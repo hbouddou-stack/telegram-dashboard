@@ -409,8 +409,11 @@
             padding-top: 10px;
         }
         .subj-card-footer .arrow {
-            transform: scaleX(-1);
             display: inline-block;
+            transition: transform 0.2s ease;
+        }
+        .subject-card:hover .subj-card-footer .arrow {
+            transform: translateX(-4px);
         }
 
         /* Subject Detail Header */
@@ -661,11 +664,11 @@
 
         /* Immersive Reader Footer Navigation */
         .modal-footer-nav {
-            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
             border-top: 1px solid var(--border);
             background: var(--surface);
             display: flex;
-            gap: 10px;
+            gap: 12px;
             z-index: 100;
         }
         
@@ -673,23 +676,56 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border-radius: 12px;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 18px;
             border: 1px solid var(--border);
-            background: var(--surface);
+            background: var(--bg);
             font-family: inherit;
             cursor: pointer;
-            text-align: right;
-            transition: background .2s, border-color .2s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
         }
-        .nav-prev-btn:hover, .nav-next-btn:hover {
-            background: var(--bg);
+        .nav-prev-btn {
+            flex-direction: row;
+        }
+        .nav-next-btn {
+            flex-direction: row-reverse;
+            background: var(--primary-light);
+            border-color: var(--primary-border);
+        }
+        .nav-prev-btn:hover {
+            border-color: var(--text-2);
+            background: var(--surface);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .nav-next-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
+        }
+        .nav-next-btn:hover .lbl-sub {
+            color: rgba(255, 255, 255, 0.75);
+        }
+        .nav-next-btn:hover .lbl-val {
+            color: white;
+        }
+        .nav-next-btn:hover .arrow-wrap {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
         }
         .nav-prev-btn:disabled, .nav-next-btn:disabled {
-            opacity: 0.3;
+            opacity: 0.4;
             cursor: not-allowed;
             pointer-events: none;
+            background: var(--bg);
+            border-color: var(--border);
+            color: var(--text-3);
+            transform: none !important;
+            box-shadow: none !important;
         }
         
         .btn-lbl-wrap {
@@ -699,30 +735,44 @@
         }
         .nav-prev-btn .btn-lbl-wrap {
             align-items: flex-start;
+            text-align: right;
         }
         .nav-next-btn .btn-lbl-wrap {
             align-items: flex-end;
+            text-align: left;
         }
         
         .lbl-sub {
             font-size: 10px;
             color: var(--text-3);
-            font-weight: 500;
+            font-weight: 700;
+            transition: color 0.2s;
         }
         .lbl-val {
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-2);
             margin-top: 2px;
+            transition: color 0.2s;
         }
-        .nav-prev-btn .arrow {
-            font-size: 16px;
+        .arrow-wrap {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 900;
             color: var(--primary);
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
         }
-        .nav-next-btn .arrow {
-            font-size: 16px;
-            color: var(--primary);
-            transform: scaleX(-1);
+        .nav-next-btn .arrow-wrap {
+            background: var(--primary);
+            color: white;
         }
 
         /* ══ PROFILE ══ */
@@ -892,10 +942,10 @@
         .subj-aqeeda { --subj-color: #6366f1; --subj-color-light: #e0e7ff; --subj-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
         .subj-nahw { --subj-color: #f59e0b; --subj-color-light: #fef3c7; --subj-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
 
-        .subj-card.subj-sira .subj-progress-fill { background: var(--subj-gradient); }
-        .subj-card.subj-fiqh .subj-progress-fill { background: var(--subj-gradient); }
-        .subj-card.subj-aqeeda .subj-progress-fill { background: var(--subj-gradient); }
-        .subj-card.subj-nahw .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-sira .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-fiqh .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-aqeeda .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-nahw .subj-progress-fill { background: var(--subj-gradient); }
 
         /* Roadmap Timeline */
         .syllabus-roadmap {
@@ -1232,7 +1282,7 @@
         <div id="library-lessons-view" style="display:none">
             <div class="subject-detail-header">
                 <button class="back-btn" onclick="backToSubjects()">
-                    <span class="icon">←</span>
+                    <span class="icon">→</span>
                     المواد الدراسية
                 </button>
                 <div class="subject-title-wrap">
@@ -1264,7 +1314,7 @@
         </div>
         <div class="syllabus-roadmap-container" id="syllabus-roadmap-container" style="display:none">
             <button class="btn-sm btn-secondary" onclick="backToSyllabusSubjects()" style="margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
-                ⬅️ العودة للمواد
+                ➡️ العودة للمواد
             </button>
             <div id="syllabus-roadmap-header-card" style="margin-bottom: 18px; padding: 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px;">
                 <h2 id="syllabus-roadmap-title" style="font-weight: 800; font-size: 16px; color: var(--text-1); text-align: right;">المادة</h2>
@@ -1321,18 +1371,18 @@
         <div class="modal-body reader-view" id="modal-body"></div>
         <div class="modal-footer-nav">
             <button class="nav-prev-btn" id="btn-prev-lesson" onclick="navigateLesson(-1)">
-                <span class="arrow">→</span>
+                <span class="arrow-wrap">→</span>
                 <div class="btn-lbl-wrap">
                     <span class="lbl-sub">الدرس السابق</span>
                     <span class="lbl-val" id="lbl-prev-val">الدرس السابق</span>
                 </div>
             </button>
             <button class="nav-next-btn" id="btn-next-lesson" onclick="navigateLesson(1)">
+                <span class="arrow-wrap">←</span>
                 <div class="btn-lbl-wrap">
                     <span class="lbl-sub">الدرس التالي</span>
                     <span class="lbl-val" id="lbl-next-val">الدرس التالي</span>
                 </div>
-                <span class="arrow">←</span>
             </button>
         </div>
     </div>
@@ -1426,19 +1476,13 @@ const TRANSLIT = {
 
 // ── Load ──
 console.log("Loading transcripts.json...");
-fetch('transcripts.json?v=7')
+fetch('transcripts.json?v=8')
     .then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.json();
     })
     .then(data => {
         DB = data;
-        buildIndex();
-        renderHome();
-        renderLibrary();
-        renderFcPicker();
-        renderProfile();
-        
         // Initialize Syllabus State
         try {
             syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
@@ -1449,6 +1493,12 @@ fetch('transcripts.json?v=7')
             syllabusFavorites = {};
             syllabusCompletion = {};
         }
+
+        buildIndex();
+        renderHome();
+        renderLibrary();
+        renderFcPicker();
+        renderProfile();
         renderSyllabusSubjects();
     })
     .catch(e => {
@@ -1494,13 +1544,18 @@ function renderHome() {
     const days=['أ','إ','ث','أ','خ','ج','س'],done=4;
     document.getElementById('streak-days').innerHTML=days.map((d,i)=>`<div class="streak-day ${i<done?'done':i===done?'today':''}">${d}</div>`).join('');
     const recents=['sira','fiqh'].map(s=>DB.filter(l=>l.subject===s).pop()).filter(Boolean);
-    document.getElementById('recent-cards').innerHTML=recents.map(c=>`
+    document.getElementById('recent-cards').innerHTML=recents.map(c=> {
+        const blocks = c.thematic_blocks || [];
+        const completedBlocks = blocks.filter((b, i) => syllabusCompletion[`${c.subject}_${c.lessonNum}_${i}`]).length;
+        const percent = blocks.length > 0 ? Math.round((completedBlocks / blocks.length) * 100) : 0;
+        return `
         <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'fiche')">
             <span class="badge badge-${c.subject}">${c.subjectLabel}</span>
             <div class="lesson-num">الدرس ${c.lessonNum}</div>
             <div class="lesson-title">${trunc(strip(c.summary),45)}</div>
-            <div class="progress-mini"><div class="fill" style="width:65%"></div></div>
-        </div>`).join('');
+            <div class="progress-mini"><div class="fill" style="width:${percent}%"></div></div>
+        </div>`;
+    }).join('');
     const allBlocks=DB.flatMap(l=>l.thematic_blocks.map(b=>({...b,subject:l.subject,subjectLabel:l.subjectLabel})));
     if(allBlocks.length){
         const b=allBlocks[Math.floor(Math.random()*allBlocks.length)];
@@ -1558,18 +1613,27 @@ function showSubjectLessons(key) {
     document.getElementById('subject-detail-badge').textContent = `${lessons.length} درس`;
     document.getElementById('subject-detail-title').textContent = `${meta.icon} ${meta.label}`;
     
-    document.getElementById('subject-lessons-list').innerHTML = lessons.map(l => `
+    document.getElementById('subject-lessons-list').innerHTML = lessons.map(l => {
+        const blocks = l.thematic_blocks || [];
+        const completedBlocks = blocks.filter((b, i) => syllabusCompletion[`${l.subject}_${l.lessonNum}_${i}`]).length;
+        const percent = blocks.length > 0 ? Math.round((completedBlocks / blocks.length) * 100) : 0;
+        const checkIcon = percent === 100 ? ' <span style="color: #10b981;">✅</span>' : '';
+        return `
         <div class="lesson-list-item" onclick="openModal('${l.subject}', ${l.lessonNum}, 'fiche')">
             <div class="lesson-info">
-                <strong>الدرس ${l.lessonNum}</strong>
-                <span>${trunc(strip(l.summary), 75)}</span>
+                <strong style="display: flex; align-items: center; gap: 6px;">الدرس ${l.lessonNum}${checkIcon}</strong>
+                <span style="margin-top: 4px;">${trunc(strip(l.summary), 75)}</span>
+                ${blocks.length > 0 ? `
+                <div class="progress-mini" style="margin-top: 8px; max-width: 120px; height: 4px;">
+                    <div class="fill" style="width:${percent}%; background: var(--${l.subject})"></div>
+                </div>` : ''}
             </div>
             <div class="lesson-actions-inline">
                 ${l.thematic_blocks.length ? `<button class="btn-sm btn-outline" onclick="event.stopPropagation(); openModal('${l.subject}', ${l.lessonNum}, 'blocks')">📌 المحاور</button>` : ''}
                 <button class="btn-sm btn-primary" onclick="event.stopPropagation(); openModal('${l.subject}', ${l.lessonNum}, 'fiche')">📖 اقرأ</button>
             </div>
         </div>
-    `).join('');
+    `; }).join('');
     
     document.getElementById('library-subjects-view').style.display = 'none';
     document.getElementById('library-lessons-view').style.display = 'block';
@@ -1604,7 +1668,7 @@ function renderFcPicker() {
             <div style="display:flex;align-items:center;gap:12px">
                 <span style="font-size:28px">${s.icon}</span>
                 <div><div style="font-size:14px;font-weight:800">${s.label}</div><div style="font-size:11px;color:var(--text-3)">${cnt} درس بمحاور</div></div>
-                <span style="margin-right:auto;color:var(--primary);font-size:20px">›</span>
+                <span style="margin-right:auto;color:var(--primary);font-size:20px">‹</span>
             </div></div>`;
     }).join('');
 }
@@ -1620,7 +1684,7 @@ function renderFc() {
     const fc=fcCards[fcIdx];
     document.getElementById('fc-area').innerHTML=`
         <div style="text-align:left;margin-bottom:10px">
-            <button class="btn-sm btn-outline" onclick="endFc()">← رجوع</button>
+            <button class="btn-sm btn-outline" onclick="endFc()">رجوع →</button>
             <span style="font-size:11px;color:var(--text-3);margin-right:10px">${fcIdx+1} / ${fcCards.length}</span>
         </div>
         <div class="fc-card" onclick="this.dataset.flipped=this.dataset.flipped?'':'1';document.getElementById('fc-back').style.display=this.dataset.flipped?'block':'none';document.getElementById('fc-hint').style.display=this.dataset.flipped?'none':'block'">
@@ -1633,8 +1697,8 @@ function renderFc() {
             </div>
         </div>
         <div style="display:flex;gap:10px">
-            ${fcIdx>0?`<button class="btn-sm btn-outline" style="flex:1" onclick="fcIdx--;fcFlipped=false;renderFc()">‹ السابق</button>`:''}
-            <button class="btn-sm btn-primary" style="flex:1" onclick="fcIdx<fcCards.length-1?(fcIdx++,fcFlipped=false,renderFc()):alert('انتهت البطاقات!')">التالي ›</button>
+            ${fcIdx>0?`<button class="btn-sm btn-outline" style="flex:1" onclick="fcIdx--;fcFlipped=false;renderFc()">السابق ›</button>`:''}
+            <button class="btn-sm btn-primary" style="flex:1" onclick="fcIdx<fcCards.length-1?(fcIdx++,fcFlipped=false,renderFc()):alert('انتهت البطاقات!')">‹ التالي</button>
         </div>`;
 }
 function endFc(){document.getElementById('fc-area').style.display='none';document.getElementById('fc-picker').style.display='block';}
@@ -2223,7 +2287,7 @@ function renderSyllabusSubjects() {
                         <span style="font-size:22px">${meta.icon}</span>
                         <span>${meta.title}</span>
                     </div>
-                    <span style="font-size:16px;color:var(--text-3)">➡️</span>
+                    <span style="font-size:16px;color:var(--text-3)">⬅️</span>
                 </div>
                 <div class="subj-progress-container">
                     <div class="subj-progress-bar"><div class="subj-progress-fill" style="width: ${stats.percent}%"></div></div>
@@ -2360,6 +2424,12 @@ function toggleChapterCompletion(event, subject, lessonNum, chapterIdx) {
     if (selectedSyllabusSubject) {
         updateRoadmapProgress(selectedSyllabusSubject);
         renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    // Sync home and library lesson lists
+    renderHome();
+    if (selectedSubjectKey) {
+        showSubjectLessons(selectedSubjectKey);
     }
     
     // Vibration
