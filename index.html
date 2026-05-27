@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>أكاديمية الباجي للعلوم الشرعية</title>
+    <meta name="description" content="منصة أكاديمية الباجي — بحث ذكي، دروس منظمة، مراجعة تفاعلية">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* ─── Design Tokens ─── */
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #f1f5f9;
+            --text: #0f172a;
+            --text-2: #475569;
+            --text-3: #94a3b8;
+            --primary: #4f46e5;
+            --primary-light: #f5f3ff;
+            --primary-border: #ddd6fe;
+            
+            /* Material Colors */
+            --fiqh: #0d9488; --fiqh-bg: #f0fdfb; --fiqh-border: #ccfbf1;
+            --sira: #d97706; --sira-bg: #fffbeb; --sira-border: #fef3c7;
+            --nahw: #2563eb; --nahw-bg: #eff6ff; --nahw-border: #dbeafe;
+            --aqeeda: #7c3aed; --aqeeda-bg: #f5f3ff; --aqeeda-border: #ede9fe;
+            
+            --nav-h: 70px;
+            --radius: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        html, body { 
+            height: 100%; 
+            overflow: hidden; 
+            font-family: 'Tajawal', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* ─── App Shell ─── */
+        #app { 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        /* ─── Tab Panels ─── */
+        .tab-panel { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px 16px calc(var(--nav-h) + 20px); 
+            display: none; 
+        }
+        .tab-panel.active { 
+            display: block; 
+        }
+
+        /* ─── Bottom Navigation ─── */
+        nav {
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: var(--nav-h);
+            background: var(--surface); 
+            border-top: 1px solid var(--border);
+            display: flex; 
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-btn {
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            gap: 4px; 
+            background: none; 
+            border: none;
+            cursor: pointer; 
+            color: var(--text-3); 
+            font-family: inherit;
+            font-size: 11px; 
+            font-weight: 500; 
+            padding: 6px 0; 
+            transition: color .2s, transform .1s;
+        }
+        .nav-btn .icon { 
+            font-size: 22px; 
+            line-height: 1; 
+            transition: transform .2s; 
+        }
+        .nav-btn.active { 
+            color: var(--primary); 
+        }
+        .nav-btn.active .icon { 
+            transform: scale(1.12); 
+        }
+
+        /* ─── Header Styling ─── */
+        .sec-header { 
+            margin-bottom: 20px; 
+        }
+        .sec-header h1 { 
+            font-size: 20px; 
+            font-weight: 900; 
+            color: var(--text); 
+            letter-spacing: -0.5px;
+        }
+        .sec-header p { 
+            font-size: 13px; 
+            color: var(--text-2); 
+            margin-top: 4px; 
+        }
+
+        /* ─── Premium Cards ─── */
+        .card { 
+            background: var(--surface); 
+            border: 1.2px solid #f1f5f9; 
+            border-radius: var(--radius); 
+            padding: 18px; 
+            box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.03); 
+            margin-bottom: 14px; 
+            transition: all 0.25s ease;
+        }
+        .card-row { 
+            display: flex; 
+            gap: 12px; 
+            margin-bottom: 14px;
+        }
+        .card-row .card { 
+            flex: 1; 
+            margin-bottom: 0; 
+        }
+
+        /* Subject badges */
+        .badge { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+        }
+        .badge-fiqh   { background: var(--fiqh-bg);   color: var(--fiqh);   border: 1px solid var(--fiqh-border); }
+        .badge-sira   { background: var(--sira-bg);   color: var(--sira);   border: 1px solid var(--sira-border); }
+        .badge-nahw   { background: var(--nahw-bg);   color: var(--nahw);   border: 1px solid var(--nahw-border); }
+        .badge-aqeeda { background: var(--aqeeda-bg); color: var(--aqeeda); border: 1px solid var(--aqeeda-border); }
+
+        /* ══ HOME ══ */
+        .greeting-bar { 
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%); 
+            border-radius: var(--radius); 
+            padding: 24px 20px; 
+            margin-bottom: 18px; 
+            color: white; 
+            box-shadow: 0 4px 16px -2px rgba(79, 70, 229, 0.15);
+        }
+        .greeting-bar h2 { font-size: 19px; font-weight: 800; }
+        .greeting-bar p  { font-size: 13px; opacity: .85; margin-top: 4px; }
+        
+        .streak-bar { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            background: var(--surface); 
+            border: 1.2px solid #f1f5f9; 
+            border-radius: var(--radius); 
+            padding: 16px; 
+            margin-bottom: 18px; 
+            box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s ease;
+        }
+        .streak-icon { font-size: 30px; }
+        .streak-info { flex: 1; }
+        .streak-info strong { display: block; font-size: 13.5px; font-weight: 700; }
+        .streak-info span   { display: block; font-size: 11px; color: var(--text-3); margin-top: 2px; }
+        .streak-days { display: flex; gap: 6px; margin-top: 10px; }
+        .streak-day { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 10px; 
+            font-weight: 700; 
+            color: var(--text-3); 
+        }
+        .streak-day.done  { background: var(--primary); border-color: var(--primary); color: white; }
+        .streak-day.today { border-color: var(--primary); color: var(--primary); font-weight: 900; }
+        
+        .recent-lesson-card { cursor: pointer; transition: all 0.25s ease; }
+        .recent-lesson-card:hover { border-color: var(--primary-border); transform: translateY(-2px); box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.06); }
+        .recent-lesson-card .lesson-num { font-size: 11px; color: var(--text-3); margin: 6px 0 4px; font-weight: 500; }
+        .recent-lesson-card .lesson-title { font-size: 13.5px; font-weight: 700; line-height: 1.4; color: var(--text); }
+        .progress-mini { height: 5px; background: var(--border); border-radius: 99px; margin-top: 10px; overflow: hidden; }
+        .progress-mini .fill { height: 100%; border-radius: 99px; background: var(--primary); }
+
+        /* ══ SEARCH ══ */
+        .search-wrap { position: relative; margin-bottom: 14px; z-index: 100; }
+        .search-input { 
+            width: 100%; 
+            padding: 12px 44px 12px 40px; 
+            border: 1px solid var(--border); 
+            border-radius: 24px; 
+            background: var(--surface); 
+            font-family: inherit; 
+            font-size: 14px; 
+            color: var(--text); 
+            outline: none; 
+            transition: all .25s ease; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08); }
+        .search-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; color: var(--text-3); }
+        .clear-btn   { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: var(--text-3); cursor: pointer; display: none; padding: 4px; }
+        
+        .autocomplete { 
+            position: absolute; 
+            top: calc(100% + 6px); 
+            left: 0; 
+            right: 0; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            overflow: hidden; 
+            display: none; 
+            box-shadow: var(--shadow-md); 
+            z-index: 200; 
+            max-height: 220px; 
+            overflow-y: auto; 
+        }
+        .autocomplete-item { 
+            padding: 12px 16px; 
+            font-size: 13.5px; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            transition: background .15s; 
+        }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover { background: var(--bg); }
+        
+        .filter-chips { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+        .filter-chips::-webkit-scrollbar { display: none; }
+        .chip { 
+            flex-shrink: 0; 
+            padding: 8px 16px; 
+            border-radius: 99px; 
+            border: 1px solid var(--border); 
+            background: var(--surface); 
+            font-family: inherit; 
+            font-size: 12.5px; 
+            font-weight: 600; 
+            color: var(--text-2); 
+            cursor: pointer; 
+            transition: all .2s; 
+            white-space: nowrap; 
+        }
+        .chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .search-results-header {
+            font-size: 12px;
+            color: var(--text-3);
+            margin-bottom: 10px;
+            font-weight: 700;
+            padding: 0 4px;
+        }
+
+        /* Result cards */
+        .result-card { 
+            background: var(--surface); 
+            border-radius: var(--radius); 
+            border: 1px solid var(--border); 
+            margin-bottom: 14px; 
+            overflow: hidden; 
+            transition: border-color .2s, transform .2s, box-shadow .2s; 
+            cursor: pointer; 
+            box-shadow: var(--shadow-sm);
+        }
+        .result-card:hover { border-color: var(--primary-border); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .result-type-bar { height: 3px; }
+        .type-block { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .type-fiche  { background: linear-gradient(90deg, var(--primary), #818cf8); }
+        .type-trans  { background: linear-gradient(90deg, #64748b, #94a3b8); }
+        
+        .result-body { padding: 14px 16px; }
+        .result-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .result-lesson-num { font-size: 11px; color: var(--text-3); font-weight: 700; }
+        .result-title  { font-size: 14px; font-weight: 800; margin-bottom: 6px; color: var(--text); }
+        .result-snippet { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+        .result-snippet mark, mark { background: #fef08a; color: #0f172a; padding: 0 2px; border-radius: 3px; font-weight: inherit; }
+        
+        .result-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .btn-sm { 
+            padding: 6px 14px; 
+            border-radius: 10px; 
+            font-size: 11.5px; 
+            font-weight: 700; 
+            border: none; 
+            cursor: pointer; 
+            font-family: inherit; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            transition: opacity .15s, background .15s; 
+        }
+        .btn-sm:hover { opacity: .9; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: var(--primary-light); color: var(--primary); border: 1.1px solid var(--primary-border); }
+        .btn-video   { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        
+        .empty-state { 
+            text-align: center; 
+            padding: 40px 20px; 
+            color: var(--text-3); 
+            border: 2px dashed var(--border); 
+            border-radius: var(--radius); 
+            background: var(--surface); 
+        }
+        .empty-state .empty-icon { font-size: 44px; margin-bottom: 12px; }
+        .empty-state p { font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+
+        /* ══ LIBRARY (CLOISONNÉE PAR MATIÈRE) ══ */
+        .subject-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        
+        .subject-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: transform .2s, border-color .2s, box-shadow .2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .subject-card:active {
+            transform: scale(0.98);
+        }
+        .subject-card.card-sira { border-right: 4px solid var(--sira); }
+        .subject-card.card-fiqh { border-right: 4px solid var(--fiqh); }
+        .subject-card.card-aqeeda { border-right: 4px solid var(--aqeeda); }
+        .subject-card.card-nahw { border-right: 4px solid var(--nahw); }
+        
+        .subj-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .subj-icon-large {
+            font-size: 28px;
+        }
+        .subj-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--text-2);
+        }
+        .subj-card-body h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .subj-card-body p {
+            font-size: 12px;
+            color: var(--text-2);
+            line-height: 1.4;
+        }
+        .subj-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 4px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+        .subj-card-footer .arrow {
+            transform: scaleX(-1);
+            display: inline-block;
+        }
+
+        /* Subject Detail Header */
+        .subject-detail-header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .back-btn .icon {
+            font-size: 14px;
+        }
+        .subject-title-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .subject-title-wrap h2 {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .lesson-list-item { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            padding: 14px 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 10px; 
+            cursor: pointer; 
+            transition: border-color .2s, box-shadow .2s; 
+            box-shadow: var(--shadow-sm);
+        }
+        .lesson-list-item:hover { border-color: var(--primary-border); box-shadow: var(--shadow-md); }
+        .lesson-list-item .lesson-info {
+            flex: 1;
+            padding-left: 12px;
+        }
+        .lesson-list-item .lesson-info strong { display: block; font-size: 13.5px; font-weight: 700; color: var(--text); }
+        .lesson-list-item .lesson-info span   { display: block; font-size: 11.5px; color: var(--text-2); margin-top: 4px; line-height: 1.4; }
+        .lesson-actions-inline { display: flex; gap: 8px; flex-shrink: 0; }
+
+        /* ══ IMMERSIVE FULL-SCREEN READER ══ */
+        .modal-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(15,23,42,.3); 
+            display: none; 
+            align-items: flex-end; 
+            justify-content: center; 
+            z-index: 2000; 
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.open { display: flex; }
+        
+        .modal-sheet { 
+            background: var(--surface); 
+            width: 100%; 
+            max-width: 540px; 
+            height: 100vh;
+            display: flex; 
+            flex-direction: column; 
+            animation: slideUp .28s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+        @keyframes slideUp { 
+            from { transform: translateY(100%); } 
+            to { transform: translateY(0); } 
+        }
+        
+        .modal-top-nav {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        
+        .modal-close-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-header-center {
+            text-align: center;
+            flex: 1;
+        }
+        .modal-header-center h2 {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            margin-top: 2px;
+        }
+        
+        .modal-actions-top {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-font-size {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-tabs { 
+            display: flex; 
+            border-bottom: 1.5px solid var(--border); 
+            background: var(--bg);
+        }
+        .modal-tab { 
+            flex: 1; 
+            padding: 12px 10px; 
+            font-size: 12.5px; 
+            font-weight: 700; 
+            font-family: inherit; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            color: var(--text-3); 
+            border-bottom: 2.5px solid transparent; 
+            transition: all .2s; 
+        }
+        .modal-tab.active { 
+            color: var(--primary); 
+            border-bottom-color: var(--primary); 
+        }
+        
+        .modal-body { 
+            overflow-y: auto; 
+            flex: 1; 
+            padding: 20px 18px 40px; 
+            background: #ffffff;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Reader Mode Typography */
+        .reader-view {
+            direction: rtl;
+        }
+        
+        .reader-p {
+            font-size: var(--reader-font-size, 15px);
+            line-height: 1.85;
+            color: #1e293b;
+            margin-bottom: 20px;
+            text-align: justify;
+            position: relative;
+            padding-right: 2px;
+        }
+        
+        .reader-p-play {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            padding: 1px 7px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-left: 6px;
+            vertical-align: middle;
+            user-select: none;
+            transition: background .15s, color .15s;
+        }
+        .reader-p-play:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .reader-chapter-title {
+            font-size: calc(var(--reader-font-size, 15px) + 2px);
+            font-weight: 800;
+            color: var(--primary);
+            margin: 28px 0 12px 0;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid var(--border);
+        }
+        
+        .reader-chapter-explanation {
+            font-size: calc(var(--reader-font-size, 15px) - 1.5px);
+            color: var(--text-2);
+            line-height: 1.6;
+            background: var(--bg);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border-right: 3px solid var(--text-3);
+        }
+
+        .summary-html {
+            font-size: var(--reader-font-size, 15px);
+            line-height: 1.8;
+            color: #1e293b;
+        }
+        .summary-html b { 
+            font-weight: 800; 
+            color: var(--text);
+        }
+        .summary-html blockquote { 
+            border-right: 3px solid var(--primary); 
+            padding: 10px 14px; 
+            background: var(--primary-light); 
+            border-radius: 0 8px 8px 0; 
+            margin: 16px 0; 
+            font-size: calc(var(--reader-font-size, 15px) - 0.5px); 
+            line-height: 1.7;
+        }
+
+        /* Immersive Reader Footer Navigation */
+        .modal-footer-nav {
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .nav-prev-btn, .nav-next-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            font-family: inherit;
+            cursor: pointer;
+            text-align: right;
+            transition: background .2s, border-color .2s;
+        }
+        .nav-prev-btn:hover, .nav-next-btn:hover {
+            background: var(--bg);
+        }
+        .nav-prev-btn:disabled, .nav-next-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .btn-lbl-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .nav-prev-btn .btn-lbl-wrap {
+            align-items: flex-start;
+        }
+        .nav-next-btn .btn-lbl-wrap {
+            align-items: flex-end;
+        }
+        
+        .lbl-sub {
+            font-size: 10px;
+            color: var(--text-3);
+            font-weight: 500;
+        }
+        .lbl-val {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-2);
+            margin-top: 2px;
+        }
+        .nav-prev-btn .arrow {
+            font-size: 16px;
+            color: var(--primary);
+        }
+        .nav-next-btn .arrow {
+            font-size: 16px;
+            color: var(--primary);
+            transform: scaleX(-1);
+        }
+
+        /* ══ PROFILE ══ */
+        .profile-avatar { 
+            width: 72px; 
+            height: 72px; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg, var(--primary), #6366f1); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 32px; 
+            margin: 10px auto 14px; 
+        }
+        .profile-name { text-align: center; font-size: 18px; font-weight: 800; color: var(--text); }
+        .profile-sub  { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 4px; margin-bottom: 22px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-card { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            padding: 16px; 
+            text-align: center; 
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-card .stat-val { font-size: 26px; font-weight: 900; color: var(--primary); }
+        .stat-card .stat-lbl { font-size: 11.5px; color: var(--text-3); margin-top: 3px; font-weight: 600; }
+
+        /* ══ FLASHCARDS ══ */
+        .fc-card { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            min-height: 240px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            padding: 22px; 
+            cursor: pointer; 
+            box-shadow: var(--shadow-sm); 
+            margin-bottom: 14px; 
+            transition: transform .15s, box-shadow .15s; 
+        }
+        .fc-card:active { transform: scale(.98); box-shadow: var(--shadow-md); }
+
+        /* ══ Table of Contents (TOC) ══ */
+        .reader-toc {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 22px;
+            direction: rtl;
+        }
+        .reader-toc-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-2);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .reader-toc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            list-style: none;
+        }
+        .reader-toc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity .15s;
+        }
+        .reader-toc-item:hover {
+            opacity: 0.85;
+        }
+        .ts-badge {
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1.1px solid var(--primary-border);
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <!-- HOME -->
+    <div class="tab-panel active" id="tab-home">
+        <div class="greeting-bar">
+            <h2 id="greeting-text">مرحباً بك 👋</h2>
+            <p>استمر في رحلتك العلمية اليوم</p>
+        </div>
+        <div class="streak-bar">
+            <div class="streak-icon">🔥</div>
+            <div class="streak-info">
+                <strong>سلسلة المراجعة اليومية</strong>
+                <span>استمر في المراجعة كل يوم</span>
+                <div class="streak-days" id="streak-days"></div>
+            </div>
+        </div>
+        <div class="sec-header"><h1>آخر الدروس</h1><p>الدروس التي تُدرَّس حالياً</p></div>
+        <div class="card-row" id="recent-cards"></div>
+        <div class="sec-header" style="margin-top:18px"><h1>💡 هل تعلم؟</h1></div>
+        <div class="card" id="did-you-know" style="font-size:13.5px;line-height:1.7;color:var(--text-2)">جاري التحميل...</div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="tab-panel" id="tab-search">
+        <div class="sec-header"><h1>🔍 البحث الذكي</h1><p>ابحث في التفريغات والمواضيع والفيشات</p></div>
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="search-input" placeholder="اكتب كلمة أو موضوعاً (مثال: حج، فاعل، نية)..." autocomplete="off">
+            <button class="clear-btn" id="clear-btn">✕</button>
+            <div class="autocomplete" id="autocomplete"></div>
+        </div>
+        <div class="filter-chips" id="filter-chips">
+            <button class="chip active" data-filter="all">🔎 الكل</button>
+            <button class="chip" data-filter="block">📌 مواضيع الأستاذ</button>
+            <button class="chip" data-filter="fiche">📖 فيشات المراجعة</button>
+            <button class="chip" data-filter="trans">📝 التفريغ الحرفي</button>
+        </div>
+        <div id="search-results-info" class="search-results-header" style="display:none"></div>
+        <div id="search-results">
+            <div class="empty-state"><div class="empty-icon">💡</div><p>اكتب كلمة للبحث في جميع الدروس</p></div>
+        </div>
+    </div>
+
+    <!-- LIBRARY (CLOISONNÉE) -->
+    <div class="tab-panel" id="tab-library">
+        <!-- Vue par défaut : Choix des matières -->
+        <div id="library-subjects-view">
+            <div class="sec-header">
+                <h1>📚 مكتبة الدروس</h1>
+                <p>تصفح الدروس والمذكرات المفصلة لكل مادة</p>
+            </div>
+            <div class="subject-grid" id="subject-grid">
+                <!-- Rendu dynamique -->
+            </div>
+        </div>
+        
+        <!-- Vue détaillée : Liste des cours d'une matière -->
+        <div id="library-lessons-view" style="display:none">
+            <div class="subject-detail-header">
+                <button class="back-btn" onclick="backToSubjects()">
+                    <span class="icon">←</span>
+                    المواد الدراسية
+                </button>
+                <div class="subject-title-wrap">
+                    <h2 id="subject-detail-title">المادة</h2>
+                    <span id="subject-detail-badge" class="badge"></span>
+                </div>
+            </div>
+            <div id="subject-lessons-list">
+                <!-- Rendu dynamique -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div class="tab-panel" id="tab-flashcards">
+        <div class="sec-header"><h1>🃏 المراجعة بالبطاقات</h1><p>اختر مادة للمراجعة</p></div>
+        <div id="fc-picker"></div>
+        <div id="fc-area" style="display:none"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="tab-panel" id="tab-profile">
+        <div class="profile-avatar">🎓</div>
+        <div class="profile-name" id="profile-name">طالب الأكاديمية</div>
+        <div class="profile-sub">أكاديمية الباجي للعلوم الشرعية</div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="sec-header"><h1>🏅 الشارات</h1></div>
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px">أكمل المراجعة يومياً لكسب الشارات</div>
+    </div>
+
+    <!-- NAV -->
+    <nav>
+        <button class="nav-btn active" onclick="switchTab('home',this)"><span class="icon">🏠</span><span>الرئيسية</span></button>
+        <button class="nav-btn" onclick="switchTab('search',this)"><span class="icon">🔍</span><span>البحث</span></button>
+        <button class="nav-btn" onclick="switchTab('library',this)"><span class="icon">📚</span><span>المكتبة</span></button>
+        <button class="nav-btn" onclick="switchTab('flashcards',this)"><span class="icon">🃏</span><span>المراجعة</span></button>
+        <button class="nav-btn" onclick="switchTab('profile',this)"><span class="icon">👤</span><span>ملفي</span></button>
+    </nav>
+</div>
+
+<!-- IMMERSIVE READER MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalBg(event)">
+    <div class="modal-sheet">
+        <div class="modal-top-nav">
+            <button class="modal-close-btn" onclick="closeModal()">✕</button>
+            <div class="modal-header-center">
+                <span class="badge" id="modal-badge"></span>
+                <h2 id="modal-title">تفاصيل الدرس</h2>
+            </div>
+            <div class="modal-actions-top">
+                <button class="btn-font-size" onclick="adjustFontSize(1)" title="تكبير الخط">A+</button>
+                <button class="btn-font-size" onclick="adjustFontSize(-1)" title="تصغير الخط">A-</button>
+            </div>
+        </div>
+        <div class="modal-tabs" id="modal-tabs"></div>
+        <div class="modal-body reader-view" id="modal-body"></div>
+        <div class="modal-footer-nav">
+            <button class="nav-prev-btn" id="btn-prev-lesson" onclick="navigateLesson(-1)">
+                <span class="arrow">→</span>
+                <div class="btn-lbl-wrap">
+                    <span class="lbl-sub">الدرس السابق</span>
+                    <span class="lbl-val" id="lbl-prev-val">الدرس السابق</span>
+                </div>
+            </button>
+            <button class="nav-next-btn" id="btn-next-lesson" onclick="navigateLesson(1)">
+                <div class="btn-lbl-wrap">
+                    <span class="lbl-sub">الدرس التالي</span>
+                    <span class="lbl-val" id="lbl-next-val">الدرس التالي</span>
+                </div>
+                <span class="arrow">←</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Telegram Detection & Blocking ──
+(function() {
+    let isTelegram = false;
+    try {
+        const tgObj = window.Telegram?.WebApp;
+        if (tgObj && tgObj.initData && tgObj.platform && tgObj.platform !== 'unknown') {
+            isTelegram = true;
+        }
+    } catch(e) {}
+
+    // Allow localhost/127.0.0.1 for local developer testing
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isTelegram && !isLocal) {
+        document.documentElement.innerHTML = `
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>عذراً، غير متاح</title>
+            <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+            <style>
+                body {
+                    margin: 0; padding: 0; height: 100vh;
+                    display: flex; flex-direction: column; align-items: center; justify-content: center;
+                    background: #f8fafc; color: #0f172a;
+                    font-family: 'Tajawal', sans-serif; direction: rtl; text-align: center;
+                }
+                .box {
+                    background: white; padding: 36px 24px; border-radius: 20px;
+                    box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1.2px solid #e2e8f0;
+                    max-width: 340px; margin: 16px;
+                }
+                .icon { font-size: 54px; margin-bottom: 16px; }
+                h2 { font-size: 19px; font-weight: 800; margin: 0 0 12px 0; color: #1e1b4b; }
+                p { font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0 0 24px 0; }
+                .btn {
+                    display: inline-block; padding: 12px 28px; background: #4f46e5;
+                    color: white; border-radius: 12px; font-weight: 700; text-decoration: none;
+                    font-size: 13px; transition: background 0.15s;
+                    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+                }
+                .btn:hover { background: #4338ca; }
+            </style>
+        </head>
+        <body>
+            <div class="box">
+                <div class="icon">🔒</div>
+                <h2>عذراً، الوصول غير متاح</h2>
+                <p>تم تصميم هذه المنصة كأداة مراجعة تفاعلية خاصة بطلاب الأكاديمية عبر تطبيق تليجرام. يرجى فتح التطبيق من خلال البوت الرسمي للوصول إلى بياناتك.</p>
+                <a href="https://t.me/minassatalbajibot" class="btn">الانتقال إلى تليجرام</a>
+            </div>
+        </body>
+        `;
+        throw new Error("Blocked: Opened outside Telegram client.");
+    }
+})();
+
+// ── Global Error Handling for Debugging ──
+window.onerror = function(msg, url, line, col, error) {
+    console.error("Global JS Error: ", msg, " at ", url, ":", line, ":", col);
+    return false;
+};
+window.onunhandledrejection = function(event) {
+    console.error("Global Promise Rejection: ", event.reason);
+};
+
+// ── Telegram ──
+let tg;
+try { tg = window.Telegram?.WebApp; if(tg){tg.ready();tg.expand();} } catch(e){}
+
+// ── State ──
+let DB = [], wordIndex = [], currentFilter = 'all', activeLesson = null, activeTab = 'all';
+let readerFontSize = 15; // default em size in px
+
+const TRANSLIT = {
+    "hajj":["حج","الحج","حجة","حجة الوداع"],"hadj":["حج","الحج"],
+    "salat":["صلاة","الصلاة"],"salah":["صلاة","الصلاة"],
+    "wudu":["وضوء","الوضوء"],"woudou":["وضوء","الوضوء"],
+    "iman":["إيمان","الإيمان"],"tawhid":["توحيد","التوحيد"],
+    "badr":["بدر","غزوة بدر"],"uhud":["أحد","غزوة أحد"],
+    "khandaq":["خندق","غزوة الخندق"],"fiqh":["فقه","الفقه"],
+    "sira":["سيرة","السيرة"],"nahw":["نحو","النحو"],
+    "aqeeda":["عقيدة","العقيدة","توحيد"],"niya":["نية","النية"],
+    "faail":["فاعل","الفاعل"],"mafoul":["مفعول","المفعول"],
+};
+
+// ── Load ──
+console.log("Loading transcripts.json...");
+fetch('transcripts.json')
+    .then(r => {
+        if (!r.ok) throw new Error("HTTP error " + r.status);
+        return r.json();
+    })
+    .then(data => {
+        DB = data;
+        buildIndex();
+        renderHome();
+        renderLibrary();
+        renderFcPicker();
+        renderProfile();
+    })
+    .catch(e => {
+        console.error("Data load failed:", e);
+        const errorHtml = `<div class="empty-state" style="border-color:#ef4444;color:#ef4444">
+            <div class="empty-icon">⚠️</div>
+            <p>فشل تحميل البيانات. الرجاء التحقق من الاتصال بالإنترنت.</p>
+            <button class="btn-sm btn-primary" style="margin-top:10px;background:#ef4444" onclick="location.reload()">إعادة المحاولة</button>
+        </div>`;
+        document.getElementById('did-you-know').innerHTML = errorHtml;
+        document.getElementById('subject-grid').innerHTML = errorHtml;
+        document.getElementById('recent-cards').innerHTML = errorHtml;
+    });
+
+// ── Tabs ──
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    btn.classList.add('active');
+    if(name==='search') setTimeout(()=>document.getElementById('search-input').focus(),100);
+}
+
+// ── Word Index ──
+function buildIndex() {
+    const stop = new Set(["في","من","على","إلى","عن","هذا","هذه","التي","الذي","أن","إن","لا","ما","مع","كان","كانت","ثم","أو","أم","كل","يوم","بعد","قبل","عند","هو","هي","وقد","قد","فقد","وهو","وهي","وكان"]);
+    const seen = new Set();
+    DB.forEach(item => {
+        ((item.full_text||'')+' '+(item.blocks_search_text||'')).split(/[\s،.؟!():؛]+/).forEach(w=>{
+            const c=w.trim();
+            if(c.length>=3&&c.length<=10&&!stop.has(c)&&!seen.has(c)){
+                seen.add(c);
+                wordIndex.push({text:c,subjectLabel:item.subjectLabel,cls:'badge-'+item.subject});
+            }
+        });
+    });
+    Object.keys(TRANSLIT).forEach(k=>{
+        if(!seen.has(k)){
+            const m=DB.find(l=>TRANSLIT[k].some(w=>(l.full_text||'').includes(w)||(l.blocks_search_text||'').includes(w)));
+            if(m) wordIndex.unshift({text:k,subjectLabel:m.subjectLabel,cls:'badge-'+m.subject});
+        }
+    });
+}
+
+// ── HOME ──
+function renderHome() {
+    if(tg?.initDataUnsafe?.user?.first_name)
+        document.getElementById('greeting-text').textContent='مرحباً '+tg.initDataUnsafe.user.first_name+' 👋';
+    const days=['أ','إ','ث','أ','خ','ج','س'],done=4;
+    document.getElementById('streak-days').innerHTML=days.map((d,i)=>`<div class="streak-day ${i<done?'done':i===done?'today':''}">${d}</div>`).join('');
+    const recents=['sira','fiqh'].map(s=>DB.filter(l=>l.subject===s).pop()).filter(Boolean);
+    document.getElementById('recent-cards').innerHTML=recents.map(c=>`
+        <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'fiche')">
+            <span class="badge badge-${c.subject}">${c.subjectLabel}</span>
+            <div class="lesson-num">الدرس ${c.lessonNum}</div>
+            <div class="lesson-title">${trunc(strip(c.summary),45)}</div>
+            <div class="progress-mini"><div class="fill" style="width:65%"></div></div>
+        </div>`).join('');
+    const allBlocks=DB.flatMap(l=>l.thematic_blocks.map(b=>({...b,subject:l.subject,subjectLabel:l.subjectLabel})));
+    if(allBlocks.length){
+        const b=allBlocks[Math.floor(Math.random()*allBlocks.length)];
+        document.getElementById('did-you-know').innerHTML=`
+            <span class="badge badge-${b.subject}" style="margin-bottom:8px;display:inline-flex">${b.subjectLabel}</span>
+            <div style="font-weight:800;font-size:13.5px;margin-bottom:6px">${b.title}</div>
+            <div>${strip(b.citation).substring(0,200)}...</div>`;
+    }
+}
+
+// ── LIBRARY (CLOISONNÉE PAR MATIÈRE) ──
+function renderLibrary() {
+    const SUBJECTS=[
+        {key:'sira',label:'السيرة النبوية',icon:'📜',desc:'سيرة النبي ﷺ وأحداث العهدين المكي والمدني'},
+        {key:'fiqh',label:'الفقه الإسلامي',icon:'⚖️',desc:'الأحكام الفقهية والعبادات العملية والشعائر'},
+        {key:'aqeeda',label:'العقيدة والتوحيد',icon:'🌟',desc:'أصول الإيمان والتوحيد والمسائل العقدية'},
+        {key:'nahw',label:'علم النحو والصرف',icon:'📝',desc:'قواعد الإعراب واللغة العربية وتدريبات النحو'}
+    ];
+    
+    document.getElementById('subject-grid').innerHTML = SUBJECTS.map(subj => {
+        const count = DB.filter(l => l.subject === subj.key).length;
+        return `
+            <div class="subject-card card-${subj.key}" onclick="showSubjectLessons('${subj.key}')">
+                <div class="subj-card-header">
+                    <span class="subj-icon-large">${subj.icon}</span>
+                    <span class="subj-badge">${count} درس</span>
+                </div>
+                <div class="subj-card-body">
+                    <h3>${subj.label}</h3>
+                    <p>${subj.desc}</p>
+                </div>
+                <div class="subj-card-footer">
+                    <span>تصفح الدروس</span>
+                    <span class="arrow">←</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+let selectedSubjectKey = null;
+
+function showSubjectLessons(key) {
+    selectedSubjectKey = key;
+    const lessons = DB.filter(l => l.subject === key).sort((a,b) => a.lessonNum - b.lessonNum);
+    const subjMeta = {
+        'sira': {label: 'السيرة النبوية', icon: '📜', badge: 'badge-sira'},
+        'fiqh': {label: 'الفقه الإسلامي', icon: '⚖️', badge: 'badge-fiqh'},
+        'aqeeda': {label: 'العقيدة والتوحيد', icon: '🌟', badge: 'badge-aqeeda'},
+        'nahw': {label: 'علم النحو والصرف', icon: '📝', badge: 'badge-nahw'}
+    };
+    const meta = subjMeta[key];
+    
+    document.getElementById('subject-detail-badge').className = `badge ${meta.badge}`;
+    document.getElementById('subject-detail-badge').textContent = `${lessons.length} درس`;
+    document.getElementById('subject-detail-title').textContent = `${meta.icon} ${meta.label}`;
+    
+    document.getElementById('subject-lessons-list').innerHTML = lessons.map(l => `
+        <div class="lesson-list-item" onclick="openModal('${l.subject}', ${l.lessonNum}, 'fiche')">
+            <div class="lesson-info">
+                <strong>الدرس ${l.lessonNum}</strong>
+                <span>${trunc(strip(l.summary), 75)}</span>
+            </div>
+            <div class="lesson-actions-inline">
+                ${l.thematic_blocks.length ? `<button class="btn-sm btn-outline" onclick="event.stopPropagation(); openModal('${l.subject}', ${l.lessonNum}, 'blocks')">📌 المحاور</button>` : ''}
+                <button class="btn-sm btn-primary" onclick="event.stopPropagation(); openModal('${l.subject}', ${l.lessonNum}, 'fiche')">📖 اقرأ</button>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('library-subjects-view').style.display = 'none';
+    document.getElementById('library-lessons-view').style.display = 'block';
+    
+    // Telegram API Integrations
+    if (tg) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(backToSubjects);
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function backToSubjects() {
+    selectedSubjectKey = null;
+    document.getElementById('library-lessons-view').style.display = 'none';
+    document.getElementById('library-subjects-view').style.display = 'block';
+    
+    // Telegram API Integrations
+    if (tg) {
+        tg.BackButton.hide();
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+// ── FLASHCARDS ──
+let fcCards=[], fcIdx=0, fcFlipped=false;
+function renderFcPicker() {
+    const S=[{key:'sira',label:'السيرة النبوية',icon:'📜'},{key:'fiqh',label:'الفقه الإسلامي',icon:'⚖️'},{key:'aqeeda',label:'العقيدة',icon:'🌟'},{key:'nahw',label:'النحو',icon:'📝'}];
+    document.getElementById('fc-picker').innerHTML=S.map(s=>{
+        const cnt=DB.filter(l=>l.subject===s.key&&l.thematic_blocks.length).length;
+        return `<div class="card" style="cursor:pointer" onclick="startFc('${s.key}')">
+            <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:28px">${s.icon}</span>
+                <div><div style="font-size:14px;font-weight:800">${s.label}</div><div style="font-size:11px;color:var(--text-3)">${cnt} درس بمحاور</div></div>
+                <span style="margin-right:auto;color:var(--primary);font-size:20px">›</span>
+            </div></div>`;
+    }).join('');
+}
+function startFc(subject) {
+    fcCards=DB.filter(l=>l.subject===subject).flatMap(l=>l.thematic_blocks.map(b=>({...b,subject,subjectLabel:l.subjectLabel,lessonNum:l.lessonNum})));
+    if(!fcCards.length){alert('لا توجد محاور لهذه المادة بعد');return;}
+    fcIdx=0;fcFlipped=false;
+    document.getElementById('fc-picker').style.display='none';
+    document.getElementById('fc-area').style.display='block';
+    renderFc();
+}
+function renderFc() {
+    const fc=fcCards[fcIdx];
+    document.getElementById('fc-area').innerHTML=`
+        <div style="text-align:left;margin-bottom:10px">
+            <button class="btn-sm btn-outline" onclick="endFc()">← رجوع</button>
+            <span style="font-size:11px;color:var(--text-3);margin-right:10px">${fcIdx+1} / ${fcCards.length}</span>
+        </div>
+        <div class="fc-card" onclick="this.dataset.flipped=this.dataset.flipped?'':'1';document.getElementById('fc-back').style.display=this.dataset.flipped?'block':'none';document.getElementById('fc-hint').style.display=this.dataset.flipped?'none':'block'">
+            <span class="badge badge-${fc.subject}" style="margin-bottom:10px">${fc.subjectLabel} — الدرس ${fc.lessonNum}</span>
+            <div style="font-size:15px;font-weight:800;margin-bottom:10px">${fc.title}</div>
+            <div id="fc-hint" style="font-size:12px;color:var(--text-3);text-align:center">👆 اضغط لرؤية ما قاله الأستاذ</div>
+            <div id="fc-back" style="display:none">
+                <div class="block-citation">${fc.citation}</div>
+                ${fc.video_link?`<a href="${fc.video_link}" target="_blank" class="segment-ts" style="margin-top:8px;display:inline-flex;text-decoration:none">▶ ${fc.timestamp} في الفيديو</a>`:''}
+            </div>
+        </div>
+        <div style="display:flex;gap:10px">
+            ${fcIdx>0?`<button class="btn-sm btn-outline" style="flex:1" onclick="fcIdx--;fcFlipped=false;renderFc()">‹ السابق</button>`:''}
+            <button class="btn-sm btn-primary" style="flex:1" onclick="fcIdx<fcCards.length-1?(fcIdx++,fcFlipped=false,renderFc()):alert('انتهت البطاقات!')">التالي ›</button>
+        </div>`;
+}
+function endFc(){document.getElementById('fc-area').style.display='none';document.getElementById('fc-picker').style.display='block';}
+
+// ── PROFILE ──
+function renderProfile() {
+    if(tg?.initDataUnsafe?.user?.first_name) document.getElementById('profile-name').textContent=tg.initDataUnsafe.user.first_name;
+    document.getElementById('stats-grid').innerHTML=`
+        <div class="stat-card"><div class="stat-val">${DB.length}</div><div class="stat-lbl">درس متاح</div></div>
+        <div class="stat-card"><div class="stat-val">${DB.filter(d=>d.thematic_blocks.length).length}</div><div class="stat-lbl">درس بمحاور</div></div>
+        <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">مواد دراسية</div></div>
+        <div class="stat-card"><div class="stat-val">🔥</div><div class="stat-lbl">استمر في المراجعة</div></div>`;
+}
+
+// ── SEARCH ──
+const si=document.getElementById('search-input'), cb=document.getElementById('clear-btn'), ac=document.getElementById('autocomplete');
+document.getElementById('filter-chips').querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+        document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active'); currentFilter=chip.dataset.filter;
+        if(si.value.trim().length>=2) doSearch(si.value.trim());
+    });
+});
+
+si.addEventListener('input',()=>{
+    const q=si.value.trim();
+    cb.style.display=q?'block':'none';
+    if(q.length>=2){showAc(q);doSearch(q);} else{ac.style.display='none';resetSearch();}
+});
+
+si.addEventListener('keydown',(e)=>{
+    if (e.key === 'Enter') {
+        const q=si.value.trim();
+        if(q.length>=2){
+            ac.style.display='none';
+            doSearch(q);
+            si.blur(); // dismiss keyboard on mobile devices
+        }
+    }
+});
+
+cb.addEventListener('click',()=>{
+    si.value='';
+    cb.style.display='none';
+    ac.style.display='none';
+    resetSearch();
+    si.focus();
+});
+
+document.addEventListener('click',e=>{
+    if(!e.target.closest('.search-wrap')) ac.style.display='none';
+});
+
+function showAc(q) {
+    const ql=q.toLowerCase();
+    const matches=wordIndex.filter(w=>w.text.toLowerCase().includes(ql)).slice(0,5);
+    if(!matches.length){ac.style.display='none';return;}
+    ac.innerHTML=matches.map(m=>`<div class="autocomplete-item" onclick="si.value='${m.text}';ac.style.display='none';cb.style.display='block';doSearch('${m.text}')"><span>${hl(m.text,q)}</span><span class="badge ${m.cls}">${m.subjectLabel}</span></div>`).join('');
+    ac.style.display='block';
+}
+
+function getQ(q){
+    const ql=q.toLowerCase();
+    let qs=[ql];
+    // S'il y a des lettres arabes dans la recherche, on ne fait pas de translitération latine
+    const hasArabic = /[\u0600-\u06FF]/.test(ql);
+    if (!hasArabic && TRANSLIT[ql]) {
+        qs=qs.concat(TRANSLIT[ql]);
+    }
+    return qs;
+}
+
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+function score(item, queries) {
+    let s=0;
+    const title=item.title.toLowerCase(), sum=strip(item.summary||'').toLowerCase();
+    const ft=(item.full_text||'').toLowerCase(), bt=(item.blocks_search_text||'').toLowerCase();
+    for(const q of queries){
+        if(title.includes(q))s+=120;
+        s+=(sum.match(new RegExp(esc(q),'g'))||[]).length*10;
+        s+=(bt.match(new RegExp(esc(q),'g'))||[]).length*15;
+        s+=(ft.match(new RegExp(esc(q),'g'))||[]).length*3;
+    }
+    return s;
+}
+
+function doSearch(q) {
+    ac.style.display = 'none'; // Ferme les suggestions box immédiatement
+    const queries = getQ(q);
+    const results = [];
+    const res = document.getElementById('search-results');
+    const infoHeader = document.getElementById('search-results-info');
+    
+    // Parcourir tous les cours de la DB
+    DB.forEach(item => {
+        // 1. Recherche dans les blocs thématiques de l'enseignant
+        if (item.thematic_blocks && item.thematic_blocks.length) {
+            item.thematic_blocks.forEach(b => {
+                let sc = 0;
+                let matchTitle = false;
+                
+                queries.forEach(q2 => {
+                    const titleLower = b.title.toLowerCase();
+                    const textLower = b.search_text.toLowerCase();
+                    
+                    if (titleLower.includes(q2)) {
+                        sc += 2000; // Très fort score pour correspondance dans le titre
+                        matchTitle = true;
+                    }
+                    if (textLower.includes(q2)) {
+                        sc += 150; // Score moyen pour correspondance dans le texte/citation
+                    }
+                });
+                
+                if (sc > 0) {
+                    results.push({
+                        type: 'block',
+                        score: sc,
+                        item: item,
+                        block: b,
+                        matchTitle: matchTitle
+                    });
+                }
+            });
+        }
+        
+        // 2. Recherche dans les fiches (résumés de cours)
+        let ficheScore = 0;
+        const sumText = strip(item.summary || '').toLowerCase();
+        queries.forEach(q2 => {
+            if (sumText.includes(q2)) {
+                ficheScore += 100;
+            }
+        });
+        if (ficheScore > 0) {
+            results.push({
+                type: 'fiche',
+                score: ficheScore,
+                item: item
+            });
+        }
+        
+        // 3. Recherche dans le texte brut des transcriptions
+        let transScore = 0;
+        const ftText = (item.full_text || '').toLowerCase();
+        queries.forEach(q2 => {
+            if (ftText.includes(q2)) {
+                transScore += 10;
+            }
+        });
+        if (transScore > 0) {
+            results.push({
+                type: 'trans',
+                score: transScore,
+                item: item
+            });
+        }
+    });
+    
+    if (!results.length) {
+        infoHeader.style.display = 'none';
+        res.innerHTML = `<div class="empty-state"><div class="empty-icon">😕</div><p>لم نجد نتائج لـ "${q}"</p></div>`;
+        return;
+    }
+    
+    // Filtrer selon l'onglet actif
+    const filtered = results.filter(r => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'block') return r.type === 'block';
+        if (currentFilter === 'fiche') return r.type === 'fiche';
+        if (currentFilter === 'trans') return r.type === 'trans';
+        return false;
+    });
+    
+    if (!filtered.length) {
+        infoHeader.style.display = 'none';
+        res.innerHTML = `<div class="empty-state"><div class="empty-icon">😕</div><p>لم نجد نتائج في هذا الفلتر لـ "${q}"</p></div>`;
+        return;
+    }
+    
+    // Trier par score décroissant (les titres en premier !)
+    filtered.sort((a, b) => b.score - a.score);
+    
+    let html = '';
+    let matchCount = 0;
+    
+    filtered.forEach(r => {
+        matchCount++;
+        const item = r.item;
+        
+        if (r.type === 'block') {
+            const b = r.block;
+            const snip = hl(strip(b.citation).substring(0, 140) + '...', q);
+            // On ajoute une étiquette [العنوان] visuelle si c'est un match sur le titre
+            html += `<div class="result-card" onclick="openModal('${item.subject}',${item.lessonNum},'blocks')">
+                <div class="result-type-bar type-block"></div>
+                <div class="result-body">
+                    <div class="result-meta">
+                        <span class="badge badge-${item.subject}">📌 ${item.subjectLabel}</span>
+                        <span class="result-lesson-num">الدرس ${item.lessonNum}</span>
+                        ${r.matchTitle ? `<span class="badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px">🎯 تطابق العنوان</span>` : ''}
+                    </div>
+                    <div class="result-title">${hl(b.title, q)}</div>
+                    <div class="result-snippet">${snip}</div>
+                    <div class="result-actions">
+                        <button class="btn-sm btn-primary" onclick="event.stopPropagation();openModal('${item.subject}',${item.lessonNum},'blocks')">📌 اقرأ الموضوع</button>
+                        ${b.video_link ? `<a href="${b.video_link}" target="_blank" class="btn-sm btn-video" style="text-decoration:none" onclick="event.stopPropagation()">▶ ${b.timestamp}</a>` : ''}
+                    </div>
+                </div></div>`;
+        }
+        
+        else if (r.type === 'fiche') {
+            const sum = strip(item.summary || '');
+            let snip = '';
+            for (const q2 of queries) {
+                const idx = sum.toLowerCase().indexOf(q2);
+                if (idx !== -1) {
+                    snip = '...' + sum.substring(Math.max(0, idx - 30), idx + 130) + '...';
+                    break;
+                }
+            }
+            if (!snip) snip = sum.substring(0, 130) + '...';
+            html += `<div class="result-card" onclick="openModal('${item.subject}',${item.lessonNum},'fiche')">
+                <div class="result-type-bar type-fiche"></div>
+                <div class="result-body">
+                    <div class="result-meta">
+                        <span class="badge badge-${item.subject}">📖 ${item.subjectLabel}</span>
+                        <span class="result-lesson-num">الدرس ${item.lessonNum}</span>
+                    </div>
+                    <div class="result-snippet">${hl(snip, q)}</div>
+                    <div class="result-actions">
+                        <button class="btn-sm btn-outline" onclick="event.stopPropagation();openModal('${item.subject}',${item.lessonNum},'fiche')">📖 اقرأ الفيشة</button>
+                    </div>
+                </div></div>`;
+        }
+        
+        else if (r.type === 'trans') {
+            const ft = item.full_text || '';
+            let snip = '';
+            for (const q2 of queries) {
+                const idx = ft.toLowerCase().indexOf(q2);
+                if (idx !== -1) {
+                    snip = '...' + ft.substring(Math.max(0, idx - 30), idx + 130) + '...';
+                    break;
+                }
+            }
+            if (snip) {
+                html += `<div class="result-card" onclick="openModal('${item.subject}',${item.lessonNum},'trans')">
+                    <div class="result-type-bar type-trans"></div>
+                    <div class="result-body">
+                        <div class="result-meta">
+                            <span class="badge badge-${item.subject}">📝 ${item.subjectLabel}</span>
+                            <span class="result-lesson-num">الدرس ${item.lessonNum}</span>
+                        </div>
+                        <div class="result-snippet">${hl(snip, q)}</div>
+                        <div class="result-actions">
+                            <button class="btn-sm btn-outline" onclick="event.stopPropagation();openModal('${item.subject}',${item.lessonNum},'trans')">📝 قراءة التفريغ</button>
+                        </div>
+                    </div></div>`;
+            }
+        }
+    });
+    
+    infoHeader.style.display = 'block';
+    infoHeader.textContent = `تم العثور على ${matchCount} نتيجة بحث لـ "${q}"`;
+    res.innerHTML = html;
+}
+
+function resetSearch(){
+    document.getElementById('search-results-info').style.display = 'none';
+    document.getElementById('search-results').innerHTML=`<div class="empty-state"><div class="empty-icon">💡</div><p>اكتب كلمة للبحث في جميع الدروس</p></div>`;
+}
+
+// ── IMMERSIVE READER MODAL / OVERLAY ──
+function openModal(subject, lessonNum, tab) {
+    activeLesson=DB.find(l=>l.subject===subject&&l.lessonNum===lessonNum);
+    if(!activeLesson) return;
+    
+    activeTab = tab;
+    
+    document.getElementById('modal-badge').className = `badge badge-${subject}`;
+    document.getElementById('modal-badge').textContent = `${activeLesson.subjectLabel}`;
+    document.getElementById('modal-title').textContent = `الدرس ${lessonNum}`;
+    
+    const tabs=[];
+    if(activeLesson.thematic_blocks.length) tabs.push({k:'blocks',l:'📌 المحاور'});
+    tabs.push({k:'fiche',l:'📖 الفيشة'});
+    tabs.push({k:'trans',l:'📝 التفريغ'});
+    
+    // Fallback tab if requested tab not available
+    let selectedTab = tab;
+    if (tab === 'blocks' && !activeLesson.thematic_blocks.length) {
+        selectedTab = 'fiche';
+        activeTab = 'fiche';
+    }
+    
+    document.getElementById('modal-tabs').innerHTML=tabs.map(t=>`<button class="modal-tab ${t.k===selectedTab?'active':''}" onclick="switchMTab('${t.k}',this)">${t.l}</button>`).join('');
+    
+    renderMBody(selectedTab);
+    updateNavButtons();
+    
+    document.getElementById('modal-overlay').classList.add('open');
+    
+    // Telegram API Integrations
+    if (tg) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(closeModal);
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+    }
+}
+
+function switchMTab(key,btn){
+    document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = key;
+    renderMBody(key);
+}
+
+function adjustFontSize(offset) {
+    readerFontSize = Math.max(12, Math.min(24, readerFontSize + offset));
+    document.getElementById('modal-body').style.setProperty('--reader-font-size', readerFontSize + 'px');
+}
+
+function renderMBody(tab){
+    const body=document.getElementById('modal-body'), l=activeLesson, q=si.value.trim();
+    // Reset font size variable
+    body.style.setProperty('--reader-font-size', readerFontSize + 'px');
+    
+    if(tab==='blocks'){
+        if(!l.thematic_blocks.length){body.innerHTML='<div class="empty-state"><p>لا توجد محاور مفصّلة لهذا الدرس بعد</p></div>';return;}
+        body.innerHTML=l.thematic_blocks.map(b=>`<div class="block-item" style="margin-bottom:20px;padding-bottom:16px;border-bottom:1.5px dashed var(--border)">
+            <div style="font-weight:800;font-size:14.5px;color:var(--primary);margin-bottom:8px">${hl(b.title,q)}</div>
+            <div class="summary-html" style="background:var(--primary-light);border-right:3px solid var(--primary);padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:10px;font-size:inherit">${hl(b.citation,q)}</div>
+            ${b.explanation?`<div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:8px">${hl(b.explanation,q)}</div>`:''}
+            ${b.video_link?`<a href="${b.video_link}" target="_blank" class="reader-p-play" style="display:inline-flex">▶ تشغيل الفيديو (دقيقة ${b.timestamp})</a>`:''}
+        </div>`).join('');
+    } else if(tab==='fiche'){
+        body.innerHTML=`<div class="summary-html">${q?hl(l.summary,q):l.summary}</div>`;
+    } else {
+        body.innerHTML = formatTranscription(l, q);
+    }
+}
+
+// ── Smart Transcription Formatting ──
+function formatTranscription(lesson, q) {
+    if (!lesson.segments || !lesson.segments.length) {
+        return '<div class="empty-state"><p>لا يوجد تفريغ متوفر لهذا الدرس</p></div>';
+    }
+    
+    let html = '';
+    
+    // Sort blocks by start time
+    const blocks = [...(lesson.thematic_blocks || [])].sort((a,b) => (a.start_seconds || 0) - (b.start_seconds || 0));
+    
+    // 1. Generate Table of Contents (Index)
+    if (blocks.length > 0) {
+        html += `
+        <div class="reader-toc">
+            <div class="reader-toc-title">📋 فهرس موضوعات الدرس (اضغط للانتقال)</div>
+            <ul class="reader-toc-list">
+                ${blocks.map((b, idx) => `
+                    <li>
+                        <a href="javascript:void(0)" class="reader-toc-item" onclick="scrollToChapter(${idx})">
+                            <span class="ts-badge">${b.timestamp}</span>
+                            <span>${b.title}</span>
+                        </a>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>`;
+    }
+    
+    let transcriptHtml = '<div class="reader-text-content">';
+    let currentParagraph = [];
+    let paragraphStartTs = null;
+    let paragraphStartLink = null;
+    let blockIdx = 0;
+    
+    lesson.segments.forEach((seg, idx) => {
+        const sec = seg.sec || 0;
+        let startedBlock = null;
+        let matchedBlockIdx = -1;
+        
+        while (blockIdx < blocks.length && sec >= (blocks[blockIdx].start_seconds || 0)) {
+            if (sec - (blocks[blockIdx].start_seconds || 0) < 15) { // Match inside 15 seconds window
+                startedBlock = blocks[blockIdx];
+                matchedBlockIdx = blockIdx;
+            }
+            blockIdx++;
+        }
+        
+        if (startedBlock) {
+            if (currentParagraph.length) {
+                transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
+                currentParagraph = [];
+            }
+            // Add chapter title with unique ID for scrolling
+            transcriptHtml += `
+            <h3 class="reader-chapter-title" id="chapter-${matchedBlockIdx}">
+                📌 ${startedBlock.title}
+            </h3>`;
+            if (startedBlock.explanation) {
+                transcriptHtml += `<div class="reader-chapter-explanation">${startedBlock.explanation}</div>`;
+            }
+            paragraphStartTs = seg.ts;
+            paragraphStartLink = seg.video_link;
+        }
+        
+        if (!paragraphStartTs) {
+            paragraphStartTs = seg.ts;
+            paragraphStartLink = seg.video_link;
+        }
+        
+        currentParagraph.push(seg.text);
+        
+        // Break paragraph: every 5 segments OR if segment ends with punctuation and we have at least 2 segments
+        const trimmed = seg.text.trim();
+        const textEndsWithPunct = trimmed && /[.؟!]/.test(trimmed.slice(-1));
+        if (currentParagraph.length >= 6 || (currentParagraph.length >= 3 && textEndsWithPunct)) {
+            transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
+            currentParagraph = [];
+            paragraphStartTs = null;
+            paragraphStartLink = null;
+        }
+    });
+    
+    if (currentParagraph.length) {
+        transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
+    }
+    
+    transcriptHtml += '</div>';
+    html += transcriptHtml;
+    return html;
+}
+
+function scrollToChapter(idx) {
+    const el = document.getElementById(`chapter-${idx}`);
+    if (el) {
+        // Scroll the modal body itself, since it's the scroll container
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function renderParagraphHtml(texts, ts, link, q) {
+    const text = texts.join(' ');
+    const highlighted = q ? hl(text, q) : text;
+    // Quiet play button: just a video clapboard emoji linked to the youtube video
+    return `<p class="reader-p">
+        ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
+        <span class="reader-p-text">${highlighted}</span>
+    </p>`;
+}
+
+// ── Next/Previous Lesson Navigation ──
+function updateNavButtons() {
+    if (!activeLesson) return;
+    const subjectLessons = DB.filter(l => l.subject === activeLesson.subject)
+                             .sort((a,b) => a.lessonNum - b.lessonNum);
+    const idx = subjectLessons.findIndex(l => l.lessonNum === activeLesson.lessonNum);
+    
+    const prevBtn = document.getElementById('btn-prev-lesson');
+    const nextBtn = document.getElementById('btn-next-lesson');
+    const prevVal = document.getElementById('lbl-prev-val');
+    const nextVal = document.getElementById('lbl-next-val');
+    
+    // In Arabic RTL: Offset -1 (Previous lesson) is displayed on the Right (prevBtn)
+    if (idx > 0) {
+        prevBtn.disabled = false;
+        prevVal.textContent = `الدرس ${subjectLessons[idx-1].lessonNum}`;
+    } else {
+        prevBtn.disabled = true;
+        prevVal.textContent = 'لا يوجد';
+    }
+    
+    // Offset +1 (Next lesson) is displayed on the Left (nextBtn)
+    if (idx < subjectLessons.length - 1) {
+        nextBtn.disabled = false;
+        nextVal.textContent = `الدرس ${subjectLessons[idx+1].lessonNum}`;
+    } else {
+        nextBtn.disabled = true;
+        nextVal.textContent = 'لا يوجد';
+    }
+}
+
+function navigateLesson(offset) {
+    if (!activeLesson) return;
+    const subjectLessons = DB.filter(l => l.subject === activeLesson.subject)
+                             .sort((a,b) => a.lessonNum - b.lessonNum);
+    const idx = subjectLessons.findIndex(l => l.lessonNum === activeLesson.lessonNum);
+    const nextIdx = idx + offset;
+    
+    if (nextIdx >= 0 && nextIdx < subjectLessons.length) {
+        const nextL = subjectLessons[nextIdx];
+        openModal(nextL.subject, nextL.lessonNum, activeTab || 'fiche');
+        
+        // Scroll reader content to the top
+        document.getElementById('modal-body').scrollTop = 0;
+        
+        // Telegram API Vibration
+        if (tg) {
+            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+        }
+    }
+}
+
+function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+    activeLesson = null;
+    
+    // Telegram API Integrations
+    if (tg) {
+        if (selectedSubjectKey) {
+            // Restore BackButton action to return to subjects grid
+            tg.BackButton.show();
+            tg.BackButton.onClick(backToSubjects);
+        } else {
+            // Hide BackButton if not inside a specific subject lessons list
+            tg.BackButton.hide();
+        }
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+function closeModalBg(e){
+    if(e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── Utils ──
+function strip(h){return(h||'').replace(/<[^>]*>/g,'');}
+function trunc(s,n){return s.length>n?s.substring(0,n)+'…':s;}
+function hl(text,q){
+    if(!q||q.length<2)return text;
+    try{return text.replace(new RegExp(`(${esc(q)})`,'gi'),'<mark>$1</mark>');}catch(e){return text;}
+}
+</script>
+</body>
+</html>
