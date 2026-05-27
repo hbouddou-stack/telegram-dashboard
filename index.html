@@ -1042,7 +1042,7 @@ const TRANSLIT = {
 
 // ── Load ──
 console.log("Loading transcripts.json...");
-fetch('transcripts.json')
+fetch('transcripts.json?v=4')
     .then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.json();
