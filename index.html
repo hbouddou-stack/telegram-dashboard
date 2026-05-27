@@ -1349,7 +1349,7 @@ function doSearch(q) {
                 
                 queries.forEach(q2 => {
                     const titleLower = b.title.toLowerCase();
-                    const textLower = b.search_text.toLowerCase();
+                    const textLower = (b.search_text || '').toLowerCase();
                     
                     if (titleLower.includes(q2)) {
                         sc += 2000; // Très fort score pour correspondance dans le titre
