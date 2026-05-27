@@ -820,22 +820,28 @@
         .syllabus-subjects {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 18px;
             margin-bottom: 24px;
+            direction: rtl;
         }
         .subj-card {
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px;
+            border: 1.5px solid #f1f5f9;
+            border-radius: 20px;
+            padding: 20px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            box-shadow: var(--shadow-sm);
+            gap: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .subj-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+            border-color: var(--subj-color);
         }
         .subj-card:active {
             transform: scale(0.98);
@@ -844,142 +850,175 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            direction: rtl;
         }
         .subj-card-title {
-            font-size: 16px;
-            font-weight: 800;
+            font-size: 17px;
+            font-weight: 900;
             color: var(--text-1);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         .subj-progress-container {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            direction: rtl;
         }
         .subj-progress-bar {
-            height: 8px;
-            background: var(--bg);
-            border-radius: 4px;
+            height: 10px;
+            background: #f1f5f9;
+            border-radius: 6px;
             overflow: hidden;
+            border: 1px solid #f1f5f9;
         }
         .subj-progress-fill {
             height: 100%;
-            border-radius: 4px;
-            transition: width 0.3s ease;
+            border-radius: 6px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .subj-progress-label {
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 800;
             color: var(--text-3);
             display: flex;
             justify-content: space-between;
         }
 
         /* Subject thematic colors */
-        .subj-sira { --subj-color: #10b981; --subj-color-light: #ecfdf5; }
-        .subj-fiqh { --subj-color: #3b82f6; --subj-color-light: #eff6ff; }
-        .subj-aqeeda { --subj-color: #6366f1; --subj-color-light: #e0e7ff; }
-        .subj-nahw { --subj-color: #f59e0b; --subj-color-light: #fef3c7; }
+        .subj-sira { --subj-color: #10b981; --subj-color-light: #ecfdf5; --subj-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .subj-fiqh { --subj-color: #3b82f6; --subj-color-light: #eff6ff; --subj-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .subj-aqeeda { --subj-color: #6366f1; --subj-color-light: #e0e7ff; --subj-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+        .subj-nahw { --subj-color: #f59e0b; --subj-color-light: #fef3c7; --subj-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
 
-        .subj-card.subj-sira .subj-progress-fill { background: #10b981; }
-        .subj-card.subj-fiqh .subj-progress-fill { background: #3b82f6; }
-        .subj-card.subj-aqeeda .subj-progress-fill { background: #6366f1; }
-        .subj-card.subj-nahw .subj-progress-fill { background: #f59e0b; }
+        .subj-card.subj-sira .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-card.subj-fiqh .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-card.subj-aqeeda .subj-progress-fill { background: var(--subj-gradient); }
+        .subj-card.subj-nahw .subj-progress-fill { background: var(--subj-gradient); }
 
         /* Roadmap Timeline */
         .syllabus-roadmap {
             position: relative;
-            padding-left: 20px;
-            margin-top: 10px;
+            padding-right: 24px;
+            padding-left: 0;
+            margin-top: 14px;
+            direction: rtl;
         }
         .syllabus-roadmap::before {
             content: '';
             position: absolute;
             top: 10px;
             bottom: 10px;
-            left: 9px;
-            width: 2px;
-            background: var(--border);
+            right: 8px;
+            left: auto;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--subj-color) 0%, #e2e8f0 100%);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.02);
             z-index: 1;
         }
         .roadmap-node {
             position: relative;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             z-index: 2;
         }
         .roadmap-node-dot {
             position: absolute;
-            left: -16px;
-            top: 4px;
-            width: 14px;
-            height: 14px;
+            right: -21px;
+            left: auto;
+            top: 15px;
+            width: 15px;
+            height: 15px;
             border-radius: 50%;
             background: var(--surface);
-            border: 3px solid var(--border);
-            transition: border-color 0.2s, background-color 0.2s;
+            border: 4px solid #cbd5e1;
+            box-shadow: 0 0 0 4px var(--surface);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .roadmap-node.completed .roadmap-node-dot {
             border-color: var(--subj-color);
             background: var(--subj-color);
+            box-shadow: 0 0 8px var(--subj-color);
         }
         .roadmap-node.in-progress .roadmap-node-dot {
             border-color: var(--subj-color);
             background: var(--surface);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
         }
         .roadmap-node-header {
-            margin-left: 12px;
-            margin-bottom: 10px;
+            margin-right: 14px;
+            margin-left: 0;
+            margin-bottom: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+            border-right: 4px solid var(--subj-color);
+            direction: rtl;
         }
         .roadmap-node-title {
             font-size: 14px;
-            font-weight: 800;
+            font-weight: 900;
             color: var(--text-1);
         }
         .roadmap-node-subtitle {
             font-size: 11px;
             color: var(--text-3);
-            font-weight: 500;
+            font-weight: 700;
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 20px;
         }
         .roadmap-chapters-list {
-            margin-left: 12px;
+            margin-right: 14px;
+            margin-left: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
         .roadmap-chapter-item {
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
+            border: 1.2px solid #f1f5f9;
+            border-radius: 16px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+            direction: rtl;
         }
         .roadmap-chapter-item:hover {
-            background: var(--bg);
-            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            border-color: var(--subj-color);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
         }
         .roadmap-chapter-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex: 1;
             min-width: 0;
+            text-align: right;
         }
         .chapter-title-text {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 13.5px;
+            font-weight: 700;
             color: var(--text-2);
-            text-align: right;
-            direction: rtl;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            line-height: 1.4;
+            word-break: break-word;
+            white-space: normal; /* Permits natural wrapping */
         }
         .chapter-check-btn {
             background: none;
@@ -989,19 +1028,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
             border-radius: 50%;
-            border: 2px solid var(--border);
+            border: 2px solid #cbd5e1;
             color: transparent;
-            font-size: 12px;
-            font-weight: 800;
-            transition: border-color 0.2s, background 0.2s, color 0.2s;
+            font-size: 11px;
+            font-weight: 900;
+            transition: all 0.25s ease;
         }
         .roadmap-chapter-item.completed .chapter-check-btn {
             border-color: var(--subj-color);
             background: var(--subj-color);
             color: #fff;
+            box-shadow: 0 0 6px var(--subj-color);
         }
         .chapter-actions {
             display: flex;
@@ -1012,25 +1053,30 @@
             background: none;
             border: none;
             cursor: pointer;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-3);
-            transition: background 0.15s, color 0.15s;
+            transition: all 0.2s;
+            border: 1px solid transparent;
         }
         .chapter-action-btn:hover {
-            background: var(--bg);
+            background: #f1f5f9;
+            color: var(--text-1);
         }
         .chapter-action-btn.fav-active {
             color: #f59e0b;
+            background: #fef3c7;
+            border-color: #fde68a;
         }
         .chapter-action-btn.has-note {
             color: var(--primary);
             background: var(--primary-light);
+            border-color: var(--primary-border);
         }
 
         /* Notes Dialog Overlay */
@@ -1040,7 +1086,8 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
             z-index: 10000;
             display: flex;
             align-items: center;
@@ -1048,7 +1095,7 @@
             padding: 16px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
         }
         .notes-overlay.active {
             opacity: 1;
@@ -1056,60 +1103,71 @@
         }
         .notes-dialog {
             background: var(--surface);
-            border-radius: 20px;
+            border-radius: 24px;
             width: 100%;
             max-width: 400px;
-            padding: 20px;
-            box-shadow: var(--shadow-lg);
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            transform: translateY(20px);
-            transition: transform 0.2s;
+            gap: 16px;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border);
         }
         .notes-overlay.active .notes-dialog {
-            transform: translateY(0);
+            transform: scale(1) translateY(0);
         }
         .notes-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            direction: rtl;
         }
         .notes-title {
-            font-size: 15px;
-            font-weight: 800;
+            font-size: 16px;
+            font-weight: 900;
             color: var(--text-1);
         }
         .notes-close {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 20px;
             color: var(--text-3);
+            transition: color 0.15s;
+        }
+        .notes-close:hover {
+            color: var(--text-1);
         }
         .notes-textarea {
             width: 100%;
-            height: 120px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
+            height: 140px;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
             font-family: inherit;
-            font-size: 13.5px;
+            font-size: 14px;
             resize: none;
-            background: var(--bg);
+            background: #f8fafc;
             color: var(--text-1);
             direction: rtl;
+            line-height: 1.5;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .notes-textarea:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
             outline: none;
+            background: #fff;
         }
         .notes-footer {
             display: flex;
             justify-content: flex-end;
-            gap: 8px;
+            gap: 10px;
+            direction: rtl;
         }
     </style>
 </head>
@@ -1368,7 +1426,7 @@ const TRANSLIT = {
 
 // ── Load ──
 console.log("Loading transcripts.json...");
-fetch('transcripts.json?v=6')
+fetch('transcripts.json?v=7')
     .then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.json();
