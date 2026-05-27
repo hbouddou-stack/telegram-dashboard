@@ -2042,7 +2042,17 @@ function renderMBody(tab){
             ${b.video_link?`<a href="${b.video_link}" target="_blank" class="reader-p-play" style="display:inline-flex">▶ تشغيل الفيديو (دقيقة ${b.timestamp})</a>`:''}
         </div>`).join('');
     } else if(tab==='fiche'){
-        body.innerHTML=`<div class="summary-html">${q?hl(l.summary,q):l.summary}</div>`;
+        let imgHtml = '';
+        if (l.image) {
+            imgHtml = `
+            <div class="reader-image-container" style="margin-bottom: 20px; text-align: center; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm); cursor: pointer;" onclick="openImageFullscreen('${l.image}')">
+                <img src="${l.image}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; transition: transform 0.2s;" alt="خريطة ذهنية للدرس">
+                <div style="background: var(--bg); padding: 8px 12px; font-size: 11.5px; color: var(--text-2); font-weight: 700; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>🔍 اضغط لتكبير الخريطة الذهنية</span>
+                </div>
+            </div>`;
+        }
+        body.innerHTML=`${imgHtml}<div class="summary-html">${q?hl(l.summary,q):l.summary}</div>`;
     } else {
         body.innerHTML = formatTranscription(l, q);
     }
@@ -2550,6 +2560,20 @@ function deleteNote() {
         try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){}
     }
 }
+
+// ── Fullscreen Image Viewer ──
+function openImageFullscreen(src) {
+    const overlay = document.getElementById('image-viewer-overlay');
+    const img = document.getElementById('image-viewer-img');
+    img.src = src;
+    overlay.style.display = 'flex';
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+    }
+}
+function closeImageViewer() {
+    document.getElementById('image-viewer-overlay').style.display = 'none';
+}
 </script>
 
 <!-- NOTES EDIT MODAL -->
@@ -2566,6 +2590,12 @@ function deleteNote() {
             <button class="btn-sm btn-primary" onclick="saveNote()">حفظ</button>
         </div>
     </div>
+</div>
+
+<!-- FULLSCREEN IMAGE VIEWER -->
+<div id="image-viewer-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);" onclick="closeImageViewer()">
+    <button style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.25); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">✕</button>
+    <img id="image-viewer-img" style="max-width: 95%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" alt="عرض كامل">
 </div>
 
 </body>
