@@ -815,6 +815,302 @@
             border-radius: 6px;
             border: 1.1px solid var(--primary-border);
         }
+
+        /* ─── Syllabus Styles ─── */
+        .syllabus-subjects {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .subj-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .subj-card:active {
+            transform: scale(0.98);
+        }
+        .subj-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .subj-card-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .subj-progress-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .subj-progress-bar {
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .subj-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .subj-progress-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-3);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Subject thematic colors */
+        .subj-sira { --subj-color: #10b981; --subj-color-light: #ecfdf5; }
+        .subj-fiqh { --subj-color: #3b82f6; --subj-color-light: #eff6ff; }
+        .subj-aqeeda { --subj-color: #6366f1; --subj-color-light: #e0e7ff; }
+        .subj-nahw { --subj-color: #f59e0b; --subj-color-light: #fef3c7; }
+
+        .subj-card.subj-sira .subj-progress-fill { background: #10b981; }
+        .subj-card.subj-fiqh .subj-progress-fill { background: #3b82f6; }
+        .subj-card.subj-aqeeda .subj-progress-fill { background: #6366f1; }
+        .subj-card.subj-nahw .subj-progress-fill { background: #f59e0b; }
+
+        /* Roadmap Timeline */
+        .syllabus-roadmap {
+            position: relative;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        .syllabus-roadmap::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            left: 9px;
+            width: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+        .roadmap-node {
+            position: relative;
+            margin-bottom: 24px;
+            z-index: 2;
+        }
+        .roadmap-node-dot {
+            position: absolute;
+            left: -16px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 3px solid var(--border);
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .roadmap-node.completed .roadmap-node-dot {
+            border-color: var(--subj-color);
+            background: var(--subj-color);
+        }
+        .roadmap-node.in-progress .roadmap-node-dot {
+            border-color: var(--subj-color);
+            background: var(--surface);
+        }
+        .roadmap-node-header {
+            margin-left: 12px;
+            margin-bottom: 10px;
+        }
+        .roadmap-node-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-1);
+        }
+        .roadmap-node-subtitle {
+            font-size: 11px;
+            color: var(--text-3);
+            font-weight: 500;
+        }
+        .roadmap-chapters-list {
+            margin-left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .roadmap-chapter-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .roadmap-chapter-item:hover {
+            background: var(--bg);
+            border-color: var(--border-hover);
+        }
+        .roadmap-chapter-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        .chapter-title-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-2);
+            text-align: right;
+            direction: rtl;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chapter-check-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            color: transparent;
+            font-size: 12px;
+            font-weight: 800;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
+        }
+        .roadmap-chapter-item.completed .chapter-check-btn {
+            border-color: var(--subj-color);
+            background: var(--subj-color);
+            color: #fff;
+        }
+        .chapter-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chapter-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--text-3);
+            transition: background 0.15s, color 0.15s;
+        }
+        .chapter-action-btn:hover {
+            background: var(--bg);
+        }
+        .chapter-action-btn.fav-active {
+            color: #f59e0b;
+        }
+        .chapter-action-btn.has-note {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* Notes Dialog Overlay */
+        .notes-overlay {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .notes-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .notes-dialog {
+            background: var(--surface);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+        .notes-overlay.active .notes-dialog {
+            transform: translateY(0);
+        }
+        .notes-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .notes-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-1);
+        }
+        .notes-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--text-3);
+        }
+        .notes-textarea {
+            width: 100%;
+            height: 120px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 13.5px;
+            resize: none;
+            background: var(--bg);
+            color: var(--text-1);
+            direction: rtl;
+        }
+        .notes-textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .notes-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -850,8 +1146,8 @@
             <div class="autocomplete" id="autocomplete"></div>
         </div>
         <div class="filter-chips" id="filter-chips">
-            <button class="chip active" data-filter="all">🔎 الكل</button>
-            <button class="chip" data-filter="block">📌 مواضيع الأستاذ</button>
+            <button class="chip active" data-filter="title_only">📌 العناوين فقط</button>
+            <button class="chip" data-filter="all">🔎 الكل (البحث العام)</button>
             <button class="chip" data-filter="fiche">📖 فيشات المراجعة</button>
             <button class="chip" data-filter="trans">📝 التفريغ الحرفي</button>
         </div>
@@ -899,6 +1195,35 @@
         <div id="fc-area" style="display:none"></div>
     </div>
 
+    <!-- SYLLABUS -->
+    <div class="tab-panel" id="tab-syllabus">
+        <div class="sec-header">
+            <h1>🗺️ المنهج الدراسي</h1>
+            <p>خريطة طريق الدروس والمحاور التفاعلية</p>
+        </div>
+        <div class="syllabus-subjects" id="syllabus-subjects">
+            <!-- Rendu dynamique -->
+        </div>
+        <div class="syllabus-roadmap-container" id="syllabus-roadmap-container" style="display:none">
+            <button class="btn-sm btn-secondary" onclick="backToSyllabusSubjects()" style="margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+                ⬅️ العودة للمواد
+            </button>
+            <div id="syllabus-roadmap-header-card" style="margin-bottom: 18px; padding: 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px;">
+                <h2 id="syllabus-roadmap-title" style="font-weight: 800; font-size: 16px; color: var(--text-1); text-align: right;">المادة</h2>
+                <div class="subj-progress-container">
+                    <div class="subj-progress-bar"><div id="syllabus-roadmap-progress-fill" class="subj-progress-fill" style="width: 0%"></div></div>
+                    <div class="subj-progress-label">
+                        <span id="syllabus-roadmap-progress-percent">0%</span>
+                        <span>التقدم الدراسي</span>
+                    </div>
+                </div>
+            </div>
+            <div class="syllabus-roadmap" id="syllabus-roadmap">
+                <!-- Rendu dynamique -->
+            </div>
+        </div>
+    </div>
+
     <!-- PROFILE -->
     <div class="tab-panel" id="tab-profile">
         <div class="profile-avatar">🎓</div>
@@ -913,6 +1238,7 @@
     <nav>
         <button class="nav-btn active" onclick="switchTab('home',this)"><span class="icon">🏠</span><span>الرئيسية</span></button>
         <button class="nav-btn" onclick="switchTab('search',this)"><span class="icon">🔍</span><span>البحث</span></button>
+        <button class="nav-btn" onclick="switchTab('syllabus',this)"><span class="icon">🗺️</span><span>المنهج</span></button>
         <button class="nav-btn" onclick="switchTab('library',this)"><span class="icon">📚</span><span>المكتبة</span></button>
         <button class="nav-btn" onclick="switchTab('flashcards',this)"><span class="icon">🃏</span><span>المراجعة</span></button>
         <button class="nav-btn" onclick="switchTab('profile',this)"><span class="icon">👤</span><span>ملفي</span></button>
@@ -1025,7 +1351,7 @@ let tg;
 try { tg = window.Telegram?.WebApp; if(tg){tg.ready();tg.expand();} } catch(e){}
 
 // ── State ──
-let DB = [], wordIndex = [], currentFilter = 'all', activeLesson = null, activeTab = 'all';
+let DB = [], wordIndex = [], currentFilter = 'title_only', activeLesson = null, activeTab = 'all';
 let readerFontSize = 15; // default em size in px
 
 const TRANSLIT = {
@@ -1042,7 +1368,7 @@ const TRANSLIT = {
 
 // ── Load ──
 console.log("Loading transcripts.json...");
-fetch('transcripts.json?v=4')
+fetch('transcripts.json?v=5')
     .then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.json();
@@ -1054,6 +1380,18 @@ fetch('transcripts.json?v=4')
         renderLibrary();
         renderFcPicker();
         renderProfile();
+        
+        // Initialize Syllabus State
+        try {
+            syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
+            syllabusFavorites = JSON.parse(localStorage.getItem('academy_syllabus_favs') || '{}');
+            syllabusCompletion = JSON.parse(localStorage.getItem('academy_syllabus_completions') || '{}');
+        } catch(e) {
+            syllabusNotes = {};
+            syllabusFavorites = {};
+            syllabusCompletion = {};
+        }
+        renderSyllabusSubjects();
     })
     .catch(e => {
         console.error("Data load failed:", e);
@@ -1088,12 +1426,6 @@ function buildIndex() {
                 wordIndex.push({text:c,subjectLabel:item.subjectLabel,cls:'badge-'+item.subject});
             }
         });
-    });
-    Object.keys(TRANSLIT).forEach(k=>{
-        if(!seen.has(k)){
-            const m=DB.find(l=>TRANSLIT[k].some(w=>(l.full_text||'').includes(w)||(l.blocks_search_text||'').includes(w)));
-            if(m) wordIndex.unshift({text:k,subjectLabel:m.subjectLabel,cls:'badge-'+m.subject});
-        }
     });
 }
 
@@ -1414,6 +1746,11 @@ function doSearch(q) {
     // Filtrer selon l'onglet actif
     const filtered = results.filter(r => {
         if (currentFilter === 'all') return true;
+        if (currentFilter === 'title_only') {
+            if (r.type === 'block') return r.matchTitle;
+            if (r.type === 'fiche') return queries.some(q2 => r.item.title.toLowerCase().includes(q2));
+            return false;
+        }
         if (currentFilter === 'block') return r.type === 'block';
         if (currentFilter === 'fiche') return r.type === 'fiche';
         if (currentFilter === 'trans') return r.type === 'trans';
@@ -1779,6 +2116,329 @@ function hl(text,q){
     if(!q||q.length<2)return text;
     try{return text.replace(new RegExp(`(${esc(q)})`,'gi'),'<mark>$1</mark>');}catch(e){return text;}
 }
+
+// ── SYLLABUS CONTROLLER ──
+let syllabusNotes = {}, syllabusFavorites = {}, syllabusCompletion = {}, activeNoteKey = null, selectedSyllabusSubject = null;
+
+const SUBJECT_METADATA = {
+    'sira': { title: 'السيرة النبوية', icon: '🕌', cls: 'subj-sira' },
+    'fiqh': { title: 'الفقه الإسلامي', icon: '⚖️', cls: 'subj-fiqh' },
+    'aqeeda': { title: 'العقيدة والتوحيد', icon: '🛡️', cls: 'subj-aqeeda' },
+    'nahw': { title: 'النحو واللغة', icon: '📝', cls: 'subj-nahw' }
+};
+
+function getSubjectStats(subject) {
+    const lessons = DB.filter(l => l.subject === subject);
+    let totalChapters = 0;
+    let completedChapters = 0;
+    
+    lessons.forEach(l => {
+        const blocksCount = l.thematic_blocks ? l.thematic_blocks.length : 0;
+        totalChapters += blocksCount;
+        for (let i = 0; i < blocksCount; i++) {
+            const key = `${subject}_${l.lessonNum}_${i}`;
+            if (syllabusCompletion[key]) {
+                completedChapters++;
+            }
+        }
+    });
+    
+    return {
+        total: totalChapters,
+        completed: completedChapters,
+        percent: totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0
+    };
+}
+
+function renderSyllabusSubjects() {
+    const container = document.getElementById('syllabus-subjects');
+    if (!container) return;
+    
+    const subjects = ['sira', 'fiqh', 'aqeeda', 'nahw'];
+    container.innerHTML = subjects.map(sub => {
+        const meta = SUBJECT_METADATA[sub];
+        const stats = getSubjectStats(sub);
+        return `
+            <div class="subj-card ${meta.cls}" onclick="openSyllabusRoadmap('${sub}')">
+                <div class="subj-card-header">
+                    <div class="subj-card-title">
+                        <span style="font-size:22px">${meta.icon}</span>
+                        <span>${meta.title}</span>
+                    </div>
+                    <span style="font-size:16px;color:var(--text-3)">➡️</span>
+                </div>
+                <div class="subj-progress-container">
+                    <div class="subj-progress-bar"><div class="subj-progress-fill" style="width: ${stats.percent}%"></div></div>
+                    <div class="subj-progress-label">
+                        <span>${stats.percent}%</span>
+                        <span>${stats.completed} / ${stats.total} محوراً</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openSyllabusRoadmap(subject) {
+    selectedSyllabusSubject = subject;
+    const container = document.getElementById('syllabus-roadmap-container');
+    const subjectsGrid = document.getElementById('syllabus-subjects');
+    if (!container || !subjectsGrid) return;
+    
+    subjectsGrid.style.display = 'none';
+    container.style.display = 'block';
+    
+    // Update Header
+    const meta = SUBJECT_METADATA[subject];
+    document.getElementById('syllabus-roadmap-title').textContent = `${meta.icon} منهج ${meta.title}`;
+    
+    // Render roadmap
+    updateRoadmapProgress(subject);
+    renderRoadmapTimeline(subject);
+    
+    // Telegram BackButton action
+    if (tg) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(backToSyllabusSubjects);
+    }
+}
+
+function backToSyllabusSubjects() {
+    selectedSyllabusSubject = null;
+    const container = document.getElementById('syllabus-roadmap-container');
+    const subjectsGrid = document.getElementById('syllabus-subjects');
+    if (!container || !subjectsGrid) return;
+    
+    container.style.display = 'none';
+    subjectsGrid.style.display = 'grid';
+    
+    renderSyllabusSubjects();
+    
+    // Hide or restore BackButton
+    if (tg) {
+        tg.BackButton.hide();
+    }
+}
+
+function updateRoadmapProgress(subject) {
+    const stats = getSubjectStats(subject);
+    document.getElementById('syllabus-roadmap-progress-fill').style.width = `${stats.percent}%`;
+    document.getElementById('syllabus-roadmap-progress-percent').textContent = `${stats.percent}% (${stats.completed} / ${stats.total} محاور مكتملة)`;
+    
+    // Set theme color variable
+    const meta = SUBJECT_METADATA[subject];
+    const container = document.getElementById('syllabus-roadmap-container');
+    container.className = `syllabus-roadmap-container ${meta.cls}`;
+}
+
+function renderRoadmapTimeline(subject) {
+    const container = document.getElementById('syllabus-roadmap');
+    if (!container) return;
+    
+    const lessons = DB.filter(l => l.subject === subject).sort((a, b) => a.lessonNum - b.lessonNum);
+    if (!lessons.length) {
+        container.innerHTML = '<div class="empty-state"><p>لا توجد دروس متوفرة لهذه المادة</p></div>';
+        return;
+    }
+    
+    container.innerHTML = lessons.map(l => {
+        const blocks = l.thematic_blocks || [];
+        const blocksHtml = blocks.map((b, i) => {
+            const key = `${subject}_${l.lessonNum}_${i}`;
+            const isCompleted = !!syllabusCompletion[key];
+            const isFav = !!syllabusFavorites[key];
+            const hasNote = !!syllabusNotes[key] && syllabusNotes[key].trim().length > 0;
+            
+            return `
+                <div class="roadmap-chapter-item ${isCompleted ? 'completed' : ''}" onclick="goToChapter(event, '${subject}', ${l.lessonNum}, ${i})">
+                    <div class="roadmap-chapter-left">
+                        <button class="chapter-check-btn" onclick="toggleChapterCompletion(event, '${subject}', ${l.lessonNum}, ${i})" title="تحديد كمكتمل">
+                            ✓
+                        </button>
+                        <div class="chapter-title-text" title="${b.title}">${b.title}</div>
+                    </div>
+                    <div class="chapter-actions">
+                        <button class="chapter-action-btn ${isFav ? 'fav-active' : ''}" onclick="toggleChapterFavorite(event, '${subject}', ${l.lessonNum}, ${i})" title="إضافة للمفضلة">
+                            ★
+                        </button>
+                        <button class="chapter-action-btn ${hasNote ? 'has-note' : ''}" onclick="openNotesModal(event, '${subject}', ${l.lessonNum}, ${i})" title="ملاحظة شخصية">
+                            📝
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Determine lesson node status (completed if all blocks completed)
+        let nodeStatusClass = '';
+        if (blocks.length > 0) {
+            const allDone = blocks.every((b, i) => syllabusCompletion[`${subject}_${l.lessonNum}_${i}`]);
+            const someDone = blocks.some((b, i) => syllabusCompletion[`${subject}_${l.lessonNum}_${i}`]);
+            nodeStatusClass = allDone ? 'completed' : (someDone ? 'in-progress' : '');
+        }
+        
+        return `
+            <div class="roadmap-node ${nodeStatusClass}">
+                <div class="roadmap-node-dot"></div>
+                <div class="roadmap-node-header">
+                    <div class="roadmap-node-title">الدرس ${l.lessonNum}</div>
+                    <div class="roadmap-node-subtitle">${blocks.length} محاور تفصيلية</div>
+                </div>
+                <div class="roadmap-chapters-list">
+                    ${blocksHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleChapterCompletion(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    const key = `${subject}_${lessonNum}_${chapterIdx}`;
+    syllabusCompletion[key] = !syllabusCompletion[key];
+    localStorage.setItem('academy_syllabus_completions', JSON.stringify(syllabusCompletion));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        updateRoadmapProgress(selectedSyllabusSubject);
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    // Vibration
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred(syllabusCompletion[key] ? 'success' : 'warning'); } catch(e){}
+    }
+}
+
+function toggleChapterFavorite(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    const key = `${subject}_${lessonNum}_${chapterIdx}`;
+    syllabusFavorites[key] = !syllabusFavorites[key];
+    localStorage.setItem('academy_syllabus_favs', JSON.stringify(syllabusFavorites));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    // Vibration
+    if (tg) {
+        try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+    }
+}
+
+function goToChapter(event, subject, lessonNum, chapterIdx) {
+    // Open the reader modal at this specific chapter
+    openModal(subject, lessonNum, 'blocks');
+    setTimeout(() => {
+        highlightChapterInReader(chapterIdx);
+    }, 150);
+}
+
+function highlightChapterInReader(chapterIdx) {
+    const body = document.getElementById('modal-body');
+    if (!body) return;
+    const items = body.querySelectorAll('.block-item');
+    if (items && items[chapterIdx]) {
+        items[chapterIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Momentary visual highlight
+        const originalBorder = items[chapterIdx].style.border;
+        const originalBg = items[chapterIdx].style.background;
+        items[chapterIdx].style.background = 'var(--primary-light)';
+        items[chapterIdx].style.border = '1px solid var(--primary-border)';
+        items[chapterIdx].style.borderRadius = '12px';
+        items[chapterIdx].style.padding = '10px';
+        setTimeout(() => {
+            items[chapterIdx].style.background = originalBg;
+            items[chapterIdx].style.border = originalBorder;
+            items[chapterIdx].style.borderRadius = '0';
+            items[chapterIdx].style.padding = '0';
+            items[chapterIdx].style.paddingBottom = '16px';
+        }, 2000);
+    }
+}
+
+// ── Personal Notes Methods ──
+function openNotesModal(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    activeNoteKey = `${subject}_${lessonNum}_${chapterIdx}`;
+    
+    // Find chapter title
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    const b = lesson && lesson.thematic_blocks ? lesson.thematic_blocks[chapterIdx] : null;
+    const title = b ? b.title : '';
+    
+    document.getElementById('notes-chapter-title').textContent = title;
+    document.getElementById('notes-textarea').value = syllabusNotes[activeNoteKey] || '';
+    
+    document.getElementById('notes-overlay').classList.add('active');
+    document.getElementById('notes-textarea').focus();
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function closeNotesModal() {
+    document.getElementById('notes-overlay').classList.remove('active');
+    activeNoteKey = null;
+}
+
+function saveNote() {
+    if (!activeNoteKey) return;
+    const text = document.getElementById('notes-textarea').value;
+    if (text.trim().length > 0) {
+        syllabusNotes[activeNoteKey] = text;
+    } else {
+        delete syllabusNotes[activeNoteKey];
+    }
+    localStorage.setItem('academy_syllabus_notes', JSON.stringify(syllabusNotes));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    closeNotesModal();
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+}
+
+function deleteNote() {
+    if (!activeNoteKey) return;
+    delete syllabusNotes[activeNoteKey];
+    localStorage.setItem('academy_syllabus_notes', JSON.stringify(syllabusNotes));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    closeNotesModal();
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){}
+    }
+}
 </script>
+
+<!-- NOTES EDIT MODAL -->
+<div class="notes-overlay" id="notes-overlay">
+    <div class="notes-dialog">
+        <div class="notes-header">
+            <span class="notes-title">📝 ملاحظة شخصية</span>
+            <button class="notes-close" onclick="closeNotesModal()">✕</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-3);font-weight:700;direction:rtl;text-align:right;" id="notes-chapter-title">اسم المحور</div>
+        <textarea class="notes-textarea" id="notes-textarea" placeholder="اكتب ملاحظاتك الشخصية هنا للرجوع إليها لاحقاً..."></textarea>
+        <div class="notes-footer">
+            <button class="btn-sm btn-secondary" onclick="deleteNote()" style="background:#ef4444;color:#fff;border-color:#ef4444;font-weight:700;">حذف</button>
+            <button class="btn-sm btn-primary" onclick="saveNote()">حفظ</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
