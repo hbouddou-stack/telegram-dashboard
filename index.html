@@ -2261,21 +2261,45 @@ function renderMBody(tab){
         // Format lines for poetry in summary
         const lines = l.summary.split('\n');
         const formattedSummary = lines.map(line => {
-            if (line.includes('***')) {
-                const parts = line.split('***');
-                let shatr1 = parts[0].trim();
-                let shatr2 = parts[1] ? parts[1].trim() : '';
-                shatr1 = highlightGlossary(q ? hl(shatr1, q) : shatr1);
-                shatr2 = highlightGlossary(q ? hl(shatr2, q) : shatr2);
-                return `
-                <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px; margin: 12px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; text-align: center; line-height: 1.8; direction: rtl;">
-                    <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e; margin-bottom: 6px;">${shatr1}</div>
-                    <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e;">${shatr2}</div>
-                </div>`;
-            } else {
-                const highlighted = q ? hl(line, q) : line;
-                return highlightGlossary(highlighted);
+            const poetryRegex = /([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})\s*\*\*\*\s*([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})/g;
+            
+            let parts = [];
+            let lastIndex = 0;
+            let match;
+            
+            while ((match = poetryRegex.exec(line)) !== null) {
+                const prose = line.substring(lastIndex, match.index);
+                if (prose) parts.push({ type: 'prose', content: prose });
+                
+                parts.push({
+                    type: 'poetry',
+                    shatr1: match[1],
+                    shatr2: match[2]
+                });
+                lastIndex = poetryRegex.lastIndex;
             }
+            
+            if (lastIndex < line.length) {
+                parts.push({ type: 'prose', content: line.substring(lastIndex) });
+            }
+            if (parts.length === 0) {
+                parts.push({ type: 'prose', content: line });
+            }
+            
+            return parts.map(part => {
+                if (part.type === 'prose') {
+                    const highlighted = q ? hl(part.content, q) : part.content;
+                    return highlightGlossary(highlighted);
+                } else {
+                    const s1 = highlightGlossary(q ? hl(part.shatr1.trim(), q) : part.shatr1.trim());
+                    const s2 = highlightGlossary(q ? hl(part.shatr2.trim(), q) : part.shatr2.trim());
+                    return `
+                    <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px; margin: 12px auto; max-width: 90%; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; text-align: center; line-height: 1.8; direction: rtl; display: block; box-sizing: border-box;">
+                        <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; margin-bottom: 6px; text-align: center;">${s1}</div>
+                        <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; text-align: center;">${s2}</div>
+                    </div>`;
+                }
+            }).join('');
         }).join('\n');
         
         body.innerHTML=`<div class="summary-html">${formattedSummary}</div>${quizBtnHtml}`;
@@ -2393,32 +2417,62 @@ function scrollToChapter(idx) {
 function renderParagraphHtml(texts, ts, link, q) {
     let text = texts.join(' ');
     
-    // Check if it's a poetry verse line
-    const isPoetry = text.includes('***');
-    if (isPoetry) {
-        const parts = text.split('***');
-        let shatr1 = parts[0].trim();
-        let shatr2 = parts[1] ? parts[1].trim() : '';
+    // Regex matches 2-6 words before *** and 2-6 words after *** without punctuation
+    const poetryRegex = /([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})\s*\*\*\*\s*([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})/g;
+    
+    let parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = poetryRegex.exec(text)) !== null) {
+        // Push preceding prose
+        const prose = text.substring(lastIndex, match.index);
+        if (prose) {
+            parts.push({ type: 'prose', content: prose });
+        }
         
-        shatr1 = highlightGlossary(q ? hl(shatr1, q) : shatr1);
-        shatr2 = highlightGlossary(q ? hl(shatr2, q) : shatr2);
+        // Push poetry verse
+        parts.push({
+            type: 'poetry',
+            shatr1: match[1],
+            shatr2: match[2]
+        });
         
-        return `
-        <div class="poetry-verse-container" style="position: relative; margin: 18px 0; direction: rtl;">
-            ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" style="position: absolute; right: 10px; top: 12px; z-index: 10;" onclick="event.stopPropagation()">🎬</a>` : ''}
-            <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px 12px 42px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; text-align: center; line-height: 1.8;">
-                <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e; margin-bottom: 6px;">${shatr1}</div>
-                <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e;">${shatr2}</div>
-            </div>
-        </div>`;
+        lastIndex = poetryRegex.lastIndex;
     }
     
-    const highlighted = q ? hl(text, q) : text;
-    const finalHtml = highlightGlossary(highlighted);
+    // Push remaining prose
+    if (lastIndex < text.length) {
+        parts.push({ type: 'prose', content: text.substring(lastIndex) });
+    }
+    
+    if (parts.length === 0) {
+        parts.push({ type: 'prose', content: text });
+    }
+    
+    // Now, render each part
+    const renderedParts = parts.map(part => {
+        if (part.type === 'prose') {
+            if (!part.content.trim()) return '';
+            const highlighted = q ? hl(part.content, q) : part.content;
+            const finalHtml = highlightGlossary(highlighted);
+            return `<span class="reader-p-text">${finalHtml}</span>`;
+        } else {
+            const s1 = highlightGlossary(q ? hl(part.shatr1.trim(), q) : part.shatr1.trim());
+            const s2 = highlightGlossary(q ? hl(part.shatr2.trim(), q) : part.shatr2.trim());
+            return `
+            <div class="poetry-verse-container" style="position: relative; margin: 14px auto; max-width: 90%; direction: rtl; text-align: center;">
+                <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
+                    <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; margin-bottom: 6px; text-align: center;">${s1}</div>
+                    <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; text-align: center;">${s2}</div>
+                </div>
+            </div>`;
+        }
+    }).join('');
     
     return `<p class="reader-p">
         ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
-        <span class="reader-p-text">${finalHtml}</span>
+        ${renderedParts}
     </p>`;
 }
 
