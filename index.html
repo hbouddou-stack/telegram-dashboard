@@ -1135,6 +1135,40 @@
             background: var(--primary-light) !important;
             transform: translateX(-4px);
         }
+        
+        /* Glossary term styling */
+        .glossary-term {
+            cursor: pointer;
+            border-bottom: 1.5px dotted currentColor;
+            padding: 1px 3px;
+            border-radius: 4px;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            display: inline;
+        }
+        .glossary-term:hover {
+            filter: brightness(0.95);
+        }
+        .glossary-person {
+            background: #eff6ff !important;
+            color: #1d4ed8 !important;
+        }
+        .glossary-event {
+            background: #ecfdf5 !important;
+            color: #047857 !important;
+        }
+        .glossary-tribe {
+            background: #f5f3ff !important;
+            color: #6d28d9 !important;
+        }
+        .glossary-concept {
+            background: #fffbeb !important;
+            color: #b45309 !important;
+        }
+        @keyframes slideUpToast {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
 
         /* Notes Dialog Overlay */
         .notes-overlay {
@@ -2221,7 +2255,9 @@ function renderMBody(tab){
                 🧩 اختبر معلوماتك في هذا الدرس
             </button>
         </div>` : '';
-        body.innerHTML=`<div class="summary-html">${q?hl(l.summary,q):l.summary}</div>${quizBtnHtml}`;
+        const summaryText = q ? hl(l.summary, q) : l.summary;
+        const finalHtml = highlightGlossary(summaryText);
+        body.innerHTML=`<div class="summary-html">${finalHtml}</div>${quizBtnHtml}`;
     } else {
         body.innerHTML = formatTranscription(l, q);
     }
@@ -2330,10 +2366,10 @@ function scrollToChapter(idx) {
 function renderParagraphHtml(texts, ts, link, q) {
     const text = texts.join(' ');
     const highlighted = q ? hl(text, q) : text;
-    // Quiet play button: just a video clapboard emoji linked to the youtube video
+    const finalHtml = highlightGlossary(highlighted);
     return `<p class="reader-p">
         ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
-        <span class="reader-p-text">${highlighted}</span>
+        <span class="reader-p-text">${finalHtml}</span>
     </p>`;
 }
 
@@ -2823,6 +2859,97 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ── GLOSSARY DEFINITIONS ──
+const GLOSSARY = {
+    "زيد بن حارثة": {
+        def: "صحابي جليل، كان يدعى زيد بن محمد بالتبني قبل تحريمه، وهو الصحابي الوحيد الذي ذُكر اسمه صراحة في القرآن الكريم.",
+        type: "person"
+    },
+    "أبو سفيان": {
+        def: "زعيم مشركي قريش وقائد قوافلهم وجيوشهم في غزو أحد والأحزاب قبل إسلامه يوم فتح مكة.",
+        type: "person"
+    },
+    "زينب بنت جحش": {
+        def: "أم المؤمنين، زوجة النبي ﷺ، وتزوجها بأمر من الله لإبطال حكم التبني عملياً في صبيحة زواجها.",
+        type: "person"
+    },
+    "بنو قينقاع": {
+        def: "أول قبائل اليهود بالمدينة نقضاً للعهد مع النبي ﷺ بعد غزوة بدر، فتم حصارهم وإجلاؤهم عن المدينة.",
+        type: "tribe"
+    },
+    "بدر الموعد": {
+        def: "غزوة بدر الصغرى أو الثانية، خرج فيها المسلمون للقاء قريش في السنة الرابعة للهجرة وتراجع المشركون رعباً.",
+        type: "event"
+    },
+    "زكاة الفطر": {
+        def: "صدقة تجب على كل مسلم قبل صلاة عيد الفطر طهرة للصائم وطعمة للمساكين، فرضت في شعبان من السنة الثانية للهجرة.",
+        type: "concept"
+    },
+    "التبني": {
+        def: "ادعاء بنوة طفل لغير أبيه الحقيقي، وقد أبطله الإسلام عملياً ونظرياً لصيانة الأنساب من الضياع.",
+        type: "concept"
+    },
+    "سلمان الفارسي": {
+        def: "صحابي جليل من بلاد فارس، وهو صاحب فكرة حفر الخندق لحماية المدينة في غزوة الأحزاب.",
+        type: "person"
+    },
+    "بنو قريظة": {
+        def: "إحدى قبائل اليهود بالمدينة الذين تحالفوا مع الأحزاب ونقضوا عهدهم مع المسلمين، فحُوصروا وحكم فيهم سعد بن معاذ.",
+        type: "tribe"
+    },
+    "ذات الرقاع": {
+        def: "غزوة سُميت بذلك لأن الصحابة رضي الله عنهم لفوا الخرق على أقدامهم من شدة الحر والمشي، ونزلت فيها رخص كصلاة الخوف والتيمم.",
+        type: "event"
+    }
+};
+
+function highlightGlossary(text) {
+    let result = text;
+    const sortedKeys = Object.keys(GLOSSARY).sort((a, b) => b.length - a.length);
+    
+    sortedKeys.forEach(term => {
+        const item = GLOSSARY[term];
+        const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Match term only if not inside HTML tags (prevents corrupting <mark> or <a>)
+        const regex = new RegExp(`(${escapedTerm})(?![^<>]*>)`, 'g');
+        result = result.replace(regex, `<span class="glossary-term glossary-${item.type}" onclick="showGlossaryPopup(event, '$1')">$1</span>`);
+    });
+    return result;
+}
+
+function showGlossaryPopup(event, term) {
+    if (event) event.stopPropagation();
+    const item = GLOSSARY[term];
+    if (!item) return;
+    
+    document.getElementById('glossary-popup-term').textContent = term;
+    document.getElementById('glossary-popup-def').textContent = item.def;
+    
+    const borderColors = {
+        person: '#3b82f6',
+        event: '#10b981',
+        tribe: '#7c3aed',
+        concept: '#f59e0b'
+    };
+    const color = borderColors[item.type] || '#4f46e5';
+    const popup = document.getElementById('glossary-popup');
+    popup.style.borderRightColor = color;
+    popup.style.display = 'block';
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function closeGlossaryPopup() {
+    document.getElementById('glossary-popup').style.display = 'none';
+}
+
+// Close glossary when clicking outside or anywhere in modal
+document.addEventListener('click', () => {
+    closeGlossaryPopup();
+});
+
 // ── QUIZ CONTROLLER ──
 let quizState = {
     subject: '',
@@ -3083,6 +3210,15 @@ function finishQuiz() {
 <div id="image-viewer-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);" onclick="closeImageViewer()">
     <button style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.25); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">✕</button>
     <img id="image-viewer-img" style="max-width: 95%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" alt="عرض كامل">
+</div>
+
+<!-- GLOSSARY POPUP TOAST -->
+<div id="glossary-popup" style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--surface); border: 1.5px solid var(--border); border-right: 4px solid var(--primary); border-radius: 16px; padding: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); display: none; z-index: 10005; animation: slideUpToast 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; direction: rtl;" onclick="event.stopPropagation()">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <strong id="glossary-popup-term" style="font-size: 14px; color: var(--primary); font-weight: 800;">اسم المصطلح</strong>
+        <button onclick="closeGlossaryPopup()" style="background: none; border: none; font-size: 16px; color: var(--text-3); cursor: pointer; padding: 2px;">✕</button>
+    </div>
+    <div id="glossary-popup-def" style="font-size: 12.5px; color: var(--text-2); line-height: 1.6; text-align: right;">التعريف الميسر للمصطلح...</div>
 </div>
 
 <!-- QUIZ MODAL OVERLAY -->
