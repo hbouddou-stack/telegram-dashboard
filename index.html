@@ -2355,11 +2355,13 @@ function renderMBody(tab){
                     const finalHtml = formatProse(part.content, q);
                     return `<span class="reader-p-text">${finalHtml}</span>`;
                 } else {
+                    const verseNum = findVerseNumber(part.shatr1, part.shatr2);
                     const s1 = formatProse(part.shatr1.trim(), q);
                     const s2 = formatProse(part.shatr2.trim(), q);
                     return `
-                    <div class="poetry-verse-container" style="position: relative; margin: 14px auto; max-width: 90%; direction: rtl; text-align: center;">
-                        <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
+                    <div class="poetry-verse-container" style="position: relative; margin: 18px auto; max-width: 90%; direction: rtl; text-align: center;">
+                        ${verseNum ? `<div class="poetry-badge" style="position: absolute; top: -8px; right: 12px; background: #fef08a; color: #854d0e; font-size: 10.5px; font-weight: 800; padding: 2px 9px; border-radius: 20px; border: 1px solid #eab308; font-family: 'Tajawal', sans-serif; box-shadow: 0 2px 6px rgba(133,77,14,0.1); z-index: 2;">البيت ${verseNum}</div>` : ''}
+                        <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 16px 16px 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
                             <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; margin-bottom: 6px; text-align: center;">${s1}</div>
                             <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; text-align: center;">${s2}</div>
                         </div>
@@ -2443,9 +2445,10 @@ function formatTranscription(lesson, q) {
             }
             // Add chapter title with unique ID for scrolling
             transcriptHtml += `
-            <h3 class="reader-chapter-title" id="chapter-${matchedBlockIdx}">
-                📌 ${startedBlock.title}
-            </h3>`;
+            <div class="reader-chapter-title-card" id="chapter-${matchedBlockIdx}" style="margin: 32px 0 16px 0; padding: 14px 18px; background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%); border-right: 4px solid var(--primary); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">📌</span>
+                <h3 style="margin: 0; font-size: 16.5px; font-weight: 800; color: #0f172a; font-family: 'Tajawal', sans-serif;">${startedBlock.title}</h3>
+            </div>`;
             activeBlockExplanation = startedBlock.explanation || null;
             paragraphStartTs = seg.ts;
             paragraphStartLink = seg.video_link;
@@ -2539,11 +2542,13 @@ function renderParagraphHtml(texts, ts, link, q) {
             const finalHtml = formatProse(part.content, q);
             return `<span class="reader-p-text">${finalHtml}</span>`;
         } else {
+            const verseNum = findVerseNumber(part.shatr1, part.shatr2);
             const s1 = formatProse(part.shatr1.trim(), q);
             const s2 = formatProse(part.shatr2.trim(), q);
             return `
-            <div class="poetry-verse-container" style="position: relative; margin: 14px auto; max-width: 90%; direction: rtl; text-align: center;">
-                <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
+            <div class="poetry-verse-container" style="position: relative; margin: 18px auto; max-width: 90%; direction: rtl; text-align: center;">
+                ${verseNum ? `<div class="poetry-badge" style="position: absolute; top: -8px; right: 12px; background: #fef08a; color: #854d0e; font-size: 10.5px; font-weight: 800; padding: 2px 9px; border-radius: 20px; border: 1px solid #eab308; font-family: 'Tajawal', sans-serif; box-shadow: 0 2px 6px rgba(133,77,14,0.1); z-index: 2;">البيت ${verseNum}</div>` : ''}
+                <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 16px 16px 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
                     <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; margin-bottom: 6px; text-align: center;">${s1}</div>
                     <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; text-align: center;">${s2}</div>
                 </div>
@@ -3145,6 +3150,128 @@ const GLOSSARY = {
     }
 };
 
+// ── POETRY VERSE LOOKUP MAP ──
+const POETRY_VERSE_MAP = {
+  "والغزوةالكبرىالتيببدر": 31,
+  "فيالصومفيسابععشرالشهر": 31,
+  "ووجبتفيهزكاةالفطر": 32,
+  "منبعدبدربليالعشر": 32,
+  "وماتتابنةالنبيالبر": 33,
+  "رقيةقبلرجوعالسفر": 33,
+  "زوجةعثمانوعرسالطهر": 34,
+  "فاطمةعلىعليالقدر": 34,
+  "وأسلمالعباسبعدالأسر": 35,
+  "وقينقاعغزوهمفيالأثر": 35,
+  "وبعدضحىيومعيدالنحر": 36,
+  "وغزوةالسويقثمقرقره": 36,
+  "والغزوفيالثالثةالمشتهره": 37,
+  "فيغطفانوبنيسليم": 37,
+  "وأمكلثومابنةالكريم": 38,
+  "زوجعثمانبهاوخصه": 38,
+  "ثمتزوجالنبيحفصه": 39,
+  "وزينباثمغزاإلىأحد": 39,
+  "فيشهرشوالوحمراءالأسد": 40,
+  "والخمرحرمتيقينافاسمعا": 61,
+  "هذاوفيهاولدالسبطالحسن": 61,
+  "وكانفيالرابعةالغزوإلى": 62,
+  "بنيالنضيرفيربيعأولا": 62,
+  "وبعدموتزينبالمقدمه": 63,
+  "وبعدهنكاحأمسلمه": 63,
+  "وبنتجحشثمبدرالموعد": 64,
+  "وبعدهاالأحزابفاسمعواعدد": 64,
+  "ثمبنيقريظةوفيهما": 65,
+  "خلفوفيذاتالرقاععلما": 65,
+  "كيفصلاةالخوفوالقصرنمي": 66,
+  "وآيةالحجابوالتيمم": 66,
+  "وقيلرجماللذينهودا": 67,
+  "ومولدالسبطالرضاكمابدا": 67,
+  "وكانفيالخامسةاسمعوثق": 68,
+  "الإفكفيغزوبنيالمصطلق": 68,
+  "ودومةالجندلقبلوحصل": 69,
+  "عقدابنةالحارثبعدواتصل": 69,
+  "وعقدريحانةفيذيالخامسه": 70,
+  "ثمبنولحيانبدءالسادسه": 70,
+  "وبعدهاستسقاؤهوذوقرد": 71,
+  "وصدعنعمرتهلماقصد": 71,
+  "وبيعةالرضوانأولوبنى": 72,
+  "فيهابريحانةهذابينا": 72,
+  "وفرضالحجبخلففاسمعه": 73,
+  "وكانفتحخيبرفيالسابعه": 73,
+  "وحظراللحملحمرالأهليه": 74,
+  "فيهاومتعةالنساءالرديه": 74,
+  "ثمعلىأمحبيبةعقد": 75,
+  "مهرهاعنهالنجاشينقد": 75,
+  "وسمفيخيبرفيذيالصلية": 76,
+  "ثمتميمونةيابرية": 76,
+  "ثمأتتومنبقيمهاjرا": 77,
+  "وعقدميمونةكانالآخرا": 77,
+  "وقبلإسلامأبيهريره": 78,
+  "وبعدعمرةالقضاالشهيره": 78,
+  "والرسلفيالمحرمالمحرم": 79,
+  "أرسلهمإلىالملوكفاعلم": 79,
+  "وأهديتماريةالقبطية": 80,
+  "فيهوفيالثامنةالسرية": 80,
+  "لمؤتةسارتوفيالصيام": 81,
+  "قدكانفتحالبلدالحرام": 81,
+  "وبعدهقدأوردواماكانا": 82,
+  "فييومبئرأوطاسوحنينا": 82,
+  "وبعدفيذيالقعدةاعتماره": 83,
+  "منالجعرانةواستقراره": 83,
+  "وبنتهزينبماتتثما": 84,
+  "مولدإبراهيمفيهاحتما": 84,
+  "ووهبتنوبتهالعائشه": 85,
+  "سودةمادامتزماناعائشه": 85,
+  "وعملالمنبرغيرمختفي": 86,
+  "وحجعتاببأهلالموقف": 86,
+  "ثمتبوكقدغزافيالتاسعة": 87,
+  "وهدمسجدالضراررافعة": 87,
+  "وحجبالناسأبوبكروثم": 88,
+  "تلابراءةعليوحتم": 88,
+  "ألايحجمشركبعدولا": 89,
+  "يطوفعارذابأمرفعلا": 89,
+  "وجاءتالوفودفيهاتترى": 90,
+  "هذاومننسائهآلىشهرا": 90,
+  "ثمالنجاشينعىوصلى": 91,
+  "عليهمنطيبةنالالفضلا": 91,
+  "وماتإبراهيمفيالعامالأخير": 92,
+  "والبجليأسلمواسمهجرير": 92,
+  "وحجحجةالوداعقارنا": 93,
+  "ووقفالجمعةفيهاآمنا": 93,
+  "وأنزلتاليومبشرىلكم": 94,
+  "اليومأكملتلكمدينكم": 94,
+  "وموتريحانةبعدعوده": 95,
+  "والتcععشنمدةمنبعده": 95,
+  "ويومالاثنينقضىيقينا": 96,
+  "إذأكملالثلاثوالستينا": 96,
+  "والدفنفيبيتابنةالصديق": 97,
+  "فيموضعالوفاةعنتحقيق": 97,
+  "ومدةالتمريضخمسشهر": 98,
+  "وقيلبلثلثوخمسفادري": 98,
+  "وتمتالأرجوزةالميئية": 99,
+  "فيذكرحالأشرفالبرية": 99,
+  "صلىعليهاللهربيوعلى": 100,
+  "أصحابهوآلهومنتلا": 100
+};
+
+function cleanArabicText(text) {
+    if (!text) return '';
+    return text.replace(/[\u064B-\u0652]/g, '')
+               .replace(/[^\u0621-\u064A]/g, '')
+               .trim();
+}
+
+function findVerseNumber(s1, s2) {
+    const k1 = cleanArabicText(s1);
+    const k2 = cleanArabicText(s2);
+    if (POETRY_VERSE_MAP[k1]) return POETRY_VERSE_MAP[k1];
+    if (POETRY_VERSE_MAP[k2]) return POETRY_VERSE_MAP[k2];
+    for (const key in POETRY_VERSE_MAP) {
+        if (k1 && (k1.includes(key) || key.includes(k1))) return POETRY_VERSE_MAP[key];
+        if (k2 && (k2.includes(key) || key.includes(k2))) return POETRY_VERSE_MAP[key];
+    }
+    return null;
+}
+
 function normalizeArabic(text) {
     if (!text) return '';
     return text
@@ -3206,14 +3333,33 @@ function formatProse(text, q) {
 
 function highlightGlossary(text) {
     let result = text;
-    const sortedKeys = Object.keys(GLOSSARY).sort((a, b) => b.length - a.length);
     
-    sortedKeys.forEach(term => {
-        const item = GLOSSARY[term];
-        const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        // Match term only if not inside HTML tags (prevents corrupting <mark> or <a>)
-        const regex = new RegExp(`(${escapedTerm})(?![^<>]*>)`, 'g');
-        result = result.replace(regex, `<span class="glossary-term glossary-${item.type}" onclick="showGlossaryPopup(event, '$1')">$1</span>`);
+    const GLOSSARY_MATCHERS = [
+        { term: "زيد بن حارثة", pattern: "زيد بن حارث[ةه]|زيد" },
+        { term: "أبو سفيان", pattern: "[أا]بو سفيان|[أا]بي سفيان|[أا]با سفيان" },
+        { term: "زينب بنت جحش", pattern: "زينب بنت جحش|زينب" },
+        { term: "سلمان الفارسي", pattern: "سلمان الفارسي|سلمان" },
+        { term: "بنو قريظة", pattern: "بنو قريظ[ةه]|بني قريظ[ةه]" },
+        { term: "سعد بن معاذ", pattern: "سعد بن معاذ|سعد" },
+        { term: "حيي بن أخطب", pattern: "حيي بن أخطب|حيي" },
+        { term: "نعيم بن مسعود", pattern: "نعيم بن مسعود|نعيم" },
+        { term: "عبد الله بن سلام", pattern: "عبد الله بن سلام|ابن سلام" },
+        { term: "عبد الله بن أبي بن سلول", pattern: "عبد الله بن أبي بن سلول|ابن سلول|عبد الله بن أبي" },
+        { term: "صفوان بن المعطل", pattern: "صفوان بن المعطل|صفوان" },
+        { term: "بنو قينقاع", pattern: "بنو قينقاع|بني قينقاع" },
+        { term: "بنو النضير", pattern: "بنو النضير|بني النضير" },
+        { term: "غزوة الأحزاب", pattern: "غزوة الأحزاب|الأحزاب" },
+        { term: "بدر الموعد", pattern: "بدر الموعد" },
+        { term: "ذات الرقاع", pattern: "ذات الرقاع" },
+        { term: "دومة الجندل", pattern: "دومة الجندل" },
+        { term: "أمية بن خلف", pattern: "أمية بن خلف|أميه بن خلف" },
+        { term: "حمزة بن عبد المطلب", pattern: "حمزة بن عبد المطلب|حمزه بن عبد المطلب|حمزة|حمزه" },
+        { term: "مصعب بن عمير", pattern: "مصعب بن عمير|مصعب" }
+    ];
+    
+    GLOSSARY_MATCHERS.forEach(item => {
+        const regex = new RegExp(`(?<=^|[^أ-ي])(${item.pattern})(?=$|[^أ-ي])(?![^<>]*>)`, 'g');
+        result = result.replace(regex, `<span class="glossary-term glossary-${GLOSSARY[item.term].type}" onclick="showGlossaryPopup(event, '${item.term}')">$1</span>`);
     });
     return result;
 }
