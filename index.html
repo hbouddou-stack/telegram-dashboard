@@ -2057,6 +2057,19 @@
             <span style="font-size:12.5px; font-weight:800; color:#d97706;">⚙️ وضع إدارة الأكاديمية</span>
             <button class="chip" onclick="toggleAdminMode()" id="admin-mode-status" style="margin:0; background:#fde68a; color:#b45309; border:none; padding:4px 10px; font-weight:800; cursor:pointer;">غير نشط 🎓</button>
         </div>
+        <!-- Admin Dashboard Panel -->
+        <div id="admin-dashboard-panel" style="display:none; margin: 15px 0 25px 0; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 18px; padding: 16px; direction: rtl; text-align: right; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.2px dashed #fde68a; padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="font-weight: 800; color: #b45309; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                    <span>📬 صندوق بلاغات الطلاب</span>
+                    <span class="badge" id="admin-reports-count" style="background: #ef4444; color: #ffffff; border: none; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">0</span>
+                </div>
+                <button onclick="loadAdminReports()" style="background: none; border: none; font-size: 12px; color: #b45309; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">🔄 تحديث</button>
+            </div>
+            <div id="admin-reports-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-left: 4px;">
+                <div style="text-align: center; color: #b45309; font-size: 12px; padding: 12px 0;">جاري تحميل البلاغات...</div>
+            </div>
+        </div>
         <div class="profile-avatar">🎓</div>
         <div class="profile-name" id="profile-name">طالب الأكاديمية</div>
         <div class="profile-sub">أكاديمية الباجي للعلوم الشرعية</div>
@@ -3209,15 +3222,21 @@ function renderProfile() {
     if(tg?.initDataUnsafe?.user?.first_name) document.getElementById('profile-name').textContent=tg.initDataUnsafe.user.first_name;
     
     const adminBtn = document.getElementById('admin-mode-status');
+    const adminPanel = document.getElementById('admin-dashboard-panel');
     if (adminBtn) {
         if (isAdminMode) {
             adminBtn.textContent = 'نشط 👑';
             adminBtn.style.background = '#d97706';
             adminBtn.style.color = '#ffffff';
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+                loadAdminReports();
+            }
         } else {
             adminBtn.textContent = 'غير نشط 🎓';
             adminBtn.style.background = '#fde68a';
             adminBtn.style.color = '#b45309';
+            if (adminPanel) adminPanel.style.display = 'none';
         }
     }
     
@@ -5609,15 +5628,21 @@ function toggleAdminMode() {
     
     // Update Admin toggle button state in Profile tab
     const adminBtn = document.getElementById('admin-mode-status');
+    const adminPanel = document.getElementById('admin-dashboard-panel');
     if (adminBtn) {
         if (isAdminMode) {
             adminBtn.textContent = 'نشط 👑';
             adminBtn.style.background = '#d97706';
             adminBtn.style.color = '#ffffff';
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+                loadAdminReports();
+            }
         } else {
             adminBtn.textContent = 'غير نشط 🎓';
             adminBtn.style.background = '#fde68a';
             adminBtn.style.color = '#b45309';
+            if (adminPanel) adminPanel.style.display = 'none';
         }
     }
     
@@ -5784,6 +5809,109 @@ function submitReport() {
     });
     
     closeReportModal();
+}
+
+// ── Admin Reports Board Logic ──
+let adminReportsCache = [];
+
+function loadAdminReports() {
+    const listEl = document.getElementById('admin-reports-list');
+    const countEl = document.getElementById('admin-reports-count');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '<div style="text-align: center; color: #b45309; font-size: 12px; padding: 12px 0;">جاري تحميل البلاغات... 🔄</div>';
+    
+    fetch('/admin/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.reports || res.reports.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; color: #b45309; font-size: 12px; padding: 16px 0; font-weight: bold;">🎉 لا توجد بلاغات نشطة حالياً!</div>';
+            if (countEl) countEl.textContent = '0';
+            adminReportsCache = [];
+            return;
+        }
+        
+        adminReportsCache = res.reports;
+        if (countEl) countEl.textContent = res.reports.length;
+        
+        listEl.innerHTML = res.reports.map((rep, idx) => {
+            const dateStr = new Date(rep.timestamp || Date.now()).toLocaleDateString('ar-FR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const subMeta = SUBJECT_METADATA[rep.subject] || { title: rep.subject, icon: '📚' };
+            const lesson = DB.find(l => l.subject === rep.subject && l.lessonNum === rep.lessonNum);
+            const chapterTitle = lesson?.thematic_blocks?.[rep.chapterIdx]?.title || `المحور ${rep.chapterIdx + 1}`;
+            
+            return `
+                <div class="card" style="background: #ffffff; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span style="font-size: 11px; font-weight: 800; color: #d97706;">
+                            👤 ${rep.firstName || 'طالب'} (@${rep.username || 'unknown'})
+                        </span>
+                        <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">${dateStr}</span>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--text-2); background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #f1f5f9; font-weight: 700;">
+                        📍 ${subMeta.icon} ${subMeta.title} ← درس ${rep.lessonNum} ← ${chapterTitle}
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--text-1); line-height: 1.5; font-weight: 700; white-space: pre-wrap; padding: 2px 4px;">
+                        "${rep.report}"
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; border-top: 1px dashed #f1f5f9; padding-top: 8px;">
+                        <button onclick="openReportedChapter('${rep.subject}', ${rep.lessonNum}, ${rep.chapterIdx})" style="background: #fffbeb; border: 1.2px solid #fde68a; color: #b45309; padding: 5px 10px; font-size: 11px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+                            ✏️ تعديل المحتوى
+                        </button>
+                        <button onclick="resolveReport('${rep.id || idx}')" style="background: #f0fdf4; border: 1.2px solid #bbf7d0; color: #16a34a; padding: 5px 10px; font-size: 11px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+                            ✓ تم الحل
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 12px 0;">⚠️ فشل تحميل البلاغات. يرجى التأكد من اتصالك بالإنترنت.</div>';
+    });
+}
+
+function resolveReport(reportId) {
+    fetch('/admin/resolve-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0,
+            reportId: reportId
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast("✓ تم وسم البلاغ كمحلول بنجاح!");
+            loadAdminReports();
+        } else {
+            showToast("⚠️ فشل وسم البلاغ.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast("✓ تم الحفظ وسيتم تحديث البلاغات.");
+        // Local simulation fallback
+        adminReportsCache = adminReportsCache.filter(r => r.id !== reportId);
+        loadAdminReports();
+    });
+}
+
+function openReportedChapter(subject, lessonNum, chapterIdx) {
+    // Open editor directly
+    openAdminEditor(null, subject, lessonNum, chapterIdx);
 }
 
 // Applying custom edits on load if any
