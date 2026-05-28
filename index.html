@@ -1093,95 +1093,100 @@
             background: var(--surface);
             border: 1.2px solid #f1f5f9;
             border-radius: 16px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            cursor: pointer;
+            overflow: hidden;
+            cursor: default;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
             direction: rtl;
         }
         .roadmap-chapter-item:hover {
-            transform: translateY(-2px);
             border-color: var(--subj-color);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
         }
-        .roadmap-chapter-left {
+        .roadmap-chapter-top {
             display: flex;
             align-items: center;
             gap: 12px;
-            flex: 1;
-            min-width: 0;
+            padding: 12px 14px;
             text-align: right;
+            direction: rtl;
         }
         .chapter-title-text {
             font-size: 13.5px;
             font-weight: 700;
             color: var(--text-2);
-            line-height: 1.4;
+            line-height: 1.45;
             word-break: break-word;
-            white-space: normal; /* Permits natural wrapping */
+            white-space: normal;
+            flex: 1;
         }
         .chapter-check-btn {
             background: none;
-            border: none;
+            border: 2px solid #cbd5e1;
             cursor: pointer;
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
             border-radius: 50%;
-            border: 2px solid #cbd5e1;
             color: transparent;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 900;
             transition: all 0.25s ease;
+            flex-shrink: 0;
         }
         .roadmap-chapter-item.completed .chapter-check-btn {
             border-color: var(--subj-color);
             background: var(--subj-color);
             color: #fff;
-            box-shadow: 0 0 6px var(--subj-color);
+            box-shadow: 0 0 8px var(--subj-color);
         }
-        .chapter-actions {
+        .chapter-actions-bar {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            padding: 8px 12px;
+            border-top: 1px dashed rgba(0,0,0,0.06);
+            background: rgba(0,0,0,0.01);
+            direction: rtl;
         }
-        .chapter-action-btn {
-            background: var(--bg);
+        .chapter-action-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: 8px;
             border: 1.1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-3);
+            font-size: 11.5px;
+            font-weight: 700;
             cursor: pointer;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: var(--text-2);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.18s ease;
+            font-family: inherit;
+            white-space: nowrap;
         }
-        .chapter-action-btn:hover {
+        .chapter-action-pill:hover {
             background: var(--surface);
             border-color: var(--text-3);
-            transform: scale(1.05);
+            color: var(--text-2);
         }
-        .chapter-action-btn.fav-active {
+        .chapter-action-pill.fav-active {
             color: #d97706;
             background: #fffbeb;
             border-color: #fde68a;
-            font-size: 18px;
         }
-        .chapter-action-btn.has-note {
+        .chapter-action-pill.has-note {
             color: var(--primary);
             background: var(--primary-light);
             border-color: var(--primary-border);
+        }
+        .chapter-action-pill.go-pill {
+            margin-right: auto;
+            font-weight: 800;
         }
         
         .toc-item-card:hover {
@@ -3516,22 +3521,24 @@ function renderRoadmapTimeline(subject) {
             const hasNote = !!syllabusNotes[key] && syllabusNotes[key].trim().length > 0;
             
             return `
-                <div class="roadmap-chapter-item ${isCompleted ? 'completed' : ''}" style="border-color: ${isCompleted ? theme.accent : 'rgba(0,0,0,0.06)'}; background: ${isCompleted ? theme.light : '#ffffff'}; cursor: default;">
-                    <div class="roadmap-chapter-left">
+                <div class="roadmap-chapter-item ${isCompleted ? 'completed' : ''}" style="border-color: ${isCompleted ? theme.accent : 'rgba(0,0,0,0.06)'}; background: ${isCompleted ? theme.light : '#ffffff'}">
+                    <!-- Top row: checkbox + title only -->
+                    <div class="roadmap-chapter-top">
                         <button class="chapter-check-btn" onclick="toggleChapterCompletion(event, '${subject}', ${l.lessonNum}, ${i})" style="border-color: ${isCompleted ? theme.accent : '#cbd5e1'}; background: ${isCompleted ? theme.accent : 'none'}; color: ${isCompleted ? '#ffffff' : 'transparent'};" title="تحديد كمكتمل">
                             ✓
                         </button>
-                        <div class="chapter-title-text" style="color: ${isCompleted ? '#1e293b' : 'var(--text-2)'}; font-weight: 700;">${b.title}</div>
+                        <div class="chapter-title-text" style="color: ${isCompleted ? '#1e293b' : 'var(--text-2)'}; font-weight: ${isCompleted ? '800' : '700'};">${b.title}</div>
                     </div>
-                    <div class="chapter-actions">
-                        <button class="chapter-action-btn ${isFav ? 'fav-active' : ''}" onclick="toggleChapterFavorite(event, '${subject}', ${l.lessonNum}, ${i})" title="إضافة للمفضلة">
-                            ★
+                    <!-- Bottom row: action pills -->
+                    <div class="chapter-actions-bar">
+                        <button class="chapter-action-pill go-pill" onclick="goToChapter(event, '${subject}', ${l.lessonNum}, ${i})" style="color: ${theme.accent}; background: ${theme.light}; border-color: ${theme.border};">
+                            📖 <span>قراءة</span> ←
                         </button>
-                        <button class="chapter-action-btn ${hasNote ? 'has-note' : ''}" onclick="openNotesModal(event, '${subject}', ${l.lessonNum}, ${i})" title="ملاحظة شخصية">
-                            📝
+                        <button class="chapter-action-pill ${isFav ? 'fav-active' : ''}" onclick="toggleChapterFavorite(event, '${subject}', ${l.lessonNum}, ${i})" title="إضافة للمفضلة">
+                            ★ <span>مفضلة</span>
                         </button>
-                        <button class="chapter-action-btn" onclick="goToChapter(event, '${subject}', ${l.lessonNum}, ${i})" title="قراءة التفريغ" style="color: ${theme.accent}; background: ${theme.light}; border-color: ${theme.border};">
-                            📖
+                        <button class="chapter-action-pill ${hasNote ? 'has-note' : ''}" onclick="openNotesModal(event, '${subject}', ${l.lessonNum}, ${i})" title="ملاحظة شخصية">
+                            📝 <span>ملاحظة</span>
                         </button>
                     </div>
                 </div>
