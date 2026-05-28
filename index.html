@@ -1334,6 +1334,255 @@
             direction: rtl;
         }
         
+        /* ══ READER UX IMPROVEMENTS ══ */
+        .reader-progress-tracker {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 10px 18px;
+            direction: rtl;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+        }
+        .progress-chapters-dots {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 6px 0;
+            padding: 0 4px;
+        }
+        .progress-line-bg {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--border);
+            transform: translateY(-50%);
+            z-index: 1;
+            border-radius: 2px;
+        }
+        .progress-line-fill {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            transform: translateY(-50%);
+            z-index: 2;
+            border-radius: 2px;
+            transition: width 0.1s ease;
+        }
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border);
+            border: 2px solid var(--surface);
+            z-index: 3;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .progress-dot.active {
+            background: var(--primary);
+            transform: scale(1.3);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+        .progress-dot:hover {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+        .progress-chapter-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Passage bookmark styling */
+        .reader-p {
+            position: relative;
+        }
+        .reader-p-bookmark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            color: var(--text-3);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-decoration: none;
+            margin-left: 6px;
+            vertical-align: middle;
+            user-select: none;
+            transition: all .15s;
+            cursor: pointer;
+        }
+        .reader-p-bookmark:hover {
+            color: #eab308;
+            background: #fef9c3;
+            border-color: #fef08a;
+            transform: scale(1.05);
+        }
+        .reader-p-bookmark.active {
+            color: #eab308;
+            background: #fef9c3;
+            border-color: #eab308;
+        }
+
+        /* Flash Question card */
+        .flash-q-card {
+            background: #f8fafc;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            margin: 32px 0 10px 0;
+            direction: rtl;
+            text-align: right;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: all 0.3s;
+        }
+        .flash-q-card.correct {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        .flash-q-card.incorrect {
+            border-color: #ef4444;
+            background: #fdf2f2;
+        }
+        .flash-q-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-1);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .flash-q-text {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-2);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .flash-q-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .flash-q-option {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 700;
+            color: var(--text-1);
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .flash-q-option:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .flash-q-option.selected-correct {
+            background: #10b981 !important;
+            color: white !important;
+            border-color: #10b981 !important;
+        }
+        .flash-q-option.selected-incorrect {
+            background: #ef4444 !important;
+            color: white !important;
+            border-color: #ef4444 !important;
+        }
+        .flash-q-option.should-have-selected {
+            border-color: #10b981 !important;
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+        }
+        .flash-q-explanation {
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: var(--text-2);
+            border-top: 1px dashed var(--border);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Saved passages cards */
+        .saved-passage-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 16px;
+            direction: rtl;
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+        .saved-passage-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .saved-passage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .saved-passage-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .saved-passage-text {
+            font-size: 13.5px;
+            color: var(--text-2);
+            line-height: 1.6;
+            margin: 4px 0;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .saved-passage-delete {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .saved-passage-delete:hover {
+            background: #fee2e2;
+        }
+
         /* ══ QUIZ OVERLAY & STYLES ══ */
         .quiz-overlay {
             position: fixed; 
@@ -1577,8 +1826,10 @@
         <div class="profile-name" id="profile-name">طالب الأكاديمية</div>
         <div class="profile-sub">أكاديمية الباجي للعلوم الشرعية</div>
         <div class="stats-grid" id="stats-grid"></div>
+        <div class="sec-header"><h1>🔖 المقاطع المحفوظة</h1></div>
+        <div class="saved-passages-list" id="saved-passages-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
         <div class="sec-header"><h1>🏅 الشارات</h1></div>
-        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px">أكمل المراجعة يومياً لكسب الشارات</div>
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px;margin-bottom:20px;">أكمل المراجعة يومياً لكسب الشارات</div>
     </div>
 
     <!-- NAV -->
@@ -1608,6 +1859,7 @@
         </div>
         <div class="modal-tabs" id="modal-tabs"></div>
         <div class="modal-body reader-view" id="modal-body"></div>
+        <div class="reader-progress-tracker" id="reader-progress-tracker" style="display: none;"></div>
         <div class="modal-footer-nav">
             <button class="nav-prev-btn" id="btn-prev-lesson" onclick="navigateLesson(-1)">
                 <span class="arrow-wrap">→</span>
@@ -1700,6 +1952,7 @@ try { tg = window.Telegram?.WebApp; if(tg){tg.ready();tg.expand();} } catch(e){}
 // ── State ──
 let DB = [], wordIndex = [], currentFilter = 'title_only', activeLesson = null, activeTab = 'all';
 let readerFontSize = 15; // default em size in px
+let savedPassages = {};
 
 const TRANSLIT = {
     "hajj":["حج","الحج","حجة","حجة الوداع"],"hadj":["حج","الحج"],
@@ -1738,10 +1991,12 @@ Promise.all([
         syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
         syllabusFavorites = JSON.parse(localStorage.getItem('academy_syllabus_favs') || '{}');
         syllabusCompletion = JSON.parse(localStorage.getItem('academy_syllabus_completions') || '{}');
+        savedPassages = JSON.parse(localStorage.getItem('academy_saved_passages') || '{}');
     } catch(e) {
         syllabusNotes = {};
         syllabusFavorites = {};
         syllabusCompletion = {};
+        savedPassages = {};
     }
 
     buildIndex();
@@ -1985,6 +2240,7 @@ function renderProfile() {
         <div class="stat-card"><div class="stat-val" style="color: #10b981;">${quizCount}</div><div class="stat-lbl">التقييمات المنجزة</div></div>
         <div class="stat-card"><div class="stat-val" style="color: #f59e0b;">${avgScore}%</div><div class="stat-lbl">معدل الدرجات</div></div>
         <div class="stat-card"><div class="stat-val" style="color: #7c3aed;">${DB.length}</div><div class="stat-lbl">الدروس الكلية</div></div>`;
+    renderSavedPassagesList();
 }
 
 // ── SEARCH ──
@@ -2280,6 +2536,7 @@ function openModal(subject, lessonNum, tab) {
     
     renderMBody(selectedTab);
     updateNavButtons();
+    updateReaderProgressTracker();
     
     document.getElementById('modal-overlay').classList.add('open');
     
@@ -2296,6 +2553,7 @@ function switchMTab(key,btn){
     btn.classList.add('active');
     activeTab = key;
     renderMBody(key);
+    updateReaderProgressTracker();
 }
 
 function adjustFontSize(offset) {
@@ -2448,7 +2706,7 @@ function formatTranscription(lesson, q) {
         
         if (startedBlock) {
             if (currentParagraph.length) {
-                transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
+                transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
                 currentParagraph = [];
             }
             if (activeBlockExplanation) {
@@ -2490,7 +2748,7 @@ function formatTranscription(lesson, q) {
             (currentParagraph.length >= 8 && textEndsWithComma) ||
             (currentParagraph.length >= 14)
         ) {
-            transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
+            transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
             currentParagraph = [];
             paragraphStartTs = null;
             paragraphStartLink = null;
@@ -2498,7 +2756,7 @@ function formatTranscription(lesson, q) {
     });
     
     if (currentParagraph.length) {
-        transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
+        transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
     }
     if (activeBlockExplanation) {
         transcriptHtml += `
@@ -2508,6 +2766,50 @@ function formatTranscription(lesson, q) {
                 <strong class="explanation-title">التفسير التربوي والفوائد السلوكية</strong>
             </div>
             <div class="explanation-content">${formatProse(activeBlockExplanation, q)}</div>
+        </div>`;
+    }
+    
+    // Render Flash Question at the end of transcription if quiz is available
+    if (lesson.quiz && lesson.quiz.length > 0) {
+        const qObj = lesson.quiz[0];
+        const quizKey = `flash_q_${lesson.subject}_${lesson.lessonNum}`;
+        const answeredVal = localStorage.getItem(quizKey);
+        
+        let cardClass = '';
+        let feedbackHtml = '';
+        if (answeredVal !== null) {
+            const isCorrect = parseInt(answeredVal) === qObj.correct;
+            cardClass = isCorrect ? 'correct' : 'incorrect';
+            feedbackHtml = `
+            <div class="flash-q-explanation">
+                <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
+                <p>${qObj.explanation || ''}</p>
+            </div>`;
+        }
+        
+        const optionsHtml = qObj.options.map((opt, oIdx) => {
+            let optClass = '';
+            let disabledAttr = '';
+            if (answeredVal !== null) {
+                disabledAttr = 'disabled';
+                const sVal = parseInt(answeredVal);
+                if (oIdx === qObj.correct) {
+                    optClass = (sVal === qObj.correct) ? 'selected-correct' : 'should-have-selected';
+                } else if (oIdx === sVal) {
+                    optClass = 'selected-incorrect';
+                }
+            }
+            return `<button class="flash-q-option ${optClass}" ${disabledAttr} onclick="submitFlashAnswer(this, '${lesson.subject}', ${lesson.lessonNum}, ${oIdx})">${opt}</button>`;
+        }).join('');
+
+        transcriptHtml += `
+        <div class="flash-q-card ${cardClass}" id="flash-q-card-el" style="margin-top: 30px;">
+            <div class="flash-q-title">
+                <span>🧩 سؤال سريع: هل انتبهت جيداً؟</span>
+            </div>
+            <div class="flash-q-text">${qObj.question}</div>
+            <div class="flash-q-options">${optionsHtml}</div>
+            <div id="flash-q-feedback">${feedbackHtml}</div>
         </div>`;
     }
     
@@ -2524,7 +2826,7 @@ function scrollToChapter(idx) {
     }
 }
 
-function renderParagraphHtml(texts, ts, link, q) {
+function renderParagraphHtml(texts, ts, link, q, subject, lessonNum) {
     let text = texts.join(' ');
     
     // Regex matches 2-6 words before *** and 2-6 words after *** without punctuation
@@ -2581,8 +2883,12 @@ function renderParagraphHtml(texts, ts, link, q) {
         }
     }).join('');
     
+    const isBookmarked = isPassageBookmarked(subject, lessonNum, ts);
+    const activeClass = isBookmarked ? 'active' : '';
+    
     return `<div class="reader-p">
         ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
+        <a href="javascript:void(0)" class="reader-p-bookmark ${activeClass}" data-ts="${ts}" title="حفظ هذا المقطع" onclick="toggleBookmarkPassage(event, '${subject}', ${lessonNum}, '${ts}', this)">🔖</a>
         ${renderedParts}
     </div>`;
 }
@@ -2641,6 +2947,7 @@ function navigateLesson(offset) {
 
 function closeModal(){
     document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('reader-progress-tracker').style.display = 'none';
     activeLesson = null;
     
     // Telegram API Integrations
@@ -2666,6 +2973,262 @@ function trunc(s,n){return s.length>n?s.substring(0,n)+'…':s;}
 function hl(text,q){
     if(!q||q.length<2)return text;
     try{return text.replace(new RegExp(`(${esc(q)})`,'gi'),'<mark>$1</mark>');}catch(e){return text;}
+}
+
+function showToast(message) {
+    if (window.Telegram?.WebApp) {
+        try { window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            z-index: 11000;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            direction: rtl;
+            text-align: center;
+            white-space: nowrap;
+            opacity: 0;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+    }, 2500);
+}
+
+// ── PASSAGE BOOKMARKING & SAVED PASSAGES ──
+function isPassageBookmarked(subject, lessonNum, ts) {
+    const key = `${subject}_${lessonNum}_${ts}`;
+    return !!savedPassages[key];
+}
+
+function toggleBookmarkPassage(event, subject, lessonNum, ts, btn) {
+    if (event) event.stopPropagation();
+    const key = `${subject}_${lessonNum}_${ts}`;
+    
+    if (savedPassages[key]) {
+        delete savedPassages[key];
+        if (btn) btn.classList.remove('active');
+        showToast("❌ تم إزالة المقطع من المحفوظات");
+    } else {
+        const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+        if (!lesson) return;
+        
+        const segment = lesson.segments.find(seg => seg.ts === ts);
+        const text = segment ? segment.text : "";
+        const link = segment ? segment.video_link : "";
+        
+        savedPassages[key] = {
+            subject: subject,
+            lessonNum: lessonNum,
+            ts: ts,
+            text: text,
+            link: link,
+            savedAt: Date.now()
+        };
+        if (btn) btn.classList.add('active');
+        showToast("🔖 تم حفظ المقطع في ملفك الشخصي");
+        
+        let xp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+        localStorage.setItem('academy_user_xp', xp + 5);
+        renderProfile();
+    }
+    
+    localStorage.setItem('academy_saved_passages', JSON.stringify(savedPassages));
+    renderSavedPassagesList();
+}
+
+function renderSavedPassagesList() {
+    const container = document.getElementById('saved-passages-list');
+    if (!container) return;
+    
+    const keys = Object.keys(savedPassages).sort((a, b) => savedPassages[b].savedAt - savedPassages[a].savedAt);
+    
+    if (keys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px">
+            لا توجد مقاطع محفوظة بعد. يمكنك حفظ المقاطع بالضغط على زر 🔖 أثناء قراءة التفريغ.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = keys.map(key => {
+        const item = savedPassages[key];
+        const subMeta = SUBJECT_METADATA[item.subject] || { title: item.subject, icon: '📚' };
+        const cleanText = item.text.replace(/\*\*\*/g, '').trim();
+        
+        return `
+        <div class="saved-passage-card" onclick="goToSavedPassage('${item.subject}', ${item.lessonNum}, '${item.ts}')">
+            <div class="saved-passage-header">
+                <div class="saved-passage-meta">
+                    <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 8px; font-weight: 800;">
+                        ${subMeta.icon} ${subMeta.title} - الدرس ${item.lessonNum}
+                    </span>
+                    <span style="font-size: 10px; font-weight: 800; background: var(--border); color: var(--text-2); padding: 2px 6px; border-radius: 6px;">
+                        ⏱️ ${item.ts}
+                    </span>
+                </div>
+                <button class="saved-passage-delete" title="حذف" onclick="deleteSavedPassage(event, '${key}')">✕</button>
+            </div>
+            <div class="saved-passage-text">${cleanText}</div>
+            ${item.link ? `
+            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                <a href="${item.link}" target="_blank" onclick="event.stopPropagation()" style="font-size: 11.5px; color: var(--primary); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); padding: 3px 8px; border-radius: 6px; border: 1.1px solid var(--primary-border);">
+                    🎬 مشاهدة الفيديو
+                </a>
+            </div>` : ''}
+        </div>
+        `;
+    }).join('');
+}
+
+function deleteSavedPassage(event, key) {
+    if (event) event.stopPropagation();
+    delete savedPassages[key];
+    localStorage.setItem('academy_saved_passages', JSON.stringify(savedPassages));
+    renderSavedPassagesList();
+    showToast("❌ تم حذف المقطع");
+    
+    const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
+    if (modalOpen && activeLesson && activeTab === 'trans') {
+        const parts = key.split('_');
+        const ts = parts[2];
+        const btn = document.querySelector(`.reader-p-bookmark[data-ts="${ts}"]`);
+        if (btn) btn.classList.remove('active');
+    }
+}
+
+function goToSavedPassage(subject, lessonNum, ts) {
+    openReader(subject, lessonNum, 'trans');
+    
+    setTimeout(() => {
+        const paragraphs = document.querySelectorAll('.reader-p');
+        for (let p of paragraphs) {
+            const playBtn = p.querySelector('.reader-p-play');
+            if (playBtn && playBtn.getAttribute('title').includes(ts)) {
+                p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                p.style.transition = 'all 0.5s ease';
+                p.style.background = '#fef9c3';
+                p.style.borderRadius = '12px';
+                p.style.padding = '10px';
+                setTimeout(() => {
+                    p.style.background = 'none';
+                    p.style.padding = '0';
+                }, 3000);
+                break;
+            }
+        }
+    }, 450);
+}
+
+function submitFlashAnswer(btn, subject, lessonNum, selectedIdx) {
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    if (!lesson || !lesson.quiz || !lesson.quiz.length) return;
+    const qObj = lesson.quiz[0];
+    const key = `flash_q_${subject}_${lessonNum}`;
+    localStorage.setItem(key, selectedIdx);
+    
+    const isCorrect = selectedIdx === qObj.correct;
+    
+    if (isCorrect) {
+        let xp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+        localStorage.setItem('academy_user_xp', xp + 10);
+        renderProfile();
+        showToast("🎉 إجابة صحيحة! +10 XP");
+    } else {
+        showToast("❌ إجابة خاطئة، حاول مرة أخرى في الدرس القادم");
+    }
+    
+    const card = document.getElementById('flash-q-card-el');
+    if (card) {
+        card.className = `flash-q-card ${isCorrect ? 'correct' : 'incorrect'}`;
+    }
+    
+    const options = card.querySelectorAll('.flash-q-option');
+    options.forEach((optBtn, idx) => {
+        optBtn.disabled = true;
+        if (idx === qObj.correct) {
+            optBtn.className = 'flash-q-option ' + (selectedIdx === qObj.correct ? 'selected-correct' : 'should-have-selected');
+        } else if (idx === selectedIdx) {
+            optBtn.className = 'flash-q-option selected-incorrect';
+        }
+    });
+    
+    const feedbackBox = document.getElementById('flash-q-feedback');
+    if (feedbackBox) {
+        feedbackBox.innerHTML = `
+        <div class="flash-q-explanation">
+            <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
+            <p>${qObj.explanation || ''}</p>
+        </div>`;
+    }
+}
+
+function updateReaderProgressTracker() {
+    const tracker = document.getElementById('reader-progress-tracker');
+    if (!tracker) return;
+    
+    if (activeTab !== 'trans' || !activeLesson || !activeLesson.thematic_blocks || !activeLesson.thematic_blocks.length) {
+        tracker.style.display = 'none';
+        return;
+    }
+    
+    tracker.style.display = 'flex';
+    const blocks = [...(activeLesson.thematic_blocks || [])].sort((a,b) => (a.start_seconds || 0) - (b.start_seconds || 0));
+    
+    const body = document.getElementById('modal-body');
+    const scrollTop = body.scrollTop;
+    const scrollHeight = body.scrollHeight - body.clientHeight;
+    const scrollPercent = scrollHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100)) : 0;
+    
+    let activeIdx = 0;
+    blocks.forEach((block, idx) => {
+        const el = document.getElementById(`chapter-${idx}`);
+        if (el) {
+            const relativeTop = el.offsetTop - body.offsetTop;
+            if (scrollTop >= relativeTop - 40) {
+                activeIdx = idx;
+            }
+        }
+    });
+    
+    const activeChapter = blocks[activeIdx];
+    
+    tracker.innerHTML = `
+        <div class="progress-chapter-title">
+            <span>📌</span>
+            <span style="font-weight: 800; color: var(--primary);">${activeChapter ? activeChapter.title : ''}</span>
+            <span style="color: var(--text-3); font-size: 10px; margin-right: auto;">${Math.round(scrollPercent)}%</span>
+        </div>
+        <div class="progress-chapters-dots">
+            <div class="progress-line-bg"></div>
+            <div class="progress-line-fill" style="width: ${scrollPercent}%;"></div>
+            ${blocks.map((b, idx) => {
+                const isActive = idx === activeIdx;
+                const dotClass = isActive ? 'active' : '';
+                return `<div class="progress-dot ${dotClass}" title="${b.title}" onclick="scrollToChapter(${idx})"></div>`;
+            }).join('')}
+        </div>
+    `;
 }
 
 // ── SYLLABUS CONTROLLER ──
@@ -3037,6 +3600,11 @@ function getDistance(t1, t2) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const modalBody = document.getElementById('modal-body');
+    if (modalBody) {
+        modalBody.addEventListener('scroll', updateReaderProgressTracker);
+    }
+
     const img = document.getElementById('image-viewer-img');
     if (!img) return;
 
