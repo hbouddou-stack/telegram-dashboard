@@ -2425,11 +2425,17 @@ Promise.all([
     }).catch(() => ({}))
 ])
 .then(([transcriptsText, quranDb]) => {
+    // DIAG-1: Data received
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-1: Data received (' + transcriptsText.length + ' chars). Parsing...';
+    
     // Standardize blessings to ﷺ globally in DB string with extended regex
     const dbStr = transcriptsText.replace(/صلى الله عليه (?:وعلى آله(?: وصحبه)?)? وسلم|عليه الصلاة والسلام|صلى الله عليه وسلم|صلعم|عليه السلام/g, 'ﷺ');
     DB = JSON.parse(dbStr);
     QURAN_VERSES_DB = quranDb;
-    
+
+    // DIAG-2: DB parsed
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-2: DB parsed (' + DB.length + ' lessons). Init state...';
+
     // Initialize Syllabus State
     try {
         syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
@@ -2438,19 +2444,23 @@ Promise.all([
         savedPassages = JSON.parse(localStorage.getItem('academy_saved_passages') || '{}');
         academyErrors = JSON.parse(localStorage.getItem('academy_questions_errors') || '{}');
     } catch(e) {
-        syllabusNotes = {};
-        syllabusFavorites = {};
-        syllabusCompletion = {};
-        savedPassages = {};
-        academyErrors = {};
+        syllabusNotes = {}; syllabusFavorites = {}; syllabusCompletion = {}; savedPassages = {}; academyErrors = {};
     }
 
+    // DIAG-3: buildIndex
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-3: buildIndex starting...';
     buildIndex();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-4: renderHome starting...';
     renderHome();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-5: renderMyLibrary starting...';
     renderMyLibrary();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-6: renderFcPicker starting...';
     renderFcPicker();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-7: renderProfile starting...';
     renderProfile();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-8: renderSyllabusSubjects starting...';
     renderSyllabusSubjects();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-DONE: All render functions completed!';
 })
     .catch(e => {
         console.error("Data load failed:", e);
