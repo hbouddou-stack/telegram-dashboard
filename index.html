@@ -2463,8 +2463,14 @@ function formatTranscription(lesson, q) {
         
         // Break paragraph: cuts only happen on sentence-ending punctuation OR if we reach 10 segments
         const trimmed = seg.text.trim();
-        const textEndsWithPunct = trimmed && /[.؟!]/.test(trimmed.slice(-1));
-        if (currentParagraph.length >= 10 || (currentParagraph.length >= 3 && textEndsWithPunct)) {
+        const lastChar = trimmed.slice(-1);
+        const textEndsWithPunct = trimmed && /[.؟!؛]/.test(lastChar);
+        const textEndsWithComma = trimmed && /[،,]/.test(lastChar);
+        if (
+            (currentParagraph.length >= 4 && textEndsWithPunct) ||
+            (currentParagraph.length >= 8 && textEndsWithComma) ||
+            (currentParagraph.length >= 14)
+        ) {
             transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
             currentParagraph = [];
             paragraphStartTs = null;
@@ -3146,6 +3152,10 @@ const GLOSSARY = {
     },
     "مصعب بن عمير": {
         def: "أول سفير في الإسلام، حمل راية المسلمين في غزو أُحد واستشهد مقبلاً غير مدبر رضي الله عنه.",
+        type: "person"
+    },
+    "عبد الله بن سلام": {
+        def: "حبر من أحبار يهود بني قينقاع بالمدينة، أسلم مع بداية هجرة النبي ﷺ وشهد بصدق نبوته وهو من كبار الصحابة.",
         type: "person"
     }
 };
