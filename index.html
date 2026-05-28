@@ -7,7 +7,7 @@
     <meta name="description" content="منصة أكاديمية الباجي — بحث ذكي، دروس منظمة، مراجعة تفاعلية">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         /* ─── Design Tokens ─── */
@@ -1648,7 +1648,9 @@ fetch('transcripts.json?v=11')
         return r.json();
     })
     .then(data => {
-        DB = data;
+        // Standardize Sallallahu Alayhi Wa Sallam honorifics to ﷺ globally in DB
+        const dbStr = JSON.stringify(data).replace(/صلى الله عليه وسلم/g, 'ﷺ');
+        DB = JSON.parse(dbStr);
         // Initialize Syllabus State
         try {
             syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
@@ -2255,9 +2257,28 @@ function renderMBody(tab){
                 🧩 اختبر معلوماتك في هذا الدرس
             </button>
         </div>` : '';
-        const summaryText = q ? hl(l.summary, q) : l.summary;
-        const finalHtml = highlightGlossary(summaryText);
-        body.innerHTML=`<div class="summary-html">${finalHtml}</div>${quizBtnHtml}`;
+        
+        // Format lines for poetry in summary
+        const lines = l.summary.split('\n');
+        const formattedSummary = lines.map(line => {
+            if (line.includes('***')) {
+                const parts = line.split('***');
+                let shatr1 = parts[0].trim();
+                let shatr2 = parts[1] ? parts[1].trim() : '';
+                shatr1 = highlightGlossary(q ? hl(shatr1, q) : shatr1);
+                shatr2 = highlightGlossary(q ? hl(shatr2, q) : shatr2);
+                return `
+                <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px; margin: 12px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; text-align: center; line-height: 1.8; direction: rtl;">
+                    <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e; margin-bottom: 6px;">${shatr1}</div>
+                    <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e;">${shatr2}</div>
+                </div>`;
+            } else {
+                const highlighted = q ? hl(line, q) : line;
+                return highlightGlossary(highlighted);
+            }
+        }).join('\n');
+        
+        body.innerHTML=`<div class="summary-html">${formattedSummary}</div>${quizBtnHtml}`;
     } else {
         body.innerHTML = formatTranscription(l, q);
     }
@@ -2297,6 +2318,7 @@ function formatTranscription(lesson, q) {
     let paragraphStartTs = null;
     let paragraphStartLink = null;
     let blockIdx = 0;
+    let activeBlockExplanation = null;
     
     lesson.segments.forEach((seg, idx) => {
         const sec = seg.sec || 0;
@@ -2316,14 +2338,16 @@ function formatTranscription(lesson, q) {
                 transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
                 currentParagraph = [];
             }
+            if (activeBlockExplanation) {
+                transcriptHtml += `<div class="reader-chapter-explanation">${activeBlockExplanation}</div>`;
+                activeBlockExplanation = null;
+            }
             // Add chapter title with unique ID for scrolling
             transcriptHtml += `
             <h3 class="reader-chapter-title" id="chapter-${matchedBlockIdx}">
                 📌 ${startedBlock.title}
             </h3>`;
-            if (startedBlock.explanation) {
-                transcriptHtml += `<div class="reader-chapter-explanation">${startedBlock.explanation}</div>`;
-            }
+            activeBlockExplanation = startedBlock.explanation || null;
             paragraphStartTs = seg.ts;
             paragraphStartLink = seg.video_link;
         }
@@ -2349,6 +2373,9 @@ function formatTranscription(lesson, q) {
     if (currentParagraph.length) {
         transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q);
     }
+    if (activeBlockExplanation) {
+        transcriptHtml += `<div class="reader-chapter-explanation">${activeBlockExplanation}</div>`;
+    }
     
     transcriptHtml += '</div>';
     html += transcriptHtml;
@@ -2364,9 +2391,31 @@ function scrollToChapter(idx) {
 }
 
 function renderParagraphHtml(texts, ts, link, q) {
-    const text = texts.join(' ');
+    let text = texts.join(' ');
+    
+    // Check if it's a poetry verse line
+    const isPoetry = text.includes('***');
+    if (isPoetry) {
+        const parts = text.split('***');
+        let shatr1 = parts[0].trim();
+        let shatr2 = parts[1] ? parts[1].trim() : '';
+        
+        shatr1 = highlightGlossary(q ? hl(shatr1, q) : shatr1);
+        shatr2 = highlightGlossary(q ? hl(shatr2, q) : shatr2);
+        
+        return `
+        <div class="poetry-verse-container" style="position: relative; margin: 18px 0; direction: rtl;">
+            ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" style="position: absolute; right: 10px; top: 12px; z-index: 10;" onclick="event.stopPropagation()">🎬</a>` : ''}
+            <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 12px 16px 12px 42px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; text-align: center; line-height: 1.8;">
+                <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e; margin-bottom: 6px;">${shatr1}</div>
+                <div class="shatr" style="font-size: 16px; font-weight: 700; color: #854d0e;">${shatr2}</div>
+            </div>
+        </div>`;
+    }
+    
     const highlighted = q ? hl(text, q) : text;
     const finalHtml = highlightGlossary(highlighted);
+    
     return `<p class="reader-p">
         ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
         <span class="reader-p-text">${finalHtml}</span>
