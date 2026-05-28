@@ -2551,10 +2551,10 @@ function renderParagraphHtml(texts, ts, link, q) {
         }
     }).join('');
     
-    return `<p class="reader-p">
+    return `<div class="reader-p">
         ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
         ${renderedParts}
-    </p>`;
+    </div>`;
 }
 
 // ── Next/Previous Lesson Navigation ──
