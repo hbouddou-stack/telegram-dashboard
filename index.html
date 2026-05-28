@@ -1985,7 +1985,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=16').then(r => {
+    fetch('transcripts.json?v=17').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -2785,7 +2785,11 @@ function formatTranscription(lesson, q) {
                 </div>`;
                 
                 if (activeBlockIdx !== -1) {
-                    transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+                    if (lesson.quiz && lesson.quiz[activeBlockIdx]) {
+                        transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+                    } else {
+                        transcriptHtml += renderManualCompletionButton(lesson, activeBlockIdx);
+                    }
                 }
                 
                 activeBlockExplanation = null;
@@ -2840,7 +2844,11 @@ function formatTranscription(lesson, q) {
         </div>`;
         
         if (activeBlockIdx !== -1) {
-            transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+            if (lesson.quiz && lesson.quiz[activeBlockIdx]) {
+                transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+            } else {
+                transcriptHtml += renderManualCompletionButton(lesson, activeBlockIdx);
+            }
         }
     }
     
@@ -3230,6 +3238,7 @@ function submitFlashAnswer(btn, subject, lessonNum, chIdx, selectedIdx) {
         localStorage.setItem('academy_user_xp', xp + 10);
         renderProfile();
         showToast("🎉 إجابة صحيحة! +10 XP");
+        validateChapter(subject, lessonNum, chIdx);
     } else {
         showToast("❌ إجابة خاطئة، حاول في المحور القادم");
     }
@@ -3256,6 +3265,63 @@ function submitFlashAnswer(btn, subject, lessonNum, chIdx, selectedIdx) {
             <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
             <p>${qObj.explanation || ''}</p>
         </div>`;
+    }
+}
+
+function renderManualCompletionButton(lesson, cIdx) {
+    const key = `${lesson.subject}_${lesson.lessonNum}_${cIdx}`;
+    const isCompleted = !!syllabusCompletion[key];
+    
+    if (isCompleted) {
+        return `
+        <div class="manual-validate-container" id="manual-val-container-${cIdx}" style="margin: 16px 0 24px 0; text-align: center;">
+            <button class="btn-sm" disabled style="width: 100%; padding: 12px; border-radius: 12px; background: #e2e8f0; color: #64748b; border: none; font-size: 13px; font-weight: 800; cursor: not-allowed; display: flex; justify-content: center; align-items: center; gap: 6px; font-family: inherit; direction: rtl;">
+                ✓ تم إنهاء قراءة هذا المحور
+            </button>
+        </div>`;
+    }
+    
+    return `
+    <div class="manual-validate-container" id="manual-val-container-${cIdx}" style="margin: 16px 0 24px 0; text-align: center;">
+        <button class="btn-sm btn-primary" onclick="validateChapterManual(this, '${lesson.subject}', ${lesson.lessonNum}, ${cIdx})" style="width: 100%; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); font-family: inherit; direction: rtl; cursor: pointer; border: none; color: #fff; background: var(--primary);">
+            📖 تأكيد قراءة وفهم هذا المحور
+        </button>
+    </div>`;
+}
+
+function validateChapterManual(btn, subject, lessonNum, chIdx) {
+    validateChapter(subject, lessonNum, chIdx);
+    
+    const container = document.getElementById(`manual-val-container-${chIdx}`);
+    if (container) {
+        container.innerHTML = `
+        <button class="btn-sm" disabled style="width: 100%; padding: 12px; border-radius: 12px; background: #e2e8f0; color: #64748b; border: none; font-size: 13px; font-weight: 800; cursor: not-allowed; display: flex; justify-content: center; align-items: center; gap: 6px; font-family: inherit; direction: rtl;">
+            ✓ تم إنهاء قراءة هذا المحور
+        </button>`;
+    }
+}
+
+function validateChapter(subject, lessonNum, chapterIdx) {
+    const key = `${subject}_${lessonNum}_${chapterIdx}`;
+    if (syllabusCompletion[key]) return;
+    
+    syllabusCompletion[key] = true;
+    localStorage.setItem('academy_syllabus_completions', JSON.stringify(syllabusCompletion));
+    
+    if (selectedSyllabusSubject) {
+        updateRoadmapProgress(selectedSyllabusSubject);
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    renderProfile();
+    renderHome();
+    if (selectedSubjectKey) {
+        showSubjectLessons(selectedSubjectKey);
+    }
+    
+    showToast("🌟 تم تسجيل تقدّمك في المحور !");
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
     }
 }
 
