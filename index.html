@@ -2257,7 +2257,7 @@ function openModal(subject, lessonNum, tab) {
         activeTab = selectedTab;
     }
     
-    document.getElementById('modal-tabs').innerHTML=tabs.map(t=>`<button class="modal-tab ${t.k===selectedTab?'active':''}" onclick="switchMTab('${t.k}',this)">${t.l}</button>`).join('');
+    document.getElementById('modal-tabs').innerHTML=tabs.map(t=>`<button class="modal-tab ${t.k===selectedTab?'active':''}" data-tab="${t.k}" onclick="switchMTab('${t.k}',this)">${t.l}</button>`).join('');
     
     renderMBody(selectedTab);
     updateNavButtons();
@@ -2302,7 +2302,7 @@ function renderMBody(tab){
             <div style="font-size: 13px; font-weight: 800; color: var(--text-2); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">📋 فهرس موضوعات الدرس (اضغط للانتقال للتفريغ)</div>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 ${l.thematic_blocks.map((b, idx) => `
-                <div class="toc-item-card" onclick="switchMTab('trans', document.querySelectorAll('.modal-tab')[2]); setTimeout(() => scrollToChapter(${idx}), 150);" style="background: var(--bg); border: 1.1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s;">
+                <div class="toc-item-card" onclick="switchMTab('trans', document.querySelector('.modal-tab[data-tab=trans]')); setTimeout(() => scrollToChapter(${idx}), 150);" style="background: var(--bg); border: 1.1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <span style="font-size: 10px; font-weight: 800; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--primary-border);">${b.timestamp}</span>
                         <strong style="font-size: 13.5px; color: var(--text-1); font-weight: 700;">${b.title}</strong>
