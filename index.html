@@ -1100,33 +1100,40 @@
             gap: 8px;
         }
         .chapter-action-btn {
-            background: none;
-            border: none;
+            background: var(--bg);
+            border: 1.1px solid var(--border);
             cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            color: var(--text-3);
-            transition: all 0.2s;
-            border: 1px solid transparent;
+            font-size: 16px;
+            color: var(--text-2);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .chapter-action-btn:hover {
-            background: #f1f5f9;
-            color: var(--text-1);
+            background: var(--surface);
+            border-color: var(--text-3);
+            transform: scale(1.05);
         }
         .chapter-action-btn.fav-active {
-            color: #f59e0b;
-            background: #fef3c7;
+            color: #d97706;
+            background: #fffbeb;
             border-color: #fde68a;
+            font-size: 18px;
         }
         .chapter-action-btn.has-note {
             color: var(--primary);
             background: var(--primary-light);
             border-color: var(--primary-border);
+        }
+        
+        .toc-item-card:hover {
+            border-color: var(--primary) !important;
+            background: var(--primary-light) !important;
+            transform: translateX(-4px);
         }
 
         /* Notes Dialog Overlay */
@@ -2191,18 +2198,27 @@ function renderMBody(tab){
         </div>`;
     } else if(tab==='blocks'){
         if(!l.thematic_blocks.length){body.innerHTML='<div class="empty-state"><p>لا توجد محاور مفصّلة لهذا الدرس بعد</p></div>';return;}
-        body.innerHTML=l.thematic_blocks.map(b=>`<div class="block-item" style="margin-bottom:20px;padding-bottom:16px;border-bottom:1.5px dashed var(--border)">
-            <div style="font-weight:800;font-size:14.5px;color:var(--primary);margin-bottom:8px">${hl(b.title,q)}</div>
-            <div class="summary-html" style="background:var(--primary-light);border-right:3px solid var(--primary);padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:10px;font-size:inherit">${hl(b.citation,q)}</div>
-            ${b.explanation?`<div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:8px">${hl(b.explanation,q)}</div>`:''}
-            ${b.video_link?`<a href="${b.video_link}" target="_blank" class="reader-p-play" style="display:inline-flex">▶ تشغيل الفيديو (دقيقة ${b.timestamp})</a>`:''}
-        </div>`).join('');
+        body.innerHTML = `
+        <div style="direction: rtl; text-align: right;">
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-2); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">📋 فهرس موضوعات الدرس (اضغط للانتقال للتفريغ)</div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${l.thematic_blocks.map((b, idx) => `
+                <div class="toc-item-card" onclick="switchMTab('trans', document.querySelectorAll('.modal-tab')[2]); setTimeout(() => scrollToChapter(${idx}), 150);" style="background: var(--bg); border: 1.1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 10px; font-weight: 800; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--primary-border);">${b.timestamp}</span>
+                        <strong style="font-size: 13.5px; color: var(--text-1); font-weight: 700;">${b.title}</strong>
+                    </div>
+                    <span style="color: var(--primary); font-weight: 900; font-size: 16px;">←</span>
+                </div>
+                `).join('')}
+            </div>
+        </div>`;
     } else if(tab==='fiche'){
         const hasQuiz = l.quiz && l.quiz.length > 0;
         const quizBtnHtml = hasQuiz ? `
         <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border); padding-top: 20px;">
             <button class="btn-sm btn-primary" onclick="startQuiz('${l.subject}', ${l.lessonNum})" style="padding: 12px 24px; border-radius: 14px; font-size: 13.5px; width: 100%; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15); border: none; cursor: pointer; font-family: inherit;">
-                📝 اختبر معلوماتك في هذا الدرس
+                🧩 اختبر معلوماتك في هذا الدرس
             </button>
         </div>` : '';
         body.innerHTML=`<div class="summary-html">${q?hl(l.summary,q):l.summary}</div>${quizBtnHtml}`;
@@ -2535,12 +2551,12 @@ function renderRoadmapTimeline(subject) {
             const hasNote = !!syllabusNotes[key] && syllabusNotes[key].trim().length > 0;
             
             return `
-                <div class="roadmap-chapter-item ${isCompleted ? 'completed' : ''}" onclick="goToChapter(event, '${subject}', ${l.lessonNum}, ${i})">
+                <div class="roadmap-chapter-item ${isCompleted ? 'completed' : ''}" style="cursor: default;">
                     <div class="roadmap-chapter-left">
                         <button class="chapter-check-btn" onclick="toggleChapterCompletion(event, '${subject}', ${l.lessonNum}, ${i})" title="تحديد كمكتمل">
                             ✓
                         </button>
-                        <div class="chapter-title-text" title="${b.title}">${b.title}</div>
+                        <div class="chapter-title-text" title="${b.title}" style="cursor: default;">${b.title}</div>
                     </div>
                     <div class="chapter-actions">
                         <button class="chapter-action-btn ${isFav ? 'fav-active' : ''}" onclick="toggleChapterFavorite(event, '${subject}', ${l.lessonNum}, ${i})" title="إضافة للمفضلة">
@@ -2548,6 +2564,9 @@ function renderRoadmapTimeline(subject) {
                         </button>
                         <button class="chapter-action-btn ${hasNote ? 'has-note' : ''}" onclick="openNotesModal(event, '${subject}', ${l.lessonNum}, ${i})" title="ملاحظة شخصية">
                             📝
+                        </button>
+                        <button class="chapter-action-btn" onclick="goToChapter(event, '${subject}', ${l.lessonNum}, ${i})" title="قراءة التفريغ" style="color: var(--primary); background: var(--primary-light); border-color: var(--primary-border);">
+                            📖
                         </button>
                     </div>
                 </div>
@@ -2575,7 +2594,7 @@ function renderRoadmapTimeline(subject) {
                     </div>
                     ${hasQuiz ? `
                     <button class="btn-sm btn-outline" onclick="event.stopPropagation(); startQuiz('${l.subject}', ${l.lessonNum})" style="padding: 4px 10px; font-size: 11px; border-radius: 8px; border-color: var(--subj-color); color: var(--subj-color); background: var(--surface); display: inline-flex; align-items: center; gap: 4px; font-weight: 700; margin-right: auto; cursor: pointer;">
-                        📝 اختبار
+                        🧩 اختبار
                     </button>` : ''}
                 </div>
                 <div class="roadmap-chapters-list">
