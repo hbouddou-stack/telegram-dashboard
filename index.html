@@ -306,7 +306,7 @@
         
         .result-body { padding: 14px 16px; }
         .result-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .result-lesson-num { font-size: 11px; color: var(--text-3); font-weight: 700; }
+        .result-lesson-num { font-size: 11px; color: var(--text-2); font-weight: 700; background: #f1f5f9; padding: 3px 8px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .result-title  { font-size: 14px; font-weight: 800; margin-bottom: 6px; color: var(--text); }
         .result-snippet { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
         .result-snippet mark, mark { background: #fef08a; color: #0f172a; padding: 0 2px; border-radius: 3px; font-weight: inherit; }
@@ -1737,17 +1737,14 @@
             <h2 id="greeting-text">مرحباً بك 👋</h2>
             <p>استمر في رحلتك العلمية اليوم</p>
         </div>
-        <div class="streak-bar">
-            <div class="streak-icon">🔥</div>
-            <div class="streak-info">
-                <strong>سلسلة المراجعة اليومية</strong>
-                <span>استمر في المراجعة كل يوم</span>
-                <div class="streak-days" id="streak-days"></div>
-            </div>
-        </div>
-        <div class="sec-header"><h1>آخر الدروس</h1><p>الدروس التي تُدرَّس حالياً</p></div>
+        
+        <div class="sec-header"><h1>▶️ استمر في التعلم</h1><p>الدروس التي بدأت دراستها مؤخراً</p></div>
         <div class="card-row" id="recent-cards"></div>
-        <div class="sec-header" style="margin-top:18px"><h1>💡 هل تعلم؟</h1></div>
+        
+        <div class="sec-header" style="margin-top:18px"><h1>⚠️ محاور بانتظارك</h1><p>المواضيع التي بدأت قراءتها ولم تؤكد اكتمالها بعد</p></div>
+        <div id="unfinished-chapters-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
+        
+        <div class="sec-header" style="margin-top:18px"><h1>💡 فائدة اليوم</h1></div>
         <div class="card" id="did-you-know" style="font-size:13.5px;line-height:1.7;color:var(--text-2)">جاري التحميل...</div>
     </div>
 
@@ -1772,34 +1769,33 @@
         </div>
     </div>
 
-    <!-- LIBRARY (CLOISONNÉE) -->
-    <div class="tab-panel" id="tab-library">
-        <!-- Vue par défaut : Choix des matières -->
-        <div id="library-subjects-view">
-            <div class="sec-header">
-                <h1>📚 مكتبة الدروس</h1>
-                <p>تصفح الدروس والمذكرات المفصلة لكل مادة</p>
-            </div>
-            <div class="subject-grid" id="subject-grid">
-                <!-- Rendu dynamique -->
-            </div>
+    <!-- MY LIBRARY (مكتبتي الشخصية) -->
+    <div class="tab-panel" id="tab-mylibrary">
+        <div class="sec-header">
+            <h1>📚 مكتبتي الشخصية</h1>
+            <p>أرشيفك الخاص من المقاطع المحفوظة والملاحظات والأخطاء</p>
         </div>
         
-        <!-- Vue détaillée : Liste des cours d'une matière -->
-        <div id="library-lessons-view" style="display:none">
-            <div class="subject-detail-header">
-                <button class="back-btn" onclick="backToSubjects()">
-                    <span class="icon">→</span>
-                    المواد الدراسية
-                </button>
-                <div class="subject-title-wrap">
-                    <h2 id="subject-detail-title">المادة</h2>
-                    <span id="subject-detail-badge" class="badge"></span>
-                </div>
-            </div>
-            <div id="subject-lessons-list">
-                <!-- Rendu dynamique -->
-            </div>
+        <!-- Toggle Chips for Sub-Tabs -->
+        <div class="mylib-chips" style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <button class="chip active" id="mylib-btn-bookmarks" onclick="switchMyLibSubTab('bookmarks')">📌 المقاطع المحفوظة</button>
+            <button class="chip" id="mylib-btn-notes" onclick="switchMyLibSubTab('notes')">📝 ملاحظاتي</button>
+            <button class="chip" id="mylib-btn-errors" onclick="switchMyLibSubTab('errors')">❌ أخطائي</button>
+        </div>
+        
+        <!-- Bookmarks Sub-panel -->
+        <div class="mylib-sub-panel" id="mylib-panel-bookmarks">
+            <div class="saved-passages-list" id="mylib-bookmarks-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+        
+        <!-- Notes Sub-panel -->
+        <div class="mylib-sub-panel" id="mylib-panel-notes" style="display: none;">
+            <div id="mylib-notes-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+        
+        <!-- Errors Sub-panel -->
+        <div class="mylib-sub-panel" id="mylib-panel-errors" style="display: none;">
+            <div id="mylib-errors-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
         </div>
     </div>
 
@@ -1845,18 +1841,22 @@
         <div class="profile-name" id="profile-name">طالب الأكاديمية</div>
         <div class="profile-sub">أكاديمية الباجي للعلوم الشرعية</div>
         <div class="stats-grid" id="stats-grid"></div>
-        <div class="sec-header"><h1>🔖 المقاطع المحفوظة</h1></div>
-        <div class="saved-passages-list" id="saved-passages-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
-        <div class="sec-header"><h1>🏅 الشارات</h1></div>
-        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px;margin-bottom:20px;">أكمل المراجعة يومياً لكسب الشارات</div>
+        
+        <div class="sec-header" style="margin-top:20px;"><h1>📊 إنجاز المواد الدراسية</h1><p>نسبة اكتمال المحاور لكل مادة علمية</p></div>
+        <div id="profile-subjects-progress" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
+        
+        <div class="sec-header"><h1>🏅 الرتب العلمية</h1></div>
+        <div class="card" style="font-size:13px; color:var(--text-2); padding:20px; margin-bottom:20px; line-height:1.6; text-align:right;">
+            تتدرج في الرتب العلمية بالأكاديمية بحسب تحصيلك للدرجات وحل الاختبارات التفاعلية بنجاح.
+        </div>
     </div>
 
     <!-- NAV -->
     <nav>
         <button class="nav-btn active" onclick="switchTab('home',this)"><span class="icon">🏠</span><span>الرئيسية</span></button>
         <button class="nav-btn" onclick="switchTab('search',this)"><span class="icon">🔍</span><span>البحث</span></button>
-        <button class="nav-btn" onclick="switchTab('syllabus',this)"><span class="icon">🗺️</span><span>المنهج</span></button>
-        <button class="nav-btn" onclick="switchTab('library',this)"><span class="icon">📚</span><span>المكتبة</span></button>
+        <button class="nav-btn" onclick="switchTab('syllabus',this)"><span class="icon">🗺️</span><span>المقرر</span></button>
+        <button class="nav-btn" onclick="switchTab('mylibrary',this)"><span class="icon">📚</span><span>مكتبتي</span></button>
         <button class="nav-btn" onclick="switchTab('flashcards',this)"><span class="icon">🃏</span><span>المراجعة</span></button>
         <button class="nav-btn" onclick="switchTab('profile',this)"><span class="icon">👤</span><span>ملفي</span></button>
     </nav>
@@ -1990,7 +1990,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=17').then(r => {
+    fetch('transcripts.json?v=18').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -2001,7 +2001,7 @@ Promise.all([
 ])
 .then(([transcriptsText, quranDb]) => {
     // Standardize blessings to ﷺ globally in DB string with extended regex
-    const dbStr = transcriptsText.replace(/صلى الله عليه (?:وعلى آله(?: وصحبه)?)? وسلم|عليه الصلاة والسلام/g, 'ﷺ');
+    const dbStr = transcriptsText.replace(/صلى الله عليه (?:وعلى آله(?: وصحبه)?)? وسلم|عليه الصلاة والسلام|صلى الله عليه وسلم|صلعم|عليه السلام/g, 'ﷺ');
     DB = JSON.parse(dbStr);
     QURAN_VERSES_DB = quranDb;
     
@@ -2011,16 +2011,18 @@ Promise.all([
         syllabusFavorites = JSON.parse(localStorage.getItem('academy_syllabus_favs') || '{}');
         syllabusCompletion = JSON.parse(localStorage.getItem('academy_syllabus_completions') || '{}');
         savedPassages = JSON.parse(localStorage.getItem('academy_saved_passages') || '{}');
+        academyErrors = JSON.parse(localStorage.getItem('academy_questions_errors') || '{}');
     } catch(e) {
         syllabusNotes = {};
         syllabusFavorites = {};
         syllabusCompletion = {};
         savedPassages = {};
+        academyErrors = {};
     }
 
     buildIndex();
     renderHome();
-    renderLibrary();
+    renderMyLibrary();
     renderFcPicker();
     renderProfile();
     renderSyllabusSubjects();
@@ -2037,13 +2039,13 @@ Promise.all([
         document.getElementById('recent-cards').innerHTML = errorHtml;
     });
 
-// ── Tabs ──
 function switchTab(name, btn) {
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('tab-'+name).classList.add('active');
     btn.classList.add('active');
     if(name==='search') setTimeout(()=>document.getElementById('search-input').focus(),100);
+    if(name==='mylibrary') renderMyLibrary();
 }
 
 // ── Word Index ──
@@ -2065,21 +2067,88 @@ function buildIndex() {
 function renderHome() {
     if(tg?.initDataUnsafe?.user?.first_name)
         document.getElementById('greeting-text').textContent='مرحباً '+tg.initDataUnsafe.user.first_name+' 👋';
-    const days=['أ','إ','ث','أ','خ','ج','س'],done=4;
-    document.getElementById('streak-days').innerHTML=days.map((d,i)=>`<div class="streak-day ${i<done?'done':i===done?'today':''}">${d}</div>`).join('');
-    const recents=['sira','fiqh'].map(s=>DB.filter(l=>l.subject===s).pop()).filter(Boolean);
-    document.getElementById('recent-cards').innerHTML=recents.map(c=> {
-        const blocks = c.thematic_blocks || [];
-        const completedBlocks = blocks.filter((b, i) => syllabusCompletion[`${c.subject}_${c.lessonNum}_${i}`]).length;
-        const percent = blocks.length > 0 ? Math.round((completedBlocks / blocks.length) * 100) : 0;
-        return `
-        <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'fiche')">
+    
+    // Started lessons progress calculation
+    const started = [];
+    DB.forEach(l => {
+        const blocks = l.thematic_blocks || [];
+        const completedCount = blocks.filter((b, i) => syllabusCompletion[`${l.subject}_${l.lessonNum}_${i}`]).length;
+        if (completedCount > 0) {
+            started.push({ 
+                lesson: l, 
+                completed: completedCount, 
+                total: blocks.length, 
+                percent: Math.round((completedCount / blocks.length) * 100) 
+            });
+        }
+    });
+
+    let recentsHtml = '';
+    if (started.length > 0) {
+        started.sort((a, b) => b.percent - a.percent);
+        recentsHtml = started.slice(0, 3).map(item => {
+            const c = item.lesson;
+            return `
+            <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'blocks')" style="cursor:pointer; flex: 1; min-width: 140px; margin-bottom:0;">
+                <span class="badge badge-${c.subject}">${c.subjectLabel}</span>
+                <div class="lesson-num" style="margin-top:6px; font-weight:800; font-size:14px; color:var(--${c.subject});">الدرس ${c.lessonNum}</div>
+                <div class="lesson-title" style="font-size:12px; font-weight:700; color:var(--text-2); margin:4px 0 8px 0; min-height:36px; line-height:1.4;">${trunc(strip(c.summary), 40)}</div>
+                <div class="progress-mini" style="height:5px; background:#f1f5f9; border-radius:3px; overflow:hidden;"><div class="fill" style="width:${item.percent}%; height:100%; background:var(--${c.subject});"></div></div>
+                <div style="font-size:10px; color:var(--text-3); text-align:left; margin-top:4px; font-weight:700;">مكتمل بنسبة ${item.percent}%</div>
+            </div>`;
+        }).join('');
+    } else {
+        const defaults = ['sira', 'fiqh', 'aqeeda', 'nahw'].map(s => DB.find(l => l.subject === s && l.lessonNum === 1)).filter(Boolean);
+        recentsHtml = defaults.map(c => `
+        <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'blocks')" style="cursor:pointer; flex: 1; min-width: 140px; margin-bottom:0;">
             <span class="badge badge-${c.subject}">${c.subjectLabel}</span>
-            <div class="lesson-num">الدرس ${c.lessonNum}</div>
-            <div class="lesson-title">${trunc(strip(c.summary),45)}</div>
-            <div class="progress-mini"><div class="fill" style="width:${percent}%"></div></div>
+            <div class="lesson-num" style="margin-top:6px; font-weight:800; font-size:14px; color:var(--${c.subject});">الدرس ${c.lessonNum}</div>
+            <div class="lesson-title" style="font-size:12px; font-weight:700; color:var(--text-2); margin:4px 0 8px 0; min-height:36px; line-height:1.4;">${trunc(strip(c.summary), 40)}</div>
+            <div class="progress-mini" style="height:5px; background:#f1f5f9; border-radius:3px; overflow:hidden;"><div class="fill" style="width:0%; height:100%; background:var(--${c.subject});"></div></div>
+            <div style="font-size:10px; color:var(--text-3); text-align:left; margin-top:4px; font-weight:700;">ابدأ الآن 🚀</div>
+        </div>`).join('');
+    }
+    document.getElementById('recent-cards').innerHTML = recentsHtml;
+
+    // Unfinished chapters calculation
+    const unfinished = [];
+    DB.forEach(l => {
+        const blocks = l.thematic_blocks || [];
+        const completedStates = blocks.map((b, i) => !!syllabusCompletion[`${l.subject}_${l.lessonNum}_${i}`]);
+        const completedCount = completedStates.filter(Boolean).length;
+        if (completedCount > 0 && completedCount < blocks.length) {
+            blocks.forEach((b, i) => {
+                if (!completedStates[i]) {
+                    unfinished.push({
+                        subject: l.subject,
+                        subjectLabel: l.subjectLabel,
+                        lessonNum: l.lessonNum,
+                        chapterIdx: i,
+                        title: b.title
+                    });
+                }
+            });
+        }
+    });
+
+    const unfContainer = document.getElementById('unfinished-chapters-container');
+    if (unfinished.length > 0) {
+        unfContainer.innerHTML = unfinished.slice(0, 4).map(item => `
+        <div class="card" onclick="openModal('${item.subject}', ${item.lessonNum}, 'blocks', ${item.chapterIdx})" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:12px 14px; margin-bottom:0; border:1px solid #fee2e2; background:#fff8f8; transition:transform 0.2s;">
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:right;">
+                <span class="badge badge-${item.subject}" style="font-size:10px; align-self:flex-start;">${item.subjectLabel} - الدرس ${item.lessonNum}</span>
+                <span style="font-size:13px; font-weight:700; color:var(--text-1);">${item.title}</span>
+            </div>
+            <span style="color:#ef4444; font-size:16px;">⏳</span>
+        </div>`).join('');
+    } else {
+        unfContainer.innerHTML = `
+        <div class="card" style="font-size:12.5px; color:var(--text-3); text-align:center; padding:16px; margin-bottom:0;">
+            ✅ أحسنت! لا توجد محاور قيد الانتظار في الدروس التي بدأتها.
         </div>`;
-    }).join('');
+    }
+
+    // Did you know block
     const allBlocks=DB.flatMap(l=>l.thematic_blocks.map(b=>({...b,subject:l.subject,subjectLabel:l.subjectLabel})));
     if(allBlocks.length){
         const b=allBlocks[Math.floor(Math.random()*allBlocks.length)];
@@ -2090,142 +2159,356 @@ function renderHome() {
     }
 }
 
-// ── LIBRARY (CLOISONNÉE PAR MATIÈRE) ──
-function renderLibrary() {
-    const SUBJECTS=[
-        {key:'sira',label:'السيرة النبوية',icon:'📜',desc:'سيرة النبي ﷺ وأحداث العهدين المكي والمدني'},
-        {key:'fiqh',label:'الفقه الإسلامي',icon:'⚖️',desc:'الأحكام الفقهية والعبادات العملية والشعائر'},
-        {key:'aqeeda',label:'العقيدة والتوحيد',icon:'🌟',desc:'أصول الإيمان والتوحيد والمسائل العقدية'},
-        {key:'nahw',label:'علم النحو والصرف',icon:'📝',desc:'قواعد الإعراب واللغة العربية وتدريبات النحو'}
-    ];
+// ── MY LIBRARY PERSONAL ARCHIVE ──
+let activeMyLibSubTab = 'bookmarks';
+let academyErrors = {};
+
+function switchMyLibSubTab(subTab) {
+    activeMyLibSubTab = subTab;
+    document.querySelectorAll('.mylib-chips .chip').forEach(c => c.classList.remove('active'));
+    document.getElementById(`mylib-btn-${subTab}`).classList.add('active');
     
-    document.getElementById('subject-grid').innerHTML = SUBJECTS.map(subj => {
-        const count = DB.filter(l => l.subject === subj.key).length;
+    document.querySelectorAll('.mylib-sub-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(`mylib-panel-${subTab}`).style.display = 'block';
+    
+    renderMyLibrary();
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function renderMyLibrary() {
+    if (activeMyLibSubTab === 'bookmarks') {
+        renderMyBookmarks();
+    } else if (activeMyLibSubTab === 'notes') {
+        renderMyNotes();
+    } else if (activeMyLibSubTab === 'errors') {
+        renderMyErrors();
+    }
+}
+
+function renderMyBookmarks() {
+    const container = document.getElementById('mylib-bookmarks-list');
+    if (!container) return;
+    
+    const keys = Object.keys(savedPassages).sort((a, b) => savedPassages[b].savedAt - savedPassages[a].savedAt);
+    
+    if (keys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:24px">
+            لا توجد مقاطع محفوظة بعد. يمكنك حفظ المقاطع بالضغط على زر 📌 أثناء قراءة التفريغ.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = keys.map(key => {
+        const item = savedPassages[key];
+        const subMeta = SUBJECT_METADATA[item.subject] || { title: item.subject, icon: '📚' };
+        const cleanText = item.text.replace(/\*\*\*/g, '').trim();
+        
         return `
-            <div class="subject-card card-${subj.key}" onclick="showSubjectLessons('${subj.key}')">
-                <div class="subj-card-header">
-                    <span class="subj-icon-large">${subj.icon}</span>
-                    <span class="subj-badge">${count} درس</span>
+        <div class="saved-passage-card" onclick="goToSavedPassage('${item.subject}', ${item.lessonNum}, '${item.ts}')" style="background: var(--surface); border: 1.2px solid #e2e8f0; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s;">
+            <div class="saved-passage-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div class="saved-passage-meta" style="display:flex; gap:6px; align-items:center;">
+                    <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 8px; font-weight: 800;">
+                        ${subMeta.icon} ${subMeta.title} - الدرس ${item.lessonNum}
+                    </span>
+                    <span style="font-size: 10px; font-weight: 800; background: #f1f5f9; color: var(--text-2); padding: 3px 6px; border-radius: 6px;">
+                        ⏱️ ${item.ts}
+                    </span>
                 </div>
-                <div class="subj-card-body">
-                    <h3>${subj.label}</h3>
-                    <p>${subj.desc}</p>
-                </div>
-                <div class="subj-card-footer">
-                    <span>تصفح الدروس</span>
-                    <span class="arrow">←</span>
-                </div>
+                <button class="saved-passage-delete" title="حذف" onclick="deleteSavedPassage(event, '${key}')" style="background:none; border:none; color:var(--text-3); font-size:14px; cursor:pointer; padding:2px 6px;">✕</button>
             </div>
+            <div class="saved-passage-text" style="font-size:13px; line-height:1.6; color:var(--text-1); margin-bottom:8px;">${cleanText}</div>
+            ${item.link ? `
+            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                <a href="${item.link}" target="_blank" onclick="event.stopPropagation()" style="font-size: 11px; color: var(--primary); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--primary-border);">
+                    🎬 مشاهدة الفيديو
+                </a>
+            </div>` : ''}
+        </div>
         `;
     }).join('');
 }
 
-let selectedSubjectKey = null;
-
-function showSubjectLessons(key) {
-    selectedSubjectKey = key;
-    const lessons = DB.filter(l => l.subject === key).sort((a,b) => a.lessonNum - b.lessonNum);
-    const subjMeta = {
-        'sira': {label: 'السيرة النبوية', icon: '📜', badge: 'badge-sira'},
-        'fiqh': {label: 'الفقه الإسلامي', icon: '⚖️', badge: 'badge-fiqh'},
-        'aqeeda': {label: 'العقيدة والتوحيد', icon: '🌟', badge: 'badge-aqeeda'},
-        'nahw': {label: 'علم النحو والصرف', icon: '📝', badge: 'badge-nahw'}
-    };
-    const meta = subjMeta[key];
+function renderMyNotes() {
+    const container = document.getElementById('mylib-notes-list');
+    if (!container) return;
     
-    document.getElementById('subject-detail-badge').className = `badge ${meta.badge}`;
-    document.getElementById('subject-detail-badge').textContent = `${lessons.length} درس`;
-    document.getElementById('subject-detail-title').textContent = `${meta.icon} ${meta.label}`;
+    const keys = Object.keys(syllabusNotes).filter(k => syllabusNotes[k].trim().length > 0);
     
-    document.getElementById('subject-lessons-list').innerHTML = lessons.map(l => {
-        const blocks = l.thematic_blocks || [];
-        const completedBlocks = blocks.filter((b, i) => syllabusCompletion[`${l.subject}_${l.lessonNum}_${i}`]).length;
-        const percent = blocks.length > 0 ? Math.round((completedBlocks / blocks.length) * 100) : 0;
-        const checkIcon = percent === 100 ? ' <span style="color: #10b981;">✅</span>' : '';
+    if (keys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:24px">
+            لا توجد ملاحظات مكتوبة بعد. يمكنك كتابة ملاحظاتك من خلال الضغط على زر 📝 في المنهج الدراسي.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = keys.map(key => {
+        const parts = key.split('_');
+        const subject = parts[0];
+        const lessonNum = parseInt(parts[1]);
+        const blockIdx = parseInt(parts[2]);
+        
+        const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+        const block = lesson && lesson.thematic_blocks ? lesson.thematic_blocks[blockIdx] : null;
+        const blockTitle = block ? block.title : 'محور دراسي';
+        
+        const subMeta = SUBJECT_METADATA[subject] || { title: subject, icon: '📚' };
+        const text = syllabusNotes[key];
+        
         return `
-        <div class="lesson-list-item" onclick="openModal('${l.subject}', ${l.lessonNum}, 'fiche')">
-            <div class="lesson-info">
-                <strong style="display: flex; align-items: center; gap: 6px;">الدرس ${l.lessonNum}${checkIcon}</strong>
-                <span style="margin-top: 4px;">${trunc(strip(l.summary), 75)}</span>
-                ${blocks.length > 0 ? `
-                <div class="progress-mini" style="margin-top: 8px; max-width: 120px; height: 4px;">
-                    <div class="fill" style="width:${percent}%; background: var(--${l.subject})"></div>
-                </div>` : ''}
+        <div class="note-card" onclick="openModal('${subject}', ${lessonNum}, 'blocks', ${blockIdx})" style="background: var(--surface); border: 1.2px solid #e2e8f0; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s; position:relative;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 8px; font-weight: 800;">
+                    ${subMeta.icon} ${subMeta.title} - الدرس ${lessonNum}
+                </span>
+                <span style="font-size: 11px; font-weight:700; color:var(--text-3);">📝 ملاحظة</span>
             </div>
-            <div class="lesson-actions-inline">
-                ${l.thematic_blocks.length ? `<button class="btn-sm btn-outline" onclick="event.stopPropagation(); openModal('${l.subject}', ${l.lessonNum}, 'blocks')">📌 المحاور</button>` : ''}
-                <button class="btn-sm btn-primary" onclick="event.stopPropagation(); openModal('${l.subject}', ${l.lessonNum}, 'fiche')">📖 اقرأ</button>
-            </div>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text); margin-bottom: 6px;">📌 ${blockTitle}</div>
+            <div style="font-size: 12.5px; line-height: 1.6; color: var(--text-2); background: #f8fafc; padding: 10px; border-radius: 8px; border-right: 3px solid var(--primary); white-space: pre-wrap;">${text}</div>
         </div>
-    `; }).join('');
-    
-    document.getElementById('library-subjects-view').style.display = 'none';
-    document.getElementById('library-lessons-view').style.display = 'block';
-    
-    // Telegram API Integrations
-    if (tg) {
-        tg.BackButton.show();
-        tg.BackButton.onClick(backToSubjects);
-        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
-    }
-}
-
-function backToSubjects() {
-    selectedSubjectKey = null;
-    document.getElementById('library-lessons-view').style.display = 'none';
-    document.getElementById('library-subjects-view').style.display = 'block';
-    
-    // Telegram API Integrations
-    if (tg) {
-        tg.BackButton.hide();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
-    }
-}
-
-// ── FLASHCARDS ──
-let fcCards=[], fcIdx=0, fcFlipped=false;
-function renderFcPicker() {
-    const S=[{key:'sira',label:'السيرة النبوية',icon:'📜'},{key:'fiqh',label:'الفقه الإسلامي',icon:'⚖️'},{key:'aqeeda',label:'العقيدة',icon:'🌟'},{key:'nahw',label:'النحو',icon:'📝'}];
-    document.getElementById('fc-picker').innerHTML=S.map(s=>{
-        const cnt=DB.filter(l=>l.subject===s.key&&l.thematic_blocks.length).length;
-        return `<div class="card" style="cursor:pointer" onclick="startFc('${s.key}')">
-            <div style="display:flex;align-items:center;gap:12px">
-                <span style="font-size:28px">${s.icon}</span>
-                <div><div style="font-size:14px;font-weight:800">${s.label}</div><div style="font-size:11px;color:var(--text-3)">${cnt} درس بمحاور</div></div>
-                <span style="margin-right:auto;color:var(--primary);font-size:20px">‹</span>
-            </div></div>`;
+        `;
     }).join('');
 }
-function startFc(subject) {
-    fcCards=DB.filter(l=>l.subject===subject).flatMap(l=>l.thematic_blocks.map(b=>({...b,subject,subjectLabel:l.subjectLabel,lessonNum:l.lessonNum})));
-    if(!fcCards.length){alert('لا توجد محاور لهذه المادة بعد');return;}
-    fcIdx=0;fcFlipped=false;
-    document.getElementById('fc-picker').style.display='none';
-    document.getElementById('fc-area').style.display='block';
+
+function renderMyErrors() {
+    const container = document.getElementById('mylib-errors-list');
+    if (!container) return;
+    
+    const errorKeys = Object.keys(academyErrors);
+    
+    if (errorKeys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:24px">
+            ✨ ممتاز! لا توجد أخطاء مسجلة حالياً. استمر في الإجابة على الأسئلة التفاعلية لتحدي نفسك.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = errorKeys.map(key => {
+        const err = academyErrors[key];
+        const subMeta = SUBJECT_METADATA[err.subject] || { title: err.subject, icon: '📚' };
+        
+        return `
+        <div class="error-card" onclick="openModal('${err.subject}', ${err.lessonNum}, 'blocks', ${err.chapterIdx})" style="background: var(--surface); border: 1.2px solid #fee2e2; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size: 11px; background: #fef2f2; color: #ef4444; padding: 3px 8px; border-radius: 8px; font-weight: 800; border: 1px solid #fee2e2;">
+                    ${subMeta.icon} ${subMeta.title} - الدرس ${err.lessonNum}
+                </span>
+                <span style="font-size: 11px; font-weight:700; color:#ef4444;">❌ خطأ غير مجاب</span>
+            </div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-2); margin-bottom:8px; line-height:1.5;">السؤال: ${err.question}</div>
+            <div style="font-size:12px; color:#ef4444; background:#fef2f2; padding:6px 10px; border-radius:6px; margin-bottom:6px;">إجابتك: ${err.selected}</div>
+            <div style="font-size:12px; color:#10b981; background:#f0fdf4; padding:6px 10px; border-radius:6px;">الإجابة الصحيحة: ${err.correct}</div>
+        </div>
+        `;
+    }).join('');
+}
+
+function recordQuestionError(subject, lessonNum, chapterIdx, question, selected, correct, explanation) {
+    const errorKey = `err_${subject}_${lessonNum}_${chapterIdx}`;
+    academyErrors[errorKey] = {
+        subject,
+        lessonNum,
+        chapterIdx,
+        question,
+        selected,
+        correct,
+        explanation,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('academy_questions_errors', JSON.stringify(academyErrors));
+    if (activeMyLibSubTab === 'errors') renderMyLibrary();
+}
+
+function clearQuestionError(subject, lessonNum, chapterIdx) {
+    const errorKey = `err_${subject}_${lessonNum}_${chapterIdx}`;
+    if (academyErrors[errorKey]) {
+        delete academyErrors[errorKey];
+        localStorage.setItem('academy_questions_errors', JSON.stringify(academyErrors));
+        if (activeMyLibSubTab === 'errors') renderMyLibrary();
+    }
+}
+
+// ── FLASHCARDS (REFONTE INTERACTIVE) ──
+let fcCards = [], fcIdx = 0;
+let selectedFcSubject = '', selectedFcLessonNum = '';
+
+function renderFcPicker() {
+    const picker = document.getElementById('fc-picker');
+    if (!picker) return;
+    
+    // Check if we have error-based cards for quick revision
+    const errorKeys = Object.keys(academyErrors);
+    const hasErrors = errorKeys.length > 0;
+    
+    const S = [
+        {key:'sira',label:'السيرة النبوية',icon:'📜'},
+        {key:'fiqh',label:'الفقه الإسلامي',icon:'⚖️'},
+        {key:'aqeeda',label:'العقيدة والتوحيد',icon:'🌟'},
+        {key:'nahw',label:'علم النحو والصرف',icon:'📝'}
+    ];
+    
+    let html = '';
+    
+    if (hasErrors) {
+        html += `
+        <div class="card" style="cursor:pointer; border: 1.2px solid #fee2e2; background: #fff8f8; display:flex; align-items:center; gap:12px; margin-bottom: 16px;" onclick="startFcQuickErrors()">
+            <span style="font-size:28px">❌</span>
+            <div style="flex:1">
+                <div style="font-size:14px; font-weight:800; color:#ef4444;">مراجعة سريعة للأخطاء</div>
+                <div style="font-size:11px; color:#f87171;">لديك ${errorKeys.length} أسئلة أخطأت فيها سابقاً</div>
+            </div>
+            <span style="color:#ef4444; font-size:20px">⚡</span>
+        </div>`;
+    }
+    
+    html += S.map(s => {
+        const cnt = DB.filter(l => l.subject === s.key && l.thematic_blocks && l.thematic_blocks.length).length;
+        return `
+        <div class="card" style="cursor:pointer; margin-bottom: 12px;" onclick="selectFcSubject('${s.key}')">
+            <div style="display:flex; align-items:center; gap:12px">
+                <span style="font-size:28px">${s.icon}</span>
+                <div style="flex:1">
+                    <div style="font-size:14px; font-weight:800">${s.label}</div>
+                    <div style="font-size:11px; color:var(--text-3)">${cnt} درس متوفر للمراجعة</div>
+                </div>
+                <span style="color:var(--primary); font-size:20px">‹</span>
+            </div>
+        </div>`;
+    }).join('');
+    
+    picker.innerHTML = html;
+}
+
+function selectFcSubject(subj) {
+    selectedFcSubject = subj;
+    const picker = document.getElementById('fc-picker');
+    const lessons = DB.filter(l => l.subject === subj && l.thematic_blocks && l.thematic_blocks.length).sort((a,b)=>a.lessonNum - b.lessonNum);
+    
+    if (!lessons.length) {
+        alert('لا توجد دروس متوفرة لهذه المادة حالياً');
+        return;
+    }
+    
+    const subMeta = SUBJECT_METADATA[subj] || { title: subj, icon: '📚' };
+    
+    let html = `
+    <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn-sm btn-outline" onclick="renderFcPicker()">➡️ رجوع للمواد</button>
+        <span style="font-weight:800; font-size:14px;">${subMeta.icon} منهج ${subMeta.title}</span>
+    </div>`;
+    
+    html += `
+    <div class="card" style="cursor:pointer; border: 1px dashed var(--primary-border); background: var(--primary-light);" onclick="startFcAll('${subj}')">
+        <div style="display:flex; align-items:center; gap:12px; font-weight:800; color:var(--primary);">
+            <span>📚</span>
+            <span>مراجعة جميع محاور المادة</span>
+        </div>
+    </div>
+    <div style="margin: 12px 4px 6px 0; font-size: 11px; font-weight: 700; color: var(--text-3);">اختر درساً معيناً للمراجعة:</div>`;
+    
+    html += lessons.map(l => {
+        return `
+        <div class="card" style="cursor:pointer; margin-bottom: 8px; padding: 12px 14px;" onclick="startFcLesson('${subj}', ${l.lessonNum})">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div style="font-size:13.5px; font-weight:800;">الدرس ${l.lessonNum}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">${l.thematic_blocks.length} محاور للمراجعة</div>
+                </div>
+                <span style="color:var(--text-3); font-size:16px;">🔍</span>
+            </div>
+        </div>`;
+    }).join('');
+    
+    picker.innerHTML = html;
+}
+
+function startFcAll(subject) {
+    fcCards = DB.filter(l => l.subject === subject).flatMap(l => l.thematic_blocks.map((b, idx) => ({...b, subject, subjectLabel: l.subjectLabel, lessonNum: l.lessonNum, chapterIdx: idx})));
+    if (!fcCards.length) { alert('لا توجد محاور بعد'); return; }
+    launchFcFlow();
+}
+
+function startFcLesson(subject, lessonNum) {
+    const l = DB.find(dl => dl.subject === subject && dl.lessonNum === lessonNum);
+    if (!l || !l.thematic_blocks) return;
+    fcCards = l.thematic_blocks.map((b, idx) => ({...b, subject, subjectLabel: l.subjectLabel, lessonNum: l.lessonNum, chapterIdx: idx}));
+    launchFcFlow();
+}
+
+function startFcQuickErrors() {
+    const errorKeys = Object.keys(academyErrors);
+    fcCards = errorKeys.map(key => {
+        const err = academyErrors[key];
+        const l = DB.find(dl => dl.subject === err.subject && dl.lessonNum === err.lessonNum);
+        const b = l && l.thematic_blocks ? l.thematic_blocks[err.chapterIdx] : null;
+        if (!b) return null;
+        return {
+            ...b,
+            subject: err.subject,
+            subjectLabel: l.subjectLabel,
+            lessonNum: err.lessonNum,
+            chapterIdx: err.chapterIdx
+        };
+    }).filter(Boolean);
+    
+    if (!fcCards.length) { alert('لا توجد أخطاء مسجلة'); return; }
+    launchFcFlow();
+}
+
+function launchFcFlow() {
+    fcIdx = 0;
+    document.getElementById('fc-picker').style.display = 'none';
+    document.getElementById('fc-area').style.display = 'block';
     renderFc();
 }
+
 function renderFc() {
-    const fc=fcCards[fcIdx];
-    document.getElementById('fc-area').innerHTML=`
-        <div style="text-align:left;margin-bottom:10px">
-            <button class="btn-sm btn-outline" onclick="endFc()">رجوع →</button>
-            <span style="font-size:11px;color:var(--text-3);margin-right:10px">${fcIdx+1} / ${fcCards.length}</span>
+    const fc = fcCards[fcIdx];
+    const indicatorHtml = fcCards.map((_, i) => `<div style="height:4px; flex:1; border-radius:2px; background:${i === fcIdx ? 'var(--primary)' : '#e2e8f0'};"></div>`).join('');
+    
+    document.getElementById('fc-area').innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+            <button class="btn-sm btn-outline" onclick="endFc()">➡️ إنهاء</button>
+            <span style="font-size:11.5px; font-weight:800; color:var(--text-2);">${fcIdx + 1} / ${fcCards.length}</span>
         </div>
-        <div class="fc-card" onclick="this.dataset.flipped=this.dataset.flipped?'':'1';document.getElementById('fc-back').style.display=this.dataset.flipped?'block':'none';document.getElementById('fc-hint').style.display=this.dataset.flipped?'none':'block'">
-            <span class="badge badge-${fc.subject}" style="margin-bottom:10px">${fc.subjectLabel} — الدرس ${fc.lessonNum}</span>
-            <div style="font-size:15px;font-weight:800;margin-bottom:10px">${fc.title}</div>
-            <div id="fc-hint" style="font-size:12px;color:var(--text-3);text-align:center">👆 اضغط لرؤية ما قاله الأستاذ</div>
-            <div id="fc-back" style="display:none">
-                <div class="block-citation">${fc.citation}</div>
-                ${fc.video_link?`<a href="${fc.video_link}" target="_blank" class="segment-ts" style="margin-top:8px;display:inline-flex;text-decoration:none">▶ ${fc.timestamp} في الفيديو</a>`:''}
+        
+        <div style="display:flex; gap:4px; margin-bottom:16px;">
+            ${indicatorHtml}
+        </div>
+        
+        <div class="fc-card" onclick="this.dataset.flipped = this.dataset.flipped ? '' : '1'; document.getElementById('fc-back').style.display = this.dataset.flipped ? 'block' : 'none'; document.getElementById('fc-hint').style.display = this.dataset.flipped ? 'none' : 'block';">
+            <span class="badge badge-${fc.subject}" style="margin-bottom:12px;">${fc.subjectLabel} — الدرس ${fc.lessonNum}</span>
+            <div style="font-size:16px; font-weight:800; color:var(--text-1); line-height:1.5; margin-bottom:12px;">📌 ${fc.title}</div>
+            
+            <div id="fc-hint" style="font-size:12px; color:var(--text-3); text-align:center; margin-top:20px; border-top:1px dashed #f1f5f9; padding-top:12px;">
+                👆 اضغط على البطاقة لكشف الشرح والفوائد التربوية
+            </div>
+            
+            <div id="fc-back" style="display:none; border-top:1px dashed #e2e8f0; margin-top:14px; padding-top:12px;">
+                <div class="block-citation" style="font-size:13px; line-height:1.6; color:var(--text-2);">${fc.citation}</div>
+                ${fc.video_link ? `
+                <a href="${fc.video_link}" target="_blank" class="btn-sm" style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; background:var(--primary-light); color:var(--primary); text-decoration:none; font-weight:700;" onclick="event.stopPropagation()">
+                    🎬 شاهد الشرح في الفيديو (${fc.timestamp})
+                </a>` : ''}
             </div>
         </div>
-        <div style="display:flex;gap:10px">
-            ${fcIdx>0?`<button class="btn-sm btn-outline" style="flex:1" onclick="fcIdx--;fcFlipped=false;renderFc()">السابق ›</button>`:''}
-            <button class="btn-sm btn-primary" style="flex:1" onclick="fcIdx<fcCards.length-1?(fcIdx++,fcFlipped=false,renderFc()):alert('انتهت البطاقات!')">‹ التالي</button>
+        
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn-sm btn-outline" style="flex:1" onclick="if(fcIdx > 0) { fcIdx--; renderFc(); } else { endFc(); }">السابق</button>
+            <button class="btn-sm btn-primary" style="flex:1" onclick="if(fcIdx < fcCards.length - 1) { fcIdx++; renderFc(); } else { alert('✨ أحسنت! أكملت مراجعة جميع البطاقات المحددة.'); endFc(); }">التالي</button>
         </div>`;
 }
-function endFc(){document.getElementById('fc-area').style.display='none';document.getElementById('fc-picker').style.display='block';}
+
+function endFc() {
+    document.getElementById('fc-area').style.display = 'none';
+    document.getElementById('fc-picker').style.display = 'block';
+    renderFcPicker();
+}
 
 // ── PROFILE ──
 function renderProfile() {
@@ -2255,11 +2538,33 @@ function renderProfile() {
     document.getElementById('profile-name').innerHTML = `${tg?.initDataUnsafe?.user?.first_name || 'طالب الأكاديمية'} <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 20px; font-weight: 700; margin-right: 6px;">${rank}</span>`;
     
     document.getElementById('stats-grid').innerHTML=`
-        <div class="stat-card"><div class="stat-val" style="color: var(--primary);">${xp} XP</div><div class="stat-lbl">نقاط الخبرة</div></div>
+        <div class="stat-card"><div class="stat-val" style="color: var(--primary);">${xp}</div><div class="stat-lbl">الدرجات العلمية</div></div>
         <div class="stat-card"><div class="stat-val" style="color: #10b981;">${quizCount}</div><div class="stat-lbl">التقييمات المنجزة</div></div>
-        <div class="stat-card"><div class="stat-val" style="color: #f59e0b;">${avgScore}%</div><div class="stat-lbl">معدل الدرجات</div></div>
+        <div class="stat-card"><div class="stat-val" style="color: #f59e0b;">${avgScore}%</div><div class="stat-lbl">معدل الاختبارات</div></div>
         <div class="stat-card"><div class="stat-val" style="color: #7c3aed;">${DB.length}</div><div class="stat-lbl">الدروس الكلية</div></div>`;
-    renderSavedPassagesList();
+        
+    // Render subjects progress list
+    const subjects = ['sira', 'fiqh', 'aqeeda', 'nahw'];
+    const progressContainer = document.getElementById('profile-subjects-progress');
+    if (progressContainer) {
+        progressContainer.innerHTML = subjects.map(sub => {
+            const stats = getSubjectStats(sub);
+            const meta = SUBJECT_METADATA[sub] || { title: sub, icon: '📚' };
+            return `
+            <div class="card" style="margin-bottom:0; padding:12px 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:13px; font-weight:800; color:var(--text-1);">${meta.icon} ${meta.title}</span>
+                    <span style="font-size:11.5px; font-weight:800; color:var(--text-2);">${stats.percent}%</span>
+                </div>
+                <div class="progress-mini" style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                    <div class="fill" style="width:${stats.percent}%; height:100%; background:var(--${sub});"></div>
+                </div>
+                <div style="font-size:10px; color:var(--text-3); text-align:left; margin-top:4px; font-weight:700;">
+                    ${stats.completed} من أصل ${stats.total} محاور مكتملة
+                </div>
+            </div>`;
+        }).join('');
+    }
 }
 
 // ── SEARCH ──
@@ -2824,9 +3129,8 @@ function formatTranscription(lesson, q) {
         const textEndsWithPunct = trimmed && /[.؟!؛]/.test(lastChar);
         const textEndsWithComma = trimmed && /[،,]/.test(lastChar);
         if (
-            (currentParagraph.length >= 4 && textEndsWithPunct) ||
-            (currentParagraph.length >= 8 && textEndsWithComma) ||
-            (currentParagraph.length >= 14)
+            (currentParagraph.length >= 6 && textEndsWithPunct) ||
+            (currentParagraph.length >= 12)
         ) {
             transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
             currentParagraph = [];
@@ -2932,7 +3236,7 @@ function renderParagraphHtml(texts, ts, link, q, subject, lessonNum) {
     
     return `<div class="reader-p">
         ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
-        <a href="javascript:void(0)" class="reader-p-bookmark ${activeClass}" data-ts="${ts}" title="حفظ هذا المقطع" onclick="toggleBookmarkPassage(event, '${subject}', ${lessonNum}, '${ts}', this)">🔖</a>
+        <a href="javascript:void(0)" class="reader-p-bookmark ${activeClass}" data-ts="${ts}" title="حفظ هذا المقطع" onclick="toggleBookmarkPassage(event, '${subject}', ${lessonNum}, '${ts}', this)">📌</a>
         ${renderedParts}
     </div>`;
 }
@@ -3090,7 +3394,7 @@ function toggleBookmarkPassage(event, subject, lessonNum, ts, btn) {
             savedAt: Date.now()
         };
         if (btn) btn.classList.add('active');
-        showToast("🔖 تم حفظ المقطع في ملفك الشخصي");
+        showToast("📌 تم حفظ المقطع في ملفك الشخصي");
         
         let xp = parseInt(localStorage.getItem('academy_user_xp') || '0');
         localStorage.setItem('academy_user_xp', xp + 5);
@@ -3099,6 +3403,7 @@ function toggleBookmarkPassage(event, subject, lessonNum, ts, btn) {
     
     localStorage.setItem('academy_saved_passages', JSON.stringify(savedPassages));
     renderSavedPassagesList();
+    renderMyLibrary();
 }
 
 function renderSavedPassagesList() {
@@ -3110,7 +3415,7 @@ function renderSavedPassagesList() {
     if (keys.length === 0) {
         container.innerHTML = `
         <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px">
-            لا توجد مقاطع محفوظة بعد. يمكنك حفظ المقاطع بالضغط على زر 🔖 أثناء قراءة التفريغ.
+            لا توجد مقاطع محفوظة بعد. يمكنك حفظ المقاطع بالضغط على زر 📌 أثناء قراءة التفريغ.
         </div>`;
         return;
     }
@@ -3150,6 +3455,7 @@ function deleteSavedPassage(event, key) {
     delete savedPassages[key];
     localStorage.setItem('academy_saved_passages', JSON.stringify(savedPassages));
     renderSavedPassagesList();
+    renderMyLibrary();
     showToast("❌ تم حذف المقطع");
     
     const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
@@ -3244,8 +3550,18 @@ function submitFlashAnswer(btn, subject, lessonNum, chIdx, selectedIdx) {
         renderProfile();
         showToast("🎉 إجابة صحيحة! +10 XP");
         validateChapter(subject, lessonNum, chIdx);
+        clearQuestionError(subject, lessonNum, chIdx);
     } else {
         showToast("❌ إجابة خاطئة، حاول في المحور القادم");
+        recordQuestionError(
+            subject, 
+            lessonNum, 
+            chIdx, 
+            qObj.question, 
+            qObj.options[selectedIdx], 
+            qObj.options[qObj.correct], 
+            qObj.explanation
+        );
     }
     
     const card = document.getElementById(`flash-q-card-el-${chIdx}`);
@@ -3689,6 +4005,7 @@ function saveNote() {
     if (selectedSyllabusSubject) {
         renderRoadmapTimeline(selectedSyllabusSubject);
     }
+    renderMyLibrary();
     
     closeNotesModal();
     
@@ -3706,6 +4023,7 @@ function deleteNote() {
     if (selectedSyllabusSubject) {
         renderRoadmapTimeline(selectedSyllabusSubject);
     }
+    renderMyLibrary();
     
     closeNotesModal();
     
