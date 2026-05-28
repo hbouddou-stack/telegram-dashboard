@@ -1801,9 +1801,113 @@
 
     <!-- FLASHCARDS -->
     <div class="tab-panel" id="tab-flashcards">
-        <div class="sec-header"><h1>🃏 المراجعة بالبطاقات</h1><p>اختر مادة للمراجعة</p></div>
-        <div id="fc-picker"></div>
-        <div id="fc-area" style="display:none"></div>
+    <!-- REVISION HUB -->
+    <div class="tab-panel" id="tab-flashcards">
+        <div class="sec-header">
+            <h1>🧠 مركز المراجعة الذكية</h1>
+            <p>أدوات تفاعلية لمراجعة وتثبيت المعلومات قبل الامتحان</p>
+        </div>
+        
+        <!-- Toggle Chips for Revision Tools -->
+        <div class="rev-chips" style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1.5px solid var(--border); padding-bottom: 10px;">
+            <button class="chip active" id="rev-btn-fc" onclick="switchRevisionTool('fc')">🃏 بطاقات الذاكرة</button>
+            <button class="chip" id="rev-btn-quiz" onclick="switchRevisionTool('quiz')">🧠 اختبار مخصص</button>
+            <button class="chip" id="rev-btn-planner" onclick="switchRevisionTool('planner')">📅 خطة الامتحان</button>
+        </div>
+        
+        <!-- Tool 1: Flashcards Panel -->
+        <div class="rev-tool-panel" id="rev-panel-fc">
+            <div id="fc-picker"></div>
+            <div id="fc-area" style="display:none"></div>
+        </div>
+        
+        <!-- Tool 2: Custom Quiz Settings Panel -->
+        <div class="rev-tool-panel" id="rev-panel-quiz" style="display: none;">
+            <div id="custom-quiz-setup">
+                <div class="card" style="padding: 16px; margin-bottom: 14px; text-align: right;">
+                    <h3 style="font-size:15px; font-weight:800; margin-bottom:12px; color:var(--text-1);">1. حدد المواد التي تريد اختبار نفسك فيها:</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:16px;">
+                        <label class="card" style="display:flex; align-items:center; gap:8px; margin-bottom:0; padding:10px; cursor:pointer; border:1.2px solid #e2e8f0;">
+                            <input type="checkbox" id="cq-sub-sira" checked style="width:16px; height:16px;">
+                            <span style="font-size:12.5px; font-weight:700;">📜 السيرة النبوية</span>
+                        </label>
+                        <label class="card" style="display:flex; align-items:center; gap:8px; margin-bottom:0; padding:10px; cursor:pointer; border:1.2px solid #e2e8f0;">
+                            <input type="checkbox" id="cq-sub-fiqh" checked style="width:16px; height:16px;">
+                            <span style="font-size:12.5px; font-weight:700;">⚖️ الفقه الإسلامي</span>
+                        </label>
+                        <label class="card" style="display:flex; align-items:center; gap:8px; margin-bottom:0; padding:10px; cursor:pointer; border:1.2px solid #e2e8f0;">
+                            <input type="checkbox" id="cq-sub-aqeeda" checked style="width:16px; height:16px;">
+                            <span style="font-size:12.5px; font-weight:700;">🌟 العقيدة والتوحيد</span>
+                        </label>
+                        <label class="card" style="display:flex; align-items:center; gap:8px; margin-bottom:0; padding:10px; cursor:pointer; border:1.2px solid #e2e8f0;">
+                            <input type="checkbox" id="cq-sub-nahw" checked style="width:16px; height:16px;">
+                            <span style="font-size:12.5px; font-weight:700;">📝 علم النحو</span>
+                        </label>
+                    </div>
+                    
+                    <h3 style="font-size:15px; font-weight:800; margin-bottom:10px; color:var(--text-1);">2. عدد الأسئلة:</h3>
+                    <div style="display: flex; gap:8px; margin-bottom:18px;">
+                        <button class="chip active" id="cq-count-5" onclick="selectCqCount(5)" style="flex:1; text-align:center;">5 أسئلة</button>
+                        <button class="chip" id="cq-count-10" onclick="selectCqCount(10)" style="flex:1; text-align:center;">10 أسئلة</button>
+                        <button class="chip" id="cq-count-15" onclick="selectCqCount(15)" style="flex:1; text-align:center;">15 سؤالاً</button>
+                    </div>
+                    
+                    <h3 style="font-size:15px; font-weight:800; margin-bottom:10px; color:var(--text-1);">3. نوعية الأسئلة:</h3>
+                    <div style="display: flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input type="radio" name="cq-type" id="cq-type-all" checked style="width:16px; height:16px;">
+                            <span>كل الأسئلة المتاحة بالتساوي</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input type="radio" name="cq-type" id="cq-type-errors" style="width:16px; height:16px;">
+                            <span style="color:#ef4444;">ركز فقط على الأسئلة التي أخطأت فيها سابقاً ❌</span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn-sm btn-primary" onclick="startCustomQuiz()" style="width:100%; padding:14px; border-radius:12px; font-size:14px; font-weight:800; border:none; color:#fff; cursor:pointer;">
+                        🚀 ابدأ الاختبار التفاعلي
+                    </button>
+                </div>
+            </div>
+            <div id="custom-quiz-play" style="display:none;"></div>
+        </div>
+        
+        <!-- Tool 3: Study Planner Panel -->
+        <div class="rev-tool-panel" id="rev-panel-planner" style="display: none;">
+            <div id="planner-setup">
+                <div class="card" style="padding: 16px; text-align: right;">
+                    <h3 style="font-size:15.5px; font-weight:800; margin-bottom:8px; color:var(--text-1);">📅 حدد تاريخ الامتحان الدراسي:</h3>
+                    <p style="font-size:12px; color:var(--text-3); margin-bottom:14px;">سنقوم بحساب معدل المذاكرة اليومية والتحضير لتغطية كامل المقرر قبل الامتحان.</p>
+                    
+                    <input type="date" id="planner-exam-date" style="width:100%; padding:10px; border-radius:10px; border:1.2px solid #e2e8f0; font-family:inherit; font-size:14px; margin-bottom:18px; text-align:right; direction:rtl;">
+                    
+                    <h3 style="font-size:14.5px; font-weight:800; margin-bottom:10px; color:var(--text-1);">اختر المواد المشمولة بالامتحان:</h3>
+                    <div style="display: flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input type="checkbox" id="plan-sub-sira" checked style="width:16px; height:16px;">
+                            <span>📜 السيرة النبوية</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input type="checkbox" id="plan-sub-fiqh" checked style="width:16px; height:16px;">
+                            <span>⚖️ الفقه الإسلامي</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input type="checkbox" id="plan-sub-aqeeda" checked style="width:16px; height:16px;">
+                            <span>🌟 العقيدة والتوحيد</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer;">
+                            <input type="checkbox" id="plan-sub-nahw" checked style="width:16px; height:16px;">
+                            <span>📝 علم النحو والصرف</span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn-sm btn-primary" onclick="saveStudyPlan()" style="width:100%; padding:14px; border-radius:12px; font-size:14px; font-weight:800; border:none; color:#fff; cursor:pointer;">
+                        💾 حفظ الخطة وحساب الجدول
+                    </button>
+                </div>
+            </div>
+            <div id="planner-dashboard" style="display:none;"></div>
+        </div>
     </div>
 
     <!-- SYLLABUS -->
@@ -1990,7 +2094,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=18').then(r => {
+    fetch('transcripts.json?v=19').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -2508,6 +2612,436 @@ function endFc() {
     document.getElementById('fc-area').style.display = 'none';
     document.getElementById('fc-picker').style.display = 'block';
     renderFcPicker();
+}
+
+// ── REVISION HUB JS LOGIC ──
+let activeRevisionTool = 'fc';
+function switchRevisionTool(tool) {
+    activeRevisionTool = tool;
+    document.querySelectorAll('.rev-chips .chip').forEach(c => c.classList.remove('active'));
+    document.getElementById(`rev-btn-${tool}`).classList.add('active');
+    
+    document.querySelectorAll('.rev-tool-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(`rev-panel-${tool}`).style.display = 'block';
+    
+    if (tool === 'fc') {
+        renderFcPicker();
+    } else if (tool === 'planner') {
+        renderPlannerDashboard();
+        const dateInput = document.getElementById('planner-exam-date');
+        if (dateInput && !dateInput.value) {
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            dateInput.value = nextWeek.toISOString().split('T')[0];
+        }
+    }
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+// ── CUSTOM QUIZ SYSTEM ──
+let selectedCqCountNum = 5;
+let customQuizState = { questions: [], currentIndex: 0, score: 0, answers: [] };
+
+function selectCqCount(num) {
+    selectedCqCountNum = num;
+    document.querySelectorAll('[id^="cq-count-"]').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`cq-count-${num}`).classList.add('active');
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function startCustomQuiz() {
+    // 1. Gather selected subjects
+    const subjects = [];
+    if (document.getElementById('cq-sub-sira').checked) subjects.push('sira');
+    if (document.getElementById('cq-sub-fiqh').checked) subjects.push('fiqh');
+    if (document.getElementById('cq-sub-aqeeda').checked) subjects.push('aqeeda');
+    if (document.getElementById('cq-sub-nahw').checked) subjects.push('nahw');
+    
+    if (subjects.length === 0) {
+        alert('الرجاء اختيار مادة واحدة على الأقل للاختبار.');
+        return;
+    }
+    
+    // 2. Gather all quiz questions matching filters
+    let pool = [];
+    DB.forEach(l => {
+        if (subjects.includes(l.subject) && l.quiz && l.quiz.length) {
+            l.quiz.forEach((q, idx) => {
+                pool.push({
+                    ...q,
+                    subject: l.subject,
+                    subjectLabel: l.subjectLabel,
+                    lessonNum: l.lessonNum,
+                    chapterIdx: idx
+                });
+            });
+        }
+    });
+    
+    // 3. Filter by errors if selected
+    const focusErrors = document.getElementById('cq-type-errors').checked;
+    if (focusErrors) {
+        const errorKeys = Object.keys(academyErrors);
+        pool = pool.filter(q => {
+            const errKey = `err_${q.subject}_${q.lessonNum}_${q.chapterIdx}`;
+            return errorKeys.includes(errKey);
+        });
+        
+        if (pool.length === 0) {
+            alert('ليست لديك أخطاء مسجلة في المواد المحددة حالياً! تم تحويلك للاختبار العادي.');
+            document.getElementById('cq-type-all').checked = true;
+            startCustomQuiz();
+            return;
+        }
+    }
+    
+    if (pool.length === 0) {
+        alert('لا توجد أسئلة متوفرة للمواد المحددة حالياً.');
+        return;
+    }
+    
+    // Shuffle pool
+    pool.sort(() => Math.random() - 0.5);
+    
+    // Slice questions
+    const finalQuestions = pool.slice(0, selectedCqCountNum);
+    
+    // Initialize state
+    customQuizState = {
+        questions: finalQuestions,
+        currentIndex: 0,
+        score: 0,
+        answers: []
+    };
+    
+    // Hide setup, show play
+    document.getElementById('custom-quiz-setup').style.display = 'none';
+    const playArea = document.getElementById('custom-quiz-play');
+    playArea.style.display = 'block';
+    
+    renderCustomQuizQuestion();
+}
+
+function renderCustomQuizQuestion() {
+    const state = customQuizState;
+    const q = state.questions[state.currentIndex];
+    const playArea = document.getElementById('custom-quiz-play');
+    if (!playArea) return;
+    
+    const pct = Math.round((state.currentIndex / state.questions.length) * 100);
+    const subMeta = SUBJECT_METADATA[q.subject] || { title: q.subject, icon: '📚' };
+    
+    let optionsHtml = q.options.map((opt, idx) => {
+        return `
+        <button class="quiz-option-btn" id="cq-opt-${idx}" onclick="submitCustomQuizAnswer(${idx})" style="text-align:right; justify-content:flex-start; width:100%; padding:12px; margin-bottom:8px; border-radius:10px; border:1px solid #cbd5e1; background:#ffffff; font-weight:700; display:flex; align-items:center; gap:8px;">
+            <span class="bullet" style="width:16px; height:16px; border:2px solid #cbd5e1; border-radius:50%; display:inline-block; flex-shrink:0;"></span>
+            <span style="font-size:12.5px; font-family:inherit;">${opt}</span>
+        </button>`;
+    }).join('');
+    
+    playArea.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <button class="btn-sm btn-outline" onclick="exitCustomQuiz()">إنهاء الاختبار ➡️</button>
+            <span style="font-size:11.5px; font-weight:800; color:var(--text-3);">${state.currentIndex + 1} / ${state.questions.length}</span>
+        </div>
+        
+        <div class="progress-mini" style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden; margin-bottom:18px;">
+            <div class="fill" style="width:${pct}%; height:100%; background:var(--primary);"></div>
+        </div>
+        
+        <div class="card" style="padding:16px; text-align:right; margin-bottom:12px;">
+            <span class="badge badge-${q.subject}" style="margin-bottom:8px;">${q.subjectLabel} - الدرس ${q.lessonNum}</span>
+            <div style="font-size:15px; font-weight:800; color:var(--text-1); line-height:1.5;">${q.question}</div>
+            
+            <div style="margin-top:14px;">
+                ${optionsHtml}
+            </div>
+            
+            <div id="custom-quiz-feedback-box" style="margin-top:16px;"></div>
+        </div>
+        
+        <button class="btn-sm btn-primary" id="custom-quiz-next-btn" onclick="nextCustomQuizQuestion()" style="width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:800; display:none; justify-content:center; align-items:center;">
+            السؤال التالي ➡️
+        </button>
+    `;
+}
+
+function submitCustomQuizAnswer(selectedIdx) {
+    const state = customQuizState;
+    const q = state.questions[state.currentIndex];
+    state.answers[state.currentIndex] = selectedIdx;
+    
+    const isCorrect = selectedIdx === q.correct;
+    if (isCorrect) {
+        state.score++;
+        clearQuestionError(q.subject, q.lessonNum, q.chapterIdx);
+    } else {
+        recordQuestionError(q.subject, q.lessonNum, q.chapterIdx, q.question, q.options[selectedIdx], q.options[q.correct], q.explanation);
+    }
+    
+    // Disable buttons and highlights
+    q.options.forEach((_, idx) => {
+        const btn = document.getElementById(`cq-opt-${idx}`);
+        if (btn) {
+            btn.disabled = true;
+            const bullet = btn.querySelector('.bullet');
+            if (idx === q.correct) {
+                btn.style.borderColor = '#10b981';
+                btn.style.background = '#f0fdf4';
+                if (bullet) {
+                    bullet.style.borderColor = '#10b981';
+                    bullet.style.background = '#10b981';
+                }
+            } else if (idx === selectedIdx) {
+                btn.style.borderColor = '#ef4444';
+                btn.style.background = '#fef2f2';
+                if (bullet) {
+                    bullet.style.borderColor = '#ef4444';
+                    bullet.style.background = '#ef4444';
+                }
+            }
+        }
+    });
+    
+    // Display feedback
+    const feedbackBox = document.getElementById('custom-quiz-feedback-box');
+    if (feedbackBox) {
+        feedbackBox.innerHTML = `
+        <div style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding:10px 14px; background:#f8fafc; border-radius:8px; text-align:right;">
+            <div style="font-weight:800; color:${isCorrect ? '#10b981' : '#ef4444'}; font-size:13.5px; margin-bottom:4px;">
+                ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
+            </div>
+            <div style="font-size:12px; color:var(--text-2); line-height:1.5;">${q.explanation}</div>
+        </div>`;
+    }
+    
+    // Show next button
+    const nextBtn = document.getElementById('custom-quiz-next-btn');
+    if (nextBtn) {
+        const isLast = state.currentIndex === state.questions.length - 1;
+        nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ➡️';
+        nextBtn.style.display = 'inline-flex';
+    }
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
+    }
+}
+
+function nextCustomQuizQuestion() {
+    const state = customQuizState;
+    if (state.currentIndex < state.questions.length - 1) {
+        state.currentIndex++;
+        renderCustomQuizQuestion();
+    } else {
+        finishCustomQuiz();
+    }
+}
+
+function finishCustomQuiz() {
+    const state = customQuizState;
+    const playArea = document.getElementById('custom-quiz-play');
+    if (!playArea) return;
+    
+    const pct = Math.round((state.score / state.questions.length) * 100);
+    
+    // Reward XP
+    let xpGained = state.score * 10;
+    let totalXp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+    localStorage.setItem('academy_user_xp', totalXp + xpGained);
+    renderProfile();
+    
+    playArea.innerHTML = `
+        <div class="card" style="padding:24px 16px; text-align:center; direction:rtl;">
+            <div style="font-size:48px; margin-bottom:12px;">🏆</div>
+            <h2 style="font-size:18px; font-weight:900; margin-bottom:6px; color:var(--text-1);">اكتمل الاختبار المخصص!</h2>
+            <p style="font-size:12.5px; color:var(--text-3); margin-bottom:20px;">لقد أنهيت الإجابة على جميع الأسئلة</p>
+            
+            <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:24px; background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #cbd5e1;">
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${state.score} / ${state.questions.length}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الأسئلة الصحيحة</div>
+                </div>
+                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:#10b981;">+${xpGained}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الدرجات المحصلة</div>
+                </div>
+                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--text-1);">${pct}%</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">معدل النجاح</div>
+                </div>
+            </div>
+            
+            <button class="btn-sm btn-primary" onclick="exitCustomQuiz()" style="width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:800; border:none; color:#fff; cursor:pointer;">
+                ➡️ العودة لمركز المراجعة
+            </button>
+        </div>`;
+}
+
+function exitCustomQuiz() {
+    document.getElementById('custom-quiz-play').style.display = 'none';
+    document.getElementById('custom-quiz-setup').style.display = 'block';
+}
+
+// ── STUDY PLANNER LOGIC ──
+function saveStudyPlan() {
+    const examDate = document.getElementById('planner-exam-date').value;
+    if (!examDate) {
+        alert('الرجاء تحديد تاريخ الامتحان أولاً.');
+        return;
+    }
+    
+    const subjects = [];
+    if (document.getElementById('plan-sub-sira').checked) subjects.push('sira');
+    if (document.getElementById('plan-sub-fiqh').checked) subjects.push('fiqh');
+    if (document.getElementById('plan-sub-aqeeda').checked) subjects.push('aqeeda');
+    if (document.getElementById('plan-sub-nahw').checked) subjects.push('nahw');
+    
+    if (subjects.length === 0) {
+        alert('الرجاء اختيار مادة واحدة على الأقل مشمولة بالامتحان.');
+        return;
+    }
+    
+    const plan = {
+        examDate,
+        subjects
+    };
+    
+    localStorage.setItem('academy_study_plan', JSON.stringify(plan));
+    renderPlannerDashboard();
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+}
+
+function renderPlannerDashboard() {
+    const setupDiv = document.getElementById('planner-setup');
+    const dashDiv = document.getElementById('planner-dashboard');
+    if (!setupDiv || !dashDiv) return;
+    
+    const saved = localStorage.getItem('academy_study_plan');
+    if (!saved) {
+        setupDiv.style.display = 'block';
+        dashDiv.style.display = 'none';
+        return;
+    }
+    
+    const plan = JSON.parse(saved);
+    const examDateObj = new Date(plan.examDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const timeDiff = examDateObj.getTime() - today.getTime();
+    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    if (daysRemaining < 0) {
+        // Exam passed, clear plan
+        localStorage.removeItem('academy_study_plan');
+        setupDiv.style.display = 'block';
+        dashDiv.style.display = 'none';
+        return;
+    }
+    
+    // Count unfinished chapters in selected subjects
+    let unfinishedChapters = [];
+    DB.forEach(l => {
+        if (plan.subjects.includes(l.subject) && l.thematic_blocks && l.thematic_blocks.length) {
+            l.thematic_blocks.forEach((b, idx) => {
+                const key = `${l.subject}_${l.lessonNum}_${idx}`;
+                if (!syllabusCompletion[key]) {
+                    unfinishedChapters.push({
+                        ...b,
+                        subject: l.subject,
+                        subjectLabel: l.subjectLabel,
+                        lessonNum: l.lessonNum,
+                        chapterIdx: idx
+                    });
+                }
+            });
+        }
+    });
+    
+    const totalUnfinished = unfinishedChapters.length;
+    const chaptersPerDay = daysRemaining > 0 ? Math.ceil(totalUnfinished / daysRemaining) : totalUnfinished;
+    
+    // Pick 3 daily recommendations from unfinished list
+    unfinishedChapters.sort(() => Math.random() - 0.5);
+    const dailyRecommendations = unfinishedChapters.slice(0, 3);
+    
+    let recsHtml = '';
+    if (dailyRecommendations.length > 0) {
+        recsHtml = dailyRecommendations.map(item => `
+        <div class="card" onclick="openModal('${item.subject}', ${item.lessonNum}, 'blocks', ${item.chapterIdx})" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:12px 14px; margin-bottom:8px; border:1px solid var(--primary-border); background:#ffffff;">
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:right; flex:1; min-width:0;">
+                <span class="badge badge-${item.subject}" style="font-size:10px; align-self:flex-start;">${item.subjectLabel} - الدرس ${item.lessonNum}</span>
+                <span style="font-size:13.5px; font-weight:700; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.title}</span>
+            </div>
+            <span style="color:var(--primary); font-size:14px; font-weight:800; flex-shrink:0; margin-right:12px;">دراسة ←</span>
+        </div>`).join('');
+    } else {
+        recsHtml = `
+        <div class="card" style="font-size:12.5px; color:var(--text-3); text-align:center; padding:16px; margin-bottom:0;">
+            ✨ مبروك! لقد أكملت دراسة ومراجعة جميع المحاور المطلوبة للامتحان.
+        </div>`;
+    }
+    
+    setupDiv.style.display = 'none';
+    dashDiv.style.display = 'block';
+    
+    dashDiv.innerHTML = `
+        <div class="card" style="padding:16px; margin-bottom:14px; text-align:right;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:900; color:var(--text-1);">📊 خطتك الدراسية الحالية</h3>
+                <button class="btn-sm btn-outline" onclick="resetStudyPlan()" style="font-size:10.5px;">تعديل الخطة ⚙️</button>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-bottom:18px;">
+                <div class="card" style="flex:1; margin-bottom:0; text-align:center; padding:12px; background:#f8fafc; border:1.2px solid #e2e8f0;">
+                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${daysRemaining}</div>
+                    <div style="font-size:10px; color:var(--text-3); margin-top:2px;">أيام متبقية</div>
+                </div>
+                <div class="card" style="flex:1; margin-bottom:0; text-align:center; padding:12px; background:#f8fafc; border:1.2px solid #e2e8f0;">
+                    <div style="font-size:20px; font-weight:900; color:${totalUnfinished > 0 ? '#ef4444' : '#10b981'};">${totalUnfinished}</div>
+                    <div style="font-size:10px; color:var(--text-3); margin-top:2px;">محاور لم تدرس</div>
+                </div>
+                <div class="card" style="flex:1; margin-bottom:0; text-align:center; padding:12px; background:#f8fafc; border:1.2px solid #e2e8f0;">
+                    <div style="font-size:20px; font-weight:900; color:#f59e0b;">${chaptersPerDay}</div>
+                    <div style="font-size:10px; color:var(--text-3); margin-top:2px;">محاور يومياً</div>
+                </div>
+            </div>
+            
+            <div style="font-size:12.5px; line-height:1.6; color:var(--text-2); background:var(--primary-light); padding:12px; border-radius:10px; border-right:3.5px solid var(--primary); margin-bottom:20px;">
+                📝 <strong>توجيه المراجعة :</strong>
+                ${totalUnfinished > 0 ? `تحتاج لمراجعة وتأكيد فهم <strong>${chaptersPerDay} محاور يومياً</strong> لتتمكن من تغطية مقرر الامتحان في الوقت المحدد.` : 'لقd أنهيت مراجعة كامل المحاور بنجاح!'}
+            </div>
+            
+            <h3 style="font-size:14.5px; font-weight:900; margin-bottom:10px; color:var(--text-1);">📌 المراجعة المقترحة لك اليوم :</h3>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+                ${recsHtml}
+            </div>
+        </div>`;
+}
+
+function resetStudyPlan() {
+    localStorage.removeItem('academy_study_plan');
+    document.getElementById('planner-dashboard').style.display = 'none';
+    document.getElementById('planner-setup').style.display = 'block';
+    
+    // Set default values
+    const dateInput = document.getElementById('planner-exam-date');
+    if (dateInput) {
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        dateInput.value = nextWeek.toISOString().split('T')[0];
+    }
 }
 
 // ── PROFILE ──
