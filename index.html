@@ -1971,7 +1971,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=12').then(r => {
+    fetch('transcripts.json?v=13').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -2690,6 +2690,7 @@ function formatTranscription(lesson, q) {
     let paragraphStartLink = null;
     let blockIdx = 0;
     let activeBlockExplanation = null;
+    let activeBlockIdx = -1;
     
     lesson.segments.forEach((seg, idx) => {
         const sec = seg.sec || 0;
@@ -2697,7 +2698,7 @@ function formatTranscription(lesson, q) {
         let matchedBlockIdx = -1;
         
         while (blockIdx < blocks.length && sec >= (blocks[blockIdx].start_seconds || 0)) {
-            if (sec - (blocks[blockIdx].start_seconds || 0) < 15) { // Match inside 15 seconds window
+            if (sec - (blocks[blockIdx].start_seconds || 0) < 15) {
                 startedBlock = blocks[blockIdx];
                 matchedBlockIdx = blockIdx;
             }
@@ -2718,6 +2719,11 @@ function formatTranscription(lesson, q) {
                     </div>
                     <div class="explanation-content">${formatProse(activeBlockExplanation, q)}</div>
                 </div>`;
+                
+                if (activeBlockIdx !== -1) {
+                    transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+                }
+                
                 activeBlockExplanation = null;
             }
             // Add chapter title with unique ID for scrolling
@@ -2727,6 +2733,7 @@ function formatTranscription(lesson, q) {
                 <h3 style="margin: 0; font-size: 16.5px; font-weight: 800; color: #0f172a; font-family: 'Tajawal', sans-serif;">${startedBlock.title}</h3>
             </div>`;
             activeBlockExplanation = startedBlock.explanation || null;
+            activeBlockIdx = matchedBlockIdx;
             paragraphStartTs = seg.ts;
             paragraphStartLink = seg.video_link;
         }
@@ -2767,50 +2774,10 @@ function formatTranscription(lesson, q) {
             </div>
             <div class="explanation-content">${formatProse(activeBlockExplanation, q)}</div>
         </div>`;
-    }
-    
-    // Render Flash Question at the end of transcription if quiz is available
-    if (lesson.quiz && lesson.quiz.length > 0) {
-        const qObj = lesson.quiz[0];
-        const quizKey = `flash_q_${lesson.subject}_${lesson.lessonNum}`;
-        const answeredVal = localStorage.getItem(quizKey);
         
-        let cardClass = '';
-        let feedbackHtml = '';
-        if (answeredVal !== null) {
-            const isCorrect = parseInt(answeredVal) === qObj.correct;
-            cardClass = isCorrect ? 'correct' : 'incorrect';
-            feedbackHtml = `
-            <div class="flash-q-explanation">
-                <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
-                <p>${qObj.explanation || ''}</p>
-            </div>`;
+        if (activeBlockIdx !== -1) {
+            transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
         }
-        
-        const optionsHtml = qObj.options.map((opt, oIdx) => {
-            let optClass = '';
-            let disabledAttr = '';
-            if (answeredVal !== null) {
-                disabledAttr = 'disabled';
-                const sVal = parseInt(answeredVal);
-                if (oIdx === qObj.correct) {
-                    optClass = (sVal === qObj.correct) ? 'selected-correct' : 'should-have-selected';
-                } else if (oIdx === sVal) {
-                    optClass = 'selected-incorrect';
-                }
-            }
-            return `<button class="flash-q-option ${optClass}" ${disabledAttr} onclick="submitFlashAnswer(this, '${lesson.subject}', ${lesson.lessonNum}, ${oIdx})">${opt}</button>`;
-        }).join('');
-
-        transcriptHtml += `
-        <div class="flash-q-card ${cardClass}" id="flash-q-card-el" style="margin-top: 30px;">
-            <div class="flash-q-title">
-                <span>🧩 سؤال سريع: هل انتبهت جيداً؟</span>
-            </div>
-            <div class="flash-q-text">${qObj.question}</div>
-            <div class="flash-q-options">${optionsHtml}</div>
-            <div id="flash-q-feedback">${feedbackHtml}</div>
-        </div>`;
     }
     
     transcriptHtml += '</div>';
@@ -3140,11 +3107,56 @@ function goToSavedPassage(subject, lessonNum, ts) {
     }, 450);
 }
 
-function submitFlashAnswer(btn, subject, lessonNum, selectedIdx) {
+function renderChapterFlashQuestion(lesson, cIdx) {
+    if (!lesson.quiz || !lesson.quiz[cIdx]) return '';
+    
+    const qObj = lesson.quiz[cIdx];
+    const quizKey = `flash_q_${lesson.subject}_${lesson.lessonNum}_ch_${cIdx}`;
+    const answeredVal = localStorage.getItem(quizKey);
+    
+    let cardClass = '';
+    let feedbackHtml = '';
+    if (answeredVal !== null) {
+        const isCorrect = parseInt(answeredVal) === qObj.correct;
+        cardClass = isCorrect ? 'correct' : 'incorrect';
+        feedbackHtml = `
+        <div class="flash-q-explanation">
+            <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
+            <p>${qObj.explanation || ''}</p>
+        </div>`;
+    }
+    
+    const optionsHtml = qObj.options.map((opt, oIdx) => {
+        let optClass = '';
+        let disabledAttr = '';
+        if (answeredVal !== null) {
+            disabledAttr = 'disabled';
+            const sVal = parseInt(answeredVal);
+            if (oIdx === qObj.correct) {
+                optClass = (sVal === qObj.correct) ? 'selected-correct' : 'should-have-selected';
+            } else if (oIdx === sVal) {
+                optClass = 'selected-incorrect';
+            }
+        }
+        return `<button class="flash-q-option ${optClass}" ${disabledAttr} onclick="submitFlashAnswer(this, '${lesson.subject}', ${lesson.lessonNum}, ${cIdx}, ${oIdx})">${opt}</button>`;
+    }).join('');
+
+    return `
+    <div class="flash-q-card ${cardClass}" id="flash-q-card-el-${cIdx}" style="margin-top: 16px; margin-bottom: 24px;">
+        <div class="flash-q-title">
+            <span>🧩 سؤال المحور: هل انتبهت جيداً؟</span>
+        </div>
+        <div class="flash-q-text">${qObj.question}</div>
+        <div class="flash-q-options">${optionsHtml}</div>
+        <div id="flash-q-feedback-${cIdx}">${feedbackHtml}</div>
+    </div>`;
+}
+
+function submitFlashAnswer(btn, subject, lessonNum, chIdx, selectedIdx) {
     const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
-    if (!lesson || !lesson.quiz || !lesson.quiz.length) return;
-    const qObj = lesson.quiz[0];
-    const key = `flash_q_${subject}_${lessonNum}`;
+    if (!lesson || !lesson.quiz || !lesson.quiz[chIdx]) return;
+    const qObj = lesson.quiz[chIdx];
+    const key = `flash_q_${subject}_${lessonNum}_ch_${chIdx}`;
     localStorage.setItem(key, selectedIdx);
     
     const isCorrect = selectedIdx === qObj.correct;
@@ -3155,10 +3167,10 @@ function submitFlashAnswer(btn, subject, lessonNum, selectedIdx) {
         renderProfile();
         showToast("🎉 إجابة صحيحة! +10 XP");
     } else {
-        showToast("❌ إجابة خاطئة، حاول مرة أخرى في الدرس القادم");
+        showToast("❌ إجابة خاطئة، حاول في المحور القادم");
     }
     
-    const card = document.getElementById('flash-q-card-el');
+    const card = document.getElementById(`flash-q-card-el-${chIdx}`);
     if (card) {
         card.className = `flash-q-card ${isCorrect ? 'correct' : 'incorrect'}`;
     }
@@ -3173,7 +3185,7 @@ function submitFlashAnswer(btn, subject, lessonNum, selectedIdx) {
         }
     });
     
-    const feedbackBox = document.getElementById('flash-q-feedback');
+    const feedbackBox = document.getElementById(`flash-q-feedback-${chIdx}`);
     if (feedbackBox) {
         feedbackBox.innerHTML = `
         <div class="flash-q-explanation">
