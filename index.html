@@ -1185,10 +1185,10 @@
         }
         
         .toc-item-card:hover {
-            border-color: var(--primary) !important;
-            background: var(--primary-light) !important;
-            transform: translateY(-3px);
+            border-color: var(--subj-color, var(--primary)) !important;
+            transform: translateX(-4px);
             box-shadow: var(--shadow-md) !important;
+            background: var(--subj-color-light, var(--primary-light)) !important;
         }
         
         /* Glossary term styling */
@@ -1985,7 +1985,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=15').then(r => {
+    fetch('transcripts.json?v=16').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -2570,6 +2570,22 @@ function switchMTab(key,btn){
     updateReaderProgressTracker();
 }
 
+function toggleExpl(idx, btn, event) {
+    if (event) event.stopPropagation();
+    const details = document.getElementById(`expl-details-${idx}`);
+    const chevron = btn.querySelector('.chevron');
+    const label = btn.querySelector('.label-text');
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        if (label) label.textContent = 'إخفاء التفاصيل';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        details.style.display = 'none';
+        if (label) label.textContent = 'عرض التفاصيل';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
 function adjustFontSize(offset) {
     readerFontSize = Math.max(12, Math.min(24, readerFontSize + offset));
     document.getElementById('modal-body').style.setProperty('--reader-font-size', readerFontSize + 'px');
@@ -2589,29 +2605,44 @@ function renderMBody(tab){
     } else if(tab==='blocks'){
         if(!l.thematic_blocks.length){body.innerHTML='<div class="empty-state"><p>لا توجد محاور مفصّلة لهذا الدرس بعد</p></div>';return;}
         body.innerHTML = `
-        <div style="direction: rtl; text-align: right;">
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-2); margin-bottom: 18px; display: flex; align-items: center; gap: 6px;">📋 محاور الدرس الرئيسية (اضغط للمتابعة والتفاصيل)</div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+        <div class="subj-${l.subject}" style="direction: rtl; text-align: right; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-2); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">📋 محاور الدرس الرئيسية (اضغط للانتقال للتفريغ)</div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
                 ${l.thematic_blocks.map((b, idx) => {
-                    const cleanExplanation = b.explanation ? trunc(b.explanation, 140) : '';
+                    const cleanExplanation = b.explanation ? b.explanation.trim() : '';
                     return `
-                    <div class="toc-item-card" onclick="switchMTab('trans', document.querySelector('.modal-tab[data-tab=trans]')); setTimeout(() => scrollToChapter(${idx}), 150);" style="background: #ffffff; border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; min-height: 120px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <span style="font-size: 10px; font-weight: 800; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 6px; border: 1.1px solid var(--primary-border);">${b.timestamp}</span>
-                            <span style="font-size: 10.5px; font-weight: 800; color: var(--primary); background: var(--bg); padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border);">المحور ${idx + 1}</span>
+                    <div class="toc-item-card" style="background: #ffffff; border: 1.5px solid var(--border); border-right: 5px solid var(--subj-color, var(--primary)); border-radius: 14px; overflow: hidden; transition: all 0.2s ease-in-out; box-shadow: var(--shadow-sm);">
+                        <!-- Header Row: Clickable to go to transcript -->
+                        <div onclick="switchMTab('trans', document.querySelector('.modal-tab[data-tab=trans]')); setTimeout(() => scrollToChapter(${idx}), 150);" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                <span style="font-size: 10.5px; font-weight: 800; background: var(--subj-color-light, var(--primary-light)); color: var(--subj-color, var(--primary)); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">المحور ${idx + 1}</span>
+                                <strong style="font-size: 14.5px; color: var(--text-1); font-weight: 800; line-height: 1.45;">${b.title}</strong>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 10.5px; font-weight: 800; background: var(--bg); color: var(--text-3); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); white-space: nowrap;">⏱️ ${b.timestamp}</span>
+                                <span style="color: var(--subj-color, var(--primary)); font-weight: 900; font-size: 16px; transition: transform 0.2s;">←</span>
+                            </div>
                         </div>
                         
-                        <strong style="font-size: 14px; color: var(--text-1); font-weight: 800; line-height: 1.45; margin-top: 2px;">${b.title}</strong>
-                        
+                        <!-- Toggleable Explanation Section -->
                         ${cleanExplanation ? `
-                        <p style="font-size: 12px; color: var(--text-3); line-height: 1.55; margin: 0; padding-top: 8px; border-top: 1px dashed var(--border); text-align: justify;">
-                            💡 ${cleanExplanation}
-                        </p>` : ''}
-                        
-                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: auto; padding-top: 6px; font-size: 11.5px; color: var(--primary); font-weight: 800; gap: 4px;">
-                            <span>قراءة التفريغ الكامل</span>
-                            <span>←</span>
+                        <div style="border-top: 1px dashed var(--border); background: #fafafa; padding: 10px 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px;">
+                                    <span>💡</span>
+                                    <span style="font-weight: 700;">ملخص سلوكي وتربوي للمحور</span>
+                                </div>
+                                <button onclick="toggleExpl(${idx}, this, event)" style="background: var(--subj-color-light, var(--primary-light)); border: 1.1px solid rgba(0,0,0,0.03); color: var(--subj-color, var(--primary)); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;">
+                                    <span class="label-text">عرض التفاصيل</span>
+                                    <span class="chevron" style="transition: transform 0.2s; font-size: 8px; display: inline-block;">▼</span>
+                                </button>
+                            </div>
+                            <div id="expl-details-${idx}" style="display: none; margin-top: 8px; font-size: 13px; color: var(--text-2); line-height: 1.6; text-align: justify; border-top: 1px dashed var(--border); padding-top: 8px;">
+                                ${formatProse(cleanExplanation, q)}
+                            </div>
                         </div>
+                        ` : ''}
                     </div>
                     `;
                 }).join('')}
