@@ -421,6 +421,22 @@
             margin-top: auto;
             padding: 16px 0;
         }
+        .quran-verse {
+            font-family: 'Amiri', serif !important;
+            color: #047857 !important; /* Emerald green */
+            background: #f0fdf4 !important;
+            border-bottom: 1.5px dashed #34d399 !important;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline;
+        }
+        .quran-verse:hover {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+        }
     </style>
 </head>
 <body>
@@ -527,17 +543,76 @@
         return classes[subject] || "badge-fiqh";
     }
 
-    // Load transcripts.json file
-    fetch('transcripts.json')
-        .then(response => response.json())
-        .then(data => {
-            realDatabase = data;
-            generateWordSuggestions();
-            console.log("Loaded " + realDatabase.length + " lessons successfully.");
-        })
-        .catch(err => {
-            console.error("Failed to load transcripts.json:", err);
+    // Load transcripts.json and quran_db.json files
+    let QURAN_VERSES_DB = {};
+
+    Promise.all([
+        fetch('transcripts.json?v=11').then(response => response.text()),
+        fetch('quran_db.json?v=1').then(response => response.json()).catch(() => ({}))
+    ])
+    .then(([text, quranDb]) => {
+        const cleaned = text.replace(/صلى الله عليه (?:وعلى آله(?: وصحبه)?)? وسلم|عليه الصلاة والسلام/g, 'ﷺ');
+        realDatabase = JSON.parse(cleaned);
+        QURAN_VERSES_DB = quranDb;
+        generateWordSuggestions();
+        console.log("Loaded " + realDatabase.length + " lessons successfully.");
+    });
+
+    function normalizeArabic(text) {
+        if (!text) return '';
+        return text
+            .replace(/[\u0617-\u061A\u064B-\u0652\u0670]/g, '')
+            .replace(/[أإآ]/g, 'ا')
+            .replace(/ة/g, 'ه')
+            .replace(/ى/g, 'ي')
+            .replace(/[^\u0600-\u06FFa-zA-Z0-9\s]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function showQuranPopup(event, verseText) {
+        if (event) event.stopPropagation();
+        
+        const normalized = normalizeArabic(verseText);
+        let match = null;
+        
+        for (const key in QURAN_VERSES_DB) {
+            const normKey = normalizeArabic(key);
+            if (normKey.includes(normalized) || normalized.includes(normKey)) {
+                match = QURAN_VERSES_DB[key];
+                break;
+            }
+        }
+        
+        const termEl = document.getElementById('glossary-popup-term');
+        const defEl = document.getElementById('glossary-popup-def');
+        const popup = document.getElementById('glossary-popup');
+        
+        if (match) {
+            termEl.innerHTML = `📖 آية كريمة من <span style="color:#047857">${match.surah_name}</span> (الآية ${match.ayah_number})`;
+            defEl.innerHTML = `<span style="font-family:'Amiri', serif; font-size: 15px; color:#047857; display:block; margin-bottom:8px; line-height: 1.8;">﴿ ${verseText} ﴾</span>
+                                <span style="font-size: 11px; color:var(--text-muted);">رقم السورة: ${match.surah_number} | رقم الآية: ${match.ayah_number}</span>`;
+        } else {
+            termEl.textContent = `📖 آية كريمة`;
+            defEl.innerHTML = `<span style="font-family:'Amiri', serif; font-size: 15px; color:#047857; display:block; margin-bottom:8px; line-height: 1.8;">﴿ ${verseText} ﴾</span>
+                                <span style="font-size: 11px; color:var(--text-muted);">تفسير ميسر متوفر في كتب التفسير المعتمدة.</span>`;
+        }
+        
+        popup.style.borderRightColor = '#10b981';
+        popup.style.display = 'block';
+        
+        if (tg) {
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+        }
+    }
+
+    function formatQuranVerses(text) {
+        if (!text) return '';
+        return text.replace(/\{([^{}]+)\}/g, (match, verse) => {
+            const cleanVerse = verse.trim();
+            return `<span class="quran-verse" onclick="showQuranPopup(event, ${JSON.stringify(cleanVerse)})">﴿${cleanVerse}﴾</span>`;
         });
+    }
 
     // Extract dynamic keywords and terms for suggestions from full texts
     function generateWordSuggestions() {
@@ -717,8 +792,8 @@
                         <span class="result-subject ${badge}">${item.subjectLabel}</span>
                         <span class="result-lesson">${item.lesson}</span>
                     </div>
-                    <div class="result-title">${highlightText(item.title, matchedWord)}</div>
-                    <div class="result-snippet">${highlightText(snippet, matchedWord)}</div>
+                    <div class="result-title">${formatQuranVerses(highlightText(item.title, matchedWord))}</div>
+                    <div class="result-snippet">${formatQuranVerses(highlightText(snippet, matchedWord))}</div>
                     <button class="read-btn" onclick="openLesson('${item.subject}', ${item.lessonNum}, event)">📖 اقرأ الدرس كاملاً</button>
                 `;
                 card.addEventListener('click', function(e) {
@@ -793,7 +868,7 @@
 
         summarySection.innerHTML = `
             <h2>📖 ملخص ومحاور الدرس الشاملة</h2>
-            <div class="summary-text">${highlightedSummary}</div>
+            <div class="summary-text">${formatQuranVerses(highlightedSummary)}</div>
         `;
         modalBody.appendChild(summarySection);
 
@@ -821,7 +896,7 @@
 
             row.innerHTML = `
                 <span class="transcript-time" onclick="playTime('${seg.ts}')">⏱️ ${seg.ts}</span>
-                <span>${highlightedSeg}</span>
+                <span>${formatQuranVerses(highlightedSeg)}</span>
             `;
             collContent.appendChild(row);
         });
@@ -866,6 +941,24 @@
             modal.style.display = "none";
         }
     });
+
+    function closeGlossaryPopup() {
+        document.getElementById('glossary-popup').style.display = 'none';
+    }
+
+    document.addEventListener('click', () => {
+        closeGlossaryPopup();
+    });
 </script>
+
+<!-- GLOSSARY POPUP TOAST -->
+<div id="glossary-popup" style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--card-bg); border: 2.5px solid var(--card-border); border-right: 4px solid #10b981; border-radius: 16px; padding: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); display: none; z-index: 10005; direction: rtl;" onclick="event.stopPropagation()">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <strong id="glossary-popup-term" style="font-size: 14px; color: var(--primary-color); font-weight: 800;">اسم الآية</strong>
+        <button onclick="closeGlossaryPopup()" style="background: none; border: none; font-size: 16px; color: var(--text-muted); cursor: pointer; padding: 2px;">✕</button>
+    </div>
+    <div id="glossary-popup-def" style="font-size: 12.5px; color: var(--text-muted); line-height: 1.6; text-align: right;">التعريف...</div>
+</div>
+
 </body>
 </html>
