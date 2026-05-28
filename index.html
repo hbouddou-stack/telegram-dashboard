@@ -1187,7 +1187,8 @@
         .toc-item-card:hover {
             border-color: var(--primary) !important;
             background: var(--primary-light) !important;
-            transform: translateX(-4px);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md) !important;
         }
         
         /* Glossary term styling */
@@ -1984,7 +1985,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=14').then(r => {
+    fetch('transcripts.json?v=15').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -2589,17 +2590,31 @@ function renderMBody(tab){
         if(!l.thematic_blocks.length){body.innerHTML='<div class="empty-state"><p>لا توجد محاور مفصّلة لهذا الدرس بعد</p></div>';return;}
         body.innerHTML = `
         <div style="direction: rtl; text-align: right;">
-            <div style="font-size: 13px; font-weight: 800; color: var(--text-2); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;">📋 فهرس موضوعات الدرس (اضغط للانتقال للتفريغ)</div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${l.thematic_blocks.map((b, idx) => `
-                <div class="toc-item-card" onclick="switchMTab('trans', document.querySelector('.modal-tab[data-tab=trans]')); setTimeout(() => scrollToChapter(${idx}), 150);" style="background: var(--bg); border: 1.1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 10px; font-weight: 800; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--primary-border);">${b.timestamp}</span>
-                        <strong style="font-size: 13.5px; color: var(--text-1); font-weight: 700;">${b.title}</strong>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-2); margin-bottom: 18px; display: flex; align-items: center; gap: 6px;">📋 محاور الدرس الرئيسية (اضغط للمتابعة والتفاصيل)</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+                ${l.thematic_blocks.map((b, idx) => {
+                    const cleanExplanation = b.explanation ? trunc(b.explanation, 140) : '';
+                    return `
+                    <div class="toc-item-card" onclick="switchMTab('trans', document.querySelector('.modal-tab[data-tab=trans]')); setTimeout(() => scrollToChapter(${idx}), 150);" style="background: #ffffff; border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; min-height: 120px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span style="font-size: 10px; font-weight: 800; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 6px; border: 1.1px solid var(--primary-border);">${b.timestamp}</span>
+                            <span style="font-size: 10.5px; font-weight: 800; color: var(--primary); background: var(--bg); padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border);">المحور ${idx + 1}</span>
+                        </div>
+                        
+                        <strong style="font-size: 14px; color: var(--text-1); font-weight: 800; line-height: 1.45; margin-top: 2px;">${b.title}</strong>
+                        
+                        ${cleanExplanation ? `
+                        <p style="font-size: 12px; color: var(--text-3); line-height: 1.55; margin: 0; padding-top: 8px; border-top: 1px dashed var(--border); text-align: justify;">
+                            💡 ${cleanExplanation}
+                        </p>` : ''}
+                        
+                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: auto; padding-top: 6px; font-size: 11.5px; color: var(--primary); font-weight: 800; gap: 4px;">
+                            <span>قراءة التفريغ الكامل</span>
+                            <span>←</span>
+                        </div>
                     </div>
-                    <span style="color: var(--primary); font-weight: 900; font-size: 16px;">←</span>
-                </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         </div>`;
     } else if(tab==='fiche'){
