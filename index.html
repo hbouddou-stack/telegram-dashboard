@@ -2370,10 +2370,12 @@
 // ── Global Error Handling for Debugging ──
 window.onerror = function(msg, url, line, col, error) {
     console.error("Global JS Error: ", msg, " at ", url, ":", line, ":", col);
+    alert("⚠️ خطأ في تشغيل التطبيق (JS Error):\n" + msg + "\n\nالسطر: " + line + "\nالملف: " + url.split('/').pop());
     return false;
 };
 window.onunhandledrejection = function(event) {
     console.error("Global Promise Rejection: ", event.reason);
+    alert("⚠️ خطأ غير متوقع (Promise Rejection):\n" + event.reason);
 };
 
 // ── Telegram ──
@@ -2405,11 +2407,11 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=22').then(r => {
+    fetch('https://hbouddou-stack.github.io/telegram-dashboard/transcripts.json?v=22').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
-    fetch('quran_db.json?v=1').then(r => {
+    fetch('https://hbouddou-stack.github.io/telegram-dashboard/quran_db.json?v=1').then(r => {
         if (!r.ok) return {};
         return r.json();
     }).catch(() => ({}))
