@@ -2390,6 +2390,14 @@ let isAdminMode = localStorage.getItem('academy_admin_mode') === 'true';
 let currentEditingChapter = null;
 let currentReportingChapter = null;
 
+// ── Subject Metadata (MUST be declared before any render functions) ──
+const SUBJECT_METADATA = {
+    'sira': { title: 'السيرة النبوية', icon: '🕌', cls: 'subj-sira', color: 'var(--sira)' },
+    'fiqh': { title: 'الفقه الإسلامي', icon: '⚖️', cls: 'subj-fiqh', color: 'var(--fiqh)' },
+    'aqeeda': { title: 'العقيدة والتوحيد', icon: '🛡️', cls: 'subj-aqeeda', color: 'var(--aqeeda)' },
+    'nahw': { title: 'النحو واللغة', icon: '📝', cls: 'subj-nahw', color: 'var(--nahw)' }
+};
+
 const TRANSLIT = {
     "hajj":["حج","الحج","حجة","حجة الوداع"],"hadj":["حج","الحج"],
     "salat":["صلاة","الصلاة"],"salah":["صلاة","الصلاة"],
@@ -4563,12 +4571,7 @@ function updateReaderProgressTracker() {
 // ── SYLLABUS CONTROLLER ──
 let syllabusNotes = {}, syllabusFavorites = {}, syllabusCompletion = {}, activeNoteKey = null, selectedSyllabusSubject = null;
 
-const SUBJECT_METADATA = {
-    'sira': { title: 'السيرة النبوية', icon: '🕌', cls: 'subj-sira' },
-    'fiqh': { title: 'الفقه الإسلامي', icon: '⚖️', cls: 'subj-fiqh' },
-    'aqeeda': { title: 'العقيدة والتوحيد', icon: '🛡️', cls: 'subj-aqeeda' },
-    'nahw': { title: 'النحو واللغة', icon: '📝', cls: 'subj-nahw' }
-};
+// SUBJECT_METADATA moved to global state area (line ~2392) to prevent TDZ ReferenceError
 
 function getSubjectStats(subject) {
     const lessons = DB.filter(l => l.subject === subject);
