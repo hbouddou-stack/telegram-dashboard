@@ -1728,9 +1728,9 @@
         }
         /* Admin Dashboard & Editor Styles */
         .admin-badge {
-            background: #fef3c7;
+            background: rgba(217, 119, 6, 0.08);
             color: #d97706;
-            border: 1px solid #fde68a;
+            border: 1px solid rgba(217, 119, 6, 0.15);
             font-size: 11px;
             font-weight: 800;
             padding: 3px 8px;
@@ -1741,11 +1741,133 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #fffbeb;
-            border: 1.2px dashed #fde68a;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        /* Admin Sliding Tabs */
+        .admin-sliding-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
             border-radius: 12px;
-            padding: 10px 14px;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .admin-tab-pill {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-2);
+            cursor: pointer;
+            border-radius: 9px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .admin-tab-pill.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        }
+        /* Admin card styling */
+        .admin-inbox-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.015);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .admin-inbox-card:active {
+            transform: scale(0.99);
+        }
+        .student-avatar-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 11px;
+            color: #ffffff;
+            background: var(--primary);
+            flex-shrink: 0;
+        }
+        .inbox-pill-path {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-2);
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .inbox-quiz-preview {
+            background: #f8fafc;
+            border: 1.2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .inbox-quiz-option {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .inbox-quiz-option.correct {
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+            color: #15803d;
+        }
+        .inbox-btn-action {
+            padding: 8px 12px;
+            font-size: 11.5px;
+            font-weight: 800;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+        .inbox-btn-action.approve {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #16a34a;
+        }
+        .inbox-btn-action.reject {
+            background: #fef2f2;
+            border-color: #fee2e2;
+            color: #ef4444;
+        }
+        .inbox-btn-action.edit {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #b45309;
         }
         .admin-editor-overlay {
             position: fixed;
@@ -2058,26 +2180,32 @@
             <button class="chip" onclick="toggleAdminMode()" id="admin-mode-status" style="margin:0; background:#fde68a; color:#b45309; border:none; padding:4px 10px; font-weight:800; cursor:pointer;">غير نشط 🎓</button>
         </div>
         <!-- Admin Dashboard Panel -->
-        <div id="admin-dashboard-panel" style="display:none; margin: 15px 0 25px 0; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 18px; padding: 16px; direction: rtl; text-align: right; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.2px dashed #fde68a; padding-bottom: 8px; margin-bottom: 12px;">
-                <div style="font-weight: 800; color: #b45309; font-size: 14px; display: flex; align-items: center; gap: 6px;">
-                    <span>⚙️ لوحة تحكم الإدارة</span>
+        <div id="admin-dashboard-panel" style="display:none; margin: 18px 0 24px 0; background: #ffffff; border: 1px solid var(--border); border-radius: 20px; padding: 18px; direction: rtl; text-align: right; box-shadow: 0 10px 25px rgba(0,0,0,0.025);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div style="font-weight: 800; color: var(--text-1); font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                    <span>⚙️ لوحة تحكم إدارة الأكاديمية</span>
                 </div>
-                <button onclick="refreshAdminDashboard()" style="background: none; border: none; font-size: 12px; color: #b45309; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">🔄 تحديث الكل</button>
+                <button onclick="refreshAdminDashboard()" style="background: none; border: none; font-size: 12.5px; color: var(--primary); font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 8px; transition: background 0.15s;">
+                    🔄 تحديث الكل
+                </button>
             </div>
             
-            <!-- Admin Dashboard Tabs -->
-            <div style="display: flex; gap: 6px; margin-bottom: 12px; background: rgba(180, 83, 9, 0.06); padding: 4px; border-radius: 10px;">
-                <button id="btn-admin-tab-reports" onclick="switchAdminTab('reports')" style="flex: 1; padding: 6px 8px; border: none; border-radius: 8px; font-family: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; transition: all 0.15s; background: #b45309; color: #ffffff;">⚠️ بلاغات الأخطاء (<span id="admin-reports-count">0</span>)</button>
-                <button id="btn-admin-tab-proposals" onclick="switchAdminTab('proposals')" style="flex: 1; padding: 6px 8px; border: none; border-radius: 8px; font-family: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; transition: all 0.15s; background: transparent; color: #b45309;">💡 اقتراحات الطلاب (<span id="admin-proposals-count">0</span>)</button>
+            <!-- Sliding Admin Tabs -->
+            <div class="admin-sliding-tabs">
+                <button id="btn-admin-tab-reports" class="admin-tab-pill active" onclick="switchAdminTab('reports')">
+                    ⚠️ بلاغات الأخطاء (<span id="admin-reports-count">0</span>)
+                </button>
+                <button id="btn-admin-tab-proposals" class="admin-tab-pill" onclick="switchAdminTab('proposals')">
+                    💡 اقتراحات الطلاب (<span id="admin-proposals-count">0</span>)
+                </button>
             </div>
             
             <!-- List Containers -->
-            <div id="admin-reports-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-left: 4px;">
-                <div style="text-align: center; color: #b45309; font-size: 12px; padding: 12px 0;">جاري تحميل البلاغات...</div>
+            <div id="admin-reports-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding: 2px;">
+                <div style="text-align: center; color: var(--text-3); font-size: 12px; padding: 16px 0;">جاري تحميل البلاغات...</div>
             </div>
-            <div id="admin-proposals-list" style="display: none; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-left: 4px;">
-                <div style="text-align: center; color: #b45309; font-size: 12px; padding: 12px 0;">جاري تحميل الاقتراحات...</div>
+            <div id="admin-proposals-list" style="display: none; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding: 2px;">
+                <div style="text-align: center; color: var(--text-3); font-size: 12px; padding: 16px 0;">جاري تحميل الاقتراحات...</div>
             </div>
         </div>
         <div class="profile-avatar">🎓</div>
@@ -2277,7 +2405,7 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('transcripts.json?v=21').then(r => {
+    fetch('transcripts.json?v=22').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.text();
     }),
@@ -5925,6 +6053,7 @@ function openReportedChapter(subject, lessonNum, chapterIdx) {
 }
 
 // ── Admin Dashboard Refreshes & Proposals Logic ──
+let adminReportsCache = [];
 let adminActiveTab = 'reports';
 
 function refreshAdminDashboard() {
@@ -5940,28 +6069,103 @@ function switchAdminTab(tab) {
     const listProposals = document.getElementById('admin-proposals-list');
     
     if (tab === 'reports') {
-        if (btnReports) {
-            btnReports.style.background = '#b45309';
-            btnReports.style.color = '#ffffff';
-        }
-        if (btnProposals) {
-            btnProposals.style.background = 'transparent';
-            btnProposals.style.color = '#b45309';
-        }
+        if (btnReports) btnReports.classList.add('active');
+        if (btnProposals) btnProposals.classList.remove('active');
         if (listReports) listReports.style.display = 'flex';
         if (listProposals) listProposals.style.display = 'none';
     } else {
-        if (btnReports) {
-            btnReports.style.background = 'transparent';
-            btnReports.style.color = '#b45309';
-        }
-        if (btnProposals) {
-            btnProposals.style.background = '#b45309';
-            btnProposals.style.color = '#ffffff';
-        }
+        if (btnReports) btnReports.classList.remove('active');
+        if (btnProposals) btnProposals.classList.add('active');
         if (listReports) listReports.style.display = 'none';
         if (listProposals) listProposals.style.display = 'flex';
     }
+}
+
+function loadAdminReports() {
+    const listEl = document.getElementById('admin-reports-list');
+    const countEl = document.getElementById('admin-reports-count');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 24px 0;">جاري تحميل البلاغات... 🔄</div>';
+    
+    fetch('/admin/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.reports || res.reports.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 32px 0; font-weight: 800;">🎉 لا توجد بلاغات نشطة حالياً!</div>';
+            if (countEl) countEl.textContent = '0';
+            adminReportsCache = [];
+            return;
+        }
+        
+        adminReportsCache = res.reports;
+        if (countEl) countEl.textContent = res.reports.length;
+        
+        listEl.innerHTML = res.reports.map((rep, idx) => {
+            const dateStr = new Date(rep.timestamp || Date.now()).toLocaleDateString('ar-FR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const subMeta = SUBJECT_METADATA[rep.subject] || { title: rep.subject, icon: '📚', color: 'var(--primary)' };
+            const lesson = DB.find(l => l.subject === rep.subject && l.lessonNum === rep.lessonNum);
+            const chapterTitle = lesson?.thematic_blocks?.[rep.chapterIdx]?.title || `المحور ${rep.chapterIdx + 1}`;
+            const studentInitial = (rep.firstName || 'ط').trim().substring(0, 1).toUpperCase();
+            
+            // Random soft background color for avatar
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            const avatarBg = colors[idx % colors.length];
+            
+            return `
+                <div class="admin-inbox-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="student-avatar-badge" style="background: ${avatarBg};">${studentInitial}</div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 12px; font-weight: 800; color: var(--text-1);">${rep.firstName || 'طالب الأكاديمية'}</span>
+                                <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">@${rep.username || 'unknown'}</span>
+                            </div>
+                        </div>
+                        <span style="font-size: 10.5px; color: var(--text-3); font-weight: 700;">${dateStr}</span>
+                    </div>
+                    
+                    <div style="display: flex;">
+                        <div class="inbox-pill-path">
+                            <span>${subMeta.icon}</span>
+                            <span style="color: ${subMeta.color || 'var(--primary)'};">${subMeta.title}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span>درس ${rep.lessonNum}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span style="color: var(--text-1);">${chapterTitle}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 13px; color: var(--text-1); line-height: 1.6; font-weight: 700; background: #f8fafc; border: 1.2px solid #e2e8f0; border-radius: 12px; padding: 12px; position: relative;">
+                        <span style="position: absolute; left: 8px; bottom: 4px; font-size: 24px; color: rgba(0,0,0,0.05); font-family: Georgia, serif; line-height: 1;">”</span>
+                        ${rep.report}
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;">
+                        <button class="inbox-btn-action edit" onclick="openReportedChapter('${rep.subject}', ${rep.lessonNum}, ${rep.chapterIdx})">
+                            ✏️ تعديل المحتوى
+                        </button>
+                        <button class="inbox-btn-action approve" onclick="resolveReport('${rep.id}')">
+                            ✓ تم الحل
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 24px 0;">⚠️ فشل تحميل البلاغات.</div>';
+    });
 }
 
 function loadAdminProposals() {
@@ -5969,7 +6173,7 @@ function loadAdminProposals() {
     const countEl = document.getElementById('admin-proposals-count');
     if (!listEl) return;
     
-    listEl.innerHTML = '<div style="text-align: center; color: #b45309; font-size: 12px; padding: 12px 0;">جاري تحميل الاقتراحات... 🔄</div>';
+    listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 24px 0;">جاري تحميل الاقتراحات... 🔄</div>';
     
     fetch('/admin/proposals', {
         method: 'POST',
@@ -5982,48 +6186,82 @@ function loadAdminProposals() {
     .then(r => r.json())
     .then(res => {
         if (!res.success || !res.proposals || res.proposals.length === 0) {
-            listEl.innerHTML = '<div style="text-align: center; color: #b45309; font-size: 12px; padding: 16px 0; font-weight: bold;">💡 لا توجد اقتراحات أسئلة معلقة حالياً!</div>';
+            listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 32px 0; font-weight: 800;">💡 لا توجد اقتراحات أسئلة معلقة حالياً!</div>';
             if (countEl) countEl.textContent = '0';
             return;
         }
         
         if (countEl) countEl.textContent = res.proposals.length;
         
-        listEl.innerHTML = res.proposals.map(prop => {
-            const subMeta = SUBJECT_METADATA[prop.subject] || { title: prop.subject, icon: '📚' };
+        listEl.innerHTML = res.proposals.map((prop, idx) => {
+            const subMeta = SUBJECT_METADATA[prop.subject] || { title: prop.subject, icon: '📚', color: 'var(--primary)' };
             const dateStr = new Date(prop.createdAt || Date.now()).toLocaleDateString('ar-FR', {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
+            const studentInitial = (prop.firstName || 'ط').trim().substring(0, 1).toUpperCase();
+            
+            // Random soft background color for avatar
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            const avatarBg = colors[idx % colors.length];
             
             return `
-                <div class="card" style="background: #ffffff; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="font-size: 11px; font-weight: 800; color: #d97706;">
-                            👤 ${prop.firstName || 'طالب'} (@${prop.username || 'unknown'})
-                        </span>
-                        <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">${dateStr}</span>
+                <div class="admin-inbox-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="student-avatar-badge" style="background: ${avatarBg};">${studentInitial}</div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 12px; font-weight: 800; color: var(--text-1);">${prop.firstName || 'طالب الأكاديمية'}</span>
+                                <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">@${prop.username || 'unknown'}</span>
+                            </div>
+                        </div>
+                        <span style="font-size: 10.5px; color: var(--text-3); font-weight: 700;">${dateStr}</span>
                     </div>
-                    <div style="font-size: 11.5px; color: var(--text-2); background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #f1f5f9; font-weight: 700;">
-                        📍 ${subMeta.icon} ${subMeta.title} ← ${prop.lesson} (${prop.topic})
+                    
+                    <div style="display: flex;">
+                        <div class="inbox-pill-path">
+                            <span>${subMeta.icon}</span>
+                            <span style="color: ${subMeta.color || 'var(--primary)'};">${subMeta.title}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span>${prop.lesson}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span style="color: var(--text-1);">${prop.topic}</span>
+                        </div>
                     </div>
-                    <div style="font-size: 13px; color: var(--text-1); font-weight: 800; line-height: 1.5; padding: 2px 4px;">
+                    
+                    <div style="font-size: 13.5px; color: var(--text-1); font-weight: 800; line-height: 1.5; padding: 2px 4px;">
                         ❓ السؤال المقترح: "${prop.question}"
                     </div>
-                    <div style="font-size: 12px; color: var(--text-2); display: flex; flex-direction: column; gap: 4px; padding-right: 8px; border-right: 2px solid #e2e8f0; margin: 4px 0;">
-                        <span>🟢 A. ${prop.choiceA} ${prop.correctAnswer === 'A' ? '✔️' : ''}</span>
-                        <span>🟢 B. ${prop.choiceB} ${prop.correctAnswer === 'B' ? '✔️' : ''}</span>
-                        <span>🟢 C. ${prop.choiceC} ${prop.correctAnswer === 'C' ? '✔️' : ''}</span>
-                        <span>🟢 D. ${prop.choiceD} ${prop.correctAnswer === 'D' ? '✔️' : ''}</span>
+                    
+                    <!-- Real quiz preview formatting -->
+                    <div class="inbox-quiz-preview">
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'A' ? 'correct' : ''}">
+                            <span>A. ${prop.choiceA}</span>
+                            ${prop.correctAnswer === 'A' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'B' ? 'correct' : ''}">
+                            <span>B. ${prop.choiceB}</span>
+                            ${prop.correctAnswer === 'B' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'C' ? 'correct' : ''}">
+                            <span>C. ${prop.choiceC}</span>
+                            ${prop.correctAnswer === 'C' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'D' ? 'correct' : ''}">
+                            <span>D. ${prop.choiceD}</span>
+                            ${prop.correctAnswer === 'D' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
                     </div>
-                    <div style="font-size: 11.5px; color: #16a34a; font-weight: 700; background: #f0fdf4; padding: 6px 8px; border-radius: 6px;">
-                        📖 التفسير: ${prop.explanation || 'لا يوجد'}
+                    
+                    <div style="font-size: 11.5px; color: #15803d; font-weight: 700; background: #f0fdf4; padding: 8px 12px; border-radius: 10px; border: 1px solid #bbf7d0; line-height: 1.5;">
+                        📖 <b>شرح وتفسير الإجابة:</b> ${prop.explanation || 'لا يوجد'}
                     </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; border-top: 1px dashed #f1f5f9; padding-top: 8px;">
-                        <button onclick="resolveProposal(${prop.id}, 'rejected')" style="background: #fef2f2; border: 1.2px solid #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 11px; border-radius: 8px; font-weight: 800; cursor: pointer;">
-                            ✕ رفض
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;">
+                        <button class="inbox-btn-action reject" onclick="resolveProposal(${prop.id}, 'rejected')">
+                            ✕ رفض المقترح
                         </button>
-                        <button onclick="resolveProposal(${prop.id}, 'approved')" style="background: #f0fdf4; border: 1.2px solid #bbf7d0; color: #16a34a; padding: 5px 10px; font-size: 11px; border-radius: 8px; font-weight: 800; cursor: pointer;">
-                            ✓ قبول
+                        <button class="inbox-btn-action approve" onclick="resolveProposal(${prop.id}, 'approved')">
+                            ✓ قبول واعتماد
                         </button>
                     </div>
                 </div>
@@ -6032,7 +6270,7 @@ function loadAdminProposals() {
     })
     .catch(err => {
         console.error(err);
-        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 12px 0;">⚠️ فشل تحميل الاقتراحات.</div>';
+        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 24px 0;">⚠️ فشل تحميل الاقتراحات.</div>';
     });
 }
 
@@ -6066,7 +6304,7 @@ function resolveProposal(proposalId, action) {
     })
     .catch(err => {
         console.error(err);
-        showToast("✓ تم إرسال القرار بنجاح.");
+        showToast("✓ تم حفظ القرار بنجاح.");
         loadAdminProposals();
     });
 }
