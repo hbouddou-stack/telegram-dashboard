@@ -4062,7 +4062,7 @@ function renderParagraphHtml(texts, ts, link, q, subject, lessonNum) {
     let text = texts.join(' ');
     
     // Regex matches 2-6 words before *** and 2-6 words after *** without punctuation
-    const poetryRegex = /([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})\s*\*\*\*\s*([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})/g;
+    const poetryRegex = /([^\s*]+(?:\s+[^\s*]+){1,5})\s*\*\*\*\s*([^\s*]+(?:\s+[^\s*]+){1,5})/g;
     
     let parts = [];
     let lastIndex = 0;

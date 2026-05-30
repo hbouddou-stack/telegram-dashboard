@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الدعم الفني والأسئلة - المنصة التعليمية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #e0f2fe;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-1: #0f172a;
+            --text-2: #334155;
+            --text-3: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-1);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-top: 2vh;
+            border: 1px solid var(--border);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: inline-block;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .form-content {
+            padding: 30px 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-2);
+            font-size: 14.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: var(--bg);
+            color: var(--text-1);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: var(--text-3);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 15px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #ef4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Support specific tags for mobile styling */
+        input[type="text"], input[type="tel"], input[type="email"], select, textarea {
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">💬</div>
+            <h1>طرح سؤال أو مشكلة</h1>
+            <p>سنجيبك في أقرب وقت ممكن عبر المنصة أو وسائل التواصل</p>
+        </div>
+
+        <div class="form-content">
+            <form id="support-form">
+                <div class="form-group">
+                    <label for="firstName">الاسم الكامل</label>
+                    <input type="text" id="firstName" class="form-control" placeholder="اكتب اسمك هنا" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactInfo">رقم الهاتف (واتساب) أو البريد الإلكتروني</label>
+                    <input type="text" id="contactInfo" class="form-control" placeholder="للتواصل معك" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reportType">نوع المراسلة</label>
+                    <select id="reportType" class="form-control" required>
+                        <option value="lesson_question">سؤال في الدرس (شرح، استفسار)</option>
+                        <option value="technical">مشكلة تقنية (في الموقع أو البوت)</option>
+                        <option value="suggestion">اقتراح أو ملاحظة</option>
+                        <option value="other">أمر آخر</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">رسالتك</label>
+                    <textarea id="notes" class="form-control" placeholder="اكتب تفاصيل سؤالك أو مشكلتك هنا بوضوح..." required></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" class="submit-btn">
+                    <span id="btn-text">إرسال الرسالة</span>
+                    <div id="btn-spinner" class="spinner"></div>
+                </button>
+            </form>
+
+            <div id="status-msg" class="status-message"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('support-form');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const statusMsg = document.getElementById('status-msg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const contactInfo = document.getElementById('contactInfo').value.trim();
+            const reportType = document.getElementById('reportType').value;
+            const notes = document.getElementById('notes').value.trim();
+
+            if (!firstName || !contactInfo || !notes) return;
+
+            // Update UI to loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'جاري الإرسال...';
+            btnSpinner.style.display = 'block';
+            statusMsg.style.display = 'none';
+            statusMsg.className = 'status-message';
+
+            // Point this to the Python backend API (update domain if needed for production)
+            const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                            ? '/api/tickets/external' 
+                            : 'https://hbouddou.pythonanywhere.com/api/tickets/external'; // Adjust domain later if needed
+
+            try {
+                // Determine origin source based on URL params (e.g., ?source=whatsapp)
+                const urlParams = new URLSearchParams(window.location.search);
+                const source = urlParams.get('source') || 'platform'; // defaults to platform
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        source: source,
+                        contactInfo: contactInfo,
+                        notes: notes,
+                        reportType: reportType,
+                        firstName: firstName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusMsg.textContent = '✅ تم إرسال رسالتك بنجاح! سيتم مراجعتها قريباً.';
+                    statusMsg.classList.add('status-success');
+                    statusMsg.style.display = 'block';
+                    form.reset();
+                } else {
+                    throw new Error(result.error || 'حدث خطأ أثناء الإرسال');
+                }
+
+            } catch (err) {
+                console.error("Erreur d'envoi:", err);
+                statusMsg.textContent = '❌ عذراً، حدث خطأ أثناء إرسال رسالتك. يرجى المحاولة لاحقاً.';
+                statusMsg.classList.add('status-error');
+                statusMsg.style.display = 'block';
+            } finally {
+                // Restore button state
+                submitBtn.disabled = false;
+                btnText.textContent = 'إرسال الرسالة';
+                btnSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
