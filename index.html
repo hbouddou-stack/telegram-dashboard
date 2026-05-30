@@ -2390,9 +2390,9 @@ Promise.all([
         syllabusNotes = {}; syllabusFavorites = {}; syllabusCompletion = {}; savedPassages = {}; academyErrors = {};
     }
 
-    // DIAG-3: buildIndex
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-3: buildIndex starting...';
-    buildIndex();
+    // DIAG-3: buildIndex (deferred to prevent UI freezing)
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-3: Deferring buildIndex...';
+    setTimeout(buildIndex, 50);
     document.getElementById('did-you-know').innerHTML = '✅ DIAG-4: renderHome starting...';
     renderHome();
     document.getElementById('did-you-know').innerHTML = '✅ DIAG-5: renderMyLibrary starting...';
