@@ -2360,11 +2360,11 @@ console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
 Promise.all([
-    fetch('https://hbouddou-stack.github.io/telegram-dashboard/transcripts.json?v=22').then(r => {
+    fetch('/transcripts.json?v=22').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
         return r.json();
     }),
-    fetch('https://hbouddou-stack.github.io/telegram-dashboard/quran_db.json?v=1').then(r => {
+    fetch('/quran_db.json?v=1').then(r => {
         if (!r.ok) return {};
         return r.json();
     }).catch(() => ({}))
@@ -2403,27 +2403,59 @@ Promise.all([
     renderProfile();
     document.getElementById('did-you-know').innerHTML = '✅ DIAG-8: renderSyllabusSubjects starting...';
     renderSyllabusSubjects();
+    
+    try {
+        loadStudentStatsFromDb();
+    } catch(e) {
+        console.error("Failed to load student stats from DB:", e);
+    }
+    
+    // Restore active tab from CloudStorage
+    try {
+        if (tg && tg.CloudStorage) {
+            tg.CloudStorage.getItem('active_tab', (err, value) => {
+                if (!err && value) {
+                    switchTab(value);
+                }
+            });
+        }
+    } catch(e) {}
+    
     document.getElementById('did-you-know').innerHTML = '✅ DIAG-DONE: All render functions completed!';
 })
     .catch(e => {
         console.error("Data load failed:", e);
         const errorHtml = `<div class="empty-state" style="border-color:#ef4444;color:#ef4444">
             <div class="empty-icon">⚠️</div>
-            <p>فشل تحميل البيانات. الرجاء التحقق من الاتصال بالإنترنت.</p>
+            <p>فشل تحميل البيانات. الرجاء التحقق من الاتصال بالإنترنت. (Erreur: ${e.message})</p>
             <button class="btn-sm btn-primary" style="margin-top:10px;background:#ef4444" onclick="location.reload()">إعادة المحاولة</button>
         </div>`;
-        document.getElementById('did-you-know').innerHTML = errorHtml;
-        document.getElementById('subject-grid').innerHTML = errorHtml;
-        document.getElementById('recent-cards').innerHTML = errorHtml;
+        const dyk = document.getElementById('did-you-know');
+        if (dyk) dyk.innerHTML = errorHtml;
+        const sg = document.getElementById('subject-grid');
+        if (sg) sg.innerHTML = errorHtml;
+        const rc = document.getElementById('recent-cards');
+        if (rc) rc.innerHTML = errorHtml;
     });
 
 function switchTab(name, btn) {
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('tab-'+name).classList.add('active');
-    btn.classList.add('active');
+    
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        const targetBtn = document.querySelector(`.nav-btn[onclick="switchTab('${name}',this)"]`);
+        if(targetBtn) targetBtn.classList.add('active');
+    }
+    
     if(name==='search') setTimeout(()=>document.getElementById('search-input').focus(),100);
     if(name==='mylibrary') renderMyLibrary();
+    
+    try {
+        if(tg && tg.CloudStorage) tg.CloudStorage.setItem('active_tab', name);
+    } catch(e) {}
 }
 
 // ── Word Index ──
@@ -2941,64 +2973,73 @@ function startCustomQuiz() {
         return;
     }
     
-    // 2. Gather all quiz questions matching filters
-    let pool = [];
-    DB.forEach(l => {
-        if (subjects.includes(l.subject) && l.quiz && l.quiz.length) {
-            l.quiz.forEach((q, idx) => {
-                pool.push({
-                    ...q,
-                    subject: l.subject,
-                    subjectLabel: l.subjectLabel,
-                    lessonNum: l.lessonNum,
-                    chapterIdx: idx
-                });
-            });
-        }
-    });
-    
-    // 3. Filter by errors if selected
     const focusErrors = document.getElementById('cq-type-errors').checked;
-    if (focusErrors) {
-        const errorKeys = Object.keys(academyErrors);
-        pool = pool.filter(q => {
-            const errKey = `err_${q.subject}_${q.lessonNum}_${q.chapterIdx}`;
-            return errorKeys.includes(errKey);
-        });
-        
-        if (pool.length === 0) {
-            alert('ليست لديك أخطاء مسجلة في المواد المحددة حالياً! تم تحويلك للاختبار العادي.');
-            document.getElementById('cq-type-all').checked = true;
-            startCustomQuiz();
-            return;
-        }
-    }
+    const source = focusErrors ? 'errors' : 'all';
     
-    if (pool.length === 0) {
-        alert('لا توجد أسئلة متوفرة للمواد المحددة حالياً.');
-        return;
-    }
+    // We will call the setup API
+    const userId = tg?.initDataUnsafe?.user?.id || 2045194295;
     
-    // Shuffle pool
-    pool.sort(() => Math.random() - 0.5);
-    
-    // Slice questions
-    const finalQuestions = pool.slice(0, selectedCqCountNum);
-    
-    // Initialize state
-    customQuizState = {
-        questions: finalQuestions,
-        currentIndex: 0,
-        score: 0,
-        answers: []
-    };
-    
-    // Hide setup, show play
     document.getElementById('custom-quiz-setup').style.display = 'none';
     const playArea = document.getElementById('custom-quiz-play');
     playArea.style.display = 'block';
+    playArea.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 13.5px; padding: 24px 0;">🔄 جاري تحميل الأسئلة من قاعدة البيانات...</div>';
     
-    renderCustomQuizQuestion();
+    fetch('/api/student/quiz/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId: userId,
+            subject: subjects.length === 1 ? subjects[0] : null,
+            source: source,
+            limit: selectedCqCountNum
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.questions || res.questions.length === 0) {
+            alert('لم يتم العثور على أسئلة تطابق الفلاتر المحددة حالياً.');
+            exitCustomQuiz();
+            return;
+        }
+        
+        // Map backend question fields to frontend schema
+        const mappedQuestions = res.questions.map(q => {
+            const options = [];
+            if (q.choice_a) options.push(q.choice_a);
+            if (q.choice_b) options.push(q.choice_b);
+            if (q.choice_c) options.push(q.choice_c);
+            if (q.choice_d) options.push(q.choice_d);
+            
+            const correctLetter = q.correct_choice || 'a';
+            const correctIndex = ['a', 'b', 'c', 'd'].indexOf(correctLetter);
+            
+            return {
+                id: q.id,
+                subject: q.subject,
+                subjectLabel: q.subject === 'sira' ? 'السيرة النبوية' : (q.subject === 'fiqh' ? 'الفقه الإسلامي' : (q.subject === 'aqeeda' ? 'العقيدة والتوحيد' : 'النحو واللغة')),
+                lessonNum: q.course_number,
+                question: q.question,
+                options: options,
+                correct: correctIndex !== -1 ? correctIndex : 0,
+                explanation: q.explanation || 'لا توجد تفاصيل إضافية لهذا السؤال.',
+                is_favorite: q.is_favorite
+            };
+        });
+        
+        customQuizState = {
+            questions: mappedQuestions,
+            currentIndex: 0,
+            score: 0,
+            answers: []
+        };
+        
+        renderCustomQuizQuestion();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('حدث خطأ أثناء تحميل الأسئلة من الخادم.');
+        exitCustomQuiz();
+    });
 }
 
 function renderCustomQuizQuestion() {
@@ -3053,10 +3094,20 @@ function submitCustomQuizAnswer(selectedIdx) {
     const isCorrect = selectedIdx === q.correct;
     if (isCorrect) {
         state.score++;
-        clearQuestionError(q.subject, q.lessonNum, q.chapterIdx);
-    } else {
-        recordQuestionError(q.subject, q.lessonNum, q.chapterIdx, q.question, q.options[selectedIdx], q.options[q.correct], q.explanation);
     }
+    
+    const userId = tg?.initDataUnsafe?.user?.id || 2045194295;
+    
+    fetch('/api/student/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId: userId,
+            questionId: q.id,
+            isCorrect: isCorrect,
+            wrongAnswer: q.options[selectedIdx]
+        })
+    }).catch(err => console.error("Failed to sync answer with DB:", err));
     
     // Disable buttons and highlights
     q.options.forEach((_, idx) => {
@@ -3086,11 +3137,20 @@ function submitCustomQuizAnswer(selectedIdx) {
     const feedbackBox = document.getElementById('custom-quiz-feedback-box');
     if (feedbackBox) {
         feedbackBox.innerHTML = `
-        <div style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding:10px 14px; background:#f8fafc; border-radius:8px; text-align:right;">
+        <div style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding:10px 14px; background:#f8fafc; border-radius:8px; text-align:right; margin-bottom: 12px;">
             <div style="font-weight:800; color:${isCorrect ? '#10b981' : '#ef4444'}; font-size:13.5px; margin-bottom:4px;">
                 ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
             </div>
             <div style="font-size:12px; color:var(--text-2); line-height:1.5;">${q.explanation}</div>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-sm btn-outline" onclick="toggleCustomQuizFavorite(${q.id}, this)" style="flex: 1; justify-content: center; font-weight: 800;">
+                ${q.is_favorite ? '⭐ إزالة من المفضلة' : '⭐ أضف للمفضلة'}
+            </button>
+            <button class="btn-sm btn-outline" onclick="reportCustomQuizError(${q.id})" style="flex: 1; justify-content: center; color: #ef4444; border-color: #fecaca; background: #fee2e2; font-weight: 800;">
+                ⚠️ إبلاغ عن خطأ
+            </button>
         </div>`;
     }
     
@@ -3105,6 +3165,39 @@ function submitCustomQuizAnswer(selectedIdx) {
     if (tg) {
         try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
     }
+}
+
+function toggleCustomQuizFavorite(qId, btn) {
+    const state = customQuizState;
+    const q = state.questions[state.currentIndex];
+    const newFavState = !q.is_favorite;
+    
+    const userId = tg?.initDataUnsafe?.user?.id || 2045194295;
+    
+    fetch('/api/student/favorites/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId: userId,
+            questionId: qId,
+            isFavorite: newFavState
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            q.is_favorite = newFavState;
+            btn.textContent = newFavState ? '⭐ إزالة من المفضلة' : '⭐ أضف للمفضلة';
+            showToast(newFavState ? "✓ تم إضافة السؤال للمفضلة" : "✕ تم إزالة السؤال من المفضلة", "success");
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+function reportCustomQuizError(qId) {
+    currentReportingChapter = { subject: 'question', lessonNum: qId, chapterIdx: 0 };
+    document.getElementById('report-textarea').value = '';
+    document.getElementById('report-overlay').classList.add('active');
 }
 
 function nextCustomQuizQuestion() {
@@ -3316,6 +3409,54 @@ function resetStudyPlan() {
         nextWeek.setDate(nextWeek.getDate() + 7);
         dateInput.value = nextWeek.toISOString().split('T')[0];
     }
+}
+
+function loadStudentStatsFromDb() {
+    const userId = tg?.initDataUnsafe?.user?.id || 2045194295;
+    fetch('/api/student/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            // Update Greeting with preferredName
+            if (res.preferredName) {
+                const greetEl = document.getElementById('greeting-text');
+                if (greetEl) greetEl.textContent = 'مرحباً ' + res.preferredName + ' 👋';
+            }
+            
+            // Render DB stats inside stats-grid
+            const overall = res.overall || { correct: 0, wrong: 0, total: 0 };
+            const correct = overall.correct || 0;
+            const wrong = overall.wrong || 0;
+            const streak = res.streak || 0;
+            const xp = correct * 10;
+            
+            // Determine Rank
+            let rank = 'طالب مبتدئ 🎓';
+            if (xp >= 40) rank = 'مساعد فقيه ⚖️';
+            if (xp >= 80) rank = 'مؤرخ سيرة 🕌';
+            if (xp >= 120) rank = 'مستشار نحوي 📝';
+            if (xp >= 160) rank = 'عالم محقق 🌟';
+            
+            const profileNameEl = document.getElementById('profile-name');
+            if (profileNameEl) {
+                profileNameEl.innerHTML = `${res.preferredName || tg?.initDataUnsafe?.user?.first_name || 'طالب الأكاديمية'} <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 20px; font-weight: 700; margin-right: 6px;">${rank}</span>`;
+            }
+            
+            const statsGridEl = document.getElementById('stats-grid');
+            if (statsGridEl) {
+                statsGridEl.innerHTML = `
+                    <div class="stat-card"><div class="stat-val" style="color: var(--primary);">${xp}</div><div class="stat-lbl">الدرجات العلمية (XP)</div></div>
+                    <div class="stat-card"><div class="stat-val" style="color: #10b981;">${correct}</div><div class="stat-lbl">الإجابات الصحيحة</div></div>
+                    <div class="stat-card"><div class="stat-val" style="color: #ef4444;">${wrong}</div><div class="stat-lbl">الإجابات الخاطئة</div></div>
+                    <div class="stat-card"><div class="stat-val" style="color: #f59e0b;">🔥 ${streak}</div><div class="stat-lbl">أيام النشاط المتتالي</div></div>`;
+            }
+        }
+    })
+    .catch(err => console.error("Error loading student stats from DB:", err));
 }
 
 // ── PROFILE ──
