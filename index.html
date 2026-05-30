@@ -2359,76 +2359,72 @@ const TRANSLIT = {
 console.log("Loading data files...");
 let QURAN_VERSES_DB = {};
 
-Promise.all([
-    fetch('/transcripts.json?v=22').then(r => {
-        if (!r.ok) throw new Error("HTTP error " + r.status);
-        return r.json();
-    }),
-    fetch('/quran_db.json?v=1').then(r => {
-        if (!r.ok) return {};
-        return r.json();
-    }).catch(() => ({}))
-])
-.then(([transcriptsJson, quranDb]) => {
-    // DIAG-1: Data received
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-1: Data received. Parsing...';
-    
-    DB = transcriptsJson;
-    QURAN_VERSES_DB = quranDb;
+// Initialize Syllabus State
+DB = [];
+try {
+    syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
+    syllabusFavorites = JSON.parse(localStorage.getItem('academy_syllabus_favs') || '{}');
+    syllabusCompletion = JSON.parse(localStorage.getItem('academy_syllabus_completions') || '{}');
+    savedPassages = JSON.parse(localStorage.getItem('academy_saved_passages') || '{}');
+    academyErrors = JSON.parse(localStorage.getItem('academy_questions_errors') || '{}');
+} catch(e) {
+    syllabusNotes = {}; syllabusFavorites = {}; syllabusCompletion = {}; savedPassages = {}; academyErrors = {};
+}
 
-    // DIAG-2: DB parsed
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-2: DB parsed (' + DB.length + ' lessons). Init state...';
+// Render UI instantly so there is absolutely zero loading block!
+renderHome();
+renderMyLibrary();
+renderFcPicker();
+renderProfile();
+renderSyllabusSubjects();
 
-    // Initialize Syllabus State
-    try {
-        syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
-        syllabusFavorites = JSON.parse(localStorage.getItem('academy_syllabus_favs') || '{}');
-        syllabusCompletion = JSON.parse(localStorage.getItem('academy_syllabus_completions') || '{}');
-        savedPassages = JSON.parse(localStorage.getItem('academy_saved_passages') || '{}');
-        academyErrors = JSON.parse(localStorage.getItem('academy_questions_errors') || '{}');
-    } catch(e) {
-        syllabusNotes = {}; syllabusFavorites = {}; syllabusCompletion = {}; savedPassages = {}; academyErrors = {};
+try {
+    loadStudentStatsFromDb();
+} catch(e) {
+    console.error("Failed to load student stats from DB:", e);
+}
+
+// Restore active tab from CloudStorage
+try {
+    if (tg && tg.CloudStorage) {
+        tg.CloudStorage.getItem('active_tab', (err, value) => {
+            if (!err && value) {
+                switchTab(value);
+            }
+        });
     }
+} catch(e) {}
 
-    // DIAG-3: buildIndex (deferred to prevent UI freezing)
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-3: Deferring buildIndex...';
-    setTimeout(buildIndex, 50);
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-4: renderHome starting...';
-    renderHome();
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-5: renderMyLibrary starting...';
-    renderMyLibrary();
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-6: renderFcPicker starting...';
-    renderFcPicker();
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-7: renderProfile starting...';
-    renderProfile();
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-8: renderSyllabusSubjects starting...';
-    renderSyllabusSubjects();
-    
-    try {
-        loadStudentStatsFromDb();
-    } catch(e) {
-        console.error("Failed to load student stats from DB:", e);
-    }
-    
-    // Restore active tab from CloudStorage
-    try {
-        if (tg && tg.CloudStorage) {
-            tg.CloudStorage.getItem('active_tab', (err, value) => {
-                if (!err && value) {
-                    switchTab(value);
-                }
-            });
-        }
-    } catch(e) {}
-    
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-DONE: All render functions completed!';
-})
+document.getElementById('did-you-know').innerHTML = '🚀 تم تحميل التطبيق بنجاح! جاري جلب تفاصيل الدروس بالخلفية...';
+
+// Load Quran DB in the background
+fetch('/quran_db.json?v=1')
+    .then(r => r.ok ? r.json() : {})
+    .then(quranDb => { QURAN_VERSES_DB = quranDb; })
+    .catch(() => {});
+
+// Load transcripts.json lazily so it never blocks the user interface
+fetch('/transcripts.json?v=22')
+    .then(r => r.ok ? r.json() : [])
+    .then(transcriptsJson => {
+        DB = transcriptsJson;
+        console.log("Transcripts loaded in background:", DB.length);
+        
+        // Re-render components with real transcripts database
+        renderHome();
+        renderMyLibrary();
+        renderFcPicker();
+        renderProfile();
+        renderSyllabusSubjects();
+        
+        // Quietly build search index in the background
+        setTimeout(buildIndex, 100);
+    })
     .catch(e => {
-        console.error("Data load failed:", e);
+        console.error("Failed to load transcripts in background:", e);
         const errorHtml = `<div class="empty-state" style="border-color:#ef4444;color:#ef4444">
             <div class="empty-icon">⚠️</div>
-            <p>فشل تحميل البيانات. الرجاء التحقق من الاتصال بالإنترنت. (Erreur: ${e.message})</p>
-            <button class="btn-sm btn-primary" style="margin-top:10px;background:#ef4444" onclick="location.reload()">إعادة المحاولة</button>
+            <p>فشل تحميل تفاصيل الدروس. الرجاء التحقق من الاتصال بالإنترنت.</p>
         </div>`;
         const dyk = document.getElementById('did-you-know');
         if (dyk) dyk.innerHTML = errorHtml;
