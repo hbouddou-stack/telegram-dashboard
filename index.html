@@ -2370,7 +2370,8 @@
 // ── Global Error Handling for Debugging ──
 window.onerror = function(msg, url, line, col, error) {
     console.error("Global JS Error: ", msg, " at ", url, ":", line, ":", col);
-    alert("⚠️ خطأ في تشغيل التطبيق (JS Error):\n" + msg + "\n\nالسطر: " + line + "\nالملف: " + url.split('/').pop());
+    let file = (url && typeof url === 'string') ? url.split('/').pop() : 'unknown';
+    alert("⚠️ خطأ في تشغيل التطبيق (JS Error):\n" + msg + "\n\nالسطر: " + line + "\nالملف: " + file);
     return false;
 };
 window.onunhandledrejection = function(event) {
@@ -2417,20 +2418,18 @@ let QURAN_VERSES_DB = {};
 Promise.all([
     fetch('https://hbouddou-stack.github.io/telegram-dashboard/transcripts.json?v=22').then(r => {
         if (!r.ok) throw new Error("HTTP error " + r.status);
-        return r.text();
+        return r.json();
     }),
     fetch('https://hbouddou-stack.github.io/telegram-dashboard/quran_db.json?v=1').then(r => {
         if (!r.ok) return {};
         return r.json();
     }).catch(() => ({}))
 ])
-.then(([transcriptsText, quranDb]) => {
+.then(([transcriptsJson, quranDb]) => {
     // DIAG-1: Data received
-    document.getElementById('did-you-know').innerHTML = '✅ DIAG-1: Data received (' + transcriptsText.length + ' chars). Parsing...';
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-1: Data received. Parsing...';
     
-    // Standardize blessings to ﷺ globally in DB string with extended regex
-    const dbStr = transcriptsText.replace(/صلى الله عليه (?:وعلى آله(?: وصحبه)?)? وسلم|عليه الصلاة والسلام|صلى الله عليه وسلم|صلعم|عليه السلام/g, 'ﷺ');
-    DB = JSON.parse(dbStr);
+    DB = transcriptsJson;
     QURAN_VERSES_DB = quranDb;
 
     // DIAG-2: DB parsed
