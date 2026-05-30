@@ -2311,62 +2311,6 @@
 </div>
 
 <script>
-// ── Telegram Detection & Blocking ──
-(function() {
-    let isTelegram = false;
-    try {
-        const tgObj = window.Telegram?.WebApp;
-        if (tgObj && tgObj.initData && tgObj.platform && tgObj.platform !== 'unknown') {
-            isTelegram = true;
-        }
-    } catch(e) {}
-
-    // Allow localhost/127.0.0.1 for local developer testing
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (!isTelegram && !isLocal) {
-        document.documentElement.innerHTML = `
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>عذراً، غير متاح</title>
-            <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
-            <style>
-                body {
-                    margin: 0; padding: 0; height: 100vh;
-                    display: flex; flex-direction: column; align-items: center; justify-content: center;
-                    background: #f8fafc; color: #0f172a;
-                    font-family: 'Tajawal', sans-serif; direction: rtl; text-align: center;
-                }
-                .box {
-                    background: white; padding: 36px 24px; border-radius: 20px;
-                    box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1.2px solid #e2e8f0;
-                    max-width: 340px; margin: 16px;
-                }
-                .icon { font-size: 54px; margin-bottom: 16px; }
-                h2 { font-size: 19px; font-weight: 800; margin: 0 0 12px 0; color: #1e1b4b; }
-                p { font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0 0 24px 0; }
-                .btn {
-                    display: inline-block; padding: 12px 28px; background: #4f46e5;
-                    color: white; border-radius: 12px; font-weight: 700; text-decoration: none;
-                    font-size: 13px; transition: background 0.15s;
-                    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
-                }
-                .btn:hover { background: #4338ca; }
-            </style>
-        </head>
-        <body>
-            <div class="box">
-                <div class="icon">🔒</div>
-                <h2>عذراً، الوصول غير متاح</h2>
-                <p>تم تصميم هذه المنصة كأداة مراجعة تفاعلية خاصة بطلاب الأكاديمية عبر تطبيق تليجرام. يرجى فتح التطبيق من خلال البوت الرسمي للوصول إلى بياناتك.</p>
-                <a href="https://t.me/minassatalbajibot" class="btn">الانتقال إلى تليجرام</a>
-            </div>
-        </body>
-        `;
-        throw new Error("Blocked: Opened outside Telegram client.");
-    }
-})();
-
 // ── Global Error Handling for Debugging ──
 window.onerror = function(msg, url, line, col, error) {
     console.error("Global JS Error: ", msg, " at ", url, ":", line, ":", col);
