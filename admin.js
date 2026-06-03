@@ -615,6 +615,9 @@ window.addEventListener('unhandledrejection', function(e) {
         async function loadDashboardData(silent = false) {
 
             try {
+                if (window.__botConfigReady) {
+                    await window.__botConfigReady;
+                }
 
                 if (!silent) showToast("🔄 جاري مزامنة البيانات...", "info");
 
