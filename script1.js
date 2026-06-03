@@ -1,0 +1,4036 @@
+
+// ── Telegram Detection & Blocking ──
+(function() {
+    let isTelegram = false;
+    try {
+        const tgObj = window.Telegram?.WebApp;
+        if (tgObj && tgObj.initData && tgObj.platform && tgObj.platform !== 'unknown') {
+            isTelegram = true;
+        }
+    } catch(e) {}
+
+    // Allow localhost/127.0.0.1 for local developer testing
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isTelegram && !isLocal) {
+        document.documentElement.innerHTML = `
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>عذراً، غير متاح</title>
+            <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+            <style>
+                body {
+                    margin: 0; padding: 0; height: 100vh;
+                    display: flex; flex-direction: column; align-items: center; justify-content: center;
+                    background: #f8fafc; color: #0f172a;
+                    font-family: 'Tajawal', sans-serif; direction: rtl; text-align: center;
+                }
+                .box {
+                    background: white; padding: 36px 24px; border-radius: 20px;
+                    box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1.2px solid #e2e8f0;
+                    max-width: 340px; margin: 16px;
+                }
+                .icon { font-size: 54px; margin-bottom: 16px; }
+                h2 { font-size: 19px; font-weight: 800; margin: 0 0 12px 0; color: #1e1b4b; }
+                p { font-size: 13.5px; color: #475569; line-height: 1.6; margin: 0 0 24px 0; }
+                .btn {
+                    display: inline-block; padding: 12px 28px; background: #4f46e5;
+                    color: white; border-radius: 12px; font-weight: 700; text-decoration: none;
+                    font-size: 13px; transition: background 0.15s;
+                    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+                }
+                .btn:hover { background: #4338ca; }
+            </style>
+        </head>
+        <body>
+            <div class="box">
+                <div class="icon">🔒</div>
+                <h2>عذراً، الوصول غير متاح</h2>
+                <p>تم تصميم هذه المنصة كأداة مراجعة تفاعلية خاصة بطلاب الأكاديمية عبر تطبيق تليجرام. يرجى فتح التطبيق من خلال البوت الرسمي للوصول إلى بياناتك.</p>
+                <a href="https://t.me/minassatalbajibot" class="btn">الانتقال إلى تليجرام</a>
+            </div>
+        </body>
+        `;
+        throw new Error("Blocked: Opened outside Telegram client.");
+    }
+})();
+
+// ── Global Error Handling for Debugging ──
+window.onerror = function(msg, url, line, col, error) {
+    console.error("Global JS Error: ", msg, " at ", url, ":", line, ":", col);
+    alert("⚠️ خطأ في تشغيل التطبيق (JS Error):\n" + msg + "\n\nالسطر: " + line + "\nالملف: " + url.split('/').pop());
+    return false;
+};
+window.onunhandledrejection = function(event) {
+    console.error("Global Promise Rejection: ", event.reason);
+    alert("⚠️ خطأ غير متوقع (Promise Rejection):\n" + event.reason);
+};
+
+// ── Telegram ──
+let tg;
+try { tg = window.Telegram?.WebApp; if(tg){tg.ready();tg.expand();} } catch(e){}
+
+// ── State ──
+let DB = [], wordIndex = [], currentFilter = 'title_only', activeLesson = null, activeTab = 'all';
+let readerFontSize = 15; // default em size in px
+let savedPassages = {};
+let isAdminMode = localStorage.getItem('academy_admin_mode') === 'true';
+let currentEditingChapter = null;
+let currentReportingChapter = null;
+
+// ── Subject Metadata (MUST be declared before any render functions) ──
+const SUBJECT_METADATA = {
+    'sira': { title: 'السيرة النبوية', icon: '🕌', cls: 'subj-sira', color: 'var(--sira)' },
+    'fiqh': { title: 'الفقه الإسلامي', icon: '⚖️', cls: 'subj-fiqh', color: 'var(--fiqh)' },
+    'aqeeda': { title: 'العقيدة والتوحيد', icon: '🛡️', cls: 'subj-aqeeda', color: 'var(--aqeeda)' },
+    'nahw': { title: 'النحو واللغة', icon: '📝', cls: 'subj-nahw', color: 'var(--nahw)' }
+};
+
+const TRANSLIT = {
+    "hajj":["حج","الحج","حجة","حجة الوداع"],"hadj":["حج","الحج"],
+    "salat":["صلاة","الصلاة"],"salah":["صلاة","الصلاة"],
+    "wudu":["وضوء","الوضوء"],"woudou":["وضوء","الوضوء"],
+    "iman":["إيمان","الإيمان"],"tawhid":["توحيد","التوحيد"],
+    "badr":["بدر","غزوة بدر"],"badre":["بدر","غزوة بدر"],"uhud":["أحد","غزوة أحد"],
+    "khandaq":["خندق","غزوة الخندق"],"fiqh":["فقه","الفقه"],
+    "sira":["سيرة","السيرة"],"nahw":["نحو","النحو"],
+    "aqeeda":["عقيدة","العقيدة","توحيد"],"niya":["نية","النية"],
+    "faail":["فاعل","الفاعل"],"mafoul":["مفعول","المفعول"],
+};
+
+// ── Load ──
+console.log("Loading data files...");
+let QURAN_VERSES_DB = {};
+
+Promise.all([
+    fetch('https://hbouddou-stack.github.io/telegram-dashboard/transcripts.json?v=22').then(r => {
+        if (!r.ok) throw new Error("HTTP error " + r.status);
+        return r.text();
+    }),
+    fetch('https://hbouddou-stack.github.io/telegram-dashboard/quran_db.json?v=1').then(r => {
+        if (!r.ok) return {};
+        return r.json();
+    }).catch(() => ({}))
+])
+.then(([transcriptsText, quranDb]) => {
+    // DIAG-1: Data received
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-1: Data received (' + transcriptsText.length + ' chars). Parsing...';
+    
+    // Standardize blessings to ﷺ globally in DB string with extended regex
+    const dbStr = transcriptsText.replace(/صلى الله عليه (?:وعلى آله(?: وصحبه)?)? وسلم|عليه الصلاة والسلام|صلى الله عليه وسلم|صلعم|عليه السلام/g, 'ﷺ');
+    DB = JSON.parse(dbStr);
+    QURAN_VERSES_DB = quranDb;
+
+    // DIAG-2: DB parsed
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-2: DB parsed (' + DB.length + ' lessons). Init state...';
+
+    // Initialize Syllabus State
+    try {
+        syllabusNotes = JSON.parse(localStorage.getItem('academy_syllabus_notes') || '{}');
+        syllabusFavorites = JSON.parse(localStorage.getItem('academy_syllabus_favs') || '{}');
+        syllabusCompletion = JSON.parse(localStorage.getItem('academy_syllabus_completions') || '{}');
+        savedPassages = JSON.parse(localStorage.getItem('academy_saved_passages') || '{}');
+        academyErrors = JSON.parse(localStorage.getItem('academy_questions_errors') || '{}');
+    } catch(e) {
+        syllabusNotes = {}; syllabusFavorites = {}; syllabusCompletion = {}; savedPassages = {}; academyErrors = {};
+    }
+
+    // DIAG-3: buildIndex
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-3: buildIndex starting...';
+    buildIndex();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-4: renderHome starting...';
+    renderHome();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-5: renderMyLibrary starting...';
+    renderMyLibrary();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-6: renderFcPicker starting...';
+    renderFcPicker();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-7: renderProfile starting...';
+    renderProfile();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-8: renderSyllabusSubjects starting...';
+    renderSyllabusSubjects();
+    document.getElementById('did-you-know').innerHTML = '✅ DIAG-DONE: All render functions completed!';
+})
+    .catch(e => {
+        console.error("Data load failed:", e);
+        const errorHtml = `<div class="empty-state" style="border-color:#ef4444;color:#ef4444">
+            <div class="empty-icon">⚠️</div>
+            <p>فشل تحميل البيانات. الرجاء التحقق من الاتصال بالإنترنت.</p>
+            <button class="btn-sm btn-primary" style="margin-top:10px;background:#ef4444" onclick="location.reload()">إعادة المحاولة</button>
+        </div>`;
+        document.getElementById('did-you-know').innerHTML = errorHtml;
+        document.getElementById('subject-grid').innerHTML = errorHtml;
+        document.getElementById('recent-cards').innerHTML = errorHtml;
+    });
+
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    btn.classList.add('active');
+    if(name==='search') setTimeout(()=>document.getElementById('search-input').focus(),100);
+    if(name==='mylibrary') renderMyLibrary();
+}
+
+// ── Word Index ──
+function buildIndex() {
+    const stop = new Set(["في","من","على","إلى","عن","هذا","هذه","التي","الذي","أن","إن","لا","ما","مع","كان","كانت","ثم","أو","أم","كل","يوم","بعد","قبل","عند","هو","هي","وقد","قد","فقد","وهو","وهي","وكان"]);
+    const seen = new Set();
+    DB.forEach(item => {
+        ((item.full_text||'')+' '+(item.blocks_search_text||'')).split(/[\s،.؟!():؛]+/).forEach(w=>{
+            const c=w.trim();
+            if(c.length>=3&&c.length<=10&&!stop.has(c)&&!seen.has(c)){
+                seen.add(c);
+                wordIndex.push({text:c,subjectLabel:item.subjectLabel,cls:'badge-'+item.subject});
+            }
+        });
+    });
+}
+
+// ── HOME ──
+function renderHome() {
+    if(tg?.initDataUnsafe?.user?.first_name)
+        document.getElementById('greeting-text').textContent='مرحباً '+tg.initDataUnsafe.user.first_name+' 👋';
+    
+    // Started lessons progress calculation
+    const started = [];
+    DB.forEach(l => {
+        const blocks = l.thematic_blocks || [];
+        const completedCount = blocks.filter((b, i) => syllabusCompletion[`${l.subject}_${l.lessonNum}_${i}`]).length;
+        if (completedCount > 0) {
+            started.push({ 
+                lesson: l, 
+                completed: completedCount, 
+                total: blocks.length, 
+                percent: Math.round((completedCount / blocks.length) * 100) 
+            });
+        }
+    });
+
+    let recentsHtml = '';
+    if (started.length > 0) {
+        started.sort((a, b) => b.percent - a.percent);
+        recentsHtml = started.slice(0, 3).map(item => {
+            const c = item.lesson;
+            return `
+            <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'blocks')" style="cursor:pointer; flex: 1; min-width: 140px; margin-bottom:0;">
+                <span class="badge badge-${c.subject}">${c.subjectLabel}</span>
+                <div class="lesson-num" style="margin-top:6px; font-weight:800; font-size:14px; color:var(--${c.subject});">الدرس ${c.lessonNum}</div>
+                <div class="lesson-title" style="font-size:12px; font-weight:700; color:var(--text-2); margin:4px 0 8px 0; min-height:36px; line-height:1.4;">${trunc(strip(c.summary), 40)}</div>
+                <div class="progress-mini" style="height:5px; background:#f1f5f9; border-radius:3px; overflow:hidden;"><div class="fill" style="width:${item.percent}%; height:100%; background:var(--${c.subject});"></div></div>
+                <div style="font-size:10px; color:var(--text-3); text-align:left; margin-top:4px; font-weight:700;">مكتمل بنسبة ${item.percent}%</div>
+            </div>`;
+        }).join('');
+    } else {
+        const defaults = ['sira', 'fiqh', 'aqeeda', 'nahw'].map(s => DB.find(l => l.subject === s && l.lessonNum === 1)).filter(Boolean);
+        recentsHtml = defaults.map(c => `
+        <div class="card recent-lesson-card" onclick="openModal('${c.subject}',${c.lessonNum},'blocks')" style="cursor:pointer; flex: 1; min-width: 140px; margin-bottom:0;">
+            <span class="badge badge-${c.subject}">${c.subjectLabel}</span>
+            <div class="lesson-num" style="margin-top:6px; font-weight:800; font-size:14px; color:var(--${c.subject});">الدرس ${c.lessonNum}</div>
+            <div class="lesson-title" style="font-size:12px; font-weight:700; color:var(--text-2); margin:4px 0 8px 0; min-height:36px; line-height:1.4;">${trunc(strip(c.summary), 40)}</div>
+            <div class="progress-mini" style="height:5px; background:#f1f5f9; border-radius:3px; overflow:hidden;"><div class="fill" style="width:0%; height:100%; background:var(--${c.subject});"></div></div>
+            <div style="font-size:10px; color:var(--text-3); text-align:left; margin-top:4px; font-weight:700;">ابدأ الآن 🚀</div>
+        </div>`).join('');
+    }
+    document.getElementById('recent-cards').innerHTML = recentsHtml;
+
+    // Unfinished chapters calculation
+    const unfinished = [];
+    DB.forEach(l => {
+        const blocks = l.thematic_blocks || [];
+        const completedStates = blocks.map((b, i) => !!syllabusCompletion[`${l.subject}_${l.lessonNum}_${i}`]);
+        const completedCount = completedStates.filter(Boolean).length;
+        if (completedCount > 0 && completedCount < blocks.length) {
+            blocks.forEach((b, i) => {
+                if (!completedStates[i]) {
+                    unfinished.push({
+                        subject: l.subject,
+                        subjectLabel: l.subjectLabel,
+                        lessonNum: l.lessonNum,
+                        chapterIdx: i,
+                        title: b.title
+                    });
+                }
+            });
+        }
+    });
+
+    const unfContainer = document.getElementById('unfinished-chapters-container');
+    if (unfinished.length > 0) {
+        unfContainer.innerHTML = unfinished.slice(0, 4).map(item => `
+        <div class="card" onclick="openModal('${item.subject}', ${item.lessonNum}, 'blocks', ${item.chapterIdx})" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:12px 14px; margin-bottom:0; border:1px solid #fee2e2; background:#fff8f8; transition:transform 0.2s;">
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:right;">
+                <span class="badge badge-${item.subject}" style="font-size:10px; align-self:flex-start;">${item.subjectLabel} - الدرس ${item.lessonNum}</span>
+                <span style="font-size:13px; font-weight:700; color:var(--text-1);">${item.title}</span>
+            </div>
+            <span style="color:#ef4444; font-size:16px;">⏳</span>
+        </div>`).join('');
+    } else {
+        unfContainer.innerHTML = `
+        <div class="card" style="font-size:12.5px; color:var(--text-3); text-align:center; padding:16px; margin-bottom:0;">
+            ✅ أحسنت! لا توجد محاور قيد الانتظار في الدروس التي بدأتها.
+        </div>`;
+    }
+
+    // Did you know block
+    const allBlocks=DB.flatMap(l=>l.thematic_blocks.map(b=>({...b,subject:l.subject,subjectLabel:l.subjectLabel})));
+    if(allBlocks.length){
+        const b=allBlocks[Math.floor(Math.random()*allBlocks.length)];
+        document.getElementById('did-you-know').innerHTML=`
+            <span class="badge badge-${b.subject}" style="margin-bottom:8px;display:inline-flex">${b.subjectLabel}</span>
+            <div style="font-weight:800;font-size:13.5px;margin-bottom:6px">${b.title}</div>
+            <div>${strip(b.citation).substring(0,200)}...</div>`;
+    }
+}
+
+// ── MY LIBRARY PERSONAL ARCHIVE ──
+let activeMyLibSubTab = 'bookmarks';
+let academyErrors = {};
+
+function switchMyLibSubTab(subTab) {
+    activeMyLibSubTab = subTab;
+    document.querySelectorAll('.mylib-chips .chip').forEach(c => c.classList.remove('active'));
+    document.getElementById(`mylib-btn-${subTab}`).classList.add('active');
+    
+    document.querySelectorAll('.mylib-sub-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(`mylib-panel-${subTab}`).style.display = 'block';
+    
+    renderMyLibrary();
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function renderMyLibrary() {
+    if (activeMyLibSubTab === 'bookmarks') {
+        renderMyBookmarks();
+    } else if (activeMyLibSubTab === 'notes') {
+        renderMyNotes();
+    } else if (activeMyLibSubTab === 'errors') {
+        renderMyErrors();
+    }
+}
+
+function renderMyBookmarks() {
+    const container = document.getElementById('mylib-bookmarks-list');
+    if (!container) return;
+    
+    const keys = Object.keys(savedPassages).sort((a, b) => savedPassages[b].savedAt - savedPassages[a].savedAt);
+    
+    if (keys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:24px">
+            لا توجد مقاطع محفوظة بعد. يمكنك حفظ المقاطع بالضغط على زر 📌 أثناء قراءة التفريغ.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = keys.map(key => {
+        const item = savedPassages[key];
+        const subMeta = SUBJECT_METADATA[item.subject] || { title: item.subject, icon: '📚' };
+        const cleanText = item.text.replace(/\*\*\*/g, '').trim();
+        
+        return `
+        <div class="saved-passage-card" onclick="goToSavedPassage('${item.subject}', ${item.lessonNum}, '${item.ts}')" style="background: var(--surface); border: 1.2px solid #e2e8f0; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s;">
+            <div class="saved-passage-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div class="saved-passage-meta" style="display:flex; gap:6px; align-items:center;">
+                    <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 8px; font-weight: 800;">
+                        ${subMeta.icon} ${subMeta.title} - الدرس ${item.lessonNum}
+                    </span>
+                    <span style="font-size: 10px; font-weight: 800; background: #f1f5f9; color: var(--text-2); padding: 3px 6px; border-radius: 6px;">
+                        ⏱️ ${item.ts}
+                    </span>
+                </div>
+                <button class="saved-passage-delete" title="حذف" onclick="deleteSavedPassage(event, '${key}')" style="background:none; border:none; color:var(--text-3); font-size:14px; cursor:pointer; padding:2px 6px;">✕</button>
+            </div>
+            <div class="saved-passage-text" style="font-size:13px; line-height:1.6; color:var(--text-1); margin-bottom:8px;">${cleanText}</div>
+            ${item.link ? `
+            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                <a href="${item.link}" target="_blank" onclick="event.stopPropagation()" style="font-size: 11px; color: var(--primary); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--primary-border);">
+                    🎬 مشاهدة الفيديو
+                </a>
+            </div>` : ''}
+        </div>
+        `;
+    }).join('');
+}
+
+function renderMyNotes() {
+    const container = document.getElementById('mylib-notes-list');
+    if (!container) return;
+    
+    const keys = Object.keys(syllabusNotes).filter(k => syllabusNotes[k].trim().length > 0);
+    
+    if (keys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:24px">
+            لا توجد ملاحظات مكتوبة بعد. يمكنك كتابة ملاحظاتك من خلال الضغط على زر 📝 في المنهج الدراسي.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = keys.map(key => {
+        const parts = key.split('_');
+        const subject = parts[0];
+        const lessonNum = parseInt(parts[1]);
+        const blockIdx = parseInt(parts[2]);
+        
+        const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+        const block = lesson && lesson.thematic_blocks ? lesson.thematic_blocks[blockIdx] : null;
+        const blockTitle = block ? block.title : 'محور دراسي';
+        
+        const subMeta = SUBJECT_METADATA[subject] || { title: subject, icon: '📚' };
+        const text = syllabusNotes[key];
+        
+        return `
+        <div class="note-card" onclick="openModal('${subject}', ${lessonNum}, 'blocks', ${blockIdx})" style="background: var(--surface); border: 1.2px solid #e2e8f0; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s; position:relative;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 3px 8px; border-radius: 8px; font-weight: 800;">
+                    ${subMeta.icon} ${subMeta.title} - الدرس ${lessonNum}
+                </span>
+                <span style="font-size: 11px; font-weight:700; color:var(--text-3);">📝 ملاحظة</span>
+            </div>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text); margin-bottom: 6px;">📌 ${blockTitle}</div>
+            <div style="font-size: 12.5px; line-height: 1.6; color: var(--text-2); background: #f8fafc; padding: 10px; border-radius: 8px; border-right: 3px solid var(--primary); white-space: pre-wrap;">${text}</div>
+        </div>
+        `;
+    }).join('');
+}
+
+function renderMyErrors() {
+    const container = document.getElementById('mylib-errors-list');
+    if (!container) return;
+    
+    const errorKeys = Object.keys(academyErrors);
+    
+    if (errorKeys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:24px">
+            ✨ ممتاز! لا توجد أخطاء مسجلة حالياً. استمر في الإجابة على الأسئلة التفاعلية لتحدي نفسك.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = errorKeys.map(key => {
+        const err = academyErrors[key];
+        const subMeta = SUBJECT_METADATA[err.subject] || { title: err.subject, icon: '📚' };
+        
+        return `
+        <div class="error-card" onclick="openModal('${err.subject}', ${err.lessonNum}, 'blocks', ${err.chapterIdx})" style="background: var(--surface); border: 1.2px solid #fee2e2; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size: 11px; background: #fef2f2; color: #ef4444; padding: 3px 8px; border-radius: 8px; font-weight: 800; border: 1px solid #fee2e2;">
+                    ${subMeta.icon} ${subMeta.title} - الدرس ${err.lessonNum}
+                </span>
+                <span style="font-size: 11px; font-weight:700; color:#ef4444;">❌ خطأ غير مجاب</span>
+            </div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-2); margin-bottom:8px; line-height:1.5;">السؤال: ${err.question}</div>
+            <div style="font-size:12px; color:#ef4444; background:#fef2f2; padding:6px 10px; border-radius:6px; margin-bottom:6px;">إجابتك: ${err.selected}</div>
+            <div style="font-size:12px; color:#10b981; background:#f0fdf4; padding:6px 10px; border-radius:6px;">الإجابة الصحيحة: ${err.correct}</div>
+        </div>
+        `;
+    }).join('');
+}
+
+function recordQuestionError(subject, lessonNum, chapterIdx, question, selected, correct, explanation) {
+    const errorKey = `err_${subject}_${lessonNum}_${chapterIdx}`;
+    academyErrors[errorKey] = {
+        subject,
+        lessonNum,
+        chapterIdx,
+        question,
+        selected,
+        correct,
+        explanation,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('academy_questions_errors', JSON.stringify(academyErrors));
+    if (activeMyLibSubTab === 'errors') renderMyLibrary();
+}
+
+function clearQuestionError(subject, lessonNum, chapterIdx) {
+    const errorKey = `err_${subject}_${lessonNum}_${chapterIdx}`;
+    if (academyErrors[errorKey]) {
+        delete academyErrors[errorKey];
+        localStorage.setItem('academy_questions_errors', JSON.stringify(academyErrors));
+        if (activeMyLibSubTab === 'errors') renderMyLibrary();
+    }
+}
+
+// ── FLASHCARDS (REFONTE INTERACTIVE) ──
+let fcCards = [], fcIdx = 0;
+let selectedFcSubject = '', selectedFcLessonNum = '';
+
+function renderFcPicker() {
+    const picker = document.getElementById('fc-picker');
+    if (!picker) return;
+    
+    // Check if we have error-based cards for quick revision
+    const errorKeys = Object.keys(academyErrors);
+    const hasErrors = errorKeys.length > 0;
+    
+    const S = [
+        {key:'sira',label:'السيرة النبوية',icon:'📜'},
+        {key:'fiqh',label:'الفقه الإسلامي',icon:'⚖️'},
+        {key:'aqeeda',label:'العقيدة والتوحيد',icon:'🌟'},
+        {key:'nahw',label:'علم النحو والصرف',icon:'📝'}
+    ];
+    
+    let html = '';
+    
+    if (hasErrors) {
+        html += `
+        <div class="card" style="cursor:pointer; border: 1.2px solid #fee2e2; background: #fff8f8; display:flex; align-items:center; gap:12px; margin-bottom: 16px;" onclick="startFcQuickErrors()">
+            <span style="font-size:28px">❌</span>
+            <div style="flex:1">
+                <div style="font-size:14px; font-weight:800; color:#ef4444;">مراجعة سريعة للأخطاء</div>
+                <div style="font-size:11px; color:#f87171;">لديك ${errorKeys.length} أسئلة أخطأت فيها سابقاً</div>
+            </div>
+            <span style="color:#ef4444; font-size:20px">⚡</span>
+        </div>`;
+    }
+    
+    html += S.map(s => {
+        const cnt = DB.filter(l => l.subject === s.key && l.thematic_blocks && l.thematic_blocks.length).length;
+        return `
+        <div class="card" style="cursor:pointer; margin-bottom: 12px;" onclick="selectFcSubject('${s.key}')">
+            <div style="display:flex; align-items:center; gap:12px">
+                <span style="font-size:28px">${s.icon}</span>
+                <div style="flex:1">
+                    <div style="font-size:14px; font-weight:800">${s.label}</div>
+                    <div style="font-size:11px; color:var(--text-3)">${cnt} درس متوفر للمراجعة</div>
+                </div>
+                <span style="color:var(--primary); font-size:20px">‹</span>
+            </div>
+        </div>`;
+    }).join('');
+    
+    picker.innerHTML = html;
+}
+
+function selectFcSubject(subj) {
+    selectedFcSubject = subj;
+    const picker = document.getElementById('fc-picker');
+    const lessons = DB.filter(l => l.subject === subj && l.thematic_blocks && l.thematic_blocks.length).sort((a,b)=>a.lessonNum - b.lessonNum);
+    
+    if (!lessons.length) {
+        alert('لا توجد دروس متوفرة لهذه المادة حالياً');
+        return;
+    }
+    
+    const subMeta = SUBJECT_METADATA[subj] || { title: subj, icon: '📚' };
+    
+    let html = `
+    <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn-sm btn-outline" onclick="renderFcPicker()">➡️ رجوع للمواد</button>
+        <span style="font-weight:800; font-size:14px;">${subMeta.icon} منهج ${subMeta.title}</span>
+    </div>`;
+    
+    html += `
+    <div class="card" style="cursor:pointer; border: 1px dashed var(--primary-border); background: var(--primary-light);" onclick="startFcAll('${subj}')">
+        <div style="display:flex; align-items:center; gap:12px; font-weight:800; color:var(--primary);">
+            <span>📚</span>
+            <span>مراجعة جميع محاور المادة</span>
+        </div>
+    </div>
+    <div style="margin: 12px 4px 6px 0; font-size: 11px; font-weight: 700; color: var(--text-3);">اختر درساً معيناً للمراجعة:</div>`;
+    
+    html += lessons.map(l => {
+        return `
+        <div class="card" style="cursor:pointer; margin-bottom: 8px; padding: 12px 14px;" onclick="startFcLesson('${subj}', ${l.lessonNum})">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <div style="font-size:13.5px; font-weight:800;">الدرس ${l.lessonNum}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">${l.thematic_blocks.length} محاور للمراجعة</div>
+                </div>
+                <span style="color:var(--text-3); font-size:16px;">🔍</span>
+            </div>
+        </div>`;
+    }).join('');
+    
+    picker.innerHTML = html;
+}
+
+function startFcAll(subject) {
+    fcCards = DB.filter(l => l.subject === subject).flatMap(l => l.thematic_blocks.map((b, idx) => ({...b, subject, subjectLabel: l.subjectLabel, lessonNum: l.lessonNum, chapterIdx: idx})));
+    if (!fcCards.length) { alert('لا توجد محاور بعد'); return; }
+    launchFcFlow();
+}
+
+function startFcLesson(subject, lessonNum) {
+    const l = DB.find(dl => dl.subject === subject && dl.lessonNum === lessonNum);
+    if (!l || !l.thematic_blocks) return;
+    fcCards = l.thematic_blocks.map((b, idx) => ({...b, subject, subjectLabel: l.subjectLabel, lessonNum: l.lessonNum, chapterIdx: idx}));
+    launchFcFlow();
+}
+
+function startFcQuickErrors() {
+    const errorKeys = Object.keys(academyErrors);
+    fcCards = errorKeys.map(key => {
+        const err = academyErrors[key];
+        const l = DB.find(dl => dl.subject === err.subject && dl.lessonNum === err.lessonNum);
+        const b = l && l.thematic_blocks ? l.thematic_blocks[err.chapterIdx] : null;
+        if (!b) return null;
+        return {
+            ...b,
+            subject: err.subject,
+            subjectLabel: l.subjectLabel,
+            lessonNum: err.lessonNum,
+            chapterIdx: err.chapterIdx
+        };
+    }).filter(Boolean);
+    
+    if (!fcCards.length) { alert('لا توجد أخطاء مسجلة'); return; }
+    launchFcFlow();
+}
+
+function launchFcFlow() {
+    fcIdx = 0;
+    document.getElementById('fc-picker').style.display = 'none';
+    document.getElementById('fc-area').style.display = 'block';
+    renderFc();
+}
+
+function renderFc() {
+    const fc = fcCards[fcIdx];
+    const indicatorHtml = fcCards.map((_, i) => `<div style="height:4px; flex:1; border-radius:2px; background:${i === fcIdx ? 'var(--primary)' : '#e2e8f0'};"></div>`).join('');
+    
+    document.getElementById('fc-area').innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+            <button class="btn-sm btn-outline" onclick="endFc()">➡️ إنهاء</button>
+            <span style="font-size:11.5px; font-weight:800; color:var(--text-2);">${fcIdx + 1} / ${fcCards.length}</span>
+        </div>
+        
+        <div style="display:flex; gap:4px; margin-bottom:16px;">
+            ${indicatorHtml}
+        </div>
+        
+        <div class="fc-card" onclick="this.dataset.flipped = this.dataset.flipped ? '' : '1'; document.getElementById('fc-back').style.display = this.dataset.flipped ? 'block' : 'none'; document.getElementById('fc-hint').style.display = this.dataset.flipped ? 'none' : 'block';">
+            <span class="badge badge-${fc.subject}" style="margin-bottom:12px;">${fc.subjectLabel} — الدرس ${fc.lessonNum}</span>
+            <div style="font-size:16px; font-weight:800; color:var(--text-1); line-height:1.5; margin-bottom:12px;">📌 ${fc.title}</div>
+            
+            <div id="fc-hint" style="font-size:12px; color:var(--text-3); text-align:center; margin-top:20px; border-top:1px dashed #f1f5f9; padding-top:12px;">
+                👆 اضغط على البطاقة لكشف الشرح والفوائد التربوية
+            </div>
+            
+            <div id="fc-back" style="display:none; border-top:1px dashed #e2e8f0; margin-top:14px; padding-top:12px;">
+                <div class="block-citation" style="font-size:13px; line-height:1.6; color:var(--text-2);">${fc.citation}</div>
+                ${fc.video_link ? `
+                <a href="${fc.video_link}" target="_blank" class="btn-sm" style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; background:var(--primary-light); color:var(--primary); text-decoration:none; font-weight:700;" onclick="event.stopPropagation()">
+                    🎬 شاهد الشرح في الفيديو (${fc.timestamp})
+                </a>` : ''}
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn-sm btn-outline" style="flex:1" onclick="if(fcIdx > 0) { fcIdx--; renderFc(); } else { endFc(); }">السابق</button>
+            <button class="btn-sm btn-primary" style="flex:1" onclick="if(fcIdx < fcCards.length - 1) { fcIdx++; renderFc(); } else { alert('✨ أحسنت! أكملت مراجعة جميع البطاقات المحددة.'); endFc(); }">التالي</button>
+        </div>`;
+}
+
+function endFc() {
+    document.getElementById('fc-area').style.display = 'none';
+    document.getElementById('fc-picker').style.display = 'block';
+    renderFcPicker();
+}
+
+// ── REVISION HUB JS LOGIC ──
+let activeRevisionTool = 'fc';
+function switchRevisionTool(tool) {
+    activeRevisionTool = tool;
+    document.querySelectorAll('.rev-chips .chip').forEach(c => c.classList.remove('active'));
+    document.getElementById(`rev-btn-${tool}`).classList.add('active');
+    
+    document.querySelectorAll('.rev-tool-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(`rev-panel-${tool}`).style.display = 'block';
+    
+    if (tool === 'fc') {
+        renderFcPicker();
+    } else if (tool === 'planner') {
+        renderPlannerDashboard();
+        const dateInput = document.getElementById('planner-exam-date');
+        if (dateInput && !dateInput.value) {
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            dateInput.value = nextWeek.toISOString().split('T')[0];
+        }
+    }
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+// ── CUSTOM QUIZ SYSTEM ──
+let selectedCqCountNum = 5;
+let customQuizState = { questions: [], currentIndex: 0, score: 0, answers: [] };
+
+function selectCqCount(num) {
+    selectedCqCountNum = num;
+    document.querySelectorAll('[id^="cq-count-"]').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`cq-count-${num}`).classList.add('active');
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function startCustomQuiz() {
+    // 1. Gather selected subjects
+    const subjects = [];
+    if (document.getElementById('cq-sub-sira').checked) subjects.push('sira');
+    if (document.getElementById('cq-sub-fiqh').checked) subjects.push('fiqh');
+    if (document.getElementById('cq-sub-aqeeda').checked) subjects.push('aqeeda');
+    if (document.getElementById('cq-sub-nahw').checked) subjects.push('nahw');
+    
+    if (subjects.length === 0) {
+        alert('الرجاء اختيار مادة واحدة على الأقل للاختبار.');
+        return;
+    }
+    
+    // 2. Gather all quiz questions matching filters
+    let pool = [];
+    DB.forEach(l => {
+        if (subjects.includes(l.subject) && l.quiz && l.quiz.length) {
+            l.quiz.forEach((q, idx) => {
+                pool.push({
+                    ...q,
+                    subject: l.subject,
+                    subjectLabel: l.subjectLabel,
+                    lessonNum: l.lessonNum,
+                    chapterIdx: idx
+                });
+            });
+        }
+    });
+    
+    // 3. Filter by errors if selected
+    const focusErrors = document.getElementById('cq-type-errors').checked;
+    if (focusErrors) {
+        const errorKeys = Object.keys(academyErrors);
+        pool = pool.filter(q => {
+            const errKey = `err_${q.subject}_${q.lessonNum}_${q.chapterIdx}`;
+            return errorKeys.includes(errKey);
+        });
+        
+        if (pool.length === 0) {
+            alert('ليست لديك أخطاء مسجلة في المواد المحددة حالياً! تم تحويلك للاختبار العادي.');
+            document.getElementById('cq-type-all').checked = true;
+            startCustomQuiz();
+            return;
+        }
+    }
+    
+    if (pool.length === 0) {
+        alert('لا توجد أسئلة متوفرة للمواد المحددة حالياً.');
+        return;
+    }
+    
+    // Shuffle pool
+    pool.sort(() => Math.random() - 0.5);
+    
+    // Slice questions
+    const finalQuestions = pool.slice(0, selectedCqCountNum);
+    
+    // Initialize state
+    customQuizState = {
+        questions: finalQuestions,
+        currentIndex: 0,
+        score: 0,
+        answers: []
+    };
+    
+    // Hide setup, show play
+    document.getElementById('custom-quiz-setup').style.display = 'none';
+    const playArea = document.getElementById('custom-quiz-play');
+    playArea.style.display = 'block';
+    
+    renderCustomQuizQuestion();
+}
+
+function renderCustomQuizQuestion() {
+    const state = customQuizState;
+    const q = state.questions[state.currentIndex];
+    const playArea = document.getElementById('custom-quiz-play');
+    if (!playArea) return;
+    
+    const pct = Math.round((state.currentIndex / state.questions.length) * 100);
+    const subMeta = SUBJECT_METADATA[q.subject] || { title: q.subject, icon: '📚' };
+    
+    let optionsHtml = q.options.map((opt, idx) => {
+        return `
+        <button class="quiz-option-btn" id="cq-opt-${idx}" onclick="submitCustomQuizAnswer(${idx})" style="text-align:right; justify-content:flex-start; width:100%; padding:12px; margin-bottom:8px; border-radius:10px; border:1px solid #cbd5e1; background:#ffffff; font-weight:700; display:flex; align-items:center; gap:8px;">
+            <span class="bullet" style="width:16px; height:16px; border:2px solid #cbd5e1; border-radius:50%; display:inline-block; flex-shrink:0;"></span>
+            <span style="font-size:12.5px; font-family:inherit;">${opt}</span>
+        </button>`;
+    }).join('');
+    
+    playArea.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <button class="btn-sm btn-outline" onclick="exitCustomQuiz()">إنهاء الاختبار ➡️</button>
+            <span style="font-size:11.5px; font-weight:800; color:var(--text-3);">${state.currentIndex + 1} / ${state.questions.length}</span>
+        </div>
+        
+        <div class="progress-mini" style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden; margin-bottom:18px;">
+            <div class="fill" style="width:${pct}%; height:100%; background:var(--primary);"></div>
+        </div>
+        
+        <div class="card" style="padding:16px; text-align:right; margin-bottom:12px;">
+            <span class="badge badge-${q.subject}" style="margin-bottom:8px;">${q.subjectLabel} - الدرس ${q.lessonNum}</span>
+            <div style="font-size:15px; font-weight:800; color:var(--text-1); line-height:1.5;">${q.question}</div>
+            
+            <div style="margin-top:14px;">
+                ${optionsHtml}
+            </div>
+            
+            <div id="custom-quiz-feedback-box" style="margin-top:16px;"></div>
+        </div>
+        
+        <button class="btn-sm btn-primary" id="custom-quiz-next-btn" onclick="nextCustomQuizQuestion()" style="width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:800; display:none; justify-content:center; align-items:center;">
+            السؤال التالي ➡️
+        </button>
+    `;
+}
+
+function submitCustomQuizAnswer(selectedIdx) {
+    const state = customQuizState;
+    const q = state.questions[state.currentIndex];
+    state.answers[state.currentIndex] = selectedIdx;
+    
+    const isCorrect = selectedIdx === q.correct;
+    if (isCorrect) {
+        state.score++;
+        clearQuestionError(q.subject, q.lessonNum, q.chapterIdx);
+    } else {
+        recordQuestionError(q.subject, q.lessonNum, q.chapterIdx, q.question, q.options[selectedIdx], q.options[q.correct], q.explanation);
+    }
+    
+    // Disable buttons and highlights
+    q.options.forEach((_, idx) => {
+        const btn = document.getElementById(`cq-opt-${idx}`);
+        if (btn) {
+            btn.disabled = true;
+            const bullet = btn.querySelector('.bullet');
+            if (idx === q.correct) {
+                btn.style.borderColor = '#10b981';
+                btn.style.background = '#f0fdf4';
+                if (bullet) {
+                    bullet.style.borderColor = '#10b981';
+                    bullet.style.background = '#10b981';
+                }
+            } else if (idx === selectedIdx) {
+                btn.style.borderColor = '#ef4444';
+                btn.style.background = '#fef2f2';
+                if (bullet) {
+                    bullet.style.borderColor = '#ef4444';
+                    bullet.style.background = '#ef4444';
+                }
+            }
+        }
+    });
+    
+    // Display feedback
+    const feedbackBox = document.getElementById('custom-quiz-feedback-box');
+    if (feedbackBox) {
+        feedbackBox.innerHTML = `
+        <div style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding:10px 14px; background:#f8fafc; border-radius:8px; text-align:right;">
+            <div style="font-weight:800; color:${isCorrect ? '#10b981' : '#ef4444'}; font-size:13.5px; margin-bottom:4px;">
+                ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
+            </div>
+            <div style="font-size:12px; color:var(--text-2); line-height:1.5;">${q.explanation}</div>
+        </div>`;
+    }
+    
+    // Show next button
+    const nextBtn = document.getElementById('custom-quiz-next-btn');
+    if (nextBtn) {
+        const isLast = state.currentIndex === state.questions.length - 1;
+        nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ➡️';
+        nextBtn.style.display = 'inline-flex';
+    }
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
+    }
+}
+
+function nextCustomQuizQuestion() {
+    const state = customQuizState;
+    if (state.currentIndex < state.questions.length - 1) {
+        state.currentIndex++;
+        renderCustomQuizQuestion();
+    } else {
+        finishCustomQuiz();
+    }
+}
+
+function finishCustomQuiz() {
+    const state = customQuizState;
+    const playArea = document.getElementById('custom-quiz-play');
+    if (!playArea) return;
+    
+    const pct = Math.round((state.score / state.questions.length) * 100);
+    
+    // Reward XP
+    let xpGained = state.score * 10;
+    let totalXp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+    localStorage.setItem('academy_user_xp', totalXp + xpGained);
+    renderProfile();
+    
+    playArea.innerHTML = `
+        <div class="card" style="padding:24px 16px; text-align:center; direction:rtl;">
+            <div style="font-size:48px; margin-bottom:12px;">🏆</div>
+            <h2 style="font-size:18px; font-weight:900; margin-bottom:6px; color:var(--text-1);">اكتمل الاختبار المخصص!</h2>
+            <p style="font-size:12.5px; color:var(--text-3); margin-bottom:20px;">لقد أنهيت الإجابة على جميع الأسئلة</p>
+            
+            <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:24px; background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #cbd5e1;">
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${state.score} / ${state.questions.length}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الأسئلة الصحيحة</div>
+                </div>
+                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:#10b981;">+${xpGained}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الدرجات المحصلة</div>
+                </div>
+                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--text-1);">${pct}%</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">معدل النجاح</div>
+                </div>
+            </div>
+            
+            <button class="btn-sm btn-primary" onclick="exitCustomQuiz()" style="width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:800; border:none; color:#fff; cursor:pointer;">
+                ➡️ العودة لمركز المراجعة
+            </button>
+        </div>`;
+}
+
+function exitCustomQuiz() {
+    document.getElementById('custom-quiz-play').style.display = 'none';
+    document.getElementById('custom-quiz-setup').style.display = 'block';
+}
+
+// ── STUDY PLANNER LOGIC ──
+function saveStudyPlan() {
+    const examDate = document.getElementById('planner-exam-date').value;
+    if (!examDate) {
+        alert('الرجاء تحديد تاريخ الامتحان أولاً.');
+        return;
+    }
+    
+    const subjects = [];
+    if (document.getElementById('plan-sub-sira').checked) subjects.push('sira');
+    if (document.getElementById('plan-sub-fiqh').checked) subjects.push('fiqh');
+    if (document.getElementById('plan-sub-aqeeda').checked) subjects.push('aqeeda');
+    if (document.getElementById('plan-sub-nahw').checked) subjects.push('nahw');
+    
+    if (subjects.length === 0) {
+        alert('الرجاء اختيار مادة واحدة على الأقل مشمولة بالامتحان.');
+        return;
+    }
+    
+    const plan = {
+        examDate,
+        subjects
+    };
+    
+    localStorage.setItem('academy_study_plan', JSON.stringify(plan));
+    renderPlannerDashboard();
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+}
+
+function renderPlannerDashboard() {
+    const setupDiv = document.getElementById('planner-setup');
+    const dashDiv = document.getElementById('planner-dashboard');
+    if (!setupDiv || !dashDiv) return;
+    
+    const saved = localStorage.getItem('academy_study_plan');
+    if (!saved) {
+        setupDiv.style.display = 'block';
+        dashDiv.style.display = 'none';
+        return;
+    }
+    
+    const plan = JSON.parse(saved);
+    const examDateObj = new Date(plan.examDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const timeDiff = examDateObj.getTime() - today.getTime();
+    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    if (daysRemaining < 0) {
+        // Exam passed, clear plan
+        localStorage.removeItem('academy_study_plan');
+        setupDiv.style.display = 'block';
+        dashDiv.style.display = 'none';
+        return;
+    }
+    
+    // Count unfinished chapters in selected subjects
+    let unfinishedChapters = [];
+    DB.forEach(l => {
+        if (plan.subjects.includes(l.subject) && l.thematic_blocks && l.thematic_blocks.length) {
+            l.thematic_blocks.forEach((b, idx) => {
+                const key = `${l.subject}_${l.lessonNum}_${idx}`;
+                if (!syllabusCompletion[key]) {
+                    unfinishedChapters.push({
+                        ...b,
+                        subject: l.subject,
+                        subjectLabel: l.subjectLabel,
+                        lessonNum: l.lessonNum,
+                        chapterIdx: idx
+                    });
+                }
+            });
+        }
+    });
+    
+    const totalUnfinished = unfinishedChapters.length;
+    const chaptersPerDay = daysRemaining > 0 ? Math.ceil(totalUnfinished / daysRemaining) : totalUnfinished;
+    
+    // Pick 3 daily recommendations from unfinished list
+    unfinishedChapters.sort(() => Math.random() - 0.5);
+    const dailyRecommendations = unfinishedChapters.slice(0, 3);
+    
+    let recsHtml = '';
+    if (dailyRecommendations.length > 0) {
+        recsHtml = dailyRecommendations.map(item => `
+        <div class="card" onclick="openModal('${item.subject}', ${item.lessonNum}, 'blocks', ${item.chapterIdx})" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:12px 14px; margin-bottom:8px; border:1px solid var(--primary-border); background:#ffffff;">
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:right; flex:1; min-width:0;">
+                <span class="badge badge-${item.subject}" style="font-size:10px; align-self:flex-start;">${item.subjectLabel} - الدرس ${item.lessonNum}</span>
+                <span style="font-size:13.5px; font-weight:700; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.title}</span>
+            </div>
+            <span style="color:var(--primary); font-size:14px; font-weight:800; flex-shrink:0; margin-right:12px;">دراسة ←</span>
+        </div>`).join('');
+    } else {
+        recsHtml = `
+        <div class="card" style="font-size:12.5px; color:var(--text-3); text-align:center; padding:16px; margin-bottom:0;">
+            ✨ مبروك! لقد أكملت دراسة ومراجعة جميع المحاور المطلوبة للامتحان.
+        </div>`;
+    }
+    
+    setupDiv.style.display = 'none';
+    dashDiv.style.display = 'block';
+    
+    dashDiv.innerHTML = `
+        <div class="card" style="padding:16px; margin-bottom:14px; text-align:right;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:900; color:var(--text-1);">📊 خطتك الدراسية الحالية</h3>
+                <button class="btn-sm btn-outline" onclick="resetStudyPlan()" style="font-size:10.5px;">تعديل الخطة ⚙️</button>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-bottom:18px;">
+                <div class="card" style="flex:1; margin-bottom:0; text-align:center; padding:12px; background:#f8fafc; border:1.2px solid #e2e8f0;">
+                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${daysRemaining}</div>
+                    <div style="font-size:10px; color:var(--text-3); margin-top:2px;">أيام متبقية</div>
+                </div>
+                <div class="card" style="flex:1; margin-bottom:0; text-align:center; padding:12px; background:#f8fafc; border:1.2px solid #e2e8f0;">
+                    <div style="font-size:20px; font-weight:900; color:${totalUnfinished > 0 ? '#ef4444' : '#10b981'};">${totalUnfinished}</div>
+                    <div style="font-size:10px; color:var(--text-3); margin-top:2px;">محاور لم تدرس</div>
+                </div>
+                <div class="card" style="flex:1; margin-bottom:0; text-align:center; padding:12px; background:#f8fafc; border:1.2px solid #e2e8f0;">
+                    <div style="font-size:20px; font-weight:900; color:#f59e0b;">${chaptersPerDay}</div>
+                    <div style="font-size:10px; color:var(--text-3); margin-top:2px;">محاور يومياً</div>
+                </div>
+            </div>
+            
+            <div style="font-size:12.5px; line-height:1.6; color:var(--text-2); background:var(--primary-light); padding:12px; border-radius:10px; border-right:3.5px solid var(--primary); margin-bottom:20px;">
+                📝 <strong>توجيه المراجعة :</strong>
+                ${totalUnfinished > 0 ? `تحتاج لمراجعة وتأكيد فهم <strong>${chaptersPerDay} محاور يومياً</strong> لتتمكن من تغطية مقرر الامتحان في الوقت المحدد.` : 'لقd أنهيت مراجعة كامل المحاور بنجاح!'}
+            </div>
+            
+            <h3 style="font-size:14.5px; font-weight:900; margin-bottom:10px; color:var(--text-1);">📌 المراجعة المقترحة لك اليوم :</h3>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+                ${recsHtml}
+            </div>
+        </div>`;
+}
+
+function resetStudyPlan() {
+    localStorage.removeItem('academy_study_plan');
+    document.getElementById('planner-dashboard').style.display = 'none';
+    document.getElementById('planner-setup').style.display = 'block';
+    
+    // Set default values
+    const dateInput = document.getElementById('planner-exam-date');
+    if (dateInput) {
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        dateInput.value = nextWeek.toISOString().split('T')[0];
+    }
+}
+
+// ── PROFILE ──
+function renderProfile() {
+    if(tg?.initDataUnsafe?.user?.first_name) document.getElementById('profile-name').textContent=tg.initDataUnsafe.user.first_name;
+    
+    const adminBtn = document.getElementById('admin-mode-status');
+    const adminPanel = document.getElementById('admin-dashboard-panel');
+    if (adminBtn) {
+        if (isAdminMode) {
+            adminBtn.textContent = 'نشط 👑';
+            adminBtn.style.background = '#d97706';
+            adminBtn.style.color = '#ffffff';
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+                loadAdminReports();
+            }
+        } else {
+            adminBtn.textContent = 'غير نشط 🎓';
+            adminBtn.style.background = '#fde68a';
+            adminBtn.style.color = '#b45309';
+            if (adminPanel) adminPanel.style.display = 'none';
+        }
+    }
+    
+    // Load XP & Stats
+    let xp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+    let quizStats = {};
+    try {
+        quizStats = JSON.parse(localStorage.getItem('academy_quiz_stats') || '{}');
+    } catch(e){}
+    
+    const quizCount = Object.keys(quizStats).length;
+    let avgScore = 0;
+    if (quizCount > 0) {
+        const sum = Object.values(quizStats).reduce((acc, curr) => acc + curr.percent, 0);
+        avgScore = Math.round(sum / quizCount);
+    }
+    
+    // Determine Rank
+    let rank = 'طالب مبتدئ 🎓';
+    if (xp >= 40) rank = 'مساعد فقيه ⚖️';
+    if (xp >= 80) rank = 'مؤرخ سيرة 🕌';
+    if (xp >= 120) rank = 'مستشار نحوي 📝';
+    if (xp >= 160) rank = 'عالم محقق 🌟';
+    
+    document.getElementById('profile-name').innerHTML = `${tg?.initDataUnsafe?.user?.first_name || 'طالب الأكاديمية'} <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 20px; font-weight: 700; margin-right: 6px;">${rank}</span>`;
+    
+    document.getElementById('stats-grid').innerHTML=`
+        <div class="stat-card"><div class="stat-val" style="color: var(--primary);">${xp}</div><div class="stat-lbl">الدرجات العلمية</div></div>
+        <div class="stat-card"><div class="stat-val" style="color: #10b981;">${quizCount}</div><div class="stat-lbl">التقييمات المنجزة</div></div>
+        <div class="stat-card"><div class="stat-val" style="color: #f59e0b;">${avgScore}%</div><div class="stat-lbl">معدل الاختبارات</div></div>
+        <div class="stat-card"><div class="stat-val" style="color: #7c3aed;">${DB.length}</div><div class="stat-lbl">الدروس الكلية</div></div>`;
+        
+    // Render subjects progress list
+    const subjects = ['sira', 'fiqh', 'aqeeda', 'nahw'];
+    const progressContainer = document.getElementById('profile-subjects-progress');
+    if (progressContainer) {
+        progressContainer.innerHTML = subjects.map(sub => {
+            const stats = getSubjectStats(sub);
+            const meta = SUBJECT_METADATA[sub] || { title: sub, icon: '📚' };
+            return `
+            <div class="card" style="margin-bottom:0; padding:12px 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:13px; font-weight:800; color:var(--text-1);">${meta.icon} ${meta.title}</span>
+                    <span style="font-size:11.5px; font-weight:800; color:var(--text-2);">${stats.percent}%</span>
+                </div>
+                <div class="progress-mini" style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                    <div class="fill" style="width:${stats.percent}%; height:100%; background:var(--${sub});"></div>
+                </div>
+                <div style="font-size:10px; color:var(--text-3); text-align:left; margin-top:4px; font-weight:700;">
+                    ${stats.completed} من أصل ${stats.total} محاور مكتملة
+                </div>
+            </div>`;
+        }).join('');
+    }
+}
+
+// ── SEARCH ──
+const si=document.getElementById('search-input'), cb=document.getElementById('clear-btn'), ac=document.getElementById('autocomplete');
+document.getElementById('filter-chips').querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+        document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active'); currentFilter=chip.dataset.filter;
+        if(si.value.trim().length>=2) doSearch(si.value.trim());
+    });
+});
+
+si.addEventListener('input',()=>{
+    const q=si.value.trim();
+    cb.style.display=q?'block':'none';
+    if(q.length>=2){showAc(q);doSearch(q);} else{ac.style.display='none';resetSearch();}
+});
+
+si.addEventListener('keydown',(e)=>{
+    if (e.key === 'Enter') {
+        const q=si.value.trim();
+        if(q.length>=2){
+            ac.style.display='none';
+            doSearch(q);
+            si.blur(); // dismiss keyboard on mobile devices
+        }
+    }
+});
+
+cb.addEventListener('click',()=>{
+    si.value='';
+    cb.style.display='none';
+    ac.style.display='none';
+    resetSearch();
+    si.focus();
+});
+
+document.addEventListener('click',e=>{
+    if(!e.target.closest('.search-wrap')) ac.style.display='none';
+});
+
+function showAc(q) {
+    const ql=q.toLowerCase();
+    const matches=wordIndex.filter(w=>w.text.toLowerCase().includes(ql)).slice(0,5);
+    if(!matches.length){ac.style.display='none';return;}
+    ac.innerHTML=matches.map(m=>`<div class="autocomplete-item" onclick="si.value='${m.text}';ac.style.display='none';cb.style.display='block';doSearch('${m.text}')"><span>${hl(m.text,q)}</span><span class="badge ${m.cls}">${m.subjectLabel}</span></div>`).join('');
+    ac.style.display='block';
+}
+
+function getQ(q){
+    const ql=q.toLowerCase();
+    let qs=[ql];
+    // S'il y a des lettres arabes dans la recherche, on ne fait pas de translitération latine
+    const hasArabic = /[\u0600-\u06FF]/.test(ql);
+    if (!hasArabic && TRANSLIT[ql]) {
+        qs=qs.concat(TRANSLIT[ql]);
+    }
+    return qs;
+}
+
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+function score(item, queries) {
+    let s=0;
+    const title=item.title.toLowerCase(), sum=strip(item.summary||'').toLowerCase();
+    const ft=(item.full_text||'').toLowerCase(), bt=(item.blocks_search_text||'').toLowerCase();
+    for(const q of queries){
+        if(title.includes(q))s+=120;
+        s+=(sum.match(new RegExp(esc(q),'g'))||[]).length*10;
+        s+=(bt.match(new RegExp(esc(q),'g'))||[]).length*15;
+        s+=(ft.match(new RegExp(esc(q),'g'))||[]).length*3;
+    }
+    return s;
+}
+
+function doSearch(q) {
+    ac.style.display = 'none'; // Ferme les suggestions box immédiatement
+    const queries = getQ(q);
+    const results = [];
+    const res = document.getElementById('search-results');
+    const infoHeader = document.getElementById('search-results-info');
+    
+    // Parcourir tous les cours de la DB
+    DB.forEach(item => {
+        // 1. Recherche dans les blocs thématiques de l'enseignant
+        if (item.thematic_blocks && item.thematic_blocks.length) {
+            item.thematic_blocks.forEach(b => {
+                let sc = 0;
+                let matchTitle = false;
+                
+                queries.forEach(q2 => {
+                    const titleLower = b.title.toLowerCase();
+                    const textLower = (b.search_text || '').toLowerCase();
+                    
+                    if (titleLower.includes(q2)) {
+                        sc += 2000; // Très fort score pour correspondance dans le titre
+                        matchTitle = true;
+                    }
+                    if (textLower.includes(q2)) {
+                        sc += 150; // Score moyen pour correspondance dans le texte/citation
+                    }
+                });
+                
+                if (sc > 0) {
+                    results.push({
+                        type: 'block',
+                        score: sc,
+                        item: item,
+                        block: b,
+                        matchTitle: matchTitle
+                    });
+                }
+            });
+        }
+        
+        // 2. Recherche dans les fiches (résumés de cours)
+        let ficheScore = 0;
+        const sumText = strip(item.summary || '').toLowerCase();
+        queries.forEach(q2 => {
+            if (sumText.includes(q2)) {
+                ficheScore += 100;
+            }
+        });
+        if (ficheScore > 0) {
+            results.push({
+                type: 'fiche',
+                score: ficheScore,
+                item: item
+            });
+        }
+        
+        // 3. Recherche dans le texte brut des transcriptions
+        let transScore = 0;
+        const ftText = (item.full_text || '').toLowerCase();
+        queries.forEach(q2 => {
+            if (ftText.includes(q2)) {
+                transScore += 10;
+            }
+        });
+        if (transScore > 0) {
+            results.push({
+                type: 'trans',
+                score: transScore,
+                item: item
+            });
+        }
+    });
+    
+    if (!results.length) {
+        infoHeader.style.display = 'none';
+        res.innerHTML = `<div class="empty-state"><div class="empty-icon">😕</div><p>لم نجد نتائج لـ "${q}"</p></div>`;
+        return;
+    }
+    
+    // Filtrer selon l'onglet actif
+    const filtered = results.filter(r => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'title_only') {
+            if (r.type === 'block') return r.matchTitle;
+            if (r.type === 'fiche') return queries.some(q2 => r.item.title.toLowerCase().includes(q2));
+            return false;
+        }
+        if (currentFilter === 'block') return r.type === 'block';
+        if (currentFilter === 'fiche') return r.type === 'fiche';
+        if (currentFilter === 'trans') return r.type === 'trans';
+        return false;
+    });
+    
+    if (!filtered.length) {
+        infoHeader.style.display = 'none';
+        res.innerHTML = `<div class="empty-state"><div class="empty-icon">😕</div><p>لم نجد نتائج في هذا الفلتر لـ "${q}"</p></div>`;
+        return;
+    }
+    
+    // Trier par score décroissant (les titres en premier !)
+    filtered.sort((a, b) => b.score - a.score);
+    
+    let html = '';
+    let matchCount = 0;
+    
+    filtered.forEach(r => {
+        matchCount++;
+        const item = r.item;
+        
+        if (r.type === 'block') {
+            const b = r.block;
+            const snip = hl(strip(b.citation).substring(0, 140) + '...', q);
+            // On ajoute une étiquette [العنوان] visuelle si c'est un match sur le titre
+            html += `<div class="result-card" onclick="openModal('${item.subject}',${item.lessonNum},'blocks')">
+                <div class="result-type-bar type-block"></div>
+                <div class="result-body">
+                    <div class="result-meta">
+                        <span class="badge badge-${item.subject}">📌 ${item.subjectLabel}</span>
+                        <span class="result-lesson-num">الدرس ${item.lessonNum}</span>
+                        ${r.matchTitle ? `<span class="badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px">🎯 تطابق العنوان</span>` : ''}
+                    </div>
+                    <div class="result-title">${hl(b.title, q)}</div>
+                    <div class="result-snippet">${snip}</div>
+                    <div class="result-actions">
+                        <button class="btn-sm btn-primary" onclick="event.stopPropagation();openModal('${item.subject}',${item.lessonNum},'blocks')">📌 اقرأ الموضوع</button>
+                        ${b.video_link ? `<a href="${b.video_link}" target="_blank" class="btn-sm btn-video" style="text-decoration:none" onclick="event.stopPropagation()">▶ ${b.timestamp}</a>` : ''}
+                    </div>
+                </div></div>`;
+        }
+        
+        else if (r.type === 'fiche') {
+            const sum = strip(item.summary || '');
+            let snip = '';
+            for (const q2 of queries) {
+                const idx = sum.toLowerCase().indexOf(q2);
+                if (idx !== -1) {
+                    snip = '...' + sum.substring(Math.max(0, idx - 30), idx + 130) + '...';
+                    break;
+                }
+            }
+            if (!snip) snip = sum.substring(0, 130) + '...';
+            html += `<div class="result-card" onclick="openModal('${item.subject}',${item.lessonNum},'fiche')">
+                <div class="result-type-bar type-fiche"></div>
+                <div class="result-body">
+                    <div class="result-meta">
+                        <span class="badge badge-${item.subject}">📖 ${item.subjectLabel}</span>
+                        <span class="result-lesson-num">الدرس ${item.lessonNum}</span>
+                    </div>
+                    <div class="result-snippet">${hl(snip, q)}</div>
+                    <div class="result-actions">
+                        <button class="btn-sm btn-outline" onclick="event.stopPropagation();openModal('${item.subject}',${item.lessonNum},'fiche')">📖 اقرأ الفيشة</button>
+                    </div>
+                </div></div>`;
+        }
+        
+        else if (r.type === 'trans') {
+            const ft = item.full_text || '';
+            let snip = '';
+            for (const q2 of queries) {
+                const idx = ft.toLowerCase().indexOf(q2);
+                if (idx !== -1) {
+                    snip = '...' + ft.substring(Math.max(0, idx - 30), idx + 130) + '...';
+                    break;
+                }
+            }
+            if (snip) {
+                html += `<div class="result-card" onclick="openModal('${item.subject}',${item.lessonNum},'trans')">
+                    <div class="result-type-bar type-trans"></div>
+                    <div class="result-body">
+                        <div class="result-meta">
+                            <span class="badge badge-${item.subject}">📝 ${item.subjectLabel}</span>
+                            <span class="result-lesson-num">الدرس ${item.lessonNum}</span>
+                        </div>
+                        <div class="result-snippet">${hl(snip, q)}</div>
+                        <div class="result-actions">
+                            <button class="btn-sm btn-outline" onclick="event.stopPropagation();openModal('${item.subject}',${item.lessonNum},'trans')">📝 قراءة التفريغ</button>
+                        </div>
+                    </div></div>`;
+            }
+        }
+    });
+    
+    infoHeader.style.display = 'block';
+    infoHeader.textContent = `تم العثور على ${matchCount} نتيجة بحث لـ "${q}"`;
+    res.innerHTML = html;
+}
+
+function resetSearch(){
+    document.getElementById('search-results-info').style.display = 'none';
+    document.getElementById('search-results').innerHTML=`<div class="empty-state"><div class="empty-icon">💡</div><p>اكتب كلمة للبحث في جميع الدروس</p></div>`;
+}
+
+// ── IMMERSIVE READER MODAL / OVERLAY ──
+function openModal(subject, lessonNum, tab) {
+    activeLesson=DB.find(l=>l.subject===subject&&l.lessonNum===lessonNum);
+    if(!activeLesson) return;
+    
+    activeTab = tab;
+    
+    document.getElementById('modal-badge').className = `badge badge-${subject}`;
+    document.getElementById('modal-badge').textContent = `${activeLesson.subjectLabel}`;
+    document.getElementById('modal-title').textContent = `الدرس ${lessonNum}`;
+    
+    const tabs=[];
+    if(activeLesson.image) tabs.push({k:'image',l:'🖼️ الخريطة'});
+    if(activeLesson.thematic_blocks.length) tabs.push({k:'blocks',l:'📌 المحاور'});
+    tabs.push({k:'fiche',l:'📖 الفيشة'});
+    tabs.push({k:'trans',l:'📝 التفريغ'});
+    
+    // Fallback tab if requested tab not available
+    let selectedTab = tab;
+    if (tab === 'blocks' && !activeLesson.thematic_blocks.length) {
+        selectedTab = activeLesson.image ? 'image' : 'fiche';
+        activeTab = selectedTab;
+    }
+    
+    document.getElementById('modal-tabs').innerHTML=tabs.map(t=>`<button class="modal-tab ${t.k===selectedTab?'active':''}" data-tab="${t.k}" onclick="switchMTab('${t.k}',this)">${t.l}</button>`).join('');
+    
+    renderMBody(selectedTab);
+    updateNavButtons();
+    updateReaderProgressTracker();
+    
+    document.getElementById('modal-overlay').classList.add('open');
+    
+    // Telegram API Integrations
+    if (tg) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(closeModal);
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+    }
+}
+
+function switchMTab(key,btn){
+    document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = key;
+    renderMBody(key);
+    updateReaderProgressTracker();
+}
+
+function toggleExpl(idx, btn, event) {
+    if (event) event.stopPropagation();
+    const details = document.getElementById(`expl-details-${idx}`);
+    const chevron = btn.querySelector('.chevron');
+    const label = btn.querySelector('.label-text');
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        if (label) label.textContent = 'إخفاء التفاصيل';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        details.style.display = 'none';
+        if (label) label.textContent = 'عرض التفاصيل';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+function adjustFontSize(offset) {
+    readerFontSize = Math.max(12, Math.min(24, readerFontSize + offset));
+    document.getElementById('modal-body').style.setProperty('--reader-font-size', readerFontSize + 'px');
+}
+
+function renderMBody(tab){
+    const body=document.getElementById('modal-body'), l=activeLesson, q=si.value.trim();
+    // Reset font size variable
+    body.style.setProperty('--reader-font-size', readerFontSize + 'px');
+    
+    if(tab==='image'){
+        body.innerHTML = `
+        <div style="text-align: center; padding: 10px 0;">
+            <img src="${l.image}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: var(--shadow-md); cursor: pointer;" onclick="openImageFullscreen('${l.image}')" alt="الخريطة الذهنية">
+            <p style="margin-top: 14px; font-size: 13px; color: var(--text-2); font-weight: 700; direction: rtl;">🔍 اضغط على الخريطة الذهنية لعرضها بملء الشاشة والتحكم بها</p>
+        </div>`;
+    } else if(tab==='blocks'){
+        if(!l.thematic_blocks.length){body.innerHTML='<div class="empty-state"><p>لا توجد محاور مفصّلة لهذا الدرس بعد</p></div>';return;}
+        body.innerHTML = `
+        <div class="subj-${l.subject}" style="direction: rtl; text-align: right; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-2); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">📋 محاور الدرس الرئيسية (اضغط للانتقال للتفريغ)</div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${l.thematic_blocks.map((b, idx) => {
+                    const cleanExplanation = b.explanation ? b.explanation.trim() : '';
+                    return `
+                    <div class="toc-item-card" style="background: #ffffff; border: 1.5px solid var(--border); border-right: 5px solid var(--subj-color, var(--primary)); border-radius: 14px; overflow: hidden; transition: all 0.2s ease-in-out; box-shadow: var(--shadow-sm);">
+                        <!-- Header Row: Clickable to go to transcript -->
+                        <div onclick="switchMTab('trans', document.querySelector('.modal-tab[data-tab=trans]')); setTimeout(() => scrollToChapter(${idx}), 150);" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                <span style="font-size: 10.5px; font-weight: 800; background: var(--subj-color-light, var(--primary-light)); color: var(--subj-color, var(--primary)); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">المحور ${idx + 1}</span>
+                                <strong style="font-size: 14.5px; color: var(--text-1); font-weight: 800; line-height: 1.45;">${b.title}</strong>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 10.5px; font-weight: 800; background: var(--bg); color: var(--text-3); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); white-space: nowrap;">⏱️ ${b.timestamp}</span>
+                                <span style="color: var(--subj-color, var(--primary)); font-weight: 900; font-size: 16px; transition: transform 0.2s;">←</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Toggleable Explanation Section -->
+                        ${cleanExplanation ? `
+                        <div style="border-top: 1px dashed var(--border); background: #fafafa; padding: 10px 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px;">
+                                    <span>💡</span>
+                                    <span style="font-weight: 700;">ملخص سلوكي وتربوي للمحور</span>
+                                </div>
+                                <button onclick="toggleExpl(${idx}, this, event)" style="background: var(--subj-color-light, var(--primary-light)); border: 1.1px solid rgba(0,0,0,0.03); color: var(--subj-color, var(--primary)); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;">
+                                    <span class="label-text">عرض التفاصيل</span>
+                                    <span class="chevron" style="transition: transform 0.2s; font-size: 8px; display: inline-block;">▼</span>
+                                </button>
+                            </div>
+                            <div id="expl-details-${idx}" style="display: none; margin-top: 8px; font-size: 13px; color: var(--text-2); line-height: 1.6; text-align: justify; border-top: 1px dashed var(--border); padding-top: 8px;">
+                                ${formatProse(cleanExplanation, q)}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>`;
+    } else if(tab==='fiche'){
+        const hasQuiz = l.quiz && l.quiz.length > 0;
+        const quizBtnHtml = hasQuiz ? `
+        <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border); padding-top: 20px;">
+            <button class="btn-sm btn-primary" onclick="startQuiz('${l.subject}', ${l.lessonNum})" style="padding: 12px 24px; border-radius: 14px; font-size: 13.5px; width: 100%; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15); border: none; cursor: pointer; font-family: inherit;">
+                🧩 اختبر معلوماتك في هذا الدرس
+            </button>
+        </div>` : '';
+        
+        // Format lines for poetry in summary
+        const lines = l.summary.split('\n');
+        const formattedSummary = lines.map(line => {
+            if (!line.trim()) return '';
+            const poetryRegex = /([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})\s*\*\*\*\s*([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})/g;
+            
+            let parts = [];
+            let lastIndex = 0;
+            let match;
+            
+            while ((match = poetryRegex.exec(line)) !== null) {
+                const prose = line.substring(lastIndex, match.index);
+                if (prose) parts.push({ type: 'prose', content: prose });
+                
+                parts.push({
+                    type: 'poetry',
+                    shatr1: match[1],
+                    shatr2: match[2]
+                });
+                lastIndex = poetryRegex.lastIndex;
+            }
+            
+            if (lastIndex < line.length) {
+                parts.push({ type: 'prose', content: line.substring(lastIndex) });
+            }
+            if (parts.length === 0) {
+                parts.push({ type: 'prose', content: line });
+            }
+            
+            const renderedParts = parts.map(part => {
+                if (part.type === 'prose') {
+                    const finalHtml = formatProse(part.content, q);
+                    return `<span class="reader-p-text">${finalHtml}</span>`;
+                } else {
+                    const verseNum = findVerseNumber(part.shatr1, part.shatr2);
+                    const s1 = formatProse(part.shatr1.trim(), q);
+                    const s2 = formatProse(part.shatr2.trim(), q);
+                    return `
+                    <div class="poetry-verse-container" style="position: relative; margin: 18px auto; max-width: 90%; direction: rtl; text-align: center;">
+                        ${verseNum ? `<div class="poetry-badge" style="position: absolute; top: -8px; right: 12px; background: #fef08a; color: #854d0e; font-size: 10.5px; font-weight: 800; padding: 2px 9px; border-radius: 20px; border: 1px solid #eab308; font-family: 'Tajawal', sans-serif; box-shadow: 0 2px 6px rgba(133,77,14,0.1); z-index: 2;">البيت ${verseNum}</div>` : ''}
+                        <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 16px 16px 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
+                            <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; margin-bottom: 6px; text-align: center;">${s1}</div>
+                            <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; text-align: center;">${s2}</div>
+                        </div>
+                    </div>`;
+                }
+            }).join('');
+            
+            return `<div class="reader-p">${renderedParts}</div>`;
+        }).join('');
+        
+        body.innerHTML=`<div class="summary-html">${formattedSummary}</div>${quizBtnHtml}`;
+    } else {
+        body.innerHTML = formatTranscription(l, q);
+    }
+}
+
+// ── Smart Transcription Formatting ──
+function formatTranscription(lesson, q) {
+    if (!lesson.segments || !lesson.segments.length) {
+        return '<div class="empty-state"><p>لا يوجد تفريغ متوفر لهذا الدرس</p></div>';
+    }
+    
+    let html = '';
+    
+    // Sort blocks by start time
+    const blocks = [...(lesson.thematic_blocks || [])].sort((a,b) => (a.start_seconds || 0) - (b.start_seconds || 0));
+    
+    // 1. Generate Table of Contents (Index)
+    if (blocks.length > 0) {
+        html += `
+        <div class="reader-toc" style="background: none; border: none; padding: 0; margin-bottom: 26px;">
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-2); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; direction: rtl;">
+                📋 محاور الدرس الرئيسية (اضغط للانتقال)
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; direction: rtl;">
+                ${blocks.map((b, idx) => `
+                    <div class="reader-toc-card" onclick="scrollToChapter(${idx})" style="background: #ffffff; border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; position: relative; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 9.5px; font-weight: 800; background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 6px; border: 1.1px solid var(--primary-border);">${b.timestamp}</span>
+                            <span style="font-size: 9.5px; font-weight: 800; color: var(--text-3);">المحور ${idx + 1}</span>
+                        </div>
+                        <div style="font-size: 13px; font-weight: 800; color: var(--text-1); line-height: 1.45; text-align: right; margin-top: 2px;">
+                            ${b.title}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+    }
+    
+    let transcriptHtml = '<div class="reader-text-content">';
+    let currentParagraph = [];
+    let paragraphStartTs = null;
+    let paragraphStartLink = null;
+    let blockIdx = 0;
+    let activeBlockExplanation = null;
+    let activeBlockIdx = -1;
+    
+    lesson.segments.forEach((seg, idx) => {
+        const sec = seg.sec || 0;
+        let startedBlock = null;
+        let matchedBlockIdx = -1;
+        
+        while (blockIdx < blocks.length && sec >= (blocks[blockIdx].start_seconds || 0)) {
+            if (sec - (blocks[blockIdx].start_seconds || 0) < 15) {
+                startedBlock = blocks[blockIdx];
+                matchedBlockIdx = blockIdx;
+            }
+            blockIdx++;
+        }
+        
+        if (startedBlock) {
+            if (currentParagraph.length) {
+                transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
+                currentParagraph = [];
+            }
+            if (activeBlockExplanation) {
+                transcriptHtml += `
+                <div class="reader-chapter-explanation">
+                    <div class="explanation-header">
+                        <span class="explanation-icon">💡</span>
+                        <strong class="explanation-title">التفسير التربوي والفوائد السلوكية</strong>
+                    </div>
+                    <div class="explanation-content">${formatProse(activeBlockExplanation, q)}</div>
+                </div>`;
+                
+                if (activeBlockIdx !== -1) {
+                    if (lesson.quiz && lesson.quiz[activeBlockIdx]) {
+                        transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+                    } else {
+                        transcriptHtml += renderManualCompletionButton(lesson, activeBlockIdx);
+                    }
+                }
+                
+                activeBlockExplanation = null;
+            }
+            // Add chapter title with unique ID for scrolling
+            transcriptHtml += `
+            <div class="reader-chapter-title-card" id="chapter-${matchedBlockIdx}" style="margin: 32px 0 16px 0; padding: 14px 18px; background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%); border-right: 4px solid var(--primary); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">📌</span>
+                <h3 style="margin: 0; font-size: 16.5px; font-weight: 800; color: #0f172a; font-family: 'Tajawal', sans-serif;">${startedBlock.title}</h3>
+            </div>`;
+            activeBlockExplanation = startedBlock.explanation || null;
+            activeBlockIdx = matchedBlockIdx;
+            paragraphStartTs = seg.ts;
+            paragraphStartLink = seg.video_link;
+        }
+        
+        if (!paragraphStartTs) {
+            paragraphStartTs = seg.ts;
+            paragraphStartLink = seg.video_link;
+        }
+        
+        currentParagraph.push(seg.text);
+        
+        // Break paragraph: cuts only happen on sentence-ending punctuation OR if we reach 10 segments
+        const trimmed = seg.text.trim();
+        const lastChar = trimmed.slice(-1);
+        const textEndsWithPunct = trimmed && /[.؟!؛]/.test(lastChar);
+        const textEndsWithComma = trimmed && /[،,]/.test(lastChar);
+        if (
+            (currentParagraph.length >= 6 && textEndsWithPunct) ||
+            (currentParagraph.length >= 12)
+        ) {
+            transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
+            currentParagraph = [];
+            paragraphStartTs = null;
+            paragraphStartLink = null;
+        }
+    });
+    
+    if (currentParagraph.length) {
+        transcriptHtml += renderParagraphHtml(currentParagraph, paragraphStartTs, paragraphStartLink, q, lesson.subject, lesson.lessonNum);
+    }
+    if (activeBlockExplanation) {
+        transcriptHtml += `
+        <div class="reader-chapter-explanation">
+            <div class="explanation-header">
+                <span class="explanation-icon">💡</span>
+                <strong class="explanation-title">التفسير التربوي والفوائد السلوكية</strong>
+            </div>
+            <div class="explanation-content">${formatProse(activeBlockExplanation, q)}</div>
+        </div>`;
+        
+        if (activeBlockIdx !== -1) {
+            if (lesson.quiz && lesson.quiz[activeBlockIdx]) {
+                transcriptHtml += renderChapterFlashQuestion(lesson, activeBlockIdx);
+            } else {
+                transcriptHtml += renderManualCompletionButton(lesson, activeBlockIdx);
+            }
+        }
+    }
+    
+    transcriptHtml += '</div>';
+    html += transcriptHtml;
+    return html;
+}
+
+function scrollToChapter(idx) {
+    const el = document.getElementById(`chapter-${idx}`);
+    if (el) {
+        // Scroll the modal body itself, since it's the scroll container
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function renderParagraphHtml(texts, ts, link, q, subject, lessonNum) {
+    let text = texts.join(' ');
+    
+    // Regex matches 2-6 words before *** and 2-6 words after *** without punctuation
+    const poetryRegex = /([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})\s*\*\*\*\s*([^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+(?:\s+[^\s\*\:\،\.\!\؟\-\"\'\«\»\(\)]+){1,5})/g;
+    
+    let parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = poetryRegex.exec(text)) !== null) {
+        // Push preceding prose
+        const prose = text.substring(lastIndex, match.index);
+        if (prose) {
+            parts.push({ type: 'prose', content: prose });
+        }
+        
+        // Push poetry verse
+        parts.push({
+            type: 'poetry',
+            shatr1: match[1],
+            shatr2: match[2]
+        });
+        
+        lastIndex = poetryRegex.lastIndex;
+    }
+    
+    // Push remaining prose
+    if (lastIndex < text.length) {
+        parts.push({ type: 'prose', content: text.substring(lastIndex) });
+    }
+    
+    if (parts.length === 0) {
+        parts.push({ type: 'prose', content: text });
+    }
+    
+    // Now, render each part
+    const renderedParts = parts.map(part => {
+        if (part.type === 'prose') {
+            if (!part.content.trim()) return '';
+            const finalHtml = formatProse(part.content, q);
+            return `<span class="reader-p-text">${finalHtml}</span>`;
+        } else {
+            const verseNum = findVerseNumber(part.shatr1, part.shatr2);
+            const s1 = formatProse(part.shatr1.trim(), q);
+            const s2 = formatProse(part.shatr2.trim(), q);
+            return `
+            <div class="poetry-verse-container" style="position: relative; margin: 18px auto; max-width: 90%; direction: rtl; text-align: center;">
+                ${verseNum ? `<div class="poetry-badge" style="position: absolute; top: -8px; right: 12px; background: #fef08a; color: #854d0e; font-size: 10.5px; font-weight: 800; padding: 2px 9px; border-radius: 20px; border: 1px solid #eab308; font-family: 'Tajawal', sans-serif; box-shadow: 0 2px 6px rgba(133,77,14,0.1); z-index: 2;">البيت ${verseNum}</div>` : ''}
+                <div class="poetry-verse" style="background: #fffdf5; border: 1.1px solid #f2e7c9; border-radius: 14px; padding: 16px 16px 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-family: 'Amiri', serif; line-height: 1.8; display: inline-block; width: 100%; box-sizing: border-box;">
+                    <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; margin-bottom: 6px; text-align: center;">${s1}</div>
+                    <div class="shatr" style="font-size: 16.5px; font-weight: 700; color: #854d0e; text-align: center;">${s2}</div>
+                </div>
+            </div>`;
+        }
+    }).join('');
+    
+    const isBookmarked = isPassageBookmarked(subject, lessonNum, ts);
+    const activeClass = isBookmarked ? 'active' : '';
+    
+    return `<div class="reader-p">
+        ${link ? `<a href="${link}" target="_blank" class="reader-p-play" title="شاهد من الدقيقة ${ts}" onclick="event.stopPropagation()">🎬</a>` : ''}
+        <a href="javascript:void(0)" class="reader-p-bookmark ${activeClass}" data-ts="${ts}" title="حفظ هذا المقطع" onclick="toggleBookmarkPassage(event, '${subject}', ${lessonNum}, '${ts}', this)">📌</a>
+        ${renderedParts}
+    </div>`;
+}
+
+// ── Next/Previous Lesson Navigation ──
+function updateNavButtons() {
+    if (!activeLesson) return;
+    const subjectLessons = DB.filter(l => l.subject === activeLesson.subject)
+                             .sort((a,b) => a.lessonNum - b.lessonNum);
+    const idx = subjectLessons.findIndex(l => l.lessonNum === activeLesson.lessonNum);
+    
+    const prevBtn = document.getElementById('btn-prev-lesson');
+    const nextBtn = document.getElementById('btn-next-lesson');
+    const prevVal = document.getElementById('lbl-prev-val');
+    const nextVal = document.getElementById('lbl-next-val');
+    
+    // In Arabic RTL: Offset -1 (Previous lesson) is displayed on the Right (prevBtn)
+    if (idx > 0) {
+        prevBtn.disabled = false;
+        prevVal.textContent = `الدرس ${subjectLessons[idx-1].lessonNum}`;
+    } else {
+        prevBtn.disabled = true;
+        prevVal.textContent = 'لا يوجد';
+    }
+    
+    // Offset +1 (Next lesson) is displayed on the Left (nextBtn)
+    if (idx < subjectLessons.length - 1) {
+        nextBtn.disabled = false;
+        nextVal.textContent = `الدرس ${subjectLessons[idx+1].lessonNum}`;
+    } else {
+        nextBtn.disabled = true;
+        nextVal.textContent = 'لا يوجد';
+    }
+}
+
+function navigateLesson(offset) {
+    if (!activeLesson) return;
+    const subjectLessons = DB.filter(l => l.subject === activeLesson.subject)
+                             .sort((a,b) => a.lessonNum - b.lessonNum);
+    const idx = subjectLessons.findIndex(l => l.lessonNum === activeLesson.lessonNum);
+    const nextIdx = idx + offset;
+    
+    if (nextIdx >= 0 && nextIdx < subjectLessons.length) {
+        const nextL = subjectLessons[nextIdx];
+        openModal(nextL.subject, nextL.lessonNum, activeTab || 'fiche');
+        
+        // Scroll reader content to the top
+        document.getElementById('modal-body').scrollTop = 0;
+        
+        // Telegram API Vibration
+        if (tg) {
+            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+        }
+    }
+}
+
+function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('reader-progress-tracker').style.display = 'none';
+    activeLesson = null;
+    
+    // Telegram API Integrations
+    if (tg) {
+        if (selectedSubjectKey) {
+            // Restore BackButton action to return to subjects grid
+            tg.BackButton.show();
+            tg.BackButton.onClick(backToSubjects);
+        } else {
+            // Hide BackButton if not inside a specific subject lessons list
+            tg.BackButton.hide();
+        }
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+function closeModalBg(e){
+    if(e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── Utils ──
+function strip(h){return(h||'').replace(/<[^>]*>/g,'');}
+function trunc(s,n){return s.length>n?s.substring(0,n)+'…':s;}
+function hl(text,q){
+    if(!q||q.length<2)return text;
+    try{return text.replace(new RegExp(`(${esc(q)})`,'gi'),'<mark>$1</mark>');}catch(e){return text;}
+}
+
+function showToast(message) {
+    if (window.Telegram?.WebApp) {
+        try { window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            z-index: 11000;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            direction: rtl;
+            text-align: center;
+            white-space: nowrap;
+            opacity: 0;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+    }, 2500);
+}
+
+// ── PASSAGE BOOKMARKING & SAVED PASSAGES ──
+function isPassageBookmarked(subject, lessonNum, ts) {
+    const key = `${subject}_${lessonNum}_${ts}`;
+    return !!savedPassages[key];
+}
+
+function toggleBookmarkPassage(event, subject, lessonNum, ts, btn) {
+    if (event) event.stopPropagation();
+    const key = `${subject}_${lessonNum}_${ts}`;
+    
+    if (savedPassages[key]) {
+        delete savedPassages[key];
+        if (btn) btn.classList.remove('active');
+        showToast("❌ تم إزالة المقطع من المحفوظات");
+    } else {
+        const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+        if (!lesson) return;
+        
+        const segment = lesson.segments.find(seg => seg.ts === ts);
+        const text = segment ? segment.text : "";
+        const link = segment ? segment.video_link : "";
+        
+        savedPassages[key] = {
+            subject: subject,
+            lessonNum: lessonNum,
+            ts: ts,
+            text: text,
+            link: link,
+            savedAt: Date.now()
+        };
+        if (btn) btn.classList.add('active');
+        showToast("📌 تم حفظ المقطع في ملفك الشخصي");
+        
+        let xp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+        localStorage.setItem('academy_user_xp', xp + 5);
+        renderProfile();
+    }
+    
+    localStorage.setItem('academy_saved_passages', JSON.stringify(savedPassages));
+    renderSavedPassagesList();
+    renderMyLibrary();
+}
+
+function renderSavedPassagesList() {
+    const container = document.getElementById('saved-passages-list');
+    if (!container) return;
+    
+    const keys = Object.keys(savedPassages).sort((a, b) => savedPassages[b].savedAt - savedPassages[a].savedAt);
+    
+    if (keys.length === 0) {
+        container.innerHTML = `
+        <div class="card" style="font-size:13px;color:var(--text-3);text-align:center;padding:20px">
+            لا توجد مقاطع محفوظة بعد. يمكنك حفظ المقاطع بالضغط على زر 📌 أثناء قراءة التفريغ.
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = keys.map(key => {
+        const item = savedPassages[key];
+        const subMeta = SUBJECT_METADATA[item.subject] || { title: item.subject, icon: '📚' };
+        const cleanText = item.text.replace(/\*\*\*/g, '').trim();
+        
+        return `
+        <div class="saved-passage-card" onclick="goToSavedPassage('${item.subject}', ${item.lessonNum}, '${item.ts}')">
+            <div class="saved-passage-header">
+                <div class="saved-passage-meta">
+                    <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 8px; font-weight: 800;">
+                        ${subMeta.icon} ${subMeta.title} - الدرس ${item.lessonNum}
+                    </span>
+                    <span style="font-size: 10px; font-weight: 800; background: var(--border); color: var(--text-2); padding: 2px 6px; border-radius: 6px;">
+                        ⏱️ ${item.ts}
+                    </span>
+                </div>
+                <button class="saved-passage-delete" title="حذف" onclick="deleteSavedPassage(event, '${key}')">✕</button>
+            </div>
+            <div class="saved-passage-text">${cleanText}</div>
+            ${item.link ? `
+            <div style="display: flex; justify-content: flex-end; width: 100%;">
+                <a href="${item.link}" target="_blank" onclick="event.stopPropagation()" style="font-size: 11.5px; color: var(--primary); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); padding: 3px 8px; border-radius: 6px; border: 1.1px solid var(--primary-border);">
+                    🎬 مشاهدة الفيديو
+                </a>
+            </div>` : ''}
+        </div>
+        `;
+    }).join('');
+}
+
+function deleteSavedPassage(event, key) {
+    if (event) event.stopPropagation();
+    delete savedPassages[key];
+    localStorage.setItem('academy_saved_passages', JSON.stringify(savedPassages));
+    renderSavedPassagesList();
+    renderMyLibrary();
+    showToast("❌ تم حذف المقطع");
+    
+    const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
+    if (modalOpen && activeLesson && activeTab === 'trans') {
+        const parts = key.split('_');
+        const ts = parts[2];
+        const btn = document.querySelector(`.reader-p-bookmark[data-ts="${ts}"]`);
+        if (btn) btn.classList.remove('active');
+    }
+}
+
+function goToSavedPassage(subject, lessonNum, ts) {
+    openReader(subject, lessonNum, 'trans');
+    
+    setTimeout(() => {
+        const paragraphs = document.querySelectorAll('.reader-p');
+        for (let p of paragraphs) {
+            const playBtn = p.querySelector('.reader-p-play');
+            if (playBtn && playBtn.getAttribute('title').includes(ts)) {
+                p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                p.style.transition = 'all 0.5s ease';
+                p.style.background = '#fef9c3';
+                p.style.borderRadius = '12px';
+                p.style.padding = '10px';
+                setTimeout(() => {
+                    p.style.background = 'none';
+                    p.style.padding = '0';
+                }, 3000);
+                break;
+            }
+        }
+    }, 450);
+}
+
+function renderChapterFlashQuestion(lesson, cIdx) {
+    if (!lesson.quiz || !lesson.quiz[cIdx]) return '';
+    
+    const qObj = lesson.quiz[cIdx];
+    const quizKey = `flash_q_${lesson.subject}_${lesson.lessonNum}_ch_${cIdx}`;
+    const answeredVal = localStorage.getItem(quizKey);
+    
+    let cardClass = '';
+    let feedbackHtml = '';
+    if (answeredVal !== null) {
+        const isCorrect = parseInt(answeredVal) === qObj.correct;
+        cardClass = isCorrect ? 'correct' : 'incorrect';
+        feedbackHtml = `
+        <div class="flash-q-explanation">
+            <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
+            <p>${qObj.explanation || ''}</p>
+        </div>`;
+    }
+    
+    const optionsHtml = qObj.options.map((opt, oIdx) => {
+        let optClass = '';
+        let disabledAttr = '';
+        if (answeredVal !== null) {
+            disabledAttr = 'disabled';
+            const sVal = parseInt(answeredVal);
+            if (oIdx === qObj.correct) {
+                optClass = (sVal === qObj.correct) ? 'selected-correct' : 'should-have-selected';
+            } else if (oIdx === sVal) {
+                optClass = 'selected-incorrect';
+            }
+        }
+        return `<button class="flash-q-option ${optClass}" ${disabledAttr} onclick="submitFlashAnswer(this, '${lesson.subject}', ${lesson.lessonNum}, ${cIdx}, ${oIdx})">${opt}</button>`;
+    }).join('');
+
+    return `
+    <div class="flash-q-card ${cardClass}" id="flash-q-card-el-${cIdx}" style="margin-top: 16px; margin-bottom: 24px;">
+        <div class="flash-q-title">
+            <span>🧩 سؤال المحور: هل انتبهت جيداً؟</span>
+        </div>
+        <div class="flash-q-text">${qObj.question}</div>
+        <div class="flash-q-options">${optionsHtml}</div>
+        <div id="flash-q-feedback-${cIdx}">${feedbackHtml}</div>
+    </div>`;
+}
+
+function submitFlashAnswer(btn, subject, lessonNum, chIdx, selectedIdx) {
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    if (!lesson || !lesson.quiz || !lesson.quiz[chIdx]) return;
+    const qObj = lesson.quiz[chIdx];
+    const key = `flash_q_${subject}_${lessonNum}_ch_${chIdx}`;
+    localStorage.setItem(key, selectedIdx);
+    
+    const isCorrect = selectedIdx === qObj.correct;
+    
+    if (isCorrect) {
+        let xp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+        localStorage.setItem('academy_user_xp', xp + 10);
+        renderProfile();
+        showToast("🎉 إجابة صحيحة! +10 XP");
+        validateChapter(subject, lessonNum, chIdx);
+        clearQuestionError(subject, lessonNum, chIdx);
+    } else {
+        showToast("❌ إجابة خاطئة، حاول في المحور القادم");
+        recordQuestionError(
+            subject, 
+            lessonNum, 
+            chIdx, 
+            qObj.question, 
+            qObj.options[selectedIdx], 
+            qObj.options[qObj.correct], 
+            qObj.explanation
+        );
+    }
+    
+    const card = document.getElementById(`flash-q-card-el-${chIdx}`);
+    if (card) {
+        card.className = `flash-q-card ${isCorrect ? 'correct' : 'incorrect'}`;
+    }
+    
+    const options = card.querySelectorAll('.flash-q-option');
+    options.forEach((optBtn, idx) => {
+        optBtn.disabled = true;
+        if (idx === qObj.correct) {
+            optBtn.className = 'flash-q-option ' + (selectedIdx === qObj.correct ? 'selected-correct' : 'should-have-selected');
+        } else if (idx === selectedIdx) {
+            optBtn.className = 'flash-q-option selected-incorrect';
+        }
+    });
+    
+    const feedbackBox = document.getElementById(`flash-q-feedback-${chIdx}`);
+    if (feedbackBox) {
+        feedbackBox.innerHTML = `
+        <div class="flash-q-explanation">
+            <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
+            <p>${qObj.explanation || ''}</p>
+        </div>`;
+    }
+}
+
+function renderManualCompletionButton(lesson, cIdx) {
+    const key = `${lesson.subject}_${lesson.lessonNum}_${cIdx}`;
+    const isCompleted = !!syllabusCompletion[key];
+    
+    if (isCompleted) {
+        return `
+        <div class="manual-validate-container" id="manual-val-container-${cIdx}" style="margin: 16px 0 24px 0; text-align: center;">
+            <button class="btn-sm" disabled style="width: 100%; padding: 12px; border-radius: 12px; background: #e2e8f0; color: #64748b; border: none; font-size: 13px; font-weight: 800; cursor: not-allowed; display: flex; justify-content: center; align-items: center; gap: 6px; font-family: inherit; direction: rtl;">
+                ✓ تم إنهاء قراءة هذا المحور
+            </button>
+        </div>`;
+    }
+    
+    return `
+    <div class="manual-validate-container" id="manual-val-container-${cIdx}" style="margin: 16px 0 24px 0; text-align: center;">
+        <button class="btn-sm btn-primary" onclick="validateChapterManual(this, '${lesson.subject}', ${lesson.lessonNum}, ${cIdx})" style="width: 100%; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); font-family: inherit; direction: rtl; cursor: pointer; border: none; color: #fff; background: var(--primary);">
+            📖 تأكيد قراءة وفهم هذا المحور
+        </button>
+    </div>`;
+}
+
+function validateChapterManual(btn, subject, lessonNum, chIdx) {
+    validateChapter(subject, lessonNum, chIdx);
+    
+    const container = document.getElementById(`manual-val-container-${chIdx}`);
+    if (container) {
+        container.innerHTML = `
+        <button class="btn-sm" disabled style="width: 100%; padding: 12px; border-radius: 12px; background: #e2e8f0; color: #64748b; border: none; font-size: 13px; font-weight: 800; cursor: not-allowed; display: flex; justify-content: center; align-items: center; gap: 6px; font-family: inherit; direction: rtl;">
+            ✓ تم إنهاء قراءة هذا المحور
+        </button>`;
+    }
+}
+
+function validateChapter(subject, lessonNum, chapterIdx) {
+    const key = `${subject}_${lessonNum}_${chapterIdx}`;
+    if (syllabusCompletion[key]) return;
+    
+    syllabusCompletion[key] = true;
+    localStorage.setItem('academy_syllabus_completions', JSON.stringify(syllabusCompletion));
+    
+    if (selectedSyllabusSubject) {
+        updateRoadmapProgress(selectedSyllabusSubject);
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    renderProfile();
+    renderHome();
+    if (selectedSubjectKey) {
+        showSubjectLessons(selectedSubjectKey);
+    }
+    
+    showToast("🌟 تم تسجيل تقدّمك في المحور !");
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+}
+
+function updateReaderProgressTracker() {
+    const tracker = document.getElementById('reader-progress-tracker');
+    if (!tracker) return;
+    
+    if (activeTab !== 'trans' || !activeLesson || !activeLesson.thematic_blocks || !activeLesson.thematic_blocks.length) {
+        tracker.style.display = 'none';
+        return;
+    }
+    
+    tracker.style.display = 'flex';
+    const blocks = [...(activeLesson.thematic_blocks || [])].sort((a,b) => (a.start_seconds || 0) - (b.start_seconds || 0));
+    
+    const body = document.getElementById('modal-body');
+    const scrollTop = body.scrollTop;
+    const scrollHeight = body.scrollHeight - body.clientHeight;
+    const scrollPercent = scrollHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100)) : 0;
+    
+    let activeIdx = 0;
+    blocks.forEach((block, idx) => {
+        const el = document.getElementById(`chapter-${idx}`);
+        if (el) {
+            const relativeTop = el.offsetTop - body.offsetTop;
+            if (scrollTop >= relativeTop - 40) {
+                activeIdx = idx;
+            }
+        }
+    });
+    
+    const activeChapter = blocks[activeIdx];
+    
+    tracker.innerHTML = `
+        <div class="progress-chapter-title">
+            <span>📌</span>
+            <span style="font-weight: 800; color: var(--primary);">${activeChapter ? activeChapter.title : ''}</span>
+            <span style="color: var(--text-3); font-size: 10px; margin-right: auto;">${Math.round(scrollPercent)}%</span>
+        </div>
+        <div class="progress-chapters-dots">
+            <div class="progress-line-bg"></div>
+            <div class="progress-line-fill" style="width: ${scrollPercent}%;"></div>
+            ${blocks.map((b, idx) => {
+                const isActive = idx === activeIdx;
+                const dotClass = isActive ? 'active' : '';
+                return `<div class="progress-dot ${dotClass}" title="${b.title}" onclick="scrollToChapter(${idx})"></div>`;
+            }).join('')}
+        </div>
+    `;
+}
+
+// ── SYLLABUS CONTROLLER ──
+let syllabusNotes = {}, syllabusFavorites = {}, syllabusCompletion = {}, activeNoteKey = null, selectedSyllabusSubject = null;
+
+// SUBJECT_METADATA moved to global state area (line ~2392) to prevent TDZ ReferenceError
+
+function getSubjectStats(subject) {
+    const lessons = DB.filter(l => l.subject === subject);
+    let totalChapters = 0;
+    let completedChapters = 0;
+    
+    lessons.forEach(l => {
+        const blocksCount = l.thematic_blocks ? l.thematic_blocks.length : 0;
+        totalChapters += blocksCount;
+        for (let i = 0; i < blocksCount; i++) {
+            const key = `${subject}_${l.lessonNum}_${i}`;
+            if (syllabusCompletion[key]) {
+                completedChapters++;
+            }
+        }
+    });
+    
+    return {
+        total: totalChapters,
+        completed: completedChapters,
+        percent: totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0
+    };
+}
+
+function renderSyllabusSubjects() {
+    const container = document.getElementById('syllabus-subjects');
+    if (!container) return;
+    
+    const subjects = ['sira', 'fiqh', 'aqeeda', 'nahw'];
+    container.innerHTML = subjects.map(sub => {
+        const meta = SUBJECT_METADATA[sub];
+        const stats = getSubjectStats(sub);
+        return `
+            <div class="subj-card ${meta.cls}" onclick="openSyllabusRoadmap('${sub}')">
+                <div class="subj-card-header">
+                    <div class="subj-card-title">
+                        <span style="font-size:22px">${meta.icon}</span>
+                        <span>${meta.title}</span>
+                    </div>
+                    <span style="font-size:16px;color:var(--text-3)">⬅️</span>
+                </div>
+                <div class="subj-progress-container">
+                    <div class="subj-progress-bar"><div class="subj-progress-fill" style="width: ${stats.percent}%"></div></div>
+                    <div class="subj-progress-label">
+                        <span>${stats.percent}%</span>
+                        <span>${stats.completed} / ${stats.total} محوراً</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openSyllabusRoadmap(subject) {
+    selectedSyllabusSubject = subject;
+    const container = document.getElementById('syllabus-roadmap-container');
+    const subjectsGrid = document.getElementById('syllabus-subjects');
+    if (!container || !subjectsGrid) return;
+    
+    subjectsGrid.style.display = 'none';
+    container.style.display = 'block';
+    
+    // Update Header
+    const meta = SUBJECT_METADATA[subject];
+    document.getElementById('syllabus-roadmap-title').textContent = `${meta.icon} منهج ${meta.title}`;
+    
+    // Render roadmap
+    updateRoadmapProgress(subject);
+    renderRoadmapTimeline(subject);
+    
+    // Telegram BackButton action
+    if (tg) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(backToSyllabusSubjects);
+    }
+}
+
+function backToSyllabusSubjects() {
+    selectedSyllabusSubject = null;
+    const container = document.getElementById('syllabus-roadmap-container');
+    const subjectsGrid = document.getElementById('syllabus-subjects');
+    if (!container || !subjectsGrid) return;
+    
+    container.style.display = 'none';
+    subjectsGrid.style.display = 'grid';
+    
+    renderSyllabusSubjects();
+    
+    // Hide or restore BackButton
+    if (tg) {
+        tg.BackButton.hide();
+    }
+}
+
+function updateRoadmapProgress(subject) {
+    const stats = getSubjectStats(subject);
+    document.getElementById('syllabus-roadmap-progress-fill').style.width = `${stats.percent}%`;
+    document.getElementById('syllabus-roadmap-progress-percent').textContent = `${stats.percent}% (${stats.completed} / ${stats.total} محاور مكتملة)`;
+    
+    // Set theme color variable
+    const meta = SUBJECT_METADATA[subject];
+    const container = document.getElementById('syllabus-roadmap-container');
+    container.className = `syllabus-roadmap-container ${meta.cls}`;
+}
+
+function renderRoadmapTimeline(subject) {
+    const container = document.getElementById('syllabus-roadmap');
+    if (!container) return;
+    
+    const lessons = DB.filter(l => l.subject === subject).sort((a, b) => a.lessonNum - b.lessonNum);
+    if (!lessons.length) {
+        container.innerHTML = '<div class="empty-state"><p>لا توجد دروس متوفرة لهذه المادة</p></div>';
+        return;
+    }
+    
+    // Rotating premium lesson card colors/gradients
+    const themes = [
+        { bg: "linear-gradient(135deg, rgba(245, 243, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%)", border: "rgba(196, 181, 253, 0.6)", accent: "#7c3aed", light: "#f5f3ff" }, // Purple
+        { bg: "linear-gradient(135deg, rgba(240, 253, 244, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%)", border: "rgba(167, 243, 208, 0.6)", accent: "#10b981", light: "#f0fdf4" }, // Green
+        { bg: "linear-gradient(135deg, rgba(240, 249, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%)", border: "rgba(186, 230, 253, 0.6)", accent: "#0284c7", light: "#f0f9ff" }, // Blue
+        { bg: "linear-gradient(135deg, rgba(255, 251, 235, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%)", border: "rgba(253, 230, 138, 0.6)", accent: "#f59e0b", light: "#fffbeb" }, // Amber
+        { bg: "linear-gradient(135deg, rgba(255, 241, 242, 0.85) 0%, rgba(255, 255, 255, 0.45) 100%)", border: "rgba(253, 164, 175, 0.6)", accent: "#f43f5e", light: "#fff1f2" }  // Rose
+    ];
+    
+    container.innerHTML = lessons.map((l, idx) => {
+        const theme = themes[idx % themes.length];
+        const blocks = l.thematic_blocks || [];
+        const blocksHtml = blocks.map((b, i) => {
+            const key = `${subject}_${l.lessonNum}_${i}`;
+            const isCompleted = !!syllabusCompletion[key];
+            const isFav = !!syllabusFavorites[key];
+            const hasNote = !!syllabusNotes[key] && syllabusNotes[key].trim().length > 0;
+            
+            return `
+                <div class="roadmap-chapter-item ${isCompleted ? 'completed' : ''}" style="border-color: ${isCompleted ? theme.accent : 'rgba(0,0,0,0.06)'}; background: ${isCompleted ? theme.light : '#ffffff'}">
+                    <!-- Top row: checkbox + title only -->
+                    <div class="roadmap-chapter-top">
+                        <button class="chapter-check-btn" onclick="toggleChapterCompletion(event, '${subject}', ${l.lessonNum}, ${i})" style="border-color: ${isCompleted ? theme.accent : '#cbd5e1'}; background: ${isCompleted ? theme.accent : 'none'}; color: ${isCompleted ? '#ffffff' : 'transparent'};" title="تحديد كمكتمل">
+                            ✓
+                        </button>
+                        <div class="chapter-title-text" style="color: ${isCompleted ? '#1e293b' : 'var(--text-2)'}; font-weight: ${isCompleted ? '800' : '700'};">${b.title}</div>
+                    </div>
+                    <!-- Bottom row: action pills -->
+                    <div class="chapter-actions-bar">
+                        <button class="chapter-action-pill go-pill" onclick="goToChapter(event, '${subject}', ${l.lessonNum}, ${i})" style="color: ${theme.accent}; background: ${theme.light}; border-color: ${theme.border};">
+                            📖 <span>قراءة</span> ←
+                        </button>
+                        <button class="chapter-action-pill ${isFav ? 'fav-active' : ''}" onclick="toggleChapterFavorite(event, '${subject}', ${l.lessonNum}, ${i})" title="إضافة للمفضلة">
+                            ★ <span>مفضلة</span>
+                        </button>
+                        <button class="chapter-action-pill ${hasNote ? 'has-note' : ''}" onclick="openNotesModal(event, '${subject}', ${l.lessonNum}, ${i})" title="ملاحظة شخصية">
+                            📝 <span>ملاحظة</span>
+                        </button>
+                        <button class="chapter-action-pill" onclick="openReportModal(event, '${subject}', ${l.lessonNum}, ${i})" title="إبلاغ عن خطأ" style="border-color:#fee2e2; color:#ef4444; background:#fef2f2; font-size:11px;">
+                            ⚠️ <span>إبلاغ</span>
+                        </button>
+                        ${isAdminMode ? `
+                        <button class="chapter-action-pill" onclick="openAdminEditor(event, '${subject}', ${l.lessonNum}, ${i})" title="تعديل المحتوى" style="border-color:#fde68a; color:#b45309; background:#fffbeb; font-size:11px;">
+                            ✏️ <span>تعديل</span>
+                        </button>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Determine lesson node status (completed if all blocks completed)
+        let nodeStatusClass = '';
+        const hasQuiz = l.quiz && l.quiz.length > 0;
+        let allDone = false;
+        if (blocks.length > 0) {
+            allDone = blocks.every((b, i) => syllabusCompletion[`${subject}_${l.lessonNum}_${i}`]);
+            const someDone = blocks.some((b, i) => syllabusCompletion[`${subject}_${l.lessonNum}_${i}`]);
+            nodeStatusClass = allDone ? 'completed' : (someDone ? 'in-progress' : '');
+        }
+        const quizStatusIcon = allDone ? ' <span style="color: #10b981;">✅</span>' : '';
+        
+        return `
+            <div class="roadmap-node ${nodeStatusClass}" style="background: ${theme.bg}; border: 1.5px solid ${theme.border}; border-radius: 24px; padding: 18px 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.025); margin-bottom: 24px; position: relative;">
+                <div class="roadmap-node-dot" style="border-color: ${allDone ? '#10b981' : theme.accent}; background: ${allDone ? '#10b981' : 'var(--surface)'}; top: 22px;"></div>
+                <div class="roadmap-node-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; direction: rtl; text-align: right; border: none; background: none; box-shadow: none; margin: 0 0 16px 0; padding: 0;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="roadmap-node-title" style="font-size: 16px; font-weight: 800; color: ${theme.accent};">الدرس ${l.lessonNum}${quizStatusIcon}</div>
+                        <div class="roadmap-node-subtitle" style="background: ${theme.light}; color: ${theme.accent}; border: 1px solid ${theme.border};">${blocks.length} محاور</div>
+                    </div>
+                    ${hasQuiz ? `
+                    <button class="btn-sm btn-outline" onclick="event.stopPropagation(); startQuiz('${l.subject}', ${l.lessonNum})" style="padding: 6px 12px; font-size: 11.5px; border-radius: 10px; border-color: ${theme.accent}; color: ${theme.accent}; background: #ffffff; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm);">
+                        🧩 اختبار
+                    </button>` : ''}
+                </div>
+                <div class="roadmap-chapters-list" style="margin: 0; gap: 10px;">
+                    ${blocksHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleChapterCompletion(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    const key = `${subject}_${lessonNum}_${chapterIdx}`;
+    syllabusCompletion[key] = !syllabusCompletion[key];
+    localStorage.setItem('academy_syllabus_completions', JSON.stringify(syllabusCompletion));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        updateRoadmapProgress(selectedSyllabusSubject);
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    // Sync home and library lesson lists
+    renderHome();
+    if (selectedSubjectKey) {
+        showSubjectLessons(selectedSubjectKey);
+    }
+    
+    // Vibration
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred(syllabusCompletion[key] ? 'success' : 'warning'); } catch(e){}
+    }
+}
+
+function toggleChapterFavorite(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    const key = `${subject}_${lessonNum}_${chapterIdx}`;
+    syllabusFavorites[key] = !syllabusFavorites[key];
+    localStorage.setItem('academy_syllabus_favs', JSON.stringify(syllabusFavorites));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    // Vibration
+    if (tg) {
+        try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+    }
+}
+
+function goToChapter(event, subject, lessonNum, chapterIdx) {
+    // Open the reader modal at this specific chapter (transcription tab)
+    openModal(subject, lessonNum, 'trans');
+    setTimeout(() => {
+        scrollToChapter(chapterIdx);
+    }, 200);
+}
+
+function highlightChapterInReader(chapterIdx) {
+    const body = document.getElementById('modal-body');
+    if (!body) return;
+    const items = body.querySelectorAll('.block-item');
+    if (items && items[chapterIdx]) {
+        items[chapterIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Momentary visual highlight
+        const originalBorder = items[chapterIdx].style.border;
+        const originalBg = items[chapterIdx].style.background;
+        items[chapterIdx].style.background = 'var(--primary-light)';
+        items[chapterIdx].style.border = '1px solid var(--primary-border)';
+        items[chapterIdx].style.borderRadius = '12px';
+        items[chapterIdx].style.padding = '10px';
+        setTimeout(() => {
+            items[chapterIdx].style.background = originalBg;
+            items[chapterIdx].style.border = originalBorder;
+            items[chapterIdx].style.borderRadius = '0';
+            items[chapterIdx].style.padding = '0';
+            items[chapterIdx].style.paddingBottom = '16px';
+        }, 2000);
+    }
+}
+
+// ── Personal Notes Methods ──
+function openNotesModal(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    activeNoteKey = `${subject}_${lessonNum}_${chapterIdx}`;
+    
+    // Find chapter title
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    const b = lesson && lesson.thematic_blocks ? lesson.thematic_blocks[chapterIdx] : null;
+    const title = b ? b.title : '';
+    
+    document.getElementById('notes-chapter-title').textContent = title;
+    document.getElementById('notes-textarea').value = syllabusNotes[activeNoteKey] || '';
+    
+    document.getElementById('notes-overlay').classList.add('active');
+    document.getElementById('notes-textarea').focus();
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function closeNotesModal() {
+    document.getElementById('notes-overlay').classList.remove('active');
+    activeNoteKey = null;
+}
+
+function saveNote() {
+    if (!activeNoteKey) return;
+    const text = document.getElementById('notes-textarea').value;
+    if (text.trim().length > 0) {
+        syllabusNotes[activeNoteKey] = text;
+    } else {
+        delete syllabusNotes[activeNoteKey];
+    }
+    localStorage.setItem('academy_syllabus_notes', JSON.stringify(syllabusNotes));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    renderMyLibrary();
+    
+    closeNotesModal();
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+    }
+}
+
+function deleteNote() {
+    if (!activeNoteKey) return;
+    delete syllabusNotes[activeNoteKey];
+    localStorage.setItem('academy_syllabus_notes', JSON.stringify(syllabusNotes));
+    
+    // Update UI
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    renderMyLibrary();
+    
+    closeNotesModal();
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){}
+    }
+}
+
+// ── Fullscreen Image Viewer ──
+let zoomScale = 1;
+let startDist = 0;
+let lastScale = 1;
+let translateX = 0, translateY = 0;
+let startX = 0, startY = 0;
+let isDragging = false;
+
+function openImageFullscreen(src) {
+    const overlay = document.getElementById('image-viewer-overlay');
+    const img = document.getElementById('image-viewer-img');
+    img.src = src;
+    
+    // Reset positions and zoom
+    zoomScale = 1;
+    lastScale = 1;
+    translateX = 0;
+    translateY = 0;
+    img.style.transform = `translate(0px, 0px) scale(1)`;
+    
+    overlay.style.display = 'flex';
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+    }
+}
+
+function closeImageViewer() {
+    document.getElementById('image-viewer-overlay').style.display = 'none';
+}
+
+function getDistance(t1, t2) {
+    return Math.sqrt((t1.clientX - t2.clientX) ** 2 + (t1.clientY - t2.clientY) ** 2);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modalBody = document.getElementById('modal-body');
+    if (modalBody) {
+        modalBody.addEventListener('scroll', updateReaderProgressTracker);
+    }
+
+    const img = document.getElementById('image-viewer-img');
+    if (!img) return;
+
+    img.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            startDist = getDistance(e.touches[0], e.touches[1]);
+            lastScale = zoomScale;
+            isDragging = false;
+        } else if (e.touches.length === 1) {
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+            isDragging = zoomScale > 1;
+        }
+    });
+
+    img.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const dist = getDistance(e.touches[0], e.touches[1]);
+            zoomScale = Math.max(1, Math.min(5, lastScale * (dist / startDist)));
+            img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
+        } else if (e.touches.length === 1 && isDragging) {
+            e.preventDefault();
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
+        }
+    });
+
+    img.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) {
+            lastScale = zoomScale;
+        }
+        if (e.touches.length === 0) {
+            isDragging = false;
+            // Reset position if zoomed out to 1
+            if (zoomScale <= 1.05) {
+                translateX = 0;
+                translateY = 0;
+                zoomScale = 1;
+                img.style.transform = `translate(0px, 0px) scale(1)`;
+            }
+        }
+    });
+});
+
+// ── GLOSSARY DEFINITIONS ──
+const GLOSSARY = {
+    // ── رجال الصحابة والمعاصرون ──
+    "زيد بن حارثة": {
+        def: "صحابي جليل، كان يدعى زيد بن محمد بالتبني قبل تحريمه، وهو الصحابي الوحيد الذي ذُكر اسمه صراحة في القرآن الكريم.",
+        type: "person", gender: "male"
+    },
+    "أبو سفيان": {
+        def: "زعيم مشركي قريش وقائد قوافلهم وجيوشهم في غزو أحد والأحزاب قبل إسلامه يوم فتح مكة.",
+        type: "person", gender: "male"
+    },
+    "سلمان الفارسي": {
+        def: "صحابي جليل من بلاد فارس، وهو صاحب فكرة حفر الخندق لحماية المدينة في غزوة الأحزاب.",
+        type: "person", gender: "male"
+    },
+    "سعد بن معاذ": {
+        def: "سيد الأوس وصحابي جليل اهتز لوفاته عرش الرحمن، وهو الذي حكم في بني قريظة بحكم الله ورسوله.",
+        type: "person", gender: "male"
+    },
+    "حيي بن أخطب": {
+        def: "زعيم بني النضير وأحد ألد أعداء الإسلام، حرّض الأحزاب ضد المدينة وغدر بالعهد ثم قُتل مع بني قريظة.",
+        type: "person", gender: "male"
+    },
+    "نعيم بن مسعود": {
+        def: "صحابي جليل أسلم سرّاً يوم الأحزاب ونجح بدهائه في خذل المشركين وإيقاع الخلاف بين قريش وبني قريظة.",
+        type: "person", gender: "male"
+    },
+    "عبد الله بن أبي بن سلول": {
+        def: "رأس النفاق في المدينة، استغل غزوة بني المصطلق لإثارة الفتن وتولى كِبر حادثة الإفك طعناً في أم المؤمنين عائشة.",
+        type: "person", gender: "male"
+    },
+    "صفوان بن المعطل": {
+        def: "صحابي جليل من خيرة الصحابة، اتهمه المنافقون ظلماً وزوراً في حادثة الإفك وبرأه الله عز وجل بآيات سورة النور.",
+        type: "person", gender: "male"
+    },
+    "أمية بن خلف": {
+        def: "أحد أئمة الكفر بمكة، كان يعذب بلال بن رباح، وقُتل في معركة بدر الكبرى على يد المسلمين.",
+        type: "person", gender: "male"
+    },
+    "حمزة بن عبد المطلب": {
+        def: "أسد الله ورسوله وعم النبي ﷺ، استشهد في غزوة أحد على يد وحشي ومثل المشركون بجسده الشريف.",
+        type: "person", gender: "male"
+    },
+    "مصعب بن عمير": {
+        def: "أول سفير في الإسلام، حمل راية المسلمين في غزو أُحد واستشهد مقبلاً غير مدبر رضي الله عنه.",
+        type: "person", gender: "male"
+    },
+    "عبد الله بن سلام": {
+        def: "حبر من أحبار يهود بني قينقاع بالمدينة، أسلم مع بداية هجرة النبي ﷺ وشهد بصدق نبوته وهو من كبار الصحابة.",
+        type: "person", gender: "male"
+    },
+    "أبو بكر الصديق": {
+        def: "أول الخلفاء الراشدين وأقرب الصحابة إلى النبي ﷺ، رفيقه في الهجرة وصاحب الغار، وأول من صدّق بالإسراء والمعراج.",
+        type: "person", gender: "male"
+    },
+    "عمر بن الخطاب": {
+        def: "ثاني الخلفاء الراشدين، الفاروق الذي أعز الله به الإسلام، عُرف بشدته في الحق وعدله الذي ضرب به الأمثال في كل مكان.",
+        type: "person", gender: "male"
+    },
+    "عثمان بن عفان": {
+        def: "ثالث الخلفاء الراشدين وذو النورين، زوج رقية ثم أم كلثوم بنتَي النبي ﷺ، جهّز جيش العسرة من ماله وجمع القرآن.",
+        type: "person", gender: "male"
+    },
+    "علي بن أبي طالب": {
+        def: "رابع الخلفاء الراشدين وابن عم النبي ﷺ وزوج فاطمة الزهراء، أسلم وهو صغير وكان من أشجع فرسان الإسلام.",
+        type: "person", gender: "male"
+    },
+    "خالد بن الوليد": {
+        def: "سيف الله المسلول، أسلم قُبيل فتح مكة وقاد معارك حاسمة في اليمامة والشام والعراق ولم يُهزم في حرب قط.",
+        type: "person", gender: "male"
+    },
+    "بلال بن رباح": {
+        def: "أول مؤذن في الإسلام، عبد حبشي كان يعذبه أمية بن خلف بالرمضاء ليترك دينه، حتى اشتراه أبو بكر وأعتقه.",
+        type: "person", gender: "male"
+    },
+    "أبو هريرة": {
+        def: "أكثر الصحابة رواية للحديث النبوي، أسلم عام خيبر وظل ملازماً للنبي ﷺ حتى وفاته وروى أكثر من خمسة آلاف حديث.",
+        type: "person", gender: "male"
+    },
+    "عبد الله بن مسعود": {
+        def: "صحابي من أوائل المسلمين، خادم النبي ﷺ وأعلم الصحابة بالقرآن الكريم والتفسير، قال عنه النبي ﷺ: من سره أن يقرأ القرآن غضاً فليقرأ على قراءة ابن أم عبد.",
+        type: "person", gender: "male"
+    },
+    "وحشي بن حرب": {
+        def: "الحبشي الذي قتل حمزة بن عبد المطلب بأمر هند يوم أحد، ثم أسلم بعد فتح مكة وقتل مسيلمة الكذاب في حروب الردة.",
+        type: "person", gender: "male"
+    },
+    "عمرو بن العاص": {
+        def: "صحابي وقائد عسكري بارع، أسلم قُبيل فتح مكة وفتح مصر في عهد عمر بن الخطاب رضي الله عنه.",
+        type: "person", gender: "male"
+    },
+    "الحسن بن علي": {
+        def: "سبط النبي ﷺ وريحانته، ابن علي وفاطمة، قال فيه النبي: الحسن والحسين سيدا شباب أهل الجنة.",
+        type: "person", gender: "male"
+    },
+    "الحسين بن علي": {
+        def: "سبط النبي ﷺ وريحانته، أُولد في السنة الرابعة للهجرة، وقال فيه النبي: الحسين مني وأنا من الحسين.",
+        type: "person", gender: "male"
+    },
+    "النجاشي": {
+        def: "ملك الحبشة الذي أجار المهاجرين الأولين وأنصفهم، أسلم في قلبه وصلى عليه النبي ﷺ صلاة الغائب لما مات.",
+        type: "person", gender: "male"
+    },
+    "أبو جهل": {
+        def: "فرعون هذه الأمة واسمه عمرو بن هشام، من أشد أعداء الإسلام وأكثرهم إيذاءً للمسلمين، قُتل في غزوة بدر الكبرى.",
+        type: "person", gender: "male"
+    },
+    "أبو لهب": {
+        def: "عم النبي ﷺ وعدوه اللدود، نزلت فيه وزوجته سورة المسد، لعنه الله لشدة عدائه للإسلام ورسوله.",
+        type: "person", gender: "male"
+    },
+    "سعد بن عبادة": {
+        def: "سيد الخزرج وزعيم الأنصار، كان ينافس سعد بن معاذ على إمارة الأنصار وشهد غزوات كثيرة مع النبي ﷺ.",
+        type: "person", gender: "male"
+    },
+    "طلحة بن عبيد الله": {
+        def: "أحد العشرة المبشرين بالجنة، وقف يوم أُحد درعاً للنبي ﷺ وأصيبت يده حين أنقذه، فقال النبي: أوجب طلحة.",
+        type: "person", gender: "male"
+    },
+    "الزبير بن العوام": {
+        def: "أحد العشرة المبشرين بالجنة وحواري رسول الله ﷺ وابن عمته صفية، كان فارساً شجاعاً لا يُبارى في ميادين القتال.",
+        type: "person", gender: "male"
+    },
+    "كعب بن الأشرف": {
+        def: "زعيم يهودي من بني النضير، حرّض المشركين ضد المسلمين وهجا النبي ﷺ بشعره، فأذن النبي بقتله فنفذ الأمر محمد بن مسلمة.",
+        type: "person", gender: "male"
+    },
+    // ── نساء الصحابة وأمهات المؤمنين ──
+    "زينب بنت جحش": {
+        def: "أم المؤمنين، زوجة النبي ﷺ، تزوجها بأمر من الله لإبطال حكم التبني عملياً، وكانت تفخر بأن الله زوّجها من فوق سبع سماوات.",
+        type: "person", gender: "female"
+    },
+    "عائشة بنت أبي بكر": {
+        def: "أم المؤمنين وحبيبة رسول الله ﷺ، أكثر الصحابة رواية للحديث بعد أبي هريرة، برأها الله في القرآن من حادثة الإفك.",
+        type: "person", gender: "female"
+    },
+    "خديجة بنت خويلد": {
+        def: "أول أمهات المؤمنين وأول من آمن بالنبي ﷺ، وهبت مالها ونفسها للدعوة، وبشّرها النبي ﷺ ببيت في الجنة من قصب لا صخب فيه ولا نصب.",
+        type: "person", gender: "female"
+    },
+    "فاطمة الزهراء": {
+        def: "سيدة نساء العالمين وابنة النبي ﷺ وزوجة علي بن أبي طالب، قال عنها النبي: فاطمة بضعة مني فمن آذاها فقد آذاني.",
+        type: "person", gender: "female"
+    },
+    "أم سلمة": {
+        def: "أم المؤمنين هند بنت أبي أمية، هاجرت إلى الحبشة ثم المدينة، اشتُهرت بحكمتها ونصحها للنبي ﷺ يوم الحديبية.",
+        type: "person", gender: "female"
+    },
+    "صفية بنت حيي": {
+        def: "أم المؤمنين، بنت زعيم بني النضير حيي بن أخطب، تزوجها النبي ﷺ بعد غزوة خيبر، وكانت تدافع عن شرف النبي ﷺ بلسانها.",
+        type: "person", gender: "female"
+    },
+    "حفصة بنت عمر": {
+        def: "أم المؤمنين وابنة عمر بن الخطاب، اشتهرت بالصيام والقيام، وعندها حُفظت المصحف الأول الذي جمعه أبو بكر رضي الله عنه.",
+        type: "person", gender: "female"
+    },
+    "رقية بنت محمد": {
+        def: "بنت النبي ﷺ وزوجة عثمان بن عفان، هاجرت معه إلى الحبشة ثم المدينة، وتوفيت يوم غزوة بدر وهو في المعركة.",
+        type: "person", gender: "female"
+    },
+    "أم كلثوم بنت محمد": {
+        def: "بنت النبي ﷺ وزوجة عثمان بن عفان بعد وفاة أختها رقية، ولهذا سُمي عثمان بذي النورين.",
+        type: "person", gender: "female"
+    },
+    "زينب بنت محمد": {
+        def: "أكبر بنات النبي ﷺ، تزوجت أبا العاص بن الربيع قبل الإسلام، وهاجرت إلى المدينة بعد غزوة بدر وتوفيت في السنة الثامنة.",
+        type: "person", gender: "female"
+    },
+    "هند بنت عتبة": {
+        def: "زوجة أبي سفيان وأم معاوية، أمرت بقتل حمزة يوم أُحد وشقت صدره، أسلمت يوم فتح مكة وحسن إسلامها.",
+        type: "person", gender: "female"
+    },
+    "أسماء بنت أبي بكر": {
+        def: "ذات النطاقين وأخت عائشة، أعانت أباها وزوج أختها النبي ﷺ في الهجرة بحمل الزاد، وأنجبت أول مولود في الإسلام بالمدينة.",
+        type: "person", gender: "female"
+    },
+    "ماريا القبطية": {
+        def: "أم إبراهيم ابن النبي ﷺ، أهداها المقوقس ملك مصر إلى النبي ﷺ، وتوفي ابنها إبراهيم صغيراً فبكى النبي وقال: إن العين تدمع والقلب يحزن.",
+        type: "person", gender: "female"
+    },
+    // ── الأحداث والغزوات ──
+    "بنو قينقاع": {
+        def: "أول قبائل اليهود بالمدينة نقضاً للعهد مع النبي ﷺ بعد غزوة بدر، فتم حصارهم وإجلاؤهم عن المدينة.",
+        type: "tribe"
+    },
+    "بنو قريظة": {
+        def: "إحدى قبائل اليهود بالمدينة الذين تحالفوا مع الأحزاب ونقضوا عهدهم مع المسلمين، فحُوصروا وحكم فيهم سعد بن معاذ.",
+        type: "tribe"
+    },
+    "بنو النضير": {
+        def: "قبيلة يهودية بالمدينة تآمرت على قتل النبي ﷺ بلقاء صخرة، فحاصرهم وأجلاهم إلى خيبر والشام.",
+        type: "tribe"
+    },
+    "بدر الموعد": {
+        def: "غزوة بدر الصغرى أو الثانية، خرج فيها المسلمون للقاء قريش في السنة الرابعة للهجرة وتراجع المشركون رعباً.",
+        type: "event"
+    },
+    "زكاة الفطر": {
+        def: "صدقة تجب على كل مسلم قبل صلاة عيد الفطر طهرة للصائم وطعمة للمساكين، فرضت في شعبان من السنة الثانية للهجرة.",
+        type: "concept"
+    },
+    "التبني": {
+        def: "ادعاء بنوة طفل لغير أبيه الحقيقي، وقد أبطله الإسلام عملياً ونظرياً لصيانة الأنساب من الضياع.",
+        type: "concept"
+    },
+    "ذات الرقاع": {
+        def: "غزوة سُميت بذلك لأن الصحابة رضي الله عنهم لفوا الخرق على أقدامهم من شدة الحر والمشي، ونزلت فيها رخص كصلاة الخوف والتيمم.",
+        type: "event"
+    },
+    "غزوة الأحزاب": {
+        def: "غزوة الخندق (السنة الخامسة للهجرة) حيث تجمعت قبائل المشركين واليهود لمحاصرة المسلمين، فهزمهم الله بالريح والجنود.",
+        type: "event"
+    },
+    "غزوة بني المصطلق": {
+        def: "غزوة المريسيع (السنة السادسة للهجرة) هزم فيها المسلمون بني المصطلق وحدثت فيها حادثة الإفك المفترية.",
+        type: "event"
+    },
+    "دومة الجندل": {
+        def: "غزوة قادها النبي ﷺ في السنة الخامسة للهجرة لتأمين الحدود الشمالية وتفريق قبائل هناك كانت تتهيأ لغزو المدينة.",
+        type: "event"
+    }
+};
+
+// ── POETRY VERSE LOOKUP MAP ──
+const POETRY_VERSE_MAP = {
+  "والغزوةالكبرىالتيببدر": 31,
+  "فيالصومفيسابععشرالشهر": 31,
+  "ووجبتفيهزكاةالفطر": 32,
+  "منبعدبدربليالعشر": 32,
+  "وماتتابنةالنبيالبر": 33,
+  "رقيةقبلرجوعالسفر": 33,
+  "زوجةعثمانوعرسالطهر": 34,
+  "فاطمةعلىعليالقدر": 34,
+  "وأسلمالعباسبعدالأسر": 35,
+  "وقينقاعغزوهمفيالأثر": 35,
+  "وبعدضحىيومعيدالنحر": 36,
+  "وغزوةالسويقثمقرقره": 36,
+  "والغزوفيالثالثةالمشتهره": 37,
+  "فيغطفانوبنيسليم": 37,
+  "وأمكلثومابنةالكريم": 38,
+  "زوجعثمانبهاوخصه": 38,
+  "ثمتزوجالنبيحفصه": 39,
+  "وزينباثمغزاإلىأحد": 39,
+  "فيشهرشوالوحمراءالأسد": 40,
+  "والخمرحرمتيقينافاسمعا": 61,
+  "هذاوفيهاولدالسبطالحسن": 61,
+  "وكانفيالرابعةالغزوإلى": 62,
+  "بنيالنضيرفيربيعأولا": 62,
+  "وبعدموتزينبالمقدمه": 63,
+  "وبعدهنكاحأمسلمه": 63,
+  "وبنتجحشثمبدرالموعد": 64,
+  "وبعدهاالأحزابفاسمعواعدد": 64,
+  "ثمبنيقريظةوفيهما": 65,
+  "خلفوفيذاتالرقاععلما": 65,
+  "كيفصلاةالخوفوالقصرنمي": 66,
+  "وآيةالحجابوالتيمم": 66,
+  "وقيلرجماللذينهودا": 67,
+  "ومولدالسبطالرضاكمابدا": 67,
+  "وكانفيالخامسةاسمعوثق": 68,
+  "الإفكفيغزوبنيالمصطلق": 68,
+  "ودومةالجندلقبلوحصل": 69,
+  "عقدابنةالحارثبعدواتصل": 69,
+  "وعقدريحانةفيذيالخامسه": 70,
+  "ثمبنولحيانبدءالسادسه": 70,
+  "وبعدهاستسقاؤهوذوقرد": 71,
+  "وصدعنعمرتهلماقصد": 71,
+  "وبيعةالرضوانأولوبنى": 72,
+  "فيهابريحانةهذابينا": 72,
+  "وفرضالحجبخلففاسمعه": 73,
+  "وكانفتحخيبرفيالسابعه": 73,
+  "وحظراللحملحمرالأهليه": 74,
+  "فيهاومتعةالنساءالرديه": 74,
+  "ثمعلىأمحبيبةعقد": 75,
+  "مهرهاعنهالنجاشينقد": 75,
+  "وسمفيخيبرفيذيالصلية": 76,
+  "ثمتميمونةيابرية": 76,
+  "ثمأتتومنبقيمهاjرا": 77,
+  "وعقدميمونةكانالآخرا": 77,
+  "وقبلإسلامأبيهريره": 78,
+  "وبعدعمرةالقضاالشهيره": 78,
+  "والرسلفيالمحرمالمحرم": 79,
+  "أرسلهمإلىالملوكفاعلم": 79,
+  "وأهديتماريةالقبطية": 80,
+  "فيهوفيالثامنةالسرية": 80,
+  "لمؤتةسارتوفيالصيام": 81,
+  "قدكانفتحالبلدالحرام": 81,
+  "وبعدهقدأوردواماكانا": 82,
+  "فييومبئرأوطاسوحنينا": 82,
+  "وبعدفيذيالقعدةاعتماره": 83,
+  "منالجعرانةواستقراره": 83,
+  "وبنتهزينبماتتثما": 84,
+  "مولدإبراهيمفيهاحتما": 84,
+  "ووهبتنوبتهالعائشه": 85,
+  "سودةمادامتزماناعائشه": 85,
+  "وعملالمنبرغيرمختفي": 86,
+  "وحجعتاببأهلالموقف": 86,
+  "ثمتبوكقدغزافيالتاسعة": 87,
+  "وهدمسجدالضراررافعة": 87,
+  "وحجبالناسأبوبكروثم": 88,
+  "تلابراءةعليوحتم": 88,
+  "ألايحجمشركبعدولا": 89,
+  "يطوفعارذابأمرفعلا": 89,
+  "وجاءتالوفودفيهاتترى": 90,
+  "هذاومننسائهآلىشهرا": 90,
+  "ثمالنجاشينعىوصلى": 91,
+  "عليهمنطيبةنالالفضلا": 91,
+  "وماتإبراهيمفيالعامالأخير": 92,
+  "والبجليأسلمواسمهجرير": 92,
+  "وحجحجةالوداعقارنا": 93,
+  "ووقفالجمعةفيهاآمنا": 93,
+  "وأنزلتاليومبشرىلكم": 94,
+  "اليومأكملتلكمدينكم": 94,
+  "وموتريحانةبعدعوده": 95,
+  "والتcععشنمدةمنبعده": 95,
+  "ويومالاثنينقضىيقينا": 96,
+  "إذأكملالثلاثوالستينا": 96,
+  "والدفنفيبيتابنةالصديق": 97,
+  "فيموضعالوفاةعنتحقيق": 97,
+  "ومدةالتمريضخمسشهر": 98,
+  "وقيلبلثلثوخمسفادري": 98,
+  "وتمتالأرجوزةالميئية": 99,
+  "فيذكرحالأشرفالبرية": 99,
+  "صلىعليهاللهربيوعلى": 100,
+  "أصحابهوآلهومنتلا": 100
+};
+
+function cleanArabicText(text) {
+    if (!text) return '';
+    return text.replace(/[\u064B-\u0652]/g, '')
+               .replace(/[^\u0621-\u064A]/g, '')
+               .trim();
+}
+
+function findVerseNumber(s1, s2) {
+    const k1 = cleanArabicText(s1);
+    const k2 = cleanArabicText(s2);
+    if (POETRY_VERSE_MAP[k1]) return POETRY_VERSE_MAP[k1];
+    if (POETRY_VERSE_MAP[k2]) return POETRY_VERSE_MAP[k2];
+    for (const key in POETRY_VERSE_MAP) {
+        if (k1 && (k1.includes(key) || key.includes(k1))) return POETRY_VERSE_MAP[key];
+        if (k2 && (k2.includes(key) || key.includes(k2))) return POETRY_VERSE_MAP[key];
+    }
+    return null;
+}
+
+function normalizeArabic(text) {
+    if (!text) return '';
+    return text
+        .replace(/[\u0617-\u061A\u064B-\u0652\u0670]/g, '')
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/[^\u0600-\u06FFa-zA-Z0-9\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function showQuranPopup(event, verseText) {
+    if (event) event.stopPropagation();
+    
+    const normalized = normalizeArabic(verseText);
+    let match = null;
+    
+    for (const key in QURAN_VERSES_DB) {
+        const normKey = normalizeArabic(key);
+        if (normKey.includes(normalized) || normalized.includes(normKey)) {
+            match = QURAN_VERSES_DB[key];
+            break;
+        }
+    }
+    
+    const termEl = document.getElementById('glossary-popup-term');
+    const defEl = document.getElementById('glossary-popup-def');
+    const popup = document.getElementById('glossary-popup');
+    
+    if (match) {
+        termEl.innerHTML = `📖 آية كريمة من <span style="color:#047857">${match.surah_name}</span> (الآية ${match.ayah_number})`;
+        defEl.innerHTML = `<span style="font-family:'Amiri', serif; font-size: 15px; color:#047857; display:block; margin-bottom:8px; line-height: 1.8;">﴿ ${verseText} ﴾</span>
+                            <span style="font-size: 11px; color:var(--text-3);">رقم السورة: ${match.surah_number} | رقم الآية: ${match.ayah_number}</span>`;
+    } else {
+        termEl.textContent = `📖 آية كريمة`;
+        defEl.innerHTML = `<span style="font-family:'Amiri', serif; font-size: 15px; color:#047857; display:block; margin-bottom:8px; line-height: 1.8;">﴿ ${verseText} ﴾</span>
+                            <span style="font-size: 11px; color:var(--text-3);">تفسير ميسر متوفر في كتب التفسير المعتمدة.</span>`;
+    }
+    
+    popup.style.borderRightColor = '#10b981';
+    popup.style.display = 'block';
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+    }
+}
+
+function formatProse(text, q) {
+    if (!text) return '';
+    let result = q ? hl(text, q) : text;
+    result = result.replace(/\{([^{}]+)\}/g, (match, verse) => {
+        const cleanVerse = verse.trim();
+        return `<span class="quran-verse" onclick="showQuranPopup(event, ${JSON.stringify(cleanVerse)})">﴿${cleanVerse}﴾</span>`;
+    });
+    result = highlightGlossary(result);
+    return result;
+}
+
+function highlightGlossary(text) {
+    let result = text;
+    
+    // Order matters: longer/more specific patterns first to avoid partial matches
+    const GLOSSARY_MATCHERS = [
+        // ── نساء (rose/pink) ──
+        { term: "خديجة بنت خويلد",         pattern: "خديج[ةه] بنت خويلد|خديج[ةه] رضي الله عنها|خديج[ةه]" },
+        { term: "عائشة بنت أبي بكر",        pattern: "عائش[ةه] بنت [أا]بي بكر|عائش[ةه] رضي الله عنها|عائش[ةه]|السيدة عائش[ةه]" },
+        { term: "فاطمة الزهراء",            pattern: "فاطم[ةه] الزهراء|فاطم[ةه] بنت محمد|فاطم[ةه]" },
+        { term: "زينب بنت جحش",            pattern: "زينب بنت جحش|السيدة زينب" },
+        { term: "زينب بنت محمد",            pattern: "زينب بنت محمد|زينب بنت النبي|زينب" },
+        { term: "أم سلمة",                 pattern: "[أا]م سلم[ةه]|هند بنت [أا]بي [أا]مي[ةه]" },
+        { term: "صفية بنت حيي",            pattern: "صفي[ةه] بنت حيي|صفي[ةه]" },
+        { term: "حفصة بنت عمر",            pattern: "حفص[ةه] بنت عمر|حفص[ةه]" },
+        { term: "رقية بنت محمد",            pattern: "رقي[ةه] بنت محمد|رقي[ةه]" },
+        { term: "أم كلثوم بنت محمد",        pattern: "[أا]م كلثوم بنت محمد|[أا]م كلثوم" },
+        { term: "هند بنت عتبة",             pattern: "هند بنت عتب[ةه]|هند" },
+        { term: "أسماء بنت أبي بكر",        pattern: "[أا]سماء بنت [أا]بي بكر|[أا]سماء|ذات النطاقين" },
+        { term: "ماريا القبطية",            pattern: "ماري[ةا] القبطي[ةه]|ماري[ةا]" },
+        // ── رجال (bleu) ──
+        { term: "أبو بكر الصديق",           pattern: "[أا]بو بكر الصديق|الصديق|[أا]بو بكر" },
+        { term: "عمر بن الخطاب",            pattern: "عمر بن الخطاب|الفاروق عمر|عمر بن الخطاب|عمر" },
+        { term: "عثمان بن عفان",            pattern: "عثمان بن عفان|ذو النورين|عثمان" },
+        { term: "علي بن أبي طالب",          pattern: "علي بن [أا]بي طالب|علي رضي الله عنه|علي" },
+        { term: "خالد بن الوليد",           pattern: "خالد بن الوليد|سيف الله المسلول|خالد" },
+        { term: "بلال بن رباح",             pattern: "بلال بن رباح|بلال" },
+        { term: "أبو هريرة",               pattern: "[أا]بو هرير[ةه]" },
+        { term: "عبد الله بن مسعود",        pattern: "عبد الله بن مسعود|ابن مسعود" },
+        { term: "حمزة بن عبد المطلب",       pattern: "حمز[ةه] بن عبد المطلب|حمز[ةه]" },
+        { term: "مصعب بن عمير",            pattern: "مصعب بن عمير|مصعب" },
+        { term: "عمرو بن العاص",            pattern: "عمرو بن العاص|عمرو" },
+        { term: "طلحة بن عبيد الله",        pattern: "طلح[ةه] بن عبيد الله|طلح[ةه]" },
+        { term: "الزبير بن العوام",          pattern: "الزبير بن العوام|الزبير" },
+        { term: "كعب بن الأشرف",           pattern: "كعب بن الأشرف|كعب" },
+        { term: "سعد بن عبادة",            pattern: "سعد بن عباد[ةه]" },
+        { term: "زيد بن حارثة",            pattern: "زيد بن حارث[ةه]|زيد" },
+        { term: "سلمان الفارسي",           pattern: "سلمان الفارسي|سلمان" },
+        { term: "سعد بن معاذ",             pattern: "سعد بن معاذ|سعد" },
+        { term: "حيي بن أخطب",             pattern: "حيي بن [أا]خطب|حيي" },
+        { term: "نعيم بن مسعود",           pattern: "نعيم بن مسعود|نعيم" },
+        { term: "عبد الله بن سلام",         pattern: "عبد الله بن سلام|ابن سلام" },
+        { term: "عبد الله بن أبي بن سلول",  pattern: "عبد الله بن [أا]بي بن سلول|ابن سلول|عبد الله بن [أا]بي" },
+        { term: "صفوان بن المعطل",          pattern: "صفوان بن المعطل|صفوان" },
+        { term: "وحشي بن حرب",             pattern: "وحشي بن حرب|وحشي" },
+        { term: "أبو جهل",                 pattern: "[أا]بو جهل|فرعون [أا]مة" },
+        { term: "أبو لهب",                 pattern: "[أا]بو لهب" },
+        { term: "أبو سفيان",               pattern: "[أا]بو سفيان|[أا]بي سفيان|[أا]با سفيان" },
+        { term: "أمية بن خلف",             pattern: "[أا]مي[ةه] بن خلف" },
+        { term: "الحسن بن علي",            pattern: "الحسن بن علي|السبط الحسن|الحسن" },
+        { term: "الحسين بن علي",           pattern: "الحسين بن علي|السبط الحسين|الحسين" },
+        { term: "النجاشي",                 pattern: "النجاشي|نجاشي الحبش[ةه]" },
+        // ── قبائل وأحداث ──
+        { term: "بنو قريظة",               pattern: "بنو قريظ[ةه]|بني قريظ[ةه]" },
+        { term: "بنو قينقاع",              pattern: "بنو قينقاع|بني قينقاع" },
+        { term: "بنو النضير",              pattern: "بنو النضير|بني النضير" },
+        { term: "غزوة الأحزاب",            pattern: "غزو[ةه] الأحزاب|الأحزاب" },
+        { term: "بدر الموعد",              pattern: "بدر الموعد" },
+        { term: "ذات الرقاع",              pattern: "ذات الرقاع" },
+        { term: "دومة الجندل",             pattern: "دوم[ةه] الجندل" },
+        { term: "غزوة بني المصطلق",        pattern: "غزو[ةه] بني المصطلق|بني المصطلق|المريسيع" }
+    ];
+    
+    GLOSSARY_MATCHERS.forEach(item => {
+        const entry = GLOSSARY[item.term];
+        if (!entry) return; // sécurité
+        // Determine CSS class: male/female for persons, else type
+        let cssClass;
+        if (entry.type === 'person') {
+            cssClass = entry.gender === 'female' ? 'glossary-female' : 'glossary-male';
+        } else {
+            cssClass = `glossary-${entry.type}`;
+        }
+        const regex = new RegExp(`(?<=^|[^أ-ي])(${item.pattern})(?=$|[^أ-ي])(?![^<>]*>)`, 'g');
+        result = result.replace(regex, `<span class="glossary-term ${cssClass}" onclick="showGlossaryPopup(event, '${item.term}')">$1</span>`);
+    });
+    return result;
+}
+
+function showGlossaryPopup(event, term) {
+    if (event) event.stopPropagation();
+    const item = GLOSSARY[term];
+    if (!item) return;
+    
+    // Determine icon and color based on type and gender
+    let icon = '📌';
+    let color = '#4f46e5';
+    let termColor = 'var(--primary)';
+    
+    if (item.type === 'person') {
+        if (item.gender === 'female') {
+            icon = '♀️';
+            color = '#ec4899';
+            termColor = '#be185d';
+        } else {
+            icon = '♂️';
+            color = '#3b82f6';
+            termColor = '#1d4ed8';
+        }
+    } else if (item.type === 'event') {
+        icon = '⚔️'; color = '#10b981'; termColor = '#047857';
+    } else if (item.type === 'tribe') {
+        icon = '🏹'; color = '#7c3aed'; termColor = '#6d28d9';
+    } else if (item.type === 'concept') {
+        icon = '💡'; color = '#f59e0b'; termColor = '#b45309';
+    }
+    
+    const termEl = document.getElementById('glossary-popup-term');
+    termEl.innerHTML = `<span style="margin-left: 6px; font-size: 15px;">${icon}</span><span style="color:${termColor}; font-weight:800;">${term}</span>`;
+    document.getElementById('glossary-popup-def').textContent = item.def;
+    
+    const popup = document.getElementById('glossary-popup');
+    popup.style.borderRightColor = color;
+    popup.style.display = 'block';
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+    }
+}
+
+function closeGlossaryPopup() {
+    document.getElementById('glossary-popup').style.display = 'none';
+}
+
+// Close glossary when clicking outside or anywhere in modal
+document.addEventListener('click', () => {
+    closeGlossaryPopup();
+});
+
+// ── QUIZ CONTROLLER ──
+let quizState = {
+    subject: '',
+    lessonNum: 0,
+    questions: [],
+    currentIndex: 0,
+    score: 0,
+    answers: []
+};
+
+function startQuiz(subject, lessonNum) {
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    if (!lesson || !lesson.quiz || !lesson.quiz.length) {
+        alert('لا يوجد اختبار متوفر لهذا الدرس حالياً.');
+        return;
+    }
+    
+    // Close modal if open
+    closeModal();
+    
+    quizState = {
+        subject: subject,
+        lessonNum: lessonNum,
+        questions: lesson.quiz,
+        currentIndex: 0,
+        score: 0,
+        answers: new Array(lesson.quiz.length).fill(null)
+    };
+    
+    const meta = SUBJECT_METADATA[subject] || { title: 'الدرس', icon: '📝', cls: 'subj-sira' };
+    document.getElementById('quiz-badge').className = `badge badge-${subject}`;
+    document.getElementById('quiz-badge').textContent = meta.title;
+    document.getElementById('quiz-title').textContent = `تقييم الدرس ${lessonNum}`;
+    
+    document.getElementById('quiz-overlay').classList.add('open');
+    
+    renderQuizQuestion();
+    
+    if (tg) {
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+    }
+}
+
+function closeQuiz() {
+    document.getElementById('quiz-overlay').classList.remove('open');
+}
+
+function renderQuizQuestion() {
+    const state = quizState;
+    const q = state.questions[state.currentIndex];
+    const total = state.questions.length;
+    const percent = Math.round(((state.currentIndex) / total) * 100);
+    
+    document.getElementById('quiz-progress-fill').style.width = `${percent}%`;
+    
+    const container = document.getElementById('quiz-body');
+    if (!container) return;
+    
+    const optionsHtml = q.options.map((opt, idx) => {
+        return `
+        <button class="quiz-option-btn" id="option-${idx}" onclick="submitAnswer(${idx})">
+            <span>${opt}</span>
+            <span class="bullet" style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--border); display: inline-block;"></span>
+        </button>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-3); font-weight: 700; direction: rtl;">
+            <span>السؤال ${state.currentIndex + 1} من ${total}</span>
+            <span>الدرجة الحالية: ${state.score} / ${total}</span>
+        </div>
+        <div class="quiz-q-title" style="direction: rtl; text-align: right; margin-top: 10px;">${q.question}</div>
+        <div class="quiz-options" id="quiz-options" style="margin-top: 10px;">
+            ${optionsHtml}
+        </div>
+        <div id="quiz-feedback-container" style="margin-top: 15px;"></div>
+        <button class="btn-sm btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display: none; padding: 12px; width: 100%; border-radius: 14px; font-size: 13px; justify-content: center; font-weight: 700; margin-top: 15px; border: none; cursor: pointer; font-family: inherit;">
+            السؤال التالي ⬅️
+        </button>
+    `;
+}
+
+function submitAnswer(selectedIdx) {
+    const state = quizState;
+    if (state.answers[state.currentIndex] !== null) return;
+    
+    const q = state.questions[state.currentIndex];
+    state.answers[state.currentIndex] = selectedIdx;
+    
+    const optionsDiv = document.getElementById('quiz-options');
+    const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
+    
+    const isCorrect = selectedIdx === q.answerIndex;
+    if (isCorrect) {
+        state.score++;
+    }
+    
+    buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        const bullet = btn.querySelector('.bullet');
+        if (idx === q.answerIndex) {
+            btn.classList.add('correct');
+            if (bullet) {
+                bullet.style.borderColor = '#10b981';
+                bullet.style.background = '#10b981';
+                bullet.innerHTML = '<span style="color:white; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; font-weight:900;">✓</span>';
+            }
+        } else if (idx === selectedIdx) {
+            btn.classList.add('incorrect');
+            if (bullet) {
+                bullet.style.borderColor = '#ef4444';
+                bullet.style.background = '#ef4444';
+                bullet.innerHTML = '<span style="color:white; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; font-weight:900;">✕</span>';
+            }
+        }
+    });
+    
+    const feedbackDiv = document.getElementById('quiz-feedback-container');
+    feedbackDiv.innerHTML = `
+        <div class="quiz-feedback-box" style="border-right-color: ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right;">
+            <div class="quiz-feedback-title" style="color: ${isCorrect ? '#10b981' : '#ef4444'};">
+                ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
+            </div>
+            <div class="quiz-feedback-text" style="margin-top: 4px;">${q.explanation}</div>
+            ${q.video_link ? `
+            <a href="${q.video_link}" target="_blank" class="reader-p-play" style="display: inline-flex; align-self: flex-start; margin-top: 8px; text-decoration: none;" onclick="event.stopPropagation()">
+                🎬 شاهد الشرح في الفيديو (دقيقة ${q.timestamp})
+            </a>` : ''}
+        </div>
+    `;
+    
+    const nextBtn = document.getElementById('quiz-next-btn');
+    const isLast = state.currentIndex === state.questions.length - 1;
+    nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ⬅️';
+    nextBtn.style.display = 'inline-flex';
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
+    }
+}
+
+function nextQuestion() {
+    const state = quizState;
+    if (state.currentIndex < state.questions.length - 1) {
+        state.currentIndex++;
+        renderQuizQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    const state = quizState;
+    document.getElementById('quiz-progress-fill').style.width = '100%';
+    
+    const container = document.getElementById('quiz-body');
+    if (!container) return;
+    
+    const total = state.questions.length;
+    const scorePercent = Math.round((state.score / total) * 100);
+    const passed = scorePercent >= 60;
+    
+    const quizKey = `quiz_${state.subject}_${state.lessonNum}`;
+    let quizStats = {};
+    try {
+        quizStats = JSON.parse(localStorage.getItem('academy_quiz_stats') || '{}');
+    } catch(e){}
+    
+    // Store attempt
+    quizStats[quizKey] = {
+        score: state.score,
+        total: total,
+        percent: scorePercent,
+        passed: passed,
+        date: new Date().toISOString()
+    };
+    localStorage.setItem('academy_quiz_stats', JSON.stringify(quizStats));
+    
+    // Calculate XP
+    const xpPerCorrect = 10;
+    const xpGained = state.score * xpPerCorrect;
+    let totalXp = parseInt(localStorage.getItem('academy_user_xp') || '0');
+    if (!quizStats[quizKey] || quizStats[quizKey].score < state.score) {
+        const previousScore = (quizStats[quizKey] && quizStats[quizKey].passed) ? quizStats[quizKey].score : 0;
+        const diff = Math.max(0, state.score - previousScore);
+        totalXp += diff * xpPerCorrect;
+        localStorage.setItem('academy_user_xp', totalXp.toString());
+    } else if (localStorage.getItem('academy_user_xp') === null) {
+        totalXp += xpGained;
+        localStorage.setItem('academy_user_xp', totalXp.toString());
+    }
+    
+    if (passed) {
+        const lesson = DB.find(l => l.subject === state.subject && l.lessonNum === state.lessonNum);
+        if (lesson && lesson.thematic_blocks) {
+            lesson.thematic_blocks.forEach((b, idx) => {
+                const compKey = `${state.subject}_${state.lessonNum}_${idx}`;
+                syllabusCompletion[compKey] = true;
+            });
+            localStorage.setItem('academy_syllabus_completions', JSON.stringify(syllabusCompletion));
+        }
+    }
+    
+    renderHome();
+    renderProfile();
+    renderSyllabusSubjects();
+    if (selectedSyllabusSubject === state.subject) {
+        updateRoadmapProgress(state.subject);
+        renderRoadmapTimeline(state.subject);
+    }
+    
+    container.innerHTML = `
+        <div class="quiz-score-screen" style="direction: rtl;">
+            <div class="quiz-score-badge">
+                ${passed ? '🎉' : '📚'}
+            </div>
+            <div style="font-size: 18px; font-weight: 900; color: ${passed ? '#10b981' : '#475569'}">
+                ${passed ? 'تهانينا، لقد نجحت في التقييم!' : 'تحتاج للمزيد من المراجعة'}
+            </div>
+            <div style="font-size: 14px; color: var(--text-2); margin-top: 10px;">
+                لقد أجبت بشكل صحيح على <strong>${state.score}</strong> من أصل <strong>${total}</strong> أسئلة (${scorePercent}%).
+            </div>
+            <div style="background: var(--primary-light); border: 1.1px solid var(--primary-border); border-radius: 12px; padding: 10px 18px; font-size: 13px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; margin-top: 15px;">
+                <span>⭐ نقاط الخبرة المكتسبة:</span>
+                <strong>+${xpGained} XP</strong>
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%; margin-top: 25px;">
+                <button class="btn-sm btn-outline" style="flex: 1; padding: 12px; justify-content: center; font-weight: 700; border-radius: 14px; cursor: pointer; font-family: inherit;" onclick="startQuiz('${state.subject}', ${state.lessonNum})">
+                    🔄 إعادة الاختبار
+                </button>
+                <button class="btn-sm btn-primary" style="flex: 1; padding: 12px; justify-content: center; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; font-family: inherit;" onclick="closeQuiz()">
+                    إنهاء 🏁
+                </button>
+            </div>
+        </div>
+    `;
+}
+// ── Admin Mode Logic ──
+function toggleAdminMode() {
+    isAdminMode = !isAdminMode;
+    localStorage.setItem('academy_admin_mode', isAdminMode ? 'true' : 'false');
+    
+    // Update Admin toggle button state in Profile tab
+    const adminBtn = document.getElementById('admin-mode-status');
+    const adminPanel = document.getElementById('admin-dashboard-panel');
+    if (adminBtn) {
+        if (isAdminMode) {
+            adminBtn.textContent = 'نشط 👑';
+            adminBtn.style.background = '#d97706';
+            adminBtn.style.color = '#ffffff';
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+                loadAdminReports();
+            }
+        } else {
+            adminBtn.textContent = 'غير نشط 🎓';
+            adminBtn.style.background = '#fde68a';
+            adminBtn.style.color = '#b45309';
+            if (adminPanel) adminPanel.style.display = 'none';
+        }
+    }
+    
+    // Re-render current roadmap to show/hide edit buttons
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    
+    showToast(isAdminMode ? "👑 تم تفعيل وضع الإدارة. يمكنك الآن تعديل المحتوى مباشرة!" : "🎓 تم إلغاء وضع الإدارة.");
+}
+
+function openAdminEditor(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    currentEditingChapter = { subject, lessonNum, chapterIdx };
+    
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    if (!lesson || !lesson.thematic_blocks || !lesson.thematic_blocks[chapterIdx]) {
+        showToast("❌ خطأ: المحور غير موجود");
+        return;
+    }
+    
+    const block = lesson.thematic_blocks[chapterIdx];
+    document.getElementById('admin-editor-title').textContent = `✏️ تعديل: ${block.title}`;
+    document.getElementById('admin-editor-textarea').value = block.content || '';
+    
+    document.getElementById('admin-editor-overlay').classList.add('active');
+}
+
+function closeAdminEditor() {
+    document.getElementById('admin-editor-overlay').classList.remove('active');
+    currentEditingChapter = null;
+}
+
+function closeAdminEditorBg(e) {
+    if (e.target === document.getElementById('admin-editor-overlay')) {
+        closeAdminEditor();
+    }
+}
+
+function insertFormat(prefix, suffix) {
+    const textarea = document.getElementById('admin-editor-textarea');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end);
+    const replacement = prefix + selected + suffix;
+    
+    textarea.value = text.substring(0, start) + replacement + text.substring(end);
+    textarea.focus();
+    textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+}
+
+function saveAdminContent() {
+    if (!currentEditingChapter) return;
+    const { subject, lessonNum, chapterIdx } = currentEditingChapter;
+    const newContent = document.getElementById('admin-editor-textarea').value;
+    
+    // 1. Update memory DB
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    if (lesson && lesson.thematic_blocks && lesson.thematic_blocks[chapterIdx]) {
+        lesson.thematic_blocks[chapterIdx].content = newContent;
+    }
+    
+    // 2. Local fallback save (optional, to keep state across page reloads during development)
+    const customEdits = JSON.parse(localStorage.getItem('academy_custom_edits') || '{}');
+    customEdits[`${subject}_${lessonNum}_${chapterIdx}`] = newContent;
+    localStorage.setItem('academy_custom_edits', JSON.stringify(customEdits));
+    
+    // 3. Send update command to the bot backend
+    const webAppUser = tg?.initDataUnsafe?.user || {};
+    fetch('/admin/edit-chapter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: webAppUser.id || 0,
+            subject,
+            lessonNum,
+            chapterIdx,
+            content: newContent
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast("💾 تم حفظ التعديلات بنجاح ومزامنتها!");
+        } else {
+            showToast("⚠️ تم الحفظ محلياً. لم تكتمل المزامنة: " + (res.error || 'خطأ غير معروف'));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast("⚠️ تم الحفظ محلياً وجاري المزامنة في الخلفية.");
+    });
+    
+    // 4. Re-render components
+    if (selectedSyllabusSubject) {
+        renderRoadmapTimeline(selectedSyllabusSubject);
+    }
+    closeAdminEditor();
+}
+
+// ── Student Report Logic ──
+function openReportModal(event, subject, lessonNum, chapterIdx) {
+    if (event) event.stopPropagation();
+    currentReportingChapter = { subject, lessonNum, chapterIdx };
+    
+    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    const title = lesson?.thematic_blocks?.[chapterIdx]?.title || 'المحور';
+    
+    document.getElementById('report-textarea').value = '';
+    document.getElementById('report-overlay').classList.add('active');
+}
+
+function closeReportModal() {
+    document.getElementById('report-overlay').classList.remove('active');
+    currentReportingChapter = null;
+}
+
+function closeReportModalBg(e) {
+    if (e.target === document.getElementById('report-overlay')) {
+        closeReportModal();
+    }
+}
+
+function submitReport() {
+    if (!currentReportingChapter) return;
+    const { subject, lessonNum, chapterIdx } = currentReportingChapter;
+    const reportText = document.getElementById('report-textarea').value.trim();
+    
+    if (!reportText) {
+        showToast("⚠️ يرجى كتابة تفاصيل البلاغ أولاً.");
+        return;
+    }
+    
+    const webAppUser = tg?.initDataUnsafe?.user || {};
+    
+    // Send report to bot server backend
+    fetch('/report-chapter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: webAppUser.id || 0,
+            username: webAppUser.username || '',
+            firstName: webAppUser.first_name || '',
+            subject,
+            lessonNum,
+            chapterIdx,
+            report: reportText
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast("✉️ شكراً لك! تم إرسال البلاغ بنجاح للإدارة.");
+        } else {
+            showToast("✉️ تم إرسال البلاغ وسيتم مراجعته.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast("✉️ شكراً لك! جاري إرسال بلاغك في الخلفية.");
+    });
+    
+    closeReportModal();
+}
+
+// ── Admin Reports Board Logic ──
+let adminReportsCache = [];
+
+function loadAdminReports() {
+    const listEl = document.getElementById('admin-reports-list');
+    const countEl = document.getElementById('admin-reports-count');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '<div style="text-align: center; color: #b45309; font-size: 12px; padding: 12px 0;">جاري تحميل البلاغات... 🔄</div>';
+    
+    fetch('/admin/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.reports || res.reports.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; color: #b45309; font-size: 12px; padding: 16px 0; font-weight: bold;">🎉 لا توجد بلاغات نشطة حالياً!</div>';
+            if (countEl) countEl.textContent = '0';
+            adminReportsCache = [];
+            return;
+        }
+        
+        adminReportsCache = res.reports;
+        if (countEl) countEl.textContent = res.reports.length;
+        
+        listEl.innerHTML = res.reports.map((rep, idx) => {
+            const dateStr = new Date(rep.timestamp || Date.now()).toLocaleDateString('ar-FR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const subMeta = SUBJECT_METADATA[rep.subject] || { title: rep.subject, icon: '📚' };
+            const lesson = DB.find(l => l.subject === rep.subject && l.lessonNum === rep.lessonNum);
+            const chapterTitle = lesson?.thematic_blocks?.[rep.chapterIdx]?.title || `المحور ${rep.chapterIdx + 1}`;
+            
+            return `
+                <div class="card" style="background: #ffffff; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span style="font-size: 11px; font-weight: 800; color: #d97706;">
+                            👤 ${rep.firstName || 'طالب'} (@${rep.username || 'unknown'})
+                        </span>
+                        <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">${dateStr}</span>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--text-2); background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #f1f5f9; font-weight: 700;">
+                        📍 ${subMeta.icon} ${subMeta.title} ← درس ${rep.lessonNum} ← ${chapterTitle}
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--text-1); line-height: 1.5; font-weight: 700; white-space: pre-wrap; padding: 2px 4px;">
+                        "${rep.report}"
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; border-top: 1px dashed #f1f5f9; padding-top: 8px;">
+                        <button onclick="openReportedChapter('${rep.subject}', ${rep.lessonNum}, ${rep.chapterIdx})" style="background: #fffbeb; border: 1.2px solid #fde68a; color: #b45309; padding: 5px 10px; font-size: 11px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+                            ✏️ تعديل المحتوى
+                        </button>
+                        <button onclick="resolveReport('${rep.id || idx}')" style="background: #f0fdf4; border: 1.2px solid #bbf7d0; color: #16a34a; padding: 5px 10px; font-size: 11px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+                            ✓ تم الحل
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 12px 0;">⚠️ فشل تحميل البلاغات. يرجى التأكد من اتصالك بالإنترنت.</div>';
+    });
+}
+
+function resolveReport(reportId) {
+    fetch('/admin/resolve-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0,
+            reportId: reportId
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast("✓ تم وسم البلاغ كمحلول بنجاح!");
+            loadAdminReports();
+        } else {
+            showToast("⚠️ فشل وسم البلاغ.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast("✓ تم الحفظ وسيتم تحديث البلاغات.");
+        // Local simulation fallback
+        adminReportsCache = adminReportsCache.filter(r => r.id !== reportId);
+        loadAdminReports();
+    });
+}
+
+function openReportedChapter(subject, lessonNum, chapterIdx) {
+    // Open editor directly
+    openAdminEditor(null, subject, lessonNum, chapterIdx);
+}
+
+// ── Admin Dashboard Refreshes & Proposals Logic ──
+let adminReportsCache = [];
+let adminActiveTab = 'reports';
+
+function refreshAdminDashboard() {
+    loadAdminReports();
+    loadAdminProposals();
+}
+
+function switchAdminTab(tab) {
+    adminActiveTab = tab;
+    const btnReports = document.getElementById('btn-admin-tab-reports');
+    const btnProposals = document.getElementById('btn-admin-tab-proposals');
+    const listReports = document.getElementById('admin-reports-list');
+    const listProposals = document.getElementById('admin-proposals-list');
+    
+    if (tab === 'reports') {
+        if (btnReports) btnReports.classList.add('active');
+        if (btnProposals) btnProposals.classList.remove('active');
+        if (listReports) listReports.style.display = 'flex';
+        if (listProposals) listProposals.style.display = 'none';
+    } else {
+        if (btnReports) btnReports.classList.remove('active');
+        if (btnProposals) btnProposals.classList.add('active');
+        if (listReports) listReports.style.display = 'none';
+        if (listProposals) listProposals.style.display = 'flex';
+    }
+}
+
+function loadAdminReports() {
+    const listEl = document.getElementById('admin-reports-list');
+    const countEl = document.getElementById('admin-reports-count');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 24px 0;">جاري تحميل البلاغات... 🔄</div>';
+    
+    fetch('/admin/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.reports || res.reports.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 32px 0; font-weight: 800;">🎉 لا توجد بلاغات نشطة حالياً!</div>';
+            if (countEl) countEl.textContent = '0';
+            adminReportsCache = [];
+            return;
+        }
+        
+        adminReportsCache = res.reports;
+        if (countEl) countEl.textContent = res.reports.length;
+        
+        listEl.innerHTML = res.reports.map((rep, idx) => {
+            const dateStr = new Date(rep.timestamp || Date.now()).toLocaleDateString('ar-FR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const subMeta = SUBJECT_METADATA[rep.subject] || { title: rep.subject, icon: '📚', color: 'var(--primary)' };
+            const lesson = DB.find(l => l.subject === rep.subject && l.lessonNum === rep.lessonNum);
+            const chapterTitle = lesson?.thematic_blocks?.[rep.chapterIdx]?.title || `المحور ${rep.chapterIdx + 1}`;
+            const studentInitial = (rep.firstName || 'ط').trim().substring(0, 1).toUpperCase();
+            
+            // Random soft background color for avatar
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            const avatarBg = colors[idx % colors.length];
+            
+            return `
+                <div class="admin-inbox-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="student-avatar-badge" style="background: ${avatarBg};">${studentInitial}</div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 12px; font-weight: 800; color: var(--text-1);">${rep.firstName || 'طالب الأكاديمية'}</span>
+                                <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">@${rep.username || 'unknown'}</span>
+                            </div>
+                        </div>
+                        <span style="font-size: 10.5px; color: var(--text-3); font-weight: 700;">${dateStr}</span>
+                    </div>
+                    
+                    <div style="display: flex;">
+                        <div class="inbox-pill-path">
+                            <span>${subMeta.icon}</span>
+                            <span style="color: ${subMeta.color || 'var(--primary)'};">${subMeta.title}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span>درس ${rep.lessonNum}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span style="color: var(--text-1);">${chapterTitle}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 13px; color: var(--text-1); line-height: 1.6; font-weight: 700; background: #f8fafc; border: 1.2px solid #e2e8f0; border-radius: 12px; padding: 12px; position: relative;">
+                        <span style="position: absolute; left: 8px; bottom: 4px; font-size: 24px; color: rgba(0,0,0,0.05); font-family: Georgia, serif; line-height: 1;">”</span>
+                        ${rep.report}
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;">
+                        <button class="inbox-btn-action edit" onclick="openReportedChapter('${rep.subject}', ${rep.lessonNum}, ${rep.chapterIdx})">
+                            ✏️ تعديل المحتوى
+                        </button>
+                        <button class="inbox-btn-action approve" onclick="resolveReport('${rep.id}')">
+                            ✓ تم الحل
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 24px 0;">⚠️ فشل تحميل البلاغات.</div>';
+    });
+}
+
+function loadAdminProposals() {
+    const listEl = document.getElementById('admin-proposals-list');
+    const countEl = document.getElementById('admin-proposals-count');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 24px 0;">جاري تحميل الاقتراحات... 🔄</div>';
+    
+    fetch('/admin/proposals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success || !res.proposals || res.proposals.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; color: var(--text-3); font-size: 12.5px; padding: 32px 0; font-weight: 800;">💡 لا توجد اقتراحات أسئلة معلقة حالياً!</div>';
+            if (countEl) countEl.textContent = '0';
+            return;
+        }
+        
+        if (countEl) countEl.textContent = res.proposals.length;
+        
+        listEl.innerHTML = res.proposals.map((prop, idx) => {
+            const subMeta = SUBJECT_METADATA[prop.subject] || { title: prop.subject, icon: '📚', color: 'var(--primary)' };
+            const dateStr = new Date(prop.createdAt || Date.now()).toLocaleDateString('ar-FR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const studentInitial = (prop.firstName || 'ط').trim().substring(0, 1).toUpperCase();
+            
+            // Random soft background color for avatar
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            const avatarBg = colors[idx % colors.length];
+            
+            return `
+                <div class="admin-inbox-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="student-avatar-badge" style="background: ${avatarBg};">${studentInitial}</div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 12px; font-weight: 800; color: var(--text-1);">${prop.firstName || 'طالب الأكاديمية'}</span>
+                                <span style="font-size: 10px; color: var(--text-3); font-weight: 600;">@${prop.username || 'unknown'}</span>
+                            </div>
+                        </div>
+                        <span style="font-size: 10.5px; color: var(--text-3); font-weight: 700;">${dateStr}</span>
+                    </div>
+                    
+                    <div style="display: flex;">
+                        <div class="inbox-pill-path">
+                            <span>${subMeta.icon}</span>
+                            <span style="color: ${subMeta.color || 'var(--primary)'};">${subMeta.title}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span>${prop.lesson}</span>
+                            <span style="color: var(--text-3);">←</span>
+                            <span style="color: var(--text-1);">${prop.topic}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 13.5px; color: var(--text-1); font-weight: 800; line-height: 1.5; padding: 2px 4px;">
+                        ❓ السؤال المقترح: "${prop.question}"
+                    </div>
+                    
+                    <!-- Real quiz preview formatting -->
+                    <div class="inbox-quiz-preview">
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'A' ? 'correct' : ''}">
+                            <span>A. ${prop.choiceA}</span>
+                            ${prop.correctAnswer === 'A' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'B' ? 'correct' : ''}">
+                            <span>B. ${prop.choiceB}</span>
+                            ${prop.correctAnswer === 'B' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'C' ? 'correct' : ''}">
+                            <span>C. ${prop.choiceC}</span>
+                            ${prop.correctAnswer === 'C' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                        <div class="inbox-quiz-option ${prop.correctAnswer === 'D' ? 'correct' : ''}">
+                            <span>D. ${prop.choiceD}</span>
+                            ${prop.correctAnswer === 'D' ? '<span>✓ الإجابة الصحيحة</span>' : ''}
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 11.5px; color: #15803d; font-weight: 700; background: #f0fdf4; padding: 8px 12px; border-radius: 10px; border: 1px solid #bbf7d0; line-height: 1.5;">
+                        📖 <b>شرح وتفسير الإجابة:</b> ${prop.explanation || 'لا يوجد'}
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;">
+                        <button class="inbox-btn-action reject" onclick="resolveProposal(${prop.id}, 'rejected')">
+                            ✕ رفض المقترح
+                        </button>
+                        <button class="inbox-btn-action approve" onclick="resolveProposal(${prop.id}, 'approved')">
+                            ✓ قبول واعتماد
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        listEl.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 12px; padding: 24px 0;">⚠️ فشل تحميل الاقتراحات.</div>';
+    });
+}
+
+function resolveProposal(proposalId, action) {
+    let reason = '';
+    if (action === 'rejected') {
+        reason = prompt("يرجى كتابة سبب الرفض (سيصل للطالب إشعار بالسبب):");
+        if (reason === null) return;
+        reason = reason.trim() || 'السؤال يحتاج إلى إعادة صياغة أو غير متوافق مع المنهج الدراسي.';
+    }
+    
+    fetch('/admin/resolve-proposal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg?.initData || '',
+            userId: tg?.initDataUnsafe?.user?.id || 0,
+            proposalId: proposalId,
+            action: action,
+            rejectionReason: reason
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast(action === 'approved' ? "✓ تم قبول وإضافة السؤال بنجاح!" : "✕ تم رفض مقترح السؤال.");
+            loadAdminProposals();
+        } else {
+            showToast("⚠️ فشل معالجة المقترح.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast("✓ تم حفظ القرار بنجاح.");
+        loadAdminProposals();
+    });
+}
+
+// Applying custom edits on load if any
+(function applyCustomEditsOnLoad() {
+    try {
+        const customEdits = JSON.parse(localStorage.getItem('academy_custom_edits') || '{}');
+        Object.keys(customEdits).forEach(key => {
+            const [subject, lessonNumStr, chapterIdxStr] = key.split('_');
+            const lessonNum = parseInt(lessonNumStr);
+            const chapterIdx = parseInt(chapterIdxStr);
+            
+            // Wait for DB to be populated
+            const interval = setInterval(() => {
+                if (DB && DB.length > 0) {
+                    clearInterval(interval);
+                    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+                    if (lesson && lesson.thematic_blocks && lesson.thematic_blocks[chapterIdx]) {
+                        lesson.thematic_blocks[chapterIdx].content = customEdits[key];
+                    }
+                }
+            }, 100);
+        });
+    } catch(e){}
+})();

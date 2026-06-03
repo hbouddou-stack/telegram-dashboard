@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>لوحة تحكم المشرفين | أكاديمية الباجي</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <link rel="stylesheet" href="admin.css">
+
+</head>
+
+<body>
+
+    <!-- Configuration Modal for browser access (bypassed if inside Telegram webapp and has initData) -->
+
+    <div id="config-overlay" class="config-overlay" style="display: none;">
+
+        <div class="config-modal">
+
+            <h2>🔑 تسجيل دخول المشرفين</h2>
+
+            <p>يرجى إدخال المعرّف الرقمي لحسابك في تليجرام للتحقق من صلاحياتك الإدارية وعرض البيانات.</p>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+
+                <input type="number" id="manual-user-id" class="form-input" placeholder="مثال: 12345678" style="text-align: center;" value="2045194295">
+
+            </div>
+
+            <button class="btn btn-primary" onclick="submitManualUserId()" style="width: 100%; justify-content: center;">
+
+                دخول وتحميل لوحة التحكم
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="app-layout">
+
+        <!-- Left Navigation Sidebar -->
+
+        <aside class="sidebar-navigation">
+
+            <div class="sidebar-header">
+
+                <h2 class="sidebar-logo">🎓 أكاديمية <span>الباجي</span></h2>
+
+                <p class="sidebar-subtitle">لوحة التحكم الفائقة</p>
+
+            </div>
+
+            
+
+            <div class="sidebar-profile">
+
+                <div id="badge-admin" class="admin-badge" style="width: 100%; justify-content: center;">
+
+                    <span class="pulse-indicator"></span>
+
+                    <span id="admin-name">جاري التحميل...</span>
+
+                </div>
+
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <!-- SECTION 1: TICKETS -->
+
+                <div class="sidebar-section" id="section-inbox" >
+
+                    <div class="sidebar-section-header" onclick="toggleSidebarSection('section-inbox')">
+
+                        <span class="section-icon">📂</span>
+
+                        <span class="section-title">قسم التذاكر</span>
+
+                        <span class="section-arrow">▼</span>
+
+                    </div>
+
+                    <div class="sidebar-section-content">
+
+                        <button id="btn-tab-inbox" class="sidebar-btn active" onclick="switchTab('inbox'); switchSheet('pending');">
+
+                            <span class="btn-icon">📥</span>
+
+                            <span class="btn-text">الوارد العام</span>
+
+                            <span id="badge-inbox-total" class="badge-count" style="display: none;">0</span>
+
+                        </button>
+
+                        <button id="btn-tab-my-tickets" class="sidebar-btn" onclick="switchTab('inbox'); switchSheet('my_tickets');">
+
+                            <span class="btn-icon">🎫</span>
+
+                            <span class="btn-text">تذاكري</span>
+
+                        </button>
+
+                        <button id="btn-tab-students" class="sidebar-btn" onclick="switchTab('students')">
+
+                            <span class="btn-icon">🎓</span>
+
+                            <span class="btn-text">دليل الطلاب</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- SECTION 2: CONTENT -->
+
+                <div class="sidebar-section" id="section-content">
+
+                    <div class="sidebar-section-header" onclick="toggleSidebarSection('section-content')">
+
+                        <span class="section-icon">📂</span>
+
+                        <span class="section-title">إدارة المحتوى</span>
+
+                        <span class="section-arrow">▼</span>
+
+                    </div>
+
+                    <div class="sidebar-section-content">
+
+                        <button id="btn-tab-courses" class="sidebar-btn" onclick="switchTab('transcripts')">
+
+                            <span class="btn-icon">📝</span>
+
+                            <span class="btn-text">التفريغ</span>
+
+                        </button>
+
+                        <button id="btn-tab-questions" class="sidebar-btn" onclick="switchTab('questions')">
+
+                            <span class="btn-icon">🧩</span>
+
+                            <span class="btn-text">بنك الأسئلة</span>
+
+                        </button>
+
+                        <button id="btn-tab-media" class="sidebar-btn" onclick="switchTab('media')">
+
+                            <span class="btn-icon">🖼️</span>
+
+                            <span class="btn-text">إدارة الوسائط</span>
+
+                        </button>
+
+                        <button id="btn-tab-editor" class="sidebar-btn" onclick="switchTab('editor')" style="display: none;">
+
+                            <span class="btn-icon">✏️</span>
+
+                            <span class="btn-text">المحرر السريع</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- SECTION 3: SYSTEM -->
+
+                <div class="sidebar-section" id="section-system">
+
+                    <div class="sidebar-section-header" onclick="toggleSidebarSection('section-system')">
+
+                        <span class="section-icon">⚙️</span>
+
+                        <span class="section-title">الإعدادات والتحليلات</span>
+
+                        <span class="section-arrow">▼</span>
+
+                    </div>
+
+                    <div class="sidebar-section-content">
+
+                        <button id="btn-tab-config" class="sidebar-btn" onclick="clickSidebarSettings()">
+
+                            <span class="btn-icon">⚙️</span>
+
+                            <span class="btn-text">الإعدادات العامة</span>
+
+                        </button>
+
+                        <button id="btn-tab-stats" class="sidebar-btn" onclick="switchTab('stats')">
+
+                            <span class="btn-icon">📊</span>
+
+                            <span class="btn-text">الإحصائيات</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <button id="theme-toggle" class="btn-theme-toggle" onclick="toggleTheme()" aria-label="تبديل المظهر" style="width: 100%; gap: 8px;">
+
+                    <span id="theme-toggle-icon">🌙</span> <span id="theme-toggle-label">المظهر الداكن</span>
+
+                </button>
+
+            </div>
+
+        </aside>
+
+        <!-- Main Workspace -->
+
+        <main class="main-workspace">
+
+            <!-- Header inside workspace -->
+
+            <header class="workspace-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: linear-gradient(135deg, var(--surface) 0%, rgba(19, 25, 38, 0.8) 100%); padding: 10px 16px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; overflow: hidden;">
+
+                <div class="header-title">
+
+                    <h1 style="font-size: 1.15rem; font-weight: 800;">لوحة تحكم <span>المشرفين</span></h1>
+
+                </div>
+
+                <!-- Toggle Filter Sidebar Button visible on inbox tab -->
+
+                <button id="btn-toggle-filters" class="btn btn-secondary toggle-filter-btn" onclick="toggleFilterSidebar()" style="display: flex; padding: 6px 12px; font-size: 0.85rem; height: 34px;">
+
+                    🔍 <span id="btn-toggle-filters-text">إظهار الفلاتر</span>
+
+                </button>
+
+            </header>
+
+        <!-- Tab Panel: INBOX -->
+
+        <section id="panel-inbox" class="tab-panel active">
+
+            <!-- Custom Views Tabs Bar (DB-backed, Phase 3) -->
+
+            
+
+            <!-- Filter Bar Container (Moved to right sidebar, only keeping the feed container) -->
+
+            <div id="inbox-feed" class="inbox-feed">
+
+                <!-- Loaded dynamically -->
+
+                <div class="empty-feed">
+
+                    <div class="empty-feed-icon">🔑</div>
+
+                    <p>يرجى تسجيل الدخول أو ربط حساب المشرف لعرض الوارد...</p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Tab Panel: STUDENTS -->
+
+        <section id="panel-students" class="tab-panel">
+
+            <div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 12px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: center;">
+
+                <div class="form-group" style="flex-grow: 1; margin-bottom: 0; width: 100%;">
+
+                    <input type="text" id="students-search" class="form-input" placeholder="🔍 ابحث بالاسم، الكنية، المعرف الرقمي Telegram ID أو @Username..." oninput="onStudentsSearch()" style="width: 100%; padding: 10px 14px; font-size: 0.9rem;">
+
+                </div>
+
+            </div>
+
+            <div class="helpdesk-workspace full-sheet-mode" id="students-workspace">
+
+                <div class="helpdesk-table-wrap">
+
+                    <div class="workbook-tabs">
+
+                        <div class="workbook-tab active">🎓 دليل الطلاب والنشاط المشترك</div>
+
+                    </div>
+
+                    <table class="helpdesk-table" id="students-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th style="width:130px;">Telegram ID</th>
+
+                                <th>اسم الطالب</th>
+
+                                <th style="width:110px;">الجنس</th>
+
+                                <th style="width:130px;">الاختبارات</th>
+
+                                <th style="width:110px;">البلاغات</th>
+
+                                <th style="width:110px;">المقترحات</th>
+
+                                <th style="width:150px;">تاريخ التسجيل</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="students-table-body">
+
+                            <!-- Populated dynamically -->
+
+                            <tr>
+
+                                <td colspan="7" style="text-align: center; padding: 48px;">
+
+                                    <div class="empty-feed" style="border: none; background: transparent; padding: 0;">
+
+                                        <div class="empty-feed-icon">⏳</div>
+
+                                        <h3 style="color: var(--text-primary);">جاري تحميل دليل الطلاب...</h3>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Backdrop & Details Drawer -->
+
+                <div id="student-drawer-backdrop" class="drawer-backdrop" onclick="closeStudentDrawer()"></div>
+
+                <aside id="student-detail-drawer" class="helpdesk-detail-panel" style="width: 500px; padding: 24px; overflow-y: auto;"></aside>
+
+            </div>
+
+        </section>
+
+        <!-- Tab Panel: QUESTIONS -->
+
+        <section id="panel-questions" class="tab-panel">
+
+            <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+
+                <h1 class="page-title">بنك الأسئلة</h1>
+
+                <div class="view-switcher-group" style="display: flex; gap: 8px; direction: rtl;">
+
+                    <button class="btn btn-secondary" id="btn-qb-view-grid" onclick="switchQbViewMode('grid')">🎴 عرض الشبكة</button>
+
+                    <button class="btn btn-secondary" id="btn-qb-view-table" onclick="switchQbViewMode('table')">📋 جدول الأسئلة</button>
+
+                    <button class="btn btn-secondary" id="btn-qb-view-roadmap" onclick="switchQbViewMode('roadmap')">🗺️ خارطة المنهج</button>
+
+                </div>
+
+            </div>
+
+            <!-- Onglets "Feuilles Google Sheets" -->
+
+            <div class="qb-sheets-container" id="qb-sheets-tabs">
+
+                <div class="qb-sheet-tab tab-aqida active" id="tab-qb-aqida" onclick="selectQbSubject('aqida')">📑 العقيدة</div>
+
+                <div class="qb-sheet-tab tab-fiqh" id="tab-qb-fiqh" onclick="selectQbSubject('fiqh')">📑 الفقه</div>
+
+                <div class="qb-sheet-tab tab-sira" id="tab-qb-sira" onclick="selectQbSubject('sira')">📑 السيرة</div>
+
+                <div class="qb-sheet-tab tab-nahw" id="tab-qb-nahw" onclick="selectQbSubject('nahw')">📑 النحو</div>
+
+                <div class="qb-sheet-tab tab-tajweed" id="tab-qb-tajweed" onclick="selectQbSubject('tajweed')">📑 التجويد</div>
+
+            </div>
+
+            <!-- Conteneur principal banque de questions -->
+
+            <div class="qb-main-panel">
+
+                
+
+                <!-- Vue Grille (Grid View) -->
+
+                <div id="qb-grid-view" style="display: block;">
+
+                    <div class="qb-courses-grid" id="qb-courses-grid-container">
+
+                        <!-- Rempli par javascript -->
+
+                    </div>
+
+                    <!-- Détail thématique déplacé hors de la grille -->
+
+                </div>
+
+                <!-- Vue Liste/Table (Table View) -->
+
+                <div id="qb-table-view" style="display: none;">
+
+                    <div class="filter-group" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; justify-content: flex-start; direction: rtl;">
+
+                        <select id="qb-subject-filter" class="form-select" onchange="updateLessonFilterDropdown(); loadQuestions(1);" style="min-width: 140px; display: none;">
+
+                            <option value="">كل المواد</option>
+
+                            <option value="aqeeda">العقيدة</option>
+
+                            <option value="fiqh">الفقه</option>
+
+                            <option value="sira">السيرة</option>
+
+                            <option value="nahw">النحو</option>
+
+                            <option value="tajweed">التجويد</option>
+
+                        </select>
+
+                        <select id="qb-lesson-filter" class="form-select" onchange="updateChapterFilterDropdown(); loadQuestions(1);" style="min-width: 130px;" disabled>
+
+                            <option value="">كل الدروس</option>
+
+                        </select>
+
+                        <select id="qb-chapter-filter" class="form-select" onchange="loadQuestions(1)" style="min-width: 150px;" disabled>
+
+                            <option value="">كل المحاور</option>
+
+                        </select>
+
+                        <select id="qb-source-filter" class="form-select" onchange="loadQuestions(1)" style="min-width: 190px;">
+
+                            <option value="">كل المصادر</option>
+
+                            <option value="official">رسمي (المنصة)</option>
+
+                            <option value="student_proposal">مقترحة من طالب</option>
+
+                            <option value="ai_generated">توليد ذكاء اصطناعي</option>
+
+                        </select>
+
+                        <input type="text" id="qb-search-input" class="search-input" placeholder="بحث في الأسئلة..." oninput="debounceLoadQuestions()" style="min-width: 200px;">
+
+                        <button class="btn btn-primary" onclick="loadQuestions(1)">🔍 بحث</button>
+
+                    </div>
+
+                    <div class="table-container">
+
+                        <table class="data-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th style="width: 60px;">ID</th>
+
+                                    <th style="width: 100px;">المادة</th>
+
+                                    <th style="width: 80px;">الدرس</th>
+
+                                    <th style="width: 140px;">المحور</th>
+
+                                    <th style="width: 120px;">المصدر</th>
+
+                                    <th>السؤال</th>
+
+                                    <th style="width: 70px; text-align: center;">الحالة</th>
+
+                                    <th style="width: 80px; text-align: left;">الإجراءات</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="questions-table-body">
+
+                                <!-- Questions injected here -->
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    
+
+                    <div id="questions-pagination" style="display: flex; justify-content: center; margin-top: 20px; gap: 8px;">
+
+                        <!-- Pagination injected here -->
+
+                    </div>
+
+                </div>
+
+                <!-- Vue Roadmap (Roadmap View) -->
+
+                <div id="qb-roadmap-view" style="display: none;">
+
+                    <div class="qb-roadmap-flow" id="qb-roadmap-flow-container">
+
+                        <!-- Rempli par javascript -->
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            
+
+            <!-- Question Editor Drawer -->
+
+            <div id="question-drawer-backdrop" class="drawer-backdrop" onclick="closeQuestionDrawer()"></div>
+
+            <aside id="question-detail-drawer" class="helpdesk-detail-panel" style="width: min(1000px, 95vw); max-width: 100%; padding: 24px; overflow-y: auto;"></aside>
+
+            <!-- Thematic Course Detail Side Drawer -->
+
+            <div id="qb-thematic-drawer-backdrop" class="drawer-backdrop" onclick="closeQbThematicDrawer()"></div>
+
+            <aside id="qb-course-thematic-detail" class="helpdesk-detail-panel" style="width: min(560px, 95vw); max-width: 100%; padding: 24px; overflow-y: auto;"></aside>
+
+            <!-- AI Question Generator Modal -->
+
+            <div id="qb-ai-generate-modal" class="drawer-backdrop" style="z-index: 120;" onclick="closeAiGenerateModal()"></div>
+
+            <aside id="qb-ai-generate-panel" class="helpdesk-detail-panel" style="width: min(800px, 95vw); max-width: 100%; padding: 24px; overflow-y: auto; z-index: 130;">
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:16px;">
+
+                    <div>
+
+                        <h2 style="margin:0; font-size:1.2rem; color: var(--text-primary);">🪄 توليد أسئلة بالذكاء الاصطناعي</h2>
+
+                        <div id="qb-ai-modal-subtitle" style="font-size:0.8rem; color:var(--text-secondary); margin-top:4px;"></div>
+
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="closeAiGenerateModal()">✖ إغلاق</button>
+
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 16px; direction: rtl;">
+
+                    <div class="form-group">
+
+                        <label class="form-label">عدد الأسئلة المطلوب توليدها</label>
+
+                        <select id="qb-ai-num-questions" class="form-select" style="width: 100%;">
+
+                            <option value="1">سؤال واحد (1)</option>
+
+                            <option value="3" selected>3 أسئلة</option>
+
+                            <option value="5">5 أسئلة</option>
+
+                            <option value="10">10 أسئلة</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label class="form-label">موديل الذكاء الاصطناعي</label>
+
+                        <select id="qb-ai-model" class="form-select" style="width: 100%;">
+
+                            <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash ⚡ (سريع وقوي - موصى به)</option>
+
+                            <option value="gemini-2.5-flash-preview-05-20">Gemini 2.5 Flash 🧠 (الأقوى - أبطأ قليلاً)</option>
+
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (كلاسيكي)</option>
+
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (عالي الجودة)</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label class="form-label">تعليمات إضافية للتوليد (اختياري)</label>
+
+                        <textarea id="qb-ai-instructions" class="form-input" placeholder="مثال: ركز على الجوانب العملية، أو اجعل الخيارات واضحة وغير مبهمة..." rows="3" style="width: 100%; resize: vertical; padding: 10px;"></textarea>
+
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-qb-ai-generate-submit" onclick="submitAiGenerateQuestions()" style="width: 100%; font-weight: bold; padding: 12px;">🪄 بدء التوليد الذكي</button>
+
+                    <!-- Preview generated questions -->
+
+                    <div id="qb-ai-preview-section" style="display: none; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+
+                        <h3 style="margin-bottom: 12px; color: var(--text-primary);">📝 معاينة الأسئلة المقترحة</h3>
+
+                        <div id="qb-ai-preview-list" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px;"></div>
+
+                        <button class="btn btn-success" id="btn-qb-ai-save-all" onclick="saveBulkAiQuestions()" style="width: 100%; font-weight: bold; padding: 12px;">💾 حفظ وحقن كل الأسئلة في بنك الأسئلة</button>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+        <!-- Tab Panel: TRANSCRIPTS -->
+
+        <section id="panel-transcripts" class="tab-panel">
+
+            <!-- Header -->
+
+            <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px;">
+
+                <h1 class="page-title">📝 إدارة التفريغ</h1>
+
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+
+                    <!-- View Toggle Buttons -->
+
+                    <div style="display:flex; border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+
+                        <button id="btn-tr-view-card" onclick="setTranscriptView('card')" style="padding:7px 16px; font-size:0.85rem; background:var(--gold); color:#000; border:none; cursor:pointer; font-family:var(--font-family); font-weight:700; transition:all 0.2s;">🎴 بطاقات</button>
+
+                        <button id="btn-tr-view-list" onclick="setTranscriptView('list')" style="padding:7px 16px; font-size:0.85rem; background:var(--surface-hover); color:var(--text-secondary); border:none; cursor:pointer; font-family:var(--font-family); font-weight:600; transition:all 0.2s;">☰ قائمة</button>
+
+                    </div>
+
+                    <!-- Search -->
+
+                    <input type="text" id="tr-search-input" class="search-input" placeholder="🔍 بحث في الدروس..." oninput="loadTranscripts()" style="min-width: 180px;">
+
+                    <!-- View Mode (single/thematic) -->
+
+                    <select id="tr-view-mode" class="form-select" onchange="state.transcriptViewMode = this.value; loadTranscripts()" style="min-width: 150px;">
+
+                        <option value="single">📄 عرض مجمع</option>
+
+                        <option value="thematic">🧩 عرض بالمحاور</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <!-- Subject Tabs (Google Sheets style) -->
+
+            <div class="qb-sheets-container" id="tr-sheets-tabs" style="margin-bottom:0;">
+
+                <div class="qb-sheet-tab tab-aqida active" id="tr-tab-all" onclick="selectTranscriptSubject('')" style="font-size:0.82rem;">📑 الكل</div>
+
+                <div class="qb-sheet-tab tab-aqida" id="tr-tab-aqeeda" onclick="selectTranscriptSubject('aqeeda')" style="font-size:0.82rem;">📘 العقيدة</div>
+
+                <div class="qb-sheet-tab tab-fiqh" id="tr-tab-fiqh" onclick="selectTranscriptSubject('fiqh')" style="font-size:0.82rem;">📗 الفقه</div>
+
+                <div class="qb-sheet-tab tab-sira" id="tr-tab-sira" onclick="selectTranscriptSubject('sira')" style="font-size:0.82rem;">📙 السيرة</div>
+
+                <div class="qb-sheet-tab tab-nahw" id="tr-tab-nahw" onclick="selectTranscriptSubject('nahw')" style="font-size:0.82rem;">📒 النحو</div>
+
+                <div class="qb-sheet-tab tab-tajweed" id="tr-tab-tajweed" onclick="selectTranscriptSubject('tajweed')" style="font-size:0.82rem;">🎵 التجويد</div>
+
+                <div class="qb-sheet-tab tab-hadith" id="tr-tab-hadith" onclick="selectTranscriptSubject('hadith')" style="font-size:0.82rem;">📜 الحديث</div>
+
+                <div class="qb-sheet-tab tab-tazkiyah" id="tr-tab-tazkiyah" onclick="selectTranscriptSubject('tazkiyah')" style="font-size:0.82rem;">🌿 التزكية</div>
+
+            </div>
+
+            <!-- Cards grid OR List view -->
+
+            <div id="transcripts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top:16px;">
+
+                <!-- Cards injected dynamically -->
+
+            </div>
+
+        </section>
+
+        <!-- Tab Panel: EDITOR -->
+
+        <section id="panel-editor" class="tab-panel">
+
+            <div class="editor-container">
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="editor-subject">اختر المادة</label>
+
+                        <select id="editor-subject" class="form-select" onchange="onEditorSubjectChange()">
+
+                            <option value="">-- اختر المادة --</option>
+
+                            <option value="aqida">العقيدة</option>
+
+                            <option value="aqeeda">العقيدة</option>
+
+                            <option value="fiqh">الفقه</option>
+
+                            <option value="sira">السيرة</option>
+
+                            <option value="nahw">النحو</option>
+
+                            <option value="tajweed">التجويد</option>
+
+                            <option value="hadith">الحديث</option>
+
+                            <option value="tazkiyah">التزكية</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="editor-lesson">الدرس</label>
+
+                        <select id="editor-lesson" class="form-select" onchange="onEditorLessonChange()" disabled>
+
+                            <option value="">-- اختر الدرس أولاً --</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="editor-chapter">الفقرة / المحور</label>
+
+                        <select id="editor-chapter" class="form-select" onchange="onEditorChapterChange()" disabled>
+
+                            <option value="">-- اختر المحور أولاً --</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div id="editor-content-area" style="display: none;">
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+
+                        <label style="color: var(--gold-light); font-weight: 700;" id="editor-chapter-label">محتوى الفقرة :</label>
+
+                    </div>
+
+                    <textarea id="editor-textarea" class="editor-textarea" placeholder="اكتب محتوى الفقرة هنا..."></textarea>
+
+                    
+
+                    <div class="btn-group">
+
+                        <button class="btn btn-secondary" onclick="resetEditor()">إلغاء</button>
+
+                        <button class="btn btn-primary" onclick="saveEditorContent()">💾 حفظ ونشر التغييرات</button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Tab Panel: MEDIA -->
+
+        <section id="panel-media" class="tab-panel">
+
+            <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+
+                <h1 class="page-title">🖼️ إدارة الوسائط والمستندات</h1>
+
+                <div style="display:flex; gap:12px; align-items:center;">
+
+                    <select id="media-subject-select" class="form-select" onchange="loadMediaDashboard()" style="min-width: 180px;">
+
+                        <option value="aqeeda">📘 العقيدة والتوحيد</option>
+
+                        <option value="fiqh">📗 الفقه الإسلامي</option>
+
+                        <option value="sira">📙 السيرة النبوية</option>
+
+                        <option value="nahw">📒 النحو والصرف</option>
+
+                        <option value="tajweed">🎵 التجويد</option>
+
+                        <option value="hadith">📜 الحديث الشريف</option>
+
+                        <option value="tazkiyah">🌿 التزكية والآداب</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <!-- Stats/Audit Row -->
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+
+                <div class="stat-card" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); padding: 12px 18px;">
+
+                    <div style="font-size: 1.5rem; margin-left: 10px;">🟢</div>
+
+                    <div>
+
+                        <h4 style="margin:0; font-size:0.85rem; color:var(--text-secondary);">الخرائط الذهنية المتوفرة</h4>
+
+                        <p id="media-stat-mindmaps-ok" style="margin:5px 0 0 0; font-size:1.4rem; font-weight:bold; color:#22c55e;">0</p>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px 18px;">
+
+                    <div style="font-size: 1.5rem; margin-left: 10px;">🔴</div>
+
+                    <div>
+
+                        <h4 style="margin:0; font-size:0.85rem; color:var(--text-secondary);">الخرائط الذهنية المفقودة</h4>
+
+                        <p id="media-stat-mindmaps-missing" style="margin:5px 0 0 0; font-size:1.4rem; font-weight:bold; color:#ef4444;">0</p>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); padding: 12px 18px;">
+
+                    <div style="font-size: 1.5rem; margin-left: 10px;">🟢</div>
+
+                    <div>
+
+                        <h4 style="margin:0; font-size:0.85rem; color:var(--text-secondary);">الملخصات المتوفرة</h4>
+
+                        <p id="media-stat-summaries-ok" style="margin:5px 0 0 0; font-size:1.4rem; font-weight:bold; color:#22c55e;">0</p>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px 18px;">
+
+                    <div style="font-size: 1.5rem; margin-left: 10px;">🔴</div>
+
+                    <div>
+
+                        <h4 style="margin:0; font-size:0.85rem; color:var(--text-secondary);">الملخصات المفقودة</h4>
+
+                        <p id="media-stat-summaries-missing" style="margin:5px 0 0 0; font-size:1.4rem; font-weight:bold; color:#ef4444;">0</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Media Grid Table -->
+
+            <div class="editor-container" style="padding: 20px;">
+
+                <div style="overflow-x: auto; direction: rtl; text-align: right;">
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+
+                        <thead>
+
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--gold-light);">
+
+                                <th style="padding: 12px 8px; width: 80px;">الدرس</th>
+
+                                <th style="padding: 12px 8px; min-width: 150px;">العنوان</th>
+
+                                <th style="padding: 12px 8px;">🗺️ الخارطة الذهنية (Telegram Mindmap ID)</th>
+
+                                <th style="padding: 12px 8px;">📝 الملخص الشامل (Telegram Summary ID)</th>
+
+                                <th style="padding: 12px 8px; text-align: center; width: 100px;">العمليات</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="media-table-body">
+
+                            <!-- Injected dynamically -->
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Tab Panel: STATS -->
+
+        <section id="panel-stats" class="tab-panel">
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">👥</div>
+
+                    <div class="stat-info">
+
+                        <h3>المستخدمون النشطون</h3>
+
+                        <p id="stat-active-users">0</p>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">📥</div>
+
+                    <div class="stat-info">
+
+                        <h3>طلبات معلقة</h3>
+
+                        <p id="stat-pending-items">0</p>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">✅</div>
+
+                    <div class="stat-info">
+
+                        <h3>معدل الإنجاز</h3>
+
+                        <p id="stat-completion-rate">100%</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="editor-container" style="margin-top: 16px;">
+
+                <h3 style="font-weight: 800; font-size: 1.1rem; color: var(--gold-light); margin-bottom: 14px;">📈 ملخص النشاط</h3>
+
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">لوحة الإحصائيات تقوم بتجميع النشاط العام للبوت البديل لتسريع قرارات إدارة المحتوى والمقترحات.</p>
+
+            </div>
+
+        </section>
+
+        <!-- Transcript Editor Drawer (Global) -->
+
+        <div id="transcript-drawer-backdrop" class="drawer-backdrop" onclick="closeTranscriptDrawer()"></div>
+
+        <aside id="transcript-detail-drawer" class="helpdesk-detail-panel" style="width: min(1000px, 95vw); max-width: 100%; padding: 0; display: flex; flex-direction: column; overflow: hidden; z-index: 999;"></aside>
+
+    </main>
+
+    <!-- Right Collapsible Filters Sidebar -->
+
+    <aside id="filter-sidebar" class="filter-sidebar collapsed" style="display: none;">
+
+        <div class="filter-sidebar-header">
+
+            <h3>⚙️ تصفية وفرز</h3>
+
+            <button class="close-filter-btn" onclick="toggleFilterSidebar()" aria-label="إغلاق التصفية">×</button>
+
+        </div>
+
+        <!-- Sidebar Summary Cards (Moved here to save workspace height) -->
+
+        <div id="sidebar-summary-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;"></div>
+
+        <div class="filter-sidebar-content">
+
+            <!-- Search -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-search" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">🔍 بحث بالاسم أو المعرف</label>
+
+                <input type="text" id="filter-search" class="form-input" placeholder="اكتب للبحث..." oninput="onFilterChange()" style="padding: 8px 12px; font-size: 0.85rem;">
+
+            </div>
+
+            <!-- Subject Select -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-subject" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">📚 المادة الدراسية</label>
+
+                <select id="filter-subject" class="form-select" onchange="onSubjectSelectChange()" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;">
+
+                    <option value="all">📁 الكل</option>
+
+                    <option value="aqida">العقيدة</option>
+
+                    <option value="fiqh">الفقه</option>
+
+                    <option value="sira">السيرة</option>
+
+                    <option value="nahw">النحو</option>
+
+                    <option value="tajweed">التجويد</option>
+
+                    <option value="hadith">الحديث</option>
+
+                    <option value="tazkiyah">التزكية</option>
+
+                </select>
+
+            </div>
+
+            <!-- Ticket Type -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-type" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">📁 نوع التذكرة</label>
+
+                <select id="filter-type" class="form-select" onchange="onFilterChange()" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;">
+
+                    <option value="all">📥 الكل</option>
+
+                    <option value="report">🚩 بلاغات المحتوى</option>
+
+                    <option value="proposal">💡 الأسئلة المقترحة</option>
+
+                    <option value="ticket">📩 تذاكر الدعم</option>
+
+                </select>
+
+            </div>
+
+            <!-- Status -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-status" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">⚙️ الحالة</label>
+
+                <select id="filter-status" class="form-select" onchange="onFilterChange()" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;">
+
+                    <option value="pending">⏳ قيد الانتظار</option>
+
+                    <option value="resolved">✅ المنجزة والمقبولة</option>
+
+                    <option value="rejected">❌ المرفوضة</option>
+
+                    <option value="all">📁 الكل</option>
+
+                </select>
+
+            </div>
+
+            <!-- Academic Year Select -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-year" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">🎓 السنة الدراسية</label>
+
+                <select id="filter-year" class="form-select" onchange="onFilterChange()" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;">
+
+                    <option value="all">📁 الكل</option>
+
+                    <option value="1">1️⃣ السنة الأولى</option>
+
+                    <option value="2">2️⃣ السنة الثانية</option>
+
+                    <option value="3">3️⃣ السنة الثالثة</option>
+
+                    <option value="4">4️⃣ السنة الرابعة</option>
+
+                </select>
+
+            </div>
+
+            <!-- Gender Select -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-gender" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">👥 الجنس (طلاب/طالبات)</label>
+
+                <select id="filter-gender" class="form-select" onchange="onFilterChange()" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;">
+
+                    <option value="all">📁 الكل</option>
+
+                    <option value="homme">👨 الطلاب (ذكور)</option>
+
+                    <option value="femme">👩 الطالبات (إناث)</option>
+
+                    <option value="indetermine">❓ غير محدد</option>
+
+                </select>
+
+            </div>
+
+            <!-- Sorting -->
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+
+                <label for="filter-sort" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700;">📅 الترتيب</label>
+
+                <select id="filter-sort" class="form-select" onchange="onFilterChange()" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;">
+
+                    <option value="newest">الأحدث</option>
+
+                    <option value="oldest">الأقدم</option>
+
+                </select>
+
+            </div>
+
+            <!-- Fullscreen / Layout Mode -->
+
+            <div class="form-group" style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border);">
+
+                <button class="btn btn-secondary" onclick="toggleFullSheetMode()" style="width: 100%; justify-content: center; gap: 8px; padding: 10px; font-size: 0.85rem;">
+
+                    <span id="full-sheet-btn-icon">🖥️</span> <span id="full-sheet-btn-text">ملء الشاشة</span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+</div>
+
+    <!-- Toast Notification -->
+
+    <div id="toast" class="toast">
+
+        <span id="toast-icon">📢</span>
+
+        <span id="toast-text">رسالة توضيحية</span>
+
+    </div>
+
+    <script src="admin.js"></script>
+
+    <!-- Advanced Hybrid Telegram Formatting Editor Modal -->    <!-- Advanced Thematic Axes Editor Dashboard Overlay -->
+    <div id="axes-editor-overlay" class="axes-editor-overlay" style="display: none;">
+        <div class="axes-editor-modal">
+            <div class="axes-editor-header">
+                <h2>📝 لوحة التحكم وإدارة محاور الدرس الشاملة (100% Plein Écran)</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" style="background: rgba(212, 175, 55, 0.15); color: var(--gold); border-color: var(--gold); font-weight: bold;" onclick="window.toggleFullTranscriptPanel()">📖 عرض التفريغ الكامل للدرس</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.closeAxesEditor()">✖ إغلاق اللوحة</button>
+                </div>
+            </div>
+            <div class="axes-editor-content">
+                <!-- Sidebar -->
+                <div class="axes-sidebar">
+                    <div class="axes-list" id="axes-sidebar-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    <div class="axes-sidebar-footer">
+                        <button class="btn btn-primary btn-sm" style="flex: 1; padding: 10px;" onclick="window.addNewAxis()">➕ إضافة محور</button>
+                    </div>
+                </div>
+                <!-- Main Editor Area -->
+                <div class="axes-editor-panel" id="axes-editor-panel-container">
+                    <!-- Loaded dynamically based on active axis -->
+                </div>
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background-color: rgba(15,23,42,0.2); direction: rtl;">
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">💡 تلميح: حدد جزءاً من نص التفريغ واستخدم شريط الأدوات لنقله للمحور السابق أو التالي، أو فصله لمحور جديد، أو إرساله كشعر.</span>
+                <div style="display: flex; gap: 12px; direction: ltr;">
+                    <button class="btn btn-secondary" onclick="window.closeAxesEditor()">✖ إلغاء</button>
+                    <button id="save-axes-btn" class="btn btn-primary" style="background: var(--gold); color: #000; font-weight: bold;" onclick="window.saveAxesChanges()">💾 حفظ كافة المحاور والمزامنة للإنتاج</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="telegram-editor-overlay" class="telegram-editor-overlay" style="display: none;">
+        <div class="tg-editor-modal">
+
+            <div class="tg-editor-header">
+
+                <h2>✨ محرّر تنسيقات تليجرام المتطور (الشرح)</h2>
+
+                <button class="btn btn-secondary btn-sm" onclick="closeHybridTelegramEditor()">✖ إغلاق</button>
+
+            </div>
+
+            <div class="tg-editor-body">
+
+                <!-- Left Side: Custom Rich-Text HTML Editor -->
+
+                <div class="tg-editor-pane">
+
+                    <div style="display: flex; flex-direction: column; height: 100%;">
+
+                        <div class="tg-toolbar">
+
+                            <button type="button" class="tg-toolbar-btn" onclick="insertTelegramTag('b')" title="نص عريض (Bold)"><b>B</b></button>
+
+                            <button type="button" class="tg-toolbar-btn" onclick="insertTelegramTag('i')" title="نص مائل (Italic)"><i>I</i></button>
+
+                            <button type="button" class="tg-toolbar-btn" onclick="insertTelegramTag('blockquote')" title="اقتباس تليجرام (Blockquote)" style="font-size: 0.85rem;">❞ اقتباس</button>
+
+                            <button type="button" class="tg-toolbar-btn" onclick="insertTelegramTag('code')" title="رمز مقتضب (Monospace)" style="font-family: monospace;">&lt;code&gt;</button>
+
+                            <div style="border-right: 1px solid var(--border); margin: 0 4px; height: 24px;"></div>
+
+                            <button type="button" class="tg-toolbar-btn" onclick="clearSelectedTelegramTags()" title="إزالة التنسيقات" style="font-size: 0.8rem; color: var(--danger);">🧹 تنظيف</button>
+
+                        </div>
+
+                        <div style="flex-grow: 1; display: flex; flex-direction: column;">
+
+                            <textarea id="tg-editor-textarea" oninput="updateLiveTelegramPreview()" placeholder="اكتب الشرح هنا واستخدم أزرار التنسيق بالأعلى لجعل النص يظهر بشكل احترافي للطلاب على تليجرام..."></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                
+
+                <!-- Right Side: Real-time Live Telegram Mockup Preview -->
+
+                <div class="tg-editor-pane tg-preview-pane">
+
+                    <div class="tg-phone-frame">
+
+                        <div class="tg-chat-header">
+
+                            <div class="tg-chat-avatar">🤖</div>
+
+                            <div style="display: flex; flex-direction: column;">
+
+                                <span class="tg-chat-title">المساعد الأكاديمي <span style="color: #3b82f6; font-size: 0.85rem;">✓</span></span>
+
+                                <span class="tg-chat-status">bot</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="tg-chat-body">
+
+                            <div class="tg-chat-bubble-container">
+
+                                <div class="tg-chat-bubble">
+
+                                    <div id="tg-live-preview-content" class="tg-bubble-content">
+
+                                        <!-- Real-time formatted HTML rendered here -->
+
+                                    </div>
+
+                                    <div class="tg-bubble-time" id="tg-bubble-time-el">23:00</div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="tg-editor-footer">
+
+                <button class="btn btn-secondary" onclick="closeHybridTelegramEditor()">✖ إلغاء</button>
+
+                <button class="btn btn-primary" onclick="applyTelegramEditorChange()">💾 اعتماد وتطبيق التعديل</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Floating Bulk Actions Bar -->
+
+    <div id="bulk-actions-bar" class="bulk-actions-bar">
+
+        <span style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+
+            🔗 إجراءات جماعية: 
+
+            <span id="bulk-selected-count" class="bulk-count-badge">0</span>
+
+            عناصر محددة
+
+        </span>
+
+        <div style="display: flex; gap: 8px;">
+
+            <button class="btn btn-primary" onclick="triggerBulkResolve()" style="padding: 6px 12px; font-size: 0.8rem; height: 32px; background: var(--success); border-color: var(--success); color: white;">
+
+                ✅ قبول / حل المحدّد
+
+            </button>
+
+            <button class="btn btn-secondary" onclick="triggerBulkReject()" style="padding: 6px 12px; font-size: 0.8rem; height: 32px; background: var(--danger); border-color: var(--danger); color: white;">
+
+                ❌ رفض المحدّد
+
+            </button>
+
+            <button class="btn btn-secondary" onclick="deselectAllRows()" style="padding: 6px 12px; font-size: 0.8rem; height: 32px; border-color: var(--border);">
+
+                إلغاء التحديد
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Custom View Modal (Phase 3 DB Integrated) -->
+
+    <script src="admin-late.js"></script>
+
+    <!-- ─── Custom View Editor Modal (Phase 3) ─── -->
+
+    <div id="cvm-backdrop" style="position:fixed; inset:0; background:rgba(2, 6, 23, 0.6); backdrop-filter:blur(4px); z-index:1100; opacity:0; pointer-events:none; transition:opacity 0.2s ease;" onclick="closeCustomViewModal()"></div>
+
+    <aside id="custom-view-modal" style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0.95); width:min(580px,96vw); max-height:90vh; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); z-index:1200; opacity:0; pointer-events:none; transition:transform 0.2s ease, opacity 0.2s ease; display:flex; flex-direction:column; overflow:hidden; direction:rtl; text-align:right;">
+
+        <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+
+            <h3 id="cvm-title" style="margin:0; font-size:1.05rem;">✏️ تعديل الوجهة</h3>
+
+            <button onclick="closeCustomViewModal()" style="background:none; border:none; color:var(--text-secondary); font-size:1.3rem; cursor:pointer; padding:4px 8px;">✕</button>
+
+        </div>
+
+        <div style="padding:20px 24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+
+            <input type="hidden" id="cvm-id">
+
+            
+
+            <div style="display:grid; grid-template-columns:1fr 80px; gap:12px;">
+
+                <div>
+
+                    <label style="font-size:0.82rem; color:var(--text-secondary); display:block; margin-bottom:4px;">اسم الوجهة *</label>
+
+                    <input type="text" id="cvm-name" class="form-input" placeholder="مثال: تذاكر عاجلة" style="width:100%;">
+
+                </div>
+
+                <div>
+
+                    <label style="font-size:0.82rem; color:var(--text-secondary); display:block; margin-bottom:4px;">أيقونة</label>
+
+                    <input type="text" id="cvm-icon" class="form-input" placeholder="📌" style="width:100%; text-align:center; font-size:1.4rem;">
+
+                </div>
+
+            </div>
+
+            <div>
+
+                <label style="font-size:0.82rem; color:var(--text-secondary); display:block; margin-bottom:8px;">🔍 الفلاتر المطبقة مسبقاً</label>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+
+                    <select id="cvm-filter-status" class="form-input" style="font-size:0.82rem;">
+
+                        <option value="">كل الحالات</option>
+
+                        <option value="pending">⏳ معلق</option>
+
+                        <option value="in_progress">🔄 جاري</option>
+
+                        <option value="resolved">✅ محلول</option>
+
+                    </select>
+
+                    <select id="cvm-filter-type" class="form-input" style="font-size:0.82rem;">
+
+                        <option value="">كل الأنواع</option>
+
+                        <option value="ticket">🎫 تذكرة</option>
+
+                        <option value="report">🚩 بلاغ</option>
+
+                        <option value="proposal">💡 مقترح</option>
+
+                    </select>
+
+                    <select id="cvm-filter-subject" class="form-input" style="font-size:0.82rem;">
+
+                        <option value="">كل المواد</option>
+
+                        <option value="aqeeda">العقيدة</option>
+
+                        <option value="fiqh">الفقه</option>
+
+                        <option value="sira">السيرة</option>
+
+                        <option value="nahw">النحو</option>
+
+                        <option value="tajweed">التجويد</option>
+
+                        <option value="hadith">الحديث</option>
+
+                        <option value="tazkiyah">التزكية</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div>
+
+                <label style="font-size:0.82rem; color:var(--text-secondary); display:block; margin-bottom:8px;">👁️ الرؤية</label>
+
+                <select id="cvm-visibility" class="form-input" onchange="toggleCvmTargetVisibility()" style="width:100%;">
+
+                    <option value="private">🔒 خاصة (أنا فقط)</option>
+
+                    <option value="shared">🌐 مشتركة (كل المشرفين)</option>
+
+                    <option value="targeted">🎯 موجهة (مشرفين محددين)</option>
+
+                </select>
+
+            </div>
+
+            <div id="cvm-target-section" style="display:none;">
+
+                <label style="font-size:0.82rem; color:var(--text-secondary); display:block; margin-bottom:8px;">🎯 المشرفون المستهدفون</label>
+
+                <div id="cvm-target-admins" style="max-height:180px; overflow-y:auto; padding:8px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-card);"></div>
+
+            </div>
+
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+
+                <input type="checkbox" id="cvm-locked" style="width:16px; height:16px;">
+
+                🔒 وجهة مقفلة (لا يمكن للمشرفين العاديين حذفها)
+
+            </label>
+
+        </div>
+
+        <div style="padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end;">
+
+            <button class="btn btn-danger" onclick="deleteCustomViewFromModal()" id="cvm-delete-btn" style="margin-left:auto;">🗑️ حذف</button>
+
+            <button class="btn btn-secondary" onclick="closeCustomViewModal()">إلغاء</button>
+
+            <button class="btn btn-primary" onclick="saveCustomViewModal()">💾 حفظ</button>
+
+        </div>
+
+    </aside>
+
+</body>
+
+</html>
+
+
+
+
+
+
+

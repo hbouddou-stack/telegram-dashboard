@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مركز الدعم والمساعدة | أكاديمية الباجي</title>
+    <!-- Google Fonts: Tajawal & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Telegram WebApp SDK -->
+        <script src="bot-config.js"></script>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #e0f2fe;
+            --accent: #d97706;
+            --accent-light: #fef3c7;
+            --bg: #0b0f19;
+            --card-bg: #111827;
+            --card-hover: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border: #374151;
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --font-main: 'Tajawal', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Progress Indicator */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 33.33%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header {
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            display: inline-block;
+            filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.3));
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Wizard Steps */
+        .step-container {
+            padding: 24px;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 320px;
+        }
+        .step-container.active {
+            display: flex;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Grand Buttons Style */
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .grid-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .grid-btn:hover {
+            border-color: var(--primary);
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+
+        .grid-btn.selected {
+            border-color: var(--primary);
+            background: rgba(14, 165, 233, 0.15);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+        }
+
+        .grid-btn-icon {
+            font-size: 28px;
+        }
+
+        .grid-btn-title {
+            font-size: 13.5px;
+            font-weight: 700;
+        }
+
+        /* Lists for subthemes */
+        .theme-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .theme-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .theme-item:hover {
+            border-color: var(--primary);
+            background: var(--card-hover);
+        }
+
+        .theme-item.selected {
+            border-color: var(--primary);
+            background: rgba(14, 165, 233, 0.15);
+        }
+
+        .theme-item::after {
+            content: "←";
+            font-size: 16px;
+            color: var(--text-secondary);
+            transition: transform 0.2s;
+        }
+        .theme-item:hover::after {
+            transform: translateX(-4px);
+            color: var(--primary);
+        }
+
+        /* Inputs */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14.5px;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Buttons footer */
+        .footer-nav {
+            padding: 16px 24px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(17, 24, 39, 0.5);
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Status Toast/Card */
+        .status-card {
+            padding: 20px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .status-card.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-card.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        /* Telegram Theme Adjustments */
+        body.tg-theme {
+            background-color: var(--tg-theme-bg-color, #0b0f19);
+            color: var(--tg-theme-text-color, #f9fafb);
+        }
+        body.tg-theme .container {
+            background: var(--tg-theme-bg-color, #111827);
+            border-color: var(--tg-theme-hint-color, #374151);
+        }
+
+        /* Landing Screen styles */
+        .landing-screen {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            text-align: center;
+        }
+        .landing-logo {
+            font-size: 64px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 8px 16px rgba(14, 165, 233, 0.4));
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .landing-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--card-hover) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-align: right;
+            text-decoration: none;
+        }
+        .landing-btn:hover {
+            border-color: var(--primary);
+            background: rgba(14, 165, 233, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .landing-btn-icon {
+            font-size: 32px;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .landing-btn-text h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        .landing-btn-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Ticket List styles */
+        .ticket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .ticket-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: right;
+        }
+        .ticket-card:hover {
+            border-color: var(--primary);
+            background: var(--card-hover);
+            transform: translateY(-1px);
+        }
+        .ticket-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ticket-id {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 700;
+            font-family: monospace;
+        }
+        .ticket-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+        .status-pending { background: rgba(217, 119, 6, 0.15); color: #fbbf24; }
+        .status-in_progress { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+        .status-resolved { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .ticket-card-body {
+            font-size: 13.5px;
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ticket-card-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            direction: ltr;
+        }
+
+        /* Chat Room styles */
+        .chat-room {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            word-break: break-word;
+            text-align: right;
+        }
+        .chat-bubble.student {
+            background: rgba(14, 165, 233, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-bubble.admin {
+            background: var(--border);
+            color: var(--text-primary);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble-time {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-align: left;
+            display: block;
+            direction: ltr;
+        }
+        .chat-bubble.admin .chat-bubble-time {
+            text-align: right;
+        }
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            background: var(--card-bg);
+            align-items: center;
+        }
+        .chat-input {
+            flex: 1;
+            background: rgba(255,255,255,0.02);
+            border: 1.5px solid var(--border);
+            border-radius: 24px;
+            padding: 10px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: right;
+        }
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+        .chat-send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .chat-send-btn:hover {
+            background: var(--primary-dark);
+        }
+        .chat-send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* AI Suggestions Overlay Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .modal-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--primary);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+            overflow: hidden;
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            direction: rtl;
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            direction: rtl;
+        }
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+            direction: rtl;
+        }
+        .suggestion-item:hover {
+            border-color: var(--primary);
+            background: var(--card-hover);
+        }
+        .suggestion-question {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .suggestion-answer {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-container">
+        <!-- Landing Screen -->
+        <div id="landing-screen" class="landing-screen">
+            <span class="landing-logo">💬</span>
+            <h2 style="font-weight: 800; font-size: 22px; margin-bottom: 8px;">بوابة الدعم والمحادثات</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">مرحباً بك في مركز مساعدة الأكاديمية. كيف يمكننا مساعدتك اليوم؟</p>
+            
+            <button type="button" class="landing-btn" onclick="showNewTicketWizard()">
+                <span class="landing-btn-icon">➕</span>
+                <div class="landing-btn-text">
+                    <h3>طرح سؤال أو بلاغ جديد</h3>
+                    <p>أبلغ عن مشكلة تقنية، خطأ علمي، أو استفسار عام</p>
+                </div>
+            </button>
+
+            <button type="button" class="landing-btn" onclick="showMyTickets()">
+                <span class="landing-btn-icon">📬</span>
+                <div class="landing-btn-text">
+                    <h3>محادثاتي وتذاكري السابقة</h3>
+                    <p>استعرض الردود وتواصل مع المشرفين مباشرة</p>
+                </div>
+            </button>
+        </div>
+
+        <!-- Ticket List Screen -->
+        <div id="ticket-list-screen" style="display: none; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button type="button" class="btn btn-secondary" onclick="showLandingScreen()" style="padding: 6px 12px; font-size: 13px;">↩️ عودة</button>
+                <h2 style="font-size: 18px; font-weight: 700; margin: 0;">محادثاتي المفتوحة</h2>
+            </div>
+            <div class="ticket-list" id="tickets-list-container">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Chat Room Screen -->
+        <div id="chat-room-screen" style="display: none; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.01); margin-bottom: 12px;">
+                <button type="button" class="btn btn-secondary" onclick="backFromChat()" style="padding: 6px 12px; font-size: 13px;">↩️ عودة</button>
+                <div style="text-align: right;">
+                    <h3 id="chat-title" style="font-size: 15px; font-weight: 700; margin: 0;">محادثة التذكرة</h3>
+                    <span id="chat-status" class="ticket-status" style="font-size: 10px; margin-top: 4px; display: inline-block;">-</span>
+                </div>
+            </div>
+            
+            <div class="chat-room">
+                <div class="chat-messages" id="chat-messages-container">
+                    <!-- Messages will load here -->
+                </div>
+                
+                <div class="chat-input-container">
+                    <button class="chat-send-btn" onclick="sendChatReply()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                    <input type="text" class="chat-input" id="chat-message-input" placeholder="اكتب ردك هنا..." onkeydown="if(event.key === 'Enter') sendChatReply()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Elements (Header & Progress bar) -->
+        <div id="wizard-header-container" style="display: none;">
+            <!-- Progress Bar -->
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="header">
+                <span class="header-icon" id="header-icon">💬</span>
+                <h1 id="header-title">طرح سؤال أو مشكلة</h1>
+                <p id="header-subtitle">الخطوة 1: حدد نوع الموضوع الذي تواجهه</p>
+            </div>
+        </div>
+
+        <form id="support-wizard-form" onsubmit="event.preventDefault();" style="display: none;">
+            <!-- STEP 1: Main Category -->
+            <div class="step-container active" id="step-1">
+                <div class="grid-buttons">
+                    <button type="button" class="grid-btn" onclick="selectCategory('payment', '💳', 'شؤون الدفع والاشتراك')">
+                        <span class="grid-btn-icon">💳</span>
+                        <span class="grid-btn-title">الدفع والاشتراك</span>
+                    </button>
+                    <button type="button" class="grid-btn" onclick="selectCategory('comprehension', '🧠', 'فهم الدروس ومسائل العلم')">
+                        <span class="grid-btn-icon">🧠</span>
+                        <span class="grid-btn-title">فهم الدروس والمسائل</span>
+                    </button>
+                    <button type="button" class="grid-btn" onclick="selectCategory('technical', '⚙️', 'مشكلة تقنية في البوت أو الموقع')">
+                        <span class="grid-btn-icon">⚙️</span>
+                        <span class="grid-btn-title">مشكلة تقنية</span>
+                    </button>
+                    <button type="button" class="grid-btn" onclick="selectCategory('suggestion', '💡', 'اقتراح أو فكرة تحسين')">
+                        <span class="grid-btn-icon">💡</span>
+                        <span class="grid-btn-title">اقتراحات وأفكار</span>
+                    </button>
+                    <button type="button" class="grid-btn" onclick="selectCategory('content', '📝', 'خطأ في سؤال أو إجابة كويز')">
+                        <span class="grid-btn-icon">📝</span>
+                        <span class="grid-btn-title">خطأ في المحتوى / كويز</span>
+                    </button>
+                    <button type="button" class="grid-btn" onclick="selectCategory('other', '📁', 'أمر آخر أو استفسار عام')">
+                        <span class="grid-btn-icon">📁</span>
+                        <span class="grid-btn-title">أمر آخر</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Sub-category -->
+            <div class="step-container" id="step-2">
+                <div class="theme-list" id="subtheme-list-container">
+                    <!-- Dynamic Items -->
+                </div>
+            </div>
+
+            <!-- STEP 3: Details -->
+            <div class="step-container" id="step-3">
+                <div class="form-group">
+                    <label for="shortTitle">عنوان مختصر للموضوع</label>
+                    <input type="text" id="shortTitle" class="form-control" placeholder="مثال: تعذر إتمام عملية الدفع" maxlength="50" required>
+                </div>
+                
+                <div class="form-group" id="other-subtheme-group" style="display:none;">
+                    <label for="customSubTheme">حدد الموضوع الفرعي بالتحديد</label>
+                    <input type="text" id="customSubTheme" class="form-control" placeholder="اكتب الموضوع الفرعي هنا..." maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="details">تفاصيل رسالتك</label>
+                    <textarea id="details" class="form-control" placeholder="اكتب تفاصيل سؤالك أو مشكلتك هنا بوضوح..." required></textarea>
+                </div>
+
+                <div class="form-group" id="contact-fields">
+                    <label for="firstName">الاسم الكامل</label>
+                    <input type="text" id="firstName" class="form-control" placeholder="اكتب اسمك الكامل">
+                    
+                    <label style="margin-top:8px;" for="contactInfo">رقم الهاتف (واتساب) أو البريد الإلكتروني</label>
+                    <input type="text" id="contactInfo" class="form-control" placeholder="مثال: +212600000000">
+                </div>
+                
+                <!-- Status Messages -->
+                <div id="status-card" class="status-card"></div>
+            </div>
+
+            <!-- Navigation Footer -->
+            <div class="footer-nav">
+                <button type="button" class="btn btn-secondary" id="btn-back" onclick="navigateStep(-1)" style="display:none;">السابق</button>
+                <button type="button" class="btn btn-primary" id="btn-next" onclick="navigateStep(1)" disabled>التالي</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            currentStep: 1,
+            telegramUser: null,
+            isTelegramWebApp: false,
+            selectedCategory: '',
+            selectedCategoryLabel: '',
+            selectedCategoryIcon: '💬',
+            selectedSubTheme: '',
+            subThemes: {
+                payment: [
+                    "مشكلة في الدفع أو سحب الرصيد",
+                    "الاشتراك لم يتفعل بعد الدفع",
+                    "طلب منحة أو مساعدة دراسية",
+                    "طلب استرجاع الأموال",
+                    "أمر آخر"
+                ],
+                comprehension: [
+                    "إشكال في فهم شرح درس معين",
+                    "سؤال فقهي أو عقدي متعلق بالمنهج",
+                    "طلب توضيح عبارة في الكتاب",
+                    "أمر آخر"
+                ],
+                technical: [
+                    "البوت لا يستجيب للضغط",
+                    "مشكلة في تسجيل الدخول للموقع",
+                    "خطأ في الصفحة أو أزرار لا تعمل",
+                    "أمر آخر"
+                ],
+                suggestion: [
+                    "تحسين على نظام الأسئلة أو الكويزات",
+                    "اقتراح إضافة درس أو مادة جديدة",
+                    "تعديل في ميزات البوت",
+                    "أمر آخر"
+                ],
+                content: [
+                    "الجواب المحدد كصحيح خاطئ",
+                    "خطأ إملائي أو لغوي في السؤال",
+                    "رابط فيديو يوتيوب غير مطابق أو معطل",
+                    "أمر آخر"
+                ],
+                other: [
+                    "مراسلة الإدارة بخصوص أمر خاص",
+                    "أمر آخر"
+                ]
+            }
+        };
+
+        // Initialize Telegram WebApp
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+                
+                // Set Telegram theme if dark mode preferred
+                if (tg.colorScheme === 'dark') {
+                    document.body.classList.add('tg-theme');
+                }
+                
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    state.telegramUser = tg.initDataUnsafe.user;
+                    state.isTelegramWebApp = true;
+                    // Pre-fill hidden fields
+                    document.getElementById('firstName').value = (state.telegramUser.first_name || '') + ' ' + (state.telegramUser.last_name || '');
+                    document.getElementById('contactInfo').value = state.telegramUser.username ? '@' + state.telegramUser.username : state.telegramUser.id;
+                    // Hide contact fields as we retrieve them automatically
+                    document.getElementById('contact-fields').style.display = 'none';
+                }
+            }
+
+            // Inspect query parameters
+            const view = getQueryParam('view');
+            const ticketId = getQueryParam('ticket_id');
+            if (view === 'chat' && ticketId) {
+                openChatRoom(ticketId);
+            } else {
+                showLandingScreen();
+            }
+        });
+
+        function selectCategory(cat, icon, label) {
+            state.selectedCategory = cat;
+            state.selectedCategoryIcon = icon;
+            state.selectedCategoryLabel = label;
+            
+            // Mark button as selected
+            document.querySelectorAll('.grid-btn').forEach(btn => btn.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            // Enable next button
+            document.getElementById('btn-next').disabled = false;
+            
+            // Render subthemes for step 2
+            renderSubThemes();
+        }
+
+        function renderSubThemes() {
+            const container = document.getElementById('subtheme-list-container');
+            const items = state.subThemes[state.selectedCategory] || [];
+            
+            container.innerHTML = items.map(item => `
+                <div class="theme-item" onclick="selectSubTheme('${item}')">${item}</div>
+            `).join('');
+        }
+
+        function selectSubTheme(subtheme) {
+            state.selectedSubTheme = subtheme;
+            
+            // Show custom subtheme input if "أمر آخر" is selected
+            if (subtheme === "أمر آخر") {
+                document.getElementById('other-subtheme-group').style.display = 'flex';
+                document.getElementById('customSubTheme').setAttribute('required', 'true');
+            } else {
+                document.getElementById('other-subtheme-group').style.display = 'none';
+                document.getElementById('customSubTheme').removeAttribute('required');
+            }
+            
+            // Auto navigate to next step
+            navigateStep(1);
+        }
+
+        function navigateStep(direction) {
+            const nextStep = state.currentStep + direction;
+            if (nextStep < 1 || nextStep > 3) return;
+
+            // Hide active step
+            document.getElementById(`step-${state.currentStep}`).classList.remove('active');
+            
+            // Update step
+            state.currentStep = nextStep;
+            
+            // Show new active step
+            document.getElementById(`step-${state.currentStep}`).classList.add('active');
+
+            // Update Progress Bar
+            const progressPercent = (state.currentStep / 3) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Update Header & Icons
+            const iconEl = document.getElementById('header-icon');
+            const titleEl = document.getElementById('header-title');
+            const subEl = document.getElementById('header-subtitle');
+
+            if (state.currentStep === 1) {
+                iconEl.textContent = '💬';
+                titleEl.textContent = 'طرح سؤال أو مشكلة';
+                subEl.textContent = 'الخطوة 1: حدد نوع الموضوع الذي تواجهه';
+                document.getElementById('btn-back').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'block';
+                document.getElementById('btn-next').textContent = 'التالي';
+                document.getElementById('btn-next').disabled = !state.selectedCategory;
+            } else if (state.currentStep === 2) {
+                iconEl.textContent = state.selectedCategoryIcon;
+                titleEl.textContent = state.selectedCategoryLabel;
+                subEl.textContent = 'الخطوة 2: حدد الموضوع الفرعي بالتحديد';
+                document.getElementById('btn-back').style.display = 'block';
+                document.getElementById('btn-next').style.display = 'none'; // Auto navigates on click
+            } else if (state.currentStep === 3) {
+                iconEl.textContent = '✍️';
+                titleEl.textContent = 'تفاصيل رسالتك';
+                subEl.textContent = 'الخطوة الأخيرة: اكتب عنواناً وشرحاً للمشكلة';
+                document.getElementById('btn-back').style.display = 'block';
+                document.getElementById('btn-next').style.display = 'block';
+                document.getElementById('btn-next').textContent = 'إرسال الرسالة';
+                document.getElementById('btn-next').disabled = false;
+                
+                // Change button behavior to submit
+                document.getElementById('btn-next').onclick = submitForm;
+            }
+        }
+
+        async function submitForm() {
+            const shortTitle = document.getElementById('shortTitle').value.trim();
+            const details = document.getElementById('details').value.trim();
+            const firstName = document.getElementById('firstName').value.trim() || 'طالب';
+            const contactInfo = document.getElementById('contactInfo').value.trim() || '';
+            const customSubTheme = document.getElementById('customSubTheme')?.value.trim() || '';
+
+            if (!shortTitle || !details) {
+                showStatusCard('⚠️ يرجى تعبئة الحقول الأساسية بشكل كامل.', 'error');
+                return;
+            }
+
+            // Intercept for AI Similar Question Suggestions
+            if (!state.aiSuggestionChecked) {
+                document.getElementById('btn-next').disabled = true;
+                document.getElementById('btn-next').textContent = '🔍 جاري فحص الأسئلة المشابهة...';
+                try {
+                    const checkRes = await fetch('/api/triage/match', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: details })
+                    });
+                    const checkData = await checkRes.json();
+                    
+                    if (checkData.success && checkData.matches && checkData.matches.length > 0) {
+                        const listContainer = document.getElementById('modal-suggestions-list');
+                        listContainer.innerHTML = checkData.matches.map(m => `
+                            <div class="suggestion-item">
+                                <div class="suggestion-question">❓ سؤال مشابه: ${escapeHtml(m.question)}</div>
+                                <div class="suggestion-answer">${escapeHtml(m.answer)}</div>
+                            </div>
+                        `).join('');
+                        
+                        document.getElementById('ai-suggestions-modal').style.display = 'flex';
+                        
+                        document.getElementById('btn-next').disabled = false;
+                        document.getElementById('btn-next').textContent = 'إرسال الرسالة';
+                        document.getElementById('btn-back').disabled = false;
+                        return;
+                    }
+                } catch(e) {
+                    console.error("AI triage search failed", e);
+                }
+            }
+
+            const finalSubTheme = state.selectedSubTheme === "أمر آخر" && customSubTheme ? customSubTheme : state.selectedSubTheme;
+            
+            // Format notes structured way:
+            const formattedNotes = `[الموضوع الفرعي: ${finalSubTheme}]\n**العنوان:** ${shortTitle}\n\n**التفاصيل:**\n${details}`;
+
+            // Build payload
+            const payload = {
+                source: state.isTelegramWebApp ? 'telegram' : 'platform',
+                firstName: firstName,
+                contactInfo: contactInfo,
+                notes: formattedNotes,
+                reportType: state.selectedCategory
+            };
+            
+            if (state.isTelegramWebApp && state.telegramUser) {
+                payload.telegramId = state.telegramUser.id;
+                payload.username = state.telegramUser.username || '';
+            }
+
+            // Disable buttons during submission
+            document.getElementById('btn-next').disabled = true;
+            document.getElementById('btn-next').textContent = '⏳ جاري الإرسال...';
+            document.getElementById('btn-back').disabled = true;
+
+            const apiUrl = '/api/tickets/external';
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Success! Display a card with buttons to open chat or view tickets
+                    const statusCard = document.getElementById('status-card');
+                    statusCard.innerHTML = `
+                        <div style="text-align: center; width: 100%;">
+                            <p style="margin-bottom: 12px; font-weight: 700;">🎉 تم إرسال رسالتك بنجاح!</p>
+                            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 10px;">
+                                <button type="button" class="btn btn-primary" onclick="openChatRoom(${result.ticketId})" style="padding: 6px 12px; font-size: 13px;">💬 فتح المحادثة مباشرة</button>
+                                <button type="button" class="btn btn-secondary" onclick="showMyTickets()" style="padding: 6px 12px; font-size: 13px;">📬 تذاكري ومحادثاتي</button>
+                            </div>
+                        </div>
+                    `;
+                    statusCard.className = `status-card success`;
+                    statusCard.style.display = 'flex';
+                    
+                    // Hide navigation
+                    document.querySelector('.footer-nav').style.display = 'none';
+                    // Reset form fields
+                    document.getElementById('shortTitle').value = '';
+                    document.getElementById('details').value = '';
+                } else {
+                    throw new Error(result.error || 'فشل الإرسال');
+                }
+            } catch (err) {
+                console.error(err);
+                showStatusCard('❌ حدث خطأ أثناء إرسال رسالتك. يرجى المحاولة لاحقاً.', 'error');
+                document.getElementById('btn-next').disabled = false;
+                document.getElementById('btn-next').textContent = 'إرسال الرسالة';
+                document.getElementById('btn-back').disabled = false;
+            }
+        }
+
+        function showStatusCard(message, type) {
+            const card = document.getElementById('status-card');
+            card.textContent = message;
+            card.className = `status-card ${type}`;
+            card.style.display = 'flex';
+        }
+
+        // --- View Navigation & Chat Logic ---
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function showLandingScreen() {
+            // Stop chat refresh interval if active
+            if (state.activeChatInterval) {
+                clearInterval(state.activeChatInterval);
+                state.activeChatInterval = null;
+            }
+            document.getElementById('landing-screen').style.display = 'flex';
+            document.getElementById('ticket-list-screen').style.display = 'none';
+            document.getElementById('chat-room-screen').style.display = 'none';
+            document.getElementById('wizard-header-container').style.display = 'none';
+            document.getElementById('support-wizard-form').style.display = 'none';
+            document.getElementById('status-card').style.display = 'none';
+        }
+
+        function showNewTicketWizard() {
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('ticket-list-screen').style.display = 'none';
+            document.getElementById('chat-room-screen').style.display = 'none';
+            document.getElementById('wizard-header-container').style.display = 'block';
+            document.getElementById('support-wizard-form').style.display = 'block';
+            document.getElementById('status-card').style.display = 'none';
+            document.querySelector('.footer-nav').style.display = 'flex';
+            
+            // Reset Wizard to Step 1
+            state.currentStep = 1;
+            state.aiSuggestionChecked = false;
+            navigateStep(0);
+        }
+
+        function showMyTickets() {
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('ticket-list-screen').style.display = 'block';
+            document.getElementById('chat-room-screen').style.display = 'none';
+            document.getElementById('wizard-header-container').style.display = 'none';
+            document.getElementById('support-wizard-form').style.display = 'none';
+            document.getElementById('status-card').style.display = 'none';
+            
+            loadStudentTickets();
+        }
+
+        async function loadStudentTickets() {
+            const listContainer = document.getElementById('tickets-list-container');
+            listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">⏳ جاري تحميل التذاكر...</div>';
+            
+            const telegramId = state.telegramUser ? state.telegramUser.id : 12345; // Local dev fallback
+            try {
+                const response = await fetch(`/api/tickets/student?telegram_id=${telegramId}`);
+                const data = await response.json();
+                if (data.success) {
+                    if (data.tickets.length === 0) {
+                        listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">📭 لا توجد تذاكر أو محادثات مفتوحة لديك.</div>';
+                        return;
+                    }
+                    
+                    listContainer.innerHTML = '';
+                    data.tickets.forEach(ticket => {
+                        const card = document.createElement('div');
+                        card.className = 'ticket-card';
+                        card.onclick = () => openChatRoom(ticket.id);
+                        
+                        // Parse status label and styling
+                        let statusText = 'قيد الانتظار';
+                        if (ticket.status === 'in_progress') statusText = 'قيد المعالجة';
+                        else if (ticket.status === 'resolved') statusText = 'تم الحل';
+                        else if (ticket.status === 'rejected') statusText = 'مرفوض';
+                        
+                        const dateStr = new Date(ticket.createdAt).toLocaleDateString('ar-EG', {
+                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                        });
+                        
+                        // Icon if media attached
+                        const mediaIcon = (ticket.mediaFileId || ticket.mediaType) ? ' 📎' : '';
+                        
+                        card.innerHTML = `
+                            <div class="ticket-card-header">
+                                <span class="ticket-status status-${ticket.status}">${statusText}</span>
+                                <span class="ticket-id">#${ticket.id}${mediaIcon}</span>
+                            </div>
+                            <div class="ticket-card-body">${ticket.notes.replace(/\[الموضوع الفرعي:[^\]]+\]/, '').trim()}</div>
+                            <div class="ticket-card-footer">
+                                <span>${dateStr}</span>
+                                <span>النوع: ${ticket.reportType}</span>
+                            </div>
+                        `;
+                        listContainer.appendChild(card);
+                    });
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                listContainer.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 20px;">❌ فشل تحميل التذاكر. يرجى المحاولة لاحقاً.</div>';
+            }
+        }
+
+        function openChatRoom(ticketId) {
+            state.currentTicketId = ticketId;
+            
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('ticket-list-screen').style.display = 'none';
+            document.getElementById('chat-room-screen').style.display = 'flex';
+            document.getElementById('wizard-header-container').style.display = 'none';
+            document.getElementById('support-wizard-form').style.display = 'none';
+            document.getElementById('status-card').style.display = 'none';
+            
+            const messagesContainer = document.getElementById('chat-messages-container');
+            messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">⏳ جاري تحميل المحادثة...</div>';
+            
+            loadChatMessages(ticketId);
+            
+            // Poll for new messages every 5 seconds
+            if (state.activeChatInterval) clearInterval(state.activeChatInterval);
+            state.activeChatInterval = setInterval(() => loadChatMessages(ticketId, true), 5000);
+        }
+
+        function backFromChat() {
+            if (getQueryParam('view') === 'chat') {
+                // If opened directly from Telegram deep link, go back to landing screen
+                showLandingScreen();
+            } else {
+                showMyTickets();
+            }
+        }
+
+        async function loadChatMessages(ticketId, isSilent = false) {
+            try {
+                const response = await fetch(`/api/tickets/${ticketId}/messages`);
+                const data = await response.json();
+                if (data.success) {
+                    // Update header title and status
+                    document.getElementById('chat-title').textContent = `المحادثة #${ticketId}`;
+                    
+                    // We don't have the status in messages directly, but we can display the last message sender or fetch details if we want.
+                    // Let's keep it simple or default to status of ticket by looking up ticket list status or leaving it as is.
+                    
+                    const container = document.getElementById('chat-messages-container');
+                    
+                    // If no messages yet, display a placeholder
+                    if (data.messages.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 45px;">💬 لا توجد رسائل بعد. اكتب رسالة لبدء النقاش مع المشرفين.</div>';
+                        return;
+                    }
+                    
+                    // Render messages
+                    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 60;
+                    
+                    container.innerHTML = '';
+                    data.messages.forEach(msg => {
+                        const bubble = document.createElement('div');
+                        // If sender is 'student', it's student's bubble (aligned left/right depending on preferred styles)
+                        bubble.className = `chat-bubble ${msg.sender}`;
+                        
+                        const timeStr = new Date(msg.created_at).toLocaleTimeString('ar-EG', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        
+                        bubble.innerHTML = `
+                            <div style="font-size: 11px; font-weight: 700; opacity: 0.8; margin-bottom: 4px;">${msg.sender_name || (msg.sender === 'student' ? 'أنت' : 'المشرف')}</div>
+                            <div>${msg.message}</div>
+                            <span class="chat-bubble-time">${timeStr}</span>
+                        `;
+                        container.appendChild(bubble);
+                    });
+                    
+                    // Scroll to bottom if it was already at bottom or if it's the first load
+                    if (!isSilent || isAtBottom) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading chat messages:", err);
+            }
+        }
+
+        async function sendChatReply() {
+            const input = document.getElementById('chat-message-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const ticketId = state.currentTicketId;
+            const senderName = state.telegramUser ? ((state.telegramUser.first_name || '') + ' ' + (state.telegramUser.last_name || '')).trim() : "طالب";
+            
+            // Clear input instantly for UI responsiveness
+            input.value = '';
+            
+            try {
+                const response = await fetch(`/api/tickets/${ticketId}/reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sender: 'student',
+                        sender_name: senderName,
+                        message: text
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    // Reload messages immediately
+                    loadChatMessages(ticketId);
+                } else {
+                    alert('⚠️ فشل إرسال الرد: ' + data.error);
+                }
+            } catch (err) {
+                console.error("Error sending reply:", err);
+                alert('❌ حدث خطأ أثناء إرسال الرد.');
+            }
+        }
+        function escapeHtml(value) {
+            return (value || '').toString()
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        window.closeSuggestionsModal = function(isResolved) {
+            document.getElementById('ai-suggestions-modal').style.display = 'none';
+            if (isResolved) {
+                // Student found their answer! Show success cancel card
+                const statusCard = document.getElementById('status-card');
+                statusCard.innerHTML = `
+                    <div style="text-align: center; width: 100%; padding: 10px;">
+                        <span style="font-size: 40px; display: block; margin-bottom: 8px;">🎉</span>
+                        <p style="font-weight: 700; color: var(--success); font-size: 15px;">الحمد لله! يسعدنا أنك وجدت إجابة لسؤالك.</p>
+                        <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 6px;">تم إلغاء إرسال التذكرة. إذا كان لديك أي استفسار آخر، نحن في خدمتك دائماً.</p>
+                        <button type="button" class="btn btn-secondary" onclick="showLandingScreen()" style="margin-top: 14px; padding: 6px 12px; font-size: 13px; width: 100%;">العودة للرئيسية</button>
+                    </div>
+                `;
+                statusCard.className = `status-card success`;
+                statusCard.style.display = 'flex';
+                document.querySelector('.footer-nav').style.display = 'none';
+                
+                // Reset form fields
+                document.getElementById('shortTitle').value = '';
+                document.getElementById('details').value = '';
+            } else {
+                // Submit anyway: set flag to bypass check, and run submitForm again
+                state.aiSuggestionChecked = true;
+                submitForm();
+            }
+        };
+    </script>
+
+    <!-- AI Suggestions Modal -->
+    <div id="ai-suggestions-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span style="font-size: 20px;">💡</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--primary);">إجابات قد تفيدك فوراً</h3>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: var(--text-secondary); text-align: center; line-height: 1.5; margin-bottom: 8px;">
+                    لقد وجدنا إجابات مشابهة لسؤالك في قاعدة البيانات. قد تجد حل مشكلتك هنا مباشرة دون الحاجة لانتظار رد المشرفين:
+                </p>
+                <div id="modal-suggestions-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Suggested Q&As go here -->
+                </div>
+            </div>
+            <div style="padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: rgba(0,0,0,0.2);">
+                <button type="button" class="btn btn-secondary" onclick="closeSuggestionsModal(false)" style="font-size: 13.5px; flex: 1;">إرسال على أي حال</button>
+                <button type="button" class="btn btn-primary" onclick="closeSuggestionsModal(true)" style="font-size: 13.5px; background: var(--success); flex: 1.2;">نعم، وجدت الحل (إلغاء)</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
