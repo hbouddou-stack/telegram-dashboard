@@ -88,7 +88,7 @@ atexit.register(_remove_pid)
 
 # ─── AIOHTTP WEB SERVER & MINI-APP APIS ──────────────────────────────────────
 
-DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'dashboard')
+DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard')
 
 # ─── MIDDLEWARE CORS (pour GitHub Pages → API Serveo) ─────────────────────────
 @web.middleware
