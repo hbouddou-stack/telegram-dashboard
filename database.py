@@ -5,8 +5,19 @@ from config import DATABASE_PATH, MAIN_DATABASE_PATH
 
 logger = logging.getLogger(__name__)
 
+import shutil
+import os
+
 async def init_db():
     """Initialize SQLite database and create all tables if they do not exist."""
+    local_db = os.path.join(os.path.dirname(__file__), "backup_bot.db")
+    if DATABASE_PATH != local_db and not os.path.exists(DATABASE_PATH) and os.path.exists(local_db):
+        try:
+            shutil.copy2(local_db, DATABASE_PATH)
+            logger.info(f"Copied seeded database to {DATABASE_PATH}")
+        except Exception as e:
+            logger.error(f"Failed to copy seeded db: {e}")
+            
     async with aiosqlite.connect(DATABASE_PATH) as db:
         # Enable WAL mode and busy timeout to avoid database locks and crashes
         await db.execute("PRAGMA journal_mode=WAL;")

@@ -5,6 +5,7 @@
 *.db
 *.db.bak
 *.db.*
+!backup_bot.db
 
 # Python Cache
 __pycache__/
