@@ -1486,8 +1486,11 @@ async def delete_admin_question(request):
             return web.json_response({"success": False, "error": "Missing questionId"}, status=400)
             
         import database as db
-        await db.delete_question_from_db(question_id)
-        return web.json_response({"success": True})
+        success = await db.delete_question_from_db(question_id)
+        if success:
+            return web.json_response({"success": True})
+        else:
+            return web.json_response({"success": False, "error": "Database deletion failed"}, status=500)
     except Exception as e:
         logger.error(f"Error deleting admin question: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
