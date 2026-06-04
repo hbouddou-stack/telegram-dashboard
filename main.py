@@ -3491,6 +3491,39 @@ async def main():
     # Register startup hook
     dp.startup.register(on_startup)
 
+    # ─── RAILWAY ZERO-DOWNTIME CONFLICT RESOLUTION ───
+    INSTANCE_ID = str(uuid.uuid4())
+    logger.info(f"Démarrage de l'instance courante avec ID: {INSTANCE_ID}")
+    
+    async def watch_for_new_instance():
+        while True:
+            await asyncio.sleep(5)
+            try:
+                from config import DATABASE_PATH
+                if not os.path.exists(DATABASE_PATH):
+                    continue
+                async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                    async with db_conn.execute("SELECT value FROM settings WHERE key = 'current_instance_id'") as cur:
+                        row = await cur.fetchone()
+                        if row and row[0] and row[0] != INSTANCE_ID:
+                            logger.warning(f"🚨 NOUVELLE INSTANCE DÉTECTÉE ({row[0]}). Arrêt du polling pour éviter les conflits Telegram !")
+                            await dp.stop_polling()
+                            break
+            except Exception:
+                pass
+
+    try:
+        from config import DATABASE_PATH
+        if os.path.exists(DATABASE_PATH):
+            async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                await db_conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", ('current_instance_id', INSTANCE_ID))
+                await db_conn.commit()
+    except Exception as e:
+        logger.error(f"Failed to register instance ID: {e}")
+        
+    asyncio.create_task(watch_for_new_instance())
+    # ──────────────────────────────────────────────────
+
     logger.info("Starting Telegram Backup Bot polling...")
     try:
         await bot.delete_webhook(drop_pending_updates=True)
