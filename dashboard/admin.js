@@ -8439,11 +8439,29 @@ window.addEventListener('unhandledrejection', function(e) {
                 }
 
             } catch (err) {
-
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: red;">خطأ في الاتصال</td></tr>`;
-
             }
+        }
 
+        async function deleteQuestion(questionId) {
+            if (!confirm('هل أنت متأكد من رغبتك في حذف هذا السؤال نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+            try {
+                const response = await fetch('/admin/delete-question', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: state.userId, questionId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('تم حذف السؤال بنجاح', 'success');
+                    loadQuestions(state.questionsPage);
+                    state.questionsStats = null;
+                } else {
+                    showToast('خطأ: ' + data.error, 'error');
+                }
+            } catch (err) {
+                showToast('خطأ في الاتصال بالسيرفر', 'error');
+            }
         }
 
         async function toggleQuestionActive(questionId, checkbox) {
@@ -8622,13 +8640,10 @@ window.addEventListener('unhandledrejection', function(e) {
                         <td style="text-align: center; vertical-align: middle;">${statusToggle}</td>
 
                         <td style="text-align: left; vertical-align: middle;">
-
                             <button class="btn btn-secondary btn-sm" onclick="openQuestionDrawer(${q.id})">✏️ تعديل</button>
-
+                            <button class="btn btn-danger btn-sm" style="margin-right: 5px;" onclick="deleteQuestion(${q.id})">🗑️ حذف</button>
                         </td>
-
                     </tr>
-
                 `;
 
             }

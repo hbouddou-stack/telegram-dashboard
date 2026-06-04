@@ -502,6 +502,10 @@ def get_answer_keyboard(choices: dict, force_letters: bool = False, is_fav: bool
         # 2. Divider button
         rows.append([InlineKeyboardButton(text="🟢 ────────────────── 🟢", callback_data="q_ignored")])
         
+    # Determine layout mode based on text length
+    max_len = max([len(v.strip()) for v in active_choices.values()]) if active_choices else 0
+    use_grid = force_letters or (max_len <= 35)
+
     row = []
     for k in keys:
         if force_letters:
@@ -511,18 +515,19 @@ def get_answer_keyboard(choices: dict, force_letters: bool = False, is_fav: bool
             
         row.append(InlineKeyboardButton(text=btn_text, callback_data=f"ans:{k}"))
         
-        # If showing full choice texts, place 1 button per row for readability.
-        # Otherwise, place 2 buttons per row.
-        if force_letters:
+        if use_grid:
             if len(row) == 2:
-                rows.append(row[::-1])  # Invert choices order to B, A and D, C
+                rows.append(row[::-1])  # Invert for RTL: B, A and D, C
                 row = []
         else:
             rows.append([row[0]])
             row = []
             
     if row:
-        rows.append(row[::-1])
+        if use_grid:
+            rows.append(row[::-1])
+        else:
+            rows.append(row)
         
     bottom_row = []
     if question_id is not None:
@@ -2168,10 +2173,28 @@ def get_active_study_chapter_summary_keyboard(subject: str, lesson_num: int, cha
 def get_active_study_question_keyboard(subject: str, lesson_num: int, chapter_id: int, choices: dict) -> InlineKeyboardMarkup:
     rows = []
     
-    # Add choices
+    # Determine layout mode based on text length
+    max_len = max([len(v.strip()) for v in choices.values() if v]) if choices else 0
+    use_grid = (max_len <= 35)
+
+    row = []
     for key, text in choices.items():
         if text and text.strip():
-            rows.append([InlineKeyboardButton(text=f"{key.upper()}. {text}", callback_data=f"active_study_ans:{subject}:{lesson_num}:{chapter_id}:{key}")])
+            btn = InlineKeyboardButton(text=f"{key.upper()}. {text}", callback_data=f"active_study_ans:{subject}:{lesson_num}:{chapter_id}:{key}")
+            row.append(btn)
+            if use_grid:
+                if len(row) == 2:
+                    rows.append(row[::-1])
+                    row = []
+            else:
+                rows.append([row[0]])
+                row = []
+                
+    if row:
+        if use_grid:
+            rows.append(row[::-1])
+        else:
+            rows.append(row)
             
     # Add skip button
     rows.append([InlineKeyboardButton(text="⏭️ فهمت المحور (تجاوز)", callback_data=f"active_study_skip:{subject}:{lesson_num}:{chapter_id}")])

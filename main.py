@@ -1463,6 +1463,24 @@ async def get_admin_question(request):
         logger.error(f"Error loading admin question: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
+async def delete_admin_question(request):
+    try:
+        data = await request.json()
+        user_id = data.get('userId')
+        question_id = data.get('questionId')
+        
+        if not await check_admin(user_id):
+            return web.json_response({"success": False, "error": "Access denied"}, status=403)
+        if not question_id:
+            return web.json_response({"success": False, "error": "Missing questionId"}, status=400)
+            
+        import database as db
+        await db.execute("DELETE FROM questions WHERE id = ?", (question_id,))
+        return web.json_response({"success": True})
+    except Exception as e:
+        logger.error(f"Error deleting admin question: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
 async def update_admin_question(request):
     try:
         data = await request.json()
@@ -3344,6 +3362,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/admin/save-thematic-blocks', save_lesson_axes)
     app.router.add_post('/admin/question', get_admin_question)
     app.router.add_post('/admin/update-question', update_admin_question)
+    app.router.add_post('/admin/delete-question', delete_admin_question)
     app.router.add_post('/admin/toggle-question-active', toggle_question_active_api)
     app.router.add_post('/admin/proposals', get_admin_proposals)
     app.router.add_post('/admin/resolve-proposal', resolve_admin_proposal)
