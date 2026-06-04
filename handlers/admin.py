@@ -94,6 +94,46 @@ async def _get_admin_keyboard(user_id: int) -> kb.InlineKeyboardMarkup:
     show_settings = (role in ("super_admin", "backup_admin"))
     return kb.get_admin_panel_keyboard(pending_reports=pending_count, pending_proposals=pending_props, show_settings=show_settings)
 
+# --- Emergency Purge Command ---
+@router.message(Command("purge_course"))
+async def cmd_purge_course(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    if not is_admin(user_id):
+        return
+    
+    parts = message.text.split()
+    if len(parts) != 3:
+        await message.answer("⚠️ الاستخدام الصحيح:\n`/purge_course fiqh 17`", parse_mode="Markdown")
+        return
+        
+    subject = parts[1].lower()
+    try:
+        course_number = int(parts[2])
+    except ValueError:
+        await message.answer("⚠️ رقم الدرس يجب أن يكون رقماً.")
+        return
+        
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            # Delete questions
+            async with db_conn.execute("DELETE FROM questions WHERE subject = ? AND course_number = ?", (subject, course_number)) as cur:
+                deleted_q = cur.rowcount
+            # Delete resources
+            async with db_conn.execute("DELETE FROM lesson_resources WHERE subject = ? AND course_number = ?", (subject, course_number)) as cur:
+                deleted_r = cur.rowcount
+            await db_conn.commit()
+            
+        await message.answer(
+            f"✅ تم الحذف بنجاح!\n\n"
+            f"🗑️ الأسئلة المحذوفة: {deleted_q}\n"
+            f"🗑️ الموارد المحذوفة: {deleted_r}\n\n"
+            f"يمكنك الآن إعادة توليدها من (مصنع الأسئلة IA)."
+        )
+    except Exception as e:
+        await message.answer(f"❌ حدث خطأ أثناء الحذف:\n{str(e)}")
+
 # --- Open Admin Panel ---
 
 @router.message(Command("admin"))
