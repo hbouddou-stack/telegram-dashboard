@@ -1937,9 +1937,8 @@ async def reply_ticket_message_api(request):
                         }
                         label = type_labels.get(row["report_type"], "📩 رسالتك")
                         
-                        scheme = request.scheme
                         host = request.host
-                        webapp_url = f"{scheme}://{host}/support.html?view=chat&ticket_id={ticket_id}"
+                        webapp_url = f"https://{host}/support.html?view=chat&ticket_id={ticket_id}"
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
@@ -2472,10 +2471,9 @@ async def resolve_admin_ticket(request):
                         }
                         label = type_labels.get(row["report_type"] or "other", "📩 رسالتك")
                         
-                        # Add webapp button
-                        scheme = request.scheme
+                        # Force https for WebApp compatibility on Telegram
                         host = request.host
-                        webapp_url = f"{scheme}://{host}/support.html?view=chat&ticket_id={ticket_id}"
+                        webapp_url = f"https://{host}/support.html?view=chat&ticket_id={ticket_id}"
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[

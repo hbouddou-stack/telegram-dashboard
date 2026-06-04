@@ -1009,16 +1009,26 @@ async def handle_student_inbox(callback: CallbackQuery, state: FSMContext):
         )
         return
         
+    active_reports = [r for r in reports if r.get("status") in ("pending", "in_progress") or r.get("student_read", 0) == 0]
+    archive_reports = [r for r in reports if r.get("status") in ("resolved", "rejected") and r.get("student_read", 1) == 1]
+    
     if show_archive:
         text = (
             "📁 <b>أرشيف الرسائل المغلقة والمحلولة:</b>\n\n"
             "اضغط على أي بلاغ لمراجعة التفاصيل وردود الإدارة السابقة:"
         )
     else:
-        text = (
-            "📬 <b>صندوق الرسائل والطلبات النشطة:</b>\n\n"
-            "اضغط على أي بلاغ لمراجعة التفاصيل وردود الإدارة:"
-        )
+        if not active_reports and archive_reports:
+            text = (
+                "✅ <b>صندوق الرسائل النشطة فارغ:</b>\n\n"
+                "ليس لديك أي رسائل قيد المعالجة أو غير مقروءة حالياً.\n"
+                "<i>(يمكنك تصفح رسائلك السابقة المغلقة من الأرشيف بالأسفل)</i>"
+            )
+        else:
+            text = (
+                "📬 <b>صندوق الرسائل والطلبات النشطة:</b>\n\n"
+                "اضغط على أي بلاغ لمراجعة التفاصيل وردود الإدارة:"
+            )
         
     layout = await db.get_user_inbox_layout(user_id)
     reply_markup = kb.get_student_inbox_keyboard(reports, page=page, show_archive=show_archive, layout=layout)
