@@ -1985,9 +1985,14 @@
 
     <!-- HOME -->
     <div class="tab-panel active" id="tab-home">
-        <div class="greeting-bar">
-            <h2 id="greeting-text">مرحباً بك 👋</h2>
-            <p>استمر في رحلتك العلمية اليوم</p>
+        <div class="greeting-bar" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 id="greeting-text">مرحباً بك 👋</h2>
+                <p>استمر في رحلتك العلمية اليوم</p>
+            </div>
+            <button onclick="window.location.href='support.html'" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; width: 44px; height: 44px; font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: background 0.2s;">
+                📬
+            </button>
         </div>
         
         <div class="sec-header"><h1>▶️ استمر في التعلم</h1><p>الدروس التي بدأت دراستها مؤخراً</p></div>
@@ -2236,6 +2241,17 @@
         <div class="profile-name" id="profile-name">طالب الأكاديمية</div>
         <div class="profile-sub">أكاديمية الباجي للعلوم الشرعية</div>
         <div class="stats-grid" id="stats-grid"></div>
+        
+        <button onclick="window.location.href='support.html'" style="width: 100%; margin-top: 20px; padding: 18px; background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%); border: none; border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 16px -2px rgba(79, 70, 229, 0.25);">
+           <div style="display: flex; align-items: center; gap: 14px;">
+              <span style="font-size: 26px; background: rgba(255,255,255,0.2); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">💬</span>
+              <div style="text-align: right; color: white;">
+                 <h3 style="font-size: 15.5px; font-weight: 800; margin-bottom: 2px;">تذاكري والدعم الفني</h3>
+                 <p style="font-size: 12px; opacity: 0.9;">طرح سؤال، مشكلة تقنية، ومتابعة الردود</p>
+              </div>
+           </div>
+           <span style="color: white; font-size: 20px; font-weight: 800;">←</span>
+        </button>
         
         <div class="sec-header" style="margin-top:20px;"><h1>📊 إنجاز المواد الدراسية</h1><p>نسبة اكتمال المحاور لكل مادة علمية</p></div>
         <div id="profile-subjects-progress" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
