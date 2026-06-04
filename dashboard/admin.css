@@ -6214,7 +6214,19 @@
     
 
 /* ─── Mobile Sidebar & Hamburger Menu ─── */
+.mobile-sidebar-close { display: none; }
+.mobile-sidebar-backdrop { display: none; }
+.sortable-th { cursor: pointer; user-select: none; }
+.sort-header-content { display: inline-flex; align-items: center; justify-content: flex-start; gap: 6px; max-width: 100%; }
+.sort-label { min-width: 0; }
+.sort-indicator { display: inline-flex; flex-direction: column; gap: 0; color: var(--text-secondary); font-size: 0.56rem; line-height: 0.8; opacity: 0.55; transition: color 0.2s ease, opacity 0.2s ease; }
+.sortable-th:hover .sort-indicator { opacity: 0.9; }
+.sortable-th.sort-asc .sort-up, .sortable-th.sort-desc .sort-down { color: var(--gold-light); opacity: 1; }
+.sortable-th.sort-asc .sort-down, .sortable-th.sort-desc .sort-up { opacity: 0.25; }
+
 @media (max-width: 768px) {
+    body.mobile-sidebar-active { overflow: hidden; }
+
     .sidebar-navigation {
         position: fixed;
         right: -280px; /* Hide off-screen */
@@ -6227,6 +6239,29 @@
         border-left: none;
     }
     
+    .sidebar-header {
+        position: relative;
+        padding-left: 42px;
+    }
+
+    .mobile-sidebar-close {
+        display: inline-flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface-hover);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
     .sidebar-navigation.mobile-open {
         right: 0;
     }
@@ -6249,6 +6284,24 @@
         justify-content: center;
     }
 
+    .mobile-sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 900;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-sidebar-backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     .drawer-backdrop {
         display: none;
         position: fixed;
@@ -6267,6 +6320,50 @@
         display: block;
         opacity: 1;
     }
+
+    /* Mobile Cards for Question Bank Table */
+    #qb-table-view .data-table, 
+    #qb-table-view .data-table thead, 
+    #qb-table-view .data-table tbody, 
+    #qb-table-view .data-table th, 
+    #qb-table-view .data-table td, 
+    #qb-table-view .data-table tr { display: block; }
+    
+    #qb-table-view .data-table thead tr { display: none; }
+    
+    #qb-table-view .data-table tr {
+        margin-bottom: 16px; border: 1px solid var(--border);
+        border-radius: var(--radius-md); background: var(--surface);
+        padding: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative;
+    }
+    
+    #qb-table-view .data-table td {
+        border: none; padding: 6px 0; text-align: right; display: flex;
+        align-items: center; justify-content: flex-start; gap: 8px;
+    }
+    
+    #qb-table-view .data-table td::before {
+        font-weight: 800; color: var(--gold-light); min-width: 90px;
+        flex-shrink: 0; display: inline-block;
+    }
+    
+    #qb-table-view .data-table td:nth-child(2)::before { content: "المادة:"; }
+    #qb-table-view .data-table td:nth-child(3)::before { content: "الدرس:"; }
+    #qb-table-view .data-table td:nth-child(4)::before { content: "المحور:"; }
+    #qb-table-view .data-table td:nth-child(5)::before { content: "الجزئية:"; }
+    #qb-table-view .data-table td:nth-child(6)::before { content: "المصدر:"; }
+    #qb-table-view .data-table td:nth-child(7)::before { content: "السؤال:"; }
+    #qb-table-view .data-table td:nth-child(8)::before { content: "تاريخ الإضافة:"; }
+    #qb-table-view .data-table td:nth-child(9)::before { content: "الحالة:"; }
+    
+    #qb-table-view .data-table td:nth-child(7) { align-items: flex-start; }
+    #qb-table-view .data-table td:nth-child(1) { display: none; }
+    
+    #qb-table-view .data-table td:last-child {
+        justify-content: flex-end; border-top: 1px solid var(--border);
+        margin-top: 8px; padding-top: 12px;
+    }
+    #qb-table-view .data-table td:last-child::before { display: none; }
 }
 @media (min-width: 769px) {
     .mobile-hamburger-btn {

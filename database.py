@@ -525,6 +525,122 @@ async def init_db():
             if 'sub_theme' not in columns:
                 await db.execute("ALTER TABLE questions ADD COLUMN sub_theme TEXT DEFAULT '';")
 
+        # Migration: seed official Fiqh lesson 25 questions idempotently.
+        fiqh25_questions = [
+            (
+                "تجوز إمامته مع الكراهة:",
+                "المجذوم خفيفُ الجُذام.",
+                "الألكَن.",
+                "الأغلَف.",
+                "كلّ من ذُكر.",
+                "c",
+            ),
+            (
+                "تجوز إمامتُه بلا كراهة:",
+                "العِنّين.",
+                "الخَصيّ.",
+                "العبد.",
+                "",
+                "a",
+            ),
+            (
+                "صلّى الصبحَ خلف إمامه ركعتين تيقّن صحّتهما، وإذ بالإمام يقوم للثالثة. ماذا يصنع هذا المأموم؟",
+                "يتابع إمامَه.",
+                "ينبّه الإمام ويبقى جالسا.",
+                "ينبّهه ثم يتابعه.",
+                "يسلّم وحده.",
+                "b",
+            ),
+            (
+                "دخل المسجدَ فوجد إمامه راكعا، كيف يصنع ليدخُل في الصلاة؟",
+                "يركع مباشرة.",
+                "يكبّر مُحرما، ثم يركع.",
+                "يكبّر تكبيرة الانتقال ويهوي راكعا.",
+                "يكبّر مُحرما، ثم يكبّر تكبيرة الانتقال ويهوي راكعا.",
+                "d",
+            ),
+            (
+                "نقصد بالقضاء في الأقوال:",
+                "أن يعدّ المسبوقُ ما أدركَ من الأقوال آخرَ صلاته وما فاته أوّلَها فيأتي به.",
+                "أن يعدّ المسبوق ما أدركَ من الأقوال أوّلَ صلاته، ويأتي بالتتمّة وحده.",
+                "أن يقضي المسبوق الأقوال في ركعة يزيدها بعد سلامه مع الإمام.",
+                "",
+                "a",
+            ),
+            (
+                "أحوال يقارنُ فيها التكبيرُ قيامَ المسبوق بعد سلام إمامه في المشهور:",
+                "إدراك الركعة الأخيرة من الصلاة",
+                "إدراك السجدة الأخيرة من الصلاة.",
+                "إدراك الركعة الثانية من الصلاة الرباعيّة.",
+                "",
+                "b",
+            ),
+        ]
+        await db.execute(
+            """
+            DELETE FROM questions
+            WHERE subject = 'fiqh'
+              AND course_number = 25
+              AND source = 'official'
+              AND question LIKE '?%'
+            """
+        )
+        async with db.execute("SELECT COALESCE(MAX(id), 0) FROM questions") as cursor:
+            next_question_id = (await cursor.fetchone())[0]
+        for question, choice_a, choice_b, choice_c, choice_d, correct_answer in fiqh25_questions:
+            async with db.execute(
+                """
+                SELECT id FROM questions
+                WHERE subject = 'fiqh'
+                  AND course_number = 25
+                  AND question = ?
+                LIMIT 1
+                """,
+                (question,),
+            ) as cursor:
+                existing_question = await cursor.fetchone()
+            values = (
+                "fiqh",
+                25,
+                "الفقه - الدرس 25",
+                question,
+                choice_a,
+                choice_b,
+                choice_c,
+                choice_d,
+                correct_answer,
+                "",
+                "official",
+                None,
+                "",
+                1,
+                "",
+            )
+            if existing_question:
+                await db.execute(
+                    """
+                    UPDATE questions
+                    SET subject = ?, course_number = ?, course_name = ?, question = ?,
+                        choice_a = ?, choice_b = ?, choice_c = ?, choice_d = ?,
+                        correct_answer = ?, explanation = ?, source = ?,
+                        hijra_year = ?, theme = ?, is_active = ?, sub_theme = ?
+                    WHERE id = ?
+                    """,
+                    values + (existing_question[0],),
+                )
+            else:
+                next_question_id += 1
+                await db.execute(
+                    """
+                    INSERT INTO questions (
+                        id, subject, course_number, course_name, question,
+                        choice_a, choice_b, choice_c, choice_d, correct_answer,
+                        explanation, source, created_at, hijra_year, theme, is_active, sub_theme
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?, ?)
+                    """,
+                    (next_question_id,) + values,
+                )
+
         await db.commit()
     logger.info("Database initialized successfully.")
 
