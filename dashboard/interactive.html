@@ -3197,7 +3197,7 @@ function renderFc() {
                     <a href="${fc.video_link}" target="_blank" class="btn-sm" style="display:inline-flex; align-items:center; gap:6px; background:var(--primary-light); color:var(--primary); text-decoration:none; font-weight:700;" onclick="event.stopPropagation()">
                         🎬 شاهد الشرح في الفيديو (${fc.timestamp})
                     </a>
-                    <span style="font-size: 11px; font-style: italic; color: var(--text-3); margin-top: 4px;">(يمكنك الضغط على الوقت باللون الأزرق للوصول إلى الفيديو)</span>
+                    <span style="font-size: 11px; font-style: italic; color: var(--text-3); margin-top: 4px;">(يمكنك الضغط على الوقت للوصول إلى الفيديو)</span>
                 </div>` : ''}
             </div>
         </div>
@@ -6467,7 +6467,7 @@ function formatQuizExplanation(rawHtml) {
     );
     
     // Also try to format the specific text in italics if it's there
-    html = html.replace(/\(يمكنك الضغط على الوقت باللون الأزرق للوصول إلى الفيديو\)/g, '<br><span style="font-size: 11px; font-style: italic; color: #854d0e;">(يمكنك الضغط على الوقت باللون الأزرق للوصول إلى الفيديو)</span>');
+    html = html.replace(/\(يمكنك الضغط على الوقت للوصول إلى الفيديو\)/g, '<br><span style="font-size: 11px; font-style: italic; color: #854d0e;">(يمكنك الضغط على الوقت للوصول إلى الفيديو)</span>');
     
     return html;
 }
@@ -6582,7 +6582,7 @@ function submitAnswer(selectedIdx) {
                 <a href="${q.video_link}" target="_blank" class="reader-p-play" style="display: inline-flex; text-decoration: none;" onclick="event.stopPropagation()">
                     🎬 شاهد الشرح في الفيديو (دقيقة ${q.timestamp})
                 </a>
-                <span style="font-size: 11px; font-style: italic; color: var(--text-3); margin-top: 4px;">(يمكنك الضغط على الوقت باللون الأزرق للوصول إلى الفيديو)</span>
+                <span style="font-size: 11px; font-style: italic; color: var(--text-3); margin-top: 4px;">(يمكنك الضغط على الوقت للوصول إلى الفيديو)</span>
             </div>` : ''}
         </div>
     `;

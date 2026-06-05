@@ -1251,7 +1251,7 @@ async def handle_prof_quote(callback: CallbackQuery, state: FSMContext):
         parts_list.append(f"📖 <b>{teacher} يقول :</b>\n<blockquote>\u200f{cit_clean}</blockquote>")
     if source:
         source_clean = clean_islamic_salutations(source.replace("<blockquote>", "").replace("</blockquote>", "").strip())
-        parts_list.append(f"📍 <b>المصدر :</b>\n<blockquote>\u200f{source_clean}\n\n<i>(يمكنك الضغط على الوقت باللون الأزرق للوصول إلى الفيديو)</i></blockquote>")
+        parts_list.append(f"📍 <b>المصدر :</b>\n<blockquote>\u200f{source_clean}\n\n<i>(يمكنك الضغط على الوقت للوصول إلى الفيديو)</i></blockquote>")
         
     full_text = f"{qa_block}\n\n" + "\n\n".join(parts_list)
     
