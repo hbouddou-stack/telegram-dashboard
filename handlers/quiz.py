@@ -1219,7 +1219,7 @@ def split_explanation(explanation_text: str):
     return pedagogical, citation, source
 
 
-@router.callback_query(QuizStates.answering, F.data.startswith("prof_quote:"))
+@router.callback_query(F.data.startswith("prof_quote:"))
 async def handle_prof_quote(callback: CallbackQuery, state: FSMContext):
     """Show professor's transcript explanation in the same message, with a back button."""
     q_id = int(callback.data.split(":")[1])
@@ -1251,7 +1251,7 @@ async def handle_prof_quote(callback: CallbackQuery, state: FSMContext):
         parts_list.append(f"📖 <b>{teacher} يقول :</b>\n<blockquote>\u200f{cit_clean}</blockquote>")
     if source:
         source_clean = clean_islamic_salutations(source.replace("<blockquote>", "").replace("</blockquote>", "").strip())
-        parts_list.append(f"📍 <b>المصدر :</b>\n<blockquote>\u200f{source_clean}</blockquote>")
+        parts_list.append(f"📍 <b>المصدر :</b>\n<blockquote>\u200f{source_clean}\n\n<i>(يمكنك الضغط على الوقت باللون الأزرق للوصول إلى الفيديو)</i></blockquote>")
         
     full_text = f"{qa_block}\n\n" + "\n\n".join(parts_list)
     
@@ -1266,7 +1266,12 @@ async def handle_prof_quote(callback: CallbackQuery, state: FSMContext):
     if youtube_url:
         buttons.append([InlineKeyboardButton(text="🎥 مشاهدة على يوتيوب (YouTube)", url=youtube_url)])
     buttons.append([InlineKeyboardButton(text="⚠️ خطأ في الشرح", callback_data=f"report_expl_start:{q_id}")])
-    buttons.append([InlineKeyboardButton(text="↩️ العودة للتصحيح", callback_data=f"back_to_corr:{q_id}")])
+    buttons.append([InlineKeyboardButton(text="↩️ العودة", callback_data=f"back_to_corr:{q_id}")])
+    
+    current_state = await state.get_state()
+    if current_state == QuizStates.answering.state:
+        buttons.append([InlineKeyboardButton(text="⏭️ السؤال التالي", callback_data="quiz_next")])
+        
     back_kb = InlineKeyboardMarkup(inline_keyboard=buttons)
     
     await callback.message.edit_text(
@@ -1277,13 +1282,19 @@ async def handle_prof_quote(callback: CallbackQuery, state: FSMContext):
     )
 
 
-@router.callback_query(QuizStates.answering, F.data.startswith("back_to_corr:"))
+@router.callback_query(F.data.startswith("back_to_corr:"))
 async def handle_back_to_corr(callback: CallbackQuery, state: FSMContext):
-    q_id = int(callback.data.split(":")[1])
-    data = await state.get_data()
-    current_index = data.get("current_index", 0)
-    await callback.answer()
-    await render_question_correction(callback, state, current_index)
+    current_state = await state.get_state()
+    if current_state == QuizStates.answering.state:
+        q_id = int(callback.data.split(":")[1])
+        data = await state.get_data()
+        current_index = data.get("current_index", 0)
+        await callback.answer()
+        await render_question_correction(callback, state, current_index)
+    else:
+        from handlers.support import show_browser_question
+        await callback.answer()
+        await show_browser_question(callback, state)
 
 
 @router.callback_query(QuizStates.answering, F.data == "quiz_next")
