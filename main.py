@@ -1495,6 +1495,29 @@ async def delete_admin_question(request):
         logger.error(f"Error deleting admin question: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
+async def delete_bulk_admin_questions(request):
+    try:
+        data = await request.json()
+        user_id = data.get('userId')
+        question_ids = data.get('questionIds', [])
+        
+        if not await check_admin(user_id):
+            return web.json_response({"success": False, "error": "Access denied"}, status=403)
+        if not question_ids or not isinstance(question_ids, list):
+            return web.json_response({"success": False, "error": "Missing or invalid questionIds"}, status=400)
+            
+        import database as db
+        deleted_count = 0
+        for qid in question_ids:
+            success = await db.delete_question_from_db(qid)
+            if success:
+                deleted_count += 1
+                
+        return web.json_response({"success": True, "deleted": deleted_count})
+    except Exception as e:
+        logger.error(f"Error deleting bulk questions: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
 async def update_admin_question(request):
     try:
         data = await request.json()
@@ -3381,6 +3404,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/admin/question', get_admin_question)
     app.router.add_post('/admin/update-question', update_admin_question)
     app.router.add_post('/admin/delete-question', delete_admin_question)
+    app.router.add_post('/admin/delete-bulk-questions', delete_bulk_admin_questions)
     app.router.add_post('/admin/toggle-question-active', toggle_question_active_api)
     app.router.add_post('/admin/proposals', get_admin_proposals)
     app.router.add_post('/admin/resolve-proposal', resolve_admin_proposal)

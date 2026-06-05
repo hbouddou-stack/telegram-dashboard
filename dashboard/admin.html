@@ -509,6 +509,7 @@
                         <input type="text" id="qb-search-input" class="search-input" placeholder="بحث في الأسئلة..." oninput="debounceLoadQuestions()" style="min-width: 200px;">
 
                         <button class="btn btn-primary" onclick="loadQuestions(1)">🔍 بحث</button>
+                        <button class="btn btn-danger" id="btn-bulk-delete-q" style="display:none; margin-right:auto;" onclick="deleteSelectedQuestions()">🗑️ حذف المحدد (<span id="bulk-q-count">0</span>)</button>
 
                     </div>
 
@@ -519,9 +520,8 @@
                             <thead>
 
                                 <tr>
-
+                                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="bulk-q-select-all" onclick="toggleAllQuestions(this)"></th>
                                     <th style="width: 60px;">ID</th>
-
                                     <th style="width: 100px;">المادة</th>
 
                                     <th style="width: 80px;">الدرس</th>

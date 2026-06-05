@@ -8464,6 +8464,71 @@ window.addEventListener('unhandledrejection', function(e) {
             }
         }
 
+        function toggleAllQuestions(checkbox) {
+            const rowCheckboxes = document.querySelectorAll('.q-row-checkbox');
+            rowCheckboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                const row = cb.closest('tr');
+                if (checkbox.checked) row.classList.add('selected-row');
+                else row.classList.remove('selected-row');
+            });
+            updateBulkDeleteButton();
+        }
+
+        function toggleQuestionRowCheckbox(event, id) {
+            // Prevent toggling if clicking on buttons or inputs
+            if (event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT' || event.target.closest('button')) return;
+            const cb = document.querySelector(`.q-row-checkbox[value="${id}"]`);
+            if (cb) {
+                cb.checked = !cb.checked;
+                const row = cb.closest('tr');
+                if (cb.checked) row.classList.add('selected-row');
+                else row.classList.remove('selected-row');
+                updateBulkDeleteButton();
+            }
+        }
+
+        function updateBulkDeleteButton() {
+            const checkedCount = document.querySelectorAll('.q-row-checkbox:checked').length;
+            const btn = document.getElementById('btn-bulk-delete-q');
+            const countSpan = document.getElementById('bulk-q-count');
+            
+            if (checkedCount > 0) {
+                btn.style.display = 'flex';
+                countSpan.textContent = checkedCount;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        async function deleteSelectedQuestions() {
+            const checkedBoxes = document.querySelectorAll('.q-row-checkbox:checked');
+            const questionIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+            
+            if (questionIds.length === 0) return;
+            
+            if (!confirm(`هل أنت متأكد من رغبتك في حذف ${questionIds.length} سؤال نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+            
+            try {
+                // Call bulk delete endpoint
+                const response = await fetch('/admin/delete-bulk-questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: state.userId, questionIds })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`تم حذف ${questionIds.length} سؤال بنجاح`, 'success');
+                    loadQuestions(state.questionsPage);
+                    state.questionsStats = null;
+                } else {
+                    showToast('خطأ: ' + data.error, 'error');
+                }
+            } catch (err) {
+                showToast('خطأ في الاتصال بالسيرفر', 'error');
+            }
+        }
+
         async function toggleQuestionActive(questionId, checkbox) {
 
             const isActive = checkbox.checked;
@@ -8608,7 +8673,9 @@ window.addEventListener('unhandledrejection', function(e) {
 
                 html += `
 
-                    <tr class="ticket-row">
+                    <tr class="ticket-row" onclick="toggleQuestionRowCheckbox(event, ${q.id})">
+
+                        <td style="text-align: center;"><input type="checkbox" class="q-row-checkbox" value="${q.id}" onchange="updateBulkDeleteButton()"></td>
 
                         <td>${q.id}</td>
 
@@ -8620,7 +8687,6 @@ window.addEventListener('unhandledrejection', function(e) {
 
                         <td>${(() => {
                             if (!q.sub_theme) return '<span style="color:var(--text-secondary); font-style:italic; font-size:0.8rem;">-- غير محدد --</span>';
-                            // Compute a dynamic stable HSL color based on sub_theme text
                             let hash = 0;
                             const text = q.sub_theme;
                             for (let i = 0; i < text.length; i++) {
@@ -8637,9 +8703,9 @@ window.addEventListener('unhandledrejection', function(e) {
 
                         <td data-sort-value="${q.created_at ? new Date(q.created_at.replace(' ', 'T')).getTime() : 0}"><span style="font-size: 0.82rem; color: var(--text-secondary); white-space: nowrap;">${formattedDate}</span></td>
 
-                        <td style="text-align: center; vertical-align: middle;">${statusToggle}</td>
+                        <td style="text-align: center; vertical-align: middle;" onclick="event.stopPropagation()">${statusToggle}</td>
 
-                        <td style="text-align: left; vertical-align: middle;">
+                        <td style="text-align: left; vertical-align: middle;" onclick="event.stopPropagation()">
                             <button class="btn btn-secondary btn-sm" onclick="openQuestionDrawer(${q.id})">✏️ تعديل</button>
                             <button class="btn btn-danger btn-sm" style="margin-right: 5px;" onclick="deleteQuestion(${q.id})">🗑️ حذف</button>
                         </td>
@@ -8649,6 +8715,11 @@ window.addEventListener('unhandledrejection', function(e) {
             }
 
             tbody.innerHTML = html;
+            
+            // Reset selection state when re-rendering
+            const selectAllCheck = document.getElementById('bulk-q-select-all');
+            if (selectAllCheck) selectAllCheck.checked = false;
+            updateBulkDeleteButton();
 
         }
 
