@@ -330,7 +330,46 @@ async def handle_name_choice(callback: CallbackQuery, state: FSMContext):
         
     await db.update_user_preferred_name(user_id, preferred_name)
     await callback.answer("✅ تم حفظ الاسم بنجاح.")
-    await start_academic_year_selection(callback, state)
+    await finish_onboarding_and_show_main_menu(callback, state)
+
+async def finish_onboarding_and_show_main_menu(message_or_callback, state: FSMContext):
+    await state.clear()
+    user_id = message_or_callback.from_user.id
+    user = await db.get_user(user_id)
+    
+    stats = await db.get_user_overall_stats(user_id)
+    remaining = stats['not_done'] + stats['wrong']
+    unread_count = await db.get_unread_reports_count(user_id)
+    
+    greeting = get_user_greeting(user)
+    pref_sub = await db.get_user_preferred_subject(user_id)
+    if pref_sub:
+        pref_sub_ar = kb.SUBJECT_LABELS.get(pref_sub, pref_sub)
+        subject_block = f"<blockquote>🎯 <b>المادة النشطة:</b> <b>{pref_sub_ar}</b></blockquote>"
+    else:
+        subject_block = "<blockquote>🎯 <b>المادة النشطة:</b> <b>كافة المواد</b></blockquote>"
+        
+    welcome_text = (
+        f"أهلاً بك في أكاديمية الباجي للعلوم الشرعية {greeting}! 🎓\n\n"
+        f"{subject_block}\n\n"
+        "🎓 <b>القائمة الرئيسية:</b>\n\n"
+        "اختر أحد الخيارات التالية لمتابعة التمارين والمسار التعليمي:"
+    )
+    if is_admin(user_id):
+        import os
+        admin_webapp = os.getenv("ADMIN_WEBAPP_URL") or "http://localhost:8082/admin"
+        if not admin_webapp.startswith("https"):
+            welcome_text += f"\n\n🖥️ <b>رابط لوحة التحكم للمشرف:</b>\n🔗 <a href='{admin_webapp}'>{admin_webapp}</a>"
+            
+    reply_markup = kb.get_main_inline_keyboard(is_admin=is_admin(user_id), remaining_count=remaining, unread_count=unread_count)
+    
+    if isinstance(message_or_callback, CallbackQuery):
+        await message_or_callback.message.edit_text(welcome_text, reply_markup=reply_markup, parse_mode="HTML")
+    else:
+        if hasattr(message_or_callback, "edit_text"):
+            await message_or_callback.edit_text(welcome_text, reply_markup=reply_markup, parse_mode="HTML")
+        else:
+            await message_or_callback.answer(welcome_text, reply_markup=reply_markup, parse_mode="HTML")
 
 @router.callback_query(F.data == "cancel_custom_name")
 async def handle_cancel_custom_name(callback: CallbackQuery, state: FSMContext):
@@ -345,7 +384,7 @@ async def handle_cancel_custom_name(callback: CallbackQuery, state: FSMContext):
     text = (
         f"مرحباً بك {greeting} ✨\n\n"
         "<blockquote>"
-        "كيف تحب أن أناديك خلال رحلتنا التعليمية؟"
+        "كيف تحب أن أناديك خلال رحلتنا التعليمية (أو اكتب اسمك)؟"
         "</blockquote>"
     )
     await callback.message.edit_text(
@@ -394,9 +433,9 @@ async def handle_custom_name_input(message: Message, state: FSMContext):
                 self.id = chat_id
                 
         dummy_msg = DummyMessage(message.bot, message.chat.id, welcome_msg_id, message.from_user)
-        await start_academic_year_selection(dummy_msg, state)
+        await finish_onboarding_and_show_main_menu(dummy_msg, state)
     else:
-        await start_academic_year_selection(message, state)
+        await finish_onboarding_and_show_main_menu(message, state)
         
     if pending_deep_link:
         await process_deep_link(message, pending_deep_link, state)
