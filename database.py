@@ -2396,7 +2396,7 @@ async def add_course_chapter(subject: str, course_number: int, chapter_index: in
         cursor = await db.execute(
             """
             INSERT OR REPLACE INTO course_chapters (subject, course_number, chapter_index, title, content, youtube_link, timestamp_seconds, vocabulary_spoilers, poetry_verses)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (subject.lower().strip(), course_number, chapter_index, title, content, youtube_link, timestamp_seconds, vocabulary_spoilers, poetry_verses)
         )

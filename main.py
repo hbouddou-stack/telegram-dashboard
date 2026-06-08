@@ -947,12 +947,38 @@ async def save_lesson_axes(request):
                 # Update thematic blocks array in JSON
                 new_blocks = []
                 for ax in axes:
+                    video_url = ax.get("video_link", "")
+                    timestamp_seconds = None
+                    if video_url:
+                        m = re.search(r'[?&]t=(\d+)s?', video_url)
+                        if m:
+                            timestamp_seconds = int(m.group(1))
+                            
+                    start_sec = ax.get("start_seconds")
+                    if start_sec is None:
+                        start_sec = timestamp_seconds
+                    else:
+                        try:
+                            start_sec = int(start_sec)
+                        except (TypeError, ValueError):
+                            start_sec = timestamp_seconds
+
+                    ts_val = ax.get("timestamp")
+                    if not ts_val and start_sec is not None:
+                        m_val = start_sec // 60
+                        s_val = start_sec % 60
+                        ts_val = f"{m_val}:{s_val:02d}"
+
                     new_blocks.append({
                         "title": ax.get("title", ""),
                         "explanation": ax.get("explanation", ""),
-                        "video_link": ax.get("video_link", ""),
+                        "video_link": video_url,
                         "poetry_verses": ax.get("poetry_verses", ""),
-                        "search_text": ax.get("search_text", "")
+                        "search_text": ax.get("search_text", ""),
+                        "start_seconds": start_sec,
+                        "end_seconds": ax.get("end_seconds"),
+                        "timestamp": ts_val or "",
+                        "citation": ax.get("citation", "")
                     })
                 lesson['thematic_blocks'] = new_blocks
                 
@@ -971,11 +997,7 @@ async def save_lesson_axes(request):
                         
                     for idx, block in enumerate(new_blocks):
                         video_url = block.get('video_link')
-                        timestamp_seconds = None
-                        if video_url:
-                            m = re.search(r'[?&]t=(\d+)s?', video_url)
-                            if m:
-                                timestamp_seconds = int(m.group(1))
+                        timestamp_seconds = block.get('start_seconds')
                         
                         await db.add_course_chapter(
                             subject=subject,
