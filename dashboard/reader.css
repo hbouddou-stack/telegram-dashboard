@@ -1241,3 +1241,51 @@ body.zen-mode #reader-content {
     justify-content: center;
     align-items: center;
 }
+
+/* Optimisations responsives pour ordinateurs / écrans larges */
+@media (min-width: 769px) {
+    #sticky-header-container {
+        position: relative !important;
+        box-shadow: none !important;
+        top: 0 !important;
+    }
+    
+    .video-container {
+        max-width: 640px;
+        margin: 20px auto !important;
+        padding-top: 360px !important; /* Ratio 16:9 pour 640px de large */
+        height: 0 !important;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Mode Épinglé (Picture-in-Picture) flottant sur ordinateur */
+    .video-container.pinned {
+        position: fixed !important;
+        bottom: 20px !important;
+        left: 20px !important;
+        top: auto !important;
+        right: auto !important;
+        width: 320px !important;
+        height: 180px !important;
+        padding-top: 0 !important;
+        z-index: 10000 !important;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        border: 2px solid var(--primary);
+    }
+    
+    .reader-content {
+        padding-top: 1rem !important;
+    }
+    
+    .sommaire-trigger-wrapper {
+        position: relative !important;
+        top: 0 !important;
+        border-radius: 12px;
+        max-width: 640px;
+        margin: 0 auto 20px auto;
+        box-shadow: var(--shadow-sm);
+    }
+}
+
