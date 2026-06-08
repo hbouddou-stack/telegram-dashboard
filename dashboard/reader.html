@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Académie - Liseuse Interactive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="reader.css?v=47">
+    <!-- Immediate settings application to prevent FOUC -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('readerTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const fontSize = localStorage.getItem('readerFontSize') || 18;
+            document.documentElement.style.setProperty('--font-size-base', fontSize + 'px');
+        })();
+    </script>
+    <!-- YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+
+    <!-- TAB: HOME -->
+    <div class="tab-panel active" id="tab-home">
+        <div style="padding: 20px;">
+            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">📚 أكاديمية الباجي</h2>
+            
+            <div class="progress-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h3 style="margin:0; font-size:18px; color:var(--text);">تقدمك العام</h3>
+                        <p style="margin:4px 0 0; font-size:13px; color:var(--text-2);" id="progress-subtitle">0 / 0 درس</p>
+                    </div>
+                    <div class="circular-chart-container">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="progress-circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <text x="18" y="20.35" class="percentage" id="progress-text">0%</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top:24px; color:var(--text);">متابعة القراءة</h3>
+            <div id="recent-lessons-container">
+                <!-- Recent lessons dynamically injected here -->
+                <p style="color:var(--text-3); font-size:14px;">لم تفتح أي درس بعد.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: SEARCH -->
+    <div class="tab-panel" id="tab-search">
+        <div style="padding: 20px;">
+            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">🔍 البحث الذكي</h2>
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="search-input" placeholder="ابحث في الدروس والمواضيع..." autocomplete="off">
+                <button class="clear-btn" id="clear-btn" style="display:none;">✕</button>
+                <div class="autocomplete" id="autocomplete"></div>
+            </div>
+            <div class="filter-chips" id="filter-chips">
+                <button class="chip active" data-filter="title_only">📌 العناوين فقط</button>
+                <button class="chip" data-filter="all">🔎 الكل (البحث العام)</button>
+                <button class="chip" data-filter="fiche">📖 فيشات المراجعة</button>
+                <button class="chip" data-filter="trans">📝 التفريغ الحرفي</button>
+            </div>
+            <div id="search-results" style="margin-top:20px;">
+                <div class="empty-state"><p style="color:var(--text-3);">اكتب كلمة للبحث</p></div>
+            </div>
+        </div>
+    </div>
+
+    
+    
+    
+    <!-- TAB: SYLLABUS -->
+    <div class="tab-panel" id="tab-syllabus">
+        <div style="padding: 20px;">
+            <h2 style="color:var(--primary); font-weight:800; margin-bottom:15px; text-align:center;">📚 المقررات</h2>
+            
+            <!-- Global Progress -->
+            <div id="syllabus-global-progress" style="background:var(--surface); border-radius:12px; padding:15px; margin-bottom:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-weight:700; font-size:14px; color:var(--text);">
+                    <span>التقدم العام</span>
+                    <span id="syllabus-progress-text">0%</span>
+                </div>
+                <div style="height:8px; background:var(--bg); border-radius:99px; overflow:hidden;">
+                    <div id="syllabus-progress-bar" style="height:100%; background:var(--primary); width:0%; border-radius:99px; transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+
+            <!-- View Toggle -->
+            <div style="display:flex; justify-content:center; margin-bottom:20px;">
+                <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:12px; display:flex; overflow:hidden;">
+                    <button id="toggle-grid-btn" onclick="setSyllabusMode('grid')" style="flex:1; padding:10px 20px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">الشبكة</button>
+                    <button id="toggle-list-btn" onclick="setSyllabusMode('list')" style="flex:1; padding:10px 20px; border:none; background:transparent; color:var(--text-2); font-weight:bold; cursor:pointer;">البرنامج</button>
+                </div>
+            </div>
+
+            <div id="subjects-list" class="subjects-accordion">
+                <!-- Subjects and lessons injected here -->
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- TAB: READER -->
+    <div class="tab-panel" id="tab-reader">
+        <div id="reader-empty-state" style="padding: 40px 20px; text-align: center;">
+            <div style="font-size:48px; margin-bottom:16px;">📚</div>
+            <h3 style="color:var(--text); font-weight:700; margin-bottom:8px;">لم يتم اختيار أي درس</h3>
+            <p style="color:var(--text-3); font-size:14px; margin-bottom:24px;">يرجى اختيار درس من قائمة المقررات للبدء في القراءة.</p>
+            <button onclick="switchTab('syllabus', this)" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">تصفح المقررات</button>
+        </div>
+
+        <div id="reader-active-state" style="display:none;">
+            
+            <!-- STICKY HEADER CONTAINER -->
+            <div id="sticky-header-container" style="position: sticky; top: 0; z-index: 102; background: var(--bg); box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
+                <!-- Top Navigation Bar for Reader only -->
+                <header class="top-nav" style="border-bottom: none; padding-bottom: 8px;">
+                    <button class="control-btn" style="font-weight:bold; background: var(--surface);" onclick="openMindMap()">
+                        خريطة
+                    </button>
+                    <div class="reader-controls">
+                        <button class="control-btn font-control-btn" id="btn-text-minus">ض-</button>
+                        <button class="control-btn font-control-btn" id="btn-text-plus">ض+</button>
+                        <button class="control-btn" id="btn-theme-toggle">🌙</button>
+                            <button class="control-btn" id="btn-zen-toggle" title="Mode Zen" style="margin-right:4px;">👁️</button>
+                        <button class="control-btn" id="btn-settings-toggle" title="Paramètres de Lecture">⚙️</button>
+                    </div>
+                </header>
+
+                <!-- Header / Video Section -->
+                <div class="video-container" id="video-wrapper" style="position: relative; display: flex; justify-content: center; overflow: hidden; background: #000;">
+                    <div id="youtube-player"></div>
+                </div>
+                
+                <!-- Unified Dashboard: Sommaire + Progress -->
+                <div class="sommaire-trigger-wrapper" id="sommaire-wrapper" style="padding: 12px 20px; display:flex; flex-direction:column; gap:16px; border-bottom:1px solid var(--border-color); background:var(--surface);">
+                    
+                    <!-- LIGNE 1 : Titre et Outils Vidéo -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; width: 100%; gap: 12px;">
+                        <button class="control-btn video-tool-btn" id="btn-speed-toggle" title="Vitesse de lecture" style="flex-shrink: 0;">1x</button>
+                        
+                        <button id="open-sommaire-btn" class="sommaire-btn" style="flex:1; justify-content:center; background: transparent; border: none; padding: 0; min-width: 0;">
+                            <span class="icon" style="font-size: 20px; margin-right: 8px;">☰</span>
+                            <span class="text" id="current-theme-label" style="font-size: 15px; text-align: center; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">محاور الدرس</span>
+                        </button>
+
+                        <button class="control-btn video-tool-btn" id="btn-sticky-toggle" title="Désépingler la vidéo" style="flex-shrink: 0;">📌</button>
+                    </div>
+
+                    <!-- LIGNE 2 : Progression Pure -->
+                    <div class="progress-chapters-dots" id="progress-tracker-dots" style="width: calc(100% - 16px); margin: 0 8px; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0; min-height: 16px;">
+                        <div class="progress-line-fill" id="progress-tracker-fill" style="position: absolute; top: 50%; right: 0; height: 3px; background: var(--primary); transform: translateY(-50%); border-radius: 2px; width: 0%; transition: width 0.1s linear;"></div>
+                        <!-- Dots injected via JS -->
+                    </div>
+                </div>
+            </div>
+          <section class="reader-header">
+                <div class="header-content">
+                    <h1 id="lesson-title">Chargement...</h1>
+                    <p id="lesson-subject" class="subject-badge"></p>
+                </div>
+            </section>
+
+            <!-- Main Content (Reading Area) -->
+            <main class="reader-content" id="reader-content">
+                <!-- Active tab content injected here -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet pour les Thématiques -->
+    <div class="bottom-sheet-overlay" id="sommaire-overlay"></div>
+    <div class="bottom-sheet" id="sommaire-sheet">
+        <div class="bottom-sheet-handle-wrap">
+            <div class="bottom-sheet-handle"></div>
+        </div>
+    
+
+        <div class="bottom-sheet-header">
+            <h3>محاور الدرس</h3>
+            <button class="close-sheet" id="close-sommaire-btn">✕</button>
+        </div>
+        <div class="bottom-sheet-content" id="sommaire-list">
+            <!-- Themes and Sub-themes injected here -->
+        </div>
+    </div>
+
+    <!-- Preview Bottom Sheet -->
+    <div class="bottom-sheet-overlay" id="lesson-preview-overlay"></div>
+    <div class="bottom-sheet" id="lesson-preview-sheet">
+        <div class="bottom-sheet-handle-wrap">
+            <div class="bottom-sheet-handle"></div>
+        </div>
+        <div class="bottom-sheet-header">
+            <h3 id="lesson-preview-title">المحاور</h3>
+            <button class="close-sheet" id="close-preview-btn">✕</button>
+        </div>
+        <div class="bottom-sheet-content" id="lesson-preview-list" style="padding-bottom: 20px;">
+            <!-- Chapter checkboxes injected here -->
+        </div>
+        <div style="padding: 16px; border-top: 1px solid var(--border-color); background: var(--surface);">
+            <button id="start-reading-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 16px; border-radius: 12px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                📖 ابدأ القراءة
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Bottom Sheet -->
+    <div class="bottom-sheet-overlay" id="settings-overlay"></div>
+    <div class="bottom-sheet" id="settings-sheet">
+        <div class="bottom-sheet-header">
+            <h3>Paramètres de Lecture</h3>
+            <button class="close-sheet" id="close-settings-btn">✕</button>
+        </div>
+        <div class="bottom-sheet-content" id="settings-content" style="padding: 20px; padding-bottom: 90px; direction: rtl; text-align: right;">
+            <div class="setting-group" style="margin-bottom: 30px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">وضع التمرير (Scroll Mode)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">كيف تتفاعل الصفحة أثناء قراءة الأستاذ.</p>
+                
+                <label style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; cursor: pointer; padding: 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-color);">
+                    <input type="radio" name="scrollMode" value="zone" style="width: 22px; height: 22px; accent-color: var(--primary);">
+                    <div>
+                        <div style="font-weight: bold; font-size: 15px; color: var(--text);">وضع الكتاب (موصى به)</div>
+                        <div style="font-size: 13px; color: var(--text-2);">تمرير طبيعي، تتحرك الصفحة فقط عند الحاجة.</div>
+                    </div>
+                </label>
+                
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-color);">
+                    <input type="radio" name="scrollMode" value="teleprompter" style="width: 22px; height: 22px; accent-color: var(--primary);">
+                    <div>
+                        <div style="font-weight: bold; font-size: 15px; color: var(--text);">وضع التلقين (Teleprompter)</div>
+                        <div style="font-size: 13px; color: var(--text-2);">تبقى الجملة المقروءة دائماً في أعلى الشاشة.</div>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="setting-group">
+                
+            <div class="setting-group" style="margin-bottom: 24px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">نوع الخط (Police)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 12px;">اختر الخط الأنسب للقراءة.</p>
+                <div class="settings-btn-group" style="display: flex; gap: 10px; direction: rtl;">
+                    <button class="btn font-select-btn" data-font="'Tajawal', sans-serif" style="font-family:'Tajawal', sans-serif; font-size:16px;">حديث</button>
+                    <button class="btn font-select-btn" data-font="'Amiri', serif" style="font-family:'Amiri', serif; font-size:18px;">تقليدي</button>
+                    <button class="btn font-select-btn" data-font="'Cairo', sans-serif" style="font-family:'Cairo', sans-serif; font-size:16px;">واضح</button>
+                </div>
+            </div>
+    
+            <div class="setting-group">
+            <div class="setting-group" style="margin-bottom: 24px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">سرعة القراءة (Vitesse)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 12px;">تغيير سرعة الفيديو.</p>
+                <div class="settings-btn-group" style="display: flex; gap: 8px; direction: ltr;">
+                    <button class="btn speed-select-btn" data-speed="0.75">0.75x</button>
+                    <button class="btn speed-select-btn active" data-speed="1">1x</button>
+                    <button class="btn speed-select-btn" data-speed="1.25">1.25x</button>
+                    <button class="btn speed-select-btn" data-speed="1.5">1.5x</button>
+                    <button class="btn speed-select-btn" data-speed="2">2x</button>
+                </div>
+            </div>
+    
+            <div class="setting-group">
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">وضع التركيز (Focus Mode)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">إخفاء باقي النص لتجنب التشتت أثناء الاستماع.</p>
+                
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-weight: bold; font-size: 15px; color: var(--text);">تعتيم النص غير المقروء</div>
+                    <label class="switch">
+                      <input type="checkbox" id="focusModeToggle">
+                      <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+
+            <div class="setting-group">
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">تباعد الأسطر (Line Spacing)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">زيادة المسافة بين الأسطر لراحة العين.</p>
+                
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-weight: bold; font-size: 15px; color: var(--text);">نص متباعد</div>
+                    <label class="switch">
+                      <input type="checkbox" id="spacing-toggle">
+                      <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+        
+        </div>
+    </div>
+
+    <!-- Glossary Popup -->
+    <div id="glossary-popup" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:var(--surface); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:9999; padding:16px; border-right:4px solid var(--primary); text-align:right;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+            <h4 id="glossary-popup-term" style="margin:0; font-size:16px; display:flex; align-items:center; gap:6px;"></h4>
+            <button onclick="closeGlossaryPopup()" style="background:none; border:none; font-size:18px; color:var(--text-3); cursor:pointer;">✕</button>
+        </div>
+        <div id="glossary-popup-def" style="font-size:13.5px; color:var(--text-2); line-height:1.6; font-weight:500;"></div>
+    </div>
+
+    <!-- Mind Map Modal -->
+    <div id="mindmap-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; flex-direction:column; padding:20px;">
+        <div style="width:100%; display:flex; justify-content:flex-end; padding-bottom:10px;">
+            <button onclick="closeMindMap()" style="background:#fff; border:none; width:40px; height:40px; border-radius:20px; font-size:20px; font-weight:bold; cursor:pointer;">✕</button>
+        </div>
+        <div style="flex:1; width:100%; background:#fff; border-radius:12px; overflow:hidden; display:flex; justify-content:center; align-items:center;">
+            <img id="mindmap-image" src="" alt="Carte Mentale" style="max-width:100%; max-height:100%; object-fit:contain;">
+        </div>
+        <div style="color:#fff; text-align:center; padding-top:12px; font-size:14px; font-family:'Tajawal', sans-serif;">
+            يمكنك تكبير الصورة باستخدام إصبعيك (Pinch to zoom)
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    
+    <nav class="bottom-nav">
+        <!-- Reader Progress Tracker -->
+        
+        
+        <button class="nav-btn active" onclick="switchTab('home', this)">
+            <span class="icon">🏠</span><span>الرئيسية</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('search', this)">
+            <span class="icon">🔍</span><span>البحث</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('syllabus', this)">
+            <span class="icon">📖</span><span>المقرر</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-reader" onclick="switchTab('reader', this)">
+            <span class="icon">📚</span><span>الدرس</span>
+        </button>
+    </nav>
+
+    <script src="reader.js?v=47"></script>
+
+</body>
+</html>

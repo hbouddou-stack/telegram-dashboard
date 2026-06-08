@@ -205,6 +205,15 @@ async def handle_transcripts(request):
 async def handle_quran(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'quran_db.json'))
 
+async def handle_reader(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.html'))
+
+async def handle_reader_js(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.js'))
+
+async def handle_reader_css(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.css'))
+
 async def check_admin(user_id):
     if not user_id:
         return False
@@ -3728,6 +3737,10 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/search.html', handle_search)
     app.router.add_get('/transcripts.json', handle_transcripts)
     app.router.add_get('/quran_db.json', handle_quran)
+    app.router.add_get('/reader', handle_reader)
+    app.router.add_get('/reader.html', handle_reader)
+    app.router.add_get('/reader.js', handle_reader_js)
+    app.router.add_get('/reader.css', handle_reader_css)
     app.router.add_get('/support', handle_support)
     app.router.add_get('/support.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)
