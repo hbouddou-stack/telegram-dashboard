@@ -1463,11 +1463,7 @@ async def save_full_transcript(request):
                     if new_thematic_blocks:
                         for idx, block in enumerate(new_thematic_blocks):
                             new_video_url = block.get('video_link')
-                            timestamp_seconds = None
-                            if new_video_url:
-                                m = re.search(r'[?&]t=(\d+)s?', new_video_url)
-                                if m:
-                                    timestamp_seconds = int(m.group(1))
+                            timestamp_seconds = block.get('start_seconds')
                             
                             await db.add_course_chapter(
                                 subject=subject,
