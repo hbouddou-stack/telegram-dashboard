@@ -45,9 +45,10 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     
     # Row 1.2: Liseuse (Reader)
     base_url = get_webapp_base_url()
-    rows.append([
-        InlineKeyboardButton(text="📖 وضع القراءة (Liseuse)", web_app=WebAppInfo(url=f"{base_url}/reader.html?lesson=14"))
-    ])
+    if base_url.startswith("https"):
+        rows.append([
+            InlineKeyboardButton(text="📖 وضع القراءة (Liseuse)", web_app=WebAppInfo(url=f"{base_url}/reader.html?lesson=14"))
+        ])
     
     # Row 1.5: Revision Library (full width)
     if "revision" not in hidden_buttons:
@@ -852,8 +853,9 @@ def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 
         rows.append([btn])
         
     # We also add student reader webapps
-    btn_reader = InlineKeyboardButton(text="📖 وضع القراءة (Liseuse) 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?lesson=14"))
-    rows.append([btn_reader])
+    if base_url.startswith("https"):
+        btn_reader = InlineKeyboardButton(text="📖 وضع القراءة (Liseuse) 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?lesson=14"))
+        rows.append([btn_reader])
         
     rows.extend([
         [InlineKeyboardButton(text=inbox_text, callback_data="admin_reports_center")],
