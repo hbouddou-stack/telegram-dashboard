@@ -9470,7 +9470,7 @@ window.addEventListener('unhandledrejection', function(e) {
 
                     body: JSON.stringify({
 
-                        userId:    state.state.userId,
+                        userId:    state.userId,
 
                         subject:   transcriptEditorLesson.subject,
 
