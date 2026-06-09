@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html lang="ar" dir="rtl" data-theme="sepia">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,7 +9,7 @@
     <!-- Immediate settings application to prevent FOUC -->
     <script>
         (function() {
-            const theme = localStorage.getItem('readerTheme') || 'light';
+            const theme = localStorage.getItem('readerTheme') || 'sepia';
             document.documentElement.setAttribute('data-theme', theme);
             const fontSize = localStorage.getItem('readerFontSize') || 18;
             document.documentElement.style.setProperty('--font-size-base', fontSize + 'px');
@@ -161,12 +161,7 @@
                     </div>
                 </div>
             </div>
-          <section class="reader-header">
-                <div class="header-content">
-                    <h1 id="lesson-title">Chargement...</h1>
-                    <p id="lesson-subject" class="subject-badge"></p>
-                </div>
-            </section>
+
 
             <!-- Main Content (Reading Area) -->
             <main class="reader-content" id="reader-content">
@@ -337,7 +332,7 @@
         </button>
     </nav>
 
-    <script src="reader.js?v=poetry-20260609171132"></script>
+    <script src="reader.js?v=sepia-2"></script>
 
 </body>
 </html>

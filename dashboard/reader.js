@@ -1,5 +1,7 @@
 let player; 
 let currentLessonData = null;
+let currentSubject = null;
+let currentLessonNum = null;
 let currentTabIndex = 0;
 let thematicData = []; // Array of objects { title, startTime, endTime, htmlContent, questions: [] }
 let DB = [];
@@ -10,7 +12,7 @@ let syllabusMode = 'grid';
 
 
 // UI State
-let currentTheme = localStorage.getItem('readerTheme') || 'light';
+let currentTheme = localStorage.getItem('readerTheme') || 'sepia';
 let fontSizeBase = parseInt(localStorage.getItem('readerFontSize')) || 18; 
 if(currentTheme !== 'light') document.documentElement.setAttribute('data-theme', currentTheme);
 document.documentElement.style.setProperty('--font-size-base', fontSizeBase + 'px');
@@ -48,6 +50,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Error loading reader data:", e);
     }
 });
+
+function loadLesson(lessonNum, subject) {
+    currentSubject = subject;
+    currentLessonNum = lessonNum;
+    
+    document.getElementById('reader-empty-state').style.display = 'none';
+    const activeState = document.getElementById('reader-active-state');
+    if(activeState) activeState.style.display = 'block';
+    
+    document.getElementById('reader-content').style.display = 'block';
+    const lesson = DB.find(t => t.lessonNum == lessonNum && t.subject === subject);
+    if (lesson) openLesson(lesson);
+}
 
 function openLesson(lesson) {
     const emptyState = document.getElementById('reader-empty-state');
@@ -347,7 +362,8 @@ function buildSyllabusTab(transcripts) {
             card.innerHTML = `
                 <div class="card-info">
                     <h3>${data.label}</h3>
-                    <p>${data.lessons.length} cours &bull; ${completedBlocks}/${totalBlocks} terminés</p>
+                    <p style="margin-bottom: 4px; font-weight: 600; color: var(--subject-color, var(--primary));">الدروس: ${data.lessons.length}</p>
+                    <p style="color: var(--text-2); font-size: 13px;">المحاور المنجزة: ${completedBlocks}/${totalBlocks}</p>
                 </div>
                 <div class="card-progress">
                     <div class="circular-progress-wrap" style="background: conic-gradient(var(--subject-color, var(--primary, var(--accent-color))) ${deg}deg, var(--surface-2) 0deg);">
@@ -409,7 +425,7 @@ function openSubjectDetail(data, colorClass) {
     const header = document.createElement('div');
     header.className = `subject-detail-header ${colorClass}`;
     header.innerHTML = `
-        <button class="back-btn" onclick="buildSyllabusTab(DB)">← رجوع</button>
+        <button class="back-btn" onclick="buildSyllabusTab(DB)">رجوع ➡️</button>
         <h2 style="color: var(--subject-color, var(--primary, var(--accent-color)));">${data.label}</h2>
     `;
     listContainer.appendChild(header);
@@ -491,10 +507,6 @@ function initYouTubePlayer(videoId) {
     }
 }
 function renderLessonHeader(lesson) {
-    document.getElementById('lesson-title').textContent = lesson.title || `الدرس ${lesson.lessonNum}`;
-    document.getElementById('lesson-subject').textContent = lesson.subjectLabel || lesson.subject;
-    document.getElementById('lesson-subject').className = `badge badge-${lesson.subject}`;
-
     function extractYoutubeId(url) { if(!url) return null; let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&\n\?#]+)/); return (match && match[1]) || null; }
     const videoId = extractYoutubeId(lesson.video_url || lesson.videoLink || lesson.url);
     const videoWrapper = document.getElementById('video-wrapper');
@@ -767,6 +779,17 @@ function switchThemeTab(index, shouldSeek = true) {
     let contentDiv = document.createElement('div');
     contentDiv.className = 'tab-content active';
     
+    // Course Badge (Lesson X - Subject)
+    if (currentSubject && currentLessonNum) {
+        let courseBadge = document.createElement('div');
+        courseBadge.style.fontSize = '12px';
+        courseBadge.style.color = 'var(--text-3)';
+        courseBadge.style.marginBottom = '6px';
+        const subjLabel = SUBJECT_LABELS[currentSubject] || currentSubject;
+        courseBadge.textContent = `${subjLabel} • الدرس ${currentLessonNum}`;
+        contentDiv.appendChild(courseBadge);
+    }
+
     // Title
     let titleEl = document.createElement('h2');
     if (data.level === 2) {
@@ -787,6 +810,53 @@ function switchThemeTab(index, shouldSeek = true) {
         contentDiv.appendChild(createQuizElement(q));
     });
 
+    // Finish Thematic Button
+    if (currentSubject && currentLessonNum) {
+        let finishBtnWrapper = document.createElement('div');
+        finishBtnWrapper.style.marginTop = '24px';
+        finishBtnWrapper.style.marginBottom = '12px';
+        let finishBtn = document.createElement('button');
+        finishBtn.className = 'finish-theme-btn';
+        finishBtn.innerHTML = '✅ أكملت هذا المحور';
+        finishBtn.onclick = (e) => {
+            toggleChapterCompletion(e, currentSubject, currentLessonNum, index);
+            if (finishBtn.classList.contains('completed')) {
+                finishBtn.classList.remove('completed');
+                finishBtn.innerHTML = '✅ أكملت هذا المحور';
+                finishBtn.style.background = 'var(--surface)';
+                finishBtn.style.color = 'var(--text)';
+            } else {
+                finishBtn.classList.add('completed');
+                finishBtn.innerHTML = '✔️ تم إنجاز المحور';
+                finishBtn.style.background = 'var(--success, #10b981)';
+                finishBtn.style.color = 'white';
+            }
+        };
+        
+        // Check if already completed
+        const compKey = `${currentSubject}_${currentLessonNum}_${index}`;
+        if (syllabusCompletion[compKey]) {
+            finishBtn.classList.add('completed');
+            finishBtn.innerHTML = '✔️ تم إنجاز المحور';
+            finishBtn.style.background = 'var(--success, #10b981)';
+            finishBtn.style.color = 'white';
+        } else {
+            finishBtn.style.background = 'var(--surface)';
+            finishBtn.style.color = 'var(--text)';
+            finishBtn.style.border = '1px solid var(--border-color)';
+        }
+        
+        finishBtn.style.width = '100%';
+        finishBtn.style.padding = '14px';
+        finishBtn.style.borderRadius = '12px';
+        finishBtn.style.fontWeight = 'bold';
+        finishBtn.style.cursor = 'pointer';
+        finishBtn.style.transition = 'all 0.3s';
+        
+        finishBtnWrapper.appendChild(finishBtn);
+        contentDiv.appendChild(finishBtnWrapper);
+    }
+
     // Next Button
     if (index < thematicData.length - 1) {
         let nextBtnWrapper = document.createElement('div');
@@ -794,7 +864,7 @@ function switchThemeTab(index, shouldSeek = true) {
         
         let nextBtn = document.createElement('button');
         nextBtn.className = 'next-tab-btn';
-        nextBtn.innerHTML = `Passer à la suite : ${thematicData[index+1].title} ➔`;
+        nextBtn.innerHTML = `التالي: ${thematicData[index+1].title} ⬅️`;
         nextBtn.onclick = () => switchThemeTab(index + 1, true);
         
         nextBtnWrapper.appendChild(nextBtn);
@@ -885,7 +955,40 @@ function createQuizElement(questionData) {
 
     let tempDiv = document.createElement('div');
     tempDiv.innerHTML = questionData.explanation || '';
-    let cleanExplanation = tempDiv.textContent || tempDiv.innerText || '';
+    // Parse explanation like Telegram
+    let text = cleanExplanation.trim();
+    let sourceText = "";
+    if (text.includes("📍")) {
+        let parts = text.split("📍");
+        text = parts[0].trim();
+        sourceText = "📍 " + parts[1].trim();
+    } else if (text.includes("المصدر")) {
+        let parts = text.split("المصدر");
+        text = parts[0].trim();
+        sourceText = "📍 المصدر " + parts[1].trim();
+    }
+
+    let profNote = "";
+    const profPatterns = ["توجيه وفائدة :", "ملاحظة الأستاذ :", "فائدة :"];
+    for (let p of profPatterns) {
+        if (text.includes(p)) {
+            let parts = text.split(p);
+            text = parts[0].trim();
+            profNote = parts[1].trim();
+            break;
+        }
+    }
+
+    let parsedHtml = '';
+    if (text) {
+        parsedHtml += `<div class="exp-main" style="margin-bottom:12px; font-size:14px;"><strong>التوضيح:</strong><br>${text}</div>`;
+    }
+    if (profNote) {
+        parsedHtml += `<div class="exp-prof" style="margin-bottom:12px; background:var(--surface-2); padding:12px; border-radius:8px; border-right:3px solid var(--primary); font-size:13.5px;"><span style="font-size:16px;">💡</span> <strong>توجيه وفائدة:</strong><br>${profNote}</div>`;
+    }
+    if (sourceText) {
+        parsedHtml += `<div class="exp-source" style="font-size:12px; color:var(--text-3); margin-top:8px;">${sourceText}</div>`;
+    }
 
     container.innerHTML = `
         <div class="quiz-header">سؤال تفاعلي</div>
@@ -894,8 +997,7 @@ function createQuizElement(questionData) {
             ${optionsHtml}
         </div>
         <div class="quiz-explanation">
-            <strong>التوضيح :</strong><br>
-            ${cleanExplanation}
+            ${parsedHtml}
         </div>
     `;
 
@@ -1703,16 +1805,17 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const stickyToggleBtn = document.getElementById('btn-sticky-toggle');
     const stickyContainer = document.getElementById('sticky-header-container');
+    const videoWrapper = document.getElementById('video-wrapper');
     
-    if (stickyToggleBtn && stickyContainer) {
+    if (stickyToggleBtn && stickyContainer && videoWrapper) {
         stickyToggleBtn.addEventListener('click', () => {
-            if (stickyContainer.style.position === 'relative') {
-                stickyContainer.style.position = 'sticky';
+            if (videoWrapper.style.display === 'none') {
+                videoWrapper.style.display = 'flex';
                 stickyToggleBtn.style.background = 'var(--surface)';
                 stickyToggleBtn.style.color = 'var(--text)';
                 stickyToggleBtn.setAttribute('title', 'Désépingler la vidéo');
             } else {
-                stickyContainer.style.position = 'relative';
+                videoWrapper.style.display = 'none';
                 stickyToggleBtn.style.background = 'var(--primary)';
                 stickyToggleBtn.style.color = 'white';
                 stickyToggleBtn.setAttribute('title', 'Épingler la vidéo');
