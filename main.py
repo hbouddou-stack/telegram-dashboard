@@ -1023,7 +1023,7 @@ async def save_lesson_axes(request):
                             course_number=int(lesson_num),
                             chapter_index=idx + 1,
                             title=block.get('title', ''),
-                            content=block.get('search_text', ''),
+                            content=block.get('explanation') or block.get('content') or block.get('search_text', ''),
                             youtube_link=video_url,
                             timestamp_seconds=timestamp_seconds,
                             poetry_verses=block.get('poetry_verses', '')
