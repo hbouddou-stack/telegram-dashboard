@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-function loadLesson(lessonNum, subject) {
+function loadLesson(lessonNum, subject, startSeconds = 0) {
     currentSubject = subject;
     currentLessonNum = lessonNum;
     
@@ -61,8 +61,18 @@ function loadLesson(lessonNum, subject) {
     
     document.getElementById('reader-content').style.display = 'block';
     const lesson = DB.find(t => t.lessonNum == lessonNum && t.subject === subject);
-    if (lesson) openLesson(lesson);
+    if (lesson) {
+        if (startSeconds > 0) {
+            pendingSeekTime = startSeconds;
+        }
+        openLesson(lesson);
+    }
 }
+
+window.openLessonFromList = function(subject, lessonNum, startSeconds = 0) {
+    loadLesson(lessonNum, subject, startSeconds);
+    switchTab('reader');
+};
 
 function openLesson(lesson) {
     const emptyState = document.getElementById('reader-empty-state');
@@ -1922,7 +1932,7 @@ function openLessonPreview(l) {
             html += `<div class="preview-chapter-item" onclick="togglePreviewChapter(event, '${l.subject}', ${l.lessonNum}, ${idx}, this)">
                 <div class="preview-checkbox ${isComp ? 'checked' : ''}">${isComp ? '✓' : ''}</div>
                 <div class="preview-chapter-info" style="margin-right: 12px; text-align: right;">
-                    <div class="preview-chapter-title">${b.title}</div>
+                    <div class="preview-chapter-title">${idx + 1}. ${b.title}</div>
                 </div>
             </div>`;
         });
@@ -1933,7 +1943,7 @@ function openLessonPreview(l) {
 
     startBtn.onclick = () => {
         closeLessonPreview();
-        openLesson(l);
+        loadLesson(l.lessonNum, l.subject);
         switchTab('reader');
     };
 
