@@ -962,7 +962,10 @@ function createQuizElement(questionData) {
     container.className = 'inline-quiz-container';
 
     let optionsHtml = '';
-    questionData.options.forEach((opt, optIdx) => {
+    let opts = Array.isArray(questionData.options) ? questionData.options : 
+               (typeof questionData.options === 'string' ? questionData.options.split(/[.-]/).map(s=>s.trim()).filter(s=>s) : []);
+    
+    opts.forEach((opt, optIdx) => {
         optionsHtml += `<button class="quiz-option" data-idx="${optIdx}">${opt}</button>`;
     });
 
