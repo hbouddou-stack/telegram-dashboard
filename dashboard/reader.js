@@ -1943,8 +1943,12 @@ function openLessonPreview(l) {
 
     startBtn.onclick = () => {
         closeLessonPreview();
-        loadLesson(l.lessonNum, l.subject);
         switchTab('reader');
+        let startSec = 0;
+        if (l.thematic_blocks && l.thematic_blocks.length > 0) {
+            startSec = l.thematic_blocks[0].start_seconds;
+        }
+        loadLesson(l.lessonNum, l.subject, startSec);
     };
 
     sheet.classList.add('open');
