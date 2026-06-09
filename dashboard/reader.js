@@ -512,7 +512,8 @@ function initYouTubePlayer(videoId) {
             playerVars: {
                 'playsinline': 1,
                 'rel': 0,
-                'controls': 0,
+                'controls': 1,
+                'autoplay': 1,
                 'modestbranding': 1,
                 'showinfo': 0,
                 'start': pendingSeekTime || 0
