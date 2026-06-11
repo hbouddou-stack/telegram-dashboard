@@ -96,7 +96,13 @@
                 </div>
             </div>
 
-
+            <!-- View Toggle -->
+            <div style="display:flex; justify-content:center; margin-bottom:20px;">
+                <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:12px; display:flex; overflow:hidden;">
+                    <button id="toggle-grid-btn" onclick="setSyllabusMode('grid')" style="flex:1; padding:10px 20px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">الشبكة</button>
+                    <button id="toggle-list-btn" onclick="setSyllabusMode('list')" style="flex:1; padding:10px 20px; border:none; background:transparent; color:var(--text-2); font-weight:bold; cursor:pointer;">البرنامج</button>
+                </div>
+            </div>
 
             <div id="subjects-list" class="subjects-accordion">
                 <!-- Subjects and lessons injected here -->
