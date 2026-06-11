@@ -1574,16 +1574,20 @@ function setSyllabusMode(mode) {
     syllabusMode = mode;
     const gridBtn = document.getElementById('toggle-grid-btn');
     const listBtn = document.getElementById('toggle-list-btn');
+    const subjectsList = document.getElementById('subjects-list');
+    
     if (mode === 'grid') {
         gridBtn.style.background = 'var(--primary)';
         gridBtn.style.color = 'white';
         listBtn.style.background = 'transparent';
         listBtn.style.color = 'var(--text-2)';
+        if (subjectsList) subjectsList.classList.add('grid-view-mobile');
     } else {
         listBtn.style.background = 'var(--primary)';
         listBtn.style.color = 'white';
         gridBtn.style.background = 'transparent';
         gridBtn.style.color = 'var(--text-2)';
+        if (subjectsList) subjectsList.classList.remove('grid-view-mobile');
     }
     buildSyllabusTab(DB);
 }
