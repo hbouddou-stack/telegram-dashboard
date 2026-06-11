@@ -152,7 +152,7 @@ async def cors_middleware(request, handler):
 # ──────────────────────────────────────────────────────────────────────────────
 
 async def handle_index(request):
-    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'index.html'))
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.html'))
 
 async def handle_interactive(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'interactive.html'))
