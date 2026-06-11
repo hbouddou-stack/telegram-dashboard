@@ -48,7 +48,7 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     base_url = get_webapp_base_url()
     if base_url.startswith("https"):
         rows.append([
-            InlineKeyboardButton(text="🖥️ المنصة التعليمية واللّيسوز 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html"))
+            InlineKeyboardButton(text="🖥️ المنصة التعليمية واللّيسوز 📱", web_app=WebAppInfo(url=f"{base_url}/index.html"))
         ])
     
     # Row 1.5: Revision Library (full width)
@@ -851,7 +851,7 @@ def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 
         web_app_buttons.append(InlineKeyboardButton(text="📝 لوحة المحرر Editor 📱", web_app=WebAppInfo(url=editor_webapp)))
         
     if base_url.startswith("https"):
-        web_app_buttons.append(InlineKeyboardButton(text="🖥️ المنصة التعليمية واللّيسوز 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html")))
+        web_app_buttons.append(InlineKeyboardButton(text="🖥️ المنصة التعليمية واللّيسوز 📱", web_app=WebAppInfo(url=f"{base_url}/index.html")))
         
     for btn in web_app_buttons:
         rows.append([btn])
