@@ -2211,6 +2211,45 @@ const quizEngine = {
     audioSuccess: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
     audioFail: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
     
+    
+    async fetchQuestionsCustom(options) {
+        this.currentSubject = options.subject;
+        this.currentLessonNum = null;
+        
+        document.getElementById('practice-active-state').style.display = 'none';
+        document.getElementById('practice-result-state').style.display = 'none';
+        document.getElementById('practice-loading').style.display = 'block';
+        
+        try {
+            const res = await fetch('/api/student/quiz/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: 1, 
+                    subject: options.subject,
+                    courseNumbers: options.courseNumbers,
+                    source: 'all',
+                    mode: options.mode,
+                    limit: options.limit
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success && data.questions && data.questions.length > 0) {
+                this.questions = data.questions;
+                this.start();
+            } else {
+                document.getElementById('practice-loading').style.display = 'none';
+                alert('عذراً، لا توجد أسئلة متاحة لهذه الخيارات.');
+                switchTab('exams');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('حدث خطأ أثناء تحميل الأسئلة');
+            switchTab('exams');
+        }
+    },
+
     async fetchQuestions(subject, lessonNum) {
         this.currentSubject = subject;
         this.currentLessonNum = lessonNum;
