@@ -3188,7 +3188,7 @@ async def get_available_themes(subject: str) -> list[dict]:
             SELECT tn.id, tn.title 
             FROM thematic_nodes tn
             JOIN programs p ON tn.program_id = p.id
-            WHERE p.alias = ? AND tn.level = 2
+            WHERE p.subject = ? AND tn.level = 2
             ORDER BY tn.order_index
         """, (subject.lower().strip(),)) as cursor:
             rows = await cursor.fetchall()
