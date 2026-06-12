@@ -2175,7 +2175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSegmentUI();
     }
 });
-\n
+
 // ─── QUIZ ENGINE (PRACTICE TAB) ───
 const quizEngine = {
     questions: [],
