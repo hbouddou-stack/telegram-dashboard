@@ -1873,7 +1873,7 @@ def get_revision_resources_keyboard(subject: str, lesson_num: int, has_map: bool
         
         base_url = get_webapp_base_url()
         if base_url.startswith("https"):
-            rows.append([InlineKeyboardButton(text="📖 وضع القراءة التفاعلي (Liseuse) 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p1"))])
+            rows.append([InlineKeyboardButton(text="📖 وضع القراءة التفاعلي (Liseuse) 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p2"))])
     else:
         rows.append([InlineKeyboardButton(text="📝 التفريغ (غير متوفر ❌)", callback_data="rev_noop")])
         
@@ -1919,7 +1919,7 @@ def get_map_as_menu_keyboard(subject: str, lesson_num: int, has_summary: bool, h
         
         base_url = get_webapp_base_url()
         if base_url.startswith("https"):
-            rows.append([InlineKeyboardButton(text="📖 وضع القراءة التفاعلي (Liseuse) 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p1"))])
+            rows.append([InlineKeyboardButton(text="📖 وضع القراءة التفاعلي (Liseuse) 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p2"))])
     else:
         rows.append([InlineKeyboardButton(text="📝 التفريغ (غير متوفر ❌)", callback_data="rev_noop")])
     if has_study_path:
