@@ -1359,6 +1359,24 @@ function switchTab(name, btn) {
     if(name === 'search') {
         setTimeout(() => document.getElementById('search-input').focus(), 100);
     }
+    
+    if (name === 'practice') {
+        if (!currentLessonData) {
+            document.getElementById('practice-empty-state').style.display = 'block';
+            document.getElementById('practice-active-state').style.display = 'none';
+            document.getElementById('practice-result-state').style.display = 'none';
+            document.getElementById('practice-loading').style.display = 'none';
+        } else {
+            document.getElementById('practice-empty-state').style.display = 'none';
+            if (!quizEngine.questions || quizEngine.questions.length === 0 || quizEngine.currentSubject !== currentLessonData.subject || quizEngine.currentLessonNum !== currentLessonData.lessonNum) {
+                quizEngine.fetchQuestions(currentLessonData.subject, currentLessonData.lessonNum);
+            } else {
+                if (document.getElementById('practice-result-state').style.display !== 'block') {
+                    document.getElementById('practice-active-state').style.display = 'block';
+                }
+            }
+        }
+    }
 }
 
 // ─── PROGRESS LOGIC ───
@@ -2157,3 +2175,180 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSegmentUI();
     }
 });
+\n
+// ─── QUIZ ENGINE (PRACTICE TAB) ───
+const quizEngine = {
+    questions: [],
+    currentIndex: 0,
+    score: 0,
+    lives: 3,
+    currentSubject: null,
+    currentLessonNum: null,
+    audioSuccess: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
+    audioFail: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+    
+    async fetchQuestions(subject, lessonNum) {
+        this.currentSubject = subject;
+        this.currentLessonNum = lessonNum;
+        
+        document.getElementById('practice-active-state').style.display = 'none';
+        document.getElementById('practice-result-state').style.display = 'none';
+        document.getElementById('practice-loading').style.display = 'block';
+        
+        try {
+            const res = await fetch('/api/student/quiz/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: 1, 
+                    subject: subject,
+                    courseNumbers: [lessonNum],
+                    source: 'all',
+                    limit: 10
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success && data.questions && data.questions.length > 0) {
+                this.questions = data.questions;
+                this.start();
+            } else {
+                document.getElementById('practice-loading').style.display = 'none';
+                document.getElementById('practice-empty-state').innerHTML = `
+                    <div style="font-size:48px; margin-bottom:16px;">🤷‍♂️</div>
+                    <h3 style="color:var(--text); font-weight:700; margin-bottom:8px;">لا توجد أسئلة</h3>
+                    <p style="color:var(--text-3); font-size:14px; margin-bottom:24px;">لم تتم إضافة تدريبات لهذا الدرس بعد.</p>
+                `;
+                document.getElementById('practice-empty-state').style.display = 'block';
+            }
+        } catch (e) {
+            console.error("Error fetching quiz questions", e);
+            document.getElementById('practice-loading').style.display = 'none';
+            document.getElementById('practice-empty-state').innerHTML = `<p style="color:red;">خطأ في تحميل الأسئلة.</p>`;
+            document.getElementById('practice-empty-state').style.display = 'block';
+        }
+    },
+    
+    start() {
+        this.currentIndex = 0;
+        this.score = 0;
+        this.lives = 3;
+        
+        document.getElementById('practice-loading').style.display = 'none';
+        document.getElementById('practice-empty-state').style.display = 'none';
+        document.getElementById('practice-result-state').style.display = 'none';
+        document.getElementById('practice-active-state').style.display = 'block';
+        
+        this.showQuestion();
+    },
+    
+    showQuestion() {
+        if (this.currentIndex >= this.questions.length || this.lives <= 0) {
+            this.showResult();
+            return;
+        }
+        
+        const q = this.questions[this.currentIndex];
+        
+        document.getElementById('quiz-lives').textContent = this.lives;
+        const progressPercent = (this.currentIndex / this.questions.length) * 100;
+        document.getElementById('quiz-progress-bar').style.width = progressPercent + '%';
+        
+        document.getElementById('quiz-question-text').textContent = q.question;
+        
+        const optsContainer = document.getElementById('quiz-options-container');
+        optsContainer.innerHTML = '';
+        
+        const choices = [];
+        if (q.option_a) choices.push({ id: 'a', text: q.option_a });
+        if (q.option_b) choices.push({ id: 'b', text: q.option_b });
+        if (q.option_c) choices.push({ id: 'c', text: q.option_c });
+        if (q.option_d) choices.push({ id: 'd', text: q.option_d });
+        
+        choices.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option-btn';
+            btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
+            btn.onclick = () => this.checkAnswer(c.id, q.correct_choice, btn);
+            optsContainer.appendChild(btn);
+        });
+    },
+    
+    checkAnswer(selectedId, correctId, btnEl) {
+        const isCorrect = selectedId.toLowerCase() === correctId.toLowerCase();
+        
+        const allBtns = document.querySelectorAll('.quiz-option-btn');
+        allBtns.forEach(b => b.style.pointerEvents = 'none'); 
+        
+        if (isCorrect) {
+            btnEl.classList.add('correct');
+            this.audioSuccess.play().catch(e=>{});
+            this.score++;
+            
+            setTimeout(() => {
+                this.currentIndex++;
+                this.showQuestion();
+            }, 1000);
+            
+        } else {
+            btnEl.classList.add('wrong');
+            this.audioFail.play().catch(e=>{});
+            this.lives--;
+            document.getElementById('quiz-lives').textContent = this.lives;
+            
+            allBtns.forEach(b => {
+                if (b.querySelector('.opt-letter').textContent.toLowerCase() === correctId.toLowerCase()) {
+                    b.classList.add('correct');
+                }
+            });
+            
+            setTimeout(() => {
+                this.currentIndex++;
+                this.showQuestion();
+            }, 2000);
+        }
+    },
+    
+    showResult() {
+        document.getElementById('practice-active-state').style.display = 'none';
+        document.getElementById('practice-result-state').style.display = 'block';
+        
+        const maxScore = this.questions.length;
+        const pct = Math.round((this.score / maxScore) * 100);
+        
+        document.getElementById('quiz-final-score').textContent = pct + '%';
+        
+        setTimeout(() => {
+            document.getElementById('quiz-final-circle').style.strokeDasharray = `${pct}, 100`;
+        }, 100);
+        
+        const msgEl = document.getElementById('quiz-final-msg');
+        const subEl = document.getElementById('quiz-final-sub');
+        
+        if (this.lives <= 0) {
+            msgEl.textContent = 'انتهت المحاولات 💔';
+            msgEl.style.color = '#ef4444';
+            subEl.textContent = 'لا بأس، يمكنك إعادة مراجعة الدرس والمحاولة مجدداً.';
+            document.getElementById('quiz-final-circle').style.stroke = '#ef4444';
+        } else if (pct === 100) {
+            msgEl.textContent = 'ممتاز جداً! 🌟';
+            msgEl.style.color = '#10b981';
+            subEl.textContent = 'لقد أتقنت هذا الدرس تماماً.';
+            document.getElementById('quiz-final-circle').style.stroke = '#10b981';
+        } else if (pct >= 50) {
+            msgEl.textContent = 'جيد جداً! 👍';
+            msgEl.style.color = 'var(--primary)';
+            subEl.textContent = 'لقد اجتزت التدريب، لكن يمكنك تحسين نتيجتك.';
+            document.getElementById('quiz-final-circle').style.stroke = 'var(--primary)';
+        } else {
+            msgEl.textContent = 'حاول مجدداً 🤔';
+            msgEl.style.color = '#f59e0b';
+            subEl.textContent = 'ننصحك بمراجعة الدرس مرة أخرى.';
+            document.getElementById('quiz-final-circle').style.stroke = '#f59e0b';
+        }
+    },
+    
+    quit() {
+        switchTab('reader');
+    }
+};
