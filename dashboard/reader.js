@@ -1001,6 +1001,30 @@ function switchThemeTab(index, shouldSeek = true) {
     markBtnWrapper.appendChild(markBtn);
     contentDiv.appendChild(markBtnWrapper);
 
+    // --- NEW: Add "Practice Lesson" button at the end ---
+    if (currentSubject && currentLessonNum) {
+        let practiceBtnWrapper = document.createElement('div');
+        practiceBtnWrapper.style.marginTop = '12px';
+        practiceBtnWrapper.style.marginBottom = '24px';
+        let practiceBtn = document.createElement('button');
+        practiceBtn.innerHTML = '🎯 التدريب على هذا الدرس';
+        practiceBtn.style.background = 'var(--primary)';
+        practiceBtn.style.color = 'white';
+        practiceBtn.style.border = 'none';
+        practiceBtn.style.width = '100%';
+        practiceBtn.style.padding = '14px';
+        practiceBtn.style.borderRadius = '12px';
+        practiceBtn.style.fontWeight = 'bold';
+        practiceBtn.style.cursor = 'pointer';
+        practiceBtn.style.fontSize = '16px';
+        practiceBtn.style.boxShadow = '0 4px 10px rgba(79, 70, 229, 0.2)';
+        practiceBtn.onclick = () => {
+            switchTab('practice');
+        };
+        practiceBtnWrapper.appendChild(practiceBtn);
+        contentDiv.appendChild(practiceBtnWrapper);
+    }
+
     contentArea.appendChild(contentDiv);
 
     // Video Seek
