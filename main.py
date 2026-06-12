@@ -3597,6 +3597,32 @@ async def get_student_stats(request):
         logger.error(f"Error in get_student_stats: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
+
+async def get_student_quiz_options(request):
+    try:
+        subject = request.query.get('subject')
+        if not subject:
+            return web.json_response({"success": False, "error": "Missing subject"}, status=400)
+            
+        import database as db
+        
+        lessons = await db.get_available_lessons(subject)
+        themes = await db.get_available_themes(subject)
+        years = []
+        if subject.lower() == 'sira':
+            years = await db.get_available_sira_years()
+            
+        return web.json_response({
+            "success": True,
+            "lessons": lessons,
+            "themes": themes,
+            "years": years
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
 async def get_student_quiz_questions(request):
     try:
         data = await request.json()
@@ -3604,6 +3630,7 @@ async def get_student_quiz_questions(request):
         subject = data.get('subject')
         course_numbers = data.get('courseNumbers', [])
         source = data.get('source', 'all') # 'all', 'favorites', 'errors'
+        mode = data.get('mode', 'lessons')
         limit = int(data.get('limit', 10))
         
         if not user_id:
@@ -3627,7 +3654,25 @@ async def get_student_quiz_questions(request):
                 if subject:
                     query += " AND q.subject = ?"
                     params.append(subject.lower().strip())
-                if course_numbers:
+                if mode == 'themes' and course_numbers:
+                    theme_ids = course_numbers
+                    placeholders = ",".join("?" for _ in theme_ids)
+                    query_nodes = f"SELECT id FROM thematic_nodes WHERE id IN ({placeholders}) OR parent_id IN ({placeholders})"
+                    params_nodes = list(theme_ids) + list(theme_ids)
+                    async with db_conn.execute(query_nodes, params_nodes) as cursor:
+                        nodes_rows = await cursor.fetchall()
+                        node_ids = [r['id'] for r in nodes_rows]
+                        
+                    if node_ids:
+                        node_placeholders = ",".join("?" for _ in node_ids)
+                        query += f" AND q.thematic_node_id IN ({node_placeholders})"
+                    else:
+                        query += " AND 1=0" # No nodes found
+                elif mode == 'years' and course_numbers:
+                    placeholders = ",".join("?" for _ in course_numbers)
+                    query += f" AND q.hijra_year IN ({placeholders})"
+                    params.extend(course_numbers)
+                elif course_numbers:
                     placeholders = ",".join("?" for _ in course_numbers)
                     query += f" AND q.course_number IN ({placeholders})"
                     params.extend(course_numbers)
@@ -3648,7 +3693,25 @@ async def get_student_quiz_questions(request):
                 if subject:
                     query += " AND q.subject = ?"
                     params.append(subject.lower().strip())
-                if course_numbers:
+                if mode == 'themes' and course_numbers:
+                    theme_ids = course_numbers
+                    placeholders = ",".join("?" for _ in theme_ids)
+                    query_nodes = f"SELECT id FROM thematic_nodes WHERE id IN ({placeholders}) OR parent_id IN ({placeholders})"
+                    params_nodes = list(theme_ids) + list(theme_ids)
+                    async with db_conn.execute(query_nodes, params_nodes) as cursor:
+                        nodes_rows = await cursor.fetchall()
+                        node_ids = [r['id'] for r in nodes_rows]
+                        
+                    if node_ids:
+                        node_placeholders = ",".join("?" for _ in node_ids)
+                        query += f" AND q.thematic_node_id IN ({node_placeholders})"
+                    else:
+                        query += " AND 1=0" # No nodes found
+                elif mode == 'years' and course_numbers:
+                    placeholders = ",".join("?" for _ in course_numbers)
+                    query += f" AND q.hijra_year IN ({placeholders})"
+                    params.extend(course_numbers)
+                elif course_numbers:
                     placeholders = ",".join("?" for _ in course_numbers)
                     query += f" AND q.course_number IN ({placeholders})"
                     params.extend(course_numbers)
@@ -3665,7 +3728,25 @@ async def get_student_quiz_questions(request):
                 if subject:
                     query += " AND subject = ?"
                     params.append(subject.lower().strip())
-                if course_numbers:
+                if mode == 'themes' and course_numbers:
+                    theme_ids = course_numbers
+                    placeholders = ",".join("?" for _ in theme_ids)
+                    query_nodes = f"SELECT id FROM thematic_nodes WHERE id IN ({placeholders}) OR parent_id IN ({placeholders})"
+                    params_nodes = list(theme_ids) + list(theme_ids)
+                    async with db_conn.execute(query_nodes, params_nodes) as cursor:
+                        nodes_rows = await cursor.fetchall()
+                        node_ids = [r['id'] for r in nodes_rows]
+                        
+                    if node_ids:
+                        node_placeholders = ",".join("?" for _ in node_ids)
+                        query += f" AND thematic_node_id IN ({node_placeholders})"
+                    else:
+                        query += " AND 1=0" # No nodes found
+                elif mode == 'years' and course_numbers:
+                    placeholders = ",".join("?" for _ in course_numbers)
+                    query += f" AND hijra_year IN ({placeholders})"
+                    params.extend(course_numbers)
+                elif course_numbers:
                     placeholders = ",".join("?" for _ in course_numbers)
                     query += f" AND course_number IN ({placeholders})"
                     params.extend(course_numbers)
@@ -3788,6 +3869,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/report-chapter', report_chapter)
     # Student Practice & Quiz API routes
     app.router.add_post('/api/student/stats', get_student_stats)
+    app.router.add_get('/api/student/quiz/options', get_student_quiz_options)
     app.router.add_post('/api/student/quiz/setup', get_student_quiz_questions)
     app.router.add_post('/api/student/quiz/submit', submit_student_quiz_answer)
     app.router.add_post('/api/student/favorites/toggle', toggle_student_favorite)
