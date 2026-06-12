@@ -2260,16 +2260,16 @@ const quizEngine = {
         optsContainer.innerHTML = '';
         
         const choices = [];
-        if (q.option_a) choices.push({ id: 'a', text: q.option_a });
-        if (q.option_b) choices.push({ id: 'b', text: q.option_b });
-        if (q.option_c) choices.push({ id: 'c', text: q.option_c });
-        if (q.option_d) choices.push({ id: 'd', text: q.option_d });
+        if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
+        if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
+        if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
+        if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
         
         choices.forEach(c => {
             const btn = document.createElement('button');
             btn.className = 'quiz-option-btn';
             btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
-            btn.onclick = () => this.checkAnswer(c.id, q.correct_choice, btn);
+            btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
             optsContainer.appendChild(btn);
         });
     },
