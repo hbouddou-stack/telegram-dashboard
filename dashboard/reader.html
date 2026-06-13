@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="sepia">
 <head>
+<script>
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    alert('ERROR: ' + msg + ' | Line: ' + lineNo);
+    return false;
+};
+window.addEventListener('unhandledrejection', function(event) {
+    alert('PROMISE ERROR: ' + event.reason);
+});
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Académie - Liseuse Interactive</title>
