@@ -121,18 +121,27 @@ let examWizard = {
         document.querySelectorAll('.exam-subject-card').forEach(c => c.classList.remove('active'));
     },
     
+    goToStep4() {
+        document.getElementById('exam-step-3').style.display = 'none';
+        document.getElementById('exam-step-4').style.display = 'block';
+    },
+
     startQuiz() {
         if (this.selectedIds.length === 0) return;
         
         const limitInput = document.getElementById('exam-limit-input');
         const limit = limitInput ? parseInt(limitInput.value) : 10;
+        const timerSelect = document.getElementById('exam-timer-mode');
+        const correctionSelect = document.getElementById('exam-correction-mode');
         
         switchTab('practice');
         quizEngine.fetchQuestionsCustom({
             subject: this.subject,
             courseNumbers: this.selectedIds,
             mode: this.mode,
-            limit: limit
+            limit: limit,
+            timer: timerSelect ? parseInt(timerSelect.value) : 0,
+            correctionMode: correctionSelect ? correctionSelect.value : 'instant'
         });
     }
 };

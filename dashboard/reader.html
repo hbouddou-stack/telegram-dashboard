@@ -262,7 +262,7 @@
                 <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">عدد الأسئلة</h3>
                 <input type="number" id="exam-limit-input" value="10" min="5" max="50" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:24px; text-align:center;">
                 
-                <button id="exam-start-btn" onclick="examWizard.startQuiz()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: opacity 0.3s;">🚀 بدء الامتحان</button>
+                <button id="exam-start-btn" onclick="examWizard.goToStep4()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: opacity 0.3s;">🚀 بدء الامتحان</button>
             </div>
         </div>
     </div>
@@ -291,11 +291,20 @@
             </div>
 
             <div id="quiz-question-container" style="background:var(--surface); border-radius:16px; padding:24px; box-shadow:0 4px 15px rgba(0,0,0,0.05); margin-bottom:24px; text-align:center;">
+                <div id="quiz-timer-bar" style="height:4px; background:var(--primary); width:100%; margin-bottom:12px; border-radius:2px; display:none;"></div>
                 <h3 id="quiz-question-text" style="font-size:20px; color:var(--text); line-height:1.5; margin:0;"></h3>
             </div>
 
             <div id="quiz-options-container" style="display:flex; flex-direction:column; gap:12px;">
                 <!-- Options injected via JS -->
+            </div>
+
+            <div id="quiz-explanation-container" style="display:none; margin-top:20px; text-align:right;">
+                <div id="quiz-explanation-content"></div>
+                <div style="display:flex; justify-content:space-between; margin-top:16px;">
+                    <button onclick="quizEngine.reportQuestion()" style="background:#fee2e2; color:#ef4444; border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer;">⚠️ إبلاغ عن خطأ</button>
+                    <button onclick="quizEngine.nextQuestion()" style="background:var(--primary); color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:bold; cursor:pointer;">التالي ⬅️</button>
+                </div>
             </div>
         </div>
 
@@ -311,6 +320,12 @@
             <h2 id="quiz-final-msg" style="color:var(--text); margin-bottom:12px;">أحسنت!</h2>
             <p id="quiz-final-sub" style="color:var(--text-2); margin-bottom:32px;">لقد أنهيت التدريب بنجاح.</p>
             
+            
+            <div id="quiz-errors-container" style="display:none; text-align:right; margin-bottom:24px; padding:16px; background:var(--surface); border-radius:12px; border:1px solid #ef4444;">
+                <h3 style="color:#ef4444; margin-bottom:12px; font-size:18px;">الأسئلة التي أخطأت فيها:</h3>
+                <div id="quiz-errors-list"></div>
+            </div>
+
             <button onclick="quizEngine.start()" style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:16px; font-weight:bold; width:100%; cursor:pointer; margin-bottom:12px; box-shadow: 0 4px 0 rgba(0,0,0,0.1);">إعادة التدريب</button>
             <button onclick="switchTab('reader', document.getElementById('btn-nav-reader'))" style="background:transparent; color:var(--text-2); border:2px solid var(--border-color); padding:14px 32px; border-radius:12px; font-size:16px; font-weight:bold; width:100%; cursor:pointer;">العودة للدرس</button>
         </div>
@@ -483,5 +498,28 @@
     <script src="reader.js?v=practice-2"></script>
 
 <script src="exam.js?v=1"></script>
+
+    <div id="report-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:var(--surface); padding:24px; border-radius:16px; width:90%; max-width:400px; text-align:right;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <button onclick="quizEngine.closeReportModal()" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-2);">✕</button>
+                <h3 style="margin:0; font-size:20px; color:var(--text);">إبلاغ عن خطأ ⚠️</h3>
+            </div>
+            
+            <p style="color:var(--text-2); margin-bottom:15px; font-size:14px;">ما هو نوع الخطأ في هذا السؤال؟</p>
+            
+            <select id="report-type" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg); margin-bottom:15px; font-size:16px;">
+                <option value="orthographe">خطأ إملائي</option>
+                <option value="faux">إجابة خاطئة</option>
+                <option value="technique">مشكلة تقنية / السؤال غير واضح</option>
+                <option value="autre">أخرى</option>
+            </select>
+            
+            <textarea id="report-details" rows="3" placeholder="تفاصيل إضافية (اختياري)..." style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg); margin-bottom:20px; font-family:inherit; resize:vertical; font-size:16px;"></textarea>
+            
+            <button onclick="quizEngine.submitReport()" style="width:100%; padding:14px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">إرسال التقرير 🚀</button>
+        </div>
+    </div>
+
 </body>
 </html>
