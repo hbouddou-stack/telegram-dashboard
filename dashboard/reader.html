@@ -1,15 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="sepia">
 <head>
-<script>
-window.onerror = function(msg, url, lineNo, columnNo, error) {
-    alert('ERROR: ' + msg + ' | Line: ' + lineNo);
-    return false;
-};
-window.addEventListener('unhandledrejection', function(event) {
-    alert('PROMISE ERROR: ' + event.reason);
-});
-</script>
+
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -270,9 +262,23 @@ window.addEventListener('unhandledrejection', function(event) {
                 </div>
                 
                 <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">عدد الأسئلة</h3>
-                <input type="number" id="exam-limit-input" value="10" min="5" max="50" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:24px; text-align:center;">
-                
-                <button id="exam-start-btn" onclick="examWizard.goToStep4()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: opacity 0.3s;">🚀 بدء الامتحان</button>
+                  <input type="number" id="exam-limit-input" value="10" min="5" max="50" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:16px; text-align:center;">
+                  
+                  <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">وقت السؤال (ثواني)</h3>
+                  <select id="exam-timer-mode" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:16px; text-align:center; direction:rtl;">
+                      <option value="0">بدون وقت</option>
+                      <option value="15">15 ثانية</option>
+                      <option value="30">30 ثانية</option>
+                      <option value="60">60 ثانية</option>
+                  </select>
+
+                  <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">طريقة التصحيح</h3>
+                  <select id="exam-correction-mode" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:24px; text-align:center; direction:rtl;">
+                      <option value="instant">فوري (بعد كل سؤال)</option>
+                      <option value="deferred">مؤجل (في نهاية الاختبار)</option>
+                  </select>
+                  
+                  <button id="exam-start-btn" onclick="examWizard.startQuiz()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: opacity 0.3s;">ابدأ الاختبار</button>
             </div>
         </div>
     </div>
@@ -503,9 +509,9 @@ window.addEventListener('unhandledrejection', function(event) {
         </button>
     </nav>
 
-    <script src="reader.js?v=practice-2"></script>
-
-<script src="exam.js?v=1"></script>
+    <script src="reader.js?v=practice-2" charset="UTF-8"></script>
+    <script src="exam.js?v=2" charset="UTF-8"></script>
+    <script src="quiz.js?v=2" charset="UTF-8"></script>
 
     <div id="report-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
         <div class="modal-content" style="background:var(--surface); padding:24px; border-radius:16px; width:90%; max-width:400px; text-align:right;">

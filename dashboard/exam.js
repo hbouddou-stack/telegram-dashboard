@@ -120,11 +120,6 @@ let examWizard = {
         
         document.querySelectorAll('.exam-subject-card').forEach(c => c.classList.remove('active'));
     },
-    
-    goToStep4() {
-        document.getElementById('exam-step-3').style.display = 'none';
-        document.getElementById('exam-step-4').style.display = 'block';
-    },
 
     startQuiz() {
         if (this.selectedIds.length === 0) return;
