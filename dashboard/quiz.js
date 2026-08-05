@@ -1,4 +1,4 @@
-var quizEngine = {
+window.quizEngine = {
     questions: [],
     currentIndex: 0,
     score: 0,
@@ -7,11 +7,6 @@ var quizEngine = {
     currentLessonNum: null,
     audioSuccess: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
     audioFail: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
-};
-window.quizEngine = quizEngine;
-Object.assign(quizEngine, {
-    
-    
     fetchQuestionsCustom: function(options) {
         this.currentSubject = options.subject;
         this.currentLessonNum = null;
@@ -415,4 +410,4 @@ Object.assign(quizEngine, {
     quit: function() {
         switchTab('reader');
     }
-});
+};

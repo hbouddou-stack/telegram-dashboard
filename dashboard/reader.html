@@ -605,7 +605,7 @@
             fetch('/api/student/quiz/setup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: 1, subject: 'الفقه', source: 'all', limit: 5 })
+                body: JSON.stringify({ userId: 1, subject: 'fiqh', source: 'all', limit: 5 })
             })
             .then(r => r.json())
             .then(data => {
