@@ -3750,9 +3750,12 @@ async def get_student_quiz_questions(request):
                     query += f" AND hijra_year IN ({placeholders})"
                     params.extend(course_numbers)
                 elif course_numbers:
-                    placeholders = ",".join("?" for _ in course_numbers)
-                    query += f" AND course_number IN ({placeholders})"
-                    params.extend(course_numbers)
+                    # Convert to int or string list safely
+                    parsed_courses = [int(x) if str(x).isdigit() else str(x) for x in course_numbers]
+                    placeholders = ",".join("?" for _ in parsed_courses)
+                    query += f" AND (course_number IN ({placeholders}) OR course_id IN ({placeholders}))"
+                    params.extend(parsed_courses)
+                    params.extend(parsed_courses)
                 
                 # Exclude AI generated if settings say so
                 async with db_conn.execute("SELECT value FROM settings WHERE key='disable_ai_for_students'") as cur:
@@ -3765,6 +3768,13 @@ async def get_student_quiz_questions(request):
                 async with db_conn.execute(query, params) as cur:
                     rows = await cur.fetchall()
                     questions = [dict(r) for r in rows]
+                
+                # Broad fallback: if specific course query returns 0 questions, get any questions for this subject
+                if not questions and subject:
+                    fb_query = "SELECT * FROM questions WHERE subject = ? ORDER BY random() LIMIT ?"
+                    async with db_conn.execute(fb_query, [subject.lower().strip(), limit]) as cur:
+                        rows = await cur.fetchall()
+                        questions = [dict(r) for r in rows]
 
         favorites_list = await db.get_user_favorites(int(user_id))
         for q in questions:
