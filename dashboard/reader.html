@@ -191,63 +191,75 @@
     
 
     <!-- TAB: EXAMS WIZARD -->
-    <div class="tab-panel" id="tab-exams" style="background: var(--bg); min-height: 100vh; padding-bottom: 80px;">
+    <div class="tab-panel" id="tab-exams" style="background: var(--bg); min-height: 100vh; padding-bottom: 90px; direction: rtl; text-align: right;">
         <div style="padding: 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0; color:var(--text); font-size:24px;">مولد الامتحانات</h2>
-                <button onclick="examWizard.reset()" style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer;">إعادة ضبط</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; background:var(--surface); padding:12px 16px; border-radius:12px; border:1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button id="exam-back-btn" onclick="examWizard.goBack()" style="display:none; background:var(--primary-light); color:var(--primary); border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">⬅️ تراجع</button>
+                    <h2 style="margin:0; color:var(--text); font-size:20px; font-weight:800;">📝 مولد الاختبارات والتمارين</h2>
+                </div>
+                <button onclick="examWizard.reset()" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 14px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:4px;">
+                    <span>🔄 إعادة ضبط</span>
+                </button>
             </div>
             
             <!-- STEP 1: SUBJECT -->
             <div id="exam-step-1" style="display:block;">
-                <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">1. اختر المادة</h3>
+                <h3 style="color:var(--text); text-align:center; margin-bottom:16px; font-size:18px; font-weight:700;">1️⃣ اختر المادة المراد الاختبار فيها:</h3>
                 <div id="exam-subject-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                    <div class="exam-subject-card" data-subject="sira" onclick="examWizard.selectSubject('sira')" style="background:var(--surface); border-radius:12px; padding:16px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid transparent;">
-                        <div style="font-size:32px; margin-bottom:8px;">📜</div>
-                        <div style="font-weight:bold;">السيرة</div>
+                    <div class="exam-subject-card" data-subject="sira" onclick="examWizard.selectSubject('sira')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
+                        <div style="font-size:36px; margin-bottom:6px;">📜</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">السيرة النبوية</div>
                     </div>
-                    <div class="exam-subject-card" data-subject="fiqh" onclick="examWizard.selectSubject('fiqh')" style="background:var(--surface); border-radius:12px; padding:16px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid transparent;">
-                        <div style="font-size:32px; margin-bottom:8px;">⚖️</div>
-                        <div style="font-weight:bold;">الفقه</div>
+                    <div class="exam-subject-card" data-subject="fiqh" onclick="examWizard.selectSubject('fiqh')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
+                        <div style="font-size:36px; margin-bottom:6px;">⚖️</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">الفقه الإسلامي</div>
                     </div>
-                    <div class="exam-subject-card" data-subject="aqeeda" onclick="examWizard.selectSubject('aqeeda')" style="background:var(--surface); border-radius:12px; padding:16px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid transparent;">
-                        <div style="font-size:32px; margin-bottom:8px;">🕋</div>
-                        <div style="font-weight:bold;">العقيدة</div>
+                    <div class="exam-subject-card" data-subject="aqeeda" onclick="examWizard.selectSubject('aqeeda')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
+                        <div style="font-size:36px; margin-bottom:6px;">🕋</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">العقيدة</div>
                     </div>
-                    <div class="exam-subject-card" data-subject="nahw" onclick="examWizard.selectSubject('nahw')" style="background:var(--surface); border-radius:12px; padding:16px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid transparent;">
-                        <div style="font-size:32px; margin-bottom:8px;">📝</div>
-                        <div style="font-weight:bold;">النحو</div>
+                    <div class="exam-subject-card" data-subject="nahw" onclick="examWizard.selectSubject('nahw')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
+                        <div style="font-size:36px; margin-bottom:6px;">📝</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">النحو العربي</div>
                     </div>
-                    <div class="exam-subject-card" data-subject="tajweed" onclick="examWizard.selectSubject('tajweed')" style="background:var(--surface); border-radius:12px; padding:16px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid transparent;">
-                        <div style="font-size:32px; margin-bottom:8px;">📖</div>
-                        <div style="font-weight:bold;">التجويد</div>
+                    <div class="exam-subject-card" data-subject="tajweed" onclick="examWizard.selectSubject('tajweed')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); grid-column: span 2; transition:all 0.2s;">
+                        <div style="font-size:36px; margin-bottom:6px;">📖</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">أحكام التجويد</div>
                     </div>
                 </div>
             </div>
 
             <!-- STEP 2: MODE -->
             <div id="exam-step-2" style="display:none;">
-                <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">2. اختر نمط الأسئلة</h3>
-                <div id="exam-mode-cards" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="exam-mode-card" onclick="examWizard.selectMode('lessons')" style="background:var(--surface); border-radius:12px; padding:16px; display:flex; align-items:center; cursor:pointer; box-shadow:var(--shadow-sm);">
-                        <div style="font-size:24px; margin-left:16px; background:var(--primary-light); padding:10px; border-radius:12px;">📚</div>
-                        <div>
-                            <div style="font-weight:bold; font-size:16px; color:var(--text);">أسئلة الدروس</div>
-                            <div style="font-size:12px; color:var(--text-3);">الأسئلة الرسمية الخاصة بكل درس</div>
+                <h3 style="color:var(--text); text-align:center; margin-bottom:18px; font-size:18px; font-weight:700;">2️⃣ اختر نمط وطريقة التقسيم:</h3>
+                
+                <div id="exam-mode-cards" style="display:flex; flex-direction:column; gap:14px; max-width:500px; margin:0 auto;">
+                    
+                    <!-- Mode Lessons -->
+                    <div class="exam-mode-card" onclick="examWizard.selectMode('lessons')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid var(--primary-light);">
+                        <div style="font-size:32px; margin-bottom:8px;">📚</div>
+                        <div style="font-weight:800; font-size:18px; color:var(--primary); margin-bottom:4px;">حسب أرقام الدروس</div>
+                        <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
+                            📌 مثال: اختبر نفسك في (الدرس 12، الدرس 13، الدرس 14...)
                         </div>
                     </div>
-                    <div class="exam-mode-card" onclick="examWizard.selectMode('themes')" style="background:var(--surface); border-radius:12px; padding:16px; display:flex; align-items:center; cursor:pointer; box-shadow:var(--shadow-sm);">
-                        <div style="font-size:24px; margin-left:16px; background:#fef3c7; padding:10px; border-radius:12px;">🎯</div>
-                        <div>
-                            <div style="font-weight:bold; font-size:16px; color:var(--text);">أسئلة المحاور</div>
-                            <div style="font-size:12px; color:var(--text-3);">تدريب شامل ومخصص حسب المحور</div>
+
+                    <!-- Mode Themes -->
+                    <div class="exam-mode-card" onclick="examWizard.selectMode('themes')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid #fef3c7;">
+                        <div style="font-size:32px; margin-bottom:8px;">🎯</div>
+                        <div style="font-weight:800; font-size:18px; color:#d97706; margin-bottom:4px;">حسب المحاور العلمية</div>
+                        <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
+                            🎯 مثال: اختبر نفسك في (أحكام الصيام، شروط الإمامة، النون الساكنة...)
                         </div>
                     </div>
-                    <div class="exam-mode-card" id="exam-mode-years" onclick="examWizard.selectMode('years')" style="background:var(--surface); border-radius:12px; padding:16px; display:flex; align-items:center; cursor:pointer; box-shadow:var(--shadow-sm); display:none;">
-                        <div style="font-size:24px; margin-left:16px; background:#dcfce7; padding:10px; border-radius:12px;">⏳</div>
-                        <div>
-                            <div style="font-weight:bold; font-size:16px; color:var(--text);">أسئلة السنوات</div>
-                            <div style="font-size:12px; color:var(--text-3);">تدريب حسب السنة الهجرية (للسيرة فقط)</div>
+
+                    <!-- Mode Years (Sira only) -->
+                    <div class="exam-mode-card" id="exam-mode-years" onclick="examWizard.selectMode('years')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid #dcfce7; display:none;">
+                        <div style="font-size:32px; margin-bottom:8px;">⏳</div>
+                        <div style="font-weight:800; font-size:18px; color:#166534; margin-bottom:4px;">حسب السنوات الهجرية</div>
+                        <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
+                            ⏳ مثال: أحداث (السنة 2 هـ، السنة 8 هـ...)
                         </div>
                     </div>
                 </div>
@@ -255,30 +267,41 @@
 
             <!-- STEP 3: SELECTION & SETTINGS -->
             <div id="exam-step-3" style="display:none;">
-                <h3 id="exam-step-3-title" style="color:var(--text-2); margin-bottom:12px; font-size:16px;">3. التحديد</h3>
-                
-                <div id="exam-selection-items" style="background:var(--surface); border-radius:12px; padding:8px 16px; max-height:300px; overflow-y:auto; box-shadow:var(--shadow-sm); margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
-                    <!-- Checkboxes injected here -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 id="exam-step-3-title" style="color:var(--text); margin:0; font-size:17px; font-weight:700;">3️⃣ حدد الدروس / المحاور:</h3>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="examWizard.selectAll(true)" style="background:var(--primary-light); color:var(--primary); border:none; padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">✅ تحديد الكل</button>
+                        <button onclick="examWizard.selectAll(false)" style="background:var(--bg); color:var(--text-2); border:1px solid var(--border-color); padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">❌ إلغاء الكل</button>
+                    </div>
                 </div>
                 
-                <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">عدد الأسئلة</h3>
-                  <input type="number" id="exam-limit-input" value="10" min="5" max="50" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:16px; text-align:center;">
-                  
-                  <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">وقت السؤال (ثواني)</h3>
-                  <select id="exam-timer-mode" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:16px; text-align:center; direction:rtl;">
-                      <option value="0">بدون وقت</option>
-                      <option value="15">15 ثانية</option>
-                      <option value="30">30 ثانية</option>
-                      <option value="60">60 ثانية</option>
-                  </select>
+                <div id="exam-selection-items" style="background:var(--surface); border-radius:16px; padding:14px; max-height:280px; overflow-y:auto; box-shadow:var(--shadow-sm); margin-bottom:20px; border:1px solid var(--border-color);">
+                    <!-- Grid or List injected here -->
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+                    <div>
+                        <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">عدد الأسئلة</h4>
+                        <input type="number" id="exam-limit-input" value="10" min="5" max="50" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); font-size:16px; text-align:center; background:var(--surface); color:var(--text);">
+                    </div>
+                    <div>
+                        <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">وقت السؤال</h4>
+                        <select id="exam-timer-mode" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); font-size:15px; text-align:center; background:var(--surface); color:var(--text); direction:rtl;">
+                            <option value="0">بدون وقت</option>
+                            <option value="15">15 ثانية</option>
+                            <option value="30">30 ثانية</option>
+                            <option value="60">60 ثانية</option>
+                        </select>
+                    </div>
+                </div>
 
-                  <h3 style="color:var(--text-2); margin-bottom:12px; font-size:16px;">طريقة التصحيح</h3>
-                  <select id="exam-correction-mode" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:16px; margin-bottom:24px; text-align:center; direction:rtl;">
-                      <option value="instant">فوري (بعد كل سؤال)</option>
-                      <option value="deferred">مؤجل (في نهاية الاختبار)</option>
-                  </select>
-                  
-                  <button id="exam-start-btn" onclick="examWizard.startQuiz()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: opacity 0.3s;">ابدأ الاختبار</button>
+                <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">طريقة التصحيح</h4>
+                <select id="exam-correction-mode" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); font-size:15px; text-align:center; background:var(--surface); color:var(--text); margin-bottom:20px; direction:rtl;">
+                    <option value="instant">فوري (تظهر الإجابة والتفريغ بعد كل سؤال)</option>
+                    <option value="deferred">مؤجل (تصحيح شامل في نهاية الاختبار)</option>
+                </select>
+                
+                <button id="exam-start-btn" onclick="examWizard.startQuiz()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:14px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: all 0.3s;">ابدأ الاختبار الآن 🚀</button>
             </div>
         </div>
     </div>
