@@ -639,9 +639,17 @@
                 if (data.success && data.questions && data.questions.length > 0) {
                     resDiv.innerHTML = '<h3 style="color:var(--success,#10b981);">✅ تم جلب سؤال بنجاح! جاري بدء الاختبار...</h3>';
                     setTimeout(() => {
-                        switchTab('practice');
-                        quizEngine.questions = data.questions;
-                        quizEngine.start();
+                        try {
+                            switchTab('practice');
+                            if (typeof quizEngine === 'undefined') {
+                                resDiv.innerHTML += '<br><strong style="color:red;">❌ خطأ: quizEngine is completely undefined. Script did not load.</strong>';
+                                return;
+                            }
+                            quizEngine.questions = data.questions;
+                            quizEngine.start();
+                        } catch(err) {
+                            resDiv.innerHTML += '<br><strong style="color:red;">❌ خطأ برمجي: </strong><p dir="ltr">' + err.toString() + ' | Stack: ' + (err.stack||'') + '</p>';
+                        }
                     }, 800);
                 } else {
                     resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
