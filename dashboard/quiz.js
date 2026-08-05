@@ -203,15 +203,35 @@ const quizEngine = {
         optsContainer.innerHTML = '';
         
         const choices = [];
-        if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
-        if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
-        if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
-        if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
+        if (q.choices && Array.isArray(q.choices)) {
+            q.choices.forEach((c, idx) => {
+                const letters = ['a', 'b', 'c', 'd', 'e'];
+                choices.push({ id: c.id || letters[idx] || 'a', text: c.text || c });
+            });
+        } else if (q.options_json) {
+            try {
+                const opts = typeof q.options_json === 'string' ? JSON.parse(q.options_json) : q.options_json;
+                if (Array.isArray(opts)) {
+                    const letters = ['a', 'b', 'c', 'd', 'e'];
+                    opts.forEach((opt, idx) => {
+                        choices.push({ id: letters[idx] || 'a', text: typeof opt === 'object' ? opt.text : opt });
+                    });
+                }
+            } catch(e) {}
+        }
+        
+        if (choices.length === 0) {
+            if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
+            if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
+            if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
+            if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
+        }
         
         choices.forEach(c => {
             const btn = document.createElement('button');
             btn.className = 'quiz-option-btn';
-            btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
+            btn.style.cssText = 'display:flex; align-items:center; width:100%; padding:14px 18px; margin-bottom:10px; border-radius:12px; border:1px solid var(--border-color); background:var(--surface); color:var(--text); font-size:16px; text-align:right; cursor:pointer; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.03);';
+            btn.innerHTML = `<span class="opt-letter" style="margin-left:12px; font-weight:bold; background:var(--primary-light); color:var(--primary); padding:4px 10px; border-radius:8px;">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
             btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
             optsContainer.appendChild(btn);
         });
