@@ -605,17 +605,17 @@
             fetch('/api/student/quiz/setup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: 1, subject: 'الفقه', source: 'all', limit: 5 })
+                body: JSON.stringify({ userId: 1, subject: 'fiqh', source: 'all', limit: 1 })
             })
             .then(r => r.json())
             .then(data => {
-                if (data.success && data.questions) {
-                    let html = '<h3 style="color:var(--success,#10b981); margin-top:0;">✅ تم جلب ' + data.questions.length + ' أسئلة بنجاح!</h3><hr style="border-color:var(--border-color);">';
-                    data.questions.forEach((q, i) => {
-                        html += '<div style="margin-bottom:15px;"><strong style="color:var(--primary);">' + (i+1) + '. ' + q.question + '</strong><br>';
-                        html += '<span style="color:var(--text-2); font-size:14px;">' + (q.choice_a || 'A') + ' | ' + (q.choice_b || 'B') + '</span></div>';
-                    });
-                    resDiv.innerHTML = html;
+                if (data.success && data.questions && data.questions.length > 0) {
+                    resDiv.innerHTML = '<h3 style="color:var(--success,#10b981);">✅ تم جلب سؤال بنجاح! جاري بدء الاختبار...</h3>';
+                    setTimeout(() => {
+                        switchTab('practice');
+                        quizEngine.questions = data.questions;
+                        quizEngine.start();
+                    }, 800);
                 } else {
                     resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
                 }
