@@ -1448,20 +1448,12 @@ function switchTab(name, btn) {
     }
     
     if (name === 'practice') {
-        if (!currentLessonData) {
-            document.getElementById('practice-empty-state').style.display = 'block';
-            document.getElementById('practice-active-state').style.display = 'none';
-            document.getElementById('practice-result-state').style.display = 'none';
-            document.getElementById('practice-loading').style.display = 'none';
-        } else {
-            document.getElementById('practice-empty-state').style.display = 'none';
-            if (!quizEngine.questions || quizEngine.questions.length === 0 || quizEngine.currentSubject !== currentLessonData.subject || quizEngine.currentLessonNum !== currentLessonData.lessonNum) {
-                quizEngine.fetchQuestions(currentLessonData.subject, currentLessonData.lessonNum);
-            } else {
-                if (document.getElementById('practice-result-state').style.display !== 'block') {
-                    document.getElementById('practice-active-state').style.display = 'block';
-                }
-            }
+        // Always hide empty state when entering practice, let quizEngine handle questions loading
+        const emptyState = document.getElementById('practice-empty-state');
+        if (emptyState) emptyState.style.display = 'none';
+        
+        if (!quizEngine.questions || quizEngine.questions.length === 0) {
+            document.getElementById('practice-loading').style.display = 'block';
         }
     }
 }
