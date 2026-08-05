@@ -351,7 +351,6 @@ Object.assign(quizEngine, {
         .then(function(res) { return res.json(); })
         .then(function(data) {})
         .catch(function(e) { console.error(e); });
-    }
     },
 
     
