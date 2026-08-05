@@ -5,8 +5,8 @@ window.quizEngine = {
     lives: 3,
     currentSubject: null,
     currentLessonNum: null,
-    audioSuccess: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
-    audioFail: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+    audioSuccess: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3') : null,
+    audioFail: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') : null,
     fetchQuestionsCustom: function(options) {
         this.currentSubject = options.subject;
         this.currentLessonNum = null;
@@ -273,7 +273,7 @@ window.quizEngine = {
             if (btnEl) btnEl.classList.add('correct');
             this.score++;
             if (this.correctionMode === 'instant') {
-                this.audioSuccess.play().catch(e=>{});
+                if (this.audioSuccess) this.audioSuccess.play().catch(e=>{});
                 this.showExplanation(q, true);
             } else {
                 this.nextQuestion();
@@ -290,7 +290,7 @@ window.quizEngine = {
                         b.classList.add('correct');
                     }
                 });
-                this.audioFail.play().catch(e=>{});
+                if (this.audioFail) this.audioFail.play().catch(e=>{});
                 this.showExplanation(q, false);
             } else {
                 this.nextQuestion();
