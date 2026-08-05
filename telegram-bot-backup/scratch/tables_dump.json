@@ -1,0 +1,44 @@
+{
+  "tables": [
+    "users",
+    "questions",
+    "user_favorites",
+    "sqlite_sequence",
+    "user_errors",
+    "support_tickets",
+    "quiz_logs",
+    "question_progress",
+    "question_reports",
+    "settings",
+    "admins",
+    "lesson_resources",
+    "lesson_transcription_pages",
+    "lesson_mind_map_pages",
+    "course_chapters",
+    "course_chapter_questions",
+    "question_proposals",
+    "chapter_reports",
+    "questions_proposees",
+    "canned_responses",
+    "ticket_chat_messages",
+    "admin_custom_views",
+    "telegram_groups",
+    "course_chapters_fts",
+    "course_chapters_fts_data",
+    "course_chapters_fts_idx",
+    "course_chapters_fts_content",
+    "course_chapters_fts_docsize",
+    "course_chapters_fts_config",
+    "student_course_progress",
+    "generated_fiches",
+    "programs",
+    "thematic_nodes"
+  ],
+  "programs": [
+    [
+      1,
+      "fiqh",
+      "الفقه الميسر"
+    ]
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "question_1002": {
+    "id": 1002,
+    "subject": "fiqh",
+    "course_number": 15,
+    "course_name": "",
+    "question": "ما هي السورة التي تجب قراءتها في كل ركعة؟",
+    "choice_a": "سورة الإخلاص",
+    "choice_b": "قراءة الفاتحة",
+    "choice_c": "النية",
+    "choice_d": "التشهد",
+    "correct_answer": "C",
+    "explanation": "💡 <b>التفسير التربوي :</b>\n<blockquote>تعد قراءة سورة الفاتحة ركناً أساسياً لا تصح الصلاة بدونه في كل ركعة، سواء كانت الصلاة فرضاً أو نفلاً، وسواء كان المصلي إماماً أو منفرداً. وقد أجمع العلماء على وجوبها في كل ركعة بناءً على توجيهات النبي صلى الله عليه وسلم الذي علم المسيء في صلاته كيف يصلي، مؤكداً أن الصلاة لا تتم إلا بذلك.</blockquote>\n\n📖 <b>قول الشيخ :</b>\n<blockquote>لا تقبل صلاة بغير طهور</blockquote>\n\n📍 <b>المصدر :</b>\n<blockquote><b>الفقه - الدرس 15</b>، الدقيقة <a href=\"https://www.youtube.com/watch?v=_l-rqJmVWZs&t=745s\"><b>[12:25]</b></a></blockquote>",
+    "source": "official",
+    "created_at": "2026-05-18 00:00:00",
+    "hijra_year": null,
+    "theme": "عبادات",
+    "is_active": 1,
+    "sub_theme": "",
+    "thematic_node_id": null
+  },
+  "similar": [
+    {
+      "id": 1002,
+      "source": "official",
+      "is_active": 1
+    }
+  ]
+}

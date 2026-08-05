@@ -1,0 +1,3422 @@
+[
+  {
+    "id": 553,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "العلاقة بين أنواع التوحيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 554,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "وحدة دين الأنبياء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 555,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أدلة توحيد الألوهية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 556,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "الصلة بين أنواع التوحيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 557,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أنواع التوحيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 558,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "منهج التأليف في العقيدة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 559,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "توحيد الأسماء والصفات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 560,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "منهج تلقي العقيدة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 561,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أسماء الله وصفاته",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 562,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "موقف أهل السنة من الصفات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 563,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "التعطيل وأسبابه",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 564,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "نشأة الشرك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 565,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "قاعدة سد الذرائع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 566,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أسباب الوقوع في الشرك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 567,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "شرك الربوبية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 568,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "ادعاء الربوبية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 569,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أحكام الحلف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 570,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أحكام الاستغاثة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 571,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أنواع الشرك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 572,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "أنواع المحبة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 573,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "الرجاء والخوف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 574,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "التوكل والعبادة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 575,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "tawhid",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 576,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب توحيد الألوهية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 582,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب الأسماء والصفات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 587,
+    "program_id": 2,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب الشرك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 591,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "فرائض الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 619,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "سنن الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 659,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "سجود السهو",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 672,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "مندوبات الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 709,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "مكروهات ومبطلات الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 740,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "شروط الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 752,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "فرض عين / فرض كفاية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 764,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "صلاة الجمعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 767,
+    "program_id": 1,
+    "parent_id": null,
+    "level": 2,
+    "title": "شروط الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 792,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أقسام الكلمة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 793,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أنواع الفعل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 794,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "علامات الإعراب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 795,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "حروف المضارعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 796,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "الأسماء الموصولة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 797,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أحكام الفاعل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 798,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "نائب الفاعل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 799,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "الابتداء بالنكرة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 800,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أنواع الخبر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 801,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أحكام تقديم الخبر وحذفه",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 802,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "نواسخ الجملة الاسمية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 803,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "الحروف الناسخة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 804,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أفعال المقاربة والرجاء والشروع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 805,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "إنّ وأخواتها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 806,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "لا النافية للجنس",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 807,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "أفعال الظن واليقين وأحكامها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 808,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب الاشتغال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 809,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب النكرة والمعرفة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 812,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب المرفوعات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 821,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب الم مرفوعات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 823,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "باب المنصوبات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 825,
+    "program_id": 3,
+    "parent_id": null,
+    "level": 2,
+    "title": "marfouat",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 826,
+    "program_id": 4,
+    "parent_id": null,
+    "level": 2,
+    "title": "الغزوات والسرايا",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 842,
+    "program_id": 4,
+    "parent_id": null,
+    "level": 2,
+    "title": "العبادات والمعاملات والتشريعات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 879,
+    "program_id": 4,
+    "parent_id": null,
+    "level": 2,
+    "title": "بيت النبوة والحياة الشخصية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 889,
+    "program_id": 4,
+    "parent_id": null,
+    "level": 2,
+    "title": "الصحابة والمجتمع المدني",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 900,
+    "program_id": 4,
+    "parent_id": null,
+    "level": 2,
+    "title": "العهود والوفود والعلاقات الخارجية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 905,
+    "program_id": 4,
+    "parent_id": null,
+    "level": 2,
+    "title": "الشمائل والأخلاق النبوية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 920,
+    "program_id": 5,
+    "parent_id": null,
+    "level": 2,
+    "title": "مخارج الحروف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 923,
+    "program_id": 5,
+    "parent_id": null,
+    "level": 2,
+    "title": "المُدُودِ",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 577,
+    "program_id": 2,
+    "parent_id": 576,
+    "level": 3,
+    "title": "مدخل لتوحيد الألوهية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 578,
+    "program_id": 2,
+    "parent_id": 576,
+    "level": 3,
+    "title": "الدليل الفطري",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 579,
+    "program_id": 2,
+    "parent_id": 576,
+    "level": 3,
+    "title": "الأدلة النقلية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 580,
+    "program_id": 2,
+    "parent_id": 576,
+    "level": 3,
+    "title": "الأدلة العقليّة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 581,
+    "program_id": 2,
+    "parent_id": 576,
+    "level": 3,
+    "title": "مقارنة بين توحيد الربوبية وتوحيد الألوهية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 583,
+    "program_id": 2,
+    "parent_id": 582,
+    "level": 3,
+    "title": "مدخل لتوحيد الاسماء والصفات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 584,
+    "program_id": 2,
+    "parent_id": 582,
+    "level": 3,
+    "title": "الفرق بين الاسم والصفة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 585,
+    "program_id": 2,
+    "parent_id": 582,
+    "level": 3,
+    "title": "ما ينبغي تمثّله",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 586,
+    "program_id": 2,
+    "parent_id": 582,
+    "level": 3,
+    "title": "ما ينبغي تجنّبه في باب الأسماء والصفات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 588,
+    "program_id": 2,
+    "parent_id": 587,
+    "level": 3,
+    "title": "مدخل لتعريف الشرك وحقيقته",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 589,
+    "program_id": 2,
+    "parent_id": 587,
+    "level": 3,
+    "title": "الشرك في الربوبية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 590,
+    "program_id": 2,
+    "parent_id": 587,
+    "level": 3,
+    "title": "الشرك في ألوهية الله",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 592,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "الطمأنينة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 593,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "السجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 594,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "السلام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 595,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "الجلوس للسلام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 596,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "الاعتدال من السجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 597,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "ترتيب أركان الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 598,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "أدلة وجوب الترتيب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 599,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "حكم الإخلال بترتيب الأركان",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 600,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "تقسيم الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 601,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "عدد الصلوات المفروضة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 602,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "حكم النوافل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 603,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "فرائض صلاة الجنازة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 604,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "متابعة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 605,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "الزيادة في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 606,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "أحكام المسبوق",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 607,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "إدراك الركعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 608,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "قاعدة القضاء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 609,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "إتمام الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 610,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "ترتيب الركعات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 611,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "ترتيب الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 612,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "قاعدتا القضاء والبناء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 613,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "الاعتدال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 614,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "دلالة اللفظ الشرعي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 615,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "بطلان الصلاة بترك الترتيب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 616,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "أمثلة على الأركان المرتبة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 617,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "هيئة الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 618,
+    "program_id": 1,
+    "parent_id": 591,
+    "level": 3,
+    "title": "أدلة وجوب الصلوات الخمس",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 620,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "قراءة السورة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 621,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "القيام لقراءة السورة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 622,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مقاصد قراءة القرآن",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 623,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "هيئة الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 624,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "الفرق بين الركن والسنة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 625,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "التشهد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 626,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صيغ التشهد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 627,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "الصلاة على النبي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 628,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مقدار القراءة في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 629,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "وقت صلاة الوتر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 630,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "حكم صلاة الكسوف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 631,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صفة صلاة الكسوف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 632,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "عدد ركعات الوتر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 633,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "قراءة الفاتحة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 634,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "تكبيرات صلاة العيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 635,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "تكبيرات الركعة الثانية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 636,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مشروعية الاستسقاء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 637,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مكان الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 638,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صفة الخطبة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 639,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "التكبيرات الزائدة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 640,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "هيئة التضرع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 641,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "هيئة اليدين في القيام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 642,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "التكبيرات الانتقالية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 643,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "هيئة التشهد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 644,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "أدب الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 645,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "القيام للقراءة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 646,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "حكم ترك السورة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 647,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مقاصد التشهد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 648,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "آداب التشهد والصلاة على النبي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 649,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "هيئة صلاة الكسوف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 650,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صفة صلاة الوتر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 651,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "الوقت الضروري للوتر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 652,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صفة صلاة العيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 653,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "التكبيرات الزوائد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 654,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مشروعية صلاة الاستسقاء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 655,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "مكان أداء الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 656,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صفة الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 657,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "صفة الجلوس",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 658,
+    "program_id": 1,
+    "parent_id": 619,
+    "level": 3,
+    "title": "قراءة السور",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 660,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "سجود السهو في ترك السنن",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 661,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "حالة الزيادة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 662,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "حالة النقص",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 663,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "اجتماع النقص والزيادة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 664,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "السنن المؤكدة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 665,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "استدراك السجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 666,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "حالات السجود القبلي والبعدي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 667,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "أحكام الزيادة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 668,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "حالات النقص",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 669,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "زيادة سجدة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 670,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "أحكام السجود القبلي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 671,
+    "program_id": 1,
+    "parent_id": 659,
+    "level": 3,
+    "title": "أحكام السجود البعدي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 673,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التسليم",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 674,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "هيئات اللباس",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 675,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التأمين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 676,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "القنوت",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 677,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التحميد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 678,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "هيئة النزول للسجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 679,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "هيئة الرفع من السجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 680,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "هيئة التشهد الأوسط",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 681,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التيامن عند السلام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 682,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "ستر العاتق",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 683,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "صفة الجلوس",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 684,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "هيئة الركوع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 685,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "تفصيل القراءة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 686,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "الهوي للسجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 687,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "مقادير القراءة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 688,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "هيئة اليدين في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 689,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التشهد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 690,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التسبيح في الركوع والسجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 691,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "تكبيرات الانتقال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 692,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التبكير للمسجد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 693,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "السلام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 694,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "قراءة المأموم",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 695,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "صفة السجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 696,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "حركات الرفع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 697,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "تحريك السبابة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 698,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "لبس الرداء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 699,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "قنوت الصبح",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 700,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "مقدار القراءة في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 701,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التشهد الأوسط",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 702,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التأمين والتحميد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 703,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "خطبة العيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 704,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "التيامن في السلام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 705,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "ستر العاتق بالرداء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 706,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "القنوت في صلاة الصبح",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 707,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "صفة السجود والرفع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 708,
+    "program_id": 1,
+    "parent_id": 672,
+    "level": 3,
+    "title": "حركات الهوي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 710,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "البسملة والتعوذ",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 711,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "السجود على الثياب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 712,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "قراءة القرآن في الركوع والسجود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 713,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "حمل شيء في الفم أو الكم",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 714,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "مكروهات الهيئات والحركات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 715,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "الخشوع في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 716,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "أثر المعاصي على الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 717,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "الكلام المتعمد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 718,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "الأكل والشرب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 719,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "ترتيب الصلوات",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 720,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "النفخ",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 721,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "القهقهة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 722,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "مكروهات صلاة الجماعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 723,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "موقف المأموم",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 724,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "صفوف الجماعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 725,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "إقامة جماعة ثانية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 726,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "تراص الصفوف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 727,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "هيئة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 728,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "زيادة ركعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 729,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "مسابقة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 730,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "زيادة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 731,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "تسليم المسبوق",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 732,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "أثر بطلان صلاة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 733,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "التخصر في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 734,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "تشبيك الأصابع وفرقعتها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 735,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "تغميض العينين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 736,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "الالتفات في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 737,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "الدعاء أثناء القراءة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 738,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "مبطلات الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 739,
+    "program_id": 1,
+    "parent_id": 709,
+    "level": 3,
+    "title": "ترتيب الفوائت",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 741,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "الخشوع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 742,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "حضور القلب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 743,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "استمرار الخشوع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 744,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "وقت صلاة العيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 745,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "متابعة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 746,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "استقبال القبلة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 747,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "دخول الوقت",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 748,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "أهمية الوقت",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 749,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "الميقات الزمني",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 750,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "الوقت الاختياري والضروري",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 751,
+    "program_id": 1,
+    "parent_id": 740,
+    "level": 3,
+    "title": "وقت أداء الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 753,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "تعريف فرض العين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 754,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "الفرق بين الفرضين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 755,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "حكم صلاة الجنازة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 756,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "تجهيز الميت",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 757,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "دفن الميت",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 758,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "مشروعية صلاة العيدين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 759,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "إقامة الجماعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 760,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "أقسام الفروض في الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 761,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "التعريف الاصطلاحي للفروض",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 762,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "أمثلة على الفروض",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 763,
+    "program_id": 1,
+    "parent_id": 752,
+    "level": 3,
+    "title": "أسباب صلاة الاستسقاء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 765,
+    "program_id": 1,
+    "parent_id": 764,
+    "level": 3,
+    "title": "خطبة العيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 766,
+    "program_id": 1,
+    "parent_id": 764,
+    "level": 3,
+    "title": "شروط إمام الجمعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 768,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "ذكورة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 769,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "بلوغ الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 770,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "القدرة على الأركان",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 771,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "عدالة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 772,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "معرفة أحكام الصلاة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 773,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "الجماعة الثانية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 774,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "وحدة الجماعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 775,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "شرط الذكورة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 776,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "شرط التكليف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 777,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "شرط العدالة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 778,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "موقف إمام النساء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 779,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "متابعة المأموم للإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 780,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "مكروهات الإمامة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 781,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "صفات الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 782,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "كراهة إمامة المجهول",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 783,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "كراهة إمامة ابن الزنا",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 784,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "جواز إمامة الأعمى",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 785,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "جواز إمامة صاحب الجذام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 786,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "جواز إمامة الألكن",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 787,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "كراهة إمامة العبد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 788,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "تيقن خطأ الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 789,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "متابعة الإمام",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 790,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "أحكام الاستخلاف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 791,
+    "program_id": 1,
+    "parent_id": 767,
+    "level": 3,
+    "title": "شروط المستخلف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 810,
+    "program_id": 3,
+    "parent_id": 809,
+    "level": 3,
+    "title": "الاسم الموصول وصلته",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 811,
+    "program_id": 3,
+    "parent_id": 809,
+    "level": 3,
+    "title": "المعرّف بأداة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 813,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "الفاعل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 814,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "المفعول الذي لم يسم فاعله",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 815,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "المبتدأ والخبر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 816,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "العوامل - كان وأخواتها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 817,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "العوامل - الحروف المشبهة بـ \"ليس\"",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 818,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "العوامل - أفعال المقاربة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 819,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "العوامل - إنّ وأخواتها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 820,
+    "program_id": 3,
+    "parent_id": 812,
+    "level": 3,
+    "title": "العوامل - ظنّ وأخواتها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 822,
+    "program_id": 3,
+    "parent_id": 821,
+    "level": 3,
+    "title": "الفاعل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 824,
+    "program_id": 3,
+    "parent_id": 823,
+    "level": 3,
+    "title": "المفعول به",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 827,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "خروج النبي لاعتراض قافلة قريش",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 828,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "استشارة النبي للمهاجرين والأنصار",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 829,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "نصر الله للمسلمين في بدر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 830,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "استنفار قريش لجيشها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 831,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة بدر الكبرى",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 832,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة بني قينقاع وأسبابها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 833,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة السويق وقرقرة الكدر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 834,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة حمراء الأسد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 835,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة بني المصطلق",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 836,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة دومة الجندل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 837,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "غزوة تبوك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 838,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "هدم مسجد الضرار",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 839,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "سرية مؤتة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 840,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "أهداف فتح مكة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 841,
+    "program_id": 4,
+    "parent_id": 826,
+    "level": 3,
+    "title": "تاريخ فتح مكة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 843,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "توقيت فرض زكاة الفطر",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 844,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "أدب الخلاف في زكاة المال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 845,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الخلاف في زكاة المال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 846,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الخلاف في توقيت زكاة المال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 847,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "إبطال التبني",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 848,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "كفالة اليتيم",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 849,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "إقامة حد الرجم",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 850,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "براءة السيدة عائشة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 851,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "فرضية الحج",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 852,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "مقاصد التشريع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 853,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "بعثة الحج في السنة التاسعة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 854,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "التدرج في التشريع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 855,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الأمانة العلمية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 856,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "توقيتات الأحكام التشريعية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 857,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الأمانة العلمية في الفقه",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 858,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "حكمة الله في التشريع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 859,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "تطهير العبادات من بدع الجاهلية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 860,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "حكمة توقيتات الأحكام التشريعية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 861,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الأمانة العلمية في نقل الآراء الفقهية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 862,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "عمرة القضاء",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 863,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "سنة الرمل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 864,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "سنة الاضطباع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 865,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "أحكام سنة الاضطباع والرمل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 866,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "سنة الاضطباع والرمل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 867,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الرمل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 868,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الاضطباع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 869,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "أحكام الطواف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 870,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "تولي عتاب بن أسيد الحج بالناس",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 871,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "حج عتاب بن أسيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 872,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "صفة حجة النبي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 873,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "سبب تسمية حجة الوداع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 874,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الخطبة النبوية في عرفة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 875,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "صفة حجة النبي ﷺ",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 876,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الخطبة النبوية يوم عرفة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 877,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "الأحكام والتشريعات في حجة الوداع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 878,
+    "program_id": 4,
+    "parent_id": 842,
+    "level": 3,
+    "title": "نزول آية إكمال الدين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 880,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "zawaj",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 881,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "زواج النبي من السيدة زينب",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 882,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "زواج النبي ﷺ من زينب بنت جحش",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 883,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "زواج النبي من زينب بنت جحش",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 884,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "إبطال التبني",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 885,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "مولد الإمام الحسين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 886,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "حادثة الإفك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 887,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "براءة السيدة عائشة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 888,
+    "program_id": 4,
+    "parent_id": 879,
+    "level": 3,
+    "title": "زواج جويرية بنت الحارث",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 890,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "غزوة بني قينقاع وأسبابها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 891,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "غزوة حمراء الأسد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 892,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "حادثة الإفك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 893,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "موقف المنافقين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 894,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "زواج جويرية بنت الحارث",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 895,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "إمارة عتاب بن أسيد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 896,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "تولي الحج",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 897,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "إمارة عتاب بن أسيد على مكة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 898,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "سرية مؤتة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 899,
+    "program_id": 4,
+    "parent_id": 889,
+    "level": 3,
+    "title": "موقف عمر بن الخطاب من آية إكمال الدين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 901,
+    "program_id": 4,
+    "parent_id": 900,
+    "level": 3,
+    "title": "غزوة بني قينقاع وأسبابها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 902,
+    "program_id": 4,
+    "parent_id": 900,
+    "level": 3,
+    "title": "إهداء مارية القبطية",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 903,
+    "program_id": 4,
+    "parent_id": 900,
+    "level": 3,
+    "title": "أسباب فتح مكة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 904,
+    "program_id": 4,
+    "parent_id": 900,
+    "level": 3,
+    "title": "الاستعداد لفتح مكة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 906,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "أدب الخلاف العلمي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 907,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "الخلاف في توقيت زكاة المال",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 908,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "غزوة بني قينقاع وأسبابها",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 909,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "غزوة حمراء الأسد",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 910,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "إقامة حد الرجم ومولد الإمام الحسين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 911,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "تربية الجيل في بيت النبوة",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 912,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "تربية الجيل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 913,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "حادثة الإفك",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 914,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "زواج جويرية بنت الحارث",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 915,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "الحكمة من السنن النبوية في الطواف",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 916,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "سنة الاضطباع والرمل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 917,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "الحكمة من الرمل والاضطباع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 918,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "بناء منبر النبي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 919,
+    "program_id": 4,
+    "parent_id": 905,
+    "level": 3,
+    "title": "حنين الجذع",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 921,
+    "program_id": 5,
+    "parent_id": 920,
+    "level": 3,
+    "title": "الحلق",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 922,
+    "program_id": 5,
+    "parent_id": 920,
+    "level": 3,
+    "title": "اللسان",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 924,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "تعريف المد وأحرفه",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 925,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "المد الأصلي",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 926,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "المد المتصل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 927,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "المد المنفصل",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 928,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "المد العارض للسكون",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 929,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "مد اللين",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 930,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "مد البدل ومستثنياته",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 931,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "مراتب المدود",
+    "order_index": 0,
+    "is_active": 1
+  },
+  {
+    "id": 932,
+    "program_id": 5,
+    "parent_id": 923,
+    "level": 3,
+    "title": "المد اللازم الحرفي",
+    "order_index": 0,
+    "is_active": 1
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 933,
+    "parent_id": null,
+    "title": "الطهارة",
+    "level": 1
+  },
+  {
+    "id": 934,
+    "parent_id": null,
+    "title": "الصلاة",
+    "level": 1
+  },
+  {
+    "id": 935,
+    "parent_id": null,
+    "title": "الصيام",
+    "level": 1
+  },
+  {
+    "id": 936,
+    "parent_id": null,
+    "title": "الزكاة",
+    "level": 1
+  },
+  {
+    "id": 937,
+    "parent_id": null,
+    "title": "الحج",
+    "level": 1
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "subject": "fiqh",
+    "name": "الفقه الميسر"
+  },
+  {
+    "id": 2,
+    "subject": "aqeeda",
+    "name": "العقيدة"
+  },
+  {
+    "id": 3,
+    "subject": "nahw",
+    "name": "النحو"
+  },
+  {
+    "id": 4,
+    "subject": "sira",
+    "name": "السيرة"
+  },
+  {
+    "id": 5,
+    "subject": "tajweed",
+    "name": "التجويد"
+  }
+]

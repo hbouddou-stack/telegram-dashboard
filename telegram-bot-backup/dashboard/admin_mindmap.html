@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الخارطة التفاعلية - لوحة الإدارة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Include D3.js for rendering the mindmap tree -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --node-bg: #1e293b;
+            --node-border: #334155;
+            
+            --color-fiqh: #0d9488;
+            --color-sira: #d97706;
+            --color-nahw: #2563eb;
+            --color-aqeeda: #7c3aed;
+            
+            --link-color: #475569;
+            --hover-glow: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Tajawal', sans-serif;
+            overflow: hidden; /* D3 will handle panning/zooming */
+        }
+
+        #header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0) 100%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            background: -webkit-linear-gradient(45deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        button.control-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        button.control-btn:hover {
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+
+        #mindmap-container {
+            width: 100vw;
+            height: 100vh;
+            cursor: grab;
+        }
+        
+        #mindmap-container:active {
+            cursor: grabbing;
+        }
+
+        /* D3 Elements */
+        .node circle {
+            fill: var(--node-bg);
+            stroke: var(--node-border);
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .node text {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            fill: #e2e8f0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        .node--internal circle {
+            fill: #1e293b;
+        }
+
+        .node--leaf circle {
+            fill: #0f172a;
+        }
+
+        .link {
+            fill: none;
+            stroke: var(--link-color);
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+            transition: stroke 0.3s ease;
+        }
+
+        /* Hover effects */
+        .node:hover circle {
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
+            stroke-width: 3px;
+        }
+
+        /* Loading overlay */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #38bdf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Specific node colors based on subject */
+        .node.subject-fiqh circle { stroke: var(--color-fiqh); }
+        .node.subject-sira circle { stroke: var(--color-sira); }
+        .node.subject-nahw circle { stroke: var(--color-nahw); }
+        .node.subject-aqeeda circle { stroke: var(--color-aqeeda); }
+        .node.subject-aqida circle { stroke: var(--color-aqeeda); }
+        
+        .node.subject-fiqh:hover circle { box-shadow: 0 0 15px var(--color-fiqh); }
+        
+        /* Node foreign object for better text wrapping */
+        .node-foreign {
+            overflow: visible;
+        }
+        .node-html {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 4px 8px;
+            color: white;
+            font-size: 13px;
+            text-align: center;
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="font-size: 18px; color: #94a3b8;">جاري تحميل الخارطة...</div>
+    </div>
+
+    <div id="header">
+        <h1>الخارطة التفاعلية للمواد</h1>
+        <div class="controls">
+            <button class="control-btn" onclick="expandAll()">توسيع الكل</button>
+            <button class="control-btn" onclick="collapseAll()">طي الكل</button>
+            <button class="control-btn" onclick="resetZoom()">إعادة ضبط العرض</button>
+        </div>
+    </div>
+
+    <div id="mindmap-container"></div>
+
+    <script>
+        // API Base URL (adjust if needed, assumes same host)
+        const API_BASE = window.location.origin;
+
+        // Admin User ID - usually injected or from Telegram WebApp
+        let adminUserId = null;
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+            adminUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
+        }
+
+        // The master data structure for D3
+        const treeData = {
+            name: "الأكاديمية",
+            id: "root",
+            children: [
+                { name: "الفقه", id: "fiqh", subject: "fiqh", children: [] },
+                { name: "السيرة", id: "sira", subject: "sira", children: [] },
+                { name: "النحو", id: "nahw", subject: "nahw", children: [] },
+                { name: "العقيدة", id: "aqeeda", subject: "aqeeda", children: [] }
+            ]
+        };
+
+        // Fetch wrapper
+        async function apiCall(endpoint, payload) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: adminUserId, ...payload })
+                });
+                return await response.json();
+            } catch (e) {
+                console.error("API Error:", e);
+                return { success: false };
+            }
+        }
+
+        // Build the tree data by fetching from backend
+        async function buildTreeData() {
+            for (let subjectNode of treeData.children) {
+                const res = await apiCall('/admin/get-themes', { subject: subjectNode.subject });
+                if (res.success && res.themes) {
+                    for (let themeName of res.themes) {
+                        const themeNode = {
+                            name: themeName,
+                            id: `${subjectNode.subject}-${themeName}`,
+                            subject: subjectNode.subject,
+                            children: [] // Will fetch subthemes on demand or right away
+                        };
+                        
+                        // Fetch subthemes
+                        const subRes = await apiCall('/admin/get-themes', { subject: subjectNode.subject, theme: themeName });
+                        if (subRes.success && subRes.sub_themes) {
+                            for (let subName of subRes.sub_themes) {
+                                themeNode.children.push({
+                                    name: subName,
+                                    id: `${subjectNode.subject}-${themeName}-${subName}`,
+                                    subject: subjectNode.subject
+                                });
+                            }
+                        }
+                        
+                        subjectNode.children.push(themeNode);
+                    }
+                }
+            }
+        }
+
+        // D3.js Variables
+        let svg, g, tree, root;
+        let zoom;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const margin = {top: 20, right: 120, bottom: 20, left: 120};
+        const dx = 40; // vertical spacing
+        const dy = 200; // horizontal spacing
+
+        async function initMindmap() {
+            await buildTreeData();
+            
+            // Hide loader
+            document.getElementById('loader').style.opacity = '0';
+            setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+
+            // Setup D3 Tree
+            tree = d3.tree().nodeSize([dx, dy]);
+            
+            const diagonal = d3.linkHorizontal().x(d => -d.y).y(d => d.x);
+
+            svg = d3.select("#mindmap-container").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .style("font", "14px Tajawal")
+                .style("user-select", "none");
+
+            g = svg.append("g");
+
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 3])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
+                });
+
+            svg.call(zoom);
+
+            root = d3.hierarchy(treeData);
+            
+            // Center the root initially
+            root.x0 = height / 2;
+            root.y0 = 0;
+
+            // Collapse all except first level
+            root.children.forEach(collapse);
+
+            update(root);
+            resetZoom();
+        }
+
+        function collapse(d) {
+            if (d.children) {
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
+            }
+        }
+
+        function expand(d) {
+            if (d._children) {
+                d.children = d._children;
+                d.children.forEach(expand);
+                d._children = null;
+            }
+        }
+
+        function expandAll() {
+            root.children.forEach(expand);
+            update(root);
+            centerTree();
+        }
+
+        function collapseAll() {
+            root.children.forEach(collapse);
+            update(root);
+            centerTree();
+        }
+
+        function centerTree() {
+            const transform = d3.zoomIdentity.translate(width - margin.right, height / 2).scale(0.8);
+            svg.transition().duration(750).call(zoom.transform, transform);
+        }
+
+        function resetZoom() {
+            centerTree();
+        }
+
+        function update(source) {
+            const duration = d3.event && d3.event.altKey ? 2500 : 250;
+            const nodes = root.descendants().reverse();
+            const links = root.links();
+
+            tree(root);
+
+            let left = root;
+            let right = root;
+            root.eachBefore(node => {
+                if (node.x < left.x) left = node;
+                if (node.x > right.x) right = node;
+            });
+
+            const height = right.x - left.x + margin.top + margin.bottom;
+
+            const transition = svg.transition()
+                .duration(duration);
+
+            // --- Nodes ---
+            const node = g.selectAll("g.node")
+                .data(nodes, d => d.id || (d.id = ++i));
+
+            const nodeEnter = node.enter().append("g")
+                .attr("class", d => `node ${d.data.subject ? 'subject-'+d.data.subject : ''} ${d.children ? "node--internal" : "node--leaf"}`)
+                .attr("transform", d => `translate(${-source.y0},${source.x0})`)
+                .attr("fill-opacity", 0)
+                .attr("stroke-opacity", 0)
+                .on("click", (event, d) => {
+                    d.children = d.children ? null : d._children;
+                    update(d);
+                });
+
+            nodeEnter.append("circle")
+                .attr("r", 6)
+                .style("cursor", d => d._children ? "pointer" : "default");
+
+            nodeEnter.append("text")
+                .attr("dy", "0.31em")
+                .attr("x", d => d._children ? 10 : -10)
+                .attr("text-anchor", d => d._children ? "start" : "end")
+                .text(d => d.data.name)
+                .style("cursor", d => d._children ? "pointer" : "default")
+                .clone(true).lower()
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-width", 3)
+                .attr("stroke", "rgba(15,23,42,0.8)");
+
+            const nodeUpdate = node.merge(nodeEnter).transition(transition)
+                .attr("transform", d => `translate(${-d.y},${d.x})`)
+                .attr("fill-opacity", 1)
+                .attr("stroke-opacity", 1);
+
+            nodeUpdate.select("circle")
+                .attr("r", d => d._children ? 8 : 6)
+                .style("fill", d => d._children ? "var(--node-border)" : "var(--node-bg)");
+
+            const nodeExit = node.exit().transition(transition).remove()
+                .attr("transform", d => `translate(${-source.y},${source.x})`)
+                .attr("fill-opacity", 0)
+                .attr("stroke-opacity", 0);
+
+            // --- Links ---
+            const link = g.selectAll("path.link")
+                .data(links, d => d.target.id);
+
+            const linkEnter = link.enter().append("path")
+                .attr("class", "link")
+                .attr("d", d => {
+                    const o = {x: source.x0, y: source.y0};
+                    return d3.linkHorizontal().x(d => -d.y).y(d => d.x)({source: o, target: o});
+                });
+
+            link.merge(linkEnter).transition(transition)
+                .attr("d", d3.linkHorizontal().x(d => -d.y).y(d => d.x))
+                .attr("stroke", d => {
+                    // inherit color from subject
+                    const subj = d.target.data.subject;
+                    if(subj === 'fiqh') return 'var(--color-fiqh)';
+                    if(subj === 'sira') return 'var(--color-sira)';
+                    if(subj === 'nahw') return 'var(--color-nahw)';
+                    if(subj === 'aqeeda' || subj === 'aqida') return 'var(--color-aqeeda)';
+                    return 'var(--link-color)';
+                });
+
+            link.exit().transition(transition).remove()
+                .attr("d", d => {
+                    const o = {x: source.x, y: source.y};
+                    return d3.linkHorizontal().x(d => -d.y).y(d => d.x)({source: o, target: o});
+                });
+
+            root.eachBefore(d => {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
+
+        let i = 0;
+        
+        // Start init on load
+        window.addEventListener('DOMContentLoaded', initMindmap);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+[
+  {
+    "id": 591,
+    "parent_id": 934,
+    "title": "فرائض الصلاة",
+    "level": 2
+  },
+  {
+    "id": 619,
+    "parent_id": 934,
+    "title": "سنن الصلاة",
+    "level": 2
+  },
+  {
+    "id": 659,
+    "parent_id": 934,
+    "title": "سجود السهو",
+    "level": 2
+  },
+  {
+    "id": 672,
+    "parent_id": 934,
+    "title": "مندوبات الصلاة",
+    "level": 2
+  },
+  {
+    "id": 709,
+    "parent_id": 934,
+    "title": "مكروهات ومبطلات الصلاة",
+    "level": 2
+  },
+  {
+    "id": 740,
+    "parent_id": 934,
+    "title": "شروط الصلاة",
+    "level": 2
+  },
+  {
+    "id": 752,
+    "parent_id": 934,
+    "title": "فرض عين / فرض كفاية",
+    "level": 2
+  },
+  {
+    "id": 764,
+    "parent_id": 934,
+    "title": "صلاة الجمعة",
+    "level": 2
+  },
+  {
+    "id": 767,
+    "parent_id": 934,
+    "title": "شروط الإمام",
+    "level": 2
+  },
+  {
+    "id": 934,
+    "parent_id": null,
+    "title": "الصلاة",
+    "level": 1
+  }
+]
