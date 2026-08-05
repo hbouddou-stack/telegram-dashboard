@@ -567,9 +567,15 @@
     <!-- TAB: TEST QUIZ (ISOLATED) -->
     <div class="tab-panel" id="tab-test-quiz" style="padding: 20px; text-align: center; background: var(--bg); min-height: 100vh;">
         <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">🧪 وضع الاختبار التجريبي</h2>
-        <button onclick="startIsolatedQuizTest()" style="padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
-            جلب الأسئلة من قاعدة البيانات الآن 🚀
+        
+        <button onclick="startIsolatedQuizTestText()" style="padding: 15px 30px; background: #f59e0b; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(245,158,11,0.3); width: 100%; margin-bottom: 12px;">
+            جلب وعرض كنص (Debug) 📝
         </button>
+
+        <button onclick="startIsolatedQuizTestInteractive()" style="padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(79,70,229,0.3); width: 100%;">
+            جلب وبدء الاختبار التفاعلي 🚀
+        </button>
+
         <div id="test-quiz-result" style="margin-top: 30px; text-align: right; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: none;"></div>
     </div>
 
@@ -597,18 +603,39 @@
     </nav>
 
     <script>
-        function startIsolatedQuizTest() {
+        function fetchQuizAPI(limit) {
             var resDiv = document.getElementById('test-quiz-result');
             resDiv.style.display = 'block';
             resDiv.innerHTML = '<div style="text-align:center;">جاري الاتصال بقاعدة البيانات... ⏳</div>';
             
-            fetch('/api/student/quiz/setup', {
+            return fetch('/api/student/quiz/setup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: 1, subject: 'fiqh', source: 'all', limit: 1 })
-            })
-            .then(r => r.json())
-            .then(data => {
+                body: JSON.stringify({ userId: 1, subject: 'fiqh', source: 'all', limit: limit })
+            }).then(r => r.json());
+        }
+
+        function startIsolatedQuizTestText() {
+            fetchQuizAPI(5).then(data => {
+                var resDiv = document.getElementById('test-quiz-result');
+                if (data.success && data.questions) {
+                    let html = '<h3 style="color:var(--success,#10b981); margin-top:0;">✅ تم جلب ' + data.questions.length + ' أسئلة بنجاح!</h3><hr style="border-color:var(--border-color);">';
+                    data.questions.forEach((q, i) => {
+                        html += '<div style="margin-bottom:15px;"><strong style="color:var(--primary);">' + (i+1) + '. ' + q.question + '</strong><br>';
+                        html += '<span style="color:var(--text-2); font-size:14px;">' + (q.choice_a || 'A') + ' | ' + (q.choice_b || 'B') + '</span></div>';
+                    });
+                    resDiv.innerHTML = html;
+                } else {
+                    resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+            }).catch(e => {
+                document.getElementById('test-quiz-result').innerHTML = '<h3 style="color:#ef4444;">❌ خطأ في الاتصال.</h3><p>' + e.toString() + '</p>';
+            });
+        }
+
+        function startIsolatedQuizTestInteractive() {
+            fetchQuizAPI(1).then(data => {
+                var resDiv = document.getElementById('test-quiz-result');
                 if (data.success && data.questions && data.questions.length > 0) {
                     resDiv.innerHTML = '<h3 style="color:var(--success,#10b981);">✅ تم جلب سؤال بنجاح! جاري بدء الاختبار...</h3>';
                     setTimeout(() => {
@@ -619,9 +646,8 @@
                 } else {
                     resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
                 }
-            })
-            .catch(e => {
-                resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ خطأ في الاتصال بالخادم.</h3><p>' + e.toString() + '</p>';
+            }).catch(e => {
+                document.getElementById('test-quiz-result').innerHTML = '<h3 style="color:#ef4444;">❌ خطأ في الاتصال.</h3><p>' + e.toString() + '</p>';
             });
         }
     </script>
