@@ -115,7 +115,6 @@ const quizEngine = {
             alert('حدث خطأ');
             switchTab('exams');
         });
-    }
     },
     
     start: function() {
