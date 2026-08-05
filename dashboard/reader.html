@@ -564,6 +564,15 @@
         </div>
     </div>
 
+    <!-- TAB: TEST QUIZ (ISOLATED) -->
+    <div class="tab-panel" id="tab-test-quiz" style="padding: 20px; text-align: center; background: var(--bg); min-height: 100vh;">
+        <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">🧪 وضع الاختبار التجريبي</h2>
+        <button onclick="startIsolatedQuizTest()" style="padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
+            جلب الأسئلة من قاعدة البيانات الآن 🚀
+        </button>
+        <div id="test-quiz-result" style="margin-top: 30px; text-align: right; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: none;"></div>
+    </div>
+
     <!-- BOTTOM NAV -->
     
     <nav class="bottom-nav">
@@ -582,7 +591,40 @@
         <button class="nav-btn" id="btn-nav-support" onclick="switchTab('support', this)">
             <span class="icon">💬</span><span>الدعم والذكاء</span>
         </button>
+        <button class="nav-btn" onclick="switchTab('test-quiz', this)">
+            <span class="icon">🧪</span><span>تجربة</span>
+        </button>
     </nav>
+
+    <script>
+        function startIsolatedQuizTest() {
+            var resDiv = document.getElementById('test-quiz-result');
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = '<div style="text-align:center;">جاري الاتصال بقاعدة البيانات... ⏳</div>';
+            
+            fetch('/api/student/quiz/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: 1, subject: 'الفقه', source: 'all', limit: 5 })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.questions) {
+                    let html = '<h3 style="color:var(--success,#10b981); margin-top:0;">✅ تم جلب ' + data.questions.length + ' أسئلة بنجاح!</h3><hr style="border-color:var(--border-color);">';
+                    data.questions.forEach((q, i) => {
+                        html += '<div style="margin-bottom:15px;"><strong style="color:var(--primary);">' + (i+1) + '. ' + q.question + '</strong><br>';
+                        html += '<span style="color:var(--text-2); font-size:14px;">' + (q.choice_a || 'A') + ' | ' + (q.choice_b || 'B') + '</span></div>';
+                    });
+                    resDiv.innerHTML = html;
+                } else {
+                    resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+            })
+            .catch(e => {
+                resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ خطأ في الاتصال بالخادم.</h3><p>' + e.toString() + '</p>';
+            });
+        }
+    </script>
 
     <script src="quiz.js?v=3" charset="UTF-8"></script>
     <script src="exam.js?v=3" charset="UTF-8"></script>
