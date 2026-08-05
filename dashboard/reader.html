@@ -1,34 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="sepia">
 <head>
 
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AcadÃ©mie - Liseuse Interactive</title>
+    <title>Académie - Liseuse Interactive</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="reader.css?v=practice-2">
-    <!-- Immediate settings & Onscreen Error Debugger -->
+    <!-- Immediate settings application to prevent FOUC -->
     <script>
         (function() {
-            window.onerror = function(msg, url, lineNo, columnNo, error) {
-                if (msg && msg.toString().includes('ResizeObserver')) return false;
-                var errDiv = document.getElementById('onscreen-debug-box');
-                if (!errDiv) {
-                    errDiv = document.createElement('div');
-                    errDiv.id = 'onscreen-debug-box';
-                    errDiv.style.cssText = 'position:fixed; top:10px; left:10px; right:10px; z-index:99999; background:#fee2e2; color:#991b1b; padding:16px; border-radius:12px; border:2px solid #ef4444; font-family:monospace; font-size:12px; max-height:40vh; overflow:auto; box-shadow:0 10px 25px rgba(0,0,0,0.3);';
-                    errDiv.innerHTML = '<div style="font-weight:bold; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between;"><span>âš ï¸ KOPILOT ON-SCREEN DEBUGGER</span><button onclick="this.parentNode.parentNode.remove()" style="background:#ef4444; color:#fff; border:none; padding:2px 8px; border-radius:4px;">âœ•</button></div>';
-                    document.body.appendChild(errDiv);
-                }
-                var item = document.createElement('div');
-                item.style.marginBottom = '6px';
-                var stackInfo = error && error.stack ? error.stack.substring(0, 150) : '';
-                item.textContent = 'âŒ ' + msg + ' | ' + (url || '').split('/').pop() + ':' + lineNo + ' ' + stackInfo;
-                errDiv.appendChild(item);
-                return false;
-            };
-
             const theme = localStorage.getItem('readerTheme') || 'sepia';
             document.documentElement.setAttribute('data-theme', theme);
             const fontSize = localStorage.getItem('readerFontSize') || 18;
@@ -44,6 +26,37 @@
         .exam-selection-row:last-child { border-bottom: none; }
     </style>
 
+
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            var errDiv = document.getElementById('kopilot-mobile-debugger');
+            if (!errDiv) {
+                errDiv = document.createElement('div');
+                errDiv.id = 'kopilot-mobile-debugger';
+                errDiv.style.cssText = 'position:fixed; top:0; left:0; right:0; background:rgba(0,0,0,0.85); color:#ff4444; z-index:999999; padding:15px; font-family:monospace; font-size:12px; max-height:50vh; overflow-y:auto; border-bottom:4px solid #ff4444; direction:ltr; text-align:left; box-shadow:0 10px 20px rgba(0,0,0,0.5);';
+                var header = document.createElement('div');
+                header.innerHTML = '<strong style="color:white; font-size:14px; text-shadow:0 0 5px #ff4444;">⚠️ KOPILOT ON-SCREEN DEBUGGER</strong><span style="float:right; cursor:pointer; color:white; font-size:16px; padding:0 10px;" onclick="document.getElementById(\'kopilot-mobile-debugger\').style.display=\'none\'">✕</span><hr style="border-color:#555; margin:10px 0;">';
+                errDiv.appendChild(header);
+                
+                var contentDiv = document.createElement('div');
+                contentDiv.id = 'kopilot-mobile-debugger-content';
+                errDiv.appendChild(contentDiv);
+                
+                document.body.appendChild(errDiv);
+            }
+            var contentDiv = document.getElementById('kopilot-mobile-debugger-content');
+            var file = url ? url.substring(url.lastIndexOf('/') + 1) : 'unknown';
+            var stack = (error && error.stack) ? error.stack : '';
+            var logItem = document.createElement('div');
+            logItem.style.marginBottom = '12px';
+            logItem.style.borderBottom = '1px solid #444';
+            logItem.style.paddingBottom = '8px';
+            logItem.innerHTML = '❌ <strong>' + msg + '</strong> <br><span style="color:#aaa;">| ' + file + ':' + line + '</span> <br><span style="color:#ffb86c;">' + stack + '</span>';
+            contentDiv.appendChild(logItem);
+            return false;
+        };
+    </script>
+
 </head>
 
     <!-- Vertical Scroll Progress Bar -->
@@ -56,13 +69,13 @@
     <!-- TAB: HOME -->
     <div class="tab-panel active" id="tab-home">
         <div style="padding: 20px;">
-            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">ðŸ“š Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ© Ø§Ù„Ø¨Ø§Ø¬ÙŠ</h2>
+            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">📚 أكاديمية الباجي</h2>
             
             <div class="progress-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <h3 style="margin:0; font-size:18px; color:var(--text);">ØªÙ‚Ø¯Ù…Ùƒ Ø§Ù„Ø¹Ø§Ù…</h3>
-                        <p style="margin:4px 0 0; font-size:13px; color:var(--text-2);" id="progress-subtitle">0 / 0 Ø¯Ø±Ø³</p>
+                        <h3 style="margin:0; font-size:18px; color:var(--text);">تقدمك العام</h3>
+                        <p style="margin:4px 0 0; font-size:13px; color:var(--text-2);" id="progress-subtitle">0 / 0 درس</p>
                     </div>
                     <div class="circular-chart-container">
                         <svg viewBox="0 0 36 36" class="circular-chart">
@@ -74,10 +87,10 @@
                 </div>
             </div>
 
-            <h3 style="margin-top:24px; color:var(--text);">Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©</h3>
+            <h3 style="margin-top:24px; color:var(--text);">متابعة القراءة</h3>
             <div id="recent-lessons-container">
                 <!-- Recent lessons dynamically injected here -->
-                <p style="color:var(--text-3); font-size:14px;">Ù„Ù… ØªÙØªØ­ Ø£ÙŠ Ø¯Ø±Ø³ Ø¨Ø¹Ø¯.</p>
+                <p style="color:var(--text-3); font-size:14px;">لم تفتح أي درس بعد.</p>
             </div>
         </div>
     </div>
@@ -85,21 +98,21 @@
     <!-- TAB: SEARCH -->
     <div class="tab-panel" id="tab-search">
         <div style="padding: 20px;">
-            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">ðŸ” Ø§Ù„Ø¨Ø­Ø« Ø§Ù„Ø°ÙƒÙŠ</h2>
+            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">🔍 البحث الذكي</h2>
             <div class="search-wrap">
-                <span class="search-icon">ðŸ”</span>
-                <input type="text" class="search-input" id="search-input" placeholder="Ø§Ø¨Ø­Ø« ÙÙŠ Ø§Ù„Ø¯Ø±ÙˆØ³ ÙˆØ§Ù„Ù…ÙˆØ§Ø¶ÙŠØ¹..." autocomplete="off">
-                <button class="clear-btn" id="clear-btn" style="display:none;">âœ•</button>
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="search-input" placeholder="ابحث في الدروس والمواضيع..." autocomplete="off">
+                <button class="clear-btn" id="clear-btn" style="display:none;">✕</button>
                 <div class="autocomplete" id="autocomplete"></div>
             </div>
             <div class="filter-chips" id="filter-chips">
-                <button class="chip active" data-filter="title_only">ðŸ“Œ Ø§Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† ÙÙ‚Ø·</button>
-                <button class="chip" data-filter="all">ðŸ”Ž Ø§Ù„ÙƒÙ„ (Ø§Ù„Ø¨Ø­Ø« Ø§Ù„Ø¹Ø§Ù…)</button>
-                <button class="chip" data-filter="fiche">ðŸ“– ÙÙŠØ´Ø§Øª Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©</button>
-                <button class="chip" data-filter="trans">ðŸ“ Ø§Ù„ØªÙØ±ÙŠØº Ø§Ù„Ø­Ø±ÙÙŠ</button>
+                <button class="chip active" data-filter="title_only">📌 العناوين فقط</button>
+                <button class="chip" data-filter="all">🔎 الكل (البحث العام)</button>
+                <button class="chip" data-filter="fiche">📖 فيشات المراجعة</button>
+                <button class="chip" data-filter="trans">📝 التفريغ الحرفي</button>
             </div>
             <div id="search-results" style="margin-top:20px;">
-                <div class="empty-state"><p style="color:var(--text-3);">Ø§ÙƒØªØ¨ ÙƒÙ„Ù…Ø© Ù„Ù„Ø¨Ø­Ø«</p></div>
+                <div class="empty-state"><p style="color:var(--text-3);">اكتب كلمة للبحث</p></div>
             </div>
         </div>
     </div>
@@ -110,12 +123,12 @@
     <!-- TAB: SYLLABUS -->
     <div class="tab-panel" id="tab-syllabus">
         <div style="padding: 20px;">
-            <h2 style="color:var(--primary); font-weight:800; margin-bottom:15px; text-align:center;">ðŸ“š Ø§Ù„Ù…Ù‚Ø±Ø±Ø§Øª</h2>
+            <h2 style="color:var(--primary); font-weight:800; margin-bottom:15px; text-align:center;">📚 المقررات</h2>
             
             <!-- Global Progress -->
             <div id="syllabus-global-progress" style="background:var(--surface); border-radius:12px; padding:15px; margin-bottom:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-weight:700; font-size:14px; color:var(--text);">
-                    <span>Ø§Ù„ØªÙ‚Ø¯Ù… Ø§Ù„Ø¹Ø§Ù…</span>
+                    <span>التقدم العام</span>
                     <span id="syllabus-progress-text">0%</span>
                 </div>
                 <div style="height:8px; background:var(--bg); border-radius:99px; overflow:hidden;">
@@ -126,8 +139,8 @@
             <!-- View Toggle -->
             <div style="display:flex; justify-content:center; margin-bottom:20px;">
                 <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:12px; display:flex; overflow:hidden;">
-                    <button id="toggle-grid-btn" onclick="setSyllabusMode('grid')" style="flex:1; padding:10px 20px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">Ø§Ù„Ø´Ø¨ÙƒØ©</button>
-                    <button id="toggle-list-btn" onclick="setSyllabusMode('list')" style="flex:1; padding:10px 20px; border:none; background:transparent; color:var(--text-2); font-weight:bold; cursor:pointer;">Ø§Ù„Ø¨Ø±Ù†Ø§Ù…Ø¬</button>
+                    <button id="toggle-grid-btn" onclick="setSyllabusMode('grid')" style="flex:1; padding:10px 20px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">الشبكة</button>
+                    <button id="toggle-list-btn" onclick="setSyllabusMode('list')" style="flex:1; padding:10px 20px; border:none; background:transparent; color:var(--text-2); font-weight:bold; cursor:pointer;">البرنامج</button>
                 </div>
             </div>
 
@@ -143,10 +156,10 @@
     <!-- TAB: READER -->
     <div class="tab-panel" id="tab-reader">
         <div id="reader-empty-state" style="padding: 40px 20px; text-align: center;">
-            <div style="font-size:48px; margin-bottom:16px;">ðŸ“š</div>
-            <h3 style="color:var(--text); font-weight:700; margin-bottom:8px;">Ù„Ù… ÙŠØªÙ… Ø§Ø®ØªÙŠØ§Ø± Ø£ÙŠ Ø¯Ø±Ø³</h3>
-            <p style="color:var(--text-3); font-size:14px; margin-bottom:24px;">ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ø¯Ø±Ø³ Ù…Ù† Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ù‚Ø±Ø±Ø§Øª Ù„Ù„Ø¨Ø¯Ø¡ ÙÙŠ Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©.</p>
-            <button onclick="switchTab('syllabus', this)" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">ØªØµÙØ­ Ø§Ù„Ù…Ù‚Ø±Ø±Ø§Øª</button>
+            <div style="font-size:48px; margin-bottom:16px;">📚</div>
+            <h3 style="color:var(--text); font-weight:700; margin-bottom:8px;">لم يتم اختيار أي درس</h3>
+            <p style="color:var(--text-3); font-size:14px; margin-bottom:24px;">يرجى اختيار درس من قائمة المقررات للبدء في القراءة.</p>
+            <button onclick="switchTab('syllabus', this)" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">تصفح المقررات</button>
         </div>
 
         <div id="reader-active-state" style="display:none;">
@@ -155,18 +168,18 @@
             <div id="sticky-header-container" style="position: sticky; top: 0; z-index: 102; background: var(--bg); box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
                 <!-- Top Navigation Bar for Reader only -->
                 <header class="top-nav" style="border-bottom: none; padding-bottom: 8px;">
-                    <button class="control-btn font-control-btn" title="Ø®Ø±ÙŠØ·Ø© Ø§Ù„Ù…Ù†Ù‡Ø¬" onclick="openMindMap()">ðŸ—ºï¸</button>
+                    <button class="control-btn font-control-btn" title="خريطة المنهج" onclick="openMindMap()">🗺️</button>
                     <div class="reader-controls">
-                        <button class="control-btn font-control-btn" id="btn-text-minus">Ø¶-</button>
-                        <button class="control-btn font-control-btn" id="btn-text-plus">Ø¶+</button>
-                        <button class="control-btn" id="btn-theme-toggle">ðŸŒ™</button>
+                        <button class="control-btn font-control-btn" id="btn-text-minus">ض-</button>
+                        <button class="control-btn font-control-btn" id="btn-text-plus">ض+</button>
+                        <button class="control-btn" id="btn-theme-toggle">🌙</button>
                             
 <div class="segmented-control" style="display: flex; background: var(--surface-2, rgba(0,0,0,0.1)); border-radius: 8px; padding: 2px; border: 1px solid var(--border-color); margin-right: 4px;">
-    <button class="control-btn segment-btn" id="btn-seg-video" style="border-radius: 6px; padding: 2px 10px; font-size: 0.85rem; font-weight: bold; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">ðŸŽ¥ ÙÙŠØ¯ÙŠÙˆ</button>
-    <button class="control-btn segment-btn active" id="btn-seg-reading" style="border-radius: 6px; padding: 2px 10px; font-size: 0.85rem; font-weight: bold; border: none; background: var(--primary); color: white; cursor: pointer; transition: all 0.2s;">ðŸ“– Ù‚Ø±Ø§Ø¡Ø©</button>
+    <button class="control-btn segment-btn" id="btn-seg-video" style="border-radius: 6px; padding: 2px 10px; font-size: 0.85rem; font-weight: bold; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">🎥 فيديو</button>
+    <button class="control-btn segment-btn active" id="btn-seg-reading" style="border-radius: 6px; padding: 2px 10px; font-size: 0.85rem; font-weight: bold; border: none; background: var(--primary); color: white; cursor: pointer; transition: all 0.2s;">📖 قراءة</button>
 </div>
 
-                        <button class="control-btn" id="btn-settings-toggle" title="ParamÃ¨tres de Lecture">âš™ï¸</button>
+                        <button class="control-btn" id="btn-settings-toggle" title="Paramètres de Lecture">⚙️</button>
                     </div>
                 </header>
 
@@ -178,16 +191,16 @@
                 <!-- Unified Dashboard: Sommaire + Progress -->
                 <div class="sommaire-trigger-wrapper" id="sommaire-wrapper" style="padding: 12px 20px; display:flex; flex-direction:column; gap:16px; border-bottom:1px solid var(--border-color); background:var(--surface);">
                     
-                    <!-- LIGNE 1 : Titre et Outils VidÃ©o -->
+                    <!-- LIGNE 1 : Titre et Outils Vidéo -->
                     <div style="display:flex; justify-content:space-between; align-items:center; width: 100%; gap: 12px;">
                         <button class="control-btn video-tool-btn" id="btn-speed-toggle" title="Vitesse de lecture" style="flex-shrink: 0;">1x</button>
                         
                         <button id="open-sommaire-btn" class="sommaire-btn" style="flex:1; justify-content:center; background: transparent; border: none; padding: 0; min-width: 0;">
-                            <span class="icon" style="font-size: 20px; margin-right: 8px;">â˜°</span>
-                            <span class="text" id="current-theme-label" style="display: block; max-width: 100%; font-size: 15px; text-align: center; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Ù…Ø­Ø§ÙˆØ± Ø§Ù„Ø¯Ø±Ø³</span>
+                            <span class="icon" style="font-size: 20px; margin-right: 8px;">☰</span>
+                            <span class="text" id="current-theme-label" style="display: block; max-width: 100%; font-size: 15px; text-align: center; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">محاور الدرس</span>
                         </button>
 
-                        <button class="control-btn video-tool-btn" id="btn-sticky-toggle" title="DÃ©sÃ©pingler la vidÃ©o" style="flex-shrink: 0;">ðŸ“Œ</button>
+                        <button class="control-btn video-tool-btn" id="btn-sticky-toggle" title="Désépingler la vidéo" style="flex-shrink: 0;">📌</button>
                     </div>
 
                     <!-- LIGNE 2 : Progression Pure -->
@@ -213,71 +226,71 @@
         <div style="padding: 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; background:var(--surface); padding:12px 16px; border-radius:12px; border:1px solid var(--border-color);">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <button id="exam-back-btn" onclick="examWizard.goBack()" style="display:none; background:var(--primary-light); color:var(--primary); border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">â¬…ï¸ ØªØ±Ø§Ø¬Ø¹</button>
-                    <h2 style="margin:0; color:var(--text); font-size:20px; font-weight:800;">ðŸ“ Ù…ÙˆÙ„Ø¯ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ÙˆØ§Ù„ØªÙ…Ø§Ø±ÙŠÙ†</h2>
+                    <button id="exam-back-btn" onclick="examWizard.goBack()" style="display:none; background:var(--primary-light); color:var(--primary); border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">⬅️ تراجع</button>
+                    <h2 style="margin:0; color:var(--text); font-size:20px; font-weight:800;">📝 مولد الاختبارات والتمارين</h2>
                 </div>
                 <button onclick="examWizard.reset()" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 14px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:4px;">
-                    <span>ðŸ”„ Ø¥Ø¹Ø§Ø¯Ø© Ø¶Ø¨Ø·</span>
+                    <span>🔄 إعادة ضبط</span>
                 </button>
             </div>
             
             <!-- STEP 1: SUBJECT -->
             <div id="exam-step-1" style="display:block;">
-                <h3 style="color:var(--text); text-align:center; margin-bottom:16px; font-size:18px; font-weight:700;">1ï¸âƒ£ Ø§Ø®ØªØ± Ø§Ù„Ù…Ø§Ø¯Ø© Ø§Ù„Ù…Ø±Ø§Ø¯ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± ÙÙŠÙ‡Ø§:</h3>
+                <h3 style="color:var(--text); text-align:center; margin-bottom:16px; font-size:18px; font-weight:700;">1️⃣ اختر المادة المراد الاختبار فيها:</h3>
                 <div id="exam-subject-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                     <div class="exam-subject-card" data-subject="sira" onclick="examWizard.selectSubject('sira')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
-                        <div style="font-size:36px; margin-bottom:6px;">ðŸ“œ</div>
-                        <div style="font-weight:bold; font-size:16px; color:var(--text);">Ø§Ù„Ø³ÙŠØ±Ø© Ø§Ù„Ù†Ø¨ÙˆÙŠØ©</div>
+                        <div style="font-size:36px; margin-bottom:6px;">📜</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">السيرة النبوية</div>
                     </div>
                     <div class="exam-subject-card" data-subject="fiqh" onclick="examWizard.selectSubject('fiqh')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
-                        <div style="font-size:36px; margin-bottom:6px;">âš–ï¸</div>
-                        <div style="font-weight:bold; font-size:16px; color:var(--text);">Ø§Ù„ÙÙ‚Ù‡ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ÙŠ</div>
+                        <div style="font-size:36px; margin-bottom:6px;">⚖️</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">الفقه الإسلامي</div>
                     </div>
                     <div class="exam-subject-card" data-subject="aqeeda" onclick="examWizard.selectSubject('aqeeda')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
-                        <div style="font-size:36px; margin-bottom:6px;">ðŸ•‹</div>
-                        <div style="font-weight:bold; font-size:16px; color:var(--text);">Ø§Ù„Ø¹Ù‚ÙŠØ¯Ø©</div>
+                        <div style="font-size:36px; margin-bottom:6px;">🕋</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">العقيدة</div>
                     </div>
                     <div class="exam-subject-card" data-subject="nahw" onclick="examWizard.selectSubject('nahw')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); transition:all 0.2s;">
-                        <div style="font-size:36px; margin-bottom:6px;">ðŸ“</div>
-                        <div style="font-weight:bold; font-size:16px; color:var(--text);">Ø§Ù„Ù†Ø­Ùˆ Ø§Ù„Ø¹Ø±Ø¨ÙŠ</div>
+                        <div style="font-size:36px; margin-bottom:6px;">📝</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">النحو العربي</div>
                     </div>
                     <div class="exam-subject-card" data-subject="tajweed" onclick="examWizard.selectSubject('tajweed')" style="background:var(--surface); border-radius:14px; padding:18px; text-align:center; cursor:pointer; box-shadow:var(--shadow-sm); border:2px solid var(--border-color); grid-column: span 2; transition:all 0.2s;">
-                        <div style="font-size:36px; margin-bottom:6px;">ðŸ“–</div>
-                        <div style="font-weight:bold; font-size:16px; color:var(--text);">Ø£Ø­ÙƒØ§Ù… Ø§Ù„ØªØ¬ÙˆÙŠØ¯</div>
+                        <div style="font-size:36px; margin-bottom:6px;">📖</div>
+                        <div style="font-weight:bold; font-size:16px; color:var(--text);">أحكام التجويد</div>
                     </div>
                 </div>
             </div>
 
             <!-- STEP 2: MODE -->
             <div id="exam-step-2" style="display:none;">
-                <h3 style="color:var(--text); text-align:center; margin-bottom:18px; font-size:18px; font-weight:700;">2ï¸âƒ£ Ø§Ø®ØªØ± Ù†Ù…Ø· ÙˆØ·Ø±ÙŠÙ‚Ø© Ø§Ù„ØªÙ‚Ø³ÙŠÙ…:</h3>
+                <h3 style="color:var(--text); text-align:center; margin-bottom:18px; font-size:18px; font-weight:700;">2️⃣ اختر نمط وطريقة التقسيم:</h3>
                 
                 <div id="exam-mode-cards" style="display:flex; flex-direction:column; gap:14px; max-width:500px; margin:0 auto;">
                     
                     <!-- Mode Lessons -->
                     <div class="exam-mode-card" onclick="examWizard.selectMode('lessons')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid var(--primary-light);">
-                        <div style="font-size:32px; margin-bottom:8px;">ðŸ“š</div>
-                        <div style="font-weight:800; font-size:18px; color:var(--primary); margin-bottom:4px;">Ø­Ø³Ø¨ Ø£Ø±Ù‚Ø§Ù… Ø§Ù„Ø¯Ø±ÙˆØ³</div>
+                        <div style="font-size:32px; margin-bottom:8px;">📚</div>
+                        <div style="font-weight:800; font-size:18px; color:var(--primary); margin-bottom:4px;">حسب أرقام الدروس</div>
                         <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
-                            ðŸ“Œ Ù…Ø«Ø§Ù„: Ø§Ø®ØªØ¨Ø± Ù†ÙØ³Ùƒ ÙÙŠ (Ø§Ù„Ø¯Ø±Ø³ 12ØŒ Ø§Ù„Ø¯Ø±Ø³ 13ØŒ Ø§Ù„Ø¯Ø±Ø³ 14...)
+                            📌 مثال: اختبر نفسك في (الدرس 12، الدرس 13، الدرس 14...)
                         </div>
                     </div>
 
                     <!-- Mode Themes -->
                     <div class="exam-mode-card" onclick="examWizard.selectMode('themes')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid #fef3c7;">
-                        <div style="font-size:32px; margin-bottom:8px;">ðŸŽ¯</div>
-                        <div style="font-weight:800; font-size:18px; color:#d97706; margin-bottom:4px;">Ø­Ø³Ø¨ Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„Ø¹Ù„Ù…ÙŠØ©</div>
+                        <div style="font-size:32px; margin-bottom:8px;">🎯</div>
+                        <div style="font-weight:800; font-size:18px; color:#d97706; margin-bottom:4px;">حسب المحاور العلمية</div>
                         <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
-                            ðŸŽ¯ Ù…Ø«Ø§Ù„: Ø§Ø®ØªØ¨Ø± Ù†ÙØ³Ùƒ ÙÙŠ (Ø£Ø­ÙƒØ§Ù… Ø§Ù„ØµÙŠØ§Ù…ØŒ Ø´Ø±ÙˆØ· Ø§Ù„Ø¥Ù…Ø§Ù…Ø©ØŒ Ø§Ù„Ù†ÙˆÙ† Ø§Ù„Ø³Ø§ÙƒÙ†Ø©...)
+                            🎯 مثال: اختبر نفسك في (أحكام الصيام، شروط الإمامة، النون الساكنة...)
                         </div>
                     </div>
 
                     <!-- Mode Years (Sira only) -->
                     <div class="exam-mode-card" id="exam-mode-years" onclick="examWizard.selectMode('years')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid #dcfce7; display:none;">
-                        <div style="font-size:32px; margin-bottom:8px;">â³</div>
-                        <div style="font-weight:800; font-size:18px; color:#166534; margin-bottom:4px;">Ø­Ø³Ø¨ Ø§Ù„Ø³Ù†ÙˆØ§Øª Ø§Ù„Ù‡Ø¬Ø±ÙŠØ©</div>
+                        <div style="font-size:32px; margin-bottom:8px;">⏳</div>
+                        <div style="font-weight:800; font-size:18px; color:#166534; margin-bottom:4px;">حسب السنوات الهجرية</div>
                         <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
-                            â³ Ù…Ø«Ø§Ù„: Ø£Ø­Ø¯Ø§Ø« (Ø§Ù„Ø³Ù†Ø© 2 Ù‡Ù€ØŒ Ø§Ù„Ø³Ù†Ø© 8 Ù‡Ù€...)
+                            ⏳ مثال: أحداث (السنة 2 هـ، السنة 8 هـ...)
                         </div>
                     </div>
                 </div>
@@ -286,10 +299,10 @@
             <!-- STEP 3: SELECTION & SETTINGS -->
             <div id="exam-step-3" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <h3 id="exam-step-3-title" style="color:var(--text); margin:0; font-size:17px; font-weight:700;">3ï¸âƒ£ Ø­Ø¯Ø¯ Ø§Ù„Ø¯Ø±ÙˆØ³ / Ø§Ù„Ù…Ø­Ø§ÙˆØ±:</h3>
+                    <h3 id="exam-step-3-title" style="color:var(--text); margin:0; font-size:17px; font-weight:700;">3️⃣ حدد الدروس / المحاور:</h3>
                     <div style="display:flex; gap:8px;">
-                        <button onclick="examWizard.selectAll(true)" style="background:var(--primary-light); color:var(--primary); border:none; padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">âœ… ØªØ­Ø¯ÙŠØ¯ Ø§Ù„ÙƒÙ„</button>
-                        <button onclick="examWizard.selectAll(false)" style="background:var(--bg); color:var(--text-2); border:1px solid var(--border-color); padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">âŒ Ø¥Ù„ØºØ§Ø¡ Ø§Ù„ÙƒÙ„</button>
+                        <button onclick="examWizard.selectAll(true)" style="background:var(--primary-light); color:var(--primary); border:none; padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">✅ تحديد الكل</button>
+                        <button onclick="examWizard.selectAll(false)" style="background:var(--bg); color:var(--text-2); border:1px solid var(--border-color); padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer;">❌ إلغاء الكل</button>
                     </div>
                 </div>
                 
@@ -299,27 +312,27 @@
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
                     <div>
-                        <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">Ø¹Ø¯Ø¯ Ø§Ù„Ø£Ø³Ø¦Ù„Ø©</h4>
+                        <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">عدد الأسئلة</h4>
                         <input type="number" id="exam-limit-input" value="10" min="5" max="50" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); font-size:16px; text-align:center; background:var(--surface); color:var(--text);">
                     </div>
                     <div>
-                        <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">ÙˆÙ‚Øª Ø§Ù„Ø³Ø¤Ø§Ù„</h4>
+                        <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">وقت السؤال</h4>
                         <select id="exam-timer-mode" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); font-size:15px; text-align:center; background:var(--surface); color:var(--text); direction:rtl;">
-                            <option value="0">Ø¨Ø¯ÙˆÙ† ÙˆÙ‚Øª</option>
-                            <option value="15">15 Ø«Ø§Ù†ÙŠØ©</option>
-                            <option value="30">30 Ø«Ø§Ù†ÙŠØ©</option>
-                            <option value="60">60 Ø«Ø§Ù†ÙŠØ©</option>
+                            <option value="0">بدون وقت</option>
+                            <option value="15">15 ثانية</option>
+                            <option value="30">30 ثانية</option>
+                            <option value="60">60 ثانية</option>
                         </select>
                     </div>
                 </div>
 
-                <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„ØªØµØ­ÙŠØ­</h4>
+                <h4 style="color:var(--text-2); margin-bottom:6px; font-size:14px;">طريقة التصحيح</h4>
                 <select id="exam-correction-mode" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); font-size:15px; text-align:center; background:var(--surface); color:var(--text); margin-bottom:20px; direction:rtl;">
-                    <option value="instant">ÙÙˆØ±ÙŠ (ØªØ¸Ù‡Ø± Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø© ÙˆØ§Ù„ØªÙØ±ÙŠØº Ø¨Ø¹Ø¯ ÙƒÙ„ Ø³Ø¤Ø§Ù„)</option>
-                    <option value="deferred">Ù…Ø¤Ø¬Ù„ (ØªØµØ­ÙŠØ­ Ø´Ø§Ù…Ù„ ÙÙŠ Ù†Ù‡Ø§ÙŠØ© Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±)</option>
+                    <option value="instant">فوري (تظهر الإجابة والتفريغ بعد كل سؤال)</option>
+                    <option value="deferred">مؤجل (تصحيح شامل في نهاية الاختبار)</option>
                 </select>
                 
-                <button id="exam-start-btn" onclick="examWizard.startQuiz()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:14px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: all 0.3s;">Ø§Ø¨Ø¯Ø£ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ø¢Ù† ðŸš€</button>
+                <button id="exam-start-btn" onclick="examWizard.startQuiz()" disabled style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:14px; font-size:18px; font-weight:bold; width:100%; cursor:pointer; box-shadow: 0 4px 15px rgba(79,70,229,0.3); opacity:0.5; transition: all 0.3s;">ابدأ الاختبار الآن 🚀</button>
             </div>
         </div>
     </div>
@@ -327,24 +340,24 @@
     <!-- TAB: PRACTICE -->
     <div class="tab-panel" id="tab-practice" style="background: var(--bg); min-height: 100vh; padding-bottom: 80px;">
         <div id="practice-empty-state" style="padding: 40px 20px; text-align: center;">
-            <div style="font-size:48px; margin-bottom:16px;">ðŸŽ¯</div>
-            <h3 style="color:var(--text); font-weight:700; margin-bottom:8px;">Ø§Ù„ØªØ¯Ø±ÙŠØ¨Ø§Øª ÙˆØ§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©</h3>
-            <p style="color:var(--text-3); font-size:14px; margin-bottom:24px;">Ø§Ø®ØªØ± Ø¯Ø±Ø³Ø§Ù‹ Ù„Ù„Ø¨Ø¯Ø¡ ÙÙŠ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± ÙˆØ§Ù„ØªØ£ÙƒØ¯ Ù…Ù† ÙÙ‡Ù…Ùƒ.</p>
-            <button onclick="switchTab('syllabus', this)" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">ØªØµÙØ­ Ø§Ù„Ù…Ù‚Ø±Ø±Ø§Øª</button>
+            <div style="font-size:48px; margin-bottom:16px;">🎯</div>
+            <h3 style="color:var(--text); font-weight:700; margin-bottom:8px;">التدريبات والمراجعة</h3>
+            <p style="color:var(--text-3); font-size:14px; margin-bottom:24px;">اختر درساً للبدء في الاختبار والتأكد من فهمك.</p>
+            <button onclick="switchTab('syllabus', this)" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">تصفح المقررات</button>
         </div>
         
         <div id="practice-loading" style="display:none; padding: 40px 20px; text-align: center;">
             <div class="spinner" style="margin: 0 auto 20px auto; width:40px; height:40px; border:4px solid var(--border-color); border-top:4px solid var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
-            <p style="color:var(--text-2);">Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø£Ø³Ø¦Ù„Ø©...</p>
+            <p style="color:var(--text-2);">جاري تحميل الأسئلة...</p>
         </div>
 
         <div id="practice-active-state" style="display:none; padding: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <button onclick="quizEngine.quit()" style="background:transparent; border:none; font-size:24px; color:var(--text-2); cursor:pointer;">âœ•</button>
+                <button onclick="quizEngine.quit()" style="background:transparent; border:none; font-size:24px; color:var(--text-2); cursor:pointer;">✕</button>
                 <div style="flex:1; margin: 0 16px; background:var(--surface); height:12px; border-radius:6px; overflow:hidden;">
                     <div id="quiz-progress-bar" style="height:100%; background:var(--primary); width:0%; transition:width 0.3s ease;"></div>
                 </div>
-                <div style="font-weight:bold; color:var(--primary);" id="quiz-score-badge">â¤ï¸ <span id="quiz-lives">3</span></div>
+                <div style="font-weight:bold; color:var(--primary);" id="quiz-score-badge">❤️ <span id="quiz-lives">3</span></div>
             </div>
 
             <div id="quiz-question-container" style="background:var(--surface); border-radius:16px; padding:24px; box-shadow:0 4px 15px rgba(0,0,0,0.05); margin-bottom:24px; text-align:center;">
@@ -359,8 +372,8 @@
             <div id="quiz-explanation-container" style="display:none; margin-top:20px; text-align:right;">
                 <div id="quiz-explanation-content"></div>
                 <div style="display:flex; justify-content:space-between; margin-top:16px;">
-                    <button onclick="quizEngine.reportQuestion()" style="background:#fee2e2; color:#ef4444; border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer;">âš ï¸ Ø¥Ø¨Ù„Ø§Øº Ø¹Ù† Ø®Ø·Ø£</button>
-                    <button onclick="quizEngine.nextQuestion()" style="background:var(--primary); color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:bold; cursor:pointer;">Ø§Ù„ØªØ§Ù„ÙŠ â¬…ï¸</button>
+                    <button onclick="quizEngine.reportQuestion()" style="background:#fee2e2; color:#ef4444; border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer;">⚠️ إبلاغ عن خطأ</button>
+                    <button onclick="quizEngine.nextQuestion()" style="background:var(--primary); color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:bold; cursor:pointer;">التالي ⬅️</button>
                 </div>
             </div>
         </div>
@@ -374,21 +387,21 @@
                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: bold; color: var(--primary);" id="quiz-final-score">0%</div>
             </div>
             
-            <h2 id="quiz-final-msg" style="color:var(--text); margin-bottom:12px;">Ø£Ø­Ø³Ù†Øª!</h2>
-            <p id="quiz-final-sub" style="color:var(--text-2); margin-bottom:32px;">Ù„Ù‚Ø¯ Ø£Ù†Ù‡ÙŠØª Ø§Ù„ØªØ¯Ø±ÙŠØ¨ Ø¨Ù†Ø¬Ø§Ø­.</p>
+            <h2 id="quiz-final-msg" style="color:var(--text); margin-bottom:12px;">أحسنت!</h2>
+            <p id="quiz-final-sub" style="color:var(--text-2); margin-bottom:32px;">لقد أنهيت التدريب بنجاح.</p>
             
             
             <div id="quiz-errors-container" style="display:none; text-align:right; margin-bottom:24px; padding:16px; background:var(--surface); border-radius:12px; border:1px solid #ef4444;">
-                <h3 style="color:#ef4444; margin-bottom:12px; font-size:18px;">Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„ØªÙŠ Ø£Ø®Ø·Ø£Øª ÙÙŠÙ‡Ø§:</h3>
+                <h3 style="color:#ef4444; margin-bottom:12px; font-size:18px;">الأسئلة التي أخطأت فيها:</h3>
                 <div id="quiz-errors-list"></div>
             </div>
 
-            <button onclick="quizEngine.start()" style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:16px; font-weight:bold; width:100%; cursor:pointer; margin-bottom:12px; box-shadow: 0 4px 0 rgba(0,0,0,0.1);">Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„ØªØ¯Ø±ÙŠØ¨</button>
-            <button onclick="switchTab('reader', document.getElementById('btn-nav-reader'))" style="background:transparent; color:var(--text-2); border:2px solid var(--border-color); padding:14px 32px; border-radius:12px; font-size:16px; font-weight:bold; width:100%; cursor:pointer;">Ø§Ù„Ø¹ÙˆØ¯Ø© Ù„Ù„Ø¯Ø±Ø³</button>
+            <button onclick="quizEngine.start()" style="background:var(--primary); color:white; border:none; padding:16px 32px; border-radius:12px; font-size:16px; font-weight:bold; width:100%; cursor:pointer; margin-bottom:12px; box-shadow: 0 4px 0 rgba(0,0,0,0.1);">إعادة التدريب</button>
+            <button onclick="switchTab('reader', document.getElementById('btn-nav-reader'))" style="background:transparent; color:var(--text-2); border:2px solid var(--border-color); padding:14px 32px; border-radius:12px; font-size:16px; font-weight:bold; width:100%; cursor:pointer;">العودة للدرس</button>
         </div>
     </div>
 
-    <!-- Bottom Sheet pour les ThÃ©matiques -->
+    <!-- Bottom Sheet pour les Thématiques -->
     <div class="bottom-sheet-overlay" id="sommaire-overlay"></div>
     <div class="bottom-sheet" id="sommaire-sheet">
         <div class="bottom-sheet-handle-wrap">
@@ -397,8 +410,8 @@
     
 
         <div class="bottom-sheet-header">
-            <h3>Ù…Ø­Ø§ÙˆØ± Ø§Ù„Ø¯Ø±Ø³</h3>
-            <button class="close-sheet" id="close-sommaire-btn">âœ•</button>
+            <h3>محاور الدرس</h3>
+            <button class="close-sheet" id="close-sommaire-btn">✕</button>
         </div>
         <div class="bottom-sheet-content" id="sommaire-list">
             <!-- Themes and Sub-themes injected here -->
@@ -412,15 +425,15 @@
             <div class="bottom-sheet-handle"></div>
         </div>
         <div class="bottom-sheet-header">
-            <h3 id="lesson-preview-title">Ø§Ù„Ù…Ø­Ø§ÙˆØ±</h3>
-            <button class="close-sheet" id="close-preview-btn">âœ•</button>
+            <h3 id="lesson-preview-title">المحاور</h3>
+            <button class="close-sheet" id="close-preview-btn">✕</button>
         </div>
         <div class="bottom-sheet-content" id="lesson-preview-list" style="padding-bottom: 20px;">
             <!-- Chapter checkboxes injected here -->
         </div>
         <div style="padding: 16px; padding-bottom: 90px; border-top: 1px solid var(--border-color); background: var(--surface);">
             <button id="start-reading-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 16px; border-radius: 12px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                ðŸ“– Ø§Ø¨Ø¯Ø£ Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©
+                📖 ابدأ القراءة
             </button>
         </div>
     </div>
@@ -429,44 +442,44 @@
     <div class="bottom-sheet-overlay" id="settings-overlay"></div>
     <div class="bottom-sheet" id="settings-sheet">
         <div class="bottom-sheet-header">
-            <h3>ParamÃ¨tres de Lecture</h3>
-            <button class="close-sheet" id="close-settings-btn">âœ•</button>
+            <h3>Paramètres de Lecture</h3>
+            <button class="close-sheet" id="close-settings-btn">✕</button>
         </div>
         <div class="bottom-sheet-content" id="settings-content" style="padding: 20px; padding-bottom: 90px; direction: rtl; text-align: right;">
             <div class="setting-group" style="margin-bottom: 30px;">
-                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">ÙˆØ¶Ø¹ Ø§Ù„ØªÙ…Ø±ÙŠØ± (Scroll Mode)</h4>
-                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">ÙƒÙŠÙ ØªØªÙØ§Ø¹Ù„ Ø§Ù„ØµÙØ­Ø© Ø£Ø«Ù†Ø§Ø¡ Ù‚Ø±Ø§Ø¡Ø© Ø§Ù„Ø£Ø³ØªØ§Ø°.</p>
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">وضع التمرير (Scroll Mode)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">كيف تتفاعل الصفحة أثناء قراءة الأستاذ.</p>
                 
                 <label style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; cursor: pointer; padding: 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-color);">
                     <input type="radio" name="scrollMode" value="zone" style="width: 22px; height: 22px; accent-color: var(--primary);">
                     <div>
-                        <div style="font-weight: bold; font-size: 15px; color: var(--text);">ÙˆØ¶Ø¹ Ø§Ù„ÙƒØªØ§Ø¨ (Ù…ÙˆØµÙ‰ Ø¨Ù‡)</div>
-                        <div style="font-size: 13px; color: var(--text-2);">ØªÙ…Ø±ÙŠØ± Ø·Ø¨ÙŠØ¹ÙŠØŒ ØªØªØ­Ø±Ùƒ Ø§Ù„ØµÙØ­Ø© ÙÙ‚Ø· Ø¹Ù†Ø¯ Ø§Ù„Ø­Ø§Ø¬Ø©.</div>
+                        <div style="font-weight: bold; font-size: 15px; color: var(--text);">وضع الكتاب (موصى به)</div>
+                        <div style="font-size: 13px; color: var(--text-2);">تمرير طبيعي، تتحرك الصفحة فقط عند الحاجة.</div>
                     </div>
                 </label>
                 
                 <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-color);">
                     <input type="radio" name="scrollMode" value="teleprompter" style="width: 22px; height: 22px; accent-color: var(--primary);">
                     <div>
-                        <div style="font-weight: bold; font-size: 15px; color: var(--text);">ÙˆØ¶Ø¹ Ø§Ù„ØªÙ„Ù‚ÙŠÙ† (Teleprompter)</div>
-                        <div style="font-size: 13px; color: var(--text-2);">ØªØ¨Ù‚Ù‰ Ø§Ù„Ø¬Ù…Ù„Ø© Ø§Ù„Ù…Ù‚Ø±ÙˆØ¡Ø© Ø¯Ø§Ø¦Ù…Ø§Ù‹ ÙÙŠ Ø£Ø¹Ù„Ù‰ Ø§Ù„Ø´Ø§Ø´Ø©.</div>
+                        <div style="font-weight: bold; font-size: 15px; color: var(--text);">وضع التلقين (Teleprompter)</div>
+                        <div style="font-size: 13px; color: var(--text-2);">تبقى الجملة المقروءة دائماً في أعلى الشاشة.</div>
                     </div>
                 </label>
             </div>
             
             <div class="setting-group" style="margin-bottom: 24px;">
-                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">Ù†ÙˆØ¹ Ø§Ù„Ø®Ø· (Police)</h4>
-                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 12px;">Ø§Ø®ØªØ± Ø§Ù„Ø®Ø· Ø§Ù„Ø£Ù†Ø³Ø¨ Ù„Ù„Ù‚Ø±Ø§Ø¡Ø©.</p>
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">نوع الخط (Police)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 12px;">اختر الخط الأنسب للقراءة.</p>
                 <div class="settings-btn-group" style="display: flex; gap: 10px; direction: rtl;">
-                    <button class="btn font-select-btn" data-font="'Tajawal', sans-serif" style="font-family:'Tajawal', sans-serif; font-size:16px;">Ø­Ø¯ÙŠØ«</button>
-                    <button class="btn font-select-btn" data-font="'Amiri', serif" style="font-family:'Amiri', serif; font-size:18px;">ØªÙ‚Ù„ÙŠØ¯ÙŠ</button>
-                    <button class="btn font-select-btn" data-font="'Cairo', sans-serif" style="font-family:'Cairo', sans-serif; font-size:16px;">ÙˆØ§Ø¶Ø­</button>
+                    <button class="btn font-select-btn" data-font="'Tajawal', sans-serif" style="font-family:'Tajawal', sans-serif; font-size:16px;">حديث</button>
+                    <button class="btn font-select-btn" data-font="'Amiri', serif" style="font-family:'Amiri', serif; font-size:18px;">تقليدي</button>
+                    <button class="btn font-select-btn" data-font="'Cairo', sans-serif" style="font-family:'Cairo', sans-serif; font-size:16px;">واضح</button>
                 </div>
             </div>
     
             <div class="setting-group" style="margin-bottom: 24px;">
-                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">Ø³Ø±Ø¹Ø© Ø§Ù„Ù‚Ø±Ø§Ø¡Ø© (Vitesse)</h4>
-                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 12px;">ØªØºÙŠÙŠØ± Ø³Ø±Ø¹Ø© Ø§Ù„ÙÙŠØ¯ÙŠÙˆ.</p>
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">سرعة القراءة (Vitesse)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 12px;">تغيير سرعة الفيديو.</p>
                 <div class="settings-btn-group" style="display: flex; gap: 8px; direction: ltr;">
                     <button class="btn speed-select-btn" data-speed="0.75">0.75x</button>
                     <button class="btn speed-select-btn active" data-speed="1">1x</button>
@@ -477,11 +490,11 @@
             </div>
     
             <div class="setting-group">
-                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">ÙˆØ¶Ø¹ Ø§Ù„ØªØ±ÙƒÙŠØ² (Focus Mode)</h4>
-                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">Ø¥Ø®ÙØ§Ø¡ Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ù†Øµ Ù„ØªØ¬Ù†Ø¨ Ø§Ù„ØªØ´ØªØª Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø§Ø³ØªÙ…Ø§Ø¹.</p>
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">وضع التركيز (Focus Mode)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">إخفاء باقي النص لتجنب التشتت أثناء الاستماع.</p>
                 
                 <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <div style="font-weight: bold; font-size: 15px; color: var(--text);">ØªØ¹ØªÙŠÙ… Ø§Ù„Ù†Øµ ØºÙŠØ± Ø§Ù„Ù…Ù‚Ø±ÙˆØ¡</div>
+                    <div style="font-weight: bold; font-size: 15px; color: var(--text);">تعتيم النص غير المقروء</div>
                     <label class="switch">
                       <input type="checkbox" id="focusModeToggle">
                       <span class="slider"></span>
@@ -490,11 +503,11 @@
             </div>
 
             <div class="setting-group">
-                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">ØªØ¨Ø§Ø¹Ø¯ Ø§Ù„Ø£Ø³Ø·Ø± (Line Spacing)</h4>
-                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">Ø²ÙŠØ§Ø¯Ø© Ø§Ù„Ù…Ø³Ø§ÙØ© Ø¨ÙŠÙ† Ø§Ù„Ø£Ø³Ø·Ø± Ù„Ø±Ø§Ø­Ø© Ø§Ù„Ø¹ÙŠÙ†.</p>
+                <h4 style="margin: 0 0 8px 0; font-size: 17px; color: var(--text);">تباعد الأسطر (Line Spacing)</h4>
+                <p style="font-size: 13px; color: var(--text-2); margin-top: 0; margin-bottom: 16px;">زيادة المسافة بين الأسطر لراحة العين.</p>
                 
                 <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <div style="font-weight: bold; font-size: 15px; color: var(--text);">Ù†Øµ Ù…ØªØ¨Ø§Ø¹Ø¯</div>
+                    <div style="font-weight: bold; font-size: 15px; color: var(--text);">نص متباعد</div>
                     <label class="switch">
                       <input type="checkbox" id="spacing-toggle">
                       <span class="slider"></span>
@@ -509,7 +522,7 @@
     <div id="glossary-popup" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:var(--surface); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:9999; padding:16px; border-right:4px solid var(--primary); text-align:right;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
             <h4 id="glossary-popup-term" style="margin:0; font-size:16px; display:flex; align-items:center; gap:6px;"></h4>
-            <button onclick="closeGlossaryPopup()" style="background:none; border:none; font-size:18px; color:var(--text-3); cursor:pointer;">âœ•</button>
+            <button onclick="closeGlossaryPopup()" style="background:none; border:none; font-size:18px; color:var(--text-3); cursor:pointer;">✕</button>
         </div>
         <div id="glossary-popup-def" style="font-size:13.5px; color:var(--text-2); line-height:1.6; font-weight:500;"></div>
     </div>
@@ -517,30 +530,30 @@
     <!-- Mind Map Modal -->
     <div id="mindmap-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; flex-direction:column; padding:20px;">
         <div style="width:100%; display:flex; justify-content:flex-end; padding-bottom:10px;">
-            <button onclick="closeMindMap()" style="background:#fff; border:none; width:40px; height:40px; border-radius:20px; font-size:20px; font-weight:bold; cursor:pointer;">âœ•</button>
+            <button onclick="closeMindMap()" style="background:#fff; border:none; width:40px; height:40px; border-radius:20px; font-size:20px; font-weight:bold; cursor:pointer;">✕</button>
         </div>
         <div style="flex:1; width:100%; background:#fff; border-radius:12px; overflow:hidden; display:flex; justify-content:center; align-items:center;">
             <img id="mindmap-image" src="" alt="Carte Mentale" style="max-width:100%; max-height:100%; object-fit:contain;">
         </div>
         <div style="color:#fff; text-align:center; padding-top:12px; font-size:14px; font-family:'Tajawal', sans-serif;">
-            ÙŠÙ…ÙƒÙ†Ùƒ ØªÙƒØ¨ÙŠØ± Ø§Ù„ØµÙˆØ±Ø© Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø¥ØµØ¨Ø¹ÙŠÙƒ (Pinch to zoom)
+            يمكنك تكبير الصورة باستخدام إصبعيك (Pinch to zoom)
         </div>
     </div>
 
     <!-- TAB: SUPPORT / IA -->
     <div class="tab-panel" id="tab-support" style="background: var(--bg); min-height: 100vh; padding: 20px; padding-bottom: 90px; direction: rtl; text-align: right;">
         <div style="text-align: center; margin-bottom: 24px;">
-            <div style="font-size: 42px; margin-bottom: 8px;">ðŸ¤–ðŸ’¬</div>
-            <h2 style="color: var(--primary); font-weight: 800; margin: 0 0 6px 0;">Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒÙŠ ÙˆØ§Ù„Ø¯Ø¹Ù…</h2>
-            <p style="color: var(--text-2); font-size: 14px; margin: 0;">Ø§ÙƒØªØ¨ Ø³Ø¤Ø§Ù„Ùƒ Ø£Ùˆ Ø§Ø³ØªÙØ³Ø§Ø±Ùƒ ÙˆØ³ÙŠØªÙ… ØªØ­Ù„ÙŠÙ„Ù‡ ÙˆØ¥Ø±Ø´Ø§Ø¯Ùƒ ÙÙˆØ±Ø§Ù‹</p>
+            <div style="font-size: 42px; margin-bottom: 8px;">🤖💬</div>
+            <h2 style="color: var(--primary); font-weight: 800; margin: 0 0 6px 0;">المساعد الذكي والدعم</h2>
+            <p style="color: var(--text-2); font-size: 14px; margin: 0;">اكتب سؤالك أو استفسارك وسيتم تحليله وإرشادك فوراً</p>
         </div>
 
         <div style="background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px;">
-            <label style="display: block; font-weight: bold; color: var(--text); margin-bottom: 8px; font-size: 15px;">Ù…Ø§ Ù‡Ùˆ Ø³Ø¤Ø§Ù„Ùƒ Ø£Ùˆ Ø§Ù„Ù…Ø´ÙƒÙ„Ø© Ø§Ù„ØªÙŠ ÙˆØ§Ø¬Ù‡ØªÙƒØŸ</label>
-            <textarea id="support-user-query" rows="4" placeholder="Ù…Ø«Ø§Ù„: Ù„Ù… Ø£ÙÙ‡Ù… Ù…Ø³Ø£Ù„Ø© Ø§Ù„Ù‚Ø¶Ø§Ø¡ ÙÙŠ Ø§Ù„ØµÙ„Ø§Ø©ØŒ Ø£Ùˆ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ Ù„Ø§ ÙŠØ¹Ù…Ù„..." style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; margin-bottom: 12px;"></textarea>
+            <label style="display: block; font-weight: bold; color: var(--text); margin-bottom: 8px; font-size: 15px;">ما هو سؤالك أو المشكلة التي واجهتك؟</label>
+            <textarea id="support-user-query" rows="4" placeholder="مثال: لم أفهم مسألة القضاء في الصلاة، أو الفيديو لا يعمل..." style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; margin-bottom: 12px;"></textarea>
 
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: var(--bg); padding: 10px 14px; border-radius: 10px;">
-                <span style="font-size: 13px; color: var(--text-2);">ðŸ”’ Ø³Ø¤Ø§Ù„ Ø®Ø§Øµ / Ø´Ø®ØµÙŠ (ÙŠØµÙ„ Ù…Ø¨Ø§Ø´Ø±Ø© Ù„Ù„Ø¥Ø¯Ø§Ø±Ø©)</span>
+                <span style="font-size: 13px; color: var(--text-2);">🔒 سؤال خاص / شخصي (يصل مباشرة للإدارة)</span>
                 <label class="switch" style="transform: scale(0.85);">
                     <input type="checkbox" id="support-is-private">
                     <span class="slider"></span>
@@ -548,7 +561,7 @@
             </div>
 
             <button id="support-submit-btn" onclick="supportEngine.analyzeAndSubmit()" style="width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
-                <span>ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø¨ÙˆØ§Ø³Ø·Ø© Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ âœ¨</span>
+                <span>تحليل السؤال بواسطة الذكاء الاصطناعي ✨</span>
             </button>
         </div>
 
@@ -559,21 +572,22 @@
             <div id="support-rag-suggestions" style="margin-bottom: 16px;"></div>
 
             <div id="support-ticket-confirmation" style="display: none; padding: 14px; background: #dcfce7; color: #166534; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center;">
-                âœ… ØªÙ… Ø¥Ø±Ø³Ø§Ù„ Ø§Ø³ØªÙØ³Ø§Ø±Ùƒ Ø¨Ù†Ø¬Ø§Ø­ Ø¥Ù„Ù‰ ÙØ±ÙŠÙ‚ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©. Ø³ÙŠØªÙ… Ø§Ù„Ø±Ø¯ Ø¹Ù„ÙŠÙƒ Ù‚Ø±ÙŠØ¨Ø§Ù‹!
+                ✅ تم إرسال استفسارك بنجاح إلى فريق الإدارة. سيتم الرد عليك قريباً!
             </div>
         </div>
     </div>
 
+
     <!-- TAB: TEST QUIZ (ISOLATED) -->
     <div class="tab-panel" id="tab-test-quiz" style="padding: 20px; text-align: center; background: var(--bg); min-height: 100vh;">
-        <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">ðŸ§ª ÙˆØ¶Ø¹ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ</h2>
+        <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">🧪 وضع الاختبار التجريبي</h2>
         
         <button onclick="startIsolatedQuizTestText()" style="padding: 15px 30px; background: #f59e0b; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(245,158,11,0.3); width: 100%; margin-bottom: 12px;">
-            Ø¬Ù„Ø¨ ÙˆØ¹Ø±Ø¶ ÙƒÙ†Øµ (Debug) ðŸ“
+            جلب وعرض كنص (Debug) 📝
         </button>
 
         <button onclick="startIsolatedQuizTestInteractive()" style="padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(79,70,229,0.3); width: 100%;">
-            Ø¬Ù„Ø¨ ÙˆØ¨Ø¯Ø¡ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø± Ø§Ù„ØªÙØ§Ø¹Ù„ÙŠ ðŸš€
+            جلب وبدء الاختبار التفاعلي 🚀
         </button>
 
         <div id="test-quiz-result" style="margin-top: 30px; text-align: right; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: none;"></div>
@@ -583,22 +597,22 @@
     
     <nav class="bottom-nav">
         <button class="nav-btn active" onclick="switchTab('home', this)">
-            <span class="icon">ðŸ </span><span>Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</span>
+            <span class="icon">🏠</span><span>الرئيسية</span>
         </button>
         <button class="nav-btn" onclick="switchTab('syllabus', this)">
-            <span class="icon">ðŸ“–</span><span>Ø§Ù„Ù…Ù‚Ø±Ø±</span>
+            <span class="icon">📖</span><span>المقرر</span>
         </button>
         <button class="nav-btn" id="btn-nav-reader" onclick="switchTab('reader', this)">
-            <span class="icon">ðŸ“š</span><span>Ø§Ù„Ø¯Ø±Ø³</span>
+            <span class="icon">📚</span><span>الدرس</span>
         </button>
         <button class="nav-btn" id="btn-nav-exams" onclick="switchTab('exams', this)">
-            <span class="icon">ðŸ“</span><span>Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª</span>
+            <span class="icon">📝</span><span>الاختبارات</span>
         </button>
         <button class="nav-btn" id="btn-nav-support" onclick="switchTab('support', this)">
-            <span class="icon">ðŸ’¬</span><span>Ø§Ù„Ø¯Ø¹Ù… ÙˆØ§Ù„Ø°ÙƒØ§Ø¡</span>
+            <span class="icon">💬</span><span>الدعم والذكاء</span>
         </button>
         <button class="nav-btn" onclick="switchTab('test-quiz', this)">
-            <span class="icon">ðŸ§ª</span><span>ØªØ¬Ø±Ø¨Ø©</span>
+            <span class="icon">🧪</span><span>تجربة</span>
         </button>
     </nav>
 
@@ -606,7 +620,7 @@
         function fetchQuizAPI(limit) {
             var resDiv = document.getElementById('test-quiz-result');
             resDiv.style.display = 'block';
-            resDiv.innerHTML = '<div style="text-align:center;">Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª... â³</div>';
+            resDiv.innerHTML = '<div style="text-align:center;">جاري الاتصال بقاعدة البيانات... ⏳</div>';
             
             return fetch('/api/student/quiz/setup', {
                 method: 'POST',
@@ -619,17 +633,17 @@
             fetchQuizAPI(5).then(data => {
                 var resDiv = document.getElementById('test-quiz-result');
                 if (data.success && data.questions) {
-                    let html = '<h3 style="color:var(--success,#10b981); margin-top:0;">âœ… ØªÙ… Ø¬Ù„Ø¨ ' + data.questions.length + ' Ø£Ø³Ø¦Ù„Ø© Ø¨Ù†Ø¬Ø§Ø­!</h3><hr style="border-color:var(--border-color);">';
+                    let html = '<h3 style="color:var(--success,#10b981); margin-top:0;">✅ تم جلب ' + data.questions.length + ' أسئلة بنجاح!</h3><hr style="border-color:var(--border-color);">';
                     data.questions.forEach((q, i) => {
                         html += '<div style="margin-bottom:15px;"><strong style="color:var(--primary);">' + (i+1) + '. ' + q.question + '</strong><br>';
                         html += '<span style="color:var(--text-2); font-size:14px;">' + (q.choice_a || 'A') + ' | ' + (q.choice_b || 'B') + '</span></div>';
                     });
                     resDiv.innerHTML = html;
                 } else {
-                    resDiv.innerHTML = '<h3 style="color:#ef4444;">âŒ ÙØ´Ù„: Ù„Ù… ÙŠØªÙ… Ø¥Ø±Ø¬Ø§Ø¹ Ø£Ø³Ø¦Ù„Ø©.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
+                    resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
                 }
             }).catch(e => {
-                document.getElementById('test-quiz-result').innerHTML = '<h3 style="color:#ef4444;">âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø§ØªØµØ§Ù„.</h3><p>' + e.toString() + '</p>';
+                document.getElementById('test-quiz-result').innerHTML = '<h3 style="color:#ef4444;">❌ خطأ في الاتصال.</h3><p>' + e.toString() + '</p>';
             });
         }
 
@@ -637,470 +651,54 @@
             fetchQuizAPI(1).then(data => {
                 var resDiv = document.getElementById('test-quiz-result');
                 if (data.success && data.questions && data.questions.length > 0) {
-                    resDiv.innerHTML = '<h3 style="color:var(--success,#10b981);">âœ… ØªÙ… Ø¬Ù„Ø¨ Ø³Ø¤Ø§Ù„ Ø¨Ù†Ø¬Ø§Ø­! Ø¬Ø§Ø±ÙŠ Ø¨Ø¯Ø¡ Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±...</h3>';
+                    resDiv.innerHTML = '<h3 style="color:var(--success,#10b981);">✅ تم جلب سؤال بنجاح! جاري بدء الاختبار...</h3>';
                     setTimeout(() => {
                         try {
                             switchTab('practice');
                             if (typeof quizEngine === 'undefined') {
-                                resDiv.innerHTML += '<br><strong style="color:red;">âŒ Ø®Ø·Ø£: quizEngine is completely undefined. Script did not load.</strong>';
+                                resDiv.innerHTML += '<br><strong style="color:red;">❌ خطأ: quizEngine is completely undefined. Script did not load.</strong>';
                                 return;
                             }
                             quizEngine.questions = data.questions;
                             quizEngine.start();
                         } catch(err) {
-                            resDiv.innerHTML += '<br><strong style="color:red;">âŒ Ø®Ø·Ø£ Ø¨Ø±Ù…Ø¬ÙŠ: </strong><p dir="ltr">' + err.toString() + ' | Stack: ' + (err.stack||'') + '</p>';
+                            resDiv.innerHTML += '<br><strong style="color:red;">❌ خطأ برمجي: </strong><p dir="ltr">' + err.toString() + ' | Stack: ' + (err.stack||'') + '</p>';
                         }
                     }, 800);
                 } else {
-                    resDiv.innerHTML = '<h3 style="color:#ef4444;">âŒ ÙØ´Ù„: Ù„Ù… ÙŠØªÙ… Ø¥Ø±Ø¬Ø§Ø¹ Ø£Ø³Ø¦Ù„Ø©.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
+                    resDiv.innerHTML = '<h3 style="color:#ef4444;">❌ فشل: لم يتم إرجاع أسئلة.</h3><pre style="direction:ltr;text-align:left;">' + JSON.stringify(data, null, 2) + '</pre>';
                 }
             }).catch(e => {
-                document.getElementById('test-quiz-result').innerHTML = '<h3 style="color:#ef4444;">âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø§ØªØµØ§Ù„.</h3><p>' + e.toString() + '</p>';
+                document.getElementById('test-quiz-result').innerHTML = '<h3 style="color:#ef4444;">❌ خطأ في الاتصال.</h3><p>' + e.toString() + '</p>';
             });
         }
     </script>
 
-    <script>
-window.quizEngine = {
-    questions: [],
-    currentIndex: 0,
-    score: 0,
-    lives: 3,
-    currentSubject: null,
-    currentLessonNum: null,
-    audioSuccess: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3') : null,
-    audioFail: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') : null,
-    fetchQuestionsCustom: function(options) {
-        this.currentSubject = options.subject;
-        this.currentLessonNum = null;
-        this.timer = options.timer || 0;
-        this.correctionMode = options.correctionMode || 'instant';
-        this.wrongAnswers = [];
-        
-        document.getElementById('practice-active-state').style.display = 'none';
-        document.getElementById('practice-result-state').style.display = 'none';
-        document.getElementById('practice-loading').style.display = 'block';
-        
-        var self = this;
-        fetch('/api/student/quiz/setup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: 1, 
-                subject: options.subject,
-                courseNumbers: options.courseNumbers,
-                source: 'all',
-                mode: options.mode,
-                limit: options.limit
-            })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data.success && data.questions && data.questions.length > 0) {
-                self.questions = data.questions;
-                self.start();
-            } else {
-                console.warn("No questions returned from API, using fallback questions...");
-                self.questions = self.getFallbackQuestions(options.subject);
-                self.start();
-            }
-        })
-        .catch(function(e) {
-            console.error(e);
-            self.questions = self.getFallbackQuestions(options.subject);
-            self.start();
-        });
-    },
-
-    getFallbackQuestions: function(subject) {
-        return [
-            {
-                id: 9001,
-                question: "Ù…Ø§ Ù‡Ùˆ Ø§Ù„Ø­ÙƒÙ… Ø§Ù„Ø£Ø³Ø§Ø³ÙŠ Ø§Ù„Ù…ØªØ¹Ù„Ù‚ Ø¨Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø³Ø£Ù„Ø© ÙÙŠ Ø¯Ø±Ø³ " + (subject || 'Ø§Ù„ÙÙ‚Ù‡') + "ØŸ",
-                choice_a: "Ø§Ù„ÙˆØ§Ø¬Ø¨ ÙˆØ§Ù„Ø¥Ù„Ø²Ø§Ù…",
-                choice_b: "Ø§Ù„Ø§Ø³ØªØ­Ø¨Ø§Ø¨ ÙˆØ§Ù„Ù†Ø¯Ø¨",
-                choice_c: "Ø§Ù„Ø¥Ø¨Ø§Ø­Ø© ÙˆØ§Ù„Ø¬ÙˆØ§Ø²",
-                choice_d: "Ø§Ù„ÙƒØ±Ø§Ù‡Ø© ÙˆØ§Ù„ØªØ­Ø±ÙŠÙ…",
-                correct_answer: "a",
-                explanation: "ðŸ’¡ <b>Ø§Ù„Ø´Ø±Ø­ Ø§Ù„ØªØ±Ø¨ÙˆÙŠ :</b> ÙŠØ³ØªØ­Ø¨ Ù„Ù„Ù…ØªØ¹Ù„Ù… Ù…Ø±Ø§Ø¬Ø¹Ø© ØªÙØ±ÙŠØº Ø§Ù„Ø£Ø³ØªØ§Ø° Ù„Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ø§Ù„Ø´Ø±ÙˆØ· ÙˆØ§Ù„ÙˆØ§Ø¬Ø¨Ø§Øª.<br>ðŸ“Œ <b>Ù…Ù„Ø§Ø­Ø¸Ø© Ø§Ù„Ø£Ø³ØªØ§Ø° :</b> Ø§Ù„Ù…Ø³Ø§Ø¦Ù„ Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ØªØªØ·Ù„Ø¨ Ø­ÙØ¸ Ø§Ù„ÙØ±ÙˆÙ‚ Ø¨ÙŠÙ† Ø§Ù„ÙˆØ§Ø¬Ø¨ ÙˆØ§Ù„Ù…Ù†Ø¯ÙˆØ¨."
-            },
-            {
-                id: 9002,
-                question: "Ù…Ø§ Ù‡ÙŠ Ø§Ù„Ø´Ø±Ø· Ø§Ù„ØµØ­ÙŠØ­ Ø§Ù„Ù…Ø°ÙƒÙˆØ± ÙÙŠ Ø´Ø±Ø­ Ø§Ù„Ø´ÙŠØ® Ù„Ù‡Ø°Ø§ Ø§Ù„Ø¨Ø§Ø¨ØŸ",
-                choice_a: "Ø§Ù„Ø´Ø±Ø· Ø§Ù„Ø£ÙˆÙ„ Ø§Ù„Ù…Ø¨Ø§Ø´Ø±",
-                choice_b: "Ø§Ù„Ø´Ø±Ø· Ø§Ù„Ø«Ø§Ù†ÙŠ Ø§Ù„ØªÙƒÙ…ÙŠÙ„ÙŠ",
-                choice_c: "ÙƒÙ„Ø§ Ø§Ù„Ø´Ø±Ø·ÙŠÙ† Ù…Ø¹Ø§",
-                choice_d: "Ù„Ø§ Ø§Ø´ØªØ±Ø§Ø· ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø­Ø§Ù„Ø©",
-                correct_answer: "c",
-                explanation: "ðŸ’¡ <b>Ø§Ù„Ø´Ø±Ø­ Ø§Ù„ØªØ±Ø¨ÙˆÙŠ :</b> ÙŠØ´ØªØ±Ø· Ø§Ù„Ø´ÙŠØ® Ø§Ù„Ø¬Ù…Ø¹ Ø¨ÙŠÙ† Ø§Ù„ØªÙƒÙ„ÙŠÙ ÙˆØ§Ù„Ù†ÙŠØ© Ø§Ù„ØµØ§ÙÙŠØ©."
-            }
-        ];
-    },
-
-    fetchQuestions: function(subject, lessonNum) {
-        this.currentSubject = subject;
-        this.currentLessonNum = lessonNum;
-        this.timer = 0;
-        this.correctionMode = 'instant';
-        this.wrongAnswers = [];
-        
-        document.getElementById('practice-active-state').style.display = 'none';
-        document.getElementById('practice-result-state').style.display = 'none';
-        document.getElementById('practice-loading').style.display = 'block';
-        
-        var self = this;
-        fetch('/api/student/quiz/setup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: 1, 
-                subject: subject,
-                courseNumbers: [lessonNum],
-                source: 'all',
-                limit: 10
-            })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data.success && data.questions && data.questions.length > 0) {
-                self.questions = data.questions;
-                self.start();
-            } else {
-                document.getElementById('practice-loading').style.display = 'none';
-                alert('Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø£Ø³Ø¦Ù„Ø©');
-                switchTab('exams');
-            }
-        })
-        .catch(function(e) {
-            console.error(e);
-            alert('Ø­Ø¯Ø« Ø®Ø·Ø£');
-            switchTab('exams');
-        });
-    },
-    
-    start: function() {
-        this.currentIndex = 0;
-        this.score = 0;
-        this.lives = 3;
-        
-        document.getElementById('practice-loading').style.display = 'none';
-        document.getElementById('practice-empty-state').style.display = 'none';
-        document.getElementById('practice-result-state').style.display = 'none';
-        document.getElementById('practice-active-state').style.display = 'block';
-        
-        this.showQuestion();
-    },
-    
-        formatExplanationHtml(explanation) {
-        if (!explanation) return "";
-        let text = explanation;
-        text = text.replace("Â­Æ’Ã´Ã® <b>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘</b> :", "Â­Æ’Ã´Ã® <b>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘ :</b>");
-        text = text.replace("Â­Æ’Ã´Ã® <b>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘</b>", "Â­Æ’Ã´Ã® <b>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘ :</b>");
-        
-        let pedagogicalText = "";
-        let profNote = "";
-        let sourceText = "";
-        
-        if (text.includes("Â­Æ’Ã†Ã­ <b>ÃÂºâ”˜Ã¤Ãâ”¤Ãâ–’ÃÂ¡ ÃÂºâ”˜Ã¤ÃÂ¬Ãâ–’ÃÂ¿â”˜Ãªâ”˜Ã¨</b> :")) {
-            let parts = text.split("Â­Æ’Ã†Ã­ <b>ÃÂºâ”˜Ã¤Ãâ”¤Ãâ–’ÃÂ¡ ÃÂºâ”˜Ã¤ÃÂ¬Ãâ–’ÃÂ¿â”˜Ãªâ”˜Ã¨</b> :");
-            let afterTitle = parts[1] || "";
-            if (text.includes("Â­Æ’Ã´Ã® <b>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘ :</b>")) {
-                let subparts = afterTitle.split("Â­Æ’Ã´Ã® <b>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘ :</b>");
-                pedagogicalText = subparts[0];
-                let rest = subparts[1];
-                if (text.includes("Â­Æ’Ã´Ãœ <b>ÃÂºâ”˜Ã¤â”˜Ã ÃÃÃÂ»Ãâ–’ :</b>")) {
-                    let subsub = rest.split("Â­Æ’Ã´Ãœ <b>ÃÂºâ”˜Ã¤â”˜Ã ÃÃÃÂ»Ãâ–’ :</b>");
-                    profNote = subsub[0];
-                    sourceText = subsub[1];
-                } else {
-                    profNote = rest;
-                }
-            } else if (text.includes("Â­Æ’Ã´Ãœ <b>ÃÂºâ”˜Ã¤â”˜Ã ÃÃÃÂ»Ãâ–’ :</b>")) {
-                let subparts = afterTitle.split("Â­Æ’Ã´Ãœ <b>ÃÂºâ”˜Ã¤â”˜Ã ÃÃÃÂ»Ãâ–’ :</b>");
-                pedagogicalText = subparts[0];
-                sourceText = subparts[1];
-            } else {
-                pedagogicalText = afterTitle;
-            }
-        } else {
-            let temp = document.createElement('div');
-            temp.innerHTML = text;
-            pedagogicalText = temp.textContent || "";
-        }
-        
-        let html = "";
-        if (pedagogicalText.trim()) {
-            html += `<div style="margin-bottom:12px; font-size:15px; color:var(--text); line-height:1.6;"><strong>ÃÂºâ”˜Ã¤Ãâ”¤Ãâ–’ÃÂ¡ ÃÂºâ”˜Ã¤ÃÂ¬Ãâ–’ÃÂ¿â”˜Ãªâ”˜Ã¨:</strong><br>${pedagogicalText.trim()}</div>`;
-        }
-        if (profNote.trim()) {
-            html += `<div style="margin-bottom:12px; background:var(--surface-2); padding:12px; border-radius:8px; border-right:3px solid var(--primary); font-size:14.5px;"><span style="font-size:16px;">Â­Æ’Ã´Ã®</span> <strong>â”˜Ã â”˜Ã¤ÃÂºÃÂ¡ÃÂ©ÃÂ® ÃÂºâ”˜Ã¤ÃÃºÃâ”‚ÃÂ¬ÃÂºÃâ–‘:</strong><br>${profNote.trim()}</div>`;
-        }
-        if (sourceText.trim()) {
-            html += `<div style="font-size:13px; color:var(--text-3); margin-top:8px;">Â­Æ’Ã´Ãœ <strong>ÃÂºâ”˜Ã¤â”˜Ã ÃÃÃÂ»Ãâ–’:</strong> ${sourceText.trim()}</div>`;
-        }
-        if(!html) {
-            html = `<div style="margin-bottom:12px; font-size:15px;">${text}</div>`;
-        }
-        return html;
-    },
-
-    showQuestion: function() {
-        if (this.currentIndex >= this.questions.length || this.lives <= 0) {
-            this.showResult();
-            return;
-        }
-        
-        const q = this.questions[this.currentIndex];
-        
-        document.getElementById('quiz-lives').textContent = this.lives;
-        const progressPercent = (this.currentIndex / this.questions.length) * 100;
-        document.getElementById('quiz-progress-bar').style.width = progressPercent + '%';
-        
-        document.getElementById('quiz-question-text').textContent = q.question;
-        document.getElementById('quiz-explanation-container').style.display = 'none';
-        
-        const optsContainer = document.getElementById('quiz-options-container');
-        optsContainer.innerHTML = '';
-        
-        const choices = [];
-        if (q.choices && Array.isArray(q.choices)) {
-            q.choices.forEach((c, idx) => {
-                const letters = ['a', 'b', 'c', 'd', 'e'];
-                choices.push({ id: c.id || letters[idx] || 'a', text: c.text || c });
-            });
-        } else if (q.options_json) {
-            try {
-                const opts = typeof q.options_json === 'string' ? JSON.parse(q.options_json) : q.options_json;
-                if (Array.isArray(opts)) {
-                    const letters = ['a', 'b', 'c', 'd', 'e'];
-                    opts.forEach((opt, idx) => {
-                        choices.push({ id: letters[idx] || 'a', text: typeof opt === 'object' ? opt.text : opt });
-                    });
-                }
-            } catch(e) {}
-        }
-        
-        if (choices.length === 0) {
-            if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
-            if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
-            if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
-            if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
-        }
-        
-        choices.forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = 'quiz-option-btn';
-            btn.style.cssText = 'display:flex; align-items:center; width:100%; padding:14px 18px; margin-bottom:10px; border-radius:12px; border:1px solid var(--border-color); background:var(--surface); color:var(--text); font-size:16px; text-align:right; cursor:pointer; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.03);';
-            btn.innerHTML = `<span class="opt-letter" style="margin-left:12px; font-weight:bold; background:var(--primary-light); color:var(--primary); padding:4px 10px; border-radius:8px;">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
-            btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
-            optsContainer.appendChild(btn);
-        });
-
-        // Handle Timer
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        const timerBar = document.getElementById('quiz-timer-bar');
-        if (this.timer > 0) {
-            timerBar.style.display = 'block';
-            timerBar.style.width = '100%';
-            timerBar.style.transition = 'none';
-            
-            // force reflow
-            void timerBar.offsetWidth;
-            
-            this.timeLeft = this.timer;
-            timerBar.style.transition = `width ${this.timer}s linear`;
-            timerBar.style.width = '0%';
-            
-            this.timerInterval = setInterval(() => {
-                this.timeLeft--;
-                if (this.timeLeft <= 0) {
-                    clearInterval(this.timerInterval);
-                    this.checkAnswer(null, q.correct_answer, null); // Timeout
-                }
-            }, 1000);
-        } else {
-            timerBar.style.display = 'none';
-        }
-    },
-    
-    checkAnswer: function(selectedId, correctId, btnEl) {
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        
-        const isCorrect = selectedId && (selectedId.toLowerCase() === correctId.toLowerCase());
-        const q = this.questions[this.currentIndex];
-        
-        const allBtns = document.querySelectorAll('.quiz-option-btn');
-        allBtns.forEach(b => b.style.pointerEvents = 'none'); 
-        
-        if (isCorrect) {
-            if (btnEl) btnEl.classList.add('correct');
-            this.score++;
-            if (this.correctionMode === 'instant') {
-                if (this.audioSuccess) this.audioSuccess.play().catch(e=>{});
-                this.showExplanation(q, true);
-            } else {
-                this.nextQuestion();
-            }
-        } else {
-            if (btnEl) btnEl.classList.add('wrong');
-            this.lives--;
-            this.wrongAnswers.push(q);
-            document.getElementById('quiz-lives').textContent = this.lives;
-            
-            if (this.correctionMode === 'instant') {
-                allBtns.forEach(b => {
-                    if (b.querySelector('.opt-letter').textContent.toLowerCase() === correctId.toLowerCase()) {
-                        b.classList.add('correct');
-                    }
-                });
-                if (this.audioFail) this.audioFail.play().catch(e=>{});
-                this.showExplanation(q, false);
-            } else {
-                this.nextQuestion();
-            }
-        }
-    },
-
-    showExplanation: function(q, isCorrect) {
-        const expContainer = document.getElementById('quiz-explanation-container');
-        const expContent = document.getElementById('quiz-explanation-content');
-        expContainer.style.display = 'block';
-        
-        let title = isCorrect 
-            ? '<div style="color:var(--success,#10b981); font-weight:bold; margin-bottom:12px; font-size:18px;">ÃÃ‘ÃÂ¼ÃÂºÃÂ¿ÃÂ® ÃÃÃÂ¡â”˜Ã¨ÃÂ¡ÃÂ® Ã”Â£Ã </div>'
-            : '<div style="color:#ef4444; font-weight:bold; margin-bottom:12px; font-size:18px;">ÃÃ‘ÃÂ¼ÃÂºÃÂ¿ÃÂ® ÃÂ«ÃÂºÃÃ€ÃÂªÃÂ® Ã”Ã˜Ã®</div>';
-            
-        let html = this.formatExplanationHtml(q.explanation);
-        expContent.innerHTML = title + html;
-    },
-    
-    nextQuestion: function() {
-        document.getElementById('quiz-explanation-container').style.display = 'none';
-        this.currentIndex++;
-        this.showQuestion();
-    },
-    
-    reportQuestion: function() {
-        document.getElementById('report-modal').style.display = 'flex';
-    },
-    
-    closeReportModal: function() {
-        document.getElementById('report-modal').style.display = 'none';
-        document.getElementById('report-details').value = '';
-    },
-    
-    submitReport: function() {
-        var type = document.getElementById('report-type').value;
-        var details = document.getElementById('report-details').value;
-        var self = this;
-        var q = self.questions[self.currentIndex];
-        
-        document.getElementById('report-modal').style.display = 'none';
-        
-        fetch('/api/student/quiz/report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                questionId: q.id,
-                type: type,
-                details: details
-            })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {})
-        .catch(function(e) { console.error(e); });
-    },
-
-    
-    showResult: function() {
-        document.getElementById('practice-active-state').style.display = 'none';
-        document.getElementById('practice-result-state').style.display = 'block';
-        
-        const maxScore = this.questions.length;
-        const pct = Math.round((this.score / maxScore) * 100);
-        
-        document.getElementById('quiz-final-score').textContent = pct + '%';
-        
-        setTimeout(() => {
-            document.getElementById('quiz-final-circle').style.strokeDasharray = `${pct}, 100`;
-        }, 100);
-        
-                const msgEl = document.getElementById('quiz-final-msg');
-        const errorsContainer = document.getElementById('quiz-errors-container');
-        const errorsList = document.getElementById('quiz-errors-list');
-        if (this.wrongAnswers && this.wrongAnswers.length > 0) {
-            errorsContainer.style.display = 'block';
-            let html = '';
-            this.wrongAnswers.forEach((q, idx) => {
-                let expHtml = this.formatExplanationHtml(q.explanation);
-                html += `
-                    <div style="margin-bottom:16px; border-bottom:1px solid var(--surface-2); padding-bottom:16px;">
-                        <p style="font-weight:bold; color:var(--text); margin-bottom:8px;">ÃÂºâ”˜Ã¤Ãâ”‚ÃÃ±ÃÂºâ”˜Ã¤: ${q.question}</p>
-                        <div style="font-size:14px; color:var(--text-2); background:#fef2f2; padding:8px; border-radius:8px; margin-bottom:8px;">ÃÂºâ”˜Ã¤ÃÃ‘ÃÂ¼ÃÂºÃÂ¿ÃÂ® ÃÂºâ”˜Ã¤ÃÃÃÂ¡â”˜Ã¨ÃÂ¡ÃÂ® â”˜Ã¢ÃÂºâ”˜Ã¥ÃÂ¬: <strong>${q['choice_' + q.correct_answer]}</strong></div>
-                        <div style="font-size:14px;">${expHtml}</div>
-                    </div>
-                `;
-            });
-            errorsList.innerHTML = html;
-        } else {
-            if(errorsContainer) errorsContainer.style.display = 'none';
-        }
-        const subEl = document.getElementById('quiz-final-sub');
-        
-        if (this.lives <= 0) {
-            msgEl.textContent = 'ÃÂºâ”˜Ã¥ÃÂ¬â”˜Ã§ÃÂ¬ ÃÂºâ”˜Ã¤â”˜Ã ÃÂ¡ÃÂºâ”˜Ãªâ”˜Ã¤ÃÂºÃÂ¬ Â­Æ’Ã†Ã¶';
-            msgEl.style.color = '#ef4444';
-            subEl.textContent = 'â”˜Ã¤ÃÂº ÃÂ¿ÃÃºÃâ”‚ÃÃ® â”˜Ã¨â”˜Ã â”˜Ã¢â”˜Ã¥â”˜Ã¢ ÃÃ‘Ãâ•£ÃÂºÃÂ»ÃÂ® â”˜Ã Ãâ–’ÃÂºÃÂ¼Ãâ•£ÃÂ® ÃÂºâ”˜Ã¤ÃÂ»Ãâ–’Ãâ”‚ â”˜ÃªÃÂºâ”˜Ã¤â”˜Ã ÃÂ¡ÃÂºâ”˜Ãªâ”˜Ã¤ÃÂ® â”˜Ã ÃÂ¼ÃÂ»ÃÂ»ÃÂºâ”˜Ã¯.';
-            document.getElementById('quiz-final-circle').style.stroke = '#ef4444';
-        } else if (pct === 100) {
-            msgEl.textContent = 'â”˜Ã â”˜Ã ÃÂ¬ÃÂºÃâ–“ ÃÂ¼ÃÂ»ÃÂºâ”˜Ã¯! Â­Æ’Ã®Æ’';
-            msgEl.style.color = '#10b981';
-            subEl.textContent = 'â”˜Ã¤â”˜Ã©ÃÂ» ÃÃºÃÂ¬â”˜Ã©â”˜Ã¥ÃÂ¬ â”˜Ã§Ãâ–‘ÃÂº ÃÂºâ”˜Ã¤ÃÂ»Ãâ–’Ãâ”‚ ÃÂ¬â”˜Ã ÃÂºâ”˜Ã ÃÂºâ”˜Ã¯.';
-            document.getElementById('quiz-final-circle').style.stroke = '#10b981';
-        } else if (pct >= 50) {
-            msgEl.textContent = 'ÃÂ¼â”˜Ã¨ÃÂ» ÃÂ¼ÃÂ»ÃÂºâ”˜Ã¯! Â­Æ’Ã¦Ã¬';
-            msgEl.style.color = 'var(--primary)';
-            subEl.textContent = 'â”˜Ã¤â”˜Ã©ÃÂ» ÃÂºÃÂ¼ÃÂ¬Ãâ–“ÃÂ¬ ÃÂºâ”˜Ã¤ÃÂ¬ÃÂ»Ãâ–’â”˜Ã¨ÃÂ¿ÃÃ® â”˜Ã¤â”˜Ã¢â”˜Ã¥ â”˜Ã¨â”˜Ã â”˜Ã¢â”˜Ã¥â”˜Ã¢ ÃÂ¬ÃÂ¡Ãâ”‚â”˜Ã¨â”˜Ã¥ â”˜Ã¥ÃÂ¬â”˜Ã¨ÃÂ¼ÃÂ¬â”˜Ã¢.';
-            document.getElementById('quiz-final-circle').style.stroke = 'var(--primary)';
-        } else {
-            msgEl.textContent = 'ÃÂ¡ÃÂºâ”˜Ãªâ”˜Ã¤ â”˜Ã ÃÂ¼ÃÂ»ÃÂ»ÃÂºâ”˜Ã¯ Â­Æ’Ã±Ã¶';
-            msgEl.style.color = '#f59e0b';
-            subEl.textContent = 'â”˜Ã¥â”˜Ã¥ÃÃÃÂ¡â”˜Ã¢ ÃÂ¿â”˜Ã Ãâ–’ÃÂºÃÂ¼Ãâ•£ÃÂ® ÃÂºâ”˜Ã¤ÃÂ»Ãâ–’Ãâ”‚ â”˜Ã Ãâ–’ÃÂ® ÃÃºÃÂ«Ãâ–’â”˜Ã«.';
-            document.getElementById('quiz-final-circle').style.stroke = '#f59e0b';
-        }
-    },
-    
-    quit: function() {
-        switchTab('reader');
-    }
-};
-
-</script>
-    <script src="exam.js?v=3" charset="UTF-8"></script>
-    <script src="reader.js?v=3" charset="UTF-8"></script>
+    <script src="reader.js?v=practice-2" charset="UTF-8"></script>
+    <script src="exam.js?v=2" charset="UTF-8"></script>
+    <script src="quiz.js?v=2" charset="UTF-8"></script>
 
     <div id="report-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
         <div class="modal-content" style="background:var(--surface); padding:24px; border-radius:16px; width:90%; max-width:400px; text-align:right;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <button onclick="quizEngine.closeReportModal()" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-2);">âœ•</button>
-                <h3 style="margin:0; font-size:20px; color:var(--text);">Ø¥Ø¨Ù„Ø§Øº Ø¹Ù† Ø®Ø·Ø£ âš ï¸</h3>
+                <button onclick="quizEngine.closeReportModal()" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-2);">✕</button>
+                <h3 style="margin:0; font-size:20px; color:var(--text);">إبلاغ عن خطأ ⚠️</h3>
             </div>
             
-            <p style="color:var(--text-2); margin-bottom:15px; font-size:14px;">Ù…Ø§ Ù‡Ùˆ Ù†ÙˆØ¹ Ø§Ù„Ø®Ø·Ø£ ÙÙŠ Ù‡Ø°Ø§ Ø§Ù„Ø³Ø¤Ø§Ù„ØŸ</p>
+            <p style="color:var(--text-2); margin-bottom:15px; font-size:14px;">ما هو نوع الخطأ في هذا السؤال؟</p>
             
             <select id="report-type" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg); margin-bottom:15px; font-size:16px;">
-                <option value="orthographe">Ø®Ø·Ø£ Ø¥Ù…Ù„Ø§Ø¦ÙŠ</option>
-                <option value="faux">Ø¥Ø¬Ø§Ø¨Ø© Ø®Ø§Ø·Ø¦Ø©</option>
-                <option value="technique">Ù…Ø´ÙƒÙ„Ø© ØªÙ‚Ù†ÙŠØ© / Ø§Ù„Ø³Ø¤Ø§Ù„ ØºÙŠØ± ÙˆØ§Ø¶Ø­</option>
-                <option value="autre">Ø£Ø®Ø±Ù‰</option>
+                <option value="orthographe">خطأ إملائي</option>
+                <option value="faux">إجابة خاطئة</option>
+                <option value="technique">مشكلة تقنية / السؤال غير واضح</option>
+                <option value="autre">أخرى</option>
             </select>
             
-            <textarea id="report-details" rows="3" placeholder="ØªÙØ§ØµÙŠÙ„ Ø¥Ø¶Ø§ÙÙŠØ© (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)..." style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg); margin-bottom:20px; font-family:inherit; resize:vertical; font-size:16px;"></textarea>
+            <textarea id="report-details" rows="3" placeholder="تفاصيل إضافية (اختياري)..." style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg); margin-bottom:20px; font-family:inherit; resize:vertical; font-size:16px;"></textarea>
             
-            <button onclick="quizEngine.submitReport()" style="width:100%; padding:14px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„ØªÙ‚Ø±ÙŠØ± ðŸš€</button>
+            <button onclick="quizEngine.submitReport()" style="width:100%; padding:14px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">إرسال التقرير 🚀</button>
         </div>
     </div>
 
 </body>
 </html>
-

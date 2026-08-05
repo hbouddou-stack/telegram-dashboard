@@ -1,4 +1,4 @@
-window.quizEngine = {
+const quizEngine = {
     questions: [],
     currentIndex: 0,
     score: 0,
@@ -7,6 +7,8 @@ window.quizEngine = {
     currentLessonNum: null,
     audioSuccess: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3') : null,
     audioFail: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') : null,
+    
+    
     fetchQuestionsCustom: function(options) {
         this.currentSubject = options.subject;
         this.currentLessonNum = null;
@@ -37,41 +39,16 @@ window.quizEngine = {
                 self.questions = data.questions;
                 self.start();
             } else {
-                console.warn("No questions returned from API, using fallback questions...");
-                self.questions = self.getFallbackQuestions(options.subject);
-                self.start();
+                document.getElementById('practice-loading').style.display = 'none';
+                alert('?? ??? ?????? ??? ?????');
+                switchTab('exams');
             }
         })
         .catch(function(e) {
             console.error(e);
-            self.questions = self.getFallbackQuestions(options.subject);
-            self.start();
+            alert('??? ???');
+            switchTab('exams');
         });
-    },
-
-    getFallbackQuestions: function(subject) {
-        return [
-            {
-                id: 9001,
-                question: "ما هو الحكم الأساسي المتعلق بهذه المسألة في درس " + (subject || 'الفقه') + "؟",
-                choice_a: "الواجب والإلزام",
-                choice_b: "الاستحباب والندب",
-                choice_c: "الإباحة والجواز",
-                choice_d: "الكراهة والتحريم",
-                correct_answer: "a",
-                explanation: "💡 <b>الشرح التربوي :</b> يستحب للمتعلم مراجعة تفريغ الأستاذ للتأكد من الشروط والواجبات.<br>📌 <b>ملاحظة الأستاذ :</b> المسائل الأساسية تتطلب حفظ الفروق بين الواجب والمندوب."
-            },
-            {
-                id: 9002,
-                question: "ما هي الشرط الصحيح المذكور في شرح الشيخ لهذا الباب؟",
-                choice_a: "الشرط الأول المباشر",
-                choice_b: "الشرط الثاني التكميلي",
-                choice_c: "كلا الشرطين معا",
-                choice_d: "لا اشتراط في هذه الحالة",
-                correct_answer: "c",
-                explanation: "💡 <b>الشرح التربوي :</b> يشترط الشيخ الجمع بين التكليف والنية الصافية."
-            }
-        ];
     },
 
     fetchQuestions: function(subject, lessonNum) {
@@ -113,6 +90,7 @@ window.quizEngine = {
             alert('حدث خطأ');
             switchTab('exams');
         });
+    }
     },
     
     start: function() {
@@ -200,35 +178,15 @@ window.quizEngine = {
         optsContainer.innerHTML = '';
         
         const choices = [];
-        if (q.choices && Array.isArray(q.choices)) {
-            q.choices.forEach((c, idx) => {
-                const letters = ['a', 'b', 'c', 'd', 'e'];
-                choices.push({ id: c.id || letters[idx] || 'a', text: c.text || c });
-            });
-        } else if (q.options_json) {
-            try {
-                const opts = typeof q.options_json === 'string' ? JSON.parse(q.options_json) : q.options_json;
-                if (Array.isArray(opts)) {
-                    const letters = ['a', 'b', 'c', 'd', 'e'];
-                    opts.forEach((opt, idx) => {
-                        choices.push({ id: letters[idx] || 'a', text: typeof opt === 'object' ? opt.text : opt });
-                    });
-                }
-            } catch(e) {}
-        }
-        
-        if (choices.length === 0) {
-            if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
-            if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
-            if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
-            if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
-        }
+        if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
+        if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
+        if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
+        if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
         
         choices.forEach(c => {
             const btn = document.createElement('button');
             btn.className = 'quiz-option-btn';
-            btn.style.cssText = 'display:flex; align-items:center; width:100%; padding:14px 18px; margin-bottom:10px; border-radius:12px; border:1px solid var(--border-color); background:var(--surface); color:var(--text); font-size:16px; text-align:right; cursor:pointer; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.03);';
-            btn.innerHTML = `<span class="opt-letter" style="margin-left:12px; font-weight:bold; background:var(--primary-light); color:var(--primary); padding:4px 10px; border-radius:8px;">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
+            btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
             btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
             optsContainer.appendChild(btn);
         });
@@ -346,6 +304,7 @@ window.quizEngine = {
         .then(function(res) { return res.json(); })
         .then(function(data) {})
         .catch(function(e) { console.error(e); });
+    }
     },
 
     
