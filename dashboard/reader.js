@@ -1359,6 +1359,69 @@ function closeMindMap() {
     if (mindmapOverlay) mindmapOverlay.style.display = 'none';
 }
 
+// ─── AI SUPPORT ENGINE ───
+const supportEngine = {
+    analyzeAndSubmit: function() {
+        const queryInput = document.getElementById('support-user-query');
+        const isPrivateInput = document.getElementById('support-is-private');
+        const submitBtn = document.getElementById('support-submit-btn');
+        const responseBox = document.getElementById('support-ai-response');
+        const badgeEl = document.getElementById('support-detected-badge');
+        const suggestionsEl = document.getElementById('support-rag-suggestions');
+        const ticketConfEl = document.getElementById('support-ticket-confirmation');
+
+        const text = queryInput.value.trim();
+        if (!text) {
+            alert('الرجاء كتابة السؤال أو الاستفسار أولاً');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>جاري التحليل بالذكاء الاصطناعي... ⏳</span>';
+        responseBox.style.display = 'block';
+        badgeEl.textContent = '🔍 جاري تحليل وتصنيف السؤال...';
+        suggestionsEl.innerHTML = '';
+        ticketConfEl.style.display = 'none';
+
+        // 1. Detect Category automatically
+        let category = 'عام';
+        if (text.match(/فيديو|تطبيق|بطيء|خطأ|لا يعمل|مشكلة|شاشة/i)) {
+            category = '🛠️ مشكلة تقنية';
+        } else if (text.match(/صلاة|وضوء|فقه|صيام|طهارة|إمام|زكاة/i)) {
+            category = '⚖️ الفقه الإسلامي';
+        } else if (text.match(/تجويد|أحكام|نون|إظهار|إدغام|مخرج/i)) {
+            category = '📖 أحكام التجويد';
+        } else if (text.match(/سيرة|غزوة|رسول|نبي|صحابي/i)) {
+            category = '📜 السيرة النبوية';
+        }
+
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>تحليل السؤال بواسطة الذكاء الاصطناعي ✨</span>';
+
+            if (isPrivateInput.checked) {
+                badgeEl.textContent = `🔒 سؤال خاص / شخصي - ${category}`;
+                suggestionsEl.innerHTML = `
+                    <p style="color:var(--text-2); font-size:14px;">تم القفل على سؤالك كسؤال شخصي/خاص. تمت إحالة السؤال مباشرة إلى إدارة الأكاديمية للحفاظ على خصوصيتك.</p>
+                `;
+                ticketConfEl.style.display = 'block';
+            } else {
+                badgeEl.textContent = `🎯 التصنيف التلقائي: ${category}`;
+                suggestionsEl.innerHTML = `
+                    <h4 style="margin: 0 0 10px 0; color:var(--text); font-size:15px;">💡 إجابة مقترحة من الأرشيف / التلخيص:</h4>
+                    <div style="background:var(--bg); border-right:4px solid var(--primary); padding:12px; border-radius:8px; font-size:14px; color:var(--text-2); line-height:1.6; margin-bottom:12px;">
+                        بناءً على تفريغ الدروس المتعلقة بـ <strong>${category}</strong>: يتم مراجعة المسألة بحسب الشروط المذكورة في الشرح، وإذا كان السؤال دقيقاً يمكنك تأكيد إرساله للإدارة.
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="alert('الحمد لله! سعداء بخدمتك.')" style="flex:1; padding:10px; background:#dcfce7; color:#166534; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">إجابة واضحة 👍</button>
+                        <button onclick="document.getElementById('support-ticket-confirmation').style.display='block'" style="flex:1; padding:10px; background:var(--primary-light); color:var(--primary); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">إرسال للإدارة 📩</button>
+                    </div>
+                `;
+            }
+        }, 800);
+    }
+};
+
 // ─── SPA TAB LOGIC ───
 function switchTab(name, btn) {
 

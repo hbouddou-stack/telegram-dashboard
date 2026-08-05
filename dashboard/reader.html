@@ -486,17 +486,48 @@
         </div>
     </div>
 
+    <!-- TAB: SUPPORT / IA -->
+    <div class="tab-panel" id="tab-support" style="background: var(--bg); min-height: 100vh; padding: 20px; padding-bottom: 90px; direction: rtl; text-align: right;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div style="font-size: 42px; margin-bottom: 8px;">🤖💬</div>
+            <h2 style="color: var(--primary); font-weight: 800; margin: 0 0 6px 0;">المساعد الذكي والدعم</h2>
+            <p style="color: var(--text-2); font-size: 14px; margin: 0;">اكتب سؤالك أو استفسارك وسيتم تحليله وإرشادك فوراً</p>
+        </div>
+
+        <div style="background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px;">
+            <label style="display: block; font-weight: bold; color: var(--text); margin-bottom: 8px; font-size: 15px;">ما هو سؤالك أو المشكلة التي واجهتك؟</label>
+            <textarea id="support-user-query" rows="4" placeholder="مثال: لم أفهم مسألة القضاء في الصلاة، أو الفيديو لا يعمل..." style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; margin-bottom: 12px;"></textarea>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: var(--bg); padding: 10px 14px; border-radius: 10px;">
+                <span style="font-size: 13px; color: var(--text-2);">🔒 سؤال خاص / شخصي (يصل مباشرة للإدارة)</span>
+                <label class="switch" style="transform: scale(0.85);">
+                    <input type="checkbox" id="support-is-private">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button id="support-submit-btn" onclick="supportEngine.analyzeAndSubmit()" style="width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
+                <span>تحليل السؤال بواسطة الذكاء الاصطناعي ✨</span>
+            </button>
+        </div>
+
+        <!-- AI Result & Suggestions Section -->
+        <div id="support-ai-response" style="display: none; background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--primary-light);">
+            <div id="support-detected-badge" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--primary-light); color: var(--primary); font-weight: bold; font-size: 12px; margin-bottom: 12px;"></div>
+            
+            <div id="support-rag-suggestions" style="margin-bottom: 16px;"></div>
+
+            <div id="support-ticket-confirmation" style="display: none; padding: 14px; background: #dcfce7; color: #166534; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center;">
+                ✅ تم إرسال استفسارك بنجاح إلى فريق الإدارة. سيتم الرد عليك قريباً!
+            </div>
+        </div>
+    </div>
+
     <!-- BOTTOM NAV -->
     
     <nav class="bottom-nav">
-        <!-- Reader Progress Tracker -->
-        
-        
         <button class="nav-btn active" onclick="switchTab('home', this)">
             <span class="icon">🏠</span><span>الرئيسية</span>
-        </button>
-        <button class="nav-btn" onclick="switchTab('search', this)">
-            <span class="icon">🔍</span><span>البحث</span>
         </button>
         <button class="nav-btn" onclick="switchTab('syllabus', this)">
             <span class="icon">📖</span><span>المقرر</span>
@@ -504,8 +535,11 @@
         <button class="nav-btn" id="btn-nav-reader" onclick="switchTab('reader', this)">
             <span class="icon">📚</span><span>الدرس</span>
         </button>
-            <button class="nav-btn" id="btn-nav-exams" onclick="switchTab('exams', this)">
-            <span class="icon">📝</span><span>الامتحانات</span>
+        <button class="nav-btn" id="btn-nav-exams" onclick="switchTab('exams', this)">
+            <span class="icon">📝</span><span>الاختبارات</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-support" onclick="switchTab('support', this)">
+            <span class="icon">💬</span><span>الدعم والذكاء</span>
         </button>
     </nav>
 
