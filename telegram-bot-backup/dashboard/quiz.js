@@ -1,4 +1,4 @@
-const quizEngine = {
+var quizEngine = {
     questions: [],
     currentIndex: 0,
     score: 0,
@@ -7,6 +7,9 @@ const quizEngine = {
     currentLessonNum: null,
     audioSuccess: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3'),
     audioFail: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+};
+window.quizEngine = quizEngine;
+Object.assign(quizEngine, {
     
     
     fetchQuestionsCustom: function(options) {
@@ -413,4 +416,4 @@ const quizEngine = {
     quit: function() {
         switchTab('reader');
     }
-};
+});
