@@ -8,9 +8,24 @@
     <title>Académie - Liseuse Interactive</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="reader.css?v=practice-2">
-    <!-- Immediate settings application to prevent FOUC -->
+    <!-- Immediate settings & Onscreen Error Debugger -->
     <script>
         (function() {
+            window.addEventListener('error', function(e) {
+                var errDiv = document.getElementById('onscreen-debug-box');
+                if (!errDiv) {
+                    errDiv = document.createElement('div');
+                    errDiv.id = 'onscreen-debug-box';
+                    errDiv.style.cssText = 'position:fixed; top:10px; left:10px; right:10px; z-index:99999; background:#fee2e2; color:#991b1b; padding:16px; border-radius:12px; border:2px solid #ef4444; font-family:monospace; font-size:12px; max-height:40vh; overflow:auto; box-shadow:0 10px 25px rgba(0,0,0,0.3);';
+                    errDiv.innerHTML = '<div style="font-weight:bold; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between;"><span>⚠️ KOPILOT ON-SCREEN DEBUGGER</span><button onclick="this.parentNode.parentNode.remove()" style="background:#ef4444; color:#fff; border:none; padding:2px 8px; border-radius:4px;">✕</button></div>';
+                    document.body.appendChild(errDiv);
+                }
+                var item = document.createElement('div');
+                item.style.marginBottom = '6px';
+                item.textContent = '❌ ' + (e.message || e) + ' at ' + (e.filename || '') + ':' + (e.lineno || '');
+                errDiv.appendChild(item);
+            });
+
             const theme = localStorage.getItem('readerTheme') || 'sepia';
             document.documentElement.setAttribute('data-theme', theme);
             const fontSize = localStorage.getItem('readerFontSize') || 18;
