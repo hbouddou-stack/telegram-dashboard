@@ -88,9 +88,10 @@ def search_transcript(query: str):
 
 def get_slide_kb(subject: str, lesson_num: int):
     base_url = os.getenv("WEB_APP_URL", "https://as2ila-dashboard.railway.app")
-    slide_url = f"{base_url}/course_slides.html?subject={subject}&lessonNum={lesson_num}"
+    # Redirect to the advanced reader (Liseuse) instead of the PowerPoint
+    reader_url = f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p5"
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📖 افتح العرض التفاعلي للدرس", web_app=WebAppInfo(url=slide_url))]
+        [InlineKeyboardButton(text="📖 افتح القارئ التفاعلي (Liseuse)", web_app=WebAppInfo(url=reader_url))]
     ])
     return kb
 
