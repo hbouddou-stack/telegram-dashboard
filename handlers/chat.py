@@ -115,7 +115,38 @@ async def handle_free_text(message: Message):
             await message.reply(f"لقد وجدت الدرس الذي تبحث عنه:\n<b>{title}</b>\n\nاضغط على الزر أدناه لفتح العرض التفاعلي:", reply_markup=kb, parse_mode="HTML")
         return
         
-    # If no match, we don't handle it (or we could send it to Gemini API here)
-    # Since this bot uses omnichannel/ticketing, we might not want to block other text handlers.
-    # But usually F.text at the end catches everything.
-    pass
+    # If no course match, try Zero-Click AI Support triage
+    import database as db
+    try:
+        # Search for similar tickets using Gemini
+        ai_matches = await db.search_similar_triage(message.text, use_ai=True)
+        
+        if ai_matches:
+            # Show top answer
+            best_match = ai_matches[0]
+            reply_text = f"💡 <b>بناءً على طلبك، إليك الإجابة التالية:</b>\n\n{best_match['answer']}\n\n<i>هل هذا حل مشكلتك؟ إذا لم يكن كذلك، يمكنك مراسلة الإدارة عبر قسم الدعم.</i>"
+            await message.reply(reply_text, parse_mode="HTML")
+            return
+            
+        # If no AI matches, create a ticket directly
+        from handlers.support import process_ticket_creation
+        user = message.from_user
+        report_id = await process_ticket_creation(
+            bot=message.bot,
+            user_id=user.id,
+            username=user.username or "",
+            first_name=user.first_name or "",
+            r_type="Autre",
+            notes=message.text,
+            urgency="Moyen",
+            media_file_id=None,
+            media_type=None,
+            category="Support Général (Auto)"
+        )
+        
+        await message.reply(f"✅ لم أتمكن من إيجاد حل فوري، لذلك قمت بإنشاء تذكرة دعم (رقم #{report_id}) وإرسالها إلى الإدارة. سنقوم بالرد عليك هنا قريباً.")
+        return
+        
+    except Exception as e:
+        logger.error(f"Error in Zero-Click Support: {e}")
+        pass
