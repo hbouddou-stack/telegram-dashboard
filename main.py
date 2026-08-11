@@ -59,6 +59,7 @@ from handlers.favorites_errors import router as fav_err_router
 from handlers.support import router as support_router
 from handlers.admin import router as admin_router
 from handlers.revision import router as revision_router
+from handlers.chat import router as chat_router
 
 # Configuration du logging double (console et fichier bot.log)
 INSTANCE_ID = str(uuid.uuid4())
@@ -160,6 +161,14 @@ async def handle_interactive(request):
 async def handle_admin_mindmap(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin_mindmap.html'))
 
+async def handle_course_slides(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'course_slides.html'))
+
+async def handle_course_slides_css(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'course_slides.css'))
+
+async def handle_course_slides_js(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'course_slides.js'))
 
 async def handle_editor(request):
     print("============= handle_editor CALLED =============")
@@ -3850,6 +3859,9 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/index.html', handle_reader)
     app.router.add_get('/interactive.html', handle_interactive)
     app.router.add_get('/admin_mindmap.html', handle_admin_mindmap)
+    app.router.add_get('/course_slides.html', handle_course_slides)
+    app.router.add_get('/course_slides.css', handle_course_slides_css)
+    app.router.add_get('/course_slides.js', handle_course_slides_js)
     
     app.router.add_get('/editor', handle_editor)
     app.router.add_get('/editor.html', handle_editor)
@@ -4050,6 +4062,7 @@ async def main():
     dp.include_router(support_router)
     dp.include_router(admin_router)
     dp.include_router(revision_router)
+    dp.include_router(chat_router)
 
     # Register startup hook
     dp.startup.register(on_startup)

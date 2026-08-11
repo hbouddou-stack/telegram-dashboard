@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Course Slides</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="course_slides.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="slides-container" id="slidesContainer">
+        <!-- Slide 1: Loading (or will be replaced) -->
+        <div class="slide" id="loadingSlide">
+            <div class="loading-spinner"></div>
+            <p>جاري تحميل الدرس...</p>
+        </div>
+    </div>
+
+    <!-- Navigation Dots -->
+    <div class="navigation-dots" id="navDots">
+        <!-- Dots will be generated dynamically -->
+    </div>
+
+    <!-- Close Button -->
+    <button class="close-btn" onclick="Telegram.WebApp.close()">✖</button>
+
+    <script src="course_slides.js"></script>
+</body>
+</html>
