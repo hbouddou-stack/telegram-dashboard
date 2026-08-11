@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 import json
 import os
 import re
@@ -77,13 +77,22 @@ def search_transcript(query: str):
         subjects = ' أو '.join(set([t.get('subjectLabel', '') for t in tied_matches]))
         return {
             'type': 'ambiguity',
-            'message': f"عذراً، لقد وجدت عدة دروس تحمل الرقم {target_num} ({subjects}). هل يمكنك تحديد المادة التي تقصدها؟"
+            'message': f"عذراً، لقد وجدت عدة دروس تحمل الرقم {target_num} ({subjects}). هل يمكنك تحديد المادة التي تقصدها؟",
+            'target_num': target_num
         }
         
     if tied_matches:
         return {'type': 'match', 'lesson': tied_matches[0]}
         
     return None
+
+def get_slide_kb(subject: str, lesson_num: int):
+    base_url = os.getenv("WEB_APP_URL", "https://as2ila-dashboard.railway.app")
+    slide_url = f"{base_url}/course_slides.html?subject={subject}&lessonNum={lesson_num}"
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📖 افتح العرض التفاعلي للدرس", web_app=WebAppInfo(url=slide_url))]
+    ])
+    return kb
 
 @router.message(F.text)
 async def handle_free_text(message: Message):
@@ -92,61 +101,49 @@ async def handle_free_text(message: Message):
     
     if match_result:
         if match_result['type'] == 'ambiguity':
+            num = match_result['target_num']
             # Send ambiguity message with quick reply buttons for subjects
             kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="📜 السيرة النبوية", callback_data="select_subj_sira")],
-                [InlineKeyboardButton(text="📖 الفقه", callback_data="select_subj_fiqh")],
-                [InlineKeyboardButton(text="🕌 العقيدة والتوحيد", callback_data="select_subj_tawhid")]
+                [InlineKeyboardButton(text="📜 السيرة النبوية", callback_data=f"sel_subj_sira_{num}")],
+                [InlineKeyboardButton(text="📖 الفقه", callback_data=f"sel_subj_fiqh_{num}")],
+                [InlineKeyboardButton(text="🕌 العقيدة والتوحيد", callback_data=f"sel_subj_tawhid_{num}")]
             ])
             await message.reply(match_result['message'], reply_markup=kb)
         else:
             lesson = match_result['lesson']
-            
-            # Use WEB_APP_URL from environment or default if running locally
-            base_url = os.getenv("WEB_APP_URL", "https://as2ila-dashboard.railway.app")
-            
-            slide_url = f"{base_url}/course_slides.html?subject={lesson.get('subject')}&lessonNum={lesson.get('lessonNum')}"
-            
-            kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="📖 افتح العرض التفاعلي للدرس", web_app=WebAppInfo(url=slide_url))]
-            ])
-            
+            kb = get_slide_kb(lesson.get('subject'), lesson.get('lessonNum'))
             title = lesson.get('subjectLabel', '') + " - " + str(lesson.get('lesson', ''))
             await message.reply(f"لقد وجدت الدرس الذي تبحث عنه:\n<b>{title}</b>\n\nاضغط على الزر أدناه لفتح العرض التفاعلي:", reply_markup=kb, parse_mode="HTML")
         return
         
-    # If no course match, try Zero-Click AI Support triage
-    import database as db
-    try:
-        # Search for similar tickets using Gemini
-        ai_matches = await db.search_similar_triage(message.text, use_ai=True)
-        
-        if ai_matches:
-            # Show top answer
-            best_match = ai_matches[0]
-            reply_text = f"💡 <b>بناءً على طلبك، إليك الإجابة التالية:</b>\n\n{best_match['answer']}\n\n<i>هل هذا حل مشكلتك؟ إذا لم يكن كذلك، يمكنك مراسلة الإدارة عبر قسم الدعم.</i>"
-            await message.reply(reply_text, parse_mode="HTML")
-            return
+    pass
+
+@router.callback_query(F.data.startswith("sel_subj_"))
+async def handle_subject_selection(callback: CallbackQuery):
+    data = callback.data
+    parts = data.split("_")
+    if len(parts) >= 4:
+        subj = parts[2]
+        try:
+            num = int(parts[3])
             
-        # If no AI matches, create a ticket directly
-        from handlers.support import process_ticket_creation
-        user = message.from_user
-        report_id = await process_ticket_creation(
-            bot=message.bot,
-            user_id=user.id,
-            username=user.username or "",
-            first_name=user.first_name or "",
-            r_type="Autre",
-            notes=message.text,
-            urgency="Moyen",
-            media_file_id=None,
-            media_type=None,
-            category="Support Général (Auto)"
-        )
-        
-        await message.reply(f"✅ لم أتمكن من إيجاد حل فوري، لذلك قمت بإنشاء تذكرة دعم (رقم #{report_id}) وإرسالها إلى الإدارة. سنقوم بالرد عليك هنا قريباً.")
-        return
-        
-    except Exception as e:
-        logger.error(f"Error in Zero-Click Support: {e}")
-        pass
+            # Map shorthand to actual subject ID
+            subject_id = subj
+            subject_label = ""
+            if subj == "sira":
+                subject_id = "sira"
+                subject_label = "السيرة النبوية"
+            elif subj == "fiqh":
+                subject_id = "fiqh"
+                subject_label = "الفقه"
+            elif subj == "tawhid":
+                subject_id = "aqeeda"
+                subject_label = "العقيدة والتوحيد"
+                
+            kb = get_slide_kb(subject_id, num)
+            title = f"{subject_label} - الدرس {num}"
+            await callback.message.edit_text(f"لقد اخترت:\n<b>{title}</b>\n\nاضغط على الزر أدناه لفتح العرض التفاعلي:", reply_markup=kb, parse_mode="HTML")
+        except ValueError:
+            await callback.answer("خطأ في قراءة رقم الدرس", show_alert=True)
+    await callback.answer()
+
