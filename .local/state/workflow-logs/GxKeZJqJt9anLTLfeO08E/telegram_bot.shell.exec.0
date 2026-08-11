@@ -1,0 +1,6 @@
+2026-05-10 01:33:53,782 [INFO] __main__: Initializing database...
+2026-05-10 01:33:53,813 [INFO] __main__: Database ready.
+2026-05-10 01:33:53,814 [INFO] __main__: Session state loaded.
+2026-05-10 01:33:53,814 [INFO] __main__: Starting bot polling...
+2026-05-10 01:33:54,136 [INFO] aiogram.dispatcher: Start polling
+2026-05-10 01:33:54,240 [INFO] aiogram.dispatcher: Run polling for bot @Albaji_quizz1_bot id=8688599509 - 'بوت المراجعة السنة 1'

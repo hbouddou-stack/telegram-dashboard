@@ -2256,3 +2256,160 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── QUIZ ENGINE (PRACTICE TAB) ───
+// ==========================================
+// SUPPORT CHAT FUNNEL LOGIC
+// ==========================================
+const supportFlow = {
+    category: '',
+    subcategory: '',
+    message: '',
+
+    selectCategory: function(cat) {
+        this.category = cat;
+        this.addMessage(cat, 'user');
+        document.getElementById('support-step-1-options').style.display = 'none';
+        
+        setTimeout(() => {
+            let subText = '';
+            let subBtns = '';
+            if(cat === '?????') {
+                subText = '?? ??????? ?????? ??:';
+                subBtns = 
+                    <button onclick="supportFlow.selectSubcategory('??????? ?? ????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">??????? ?? ????</button>
+                    <button onclick="supportFlow.selectSubcategory('?? ???? ???')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">?? ???? ???</button>
+                    <button onclick="supportFlow.selectSubcategory('????? ?? ???????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">????? ?? ???????</button>
+                ;
+            } else if(cat === '??????') {
+                subText = '?????? ????? ???????:';
+                subBtns = 
+                    <button onclick="supportFlow.selectSubcategory('????? ????????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">????? ????????</button>
+                    <button onclick="supportFlow.selectSubcategory('????? ?? ?????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">????? ?? ?????</button>
+                ;
+            } else {
+                subText = '?? ??????? ??:';
+                subBtns = 
+                    <button onclick="supportFlow.selectSubcategory('??? ?????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">??? ?????</button>
+                    <button onclick="supportFlow.selectSubcategory('???? ??? ????????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">???? ??? ????????</button>
+                ;
+            }
+            
+            this.addMessage(subText, 'bot');
+            const optsId = 'subopts-' + Date.now();
+            const optsHtml = <div id="\" style="display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; max-width: 85%;">\</div>;
+            document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', optsHtml);
+            this.currentOptsId = optsId;
+            this.scrollToBottom();
+        }, 500);
+    },
+
+    selectSubcategory: function(sub) {
+        this.subcategory = sub;
+        this.addMessage(sub, 'user');
+        if(this.currentOptsId) {
+            document.getElementById(this.currentOptsId).style.display = 'none';
+        }
+        
+        setTimeout(() => {
+            this.addMessage('?????? ????? ?????? ??????? ?????? ??? ????? ?? ???????:', 'bot');
+            document.getElementById('support-chat-input-area').style.display = 'flex';
+            document.getElementById('support-chat-input').focus();
+            this.scrollToBottom();
+        }, 500);
+    },
+
+    sendMessage: function() {
+        const inp = document.getElementById('support-chat-input');
+        const text = inp.value.trim();
+        if(!text) return;
+        
+        this.message = text;
+        inp.value = '';
+        document.getElementById('support-chat-input-area').style.display = 'none';
+        
+        this.addMessage(text, 'user');
+        
+        // Typing indicator
+        setTimeout(() => {
+            const typingId = 'typing-' + Date.now();
+            const typingHtml = 
+                <div id="\" style="align-self: flex-start; background: white; padding: 12px 16px; border-radius: 16px 16px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; gap: 4px; align-items: center;">
+                    <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></span>
+                    <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
+                    <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
+                    <span style="font-size: 12px; color: #6b7280; margin-right: 8px;">???? ????? ?? ????? ????????...</span>
+                </div>
+                <style>@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }</style>
+            ;
+            document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', typingHtml);
+            this.scrollToBottom();
+            
+            // Fake delay for search
+            setTimeout(() => {
+                document.getElementById(typingId).remove();
+                this.showFaqAndEscalate();
+            }, 2500);
+        }, 400);
+    },
+
+    showFaqAndEscalate: function() {
+        const msg = ????? ?? ??? ????? ?????? ???????. ????? ???? ??????? ??????? ?????. ??? ?? ??? ????? ????? ????? ???? ???????.;
+        this.addMessage(msg, 'bot');
+        
+        const faqs = 
+            <div style="background: white; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); align-self: flex-start; width: 100%; max-width: 90%; margin-top: 5px;">
+                <details style="padding: 8px; border-bottom: 1px solid #f3f4f6;">
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">??? ???? ?????? ????????</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">???? ?? ?????? ????????? ????? ??? ?? ??????? ?? ????? ??????.</p>
+                </details>
+                <details style="padding: 8px; border-bottom: 1px solid #f3f4f6;">
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">??? ???? ?????? ?????????</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">????? ????? ??? ?? "????? ??????" ?? ??????? ??????? ??????.</p>
+                </details>
+                <details style="padding: 8px;">
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">??? ??? ???? ??????</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">?????? ????? ?? ????? ????? ??? ?? (??????? ???????).</p>
+                </details>
+            </div>
+            
+            <div style="align-self: center; margin-top: 15px; width: 100%; text-align: center;">
+                <button onclick="supportFlow.escalateToAdmin()" style="background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 24px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
+                    ????? ??????? ??? ??????? ??
+                </button>
+            </div>
+        ;
+        document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', faqs);
+        this.scrollToBottom();
+    },
+
+    escalateToAdmin: function() {
+        // Hide the button
+        event.target.style.display = 'none';
+        
+        this.addMessage("????? ??????? ??? ???????", "user");
+        
+        setTimeout(() => {
+            this.addMessage("? ??? ????? ???? ??? ??????? ?????. ?????? ???? ?? ???? ??? ???? ??? <b>????? ??????</b> ????? ??.", "bot");
+        }, 800);
+    },
+
+    addMessage: function(text, sender) {
+        const isBot = sender === 'bot';
+        const bg = isBot ? 'white' : 'var(--primary)';
+        const color = isBot ? 'var(--text-1)' : 'white';
+        const align = isBot ? 'flex-start' : 'flex-end';
+        const radius = isBot ? '16px 16px 0 16px' : '16px 16px 16px 0';
+        
+        const html = 
+            <div style="align-self: \; background: \; color: \; padding: 12px 16px; border-radius: \; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 85%; line-height: 1.5;">
+                \
+            </div>
+        ;
+        document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', html);
+        this.scrollToBottom();
+    },
+    
+    scrollToBottom: function() {
+        const hist = document.getElementById('support-chat-history');
+        hist.scrollTop = hist.scrollHeight;
+    }
+};

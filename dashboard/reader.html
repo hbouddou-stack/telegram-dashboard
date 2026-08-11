@@ -67,60 +67,27 @@
 <body>
 
     <!-- TAB: HOME -->
-    <div class="tab-panel active" id="tab-home">
-        <div style="padding: 20px;">
-            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">📚 أكاديمية الباجي</h2>
-            
-            <div class="progress-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h3 style="margin:0; font-size:18px; color:var(--text);">تقدمك العام</h3>
-                        <p style="margin:4px 0 0; font-size:13px; color:var(--text-2);" id="progress-subtitle">0 / 0 درس</p>
-                    </div>
-                    <div class="circular-chart-container">
-                        <svg viewBox="0 0 36 36" class="circular-chart">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="circle" id="progress-circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <text x="18" y="20.35" class="percentage" id="progress-text">0%</text>
-                        </svg>
-                    </div>
-                </div>
+    
+    <div class="tab-panel active" id="tab-inbox" style="padding: 20px; direction: rtl; text-align: right; background: var(--bg); min-height: 100vh;">
+        <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px; text-align: center;">?? ????? ??????</h2>
+        
+        <div style="background: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 4px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <strong style="color: var(--text-1);">????? ??????????</strong>
+                <span style="font-size: 11px; color: var(--text-3);">????</span>
             </div>
+            <div style="font-size: 14px; color: var(--text-2);">?????? ?? ?? ???? ?????? ?????????! ??? ??? ???????? ?? ?? ???.</div>
+        </div>
 
-            <h3 style="margin-top:24px; color:var(--text);">متابعة القراءة</h3>
-            <div id="recent-lessons-container">
-                <!-- Recent lessons dynamically injected here -->
-                <p style="color:var(--text-3); font-size:14px;">لم تفتح أي درس بعد.</p>
+        <div style="background: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 4px solid #10b981; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <strong style="color: var(--text-1);">????? ????? #102</strong>
+                <span style="font-size: 11px; color: var(--text-3);">???</span>
             </div>
+            <div style="font-size: 14px; color: var(--text-2);">?? ?? ??????? ??????? ???? ????? ????. ????? ?????!</div>
         </div>
     </div>
 
-    <!-- TAB: SEARCH -->
-    <div class="tab-panel" id="tab-search">
-        <div style="padding: 20px;">
-            <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px;">🔍 البحث الذكي</h2>
-            <div class="search-wrap">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" id="search-input" placeholder="ابحث في الدروس والمواضيع..." autocomplete="off">
-                <button class="clear-btn" id="clear-btn" style="display:none;">✕</button>
-                <div class="autocomplete" id="autocomplete"></div>
-            </div>
-            <div class="filter-chips" id="filter-chips">
-                <button class="chip active" data-filter="title_only">📌 العناوين فقط</button>
-                <button class="chip" data-filter="all">🔎 الكل (البحث العام)</button>
-                <button class="chip" data-filter="fiche">📖 فيشات المراجعة</button>
-                <button class="chip" data-filter="trans">📝 التفريغ الحرفي</button>
-            </div>
-            <div id="search-results" style="margin-top:20px;">
-                <div class="empty-state"><p style="color:var(--text-3);">اكتب كلمة للبحث</p></div>
-            </div>
-        </div>
-    </div>
-
-    
-    
-    
-    <!-- TAB: SYLLABUS -->
     <div class="tab-panel" id="tab-syllabus">
         <div style="padding: 20px;">
             <h2 style="color:var(--primary); font-weight:800; margin-bottom:15px; text-align:center;">📚 المقررات</h2>
@@ -596,7 +563,7 @@
     <!-- BOTTOM NAV -->
     
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="switchTab('home', this)">
+        <button class="nav-btn active" onclick="switchTab('inbox', this)">
             <span class="icon">🏠</span><span>الرئيسية</span>
         </button>
         <button class="nav-btn" onclick="switchTab('syllabus', this)">

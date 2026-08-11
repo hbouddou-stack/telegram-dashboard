@@ -1,0 +1,961 @@
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+import json
+import urllib.parse
+from data.data_manager import SUBJECTS, INACTIVE_SUBJECTS, COURSES_BY_SUBJECT
+import session_state
+from .shared import *
+
+# ── اختيار المادة ─────────────────────────────────────────────────────────────
+
+async def subjects_kb(user_id: int, prefix: str = "exam_subj", hidden_subjects: list = None):
+    if hidden_subjects is None:
+        hidden_subjects = []
+    
+    from database.progress import get_all_subjects_status_emojis
+    status_emojis = await get_all_subjects_status_emojis(user_id)
+    
+    keys = [k for k in SUBJECTS.keys() if k not in hidden_subjects and k not in INACTIVE_SUBJECTS]
+    rows = []
+    
+    # Création de paires pour la grille 2x2
+    for i in range(0, len(keys), 2):
+        row = []
+        # Premier bouton de la paire
+        k1 = keys[i]
+        emoji1 = SUBJECT_NUM.get(k1, "📚")
+        status_emoji1 = status_emojis.get(k1, "💤")
+        name1 = SUBJECTS[k1]
+        row.append(InlineKeyboardButton(text=f"{status_emoji1} {emoji1} {name1}", callback_data=f"{prefix}_{k1}"))
+        
+        # Deuxième bouton de la paire (si présent)
+        if i + 1 < len(keys):
+            k2 = keys[i+1]
+            emoji2 = SUBJECT_NUM.get(k2, "📚")
+            status_emoji2 = status_emojis.get(k2, "💤")
+            name2 = SUBJECTS[k2]
+            row.append(InlineKeyboardButton(text=f"{status_emoji2} {emoji2} {name2}", callback_data=f"{prefix}_{k2}"))
+            
+        rows.append(row)
+    
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data="back_main")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+
+# ── بعد اختيار المادة — 3 خيارات ─────────────────────────────────────────────
+
+def exam_nav_mode_kb(subject: str):
+    buttons = []
+    if subject == "sira":
+        buttons.append([InlineKeyboardButton(text="🎯 اختيار حسب السنة الهجرية", callback_data="ehijra_select_sira")])
+    buttons.extend([
+        [InlineKeyboardButton(text="📚 اختيار حسب الموضوع (قائمة)",    callback_data=f"etopic_multi_{subject}")],
+        [InlineKeyboardButton(text="🔢 اختيار حسب رقم الدرس (شبكة)",   callback_data=f"enum_multi_{subject}")],
+        [InlineKeyboardButton(text="🎓 المادة كاملة (كل الدروس)",     callback_data=f"escope_all_{subject}")],
+        [InlineKeyboardButton(text="رجوع ▶️",                    callback_data="menu_exams")],
+    ])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+# ── حسب رقم الدرس — درس واحد أو نطاق ────────────────────────────────────────
+
+def exam_number_mode_kb(subject: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📖 درس واحد محدد",            callback_data=f"enum_specific_{subject}")],
+        [InlineKeyboardButton(text="📚 نطاق من الدروس",           callback_data=f"enum_range_{subject}")],
+        [InlineKeyboardButton(text="رجوع ▶️",                    callback_data=f"exam_subj_{subject}")],
+    ])
+
+
+# ── حسب الموضوع — واحد أو متعدد ──────────────────────────────────────────────
+
+def exam_topic_mode_kb(subject: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📖 موضوع واحد",               callback_data=f"etopic_single_{subject}")],
+        [InlineKeyboardButton(text="📚 مواضيع متعددة",            callback_data=f"etopic_multi_{subject}")],
+        [InlineKeyboardButton(text="رجوع ▶️",                    callback_data=f"exam_subj_{subject}")],
+    ])
+
+
+def topic_multi_select_kb(subject_raw: str, selected: set):
+    """Sélecteur multiple par NOMS de thématiques, utilise les numéros en callback pour la stabilité."""
+    subject_clean = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    courses = COURSES_BY_SUBJECT.get(subject_clean, [])
+    rows = []
+    for c in courses:
+        cn = c["course_number"]
+        name = c["name"]
+        mark = "✅" if cn in selected else "⬜"
+        label = f"{mark} {name}"
+        # Utilisation du numéro (cn) pour éviter de dépasser 64 octets dans le callback
+        rows.append([InlineKeyboardButton(text=label, callback_data=f"etogglet_{subject_raw}_{cn}")])
+    
+    if selected:
+        rows.append([InlineKeyboardButton(
+            text=f"✔️ تأكيد الاختيار ({len(selected)} موضوع)",
+            callback_data=f"econfirm_multi_{subject_raw}"
+        )])
+        
+    back_cb = f"train_subj_{subject_clean}" if is_training else f"exam_subj_{subject_clean}"
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=back_cb)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def thematic_options_kb(subject_raw: str, selected: set):
+    """Sélecteur multiple par AXES thématiques (Sira/Fiqh) pour éviter les limitations de longueur callback."""
+    subject_clean = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    themes = []
+    if subject_clean.lower() in ("sira", "السيرة"):
+        themes = [
+            "الشمائل والأخلاق النبوية",
+            "بيت النبوة والحياة الشخصية",
+            "العبادات والتشريعات",
+            "الغزوات والسرايا"
+        ]
+    elif subject_clean.lower() in ("fiqh", "الفقه"):
+        themes = [
+            "فرائض الصلاة",
+            "شروط الصلاة",
+            "سنن الصلاة",
+            "مندوبات الصلاة",
+            "مكروهات ومبطلات الصلاة",
+            "صلاة الجمعة",
+            "سجود السهو",
+            "فرض عين / فرض كفاية",
+            "شروط الإمام"
+        ]
+    
+    rows = []
+    for idx, theme_name in enumerate(themes):
+        mark = "✅" if theme_name in selected else "⬜"
+        label = f"{mark} {theme_name}"
+        rows.append([InlineKeyboardButton(text=label, callback_data=f"etogglethe_{subject_raw}_{idx}")])
+        
+    if selected:
+        rows.append([InlineKeyboardButton(
+            text=f"✔️ تأكيد الاختيار ({len(selected)} محور)",
+            callback_data=f"econfirm_theme_{subject_raw}"
+        )])
+        
+    back_cb = f"train_subj_{subject_clean}" if is_training else f"exam_subj_{subject_clean}"
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=back_cb)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── شبكة أرقام الدروس ────────────────────────────────────────────────────────
+
+def course_number_multi_select_kb(subject: str, selected: set, course_numbers: list):
+    """Grille de numéros multi-sélection [✅ 1] [2] [3]."""
+    admin_hidden = session_state.get_hidden()
+    
+    rows = []
+    row = []
+    for cn in course_numbers:
+        if cn in admin_hidden:
+            continue
+        
+        is_sel = cn in selected
+        mark = "✅ " if is_sel else ""
+        label = f"{mark}{cn}"
+        row.append(InlineKeyboardButton(text=label, callback_data=f"enumtoggle_{subject}_{cn}"))
+        
+        if len(row) == 5: # 5 colonnes pour la lisibilité
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+        
+    if selected:
+        rows.append([InlineKeyboardButton(
+            text=f"✔️ تأكيد الأرقام المختارة ({len(selected)})",
+            callback_data=f"econfirm_multi_{subject}"
+        )])
+        
+    subject_clean = subject.replace("train_", "")
+    is_training = subject.startswith("train_")
+    back_cb = f"train_subj_{subject_clean}" if is_training else f"exam_subj_{subject_clean}"
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=back_cb)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── اختيار النطاق ─────────────────────────────────────────────────────────────
+
+def exam_scope_kb(subject: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📖 أختار درساً محدداً",       callback_data=f"escope_single_{subject}")],
+        [InlineKeyboardButton(text="📚 أختار نطاق دروس",          callback_data=f"escope_range_{subject}")],
+        [InlineKeyboardButton(text="🎓 أختبر في جميع دروس المادة",callback_data=f"escope_all_{subject}")],
+        [InlineKeyboardButton(text="رجوع ▶️",                    callback_data="menu_exams")],
+    ])
+
+
+# ── قائمة الدروس ─────────────────────────────────────────────────────────────
+
+def courses_kb(subject: str, mastery_data: dict = None, prefix: str = "ecourse", back_cb: str = None, user_hidden_sessions: list = None, new_courses: set = None):
+    mastery_data = mastery_data or {}
+    user_hidden_sessions = user_hidden_sessions or []
+    new_courses = new_courses or set()
+    admin_hidden = session_state.get_hidden()
+    courses = COURSES_BY_SUBJECT.get(subject, [])
+    
+    rows = []
+    # Header
+    rows.append([
+        InlineKeyboardButton(text="⚙️ الحالة", callback_data="none"),
+        InlineKeyboardButton(text="📚 الدرس", callback_data="none")
+    ])
+    
+    for c in courses:
+        cn = c["course_number"]
+        course_title = c.get("name", "")
+        display_name = f"الدرس {cn} : {course_title}" if course_title else f"الدرس {cn}"
+        if cn in new_courses:
+            display_name = f"🔥 {display_name}"
+        
+        if cn in admin_hidden or str(cn) in user_hidden_sessions:
+            continue
+            
+        score = mastery_data.get(cn)
+        icon = "⚪"
+        if score is not None:
+            if score <= 2: icon = "🔴"
+            elif score <= 4: icon = "🟡"
+            else: icon = "🟢"
+        
+        identifier = cn
+        cb = f"{prefix}_{subject}_{identifier}"
+        
+        rows.append([
+            InlineKeyboardButton(text=icon, callback_data=cb),
+            InlineKeyboardButton(text=display_name, callback_data=cb)
+        ])
+        
+    back = back_cb or f"exam_subj_{subject}"
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=back)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+
+# ── نطاق الدروس ──────────────────────────────────────────────────────────────
+
+def courses_range_from_kb(subject: str, back_cb: str = None, user_hidden_sessions: list = None):
+    if user_hidden_sessions is None:
+        user_hidden_sessions = []
+    admin_hidden = session_state.get_hidden()
+    courses = COURSES_BY_SUBJECT.get(subject, [])
+    numbers = [c["course_number"] for c in courses if c["course_number"] not in admin_hidden and str(c["course_number"]) not in user_hidden_sessions]
+    rows = _number_grid(numbers, f"erange_from_{subject}")
+    back = back_cb or f"exam_subj_{subject}"
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=back)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def courses_range_to_kb(subject: str, from_cn: int):
+    courses = COURSES_BY_SUBJECT.get(subject, [])
+    rows = []
+    row  = []
+    for c in courses:
+        n = c["course_number"]
+        if n >= from_cn:
+            label = f"✅ {n}" if n == from_cn else str(n)
+            row.append(InlineKeyboardButton(
+                text=label,
+                callback_data=f"erange_to_{subject}_{from_cn}_{n}"
+            ))
+            if len(row) == 5:
+                rows.append(row)
+                row = []
+    if row:
+        rows.append(row)
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=f"escope_range_{subject}")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── عدد الأسئلة ──────────────────────────────────────────────────────────────
+
+def question_count_kb(context: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="5  أسئلة",     callback_data=f"ecount_5_{context}"),
+            InlineKeyboardButton(text="10 أسئلة",     callback_data=f"ecount_10_{context}"),
+            InlineKeyboardButton(text="20 سؤالاً",    callback_data=f"ecount_20_{context}"),
+        ],
+        [InlineKeyboardButton(text="📋 أحل جميع الأسئلة المتاحة", callback_data=f"ecount_all_{context}")],
+        [InlineKeyboardButton(text="رجوع ▶️",                     callback_data="menu_exams")],
+    ])
+
+
+def quick_exam_count_kb(context: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="5  أسئلة",     callback_data=f"qdirect_5_{context}"),
+            InlineKeyboardButton(text="10 أسئلة",     callback_data=f"qdirect_10_{context}"),
+            InlineKeyboardButton(text="20 سؤالاً",    callback_data=f"qdirect_20_{context}"),
+        ],
+        [InlineKeyboardButton(text="📋 جميع الأسئلة", callback_data=f"qdirect_all_{context}")],
+        [InlineKeyboardButton(text="رجوع ▶️",          callback_data="menu_exam_direct")],
+    ])
+
+
+# ── وقت الكرونو لكل سؤال ─────────────────────────────────────────────────────
+
+def chrono_time_kb(context: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="⚡ 10 ثوانٍ",  callback_data=f"echrono_t_10_{context}"),
+            InlineKeyboardButton(text="🕐 20 ثانية",  callback_data=f"echrono_t_20_{context}"),
+        ],
+        [
+            InlineKeyboardButton(text="🕑 30 ثانية",  callback_data=f"echrono_t_30_{context}"),
+            InlineKeyboardButton(text="🕔 60 ثانية",  callback_data=f"echrono_t_60_{context}"),
+        ],
+        [InlineKeyboardButton(text="رجوع ▶️",         callback_data="menu_exams")],
+    ])
+
+
+# ── نوع الاختبار (بدون وضع عشوائي) ──────────────────────────────────────────
+
+def exam_type_kb(context: str):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📘 تمارين تدريبية",            callback_data=f"etype_normal_{context}")],
+        [InlineKeyboardButton(text="🚀 وضعية التدريب (جديد)",      callback_data=f"etype_training_{context}")],
+        [InlineKeyboardButton(text="⏱️ التحدي بالتوقيت",           callback_data=f"etype_chrono_{context}")],
+        [InlineKeyboardButton(text="❌ مراجعة الأخطاء",            callback_data=f"etype_errors_{context}")],
+        [InlineKeyboardButton(text="📝 امتحان تجريبي",             callback_data=f"etype_exam_{context}")],
+    ])
+
+
+# ── عرض الأوضاع في شبكة 2x2 ──────────────────────────────────────────────────
+
+def exam_modes_grid_kb(context: str = ""):
+    """عرض أوضاع الاختبار في شبكة 2x2 مع شرح سريع."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="📘 تمارين\nتدريبية", callback_data=f"mode_normal_{context}"),
+            InlineKeyboardButton(text="📝 امتحان\nتجريبي",  callback_data=f"mode_exam_{context}"),
+        ],
+        [
+            InlineKeyboardButton(text="⏱️ التحدي\nبالتوقيت", callback_data=f"mode_chrono_{context}"),
+            InlineKeyboardButton(text="❌ مراجعة\nالأخطاء",  callback_data=f"mode_errors_{context}"),
+        ],
+        [InlineKeyboardButton(text="رجوع ▶️", callback_data="menu_exams")],
+    ])
+
+
+def _should_use_single_column(choices: dict, max_len: int = 15) -> bool:
+    """
+    Détermine si on doit utiliser un affichage sur une seule colonne (liste)
+    plutôt qu'une grille 2x2. Si au moins une option dépasse max_len, on renvoie True.
+    """
+    return any(len(str(text)) > max_len for text in choices.values())
+
+
+def _should_use_letter_buttons(choices: dict, max_len: int = 18) -> bool:
+    """
+    Détermine si on doit utiliser un affichage avec des boutons de lettres
+    uniquement (et afficher les textes dans le message) pour éviter la troncature sur mobile.
+    """
+    return any(len(str(text)) > max_len for text in choices.values())
+
+
+def answer_kb(q_id: int, choices: dict):
+    rows = []
+    items = list(choices.items())
+    ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+    
+    if _should_use_single_column(choices, max_len=15):
+        for letter, text in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            rows.append([InlineKeyboardButton(
+                text=f"\u200f{ar_letter} - {text}",
+                callback_data=f"answer_{q_id}_{letter}"
+            )])
+    else:
+        for i in range(0, len(items), 2):
+            row = []
+            for letter, text in items[i:i + 2]:
+                ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+                row.append(InlineKeyboardButton(
+                    text=f"\u200f{ar_letter} - {text}",
+                    callback_data=f"answer_{q_id}_{letter}"
+                ))
+            rows.append(row)
+            
+    # Ligne séparatrice sous forme de bouton à la fin des choix
+    rows.append([InlineKeyboardButton(text="━━━━━━━━━━━━━━━━━━━━━━", callback_data="noop")])
+    
+    rows.append([
+        InlineKeyboardButton(text="⚠️ إبلاغ عن خطأ في السؤال",    callback_data=f"report_q_id:{q_id}"),
+        InlineKeyboardButton(text="⭐ أسئلتي المفضلة",    callback_data=f"fav_add_{q_id}"),
+    ])
+    # Bouton pour finir l'examen pendant la réflexion
+    rows.append([InlineKeyboardButton(text="🚪 أنهي الاختبار", callback_data="end_exam")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── Versions "question buttons only" pour utiliser avec make_question_display_kb ──
+
+def _answer_buttons_only(q_id: int, choices: dict) -> list:
+    """Retourne juste les boutons de réponse (grille ou liste intelligente) sans InlineKeyboardMarkup."""
+    rows = []
+    items = list(choices.items())
+    ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+    
+    if _should_use_letter_buttons(choices):
+        letter_row = []
+        for letter, _ in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            letter_row.append(InlineKeyboardButton(
+                text=f"\u200f[{ar_letter}]",
+                callback_data=f"answer_{q_id}_{letter}"
+            ))
+        rows.append(letter_row)
+    elif _should_use_single_column(choices, max_len=15):
+        for letter, text in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            rows.append([InlineKeyboardButton(
+                text=f"\u200f{ar_letter} - {text}",
+                callback_data=f"answer_{q_id}_{letter}"
+            )])
+    else:
+        for i in range(0, len(items), 2):
+            row = []
+            for letter, text in items[i:i + 2]:
+                ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+                row.append(InlineKeyboardButton(
+                    text=f"\u200f{ar_letter} - {text}",
+                    callback_data=f"answer_{q_id}_{letter}"
+                ))
+            rows.append(row)
+            
+    # Ligne séparatrice sous forme de bouton à la fin des choix
+    rows.append([InlineKeyboardButton(text="━━━━━━━━━━━━━━━━━━━━━━", callback_data="noop")])
+    
+    rows.append([
+        InlineKeyboardButton(text="⚠️ إبلاغ عن خطأ في السؤال",    callback_data=f"report_q_id:{q_id}"),
+        InlineKeyboardButton(text="⭐ أسئلتي المفضلة",    callback_data=f"fav_add_{q_id}"),
+    ])
+    # Bouton pour finir l'examen pendant la réflexion
+    rows.append([InlineKeyboardButton(text="🚪 أنهي الاختبار", callback_data="end_exam")])
+    return rows
+
+
+def _exam_answer_buttons_only(q_id: int, choices: dict, current_idx: int, total: int,
+                              answered_count: int, is_answered: bool = False, 
+                              chosen: str = None) -> list:
+    """Retourne juste les boutons de réponse pour le mode exam (grille ou liste intelligente)."""
+    rows = []
+    items = list(choices.items())
+    ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+    
+    if _should_use_letter_buttons(choices):
+        letter_row = []
+        for letter, _ in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            if is_answered and chosen and letter.upper() == str(chosen).upper():
+                btn_text = f"\u200f✓ {ar_letter}"
+            else:
+                btn_text = f"\u200f{ar_letter}"
+            letter_row.append(InlineKeyboardButton(text=btn_text, callback_data=f"answer_{q_id}_{letter}"))
+        rows.append(letter_row)
+    elif _should_use_single_column(choices, max_len=15):
+        for letter, text in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            if is_answered and chosen and letter.upper() == str(chosen).upper():
+                btn_text = f"\u200f✓ {ar_letter} - {text}"
+            else:
+                btn_text = f"\u200f□ {ar_letter} - {text}"
+            rows.append([InlineKeyboardButton(text=btn_text, callback_data=f"answer_{q_id}_{letter}")])
+    else:
+        for i in range(0, len(items), 2):
+            row = []
+            for letter, text in items[i:i + 2]:
+                ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+                if is_answered and chosen and letter.upper() == str(chosen).upper():
+                    btn_text = f"\u200f✓ {ar_letter} - {text}"
+                else:
+                    btn_text = f"\u200f□ {ar_letter} - {text}"
+                row.append(InlineKeyboardButton(text=btn_text, callback_data=f"answer_{q_id}_{letter}"))
+            rows.append(row)
+    
+    # Ligne séparatrice sous forme de bouton à la fin des choix
+    rows.append([InlineKeyboardButton(text="━━━━━━━━━━━━━━━━━━━━━━", callback_data="noop")])
+    
+    # Navigation dans l'examen (précédent/suivant)
+    nav_row = []
+    if current_idx > 0:
+        nav_row.append(InlineKeyboardButton(text="◀️ السابق", callback_data="exam_nav_prev"))
+    if current_idx < total - 1:
+        nav_row.append(InlineKeyboardButton(text="التالي ▶️", callback_data="exam_nav_next"))
+    else:
+        nav_row.append(InlineKeyboardButton(text="✅ إنهاء الامتحان", callback_data="exam_submit"))
+    
+    if nav_row:
+        rows.append(nav_row)
+    
+    # Bouton signaler (optionnel pour le mode exam)
+    rows.append([InlineKeyboardButton(text="⚠️ الإبلاغ عن خطأ في هذا السؤال", callback_data=f"report_q_id:{q_id}")])
+    # Bouton pour finir l'examen pendant la réflexion
+    rows.append([InlineKeyboardButton(text="🚪 أنهي الاختبار", callback_data="end_exam")])
+    return rows
+
+
+def exam_question_nav_kb(q_id: int, choices: dict, current_idx: int, total: int,
+                          answered_count: int, is_answered: bool = False, chosen: str = None):
+    rows = []
+    items = list(choices.items())
+    ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+    
+    if _should_use_letter_buttons(choices):
+        letter_row = []
+        for letter, _ in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            if is_answered and chosen and letter.upper() == str(chosen).upper():
+                btn_text = f"\u200f✓ {ar_letter}"
+            else:
+                btn_text = f"\u200f{ar_letter}"
+            letter_row.append(InlineKeyboardButton(text=btn_text, callback_data=f"answer_{q_id}_{letter}"))
+        rows.append(letter_row)
+    elif _should_use_single_column(choices, max_len=15):
+        for letter, text in items:
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            if is_answered and chosen and letter.upper() == str(chosen).upper():
+                btn_text = f"\u200f✓ {ar_letter} - {text}"
+            else:
+                btn_text = f"\u200f□ {ar_letter} - {text}"
+            rows.append([InlineKeyboardButton(text=btn_text, callback_data=f"answer_{q_id}_{letter}")])
+    else:
+        for i in range(0, len(items), 2):
+            row = []
+            for letter, text in items[i:i + 2]:
+                ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+                if is_answered and chosen and letter.upper() == str(chosen).upper():
+                    btn_text = f"\u200f✓ {ar_letter} - {text}"
+                else:
+                    btn_text = f"\u200f□ {ar_letter} - {text}"
+                row.append(InlineKeyboardButton(text=btn_text, callback_data=f"answer_{q_id}_{letter}"))
+            rows.append(row)
+
+    # Ligne séparatrice sous forme de bouton à la fin des choix
+    rows.append([InlineKeyboardButton(text="━━━━━━━━━━━━━━━━━━━━━━", callback_data="noop")])
+
+    rows.append([
+        InlineKeyboardButton(text="📮 إبلاغ",             callback_data=f"report_q_id:{q_id}"),
+        InlineKeyboardButton(text="⭐ أسئلتي المفضلة",    callback_data=f"fav_add_{q_id}"),
+    ])
+
+    nav = []
+    if current_idx > 0:
+        nav.append(InlineKeyboardButton(text="◀️ السابق", callback_data="exam_prev"))
+    if current_idx < total - 1:
+        nav.append(InlineKeyboardButton(text="التالي ▶️", callback_data="exam_next"))
+    if nav:
+        rows.append(nav)
+
+    rows.append([InlineKeyboardButton(
+        text=f"🏁 إنهاء وإظهار النتيجة ({answered_count}/{total})",
+        callback_data="exam_submit"
+    )])
+    # Bouton pour finir l'examen pendant la réflexion
+    rows.append([InlineKeyboardButton(text="🚪 أنهي الاختبار", callback_data="end_exam")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def next_question_kb(q_id: int = None, has_explanation: bool = False, has_prev: bool = False):
+    rows = []
+    if q_id:
+        if has_explanation:
+            rows.append([InlineKeyboardButton(text="🔍 شرح الأستاذ", callback_data=f"show_expl_{q_id}")])
+        rows.append([InlineKeyboardButton(text="⚠️ إبلاغ عن خطأ في السؤال", callback_data=f"report_q_id:{q_id}")])
+    
+    nav_row = []
+    if has_prev:
+        nav_row.append(InlineKeyboardButton(text="◀️ السابق", callback_data="prev_q"))
+    nav_row.append(InlineKeyboardButton(text="السؤال التالي ▶️",  callback_data="next_q"))
+    
+    rows.append(nav_row)
+    rows.append([InlineKeyboardButton(text="🚪 أنهي الاختبار",  callback_data="end_exam")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def explanation_tab_kb(q_id: int = None, active_tab: str = "pedago", has_prev: bool = False, youtube_url: str = None, has_citation: bool = True, has_mind_map: bool = False):
+    rows = []
+    
+    # Bouton unique et stable de bascule entre les deux onglets (seulement s'il y a une citation)
+    if has_citation:
+        if active_tab == "quote":
+            toggle_label = "💡 الانتقال إلى الشرح التربوي"
+            callback_val = f"show_expl_{q_id}_pedago"
+        else:
+            toggle_label = "📖 الانتقال إلى قول الشيخ"
+            callback_val = f"show_expl_{q_id}_quote"
+            
+        rows.append([InlineKeyboardButton(text=toggle_label, callback_data=callback_val)])
+    
+    # Bouton YouTube si URL présente
+    if youtube_url:
+        rows.append([InlineKeyboardButton(text="🎥 مشاهدة على يوتيوب (YouTube)", url=youtube_url)])
+        
+    # Bouton Mind map si disponible
+    if has_mind_map and q_id:
+        rows.append([InlineKeyboardButton(text="🗺️ الخريطة الذهنية للدرس", callback_data=f"view_map_quiz_{q_id}")])
+        
+    if q_id:
+        rows.append([InlineKeyboardButton(text="❓ عرض السؤال والجواب", callback_data=f"show_quest_{q_id}")])
+        rows.append([InlineKeyboardButton(text="⚠️ إبلاغ عن خطأ في السؤال", callback_data=f"report_q_id:{q_id}")])
+    
+    nav_row = []
+    if has_prev:
+        nav_row.append(InlineKeyboardButton(text="◀️ السابق", callback_data="prev_q"))
+    nav_row.append(InlineKeyboardButton(text="السؤال التالي ▶️",  callback_data="next_q"))
+    
+    rows.append(nav_row)
+    rows.append([InlineKeyboardButton(text="🚪 أنهي الاختبار",  callback_data="end_exam")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def end_exam_kb():
+    rows = [
+        [InlineKeyboardButton(text="🎓 تقييم المعلم (Bilan IA)", callback_data="menu_ai_assessment")],
+        [InlineKeyboardButton(text="🏆 لوحة المتصدرين", callback_data="menu_leaderboard")],
+        [InlineKeyboardButton(text="📊 إحصائياتي التفصيلية", callback_data="menu_stats")],
+        [InlineKeyboardButton(text="🏠 القائمة الرئيسية",  callback_data="back_main")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def end_exam_with_review_kb():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔍 مراجعة إجاباتي",    callback_data="review_start")],
+        [
+            InlineKeyboardButton(text="📊 إحصائياتي",      callback_data="menu_stats"),
+            InlineKeyboardButton(text="🔄 اختبار جديد",    callback_data="menu_exams"),
+        ],
+        [InlineKeyboardButton(text="🏠 القائمة الرئيسية",  callback_data="back_main")],
+    ])
+
+
+def exam_review_nav_kb(current: int, total: int, q_id: int = None):
+    nav = []
+    if current > 0:
+        nav.append(InlineKeyboardButton(text="◀️ السابق", callback_data="rev_prev"))
+    if current < total - 1:
+        nav.append(InlineKeyboardButton(text="التالي ▶️", callback_data="rev_next"))
+    rows = []
+    if nav:
+        rows.append(nav)
+    
+    if q_id:
+        rows.append([InlineKeyboardButton(text="⚠️ إبلاغ عن خطأ في السؤال", callback_data=f"report_q_id:{q_id}")])
+        
+    rows.append([
+        InlineKeyboardButton(text="🏁 النتيجة",           callback_data="review_result"),
+        InlineKeyboardButton(text="🏠 القائمة",           callback_data="back_main"),
+    ])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── وصف نوع الاختبار قبل البدء (تأكيد) ──────────────────────────────────────
+
+def exam_confirm_kb(mode: str, rest: str):
+    """Shown before starting an exam — gives a description and a confirm button."""
+    rows = []
+    
+    # Intégration du Pont Pédagogique : Révision rapide avant l'examen
+    parts = rest.split("_")
+    if len(parts) >= 4 and parts[1] == "cn":
+        subject = parts[2]
+        course_number = parts[3]
+        rows.append([
+            InlineKeyboardButton(
+                text="⚡ مراجعة سريعة قبل الاختبار (Fiche IA)", 
+                callback_data=f"ai_flashcard_exam_{subject}_{course_number}_{mode}_{rest}"
+            )
+        ])
+        
+    if mode == "normal":
+        rows.append([InlineKeyboardButton(text="✅ Mode Classique (Correction directe)", callback_data=f"estart_normal_{rest}")])
+        rows.append([InlineKeyboardButton(text="🔥 Mode Sévère (Correction à la fin)", callback_data=f"estart_severe_{rest}")])
+    else:
+        rows.append([InlineKeyboardButton(text="✅ ابدأ الآن", callback_data=f"estart_{mode}_{rest}")])
+    
+    rows.append([InlineKeyboardButton(text="↩️ تغيير النوع", callback_data=f"ecount_{rest}")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── الدرس التوجيهي ────────────────────────────────────────────────────────────
+
+def tutorial_nav_kb(page: int, total: int = 3):
+    nav = []
+    if page > 1:
+        nav.append(InlineKeyboardButton(text="◀️ السابق",  callback_data=f"tutorial_p{page - 1}"))
+    if page < total:
+        nav.append(InlineKeyboardButton(text="التالي ▶️",  callback_data=f"tutorial_p{page + 1}"))
+    rows = []
+    if nav:
+        rows.append(nav)
+    rows.append([InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_main")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── المفضلة — اختيار المادة أولاً ────────────────────────────────────────────
+
+def favorites_subjects_kb(subjects_with_counts: dict):
+    keys = [s for s in SUBJECTS.keys() if s in subjects_with_counts]
+    rows = []
+    for i in range(0, len(keys), 2):
+        row = []
+        for key in keys[i:i + 2]:
+            count = subjects_with_counts[key]
+            num   = SUBJECT_NUM.get(key, "•")
+            name  = SUBJECT_SHORT.get(key, key)
+            row.append(InlineKeyboardButton(
+                text=f"{num}. {name} ({count})",
+                callback_data=f"fav_subj_{key}"
+            ))
+        rows.append(row)
+    rows.append([InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_main")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def favorites_list_kb(questions: list, back_cb: str = "menu_favorites"):
+    rows = []
+    for i, q in enumerate(questions, 1):
+        qid  = q["id"]
+        cn   = q.get("course_number", "?")
+        subj = SUBJECT_SHORT.get(q.get("subject", ""), "")
+        info = f"درس {cn}" + (f" — {subj}" if subj else "")
+        rows.append([
+            InlineKeyboardButton(text="🗑️ حذف",            callback_data=f"fav_del_{qid}"),
+            InlineKeyboardButton(text=f"📖 س{i} | {info}", callback_data=f"fav_view_{qid}"),
+        ])
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=back_cb)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── عرض السؤال في زر غير قابل للنقر (عريض + عرض كامل) ──────────────────────
+
+import textwrap
+from utils import backup_file
+
+# Create a backup of this file before any runtime changes
+backup_file(__file__)
+
+
+def make_question_display_kb(question_text: str, answer_buttons: list):
+    """
+    إنشاء لوحة مفatيح مع عرض أزرار الإجابات بالأسفل.
+    """
+    rows = []
+    # إضافة أزرار الإجابات
+    rows.extend(answer_buttons)
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def admin_feedback_menu_kb(counts_dict: dict):
+    prob_c = counts_dict.get("problem", {}).get("unread_cnt", 0)
+    prob_crit = counts_dict.get("problem", {}).get("crit_cnt", 0)
+    imp_c = counts_dict.get("improvement", {}).get("unread_cnt", 0)
+    rev_c = counts_dict.get("review", {}).get("unread_cnt", 0)
+    
+    p_icon = "🔴" if prob_crit > 0 else ""
+    
+    prob_text = f"{p_icon}🚨 مشاكل ({prob_c})" if prob_c > 0 else "🚨 مشاكل"
+    imp_text = f"💡 تحسينات ({imp_c})" if imp_c > 0 else "💡 تحسينات"
+    rev_text = f"⭐ تقييمات ({rev_c})" if rev_c > 0 else "⭐ تقييمات"
+    
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=prob_text, callback_data="admin_fb_cat_problem")],
+        [InlineKeyboardButton(text=imp_text, callback_data="admin_fb_cat_improvement")],
+        [InlineKeyboardButton(text=rev_text, callback_data="admin_fb_cat_review")],
+        [InlineKeyboardButton(text="↩️ لوحة الإدارة", callback_data="admin_panel")]
+    ])
+
+
+def admin_feedback_status_menu_kb(category: str, counts: dict = None):
+    """Menu intermédiaire en deux colonnes pour choisir le statut."""
+    if not counts:
+        counts = {"pending": 0, "in_progress": 0, "archived": 0}
+        
+    return InlineKeyboardMarkup(inline_keyboard=[
+        # En-têtes
+        [
+            InlineKeyboardButton(text="📩 العدد", callback_data="noop"),
+            InlineKeyboardButton(text="📁 الحالة", callback_data="noop"),
+        ],
+        # Lignes du tableau
+        [
+            InlineKeyboardButton(text=f"({counts['pending']})", callback_data=f"admin_fb_list_{category}_pending"),
+            InlineKeyboardButton(text="🔴 غير معالجة", callback_data=f"admin_fb_list_{category}_pending"),
+        ],
+        [
+            InlineKeyboardButton(text=f"({counts['in_progress']})", callback_data=f"admin_fb_list_{category}_in_progress"),
+            InlineKeyboardButton(text="🟡 قيد المعالجة", callback_data=f"admin_fb_list_{category}_in_progress"),
+        ],
+        [
+            InlineKeyboardButton(text=f"({counts['archived']})", callback_data=f"admin_fb_list_{category}_archived"),
+            InlineKeyboardButton(text="✅ تمت المعالجة", callback_data=f"admin_fb_list_{category}_archived"),
+        ],
+        [InlineKeyboardButton(text="↩️ رجوع للتصنيفات", callback_data="admin_inbox")]
+    ])
+
+
+def admin_feedback_action_kb(feedback_id: int, idx: int = 0, total: int = 1, category: str = "", msg_status: str = "pending", list_status: str = "pending"):
+    rows = []
+    
+    # Specific buttons for Technical Problems
+    if category == "problem":
+        status_row = []
+        if msg_status != "in_progress":
+            status_row.append(InlineKeyboardButton(text="🟡 قيد المعالجة", callback_data=f"admin_fb_st_{feedback_id}_in_progress_{list_status}"))
+        if msg_status != "transferred":
+            status_row.append(InlineKeyboardButton(text="🟣 تحويل", callback_data=f"admin_fb_st_{feedback_id}_transferred_{list_status}"))
+        if msg_status != "resolved":
+            status_row.append(InlineKeyboardButton(text="🟢 تم الحل", callback_data=f"admin_fb_st_{feedback_id}_resolved_{list_status}"))
+        if status_row:
+            rows.append(status_row)
+        
+        # Add reply button for problems too
+        rows.append([InlineKeyboardButton(text="💬 الرد على الطالب", callback_data=f"admin_fb_reply_{feedback_id}_{list_status}")])
+    else:
+        if msg_status == "pending":
+            rows.append([
+                InlineKeyboardButton(text="💬 الرد على الطالب", callback_data=f"admin_fb_reply_{feedback_id}_{list_status}"),
+                InlineKeyboardButton(text="✅ علامة كمقروء", callback_data=f"admin_fb_read_{feedback_id}_{list_status}")
+            ])
+    
+    nav = []
+    if idx > 0:
+        nav.append(InlineKeyboardButton(text="◀️ السابق", callback_data=f"admin_fb_nav_{category}_{list_status}_{idx - 1}"))
+    if idx < total - 1:
+        nav.append(InlineKeyboardButton(text="التالي ▶️", callback_data=f"admin_fb_nav_{category}_{list_status}_{idx + 1}"))
+    
+    if nav:
+        rows.append(nav)
+    
+    rows.append([InlineKeyboardButton(text="↩️ رجوع للقائمة", callback_data=f"admin_fb_cat_{category}")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── Refonte UX — Claviers de Fiche de Bord et Personnalisation ─────────────────
+
+def subject_options_kb(subject: str):
+    """
+    Clavier minimaliste pour la Fiche de Bord d'une matière en Mode Exercice.
+    """
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="▶️ ابدأ التدريب", callback_data=f"start_practice_{subject}")],
+        [InlineKeyboardButton(text="⚙️ تخصيص الإعدادات", callback_data=f"custom_settings_{subject}")],
+        [InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_main")]
+    ])
+
+
+def customize_settings_kb(subject: str, settings: dict):
+    """
+    Clavier de personnalisation sous forme de toggles à bascule pour modifier les paramètres de session.
+    """
+    rows = []
+    
+    # 1. Type de Révision : Par Cours vs Par Thématique
+    rev_type = settings.get("review_type", "course")
+    if rev_type == "theme":
+        rev_label = "🎯 الترتيب: حسب المحاور (Thématique)"
+    else:
+        rev_label = "📖 الترتيب: حسب الدروس (Par Cours)"
+    rows.append([InlineKeyboardButton(text=rev_label, callback_data=f"toggle_setting_{subject}_review")])
+    
+    # 2. Style de Correction : Immédiat vs À la fin
+    corr_style = settings.get("correction_style", "immediate")
+    if corr_style == "end":
+        corr_label = "📝 التصحيح: في النهاية (À la fin)"
+    else:
+        corr_label = "⚡ التصحيح: فوري (Immédiat)"
+    rows.append([InlineKeyboardButton(text=corr_label, callback_data=f"toggle_setting_{subject}_correct")])
+    
+    # 3. Type de Chrono : Sans chrono vs 30s vs 60s
+    chrono_sec = int(settings.get("chrono_seconds", 0))
+    if chrono_sec == 30:
+        chrono_label = "⏰ الوقت: 30 ثانية"
+    elif chrono_sec == 60:
+        chrono_label = "⏰ الوقت: 60 ثانية"
+    else:
+        chrono_label = "♾️ الوقت: بدون وقت (Sans chrono)"
+    rows.append([InlineKeyboardButton(text=chrono_label, callback_data=f"toggle_setting_{subject}_chrono")])
+    
+    # 4. Nombre de questions : 5 vs 10 vs 20 vs Toutes
+    q_count = settings.get("question_count", "all")
+    if q_count == 5:
+        count_label = "📊 عدد الأسئلة: 5 أسئلة"
+    elif q_count == 10:
+        count_label = "📊 عدد الأسئلة: 10 أسئلة"
+    elif q_count == 20:
+        count_label = "📊 عدد الأسئلة: 20 سؤالاً"
+    else:
+        count_label = "📊 عدد الأسئلة: كل الأسئلة (Toutes)"
+    rows.append([InlineKeyboardButton(text=count_label, callback_data=f"toggle_setting_{subject}_count")])
+    
+    # 5. Sélection de Questions : Toutes vs Uniquement mes erreurs
+    q_filter = settings.get("question_filter", "all")
+    if q_filter == "errors":
+        filter_label = "❌ الأسئلة: الأخطاء فقط (Mes Erreurs)"
+    else:
+        filter_label = "🔄 الأسئلة: كل الأسئلة (Toutes)"
+    rows.append([InlineKeyboardButton(text=filter_label, callback_data=f"toggle_setting_{subject}_filter")])
+    
+    # 5. Source des Questions : Officielle vs Communautaire vs AI
+    q_source = settings.get("question_source", "official")
+    if q_source == "community":
+        source_label = "👥 المصدر: مساهمات الطلاب (Communauté)"
+    elif q_source == "ai":
+        source_label = "⚡ المصدر: مقترح من الإدارة"
+    else:
+        source_label = "📚 المصدر: أسئلة الأكاديمية (Officiel)"
+    rows.append([InlineKeyboardButton(text=source_label, callback_data=f"toggle_setting_{subject}_source")])
+    
+    # 6. Bouton de sauvegarde et retour
+    rows.append([InlineKeyboardButton(text="💾 حفظ ورجوع", callback_data=f"save_settings_{subject}")])
+    
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def sira_hijra_years_kb(is_training: bool = False):
+    prefix = "train_" if is_training else ""
+    years = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    rows = []
+    for i in range(0, len(years), 3):
+        row = []
+        for y in years[i:i+3]:
+            row.append(InlineKeyboardButton(text=f"السنة {y} هـ", callback_data=f"{prefix}ehijra_year_{y}"))
+        rows.append(row)
+    rows.append([InlineKeyboardButton(text="رجوع ▶️", callback_data=f"exam_subj_sira")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def failed_quiz_remediation_kb(subject: str, course_number: int, mode: str = "normal"):
+    """
+    Keyboard shown when a student fails a course quiz.
+    Offers remediation buttons to chat with Karim or review flashcards.
+    """
+    rows = [
+        [
+            InlineKeyboardButton(text="💬 ناقش أخطاءك مع كريم", callback_data=f"ai_tutor_course_start_{subject}_{course_number}_lp"),
+        ],
+        [
+            InlineKeyboardButton(text="🃏 راجع بطاقات الدرس", callback_data=f"ai_fc_start_{subject}_{course_number}_lp"),
+        ],
+        [
+            InlineKeyboardButton(text="🔍 مراجعة إجاباتي", callback_data="review_start")
+        ],
+        [
+            InlineKeyboardButton(text="↩️ مسار التعلم", callback_data=f"lp_course_{subject}_{course_number}"),
+            InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_main")
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+

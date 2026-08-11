@@ -1,0 +1,2917 @@
+import asyncio
+import logging
+import random
+import time
+import html
+from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message, LinkPreviewOptions
+import auth
+from database import get_user, save_exam_result, save_user_error, clear_user_error, get_user_errors, record_correct_answer, add_bonus_points, get_lesson_mastery_for_subject, update_lesson_mastery, get_user_hidden_items, get_new_courses, get_recent_questions_summary, get_user_subject_level, set_user_subject_level
+from keyboards import (
+    subjects_kb, exam_nav_mode_kb, exam_number_mode_kb, exam_topic_mode_kb,
+    topic_multi_select_kb, exam_scope_kb, course_number_multi_select_kb,
+    courses_kb, courses_range_from_kb, courses_range_to_kb,
+    question_count_kb, quick_exam_count_kb, exam_type_kb, chrono_time_kb,
+    answer_kb, exam_question_nav_kb, next_question_kb, end_exam_kb,
+    end_exam_with_review_kb, exam_review_nav_kb, main_menu_kb, exam_confirm_kb,
+    make_question_display_kb, _answer_buttons_only, _exam_answer_buttons_only,
+    _should_use_letter_buttons,
+    subject_options_kb, customize_settings_kb, explanation_tab_kb, sira_hijra_years_kb,
+)
+from data.data_manager import (
+    SUBJECTS, COURSES_BY_SUBJECT, COURSE_BY_NUMBER, 
+    QUESTIONS_OFFICIELLES, TOPICS_BY_SUBJECT, NUMBERS_BY_SUBJECT
+)
+from utils import (
+    score_percentage, subject_name, course_label,
+    parse_count, praise_message, wrong_message, get_course,
+    get_courses_for_subject, get_gender_greeting,
+    backup_file
+)
+from question_pool import (
+    merged_for_course, merged_for_courses, merged_for_course_range,
+    merged_for_subject, merged_for_ids, merged_for_ai, merged_for_topics,
+    SOURCE_BADGE, SOURCE_LABEL,
+)
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+import ai_tutor
+
+# Create a backup of this handler file before any modifications
+backup_file(__file__)
+
+router = Router()
+exam_sessions = {}
+
+# Sessions d'examen en mémoire : {user_id: session_dict}
+exam_sessions = {}
+
+# Sessions de révision post-امتحان : {user_id: review_dict}
+review_sessions = {}
+
+# Sélections multi-thèmes en cours : {user_id: {"subject": str, "selected": set()}}
+topic_selections = {}
+
+# Tâches chrono en cours : {user_id: asyncio.Task}
+chrono_tasks: dict = {}
+
+# Paramètres de personnalisation d'entraînement des étudiants : {user_id: settings_dict}
+practice_settings: dict = {}
+
+
+def format_explanation_html(explanation: str) -> str:
+    if not explanation:
+        return ""
+    
+    # Remplacement de "قول الشيخ" par "الشيخ ياسين العمري يقول" pour homogénéité
+    explanation = explanation.replace("قول الشيخ ياسين العمري", "الشيخ ياسين العمري يقول :")
+    explanation = explanation.replace("📖 <b>قول الشيخ ياسين العمري</b> :", "📖 <b>الشيخ ياسين العمري يقول :</b>")
+    explanation = explanation.replace("📖 <b>قول الشيخ ياسين العمري</b>", "📖 <b>الشيخ ياسين العمري يقول :</b>")
+    explanation = explanation.replace("📖 <b>قول الشيخ ياسين العمري :</b>", "📖 <b>الشيخ ياسين العمري يقول :</b>")
+    
+    # Force RTL mark
+    explanation = "\u200f" + explanation.strip()
+    
+    # If "💡 <b>التفسير التربوي</b> :" is present
+    if "💡 <b>التفسير التربوي</b> :" in explanation:
+        parts = explanation.split("💡 <b>التفسير التربوي</b> :", 1)
+        before = parts[0]
+        after_title = parts[1]
+        
+        # On cherche la mention du Sheikh pour séparer
+        if "📖 <b>الشيخ ياسين العمري يقول" in after_title:
+            subparts = after_title.split("📖 <b>الشيخ ياسين العمري يقول", 1)
+            pedagogical_text = subparts[0].strip()
+            rest = "📖 <b>الشيخ ياسين العمري يقول" + subparts[1]
+            
+            # Format en blockquote (avec le trait bleu à gauche dans Telegram)
+            formatted_pedagogical = f"<blockquote>\u200f{pedagogical_text}</blockquote>"
+            explanation = f"{before}💡 <b>التفسير التربوي</b> :\n{formatted_pedagogical}\n\n\u200f{rest}"
+        elif "الشيخ ياسين العمري يقول" in after_title:
+            subparts = after_title.split("الشيخ ياسين العمري يقول", 1)
+            pedagogical_text = subparts[0].strip()
+            rest = "الشيخ ياسين العمري يقول" + subparts[1]
+            
+            # Format en blockquote
+            formatted_pedagogical = f"<blockquote>\u200f{pedagogical_text}</blockquote>"
+            explanation = f"{before}💡 <b>التفسير التربوي</b> :\n{formatted_pedagogical}\n\n\u200f{rest}"
+        else:
+            pedagogical_text = after_title.strip()
+            formatted_pedagogical = f"<blockquote>\u200f{pedagogical_text}</blockquote>"
+            explanation = f"{before}💡 <b>التفسير التربوي</b> :\n{formatted_pedagogical}"
+            
+    return explanation
+
+
+
+@router.message(F.text == "/reload_curriculum")
+async def reload_curr_cmd(message: Message, state: FSMContext):
+    if not await auth.is_any_admin(message.from_user.id):
+        return
+    await state.clear()
+    from data.data_manager import reload_curriculum
+    await reload_curriculum()
+    await message.answer("✅ تم إعادة تحميل المناهج والبيانات بنجاح!")
+
+@router.message(F.text == "/debug_curriculum")
+async def debug_curriculum(message: Message):
+    if not await auth.is_any_admin(message.from_user.id):
+        return
+    
+    msg = "📊 **Curriculum Debug**\n\n"
+    msg += "🔢 **Numbers:**\n"
+    for s, nums in NUMBERS_BY_SUBJECT.items():
+        msg += f"- {s}: {nums}\n"
+    
+    msg += "\n📚 **Topics:**\n"
+    for s, topics in TOPICS_BY_SUBJECT.items():
+        msg += f"- {s}: {len(topics)} topics\n"
+        
+    await message.answer(msg)
+
+# ── اختبار أسئلة الذكاء الاصطناعي ──────────────────────────────────────────
+
+@router.callback_query(F.data == "menu_ai_test")
+async def ai_test_start(callback: CallbackQuery):
+    hidden = await get_user_hidden_items(callback.from_user.id, "subject")
+    await callback.message.edit_text(
+        "🧪 **اختبار أسئلة الذكاء الاصطناعي**\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "اختر المادة التي تريد اختبار معلوماتك فيها (من الأسئلة المولدة بالذكاء الاصطناعي):",
+        reply_markup=await subjects_kb(callback.from_user.id, prefix="ai_test", hidden_subjects=hidden)
+    )
+
+@router.callback_query(F.data.startswith("ai_test_"))
+async def ai_test_subject_selected(callback: CallbackQuery):
+    subject = callback.data.replace("ai_test_", "").lower().strip()
+    questions = await merged_for_ai(subject)
+    if not questions:
+        all_ai = await merged_for_ai()
+        available = set(q['subject'] for q in all_ai)
+        if not available:
+            await callback.answer("⚠️ لا توجد أسئلة ذكاء اصطناعي حالياً. يرجى المزامنة من لوحة الإدارة.", show_alert=True)
+        else:
+            names = [subject_name(s) for s in available]
+            await callback.answer(f"⚠️ هذه المادة فارغة حالياً.\nالمواد المتوفرة: {', '.join(names)}", show_alert=True)
+        return
+        
+    context = f"ai_{subject}"
+    await callback.message.edit_text(
+        f"🧪 {subject_name(subject)} (أسئلة AI)\n"
+        f"❓ إجمالي الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+@router.callback_query(F.data == "menu_sira_ai")
+async def sira_ai_direct(callback: CallbackQuery):
+    subject = "sira"
+    questions = await merged_for_ai(subject)
+    if not questions:
+        await callback.answer("⚠️ لا توجد أسئلة سيرة AI حالياً في قاعدة البيانات.", show_alert=True)
+        return
+        
+    context = f"ai_{subject}"
+    await callback.message.edit_text(
+        f"📖 **اختبار السيرة النبوية (Source AI)**\n"
+        f"❓ إجمالي الأسئلة المتوفرة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة لبدء الاختبار:",
+        reply_markup=question_count_kb(context)
+    )
+
+def _cancel_chrono_task(user_id: int):
+    task = chrono_tasks.pop(user_id, None)
+    if task and not task.done():
+        task.cancel()
+
+
+# ── Helper: Créer les boutons de réponse en 2 colonnes ─────────────────────────
+
+def _build_answer_buttons(q_id: int, choices: dict, is_exam_mode: bool = False, 
+                          is_answered: bool = False, chosen: str = None) -> list:
+    """
+    Crée les boutons de réponse (2 par ligne) + boutons action.
+    Retourne une liste de listes d'InlineKeyboardButton.
+    """
+    rows = []
+    items = list(choices.items())
+    
+    # Réponses 1 par ligne (pour éviter les textes coupés)
+    for letter, text in items:
+        if is_exam_mode and is_answered and letter == chosen:
+            btn_text = f"✓ {letter}. {text}"
+        else:
+            btn_text = f"{letter}. {text}"
+        rows.append([InlineKeyboardButton(
+            text=btn_text,
+            callback_data=f"answer_{q_id}_{letter}"
+        )])
+    
+    # Boutons action (Signaler + Favoris)
+    rows.append([
+        InlineKeyboardButton(text="📮 إبلاغ",             callback_data=f"report_q_id:{q_id}"),
+        InlineKeyboardButton(text="⭐ أسئلتي المفضلة",    callback_data=f"fav_add_{q_id}"),
+    ])
+    
+    return rows
+
+
+async def _chrono_auto_skip(user_id: int, bot, chat_id: int, message_id: int, seconds: int):
+    """Tâche de fond: passe automatiquement à la question suivante si pas de réponse."""
+    try:
+        await asyncio.sleep(seconds)
+    except asyncio.CancelledError:
+        return
+
+    session = exam_sessions.get(user_id)
+    if not session:
+        return
+    is_chrono = (session.get("mode") == "chrono") or (session.get("chrono_sec", 0) > 0)
+    if not is_chrono:
+        return
+
+    idx = session["index"]
+    questions = session["questions"]
+    if idx >= len(questions):
+        return
+
+    q = questions[idx]
+    if q["id"] in session["answered"]:
+        return
+
+    session["answered"].add(q["id"])
+    session["answers"][q["id"]] = None
+    session["wrong"] += 1
+    session["index"] += 1
+    current = session["index"]
+    total   = len(questions)
+
+    try:
+        if current >= total:
+            result_text = _build_result_text(session)
+            await _finalize_exam(user_id, bot, chat_id)
+            await bot.edit_message_text(
+                f"⏰ انتهى وقت آخر سؤال!\n\n🏁 انتهى الاختبار!\n{result_text}",
+                chat_id=chat_id,
+                message_id=message_id,
+                reply_markup=end_exam_kb()
+            )
+        else:
+            await bot.edit_message_text(
+                f"⏰ انتهى الوقت! تم الانتقال تلقائياً\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"📌 تبقى {total - current} سؤال\n\n"
+                "اضغط للمتابعة ◀️",
+                chat_id=chat_id,
+                message_id=message_id,
+                reply_markup=next_question_kb()
+            )
+    except Exception:
+        pass
+
+
+# ── Navigation principale ────────────────────────────────────────────────────
+
+@router.callback_query(F.data == "menu_full_exam")
+async def menu_full_exam(callback: CallbackQuery):
+    hidden = await get_user_hidden_items(callback.from_user.id, "subject")
+    await callback.message.edit_text(
+        "🎓 <b>وضعية الامتحان المدرسي</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "في هذه الوضعية، لن تظهر الإجابات الصحيحة إلا في نهاية الاختبار.\n\n"
+        "اختر المادة التي تريد الاختبار فيها:",
+        reply_markup=await subjects_kb(callback.from_user.id, "fexam_subj", hidden_subjects=hidden),
+        parse_mode="HTML"
+    )
+
+@router.callback_query(F.data.startswith("fexam_subj_"))
+async def fexam_subject_selected(callback: CallbackQuery):
+    subject = callback.data.replace("fexam_subj_", "")
+    questions = await merged_for_subject(subject)
+    await callback.message.edit_text(
+        f"🎓 <b>امتحان {subject_name(subject)}</b>\n"
+        f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة لبدء الامتحان:",
+        reply_markup=question_count_kb(f"fexam_{subject}"),
+        parse_mode="HTML"
+    )
+
+@router.callback_query(F.data.startswith("qcount_ai_"))
+async def ai_exam_start(callback: CallbackQuery):
+    # Format: qcount_ai_{subject}_{count}
+    parts = callback.data.split("_")
+    subject = parts[2]
+    count_str = parts[3]
+    
+    from question_pool import merged_for_ai
+    questions = await merged_for_ai(subject)
+    
+    if not questions:
+        await callback.answer("⚠️ لا توجد أسئلة لهذه المادة حالياً.")
+        return
+        
+    random.shuffle(questions)
+    count = parse_count(count_str, len(questions))
+    questions = questions[:count]
+    
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":        questions,
+        "index":            0,
+        "current_idx":      0,
+        "correct":          0,
+        "wrong":            0,
+        "mode":             "training", # Correction immédiate
+        "start_time":       time.time(),
+        "answered":         set(),
+        "subject":          subject,
+        "answers":          {},
+    }
+    
+    await callback.answer("🚀 بدأ اختبار الذكاء الاصطناعي!")
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data.startswith("qcount_fexam_"))
+async def fexam_start(callback: CallbackQuery):
+    # Format: qcount_fexam_{subject}_{count}
+    parts = callback.data.split("_")
+    subject = parts[2]
+    count_str = parts[3]
+    
+    questions = await merged_for_subject(subject)
+    if not questions:
+        await callback.answer("⚠️ لا توجد أسئلة لهذه المادة حالياً.")
+        return
+        
+    random.shuffle(questions)
+    count = parse_count(count_str, len(questions))
+    questions = questions[:count]
+    
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":        questions,
+        "index":            0,
+        "current_idx":      0,
+        "correct":          0,
+        "wrong":            0,
+        "mode":             "exam", # Correction at the end
+        "start_time":       time.time(),
+        "answered":         set(),
+        "subject":          subject,
+        "answers":          {},
+    }
+    
+    # Popup Instruction
+    await callback.answer(
+        "📝 تعليمات الامتحان:\n"
+        "• الإجابات الصحيحة لن تظهر الآن.\n"
+        "• ستحصل على النتيجة والتصحيح الكامل في النهاية.\n"
+        "• بالتوفيق!",
+        show_alert=True
+    )
+    
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data == "menu_exams")
+async def menu_exams(callback: CallbackQuery):
+    hidden = await get_user_hidden_items(callback.from_user.id, "subject")
+    await callback.message.edit_text(
+        "📚 اختر المادة التي تريد الاختبار فيها:",
+        reply_markup=await subjects_kb(callback.from_user.id, "exam_subj", hidden_subjects=hidden)
+    )
+
+
+@router.callback_query(F.data == "menu_training")
+async def menu_training(callback: CallbackQuery):
+    hidden = await get_user_hidden_items(callback.from_user.id, "subject")
+    await callback.message.edit_text(
+        "🚀 وضعية التدريب (جديد)\n\nاختر المادة التي تريد مراجعتها:",
+        reply_markup=await subjects_kb(callback.from_user.id, "train_subj", hidden_subjects=hidden)
+    )
+
+
+@router.callback_query(F.data == "menu_nouveautes")
+async def menu_nouveautes(callback: CallbackQuery):
+    summary = await get_recent_questions_summary()
+    
+    if not summary:
+        text = (
+            "🆕 <b>جديد الأسئلة المضافة مؤخراً</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "✨ لا توجد أسئلة جديدة مضافة في الـ 7 أيام الأخيرة.\n\n"
+            "💡 <i>يتم تحديث الأسئلة تلقائياً عند إضافة مساهمات جديدة من الطلاب أو توليد أسئلة بالذكاء الاصطناعي!</i>"
+        )
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="↩️ العودة", callback_data="menu_learning")]
+        ])
+        await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+        return
+        
+    text = (
+        "🆕 <b>جديد الأسئلة المضافة مؤخراً (آخر 7 أيام)</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "إليك قائمة بالدروس التي تمت إضافة أسئلة جديدة لها مؤخراً :\n\n"
+    )
+    
+    # Group by subject
+    by_subject = {}
+    for item in summary:
+        by_subject.setdefault(item["subject"], []).append(item)
+        
+    for sub, items in by_subject.items():
+        sub_name = subject_name(sub)
+        text += f"📚 <b>{sub_name}</b> :\n"
+        
+        # Group by course
+        by_course = {}
+        for it in items:
+            by_course.setdefault(it["course_number"], []).append(it)
+            
+        for cn, it_list in by_course.items():
+            course_title = it_list[0]["course_name"] or ""
+            course_disp = f"الدرس {cn} : {course_title}" if course_title else f"الدرس {cn}"
+            
+            detail_strs = []
+            for it in it_list:
+                src = it["source"]
+                cnt = it["count"]
+                if src == "ai":
+                    detail_strs.append(f"🤖 +{cnt} ذكاء")
+                elif src in ("contribution", "remarkable"):
+                    detail_strs.append(f"👨‍🎓 +{cnt} مساهمة")
+                else:
+                    detail_strs.append(f"🏛️ +{cnt} رسمي")
+                    
+            text += f" ├ <b>{course_disp}</b> ({', '.join(detail_strs)})\n"
+        text += "━━━━━━━━━━━━\n\n"
+        
+    text += "🎯 <i>اختر المادة والدرس من قائمة المراجعة لبدء اختبار معلوماتك مباشرة !</i>"
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="↩️ العودة", callback_data="menu_learning")]
+    ])
+    await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+
+
+
+# ── Nouveaux Helpers & Handlers pour la Refonte UX du Mode Exercice ───────────
+
+async def show_subject_dashboard(callback: CallbackQuery, subject: str):
+    user_id = callback.from_user.id
+    
+    settings = practice_settings.setdefault(user_id, {
+        "review_type": "course",      # course (par cours) ou theme (par thème)
+        "correction_style": "immediate", # immediate (fouri) ou end (à la fin)
+        "chrono_seconds": 0,           # 0 (sans), 30s, 60s
+        "question_filter": "all",       # all (toutes) ou errors (erreurs)
+        "question_source": "official",  # official (officiel) ou community (communautaire)
+        "question_count": "all",        # default to all
+    })
+    
+    rev_type_ar = "🎯 حسب المحاور (Par Thème)" if settings.get("review_type") == "theme" else "📖 حسب الدروس (Par Cours)"
+    corr_style_ar = "⚡ تصحيح فوري (Immédiat)" if settings.get("correction_style") == "immediate" else "📝 في النهاية (À la fin)"
+    chrono_sec = settings.get("chrono_seconds", 0)
+    chrono_ar = "♾️ بدون وقت (Sans chrono)" if chrono_sec == 0 else f"⏰ {chrono_sec} ثانية"
+    q_filter_ar = "🔄 كل الأسئلة (Toutes)" if settings.get("question_filter") == "all" else "❌ الأخطاء فقط (Erreurs)"
+    q_source = settings.get("question_source", "official")
+    if q_source == "community":
+        q_source_ar = "👥 مساهمات الطلاب (Communauté)"
+    elif q_source == "ai":
+        q_source_ar = "⚡ مقترح من الإدارة"
+    else:
+        q_source_ar = "📚 أسئلة الأكاديمية (Officiel)"
+        
+    q_count = settings.get("question_count", "all")
+    if q_count == "all":
+        q_count_ar = "🔄 كل الأسئلة (Toutes)"
+    elif q_count == 5:
+        q_count_ar = "📊 5 أسئلة"
+    elif q_count == 10:
+        q_count_ar = "📊 10 أسئلة"
+    elif q_count == 20:
+        q_count_ar = "📊 20 سؤالاً"
+    else:
+        q_count_ar = f"📊 {q_count} أسئلة"
+    
+    text = (
+        f"📚 <b>مادة: {subject_name(subject)}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"⚙️ <b>الإعدادات الحالية للتدريب :</b>\n\n"
+        f"• <b>نوع الترتيب :</b> {rev_type_ar}\n"
+        f"• <b>عدد الأسئلة :</b> {q_count_ar}\n"
+        f"• <b>أسلوب التصحيح :</b> {corr_style_ar}\n"
+        f"• <b>مؤقت الإجابة :</b> {chrono_ar}\n"
+        f"• <b>نطاق الأسئلة :</b> {q_filter_ar}\n"
+        f"• <b>مصدر الأسئلة :</b> {q_source_ar}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"🚀 جاهز للبدء؟ اضغط على زر البدء بالأسفل :"
+    )
+    
+    await callback.message.edit_text(
+        text=text,
+        reply_markup=subject_options_kb(subject),
+        parse_mode="HTML"
+    )
+
+
+async def launch_practice_direct(callback: CallbackQuery, subject: str, scope: str, settings: dict):
+    user_id = callback.from_user.id
+    
+    mode = "training"
+    if settings.get("question_filter") == "errors":
+        mode = "errors"
+    elif settings.get("correction_style") == "end":
+        mode = "exam"
+
+    questions = await _resolve_questions(callback, mode, scope)
+    if not questions:
+        await callback.answer("⚠️ لا توجد أسئلة متاحة حالياً!")
+        return
+
+    # Slice questions by settings['question_count']
+    from utils import parse_count
+    q_count_setting = str(settings.get("question_count", "all"))
+    count = parse_count(q_count_setting, len(questions))
+    questions = questions[:count]
+
+    if not questions:
+        await callback.answer("⚠️ لا توجد أسئلة بعد التصفية!")
+        return
+
+    if settings.get("question_filter") == "errors":
+        random.shuffle(questions)
+
+    chrono_sec = int(settings.get("chrono_seconds", 0))
+
+    exam_sessions[user_id] = {
+        "questions":   questions,
+        "index":       0,
+        "current_idx": 0,
+        "correct":     0,
+        "wrong":       0,
+        "mode":        mode,
+        "start_time":  time.time(),
+        "answered":    set(),
+        "subject":     subject,
+        "answers":     {},
+        "chrono_sec":  chrono_sec,
+    }
+    
+    if scope.startswith("cn_"):
+        raw_cn = scope.replace("cn_", "").split("_")[-1]
+        exam_sessions[user_id]["course_number"] = int(raw_cn)
+    elif scope.startswith("hijrayear_"):
+        raw_year = scope.replace("hijrayear_", "").split("_")[-1]
+        exam_sessions[user_id]["hijra_year"] = int(raw_year)
+        
+    await callback.answer("💪 انطلاق التدريب!")
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data.startswith("train_subj_"))
+async def training_subject_redirect(callback: CallbackQuery):
+    subject = callback.data.replace("train_subj_", "")
+    await show_subject_dashboard(callback, subject)
+
+
+@router.callback_query(F.data.startswith("start_practice_"))
+async def start_practice_handler(callback: CallbackQuery):
+    subject = callback.data.replace("start_practice_", "")
+    user_id = callback.from_user.id
+    settings = practice_settings.setdefault(user_id, {
+        "review_type": "course",
+        "correction_style": "immediate",
+        "chrono_seconds": 0,
+        "question_filter": "all",
+        "question_source": "official",
+        "question_count": "all",
+    })
+    
+    if settings.get("question_filter") == "errors":
+        await launch_practice_direct(callback, subject, f"subj_{subject}", settings)
+        return
+        
+    if settings.get("review_type") == "theme":
+        topic_selections[user_id] = {
+            "subject": subject, 
+            "selected": set(), 
+            "mode": "topic",
+            "is_training": True
+        }
+        await callback.message.edit_text(
+            f"🎯 {subject_name(subject)} — اختر المواضيع للمراجعة :",
+            reply_markup=topic_multi_select_kb(f"train_{subject}", set())
+        )
+    else:
+        topic_selections[user_id] = {
+            "subject": subject, 
+            "selected": set(), 
+            "mode": "number",
+            "is_training": True
+        }
+        nums = NUMBERS_BY_SUBJECT.get(subject, [])
+        await callback.message.edit_text(
+            f"🔢 {subject_name(subject)} — اختر أرقام الدروس للتدريب :",
+            reply_markup=course_number_multi_select_kb(f"train_{subject}", set(), nums)
+        )
+
+
+@router.callback_query(F.data.startswith("custom_settings_"))
+async def custom_settings_handler(callback: CallbackQuery):
+    subject = callback.data.replace("custom_settings_", "")
+    user_id = callback.from_user.id
+    settings = practice_settings.setdefault(user_id, {
+        "review_type": "course",
+        "correction_style": "immediate",
+        "chrono_seconds": 0,
+        "question_filter": "all",
+        "question_source": "official",
+        "question_count": "all",
+    })
+    await callback.message.edit_text(
+        f"⚙️ <b>تخصيص إعدادات التدريب ({subject_name(subject)}) :</b>\n\n"
+        f"قم بالضغط على الأزرار بالأسفل لتغيير قيمها مباشرة :",
+        reply_markup=customize_settings_kb(subject, settings),
+        parse_mode="HTML"
+    )
+
+
+@router.callback_query(F.data.startswith("toggle_setting_"))
+async def toggle_settings_handler(callback: CallbackQuery):
+    raw = callback.data.replace("toggle_setting_", "")
+    parts = raw.rsplit("_", 1)
+    subject = parts[0]
+    setting_type = parts[1]
+    
+    user_id = callback.from_user.id
+    settings = practice_settings.setdefault(user_id, {
+        "review_type": "course",
+        "correction_style": "immediate",
+        "chrono_seconds": 0,
+        "question_filter": "all",
+        "question_source": "official",
+        "question_count": "all",
+    })
+    
+    if setting_type == "review":
+        settings["review_type"] = "theme" if settings.get("review_type") == "course" else "course"
+    elif setting_type == "correct":
+        settings["correction_style"] = "end" if settings.get("correction_style") == "immediate" else "immediate"
+    elif setting_type == "chrono":
+        chrono_sec = settings.get("chrono_seconds", 0)
+        if chrono_sec == 0:
+            settings["chrono_seconds"] = 30
+        elif chrono_sec == 30:
+            settings["chrono_seconds"] = 60
+        else:
+            settings["chrono_seconds"] = 0
+    elif setting_type == "count":
+        q_count = settings.get("question_count", "all")
+        try:
+            q_count = int(q_count)
+        except ValueError:
+            q_count = "all"
+        if q_count == "all":
+            settings["question_count"] = 5
+        elif q_count == 5:
+            settings["question_count"] = 10
+        elif q_count == 10:
+            settings["question_count"] = 20
+        else:
+            settings["question_count"] = "all"
+    elif setting_type == "filter":
+        settings["question_filter"] = "errors" if settings.get("question_filter") == "all" else "all"
+    elif setting_type == "source":
+        curr = settings.get("question_source", "official")
+        if curr == "official":
+            settings["question_source"] = "community"
+        elif curr == "community":
+            settings["question_source"] = "ai"
+        else:
+            settings["question_source"] = "official"
+        
+    await callback.answer("🔄 تم التعديل !")
+    await callback.message.edit_reply_markup(
+        reply_markup=customize_settings_kb(subject, settings)
+    )
+
+
+@router.callback_query(F.data.startswith("save_settings_"))
+async def save_settings_handler(callback: CallbackQuery):
+    subject = callback.data.replace("save_settings_", "")
+    await callback.answer("💾 تم الحفظ !")
+    await show_subject_dashboard(callback, subject)
+
+
+@router.callback_query(F.data.startswith("exam_subj_"))
+async def subject_selected(callback: CallbackQuery, subject_override: str = None):
+    subject = subject_override or callback.data.replace("exam_subj_", "")
+    if subject not in SUBJECTS:
+        await callback.answer("مادة غير صحيحة.")
+        return
+    await callback.message.edit_text(
+        f"📚 {subject_name(subject)}\n\nكيف تريد اختيار الدروس؟",
+        reply_markup=exam_nav_mode_kb(subject)
+    )
+
+
+# ── اختيار حسب السنة الهجرية (السيرة النبوية) ──────────────────────────────────
+
+async def get_questions_for_hijra_year(year: int) -> list:
+    import json
+    import os
+    mapping_path = "lessons/sira_lessons_mapping.json"
+    courses = []
+    if os.path.exists(mapping_path):
+        try:
+            with open(mapping_path, "r", encoding="utf-8") as f:
+                mapping = json.load(f).get("sira", {})
+                for cn_str, info in mapping.items():
+                    if year in info.get("years_hijra", []):
+                        courses.append(int(cn_str))
+        except Exception as e:
+            print(f"Error reading Sira lessons mapping: {e}")
+            
+    if not courses:
+        hardcoded = {
+            2: [14, 15],
+            3: [15, 16],
+            4: [16, 17],
+            5: [18],
+            6: [18, 19],
+            7: [19, 20],
+            8: [20, 21],
+            9: [21],
+            10: [21, 22]
+        }
+        courses = hardcoded.get(year, [])
+
+    from question_pool import get_merged_pool
+    pool = await get_merged_pool()
+    
+    matched_questions = []
+    for q in pool:
+        if q.get("subject") == "sira" and q.get("course_number") in courses:
+            q_year = q.get("hijra_year")
+            
+            # Find how many years this question's course covers
+            cn_str = str(q.get("course_number"))
+            course_years = []
+            if os.path.exists(mapping_path):
+                try:
+                    with open(mapping_path, "r", encoding="utf-8") as f:
+                        course_years = json.load(f).get("sira", {}).get(cn_str, {}).get("years_hijra", [])
+                except Exception:
+                    pass
+            if not course_years:
+                c_years_map = {
+                    14: [2],
+                    15: [2, 3],
+                    16: [3, 4],
+                    17: [4],
+                    18: [5, 6],
+                    19: [6, 7],
+                    20: [7, 8],
+                    21: [8, 9, 10],
+                    22: [10]
+                }
+                course_years = c_years_map.get(q.get("course_number"), [])
+                
+            if len(course_years) > 1:
+                if q_year == year:
+                    matched_questions.append(q)
+            else:
+                if year in course_years:
+                    matched_questions.append(q)
+                    
+    return matched_questions
+
+
+@router.callback_query(F.data == "ehijra_select_sira")
+async def ehijra_select_sira_handler(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "🎯 <b>السيرة النبوية — اختر السنة الهجرية للتدريب/الاختبار:</b>\n\n"
+        "سيقوم البوت بجمع الأسئلة من الدروس الموافقة لهذه السنة وتصفيتها بدقة.",
+        reply_markup=sira_hijra_years_kb(is_training=False),
+        parse_mode="HTML"
+    )
+
+
+@router.callback_query(F.data == "train_ehijra_select_sira")
+async def train_ehijra_select_sira_handler(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "🎯 <b>السيرة النبوية — اختر السنة الهجرية للتدريب/الاختبار:</b>\n\n"
+        "سيقوم البوت بجمع الأسئلة من الدروس الموافقة لهذه السنة وتصفيتها بدقة.",
+        reply_markup=sira_hijra_years_kb(is_training=True),
+        parse_mode="HTML"
+    )
+
+
+@router.callback_query(F.data.startswith("ehijra_year_"))
+@router.callback_query(F.data.startswith("train_ehijra_year_"))
+async def hijra_year_selected(callback: CallbackQuery):
+    is_training = "train_" in callback.data
+    raw = callback.data.replace("train_", "").replace("ehijra_year_", "")
+    year = int(raw)
+    
+    questions = await get_questions_for_hijra_year(year)
+    if not questions:
+        await callback.answer("لا توجد أسئلة متوفرة لهذه السنة حالياً.")
+        return
+
+    context = f"hijrayear_sira_{year}"
+    if is_training:
+        await callback.message.edit_text(
+            f"✅ تم اختيار السنة {year} هجرية\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+            "اختر عدد الأسئلة للبدء بالتدريب:",
+            reply_markup=question_count_kb(f"train_{context}")
+        )
+    else:
+        await callback.message.edit_text(
+            f"✅ تم اختيار السنة {year} هجرية\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "🎯 اختر نوع الاختبار:",
+            reply_markup=exam_type_kb(context)
+        )
+
+
+# ── طريقة التنقل: رقم الدرس ──────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("enum_multi_"))
+async def enum_multi(callback: CallbackQuery):
+    try:
+        subject_raw = callback.data.replace("enum_multi_", "")
+        is_training = subject_raw.startswith("train_")
+        subject = subject_raw.replace("train_", "")
+        user_id = callback.from_user.id
+        
+        # Mode 'number' : Sélection par grille d'ID
+        topic_selections[user_id] = {
+            "subject": subject, 
+            "selected": set(), 
+            "mode": "number",
+            "is_training": is_training
+        }
+        
+        nums = NUMBERS_BY_SUBJECT.get(subject, [])
+        await callback.answer()
+        await callback.message.edit_text(
+            f"🔢 {subject_name(subject)} — اختر أرقام الدروس:",
+            reply_markup=course_number_multi_select_kb(subject_raw, set(), nums)
+        )
+    except Exception as e:
+        logging.error(f"Error in enum_multi: {e}")
+        await callback.answer("حدث خطأ أثناء تحميل الدروس.")
+
+
+@router.callback_query(F.data.startswith("enumtoggle_"))
+async def enum_toggle(callback: CallbackQuery):
+    subject_raw = callback.data.replace("enumtoggle_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    parts = subject_raw.rsplit("_", 1) # On split par la fin pour le numéro
+    actual_subject_raw = parts[0]
+    actual_subject = actual_subject_raw.replace("train_", "")
+    cn = int(parts[1])
+    user_id = callback.from_user.id
+
+    sel = topic_selections.setdefault(user_id, {
+        "subject": actual_subject, 
+        "selected": set(), 
+        "mode": "number",
+        "is_training": is_training
+    })
+    
+    # Correction : réinitialiser si on change de matière ou de mode
+    if sel.get("subject") != actual_subject or sel.get("mode") != "number":
+        sel["subject"] = actual_subject
+        sel["selected"] = {cn}
+        sel["mode"] = "number"
+    else:
+        if cn in sel["selected"]:
+            sel["selected"].discard(cn)
+        else:
+            sel["selected"].add(cn)
+
+    nums = NUMBERS_BY_SUBJECT.get(actual_subject, [])
+    await callback.answer()
+    await callback.message.edit_reply_markup(
+        reply_markup=course_number_multi_select_kb(actual_subject_raw, sel["selected"], nums)
+    )
+
+@router.callback_query(F.data.startswith("enum_range_"))
+async def number_range(callback: CallbackQuery):
+    subject_raw = callback.data.replace("enum_range_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    hidden = await get_user_hidden_items(callback.from_user.id, "session")
+    await callback.message.edit_text(
+        f"📚 {subject_name(subject)} — اختر الدرس الأول (البداية):",
+        reply_markup=courses_range_from_kb(subject_raw, back_cb=f"enav_number_{subject_raw}", user_hidden_sessions=hidden)
+    )
+
+@router.callback_query(F.data.startswith("enum_specific_"))
+async def enum_specific(callback: CallbackQuery):
+    subject_raw = callback.data.replace("enum_specific_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    mastery = await get_lesson_mastery_for_subject(callback.from_user.id, subject)
+    hidden = await get_user_hidden_items(callback.from_user.id, "session")
+    new_courses = await get_new_courses(subject)
+    
+    prefix = f"train_ecourse" if is_training else "ecourse"
+    await callback.message.edit_text(
+        f"📖 {subject_name(subject)} — اختر درساً محدداً:",
+        reply_markup=courses_kb(subject, mastery, prefix=prefix, user_hidden_sessions=hidden, new_courses=new_courses)
+    )
+
+@router.callback_query(F.data.startswith("egridcn_"))
+async def grid_course_selected(callback: CallbackQuery):
+    # Correction : extraire le sujet du contexte si possible, ou utiliser le dernier sujet en RAM
+    # Pour simplifier, on récupère le sujet depuis topic_selections
+    user_id = callback.from_user.id
+    sel = topic_selections.get(user_id, {})
+    subject = sel.get("subject")
+    
+    course_number = int(callback.data.replace("egridcn_", ""))
+    questions = await merged_for_course(course_number, subject=subject)
+    if not questions:
+        await callback.answer("لا توجد أسئلة لهذا الدرس حالياً.")
+        return
+    c = get_course(course_number, subject=subject)
+    context = f"cn_{subject}_{course_number}"
+    await callback.message.edit_text(
+        f"✅ تم اختيار الدرس {course_number}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📖 {c['name']}\n"
+        f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+
+# ── طريقة التنقل: حسب الموضوع ────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("enav_topic_"))
+async def nav_by_topic(callback: CallbackQuery):
+    subject_raw = callback.data.replace("enav_topic_", "")
+    subject = subject_raw.replace("train_", "")
+    
+    await callback.message.edit_text(
+        f"📚 {subject_name(subject)} — كيف تريد اختيار المواضيع؟",
+        reply_markup=exam_topic_mode_kb(subject_raw)
+    )
+
+
+@router.callback_query(F.data.startswith("etopic_single_"))
+async def topic_single(callback: CallbackQuery):
+    subject_raw = callback.data.replace("etopic_single_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    hidden = await get_user_hidden_items(callback.from_user.id, "session")
+    new_courses = await get_new_courses(subject)
+    prefix = "train_ecourse" if is_training else "ecourse"
+    
+    await callback.message.edit_text(
+        f"📖 {subject_name(subject)} — اختر الموضوع:",
+        reply_markup=courses_kb(subject, back_cb=f"enav_topic_{subject_raw}", prefix=prefix, user_hidden_sessions=hidden, new_courses=new_courses)
+    )
+
+
+SIRA_THEMES = [
+    "الشمائل والأخلاق النبوية",
+    "بيت النبوة والحياة الشخصية",
+    "العبادات والتشريعات",
+    "الغزوات والسرايا"
+]
+
+FIQH_THEMES = [
+    "فرائض الصلاة",
+    "شروط الصلاة",
+    "سنن الصلاة",
+    "مندوبات الصلاة",
+    "مكروهات ومبطلات الصلاة",
+    "صلاة الجمعة",
+    "سجود السهو",
+    "فرض عين / فرض كفاية",
+    "شروط الإمام"
+]
+
+
+@router.callback_query(F.data.startswith("etopic_multi_"))
+async def etopic_multi(callback: CallbackQuery):
+    from keyboards.exam_kb import thematic_options_kb
+    subject_raw = callback.data.replace("etopic_multi_", "")
+    is_training = subject_raw.startswith("train_")
+    subject = subject_raw.replace("train_", "")
+    user_id = callback.from_user.id
+    
+    if subject.lower() in ("sira", "fiqh", "السيرة", "الفقه"):
+        # Mode 'theme'
+        topic_selections[user_id] = {
+            "subject": subject, 
+            "selected": set(), 
+            "mode": "theme",
+            "is_training": is_training
+        }
+        await callback.answer()
+        await callback.message.edit_text(
+            f"🎯 {subject_name(subject)} — اختر المحاور للمراجعة :",
+            reply_markup=thematic_options_kb(subject_raw, set())
+        )
+    else:
+        # Mode 'topic' : Sélection par liste de thèmes
+        topic_selections[user_id] = {
+            "subject": subject, 
+            "selected": set(), 
+            "mode": "topic",
+            "is_training": is_training
+        }
+        await callback.answer()
+        await callback.message.edit_text(
+            f"📚 {subject_name(subject)} — اختر المواضيع:",
+            reply_markup=topic_multi_select_kb(subject_raw, set())
+        )
+
+
+@router.callback_query(F.data.startswith("etogglethe_"))
+async def theme_toggle(callback: CallbackQuery):
+    from keyboards.exam_kb import thematic_options_kb
+    rest    = callback.data.replace("etogglethe_", "")
+    parts   = rest.rsplit("_", 1) 
+    subject_raw = parts[0]
+    idx = int(parts[1])
+    
+    subject_clean = subject_raw.replace("train_", "")
+    themes = SIRA_THEMES if subject_clean.lower() in ("sira", "السيرة") else FIQH_THEMES
+    theme_name = themes[idx]
+    
+    user_id = callback.from_user.id
+    sel = topic_selections.setdefault(user_id, {"subject": subject_raw, "selected": set(), "mode": "theme"})
+    
+    if sel.get("subject") != subject_raw or sel.get("mode") != "theme":
+        sel["subject"] = subject_raw
+        sel["selected"] = {theme_name}
+        sel["mode"] = "theme"
+    else:
+        if theme_name in sel["selected"]:
+            sel["selected"].discard(theme_name)
+        else:
+            sel["selected"].add(theme_name)
+            
+    await callback.answer()
+    await callback.message.edit_reply_markup(
+        reply_markup=thematic_options_kb(subject_raw, sel["selected"])
+    )
+
+
+@router.callback_query(F.data.startswith("econfirm_theme_"))
+async def confirm_theme(callback: CallbackQuery):
+    subject_raw = callback.data.replace("econfirm_theme_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    user_id = callback.from_user.id
+    sel = topic_selections.get(user_id, {})
+    is_training = is_training or sel.get("is_training", False)
+    
+    selected = sel.get("selected", set())
+    
+    if not selected:
+        await callback.answer("يرجى اختيار محور واحد على الأقل.")
+        return
+        
+    themes_list = sorted(list(selected))
+    from question_pool import merged_for_themes
+    questions = await merged_for_themes(subject, themes_list)
+    
+    context = "session_theme"
+    
+    if not questions:
+        await callback.answer("لا توجد أسئلة لهذه الاختيارات حالياً.")
+        return
+        
+    if is_training:
+        settings = practice_settings.setdefault(user_id, {
+            "review_type": "theme",
+            "correction_style": "immediate",
+            "chrono_seconds": 0,
+            "question_filter": "all",
+            "question_source": "official",
+            "question_count": "all",
+        })
+        await launch_practice_direct(callback, subject, f"train_{context}", settings)
+        return
+        
+    await callback.message.edit_text(
+        f"✅ تم اختيار المحاور\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🎯 {subject_name(subject)}\n"
+        f"📌 {' | '.join(themes_list[:10])}{' ...' if len(themes_list) > 10 else ''}\n"
+        f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+
+@router.callback_query(F.data.startswith("etogglet_"))
+async def topic_toggle(callback: CallbackQuery):
+    rest    = callback.data.replace("etogglet_", "")
+    parts   = rest.rsplit("_", 1) 
+    subject_raw = parts[0]
+    topic_name = parts[1] # C'est le nom du cours (ex: غزوة أحد)
+    user_id = callback.from_user.id
+
+    sel = topic_selections.setdefault(user_id, {"subject": subject_raw, "selected": set(), "mode": "topic"})
+    
+    if sel.get("subject") != subject_raw or sel.get("mode") != "topic":
+        sel["subject"] = subject_raw
+        sel["selected"] = {topic_name}
+        sel["mode"] = "topic"
+    else:
+        if topic_name in sel["selected"]:
+            sel["selected"].discard(topic_name)
+        else:
+            sel["selected"].add(topic_name)
+
+    await callback.answer()
+    await callback.message.edit_reply_markup(
+        reply_markup=topic_multi_select_kb(subject_raw, sel["selected"])
+    )
+
+
+@router.callback_query(F.data.startswith("econfirm_multi_"))
+async def confirm_multi(callback: CallbackQuery):
+    subject_raw = callback.data.replace("econfirm_multi_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    user_id  = callback.from_user.id
+    sel      = topic_selections.get(user_id, {})
+    # On vérifie aussi dans la session si le prefixe n'était pas dans le callback
+    is_training = is_training or sel.get("is_training", False)
+    
+    selected = sel.get("selected", set())
+    mode     = sel.get("mode", "topic")
+    
+    if not selected:
+        await callback.answer("يرجى اختيار موضوع واحد على الأقل.")
+        return
+
+    # Résolution des noms pour l'affichage
+    cns = sorted(list(selected))
+    questions = await merged_for_courses(cns, subject=subject)
+    
+    if mode == "topic":
+        # On affiche les noms des sujets
+        topics_labels = [get_course(cn, subject=subject)['name'] for cn in cns]
+        context = "session_topic"
+    else:
+        # On affiche les numéros
+        topics_labels = [str(cn) for cn in cns]
+        context = "session_number"
+    
+    if not questions:
+        await callback.answer("لا توجد أسئلة لهذه الاختيارات حالياً.")
+        return
+
+    if is_training:
+        settings = practice_settings.setdefault(user_id, {
+            "review_type": "course",
+            "correction_style": "immediate",
+            "chrono_seconds": 0,
+            "question_filter": "all",
+            "question_source": "official",
+            "question_count": "all",
+        })
+        await launch_practice_direct(callback, subject, f"train_{context}", settings)
+        return
+
+    # Si on est en mode examen, on demande le nombre de questions (car pas de réglages généraux pour l'examen)
+    await callback.message.edit_text(
+        f"✅ تم اختيار المواضيع\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📚 {subject_name(subject)}\n"
+        f"📌 {' | '.join(topics_labels[:10])}{' ...' if len(topics_labels) > 10 else ''}\n"
+        f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+
+# ── المادة كاملاً ─────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("enav_s2_"))
+async def nav_full_subject(callback: CallbackQuery):
+    subject   = callback.data.replace("enav_s2_", "")
+    questions = await merged_for_subject(subject)
+    if not questions:
+        await callback.answer("لا توجد أسئلة لهذه المادة حالياً.")
+        return
+    context = f"subj_{subject}"
+    await callback.message.edit_text(
+        f"📘 {subject_name(subject)} — المادة كاملاً\n"
+        f"❓ إجمالي الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+
+# ── Mode Entraînement Direct (Exercices rapides) ──────────────────────────────
+
+@router.callback_query(F.data == "menu_exam_direct")
+async def menu_exam_direct(callback: CallbackQuery):
+    hidden = await get_user_hidden_items(callback.from_user.id, "subject")
+    await callback.message.edit_text(
+        "🚀 <b>تمارين تدريبية</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• تصحيح فوري بعد كل سؤال\n"
+        "• شرح مفصل للإجابات الصحيحة\n"
+        "• الهدف هو التعلم والتدريب\n\n"
+        "اختر المادة للبدء:",
+        reply_markup=await subjects_kb(callback.from_user.id, "etraining_subj", hidden_subjects=hidden),
+        parse_mode="HTML"
+    )
+
+@router.callback_query(F.data.startswith("etraining_subj_"))
+async def training_subject_selected(callback: CallbackQuery):
+    subject = callback.data.replace("etraining_subj_", "")
+    if subject not in SUBJECTS:
+        await callback.answer("مادة غير صحيحة.")
+        return
+    await show_subject_dashboard(callback, subject)
+
+@router.callback_query(F.data.startswith("qdirect_"))
+async def quick_direct_count(callback: CallbackQuery):
+    # Format possible : qdirect_{count}_{subject}  OU  qdirect_{count}_training_{subject}
+    parts = callback.data.split("_")
+    if len(parts) < 3:
+        return
+        
+    count_str = parts[1]
+    
+    # Détection du mode et du sujet
+    if "training" in callback.data:
+        mode = "training"
+        # parts[2] est "training", parts[3] est le sujet
+        subject = parts[3] if len(parts) > 3 else "fiqh"
+    else:
+        mode = "exam"
+        subject = parts[2]
+        
+    questions = await merged_for_subject(subject)
+    if not questions:
+        await callback.answer("⚠️ لا توجد أسئلة متاحة!")
+        return
+        
+    random.shuffle(questions)
+    count = parse_count(count_str, len(questions))
+    questions = questions[:count]
+    
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":        questions,
+        "index":            0,
+        "current_idx":      0,
+        "correct":          0,
+        "wrong":            0,
+        "mode":             mode,
+        "start_time":       time.time(),
+        "answered":         set(),
+        "subject":          subject,
+        "answers":          {},
+    }
+    
+    msg = "💪 انطلاق التدريب!" if mode == "training" else "📝 انطلاق الامتحان!"
+    await callback.answer(msg)
+    await _send_question(callback, user_id)
+
+
+# ── تحدي أسئلة المجتمع ────────────────────────────────────────────────────────
+
+@router.callback_query(F.data == "exam_community_start")
+async def exam_community_start(callback: CallbackQuery):
+    from question_pool import get_merged_pool
+    pool = await get_merged_pool()
+    questions = [q for q in pool if q.get("source") in ("contribution", "remarkable")]
+    
+    if not questions:
+        await callback.answer("لا توجد أسئلة جديدة متاحة حالياً.", show_alert=True)
+        return
+        
+    random.shuffle(questions)
+    questions = questions[:20]
+    
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":        questions,
+        "index":            0,
+        "current_idx":      0,
+        "correct":          0,
+        "wrong":            0,
+        "mode":             "chrono",
+        "start_time":       time.time(),
+        "answered":         set(),
+        "subject":          "تحدي المجتمع",
+        "answers":          {},
+        "time_per_question": 20,
+    }
+    
+    await callback.message.edit_text(
+        "🤝 <b>تحدي المجتمع: منكم وإليكم</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "هذا القسم يحتوي حصرياً على أسئلة تم اقتراحها وصياغتها من قبل زملائكم الطلاب، وراجعتها الإدارة.\n\n"
+        "💡 <b>لماذا هذا الوضع؟</b>\n"
+        "• لتبادل المعرفة بين الطلاب.\n"
+        "• لرؤية زوايا مختلفة في الأسئلة.\n\n"
+        "✨ <b>كن جزءاً من الفريق!</b>\n"
+        "نشجعك على اقتراح أسئلتك الخاصة عبر «ركن الطالب ← اقترح سؤالاً». أفضل المساهمين يظهرون في لوحة الشرف! 🏆\n\n"
+        "🚀 هل أنت مستعد للبدء؟ (20 سؤال)",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⚡ ابدأ التحدي الآن", callback_data="exam_community_go")],
+            [InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_main")]
+        ])
+    )
+
+@router.callback_query(F.data == "exam_community_go")
+async def exam_community_go(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    if user_id not in exam_sessions:
+        await callback.answer("انتهت الجلسة، يرجى المحاولة مرة أخرى.")
+        return
+    await _send_question(callback, user_id)
+
+# ── درس واحد ─────────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("escope_single_"))
+async def scope_single(callback: CallbackQuery):
+    subject = callback.data.replace("escope_single_", "")
+    user_id = callback.from_user.id
+    mastery_data = await get_lesson_mastery_for_subject(user_id, subject)
+    hidden = await get_user_hidden_items(user_id, "session")
+    new_courses = await get_new_courses(subject)
+    await callback.message.edit_text(
+        f"📖 {subject_name(subject)} — اختر الدرس:\n"
+        f"💡 الألوان: ⚪ جديد، 🔴 ضعيف، 🟡 متوسط، 🟢 ممتاز",
+        reply_markup=courses_kb(subject, mastery_data, user_hidden_sessions=hidden, new_courses=new_courses)
+    )
+
+
+@router.callback_query(F.data.startswith("train_ecourse_"))
+@router.callback_query(F.data.startswith("ecourse_"))
+async def course_selected(callback: CallbackQuery):
+    is_training = "train_" in callback.data
+    # On nettoie pour avoir le sujet et le numéro : ecourse_{subject}_{cn}
+    raw = callback.data.replace("train_", "").replace("ecourse_", "")
+    parts = raw.split("_")
+    if len(parts) < 2:
+        # Fallback pour ancienne version si besoin
+        course_number = int(parts[0])
+        c = get_course(course_number)
+        subject = c['subject'] if c else "fiqh"
+    else:
+        subject = parts[0]
+        course_number = int(parts[1])
+    
+    questions = await merged_for_course(course_number, subject=subject)
+    if not questions:
+        await callback.answer("لا توجد أسئلة لهذا الدرس حالياً.")
+        return
+        
+    c = get_course(course_number, subject=subject)
+    if is_training:
+        # On passe directement au choix du nombre de questions
+        context = f"train_cn_{subject}_{course_number}"
+        await callback.message.edit_text(
+            f"✅ تم اختيار الدرس {course_number}\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📖 {c['name']}\n"
+            f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+            "اختر عدد الأسئلة:",
+            reply_markup=question_count_kb(context)
+        )
+        return
+
+    # On inclut le sujet dans le contexte pour lever toute ambiguïté plus tard
+    context = f"5_cn_{subject}_{course_number}"
+    await callback.message.edit_text(
+        f"✅ تم اختيار الدرس {course_number}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📖 {c['name']}\n\n"
+        "🎯 اختر نوع الاختبار:",
+        reply_markup=exam_type_kb(context)
+    )
+
+
+# ── نطاق دروس ────────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("escope_range_"))
+async def scope_range(callback: CallbackQuery):
+    subject_raw = callback.data.replace("escope_range_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    hidden = await get_user_hidden_items(callback.from_user.id, "session")
+    await callback.message.edit_text(
+        f"📚 {subject_name(subject)} — اختر الدرس الأول (البداية):",
+        reply_markup=courses_range_from_kb(subject_raw, user_hidden_sessions=hidden)
+    )
+
+
+@router.callback_query(F.data.startswith("erange_from_"))
+async def range_from_selected(callback: CallbackQuery):
+    parts   = callback.data.replace("erange_from_", "").rsplit("_", 1)
+    subject_raw = parts[0]
+    subject = subject_raw.replace("train_", "")
+    from_cn = int(parts[1])
+    await callback.message.edit_text(
+        f"✅ تم اختيار الدرس {from_cn} كبداية\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📚 {subject_name(subject)}\n\n"
+        f"اختر الدرس الأخير (النهاية):\n"
+        f"الدرس ✅ {from_cn} محدد تلقائياً كبداية",
+        reply_markup=courses_range_to_kb(subject_raw, from_cn)
+    )
+
+
+@router.callback_query(F.data.startswith("erange_to_"))
+async def range_to_selected(callback: CallbackQuery):
+    parts   = callback.data.replace("erange_to_", "").rsplit("_", 2)
+    subject_raw = parts[0]
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    from_cn = int(parts[1])
+    to_cn   = int(parts[2])
+    questions = await merged_for_course_range(from_cn, to_cn, subject=subject)
+    if not questions:
+        await callback.answer("لا توجد أسئلة في هذا النقاط حالياً.")
+        return
+    context = f"range_{subject}_{from_cn}_{to_cn}"
+    if is_training:
+        context = "train_" + context
+    label   = f"الدرس {from_cn}" if from_cn == to_cn else f"الدروس من {from_cn} إلى {to_cn}"
+    await callback.message.edit_text(
+        f"✅ تم اختيار {label}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"❓ عدد الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+
+# ── جميع دروس المادة ─────────────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("escope_all_"))
+async def scope_all(callback: CallbackQuery):
+    subject_raw = callback.data.replace("escope_all_", "")
+    subject = subject_raw.replace("train_", "")
+    is_training = subject_raw.startswith("train_")
+    
+    context = f"training_{subject}" if is_training else f"subj_{subject}"
+    questions = await merged_for_subject(subject)
+    if not questions:
+        await callback.answer("لا توجد أسئلة لهذه المادة حالياً.")
+        return
+    await callback.message.edit_text(
+        f"🎓 {subject_name(subject)} — جميع الدروس\n"
+        f"❓ إجمالي الأسئلة المتاحة: {len(questions)}\n\n"
+        "اختر عدد الأسئلة:",
+        reply_markup=question_count_kb(context)
+    )
+
+
+# ── اختيار العدد ثم النوع ────────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("ecount_"))
+async def count_selected(callback: CallbackQuery):
+    parts     = callback.data.split("_", 2)
+    count_str = parts[1]
+    context   = parts[2] if len(parts) > 2 else ""
+
+    # Cas 1: Mode Entraînement direct (Quick Training)
+    if context.startswith("train_") or context.startswith("training_"):
+        mode = "training"
+        actual_context = context.replace("train_", "").replace("training_", "")
+        await callback.message.edit_text(
+            _MODE_DESC[mode],
+            reply_markup=exam_confirm_kb(mode, f"{count_str}_{actual_context}")
+        )
+        return
+
+    # Cas 2: Examen Complet (Full Exam) - Correction à la fin imposée
+    if context.startswith("fexam_"):
+        subject = context.replace("fexam_", "")
+        from utils import parse_count, subject_name
+        questions = await merged_for_subject(subject)
+        if not questions:
+            await callback.answer("⚠️ لا توجد أسئلة!")
+            return
+            
+        random.shuffle(questions)
+        count = parse_count(count_str, len(questions))
+        questions = questions[:count]
+        
+        user_id = callback.from_user.id
+        exam_sessions[user_id] = {
+            "questions":        questions,
+            "index":            0,
+            "current_idx":      0,
+            "correct":          0,
+            "wrong":            0,
+            "mode":             "exam", # Correction à la fin
+            "start_time":       time.time(),
+            "answered":         set(),
+            "subject":          subject,
+            "answers":          {},
+        }
+        
+        await callback.answer(f"📝 انطلاق امتحان {subject_name(subject)}! بالتوفيق.", show_alert=True)
+        await _send_question(callback, user_id)
+        return
+
+    # Cas par défaut: Options avancées (Choix du mode)
+    await callback.message.edit_text(
+        "🎯 اختر نوع الاختبار:",
+        reply_markup=exam_type_kb(f"{count_str}_{context}")
+    )
+
+
+_MODE_DESC = {
+    "normal": (
+        "📘 تمارين تدريبية\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• تظهر الإجابة الصحيحة فوراً بعد كل سؤال\n"
+        "• يمكنك التعلم من أخطائك مباشرة\n"
+        "• مناسب للمراجعة اليومية والتدريب\n\n"
+        "هل تريد البدء؟"
+    ),
+    "training": (
+        "🚀 وضعية التدريب (جديد)\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• تظهر الإجابة الصحيحة فوراً بعد كل سؤال\n"
+        "• وضعية محسنة لضمان الاستقرار\n"
+        "• مناسب للمراجعة والتعلم السريع\n\n"
+        "هل تريد البدء؟"
+    ),
+    "exam": (
+        "📝 امتحان تجريبي\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• لا تظهر الإجابات أثناء الامتحان\n"
+        "• يمكنك التنقل بين الأسئلة والتعديل بحرية\n"
+        "• نتيجتك الكاملة تظهر عند الإنهاء\n"
+        "• يمكنك مراجعة كل سؤال بعد الانتهاء\n\n"
+        "هل تريد البدء؟"
+    ),
+}
+
+
+@router.callback_query(F.data.startswith("etype_"))
+async def exam_type_selected(callback: CallbackQuery):
+    data       = callback.data.replace("etype_", "")
+    parts      = data.split("_", 1)
+    mode       = parts[0]
+    rest       = parts[1] if len(parts) > 1 else ""
+    rest_parts = rest.split("_", 1)
+    count_str  = rest_parts[0]
+    scope      = rest_parts[1] if len(rest_parts) > 1 else ""
+
+    if mode == "chrono":
+        await callback.message.edit_text(
+            "⏱️ التحدي بالتوقيت\n"
+            "━━━━━━━━━━━━━━━━━━━━━━\n"
+            "اختر الوقت المسموح به لكل سؤال:\n\n"
+            "إذا انتهى الوقت ينتقل البوت تلقائياً للسؤال التالي.",
+            reply_markup=chrono_time_kb(f"{count_str}_{scope}")
+        )
+        return
+
+    if mode in ("normal", "training", "exam"):
+        await callback.message.edit_text(
+            _MODE_DESC[mode],
+            reply_markup=exam_confirm_kb(mode, rest)
+        )
+        return
+
+    questions = await _resolve_questions(callback, mode, scope)
+    if questions is None:
+        return
+
+    count = parse_count(count_str, len(questions))
+    if mode == "errors":
+        random.shuffle(questions)
+    questions = questions[:count]
+
+    if not questions:
+        await callback.answer("لا توجد أسئلة متاحة!")
+        return
+
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":   questions,
+        "index":       0,
+        "current_idx": 0,
+        "correct":     0,
+        "wrong":       0,
+        "mode":        mode,
+        "start_time":  time.time(),
+        "answered":    set(),
+        "subject":     questions[0]["subject"],
+        "answers":     {},
+    }
+    if scope.startswith("cn_"):
+        # On extrait le numéro à la fin (ex: cn_sira_16 -> 16)
+        raw_cn = scope.replace("cn_", "").split("_")[-1]
+        exam_sessions[user_id]["course_number"] = int(raw_cn)
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data.startswith("estart_"))
+async def exam_start_confirmed(callback: CallbackQuery):
+    """Called after user confirms mode description — actually starts the exam."""
+    data       = callback.data.replace("estart_", "")
+    parts      = data.split("_", 1)
+    mode       = parts[0]
+    rest       = parts[1] if len(parts) > 1 else ""
+    rest_parts = rest.split("_", 1)
+    count_str  = rest_parts[0]
+    scope      = rest_parts[1] if len(rest_parts) > 1 else ""
+
+    questions = await _resolve_questions(callback, mode, scope)
+    if questions is None:
+        return
+
+    count = parse_count(count_str, len(questions))
+    questions = questions[:count]
+
+    if not questions:
+        await callback.answer("لا توجد أسئلة متاحة!")
+        return
+
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":   questions,
+        "index":       0,
+        "current_idx": 0,
+        "correct":     0,
+        "wrong":       0,
+        "mode":        mode,
+        "start_time":  time.time(),
+        "answered":    set(),
+        "subject":     questions[0]["subject"],
+        "answers":     {},
+    }
+    if scope.startswith("cn_"):
+        # On extrait le numéro à la fin (ex: cn_sira_16 -> 16)
+        raw_cn = scope.replace("cn_", "").split("_")[-1]
+        exam_sessions[user_id]["course_number"] = int(raw_cn)
+    elif scope.startswith("hijrayear_"):
+        raw_year = scope.replace("hijrayear_", "").split("_")[-1]
+        exam_sessions[user_id]["hijra_year"] = int(raw_year)
+    await _send_question(callback, user_id)
+
+
+# ── وضع الكرونو: اختيار الوقت ────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("echrono_t_"))
+async def chrono_time_selected(callback: CallbackQuery):
+    data  = callback.data.replace("echrono_t_", "")
+    parts = data.split("_", 2)
+    if len(parts) < 3:
+        await callback.answer("خطأ في البيانات.")
+        return
+    seconds   = int(parts[0])
+    count_str = parts[1]
+    scope     = parts[2]
+
+    questions = await _resolve_questions(callback, "chrono", scope)
+    if questions is None:
+        return
+    random.shuffle(questions)
+    count     = parse_count(count_str, len(questions))
+    questions = questions[:count]
+
+    if not questions:
+        await callback.answer("لا توجد أسئلة متاحة!")
+        return
+
+    user_id = callback.from_user.id
+    exam_sessions[user_id] = {
+        "questions":        questions,
+        "index":            0,
+        "current_idx":      0,
+        "correct":          0,
+        "wrong":            0,
+        "mode":             "chrono",
+        "start_time":       time.time(),
+        "answered":         set(),
+        "subject":          questions[0]["subject"],
+        "answers":          {},
+        "time_per_question": seconds,
+    }
+    if scope.startswith("cn_"):
+        # On extrait le numéro à la fin (ex: cn_sira_16 -> 16)
+        raw_cn = scope.replace("cn_", "").split("_")[-1]
+        exam_sessions[user_id]["course_number"] = int(raw_cn)
+    elif scope.startswith("hijrayear_"):
+        raw_year = scope.replace("hijrayear_", "").split("_")[-1]
+        exam_sessions[user_id]["hijra_year"] = int(raw_year)
+    await _send_question(callback, user_id)
+
+
+# ── حل الأسئلة (مصدر الأسئلة المدمجة) ───────────────────────────────────────
+
+async def _resolve_questions(callback: CallbackQuery, mode: str, scope: str):
+    questions = []
+    
+    if mode == "errors":
+        error_ids = await get_user_errors(callback.from_user.id)
+        if not error_ids:
+            await callback.answer("لا توجد أخطاء مسجلة لمراجعتها!")
+            return None
+        questions = await merged_for_ids(error_ids)
+        
+    elif scope.startswith("hijrayear_"):
+        parts = scope.replace("hijrayear_", "").split("_")
+        if len(parts) >= 2:
+            year = int(parts[1])
+        else:
+            year = int(parts[0])
+        questions = await get_questions_for_hijra_year(year)
+
+    elif scope.startswith("cn_"):
+        parts = scope.replace("cn_", "").split("_")
+        if len(parts) >= 2:
+            subject = parts[0]
+            cn = int(parts[1])
+        else:
+            cn = int(parts[0])
+            user_id = callback.from_user.id
+            subject = topic_selections.get(user_id, {}).get("subject")
+        questions = await merged_for_course(cn, subject=subject)
+        
+    elif scope.startswith("range_"):
+        parts = scope.replace("range_", "").split("_")
+        if len(parts) >= 3:
+            subject = parts[0]
+            from_cn = int(parts[1])
+            to_cn   = int(parts[2])
+        else:
+            from_cn = int(parts[0])
+            to_cn   = int(parts[1])
+            user_id = callback.from_user.id
+            subject = topic_selections.get(user_id, {}).get("subject")
+        questions = await merged_for_course_range(from_cn, to_cn, subject=subject)
+        
+    elif scope.startswith("subj_"):
+        subject = scope.replace("subj_", "")
+        questions = await merged_for_subject(subject)
+        
+    elif scope == "session_number" or scope == "train_session_number":
+        sel = topic_selections.get(callback.from_user.id, {})
+        subject = sel.get("subject")
+        cns = list(sel.get("selected", []))
+        questions = await merged_for_courses(cns, subject=subject) if cns else []
+        
+    elif scope == "session_topic" or scope == "train_session_topic":
+        sel = topic_selections.get(callback.from_user.id, {})
+        subject = sel.get("subject")
+        names = list(sel.get("selected", []))
+        questions = await merged_for_topics(subject, names) if subject and names else []
+        
+    elif scope == "session_theme" or scope == "train_session_theme":
+        sel = topic_selections.get(callback.from_user.id, {})
+        subject = sel.get("subject")
+        themes = list(sel.get("selected", []))
+        from question_pool import merged_for_themes
+        questions = await merged_for_themes(subject, themes) if subject and themes else []
+        
+    elif scope.startswith("ai_"):
+        subject = scope.replace("ai_", "")
+        questions = await merged_for_ai(subject)
+        
+    else:
+        await callback.answer("نطاق غير صحيح.")
+        return None
+
+    # Filtrage par source (Officiel vs Communautaire) uniquement en mode entraînement (si configuré)
+    if questions:
+        user_id = callback.from_user.id
+        settings = practice_settings.get(user_id, {})
+        q_source = settings.get("question_source", "official")
+        
+        if q_source == "community":
+            questions = [q for q in questions if q.get("source") in ("contribution", "remarkable")]
+        elif q_source == "ai":
+            questions = [q for q in questions if q.get("source") == "ai"]
+        else:
+            # L'option "Officiel" regroupe le socle officiel et les questions générées/approuvées par l'administration
+            questions = [q for q in questions if q.get("source") in ("official", "ai")]
+            
+        # Exclusion des questions signalées par cet utilisateur
+        from database.feedback import get_user_reported_question_ids
+        reported_ids = await get_user_reported_question_ids(user_id)
+        if reported_ids:
+            questions = [q for q in questions if q.get("id") not in reported_ids]
+            
+    return questions
+
+
+# ── دورة الأسئلة ─────────────────────────────────────────────────────────────
+
+def _source_line(q: dict) -> str:
+    """Return a compact badge line for the question's source."""
+    source = q.get("source", "official")
+    badge  = SOURCE_BADGE.get(source, "🏛️")
+    label  = SOURCE_LABEL.get(source, "")
+    return f"{badge} {label}  "
+
+
+async def _send_question(callback: CallbackQuery, user_id: int):
+    session = exam_sessions.get(user_id)
+    if not session:
+        await callback.message.edit_text("انتهى الاختبار.", reply_markup=main_menu_kb())
+        return
+
+    # Delete any active explanation message to keep the chat clean
+    expl_msg_id = session.pop("explanation_message_id", None)
+    if expl_msg_id:
+        try:
+            await callback.bot.delete_message(chat_id=callback.message.chat.id, message_id=expl_msg_id)
+        except Exception:
+            pass
+
+    mode      = session["mode"]
+    questions = session["questions"]
+    total     = len(questions)
+
+    # ── وضع الامتحان الرسمي — تنقل حر ────────────────────────────────────────
+    if mode == "exam":
+        idx = session.get("current_idx", 0)
+        idx = max(0, min(idx, total - 1))
+        session["current_idx"] = idx
+        q             = questions[idx]
+        is_answered   = q["id"] in session["answered"]
+        chosen        = session["answers"].get(q["id"])
+        answered_count = len(session["answered"])
+        src_line      = _source_line(q)
+        note = f"\u200f✏️ إجابتك: {chosen} — يمكنك تغييرها\n" if is_answered else "\u200f👆 اختر إجابتك:\n"
+        
+        # Adding the question text inside a beautiful RTL blockquote inside the message text
+        question_quote = f"\n\u200f<blockquote><b>❓ السؤال:</b>\n{q['question']}</blockquote>"
+        
+        text = (
+            f"\u200f📝 الامتحان التجريبي  |  {src_line}\n"
+            f"\u200f━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"\u200fالسؤال {idx + 1} من {total}  |  أجبت على: {answered_count}/{total}\n"
+            f"{note}"
+            f"\u200f━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"{question_quote}"
+        )
+        if _should_use_letter_buttons(q["choices"]):
+            ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+            choices_text = ""
+            for letter, choice_val in q["choices"].items():
+                ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+                choices_text += f"\n\u200f<b>{ar_letter} -</b> {choice_val}"
+            text += f"\n{choices_text}"
+
+        # استخدام الدالة الجديدة لعرض السؤال في زر كبير + الإجابات
+        answer_buttons = _exam_answer_buttons_only(
+            q["id"], q["choices"], idx, total, answered_count, is_answered, chosen
+        )
+        keyboard = make_question_display_kb(q['question'], answer_buttons)
+        # إضافة المعلومات قبل la keyboard
+        await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+        return
+
+    # ── الأوضاع الأخرى (عادي / كرونو / عشوائي / مراجعة) ─────────────────────
+    idx = session["index"]
+    if idx >= total:
+        await _show_results(callback, user_id)
+        return
+
+    q         = questions[idx]
+    src_line  = _source_line(q)
+    time_info = ""
+    chrono_sec = session.get("chrono_sec", 0)
+    if mode == "chrono" or chrono_sec > 0:
+        seconds = chrono_sec if chrono_sec > 0 else session.get("time_per_question", 30)
+        time_info = f"\u200f⏱️ مهلتك: {seconds} ثانية لهذا السؤال\n"
+
+    course_info = f"📖 الدرس {q['course_number']}  |  " if "course_number" in q else ""
+    
+    # Adding the question text inside a beautiful RTL blockquote inside the message text
+    question_quote = f"\n\u200f<blockquote><b>❓ السؤال:</b>\n{q['question']}</blockquote>"
+    
+    text = (
+        f"\u200f📝 السؤال {idx + 1} من {total}  |  {course_info}{src_line}\n"
+        f"{time_info}"
+        f"{question_quote}"
+    )
+    if _should_use_letter_buttons(q["choices"]):
+        ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+        choices_text = ""
+        for letter, choice_val in q["choices"].items():
+            ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+            choices_text += f"\n\u200f<b>{ar_letter} -</b> {choice_val}"
+        text += f"\n{choices_text}"
+    
+    # استخدام la nouvelle fonction pour afficher la question dans un gros bouton
+    answer_buttons = _answer_buttons_only(q["id"], q["choices"])
+    keyboard = make_question_display_kb(q['question'], answer_buttons)
+    await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+
+    # ── وضع الكرونو: إطلاق مؤقت الوقت ───────────────────────────────────────
+    if mode == "chrono" or chrono_sec > 0:
+        seconds = chrono_sec if chrono_sec > 0 else session.get("time_per_question", 30)
+        _cancel_chrono_task(user_id)
+        task = asyncio.create_task(
+            _chrono_auto_skip(
+                user_id, callback.bot,
+                callback.message.chat.id,
+                callback.message.message_id,
+                seconds
+            )
+        )
+        chrono_tasks[user_id] = task
+
+
+# ── معالج الإجابات ────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data.startswith("answer_"))
+async def handle_answer(callback: CallbackQuery):
+    try:
+        parts  = callback.data.split("_")
+        q_id   = int(parts[1])
+        chosen = parts[2].upper().strip()
+
+        user_id = callback.from_user.id
+        session = exam_sessions.get(user_id)
+        if not session:
+            await callback.answer("لا يوجد اختبار نشط.")
+            return
+
+        mode = session["mode"]
+
+        q = next((qq for qq in session["questions"] if qq["id"] == q_id), None)
+        if not q:
+            await callback.answer("خطأ في السؤال.")
+            return
+
+        if q_id in session["answered"]:
+            if mode == "exam":
+                old_chosen = session["answers"].get(q_id)
+                if old_chosen == q["correct"]:
+                    session["correct"] -= 1
+                else:
+                    session["wrong"] -= 1
+                session["answered"].discard(q_id)
+            else:
+                await callback.answer("لقد أجبت على هذا السؤال بالفعل!")
+                return
+
+        # Acknowledge the callback query instantly to remove loading spinners
+        await callback.answer()
+
+        if mode == "chrono":
+            _cancel_chrono_task(user_id)
+
+        session["answered"].add(q_id)
+        session["answers"][q_id] = chosen
+
+        correct      = q["correct"].upper().strip()
+        correct_text = q["choices"].get(correct, "???")
+        explanation  = q.get("explanation", "")
+
+        if chosen == correct:
+            session["correct"] += 1
+            await clear_user_error(user_id, q_id)
+            await record_correct_answer(user_id, q_id)
+        else:
+            session["wrong"] += 1
+            await save_user_error(user_id, q_id, q["subject"], chosen)
+
+        # ── Mode Sévère : Pas de correction immédiate, on passe à la suite ───
+        if mode == "severe":
+            session["index"] += 1
+            current = session["index"]
+            total   = len(session["questions"])
+            
+            if current >= total:
+                # Préparer la session de révision avant de finaliser
+                review_sessions[user_id] = {
+                    "questions": list(session["questions"]),
+                    "answers":   dict(session["answers"]),
+                    "index":     0,
+                }
+                await _show_results(callback, user_id)
+            else:
+                await _send_question(callback, user_id)
+            return
+
+        # ── وضع الامتحان الرسمي — يبقى على نفس السؤال ────────────────────────────
+        if mode == "exam":
+            current_idx    = session.get("current_idx", 0)
+            answered_count = len(session["answered"])
+            total          = len(session["questions"])
+            src_line       = _source_line(q)
+            note = f"\u200f✏️ إجابتك: {chosen} — يمكنك تغييرها\n"
+            question_quote = f"\n\u200f<blockquote><b>❓ السؤال:</b>\n{q['question']}</blockquote>"
+            text = (
+                f"\u200f📝 الامتحان التجريبي  |  {src_line}\n"
+                f"\u200f━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"\u200fالسؤال {current_idx + 1} من {total}  |  أجبت على: {answered_count}/{total}\n"
+                f"{note}"
+                f"\u200f━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"{question_quote}"
+            )
+            if _should_use_letter_buttons(q["choices"]):
+                ARABIC_CHOICE = {"a": "أ", "b": "ب", "c": "ج", "d": "د"}
+                choices_text = ""
+                for letter, choice_val in q["choices"].items():
+                    ar_letter = ARABIC_CHOICE.get(letter.lower(), letter.upper())
+                    choices_text += f"\n\u200f<b>{ar_letter} -</b> {choice_val}"
+                text += f"\n{choices_text}"
+
+            await callback.message.edit_text(
+                text,
+                reply_markup=exam_question_nav_kb(
+                    q_id, q["choices"], current_idx, total, answered_count, True, chosen
+                ),
+                parse_mode="HTML"
+            )
+            return
+
+        # ── الأوضاع العادية — التصحيح الفوري ────────────────────────────────────
+        session["index"] += 1
+        current = session["index"]
+        total   = len(session["questions"])
+
+        user   = await get_user(user_id)
+        gender = user["gender"] if user else None
+
+        ARABIC_CHOICE = {"A": "أ", "B": "ب", "C": "ج", "D": "د"}
+        correct_ar = ARABIC_CHOICE.get(correct.upper(), correct)
+
+        if chosen == correct:
+            fb = praise_message(gender)
+            result_text = f"\u200f✅ {fb}"
+        else:
+            base = get_gender_greeting(
+                gender,
+                "يا أخي، للأسف الإجابة خاطئة ❌",
+                "يا أختي، للأسف الإجابة خاطئة ❌",
+                "للأسف الإجابة خاطئة ❌"
+            )
+            result_text = (
+                f"\u200f{base}\n\n"
+                f"\u200f<b>❓ السؤال:</b>\n"
+                f"<blockquote>\u200f"
+                f"{q['question']}\n\n"
+                f"<b>✅ الإجابة الصحيحة:</b>\n"
+                f"{correct_ar}. {correct_text}"
+                f"</blockquote>"
+            )
+
+        has_expl = True
+        
+        # Build the text for the correction screen
+        # On inclut toujours la question dans le texte pour qu'elle soit visible même en cas de bonne réponse
+        if chosen == correct:
+            correction_text = (
+                f"{result_text}\n\n"
+                f"\u200f<b>❓ السؤال:</b>\n"
+                f"<blockquote>\u200f"
+                f"{q['question']}\n\n"
+                f"<b>✅ الإجابة الصحيحة:</b>\n{correct_ar}. {correct_text}"
+                f"</blockquote>"
+            )
+        else:
+            correction_text = result_text
+
+        if current >= total:
+            # Clean up the explanation message if it exists
+            expl_msg_id = session.pop("explanation_message_id", None)
+            if expl_msg_id:
+                try:
+                    await callback.bot.delete_message(chat_id=callback.message.chat.id, message_id=expl_msg_id)
+                except Exception:
+                    pass
+            await _finalize_exam(user_id, callback.bot, callback.message.chat.id)
+            final_text = f"{correction_text}\n\n━━━━━━━━━━━━━━━━━━━━━━\n🏁 انتهى الاختبار!"
+            await callback.message.edit_text(final_text, reply_markup=end_exam_kb())
+            
+            # Save to history for navigation
+            session.setdefault("history_screens", []).append({
+                "text": final_text, "q_id": q_id, "has_expl": has_expl, "is_final": True
+            })
+            session["view_index"] = len(session["history_screens"]) - 1
+        else:
+            final_text = f"{correction_text}\n\n━━━━━━━━━━━━━━━━━━━━━━\n📌 تبقى {total - current} سؤال"
+            
+            # Save to history for navigation
+            session.setdefault("history_screens", []).append({
+                "text": final_text, "q_id": q_id, "has_expl": has_expl, "is_final": False
+            })
+            session["view_index"] = len(session["history_screens"]) - 1
+            has_prev = session["view_index"] > 0
+            
+            await callback.message.edit_text(
+                final_text,
+                reply_markup=next_question_kb(q_id=q_id, has_explanation=has_expl, has_prev=has_prev)
+            )
+    except Exception as e:
+        import logging
+        logging.exception("Error in handle_answer")
+        await callback.answer("⚠️ حدث خطأ أثناء معالجة الإجابة.")
+
+
+# ── تنقل الامتحان الرسمي ─────────────────────────────────────────────────────
+
+@router.callback_query(F.data == "exam_prev")
+async def exam_nav_prev(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id)
+    if not session or session["mode"] != "exam":
+        await callback.answer()
+        return
+    idx = session.get("current_idx", 0)
+    if idx > 0:
+        session["current_idx"] = idx - 1
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data == "exam_next")
+async def exam_nav_next(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id)
+    if not session or session["mode"] != "exam":
+        await callback.answer()
+        return
+    total = len(session["questions"])
+    idx   = session.get("current_idx", 0)
+    if idx < total - 1:
+        session["current_idx"] = idx + 1
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data == "exam_submit")
+async def exam_submit(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id)
+    if not session or session["mode"] != "exam":
+        await callback.answer()
+        return
+
+    answered_count = len(session["answered"])
+    if answered_count == 0:
+        await callback.answer("لم تُجب على أي سؤال بعد!", show_alert=True)
+        return
+
+    for q in session["questions"]:
+        if q["id"] not in session["answered"]:
+            session["wrong"] += 1
+
+    review_sessions[user_id] = {
+        "questions": list(session["questions"]),
+        "answers":   dict(session["answers"]),
+        "index":     0,
+    }
+    result_text = _build_result_text(session)
+    await _finalize_exam(user_id, callback.bot, callback.message.chat.id)
+    await callback.message.edit_text(
+        f"🏁 انتهى الامتحان!\n\n{result_text}",
+        reply_markup=end_exam_with_review_kb()
+    )
+
+
+def split_explanation(explanation_text: str):
+    import re
+    if not explanation_text:
+        return "", "", ""
+        
+    text = explanation_text.strip()
+    
+    # 1. Split into paragraphs/blocks by looking at double newlines
+    blocks = [b.strip() for b in re.split(r'\n\s*\n', text) if b.strip()]
+    
+    pedagogical_blocks = []
+    citation_blocks = []
+    source_blocks = []
+    
+    # Check if there is ANY citation marker or pedagogical marker in the entire text
+    has_any_cit_marker = False
+    has_any_ped_marker = False
+    
+    cit_markers = ["📖", "قول الشيخ", "الشيخ ياسين"]
+    ped_markers = ["💡", "التفسير التربوي"]
+    
+    for m in cit_markers:
+        if m in text:
+            has_any_cit_marker = True
+            break
+            
+    for m in ped_markers:
+        if m in text:
+            has_any_ped_marker = True
+            break
+            
+    if not has_any_cit_marker and not has_any_ped_marker:
+        return "", text, ""
+        
+    for block in blocks:
+        is_src = False
+        if block.startswith("📍") or "المصدر" in block[:40]:
+            is_src = True
+            
+        if is_src:
+            source_blocks.append(block)
+            continue
+            
+        is_cit = False
+        if block.startswith("📖") or "📖" in block[:15] or block.startswith("قول الشيخ") or "قول الشيخ" in block[:20]:
+            is_cit = True
+        elif "الشيخ ياسين" in block[:40] and ("يقول" in block[:60] or "العمري" in block[:50]):
+            is_cit = True
+            
+        if is_cit:
+            citation_blocks.append(block)
+        else:
+            pedagogical_blocks.append(block)
+            
+    pedagogical = "\n\n".join(pedagogical_blocks)
+    citation = "\n\n".join(citation_blocks)
+    source = "\n\n".join(source_blocks)
+    
+    # Clean pedagogical headers
+    ped_prefixes = [
+        r'^💡\s*',
+        r'^<b>\s*(\d+\.)?\s*💡?\s*التفسير\s+التربوي\s*(:|：)?\s*</b>\s*(:|：)?\s*',
+        r'^(\d+\.)?\s*💡?\s*التفسير\s+التربوي\s*(:|：)?\s*',
+        r'^:\s*'
+    ]
+    for rx in ped_prefixes:
+        pedagogical = re.sub(rx, '', pedagogical, flags=re.IGNORECASE).strip()
+    pedagogical = pedagogical.replace("<blockquote>", "").replace("</blockquote>", "").strip()
+    
+    # Clean citation headers
+    cit_prefixes = [
+        r'^📖\s*',
+        r'^<b>\s*(\d+\.)?\s*📖?\s*قول\s+الشيخ\s*(:|：)?\s*</b>\s*(:|：)?\s*',
+        r'^<b>\s*(\d+\.)?\s*📖?\s*الشيخ\s+ياسين\s+العمري\s+يقول\s*(:|：)?\s*</b>\s*(:|：)?\s*',
+        r'^<b>\s*(\d+\.)?\s*📖?\s*الشيخ\s+ياسين\s+العمري\s*</b>\s*(:|：)?\s*',
+        r'^<b>\s*(\d+\.)?\s*📖?\s*الشيخ\s+ياسين\s*(:|：)?\s*</b>\s*(:|：)?\s*',
+        r'^(\d+\.)?\s*📖?\s*قول\s+الشيخ\s*(:|：)?\s*',
+        r'^(\d+\.)?\s*📖?\s*الشيخ\s+ياسين\s+العمري\s+يقول\s*(:|：)?\s*',
+        r'^(\d+\.)?\s*📖?\s*الشيخ\s+ياسين\s*(:|：)?\s*',
+        r'^:\s*'
+    ]
+    for rx in cit_prefixes:
+        citation = re.sub(rx, '', citation, flags=re.IGNORECASE).strip()
+    citation = citation.replace("<blockquote>", "").replace("</blockquote>", "").strip()
+    
+    # Clean source headers
+    src_prefixes = [
+        r'^📍\s*',
+        r'^<b>\s*المصدر\s*(:|：)?\s*</b>\s*(:|：)?\s*',
+        r'^المصدر\s*(:|：)?\s*',
+        r'^:\s*'
+    ]
+    for rx in src_prefixes:
+        source = re.sub(rx, '', source, flags=re.IGNORECASE).strip()
+    source = source.replace("<blockquote>", "").replace("</blockquote>", "").strip()
+    
+    # Balance HTML tags
+    def balance_html_tags(html_str: str) -> str:
+        if not html_str:
+            return ""
+        b_open = html_str.count("<b>")
+        b_close = html_str.count("</b>")
+        if b_open > b_close:
+            html_str = html_str + "</b>" * (b_open - b_close)
+        elif b_close > b_open:
+            html_str = "<b>" * (b_close - b_open) + html_str
+            
+        i_open = html_str.count("<i>")
+        i_close = html_str.count("</i>")
+        if i_open > i_close:
+            html_str = html_str + "</i>" * (i_open - i_close)
+        elif i_close > i_open:
+            html_str = "<i>" * (i_close - i_open) + html_str
+            
+        a_open = html_str.count("<a ") + html_str.count("<a\n")
+        a_close = html_str.count("</a>")
+        if a_open > a_close:
+            html_str = html_str + "</a>" * (a_open - a_close)
+        elif a_close > a_open:
+            html_str = "<a>" * (a_close - a_open) + html_str
+            
+        return html_str
+
+    pedagogical = balance_html_tags(pedagogical)
+    citation = balance_html_tags(citation)
+    source = balance_html_tags(source)
+    
+    return pedagogical, citation, source
+
+
+
+def highlight_keywords_in_explanation(pedagogical_text: str, question_text: str) -> str:
+    import re
+    cleaned_q = re.sub(r'[^\w\s]', ' ', question_text)
+    words = cleaned_q.split()
+    
+    stopwords = {
+        "في", "من", "على", "إلى", "عن", "مع", "أن", "إن", "هو", "هي", "هم", "كان", "كانت",
+        "التي", "الذي", "الذين", "هذا", "هذه", "ذلك", "أو", "أم", "ثم", "بل", "لا", "ما",
+        "يا", "لقد", "وقد", "حيث", "كل", "بعض", "بين", "حول", "عند", "قبل", "بعد", "تحت",
+        "فوق", "مع", "كيف", "متى", "أين", "منذ", "خلال", "ضد", "نحو", "منها", "إليها", "فيها",
+        "بها", "له", "لها", "lhem", "حتى", "غير", "سوى", "إلا", "الخ", "السنة", "سنة", "هجرية"
+    }
+    
+    keywords = []
+    for w in words:
+        w_clean = w.strip()
+        if len(w_clean) >= 3 and w_clean not in stopwords:
+            keywords.append(w_clean)
+            if w_clean.startswith("ال") and len(w_clean) > 4:
+                keywords.append(w_clean[2:])
+            else:
+                keywords.append("ال" + w_clean)
+                
+    keywords = sorted(list(set(keywords)), key=len, reverse=True)
+    
+    tokens = re.split(r'(<[^>]+>)', pedagogical_text)
+    for i in range(len(tokens)):
+        if i % 2 == 0:
+            text = tokens[i]
+            for kw in keywords[:12]:
+                pattern = r'(?<!\w)' + re.escape(kw) + r'(?!\w)'
+                text = re.sub(pattern, f"<b>{kw}</b>", text)
+            tokens[i] = text
+            
+    return "".join(tokens)
+
+
+@router.callback_query(F.data.startswith("show_expl_"))
+async def show_explanation_callback(callback: CallbackQuery):
+    data = callback.data.replace("show_expl_", "")
+    parts = data.split("_")
+    q_id = int(parts[0])
+    requested_tab = parts[1] if len(parts) > 1 else None
+    
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id) or review_sessions.get(user_id)
+    
+    if not session:
+        await callback.answer("⚠️ انتهت الجلسة.")
+        return
+
+    q = next((qq for qq in session["questions"] if qq["id"] == q_id), None)
+    if not q:
+        await callback.answer("⚠️ لم يتم العثور على السؤال.")
+        return
+
+    # Indiquer que l'IA cherche uniquement au premier clic
+    if not requested_tab:
+        await callback.answer("🔍 جاري البحث في دروس الأستاذ...", show_alert=False)
+
+    subject = q.get("subject", "")
+    course_number = q.get("course_number", 0)
+    question_text = q.get("question", "")
+    correct_answer_letter = q.get("correct", "A")
+    correct_answer_text = q.get("choices", {}).get(correct_answer_letter, "")
+
+    try:
+        explanation = await ai_tutor.get_ai_explanation(
+            q_id, question_text, correct_answer_text, subject, course_number
+        )
+        if not explanation or "indisponible" in explanation or "Désolé" in explanation:
+            raise ValueError("AI explanation unavailable")
+    except Exception as e:
+        logging.warning(f"AI explanation failed for question {q_id}: {e}")
+        explanation = q.get("explanation", "").strip()
+        if not explanation:
+            user = await get_user(user_id)
+            gender = user["gender"] if user else None
+            explanation = get_gender_greeting(
+                gender,
+                "عذرًا يا أخي، شرح الأستاذ غير متوفر حاليًا لهذا السؤال. يرجى مراجعة الدرس أو المحاولة لاحقًا 🌸",
+                "عذرًا يا أختي، شرح الأستاذ غير متوفر حاليًا لهذا السؤال. يرجى مراجعة الدرس أو المحاولة لاحقًا 🌸",
+                "عذرًا، شرح الأستاذ غير متوفر حاليًا لهذا السؤال. يرجى مراجعة الدرس أو المحاولة لاحقًا 🌸"
+            )
+
+    # Séparation
+    pedagogical, citation, source = split_explanation(explanation)
+    
+    # En gras les mots clés dans l'explication
+    pedagogical = highlight_keywords_in_explanation(pedagogical, question_text)
+
+    # Décision intelligente par défaut si aucun onglet n'est cliqué
+    if not requested_tab:
+        total_len = len(pedagogical) + len(citation)
+        if total_len > 550 or not citation:
+            requested_tab = "pedago"
+        else:
+            requested_tab = "quote"
+
+    # Construction du texte
+    question_text_escaped = html.escape(question_text)
+    qa_block = f"<blockquote>❓ <b>السؤال :</b>\n{question_text_escaped}</blockquote>"
+
+    import re
+
+    # Nettoyage robuste pour l'explication pédagogique
+    pedago_clean = pedagogical.replace("<blockquote>", "").replace("</blockquote>", "").strip()
+    pedago_clean = re.sub(r'^.*?التفسير\s*التربوي\s*(:|：)?\s*', '', pedago_clean, flags=re.IGNORECASE).strip()
+    pedago_clean = re.sub(r'^(💡|💡\s*)+', '', pedago_clean).strip()
+    pedago_clean = re.sub(r'^[:\s\r\n\u200f]+', '', pedago_clean).strip()
+    # Supprimer toutes les balises HTML et échapper le reste pour éviter tout crash dans <code>
+    pedago_clean = re.sub(r'</?[a-zA-Z][^>]*>', '', pedago_clean)
+    pedago_clean = html.escape(pedago_clean)
+    pedago_wrapped = f"💡 <b>التفسير التربوي :</b>\n<code>\u200f{pedago_clean}</code>"
+
+    # Nettoyage robuste pour la citation
+    cit_clean = citation.replace("<blockquote>", "").replace("</blockquote>", "").strip()
+    cit_clean = re.sub(r'^.*?الشيخ\s*ياسين\s*العمري\s*يقول\s*(:|：)?\s*', '', cit_clean, flags=re.IGNORECASE).strip()
+    cit_clean = re.sub(r'^(📖|📖\s*)+', '', cit_clean).strip()
+    cit_clean = re.sub(r'^[:\s\r\n\u200f]+', '', cit_clean).strip()
+    cit_wrapped = f"📖 <b>الشيخ ياسين العمري يقول :</b>\n<blockquote>\u200f{cit_clean}</blockquote>"
+
+    # Extraction et nettoyage de la source
+    youtube_url = None
+    if source:
+        yt_match = re.search(r'https?://(?:www\.)?(?:youtube\.com|youtu\.be)/[^\s\)]+', source)
+        if yt_match:
+            youtube_url = yt_match.group(0).strip()
+            
+    source_clean = source.replace("📍", "").strip()
+    source_clean = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', source_clean) # enlever le lien markdown
+    
+    if source_clean:
+        # Supprimer toutes les balises HTML et échapper le reste pour <code>
+        source_clean = re.sub(r'</?[a-zA-Z][^>]*>', '', source_clean)
+        source_clean = html.escape(source_clean)
+        source_wrapped = (
+            f"📍 <b>المصدر :</b>\n"
+            f"<code>\u200f{source_clean}</code>\n"
+            f"💡 <i>انقر على الرابط الأزرق أو زر اليوتيوب أسفله لمشاهدة الفيديو.</i>"
+        )
+        if youtube_url:
+            source_wrapped += f"\n🔗 <a href='{youtube_url}'>شاهد الفيديو من هنا</a>"
+    else:
+        source_wrapped = ""
+
+    if requested_tab == "pedago":
+        content = (
+            f"{qa_block}\n\n"
+            f"{pedago_wrapped}\n\n"
+            f"{source_wrapped}"
+        )
+    else:  # quote
+        if citation:
+            content = (
+                f"{qa_block}\n\n"
+                f"{cit_wrapped}\n\n"
+                f"{source_wrapped}"
+            )
+        else:
+            content = (
+                f"{qa_block}\n\n"
+                f"{pedago_wrapped}\n\n"
+                f"{source_wrapped}"
+            )
+
+    full_text = content
+
+    view_idx = session.get("view_index", 0)
+    has_prev = view_idx > 0
+
+    from database import get_lesson_resources
+    resources = await get_lesson_resources(subject, course_number)
+    has_mind_map = bool(resources and resources.get("mind_map_file_id"))
+
+    await callback.message.edit_text(
+        text=full_text,
+        parse_mode="HTML",
+        link_preview_options=LinkPreviewOptions(is_disabled=True),
+        reply_markup=explanation_tab_kb(
+            q_id=q_id,
+            active_tab=requested_tab,
+            has_prev=has_prev,
+            youtube_url=youtube_url,
+            has_citation=bool(citation),
+            has_mind_map=has_mind_map
+        )
+    )
+
+@router.callback_query(F.data.startswith("show_quest_"))
+async def show_question_callback(callback: CallbackQuery):
+    q_id = int(callback.data.replace("show_quest_", ""))
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id) or review_sessions.get(user_id)
+    
+    if not session:
+        await callback.answer("⚠️ انتهت الجلسة.")
+        return
+
+    # Récupérer l'écran historique actuel contenant la question et sa correction
+    view_idx = session.get("view_index", 0)
+    history = session.get("history_screens", [])
+    
+    scr = None
+    if view_idx < len(history) and history[view_idx].get("q_id") == q_id:
+        scr = history[view_idx]
+    else:
+        for idx, h in enumerate(history):
+            if h.get("q_id") == q_id:
+                scr = h
+                session["view_index"] = idx
+                break
+
+    if not scr:
+        await callback.answer("⚠️ لم يتم العثور على السؤال في السجل.")
+        return
+
+    has_prev = session.get("view_index", 0) > 0
+    
+    await callback.message.edit_text(
+        text=scr["text"],
+        parse_mode="HTML",
+        link_preview_options=LinkPreviewOptions(is_disabled=True),
+        reply_markup=next_question_kb(
+            q_id=q_id,
+            has_explanation=True,
+            has_prev=has_prev
+        )
+    )
+
+@router.callback_query(F.data == "delete_msg")
+async def delete_msg_callback(callback: CallbackQuery):
+    await callback.message.delete()
+
+
+@router.callback_query(F.data == "next_q")
+async def next_question(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id)
+    if session and "history_screens" in session:
+        view_idx = session.get("view_index", 0)
+        history = session["history_screens"]
+        if view_idx < len(history) - 1:
+            session["view_index"] = view_idx + 1
+            next_scr = history[session["view_index"]]
+            has_prev = session["view_index"] > 0
+            
+            if next_scr.get("is_final"):
+                await callback.message.edit_text(next_scr["text"], reply_markup=end_exam_kb())
+            else:
+                await callback.message.edit_text(
+                    next_scr["text"],
+                    reply_markup=next_question_kb(q_id=next_scr["q_id"], has_explanation=next_scr["has_expl"], has_prev=has_prev)
+                )
+            await callback.answer()
+            return
+            
+    await _send_question(callback, user_id)
+
+
+@router.callback_query(F.data == "prev_q")
+async def prev_question(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    session = exam_sessions.get(user_id)
+    if not session or "history_screens" not in session:
+        await callback.answer("لا يمكن الرجوع للخلف.")
+        return
+        
+    view_idx = session.get("view_index", 0)
+    if view_idx > 0:
+        session["view_index"] = view_idx - 1
+        prev_scr = session["history_screens"][session["view_index"]]
+        has_prev = session["view_index"] > 0
+        
+        await callback.message.edit_text(
+            prev_scr["text"],
+            reply_markup=next_question_kb(q_id=prev_scr["q_id"], has_explanation=prev_scr["has_expl"], has_prev=has_prev)
+        )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "end_exam")
+async def end_exam_early(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    _cancel_chrono_task(user_id)
+    session = exam_sessions.get(user_id) or review_sessions.get(user_id)
+    if session:
+        expl_msg_id = session.pop("explanation_message_id", None)
+        if expl_msg_id:
+            try:
+                await callback.bot.delete_message(chat_id=callback.message.chat.id, message_id=expl_msg_id)
+            except Exception:
+                pass
+        if user_id in exam_sessions:
+            await _finalize_exam(user_id, callback.bot, callback.message.chat.id)
+        elif user_id in review_sessions:
+            review_sessions.pop(user_id, None)
+            
+    await callback.message.edit_text("🚪 تم إنهاء الاختبار مبكراً.", reply_markup=end_exam_kb())
+
+
+# ── بناء نص النتيجة ──────────────────────────────────────────────────────────
+
+def _build_result_text(session: dict) -> str:
+    correct = session["correct"]
+    wrong   = session["wrong"]
+    total   = correct + wrong
+    score   = int(score_percentage(correct, total))
+    if score >= 90:   grade = "ممتاز 🌟"
+    elif score >= 75: grade = "جيد جداً ✅"
+    elif score >= 60: grade = "جيد 📈"
+    elif score >= 50: grade = "مقبول ⚠️"
+    else:             grade = "يحتاج مراجعة ❌"
+    elapsed    = int(time.time() - session["start_time"])
+    mins, secs = elapsed // 60, elapsed % 60
+    return (
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"❓ عدد الأسئلة: {total}\n"
+        f"✅ إجابات صحيحة: {correct}\n"
+        f"❌ إجابات خاطئة: {wrong}\n"
+        f"📊 النتيجة: {score}%\n"
+        f"🏆 التقدير: {grade}\n"
+        f"⏱️ الوقت: {mins}د {secs}ث\n"
+        "━━━━━━━━━━━━━━━━━━━━━━"
+    )
+
+
+# ── إنهاء وحفظ الاختبار ──────────────────────────────────────────────────────
+
+async def _finalize_exam(user_id: int, bot = None, chat_id: int = None):
+    _cancel_chrono_task(user_id)
+    session = exam_sessions.pop(user_id, None)
+    if not session:
+        return
+    correct = session["correct"]
+    wrong   = session["wrong"]
+    total   = correct + wrong
+    score   = int(score_percentage(correct, total))
+    subject = session.get("subject", "unknown")
+    
+    await save_exam_result(
+        user_id,
+        subject,
+        session.get("mode", "normal"),
+        total, correct, wrong, score
+    )
+
+    if "course_number" in session:
+        await update_lesson_mastery(
+            user_id,
+            subject,
+            session["course_number"],
+            correct
+        )
+
+    if session.get("subject") == "تحدي المجتمع" and score >= 50:
+        await add_bonus_points(user_id, 50)
+
+    # Adaptation automatique du niveau si on a le bot, le chat et une matière principale valide
+    if total > 0 and bot and chat_id and subject in ["fiqh", "sira", "nahw", "tajweed", "aqeeda"]:
+        ratio = correct / total
+        current_level = await get_user_subject_level(user_id, subject)
+        new_level = current_level
+        
+        subjects_map = {
+            "fiqh": "الفقه",
+            "sira": "السيرة النبوية",
+            "nahw": "علم النحو",
+            "tajweed": "علم التجويد",
+            "aqeeda": "العقيدة الإسلامية"
+        }
+        subj_name = subjects_map.get(subject, subject)
+        
+        user = await get_user(user_id)
+        user_dict = dict(user) if user else {}
+        is_female = user_dict.get("gender") == "female"
+        gender_title = "أختي" if is_female else "أخي"
+        first_name = user_dict.get("first_name", "الطالب")
+        
+        change_msg = None
+        if ratio >= 0.8 and current_level < 5:
+            new_level = current_level + 1
+            await set_user_subject_level(user_id, subject, new_level)
+            change_msg = (
+                f"🚀 <b>Level Up! لقد ارتفع مستواكِ!</b> 🌟\n\n" if is_female else
+                f"🚀 <b>Level Up! لقد ارتفع مستواك!</b> 🌟\n\n"
+                f"<blockquote>بما أنكِ حققتِ نتيجة ممتازة ({score}%) في <b>{subj_name}</b>، فقد قمتُ برفع مستوى تمكنكِ التلقائي في هذه المادة إلى <b>{new_level}/5</b>! 📈\n\n" if is_female else
+                f"<blockquote>بما أنك حققت نتيجة ممتازة ({score}%) في <b>{subj_name}</b>، فقد قمت برفع مستوى تمكنك التلقائي في هذه المادة إلى <b>{new_level}/5</b>! 📈\n\n"
+                f"بدءاً من درسك القادم، سأقوم بزيادة تحديات وتفاصيل شروحاتي وأسئلتي لكِ لمساعدتكِ على التفوق. جاهزة؟ 💪</blockquote>" if is_female else
+                f"بدءاً من درسك القادم، سأقوم بزيادة تحديات وتفاصيل شروحاتي وأسئلتي لك لمساعدتك على التفوق. جاهز؟ 💪</blockquote>"
+            )
+        elif ratio <= 0.4 and current_level > 1:
+            new_level = current_level - 1
+            await set_user_subject_level(user_id, subject, new_level)
+            change_msg = (
+                f"💡 <b>لا بأس يا {gender_title} {first_name}، كلنا نتعلم!</b>\n\n"
+                f"<blockquote>أرى أنكِ واجهتِ بعض الصعوبات في اختبار <b>{subj_name}</b> ({score}%). لتسهيل المراجعة عليكِ، قمتُ بتخفيض مستوى المادة مؤقتاً إلى <b>{new_level}/5</b>.\n\n" if is_female else
+                f"<blockquote>أرى أنك واجهت بعض الصعوبات في اختبار <b>{subj_name}</b> ({score}%). لتسهيل المراجعة عليك، قمت بتخفيض مستوى المادة مؤقتاً إلى <b>{new_level}/5</b>.\n\n"
+                f"سأركز في شروحاتي وأسئلتي القادمة معكِ على تبسيط المفاهيم الأساسية لنبني أساساً متيناً معاً خطوة بخطوة. 💪</blockquote>" if is_female else
+                f"سأركز في شروحاتي وأسئلتي القادمة معك على تبسيط المفاهيم الأساسية لنبني أساساً متيناً معاً خطوة بخطوة. 💪</blockquote>"
+            )
+            
+        if change_msg:
+            try:
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text=change_msg,
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logging.getLogger(__name__).error(f"Error sending level adjustment message: {e}")
+
+
+async def _show_results(callback: CallbackQuery, user_id: int):
+    session = exam_sessions.get(user_id)
+    if not session:
+        return
+
+    correct = session["correct"]
+    wrong   = session["wrong"]
+    total   = correct + wrong
+    score   = int(score_percentage(correct, total))
+
+    if score >= 90:   grade = "ممتاز 🌟"
+    elif score >= 75: grade = "جيد جداً ✅"
+    elif score >= 60: grade = "جيد 📈"
+    elif score >= 50: grade = "مقبول ⚠️"
+    else:             grade = "يحتاج مراجعة ❌"
+
+    mode_names = {
+        "normal":   "📘 تمارين تدريبية",
+        "training": "🚀 وضعية التدريب (جديد)",
+        "severe":   "🔥 وضع سيفير (Sévère)",
+        "chrono":   "⏱️ التحدي بالتوقيت",
+        "random":   "🎲 عشوائي",
+        "errors":   "❌ مراجعة الأخطاء",
+        "exam":     "📝 امتحان تجريبي",
+    }
+    mode_label = mode_names.get(session["mode"], session["mode"])
+    elapsed    = int(time.time() - session["start_time"])
+    mins, secs = elapsed // 60, elapsed % 60
+
+    bonus_text = ""
+    if session.get("subject") == "تحدي المجتمع" and score >= 50:
+        bonus_text = "\n🎁 حصلت على 50 نقطة إضافية لنجاحك في التحدي!"
+
+    text = (
+        "🏁 نتيجة الاختبار\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📝 نوع الاختبار: {mode_label}\n"
+        f"❓ عدد الأسئلة: {total}\n"
+        f"✅ إجابات صحيحة: {correct}\n"
+        f"❌ إجابات خاطئة: {wrong}\n"
+        f"📊 النتيجة: {score}%\n"
+        f"🏆 التقدير: {grade}\n"
+        f"⏱️ الوقت: {mins}د {secs}ث"
+        f"{bonus_text}\n"
+        "━━━━━━━━━━━━━━━━━━━━━━"
+    )
+
+    if user_id not in review_sessions:
+        review_sessions[user_id] = {
+            "questions": list(session["questions"]),
+            "answers":   dict(session.get("answers", {})),
+            "index":     0,
+        }
+
+    cn = session.get("course_number")
+    subject = session.get("subject")
+
+    await _finalize_exam(user_id, callback.bot, callback.message.chat.id)
+    
+    if score < 60 and cn is not None and subject is not None:
+        from keyboards.exam_kb import failed_quiz_remediation_kb
+        await callback.message.edit_text(text, reply_markup=failed_quiz_remediation_kb(subject, cn, session.get("mode", "normal")))
+    else:
+        # Si mode exam ou severe, on propose la révision
+        if session.get("mode") in ("exam", "severe"):
+            await callback.message.edit_text(text, reply_markup=end_exam_with_review_kb())
+        else:
+            await callback.message.edit_text(text, reply_markup=end_exam_kb())
+
+
+# ── مراجعة الامتحان الرسمي سؤالاً بسؤال ─────────────────────────────────────
+
+@router.callback_query(F.data == "review_start")
+async def review_start(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    review  = review_sessions.get(user_id)
+    if not review:
+        await callback.answer("لا توجد بيانات مراجعة. أعد الامتحان أولاً.", show_alert=True)
+        return
+    review["index"] = 0
+    await _show_review_question(callback, user_id)
+
+
+@router.callback_query(F.data == "rev_next")
+async def review_next(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    review  = review_sessions.get(user_id)
+    if not review:
+        await callback.answer("انتهت جلسة المراجعة.")
+        return
+    review["index"] = min(review["index"] + 1, len(review["questions"]) - 1)
+    await _show_review_question(callback, user_id)
+
+
+@router.callback_query(F.data == "rev_prev")
+async def review_prev(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    review  = review_sessions.get(user_id)
+    if not review:
+        await callback.answer("انتهت جلسة المراجعة.")
+        return
+    review["index"] = max(review["index"] - 1, 0)
+    await _show_review_question(callback, user_id)
+
+
+async def _show_review_question(callback: CallbackQuery, user_id: int):
+    review = review_sessions.get(user_id)
+    if not review:
+        return
+    idx         = review["index"]
+    questions   = review["questions"]
+    total       = len(questions)
+    q           = questions[idx]
+    chosen      = review["answers"].get(q["id"])
+    correct     = q["correct"]
+    explanation = q.get("explanation", "")
+
+    is_correct  = chosen == correct
+    status_icon = "✅" if is_correct else "❌"
+    status_text = "إجابة صحيحة" if is_correct else "إجابة خاطئة"
+    src_badge   = SOURCE_BADGE.get(q.get("source", "official"), "🏛️")
+    course_info = f"📖 الدرس {q['course_number']} | " if "course_number" in q else ""
+
+    question_quote = f"\u200f<blockquote><b>❓ السؤال:</b>\n{q['question']}</blockquote>"
+    lines = [
+        f"\u200f🔍 مراجعة الامتحان — السؤال {idx + 1} من {total}  {src_badge}",
+        f"\u200f{course_info}{status_icon} {status_text}",
+        f"\u200f━━━━━━━━━━━━━━━━━━━━━━",
+        f"{question_quote}",
+        f"\u200f━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+    for letter, opt_text in q["choices"].items():
+        if letter == chosen and letter == correct:
+            lines.append(f"\u200f✅ <b>{letter} -</b> {opt_text}")
+        elif letter == chosen:
+            lines.append(f"\u200f❌ <b>{letter} -</b> {opt_text} <i>(إجابتك)</i>")
+        elif letter == correct:
+            lines.append(f"\u200f✔️ <b>{letter} -</b> {opt_text} <i>(الصواب)</i>")
+        else:
+            lines.append(f"\u200f<b>{letter} -</b> {opt_text}")
+    if explanation:
+        lines.append(f"\n\u200f💡 <b>توضيح:</b>\n<blockquote>\u200f{explanation}</blockquote>")
+
+    # Utilisation du bouton large pour la question
+    nav_kb_buttons = exam_review_nav_kb(idx, total, q_id=q['id']).inline_keyboard
+    
+    # Bouton d'explication IA toujours visible
+    nav_kb_buttons.insert(0, [InlineKeyboardButton(text="🔍 شرح السؤال (IA)", callback_data=f"show_expl_{q['id']}")])
+
+    final_kb = make_question_display_kb(q["question"], nav_kb_buttons)
+
+    await callback.message.edit_text(
+        "\n".join(lines),
+        reply_markup=final_kb,
+        parse_mode="HTML"
+    )
+
+
+@router.callback_query(F.data == "review_result")
+async def review_back_to_result(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    review  = review_sessions.get(user_id)
+    if review:
+        total   = len(review["questions"])
+        correct = sum(
+            1 for q in review["questions"]
+            if review["answers"].get(q["id"]) == q["correct"]
+        )
+        score = int(score_percentage(correct, total))
+        text  = (
+            f"🏁 نتيجة الامتحان\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"✅ {correct}/{total} — {score}%\n"
+            "━━━━━━━━━━━━━━━━━━━━━━"
+        )
+    else:
+        text = "لا توجد بيانات مراجعة."
+    await callback.message.edit_text(text, reply_markup=end_exam_with_review_kb())

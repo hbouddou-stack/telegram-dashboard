@@ -1,0 +1,11 @@
+Successfully parsed transcripts.json
+Found 9 Sira lessons:
+Lesson 14: الدرس 14 -> themes: 0, thematic_blocks: 4, segments: 209
+Lesson 15: الدرس 15 -> themes: 0, thematic_blocks: 4, segments: 235
+Lesson 16: الدرس 16 -> themes: 0, thematic_blocks: 5, segments: 164
+Lesson 17: الدرس 17 -> themes: 0, thematic_blocks: 6, segments: 228
+Lesson 18: الدرس 18 -> themes: 0, thematic_blocks: 4, segments: 224
+Lesson 19: الدرس 19 -> themes: 0, thematic_blocks: 7, segments: 248
+Lesson 20: الدرس 20 -> themes: 0, thematic_blocks: 4, segments: 88
+Lesson 21: الدرس 21 -> themes: 0, thematic_blocks: 4, segments: 26
+Lesson 22: الدرس 22 -> themes: 0, thematic_blocks: 4, segments: 12

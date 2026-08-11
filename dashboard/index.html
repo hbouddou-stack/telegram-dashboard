@@ -1027,6 +1027,7 @@
             z-index: 2;
         }
         .roadmap-node-dot {
+            display: none;
             position: absolute;
             right: -21px;
             left: auto;
@@ -1040,11 +1041,13 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .roadmap-node.completed .roadmap-node-dot {
+            display: none;
             border-color: var(--subj-color);
             background: var(--subj-color);
             box-shadow: 0 0 8px var(--subj-color);
         }
         .roadmap-node.in-progress .roadmap-node-dot {
+            display: none;
             border-color: var(--subj-color);
             background: var(--surface);
             animation: pulse-dot 2s infinite;
@@ -5017,11 +5020,8 @@ function toggleChapterFavorite(event, subject, lessonNum, chapterIdx) {
 }
 
 function goToChapter(event, subject, lessonNum, chapterIdx) {
-    // Open the reader modal at this specific chapter (transcription tab)
-    openModal(subject, lessonNum, 'trans');
-    setTimeout(() => {
-        scrollToChapter(chapterIdx);
-    }, 200);
+    if (event) event.stopPropagation();
+    window.location.href = 'reader.html?subject=' + subject + '&lesson=' + lessonNum + '&v=p5';
 }
 
 function highlightChapterInReader(chapterIdx) {
