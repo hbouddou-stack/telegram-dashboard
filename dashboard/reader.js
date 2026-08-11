@@ -2272,30 +2272,30 @@ const supportFlow = {
         setTimeout(() => {
             let subText = '';
             let subBtns = '';
-            if(cat === '?????') {
-                subText = '?? ??????? ?????? ??:';
-                subBtns = 
-                    <button onclick="supportFlow.selectSubcategory('??????? ?? ????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">??????? ?? ????</button>
-                    <button onclick="supportFlow.selectSubcategory('?? ???? ???')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">?? ???? ???</button>
-                    <button onclick="supportFlow.selectSubcategory('????? ?? ???????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">????? ?? ???????</button>
-                ;
-            } else if(cat === '??????') {
-                subText = '?????? ????? ???????:';
-                subBtns = 
-                    <button onclick="supportFlow.selectSubcategory('????? ????????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">????? ????????</button>
-                    <button onclick="supportFlow.selectSubcategory('????? ?? ?????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">????? ?? ?????</button>
-                ;
+            if(cat === 'تقنية') {
+                subText = 'هل المشكلة متعلقة بـ:';
+                subBtns = `
+                    <button onclick="supportFlow.selectSubcategory('الفيديو لا يعمل')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">الفيديو لا يعمل</button>
+                    <button onclick="supportFlow.selectSubcategory('لا يوجد صوت')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">لا يوجد صوت</button>
+                    <button onclick="supportFlow.selectSubcategory('مشكلة في التطبيق')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">مشكلة في التطبيق</button>
+                `;
+            } else if(cat === 'إدارية') {
+                subText = 'المرجو تحديد المشكلة:';
+                subBtns = `
+                    <button onclick="supportFlow.selectSubcategory('تجديد الاشتراك')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">تجديد الاشتراك</button>
+                    <button onclick="supportFlow.selectSubcategory('مشكلة في الدفع')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">مشكلة في الدفع</button>
+                `;
             } else {
-                subText = '?? ??????? ??:';
-                subBtns = 
-                    <button onclick="supportFlow.selectSubcategory('??? ?????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">??? ?????</button>
-                    <button onclick="supportFlow.selectSubcategory('???? ??? ????????')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">???? ??? ????????</button>
-                ;
+                subText = 'هل المشكلة في:';
+                subBtns = `
+                    <button onclick="supportFlow.selectSubcategory('فهم الدرس')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">فهم الدرس</button>
+                    <button onclick="supportFlow.selectSubcategory('سؤال حول الاختبار')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">سؤال حول الاختبار</button>
+                `;
             }
             
             this.addMessage(subText, 'bot');
             const optsId = 'subopts-' + Date.now();
-            const optsHtml = <div id="\" style="display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; max-width: 85%;">\</div>;
+            const optsHtml = `<div id="${optsId}" style="display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; max-width: 85%;">${subBtns}</div>`;
             document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', optsHtml);
             this.currentOptsId = optsId;
             this.scrollToBottom();
@@ -2311,15 +2311,15 @@ const supportFlow = {
         
         setTimeout(() => {
             let tip = '';
-            if (sub === '??????? ?? ????' || sub === '?? ???? ???') {
-                tip = '?? ????? ?????: 90% ?? ????? ??????? ???? ????? ????? ?????? ?? ??? ????? ??????? ?????? (Cache). ?? ???? ????? ????<br><br>';
-            } else if (sub === '????? ?? ?????' || sub === '????? ????????') {
-                tip = '?? ??????: ????? ?????????? ?? ???? ?? ??? 5 ??? 15 ????? ?????? ?? ??????? ??? ?????.<br><br>';
-            } else if (sub === '??? ?????') {
-                tip = '?? ?? ????? ????? ??????? "??????? ???????" ?? "???? ?????" ???????? ?? ????? ????? ?????? ??? ???? ???? ??? ??? ??????.<br><br>';
+            if (sub === 'الفيديو لا يعمل' || sub === 'لا يوجد صوت') {
+                tip = '💡 نصيحة سريعة: 90% من مشاكل الفيديو تُحل بمجرد تحديث الصفحة أو مسح ذاكرة التخزين المؤقت (Cache). هل تريد تجربة ذلك؟<br><br>';
+            } else if (sub === 'مشكلة في الدفع' || sub === 'تجديد الاشتراك') {
+                tip = '💡 ملاحظة: تفعيل الاشتراكات قد يأخذ ما بين 5 إلى 15 دقيقة للظهور في التطبيق بعد الدفع.<br><br>';
+            } else if (sub === 'فهم الدرس') {
+                tip = '💡 هل تعلم؟ يمكنك استخدام "الخريطة الذهنية" أو "ملخص الدرس" المتوفرة في قائمة الدرس للحصول على فكرة أوضح قبل طرح السؤال.<br><br>';
             }
             
-            this.addMessage(tip + '??? ???? ??????? ??????? ???? ????? ???????? ?????:', 'bot');
+            this.addMessage(tip + 'إذا كانت المشكلة مستمرة، يرجى كتابة التفاصيل أدناه:', 'bot');
             document.getElementById('support-chat-input-area').style.display = 'flex';
             document.getElementById('support-chat-input').focus();
             this.scrollToBottom();
@@ -2340,15 +2340,15 @@ const supportFlow = {
         // Typing indicator
         setTimeout(() => {
             const typingId = 'typing-' + Date.now();
-            const typingHtml = 
-                <div id="\" style="align-self: flex-start; background: white; padding: 12px 16px; border-radius: 16px 16px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; gap: 4px; align-items: center;">
+            const typingHtml = `
+                <div id="${typingId}" style="align-self: flex-start; background: white; padding: 12px 16px; border-radius: 16px 16px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; gap: 4px; align-items: center;">
                     <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></span>
                     <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
                     <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
-                    <span style="font-size: 12px; color: #6b7280; margin-right: 8px;">???? ????? ?? ????? ????????...</span>
+                    <span style="font-size: 12px; color: #6b7280; margin-right: 8px;">جاري البحث في قاعدة البيانات...</span>
                 </div>
                 <style>@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }</style>
-            ;
+            `;
             document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', typingHtml);
             this.scrollToBottom();
             
@@ -2361,31 +2361,31 @@ const supportFlow = {
     },
 
     showFaqAndEscalate: function() {
-        const msg = ????? ?? ??? ????? ?????? ???????. ????? ???? ??????? ??????? ?????. ??? ?? ??? ????? ????? ????? ???? ???????.;
+        const msg = `للأسف لم أجد إجابة مباشرة لمشكلتك. يمكنك تصفح الأسئلة الشائعة أدناه. إذا لم تجد حلاً، يمكنك تحويل طلبك للإدارة.`;
         this.addMessage(msg, 'bot');
         
-        const faqs = 
+        const faqs = `
             <div style="background: white; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); align-self: flex-start; width: 100%; max-width: 90%; margin-top: 5px;">
                 <details style="padding: 8px; border-bottom: 1px solid #f3f4f6;">
-                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">??? ???? ?????? ????????</summary>
-                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">???? ?? ?????? ????????? ????? ??? ?? ??????? ?? ????? ??????.</p>
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">كيف أقوم بتشغيل الفيديو؟</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">تأكد من اتصالك بالإنترنت واضغط على زر التشغيل في منتصف الشاشة.</p>
                 </details>
                 <details style="padding: 8px; border-bottom: 1px solid #f3f4f6;">
-                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">??? ???? ?????? ?????????</summary>
-                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">????? ????? ??? ?? "????? ??????" ?? ??????? ??????? ??????.</p>
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">كيف أعود للصفحة الرئيسية؟</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">يمكنك الضغط على زر "صندوق الوارد" في القائمة السفلية للعودة.</p>
                 </details>
                 <details style="padding: 8px;">
-                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">??? ??? ???? ??????</summary>
-                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">?????? ????? ?? ????? ????? ??? ?? (??????? ???????).</p>
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">كيف أجد ملخص الدرس؟</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">الملخص متوفر في قائمة الدرس عبر زر (الخريطة الذهنية).</p>
                 </details>
             </div>
             
             <div style="align-self: center; margin-top: 15px; width: 100%; text-align: center;">
                 <button onclick="supportFlow.escalateToAdmin()" style="background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 24px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
-                    ????? ??????? ??? ??????? ??
+                    إرسال المشكلة إلى الإدارة 📩
                 </button>
             </div>
-        ;
+        `;
         document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', faqs);
         this.scrollToBottom();
     },
@@ -2394,10 +2394,10 @@ const supportFlow = {
         // Hide the button
         event.target.style.display = 'none';
         
-        this.addMessage("????? ??????? ??? ???????", "user");
+        this.addMessage("إرسال المشكلة إلى الإدارة", "user");
         
         setTimeout(() => {
-            this.addMessage("? ??? ????? ???? ??? ??????? ?????. ?????? ???? ?? ???? ??? ???? ??? <b>????? ??????</b> ????? ??.", "bot");
+            this.addMessage("✅ تمت إحالة طلبك إلى الإدارة بنجاح. ستتلقى رداً في أقرب وقت ممكن عبر <b>صندوق الوارد</b> الخاص بك.", "bot");
         }, 800);
     },
 
@@ -2408,11 +2408,11 @@ const supportFlow = {
         const align = isBot ? 'flex-start' : 'flex-end';
         const radius = isBot ? '16px 16px 0 16px' : '16px 16px 16px 0';
         
-        const html = 
-            <div style="align-self: \; background: \; color: \; padding: 12px 16px; border-radius: \; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 85%; line-height: 1.5;">
-                \
+        const html = `
+            <div style="align-self: ${align}; background: ${bg}; color: ${color}; padding: 12px 16px; border-radius: ${radius}; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 85%; line-height: 1.5;">
+                ${text}
             </div>
-        ;
+        `;
         document.getElementById('support-chat-history').insertAdjacentHTML('beforeend', html);
         this.scrollToBottom();
     },
