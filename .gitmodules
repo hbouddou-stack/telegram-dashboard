@@ -1,8 +1,0 @@
-﻿[submodule "telegram-bot"]
-	path = telegram-bot
-	url = https://github.com/hbouddou-stack/bot_quizz_albaji.git
-
-[submodule "telegram-bot-backup_Safety_Backup"]
-	path = telegram-bot-backup_Safety_Backup
-	url = https://github.com/hbouddou-stack/bot-secours-academy.git
-
