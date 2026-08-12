@@ -3678,6 +3678,7 @@ async def get_student_quiz_questions(request):
                     if node_ids:
                         node_placeholders = ",".join("?" for _ in node_ids)
                         query += f" AND q.thematic_node_id IN ({node_placeholders})"
+                        params.extend(node_ids)
                     else:
                         query += " AND 1=0" # No nodes found
                 elif mode == 'years' and course_numbers:
@@ -3717,6 +3718,7 @@ async def get_student_quiz_questions(request):
                     if node_ids:
                         node_placeholders = ",".join("?" for _ in node_ids)
                         query += f" AND q.thematic_node_id IN ({node_placeholders})"
+                        params.extend(node_ids)
                     else:
                         query += " AND 1=0" # No nodes found
                 elif mode == 'years' and course_numbers:
@@ -3752,6 +3754,7 @@ async def get_student_quiz_questions(request):
                     if node_ids:
                         node_placeholders = ",".join("?" for _ in node_ids)
                         query += f" AND thematic_node_id IN ({node_placeholders})"
+                        params.extend(node_ids)
                     else:
                         query += " AND 1=0" # No nodes found
                 elif mode == 'years' and course_numbers:
@@ -3762,8 +3765,7 @@ async def get_student_quiz_questions(request):
                     # Convert to int or string list safely
                     parsed_courses = [int(x) if str(x).isdigit() else str(x) for x in course_numbers]
                     placeholders = ",".join("?" for _ in parsed_courses)
-                    query += f" AND (course_number IN ({placeholders}) OR course_id IN ({placeholders}))"
-                    params.extend(parsed_courses)
+                    query += f" AND course_number IN ({placeholders})"
                     params.extend(parsed_courses)
                 
                 # Exclude AI generated if settings say so
