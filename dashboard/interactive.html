@@ -6470,9 +6470,10 @@ function stopQuizChrono() {
       text = text.replace(/\(يمكنك الضغط على الوقت للوصول إلى الفيديو\)/gi, "");
       text = text.replace(/\(سينقلك إلى يوتيوب خارج التطبيق\)/gi, "");
       
-      text = text.replace(/💡 <b>التفسير التربوي(.*?)<\/b>\s*:/g, "AI_MARKER");
-      text = text.replace(/📖 <b>قول الشيخ(.*?)<\/b>\s*:/g, "PROF_MARKER");
-      text = text.replace(/📍 <b>المصدر(.*?)<\/b>\s*:/g, "SRC_MARKER");
+      // Match markers — colons may be INSIDE or OUTSIDE the <b> tag depending on DB entry
+      text = text.replace(/💡\s*<b>[^<]*التفسير التربوي[^<]*:?<\/b>\s*:?/g, "AI_MARKER");
+      text = text.replace(/📖\s*<b>[^<]*قول الشيخ[^<]*:?<\/b>\s*:?/g, "PROF_MARKER");
+      text = text.replace(/📍\s*<b>[^<]*المصدر[^<]*:?<\/b>\s*:?/g, "SRC_MARKER");
       text = text.replace(/<blockquote>/g, "").replace(/<\/blockquote>/g, "");
       
       if (text.includes("AI_MARKER")) {
@@ -6520,20 +6521,21 @@ function stopQuizChrono() {
                    </div>`;
       }
       
-      if (sourceText.trim() || videoId) {
+      // Determine subject and lesson — always try, regardless of videoId
+      let subj = questionObj ? questionObj.subject : (typeof quizState !== 'undefined' ? quizState.subject : null);
+      let less = questionObj ? (questionObj.course_number || questionObj.lessonNum) : (typeof quizState !== 'undefined' ? quizState.lessonNum : null);
+
+      if (sourceText.trim() || videoId || (subj && less)) {
           let cleanSourceText = sourceText.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1').trim();
           cleanSourceText = cleanSourceText.replace(/،\s*الدقيقة\s*,?/g, '').trim();
           
-          let sourceHtml = cleanSourceText ? `<div>📚 المصدر: ${cleanSourceText}</div>` : '';
-          html += `<div style="font-size:12px; color:var(--text-3); text-align:left; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          let sourceHtml = cleanSourceText ? `<div style="font-size:12px; color:var(--text-3);">📚 المصدر: ${cleanSourceText}</div>` : '';
+          html += `<div style="margin-top:12px; display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
                       ${sourceHtml}`;
           
-          // Determine subject and lesson based on either quizState (global) or questionObj
-          let subj = questionObj ? questionObj.subject : (typeof quizState !== 'undefined' ? quizState.subject : null);
-          let less = questionObj ? (questionObj.course_number || questionObj.lessonNum) : (typeof quizState !== 'undefined' ? quizState.lessonNum : null);
-          
-          if (videoId && subj && less) {
-              html += `<button onclick="window.location.href='reader.html?subject=${subj}&lesson=${less}&v=p16'" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:8px;">
+          // Always show Liseuse button when we know subject + lesson
+          if (subj && less) {
+              html += `<button onclick="window.location.href='reader.html?subject=${subj}&lesson=${less}&v=p17'" style="background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:20px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); font-size:13px;">
                           📖 افتح اللمحة في القارئ (Liseuse)
                        </button>`;
           }
