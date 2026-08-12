@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 
 # --- DB TRANSCRIPTS HELPERS ---
 async def load_lessons_from_db():
@@ -75,11 +75,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("main")
 
-# ─── INSTANCE LOCK (anti-fantôme) ──────────────────────────────────────────────
+# â”€â”€â”€ INSTANCE LOCK (anti-fantÃ´me) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 PID_FILE = os.path.join(os.path.dirname(__file__), ".bot.pid")
 
 def _kill_existing_instance():
-    """Tue toute instance précédente du bot avant de démarrer."""
+    """Tue toute instance prÃ©cÃ©dente du bot avant de dÃ©marrer."""
     if not os.path.exists(PID_FILE):
         return
     try:
@@ -89,26 +89,26 @@ def _kill_existing_instance():
             return
             
         if sys.platform == "win32":
-            # Utilisation de taskkill sous Windows pour forcer l'arrêt de manière fiable
+            # Utilisation de taskkill sous Windows pour forcer l'arrÃªt de maniÃ¨re fiable
             import subprocess
-            logger.warning(f"⚠️  Instance fantôme détectée (PID {old_pid}). Arrêt en cours...")
+            logger.warning(f"âš ï¸  Instance fantÃ´me dÃ©tectÃ©e (PID {old_pid}). ArrÃªt en cours...")
             subprocess.run(["taskkill", "/F", "/PID", str(old_pid)], capture_output=True)
         else:
-            # Vérifie si le processus tourne encore (Unix)
+            # VÃ©rifie si le processus tourne encore (Unix)
             os.kill(old_pid, 0)
-            # Il tourne encore → on le tue
-            logger.warning(f"⚠️  Instance fantôme détectée (PID {old_pid}). Arrêt en cours...")
+            # Il tourne encore â†’ on le tue
+            logger.warning(f"âš ï¸  Instance fantÃ´me dÃ©tectÃ©e (PID {old_pid}). ArrÃªt en cours...")
             os.kill(old_pid, signal.SIGTERM)
             import time; time.sleep(1)
             try:
                 os.kill(old_pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
-            logger.info(f"✅ Instance précédente (PID {old_pid}) arrêtée.")
+            logger.info(f"âœ… Instance prÃ©cÃ©dente (PID {old_pid}) arrÃªtÃ©e.")
     except (ValueError, ProcessLookupError, OSError):
-        pass  # PID invalide, processus déjà mort ou erreur OS (ex: WinError 87 sur Windows)
+        pass  # PID invalide, processus dÃ©jÃ  mort ou erreur OS (ex: WinError 87 sur Windows)
     except PermissionError:
-        logger.warning("Permission refusée pour tuer l'ancienne instance.")
+        logger.warning("Permission refusÃ©e pour tuer l'ancienne instance.")
 
 def _write_pid():
     with open(PID_FILE, "w") as f:
@@ -124,17 +124,17 @@ _kill_existing_instance()
 _write_pid()
 import atexit
 atexit.register(_remove_pid)
-# ───────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-# ─── AIOHTTP WEB SERVER & MINI-APP APIS ──────────────────────────────────────
+# â”€â”€â”€ AIOHTTP WEB SERVER & MINI-APP APIS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard')
 
-# ─── MIDDLEWARE CORS (pour GitHub Pages → API Serveo) ─────────────────────────
+# â”€â”€â”€ MIDDLEWARE CORS (pour GitHub Pages â†’ API Serveo) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @web.middleware
 async def cors_middleware(request, handler):
-    """Autorise les requêtes cross-origin depuis GitHub Pages et autres origines."""
-    # Répondre immédiatement aux preflight OPTIONS
+    """Autorise les requÃªtes cross-origin depuis GitHub Pages et autres origines."""
+    # RÃ©pondre immÃ©diatement aux preflight OPTIONS
     if request.method == 'OPTIONS':
         return web.Response(
             status=204,
@@ -150,7 +150,7 @@ async def cors_middleware(request, handler):
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     return response
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_index(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'index.html'))
@@ -285,7 +285,7 @@ async def get_admin_info(request):
             
         from config import DATABASE_PATH, TELEGRAM_ADMIN_IDS
         role = "moderator"
-        first_name = "مشرف"
+        first_name = "Ù…Ø´Ø±Ù"
         username = "admin"
         
         if int(user_id) in TELEGRAM_ADMIN_IDS:
@@ -307,7 +307,7 @@ async def get_admin_info(request):
                     visible_sections_raw = None
             
             # Fallback if first_name/username is still generic/missing/default
-            if first_name in ["مشرف", "Super Admin"] or not first_name:
+            if first_name in ["Ù…Ø´Ø±Ù", "Super Admin"] or not first_name:
                 async with db_conn.execute("SELECT first_name, username FROM users WHERE telegram_id = ?", (int(user_id),)) as cur:
                     r = await cur.fetchone()
                     if r and (r["first_name"] or r["username"]):
@@ -318,7 +318,7 @@ async def get_admin_info(request):
                             (r["first_name"] or "", r["username"] or "", int(user_id))
                         )
             
-            if first_name in ["مشرف", "Super Admin"] or not first_name:
+            if first_name in ["Ù…Ø´Ø±Ù", "Super Admin"] or not first_name:
                 bot = request.app.get('bot')
                 if bot:
                     try:
@@ -385,12 +385,12 @@ async def get_admin_settings(request):
         settings.setdefault("disable_ai_for_students", "False")
         settings.setdefault("ticket_detail_level", "compact")
         settings.setdefault("maintenance_mode", "False")
-        settings.setdefault("maintenance_message", "🚧 البوت في وضع الصيانة مؤقتاً. سيعود قريباً بإذن الله.")
+        settings.setdefault("maintenance_message", "ðŸš§ Ø§Ù„Ø¨ÙˆØª ÙÙŠ ÙˆØ¶Ø¹ Ø§Ù„ØµÙŠØ§Ù†Ø© Ù…Ø¤Ù‚ØªØ§Ù‹. Ø³ÙŠØ¹ÙˆØ¯ Ù‚Ø±ÙŠØ¨Ø§Ù‹ Ø¨Ø¥Ø°Ù† Ø§Ù„Ù„Ù‡.")
         settings.setdefault("quiz_questions_per_session", "10")
         settings.setdefault("quiz_cooldown_minutes", "0")
         settings.setdefault("enable_revision_mode", "False")
         settings.setdefault("quiz_pass_threshold", "60")
-        settings.setdefault("bot_welcome_message", "مرحباً بك في بوت أكاديمية النور! 🌟")
+        settings.setdefault("bot_welcome_message", "Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ùƒ ÙÙŠ Ø¨ÙˆØª Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ© Ø§Ù„Ù†ÙˆØ±! ðŸŒŸ")
         settings.setdefault("notify_on_new_report", "True")
         settings.setdefault("quiz_reminder_enabled", "False")
         
@@ -687,13 +687,13 @@ async def report_chapter(request):
                 admins = [2045194295]
                 
             subj_ar = subject
-            if subject == 'fiqh': subj_ar = 'الفقه'
-            elif subject == 'aqeeda': subj_ar = 'العقيدة'
-            elif subject == 'sira': subj_ar = 'السيرة'
-            elif subject == 'tajweed': subj_ar = 'التجويد'
-            elif subject == 'nahw': subj_ar = 'النحو'
+            if subject == 'fiqh': subj_ar = 'Ø§Ù„ÙÙ‚Ù‡'
+            elif subject == 'aqeeda': subj_ar = 'Ø§Ù„Ø¹Ù‚ÙŠØ¯Ø©'
+            elif subject == 'sira': subj_ar = 'Ø§Ù„Ø³ÙŠØ±Ø©'
+            elif subject == 'tajweed': subj_ar = 'Ø§Ù„ØªØ¬ÙˆÙŠØ¯'
+            elif subject == 'nahw': subj_ar = 'Ø§Ù„Ù†Ø­Ùˆ'
             
-            chapter_title = f"المحور {chapter_idx + 1}"
+            chapter_title = f"Ø§Ù„Ù…Ø­ÙˆØ± {chapter_idx + 1}"
             try:
                 with open('dashboard/transcripts.json', 'r', encoding='utf-8') as f:
                     lessons = json.load(f)
@@ -704,14 +704,14 @@ async def report_chapter(request):
                 pass
             
             notif_msg = (
-                f"🚩 <b>[البوت البديل] بلاغ جديد عن خطأ في المحتوى</b>\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"👤 الطالب: <b>{first_name}</b> (@{username})\n"
-                f"📍 المادة: <b>{subj_ar}</b> ← درس {lesson_num} ← <b>{chapter_title}</b>\n\n"
-                f"📝 <b>ملاحظة الطالب:</b>\n"
+                f"ðŸš© <b>[Ø§Ù„Ø¨ÙˆØª Ø§Ù„Ø¨Ø¯ÙŠÙ„] Ø¨Ù„Ø§Øº Ø¬Ø¯ÙŠØ¯ Ø¹Ù† Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…Ø­ØªÙˆÙ‰</b>\n"
+                f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+                f"ðŸ‘¤ Ø§Ù„Ø·Ø§Ù„Ø¨: <b>{first_name}</b> (@{username})\n"
+                f"ðŸ“ Ø§Ù„Ù…Ø§Ø¯Ø©: <b>{subj_ar}</b> â† Ø¯Ø±Ø³ {lesson_num} â† <b>{chapter_title}</b>\n\n"
+                f"ðŸ“ <b>Ù…Ù„Ø§Ø­Ø¸Ø© Ø§Ù„Ø·Ø§Ù„Ø¨:</b>\n"
                 f"<i>\"{report_text}\"</i>\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"👉 يمكنك مراجعة البلاغ وتعديل المحتوى مباشرة من لوحة التحكم بالملف الشخصي في تطبيق الويب."
+                f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+                f"ðŸ‘‰ ÙŠÙ…ÙƒÙ†Ùƒ Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø¨Ù„Ø§Øº ÙˆØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø­ØªÙˆÙ‰ Ù…Ø¨Ø§Ø´Ø±Ø© Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… Ø¨Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ ÙÙŠ ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ÙˆÙŠØ¨."
             )
             
             bot = request.app['bot']
@@ -849,23 +849,23 @@ async def resolve_admin_report(request):
             bot = request.app['bot']
             try:
                 subj_map = {
-                    "aqida": "العقيدة",
-                    "fiqh": "الفقه",
-                    "sira": "السيرة",
-                    "hadith": "الحديث",
-                    "tazkiyah": "التزكية"
+                    "aqida": "Ø§Ù„Ø¹Ù‚ÙŠØ¯Ø©",
+                    "fiqh": "Ø§Ù„ÙÙ‚Ù‡",
+                    "sira": "Ø§Ù„Ø³ÙŠØ±Ø©",
+                    "hadith": "Ø§Ù„Ø­Ø¯ÙŠØ«",
+                    "tazkiyah": "Ø§Ù„ØªØ²ÙƒÙŠØ©"
                 }
                 subj_ar = subj_map.get(report_row['subject'].lower(), report_row['subject'])
                 
                 notif = (
-                    f"🔔 <b>تحديث بخصوص بلاغك عن خطأ في المحتوى</b>\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"📍 المادة: <b>{subj_ar}</b> ← درس {report_row['lesson_num']}\n"
-                    f"📝 بلاغك: <i>\"{report_row['report']}\"</i>\n\n"
-                    f"✅ <b>رد الإدارة:</b>\n"
+                    f"ðŸ”” <b>ØªØ­Ø¯ÙŠØ« Ø¨Ø®ØµÙˆØµ Ø¨Ù„Ø§ØºÙƒ Ø¹Ù† Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…Ø­ØªÙˆÙ‰</b>\n"
+                    f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+                    f"ðŸ“ Ø§Ù„Ù…Ø§Ø¯Ø©: <b>{subj_ar}</b> â† Ø¯Ø±Ø³ {report_row['lesson_num']}\n"
+                    f"ðŸ“ Ø¨Ù„Ø§ØºÙƒ: <i>\"{report_row['report']}\"</i>\n\n"
+                    f"âœ… <b>Ø±Ø¯ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©:</b>\n"
                     f"<i>\"{admin_reply}\"</i>\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"شكراً لمساعدتك في بناء الأكاديمية!"
+                    f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+                    f"Ø´ÙƒØ±Ø§Ù‹ Ù„Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ ÙÙŠ Ø¨Ù†Ø§Ø¡ Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ©!"
                 )
                 await bot.send_message(report_row['user_id'], notif, parse_mode="HTML")
             except Exception as notify_err:
@@ -1086,7 +1086,7 @@ async def generate_questions_ia(request):
             return web.json_response({"success": False, "error": "Access denied"}, status=403)
 
         if not subject or lesson_num is None:
-            return web.json_response({"success": False, "error": "Paramètres manquants (matière ou numéro de leçon)"}, status=400)
+            return web.json_response({"success": False, "error": "ParamÃ¨tres manquants (matiÃ¨re ou numÃ©ro de leÃ§on)"}, status=400)
 
         # Reload GEMINI_API_KEYS fresh from config (ensures .env was loaded)
         import importlib
@@ -1096,7 +1096,7 @@ async def generate_questions_ia(request):
         if not api_keys and getattr(cfg_module, "GEMINI_API_KEY", ""):
             api_keys = [cfg_module.GEMINI_API_KEY]
         if not api_keys:
-            return web.json_response({"success": False, "error": "Clé API Gemini non configurée dans .env"}, status=500)
+            return web.json_response({"success": False, "error": "ClÃ© API Gemini non configurÃ©e dans .env"}, status=500)
 
         # Find reference text from transcript JSON file
         transcripts_path = 'dashboard/transcripts.json'
@@ -1132,10 +1132,10 @@ async def generate_questions_ia(request):
                         for b in blocks:
                             text = b.get('explanation') or b.get('search_text') or ""
                             if text:
-                                content_parts.append(f"--- {b.get('title', 'محور')} ---\n{text}")
+                                content_parts.append(f"--- {b.get('title', 'Ù…Ø­ÙˆØ±')} ---\n{text}")
                         chapter_content = "\n\n".join(content_parts)
                         if not theme:
-                            theme = "الدرس كاملاً"
+                            theme = "Ø§Ù„Ø¯Ø±Ø³ ÙƒØ§Ù…Ù„Ø§Ù‹"
 
         # Construct specialized prompts based on subject
         subj_clean = subject.lower().strip()
@@ -1143,7 +1143,7 @@ async def generate_questions_ia(request):
         # Dynamic strategy instructions
         strategy_instr = ""
         if strategy == "specific" and specific_subtheme:
-            strategy_instr = f"يجب أن تكون جميع الأسئلة المولدة مستهدفة بدقة للمحور الفرعي التالي حصراً: \"{specific_subtheme}\" ويجب تعيين قيمة الحقل sub_theme لكل سؤال إلى \"{specific_subtheme}\" تماماً."
+            strategy_instr = f"ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ù…ÙˆÙ„Ø¯Ø© Ù…Ø³ØªÙ‡Ø¯ÙØ© Ø¨Ø¯Ù‚Ø© Ù„Ù„Ù…Ø­ÙˆØ± Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„ØªØ§Ù„ÙŠ Ø­ØµØ±Ø§Ù‹: \"{specific_subtheme}\" ÙˆÙŠØ¬Ø¨ ØªØ¹ÙŠÙŠÙ† Ù‚ÙŠÙ…Ø© Ø§Ù„Ø­Ù‚Ù„ sub_theme Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„ Ø¥Ù„Ù‰ \"{specific_subtheme}\" ØªÙ…Ø§Ù…Ø§Ù‹."
         else:
             # Smart balanced strategy: prioritize axes with fewest existing questions
             if all_course_subthemes:
@@ -1163,187 +1163,187 @@ async def generate_questions_ia(request):
                                     axe_counts[_row[0]] = _row[1]
                     # Sort: axes with fewest questions first (0 = highest priority)
                     sorted_subthemes = sorted(all_course_subthemes, key=lambda st: axe_counts.get(st, 0))
-                    counts_info = [f'"{st}" ({axe_counts.get(st, 0)} أسئلة)' for st in sorted_subthemes]
-                    subthemes_list_str = "، ".join(counts_info)
+                    counts_info = [f'"{st}" ({axe_counts.get(st, 0)} Ø£Ø³Ø¦Ù„Ø©)' for st in sorted_subthemes]
+                    subthemes_list_str = "ØŒ ".join(counts_info)
                     strategy_instr = (
-                        f"يجب توزيع الأسئلة الـ {num_questions} بشكل ذكي ومتوازن على المحاور الفرعية التالية لهذا الدرس، "
-                        f"مع الأولوية للمحاور التي تمتلك أقل عدد من الأسئلة حالياً في قاعدة البيانات (تُذكر الأعداد الحالية للإرشاد فقط): "
-                        f"[{subthemes_list_str}]. تأكد من تعيين sub_theme لكل سؤال بالمحور الفرعي المناسب له بالضبط."
+                        f"ÙŠØ¬Ø¨ ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ù€ {num_questions} Ø¨Ø´ÙƒÙ„ Ø°ÙƒÙŠ ÙˆÙ…ØªÙˆØ§Ø²Ù† Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„ÙØ±Ø¹ÙŠØ© Ø§Ù„ØªØ§Ù„ÙŠØ© Ù„Ù‡Ø°Ø§ Ø§Ù„Ø¯Ø±Ø³ØŒ "
+                        f"Ù…Ø¹ Ø§Ù„Ø£ÙˆÙ„ÙˆÙŠØ© Ù„Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„ØªÙŠ ØªÙ…ØªÙ„Ùƒ Ø£Ù‚Ù„ Ø¹Ø¯Ø¯ Ù…Ù† Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø­Ø§Ù„ÙŠØ§Ù‹ ÙÙŠ Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª (ØªÙØ°ÙƒØ± Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø­Ø§Ù„ÙŠØ© Ù„Ù„Ø¥Ø±Ø´Ø§Ø¯ ÙÙ‚Ø·): "
+                        f"[{subthemes_list_str}]. ØªØ£ÙƒØ¯ Ù…Ù† ØªØ¹ÙŠÙŠÙ† sub_theme Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„ Ø¨Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„Ù…Ù†Ø§Ø³Ø¨ Ù„Ù‡ Ø¨Ø§Ù„Ø¶Ø¨Ø·."
                     )
                 except Exception as _ex:
                     logger.warning(f"Could not fetch axe counts for smart distribution: {_ex}")
-                    subthemes_list_str = "، ".join([f'"{st}"' for st in all_course_subthemes])
-                    strategy_instr = f"يجب توزيع الأسئلة الـ {num_questions} بشكل متوازن لتغطية أكبر قدر ممكن من المحاور الفرعية التالية: [{subthemes_list_str}]. تأكد أن تعين لكل سؤال المحور الفرعي المناسب له من القائمة في حقل sub_theme."
+                    subthemes_list_str = "ØŒ ".join([f'"{st}"' for st in all_course_subthemes])
+                    strategy_instr = f"ÙŠØ¬Ø¨ ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ù€ {num_questions} Ø¨Ø´ÙƒÙ„ Ù…ØªÙˆØ§Ø²Ù† Ù„ØªØºØ·ÙŠØ© Ø£ÙƒØ¨Ø± Ù‚Ø¯Ø± Ù…Ù…ÙƒÙ† Ù…Ù† Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„ÙØ±Ø¹ÙŠØ© Ø§Ù„ØªØ§Ù„ÙŠØ©: [{subthemes_list_str}]. ØªØ£ÙƒØ¯ Ø£Ù† ØªØ¹ÙŠÙ† Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„ Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„Ù…Ù†Ø§Ø³Ø¨ Ù„Ù‡ Ù…Ù† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© ÙÙŠ Ø­Ù‚Ù„ sub_theme."
             else:
-                strategy_instr = "قم بتوزيع الأسئلة لتغطي جزئيات فرعية متنوعة ومختلفة من الدرس، وعيّن قيمة sub_theme بشكل معبر لكل سؤال."
+                strategy_instr = "Ù‚Ù… Ø¨ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ù„ØªØºØ·ÙŠ Ø¬Ø²Ø¦ÙŠØ§Øª ÙØ±Ø¹ÙŠØ© Ù…ØªÙ†ÙˆØ¹Ø© ÙˆÙ…Ø®ØªÙ„ÙØ© Ù…Ù† Ø§Ù„Ø¯Ø±Ø³ØŒ ÙˆØ¹ÙŠÙ‘Ù† Ù‚ÙŠÙ…Ø© sub_theme Ø¨Ø´ÙƒÙ„ Ù…Ø¹Ø¨Ø± Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„."
 
-        if subj_clean in ("fiqh", "الفقه"):
-            prompt = f"""أنت خبير في الفقه الإسلامي (المذهب المالكي) ومصمم اختبارات تعليمية.
-قم بتوليد {num_questions} أسئلة اختيار من متعدد (QCM) باللغة العربية الفصحى.
+        if subj_clean in ("fiqh", "Ø§Ù„ÙÙ‚Ù‡"):
+            prompt = f"""Ø£Ù†Øª Ø®Ø¨ÙŠØ± ÙÙŠ Ø§Ù„ÙÙ‚Ù‡ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ÙŠ (Ø§Ù„Ù…Ø°Ù‡Ø¨ Ø§Ù„Ù…Ø§Ù„ÙƒÙŠ) ÙˆÙ…ØµÙ…Ù… Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ØªØ¹Ù„ÙŠÙ…ÙŠØ©.
+Ù‚Ù… Ø¨ØªÙˆÙ„ÙŠØ¯ {num_questions} Ø£Ø³Ø¦Ù„Ø© Ø§Ø®ØªÙŠØ§Ø± Ù…Ù† Ù…ØªØ¹Ø¯Ø¯ (QCM) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© Ø§Ù„ÙØµØ­Ù‰.
 
-المادة: الفقه الإسلامي
-رقم الدرس: {lesson_num}
-اسم الدرس: {course_name or f'الدرس {lesson_num}'}
-الموضوع/المحور النشط: {theme or 'عام'}
-النص المرجعي للدرس:
-{chapter_content or 'لا يوجد نص مرجعي - اعتمد على معرفتك العامة بالمادة'}
+Ø§Ù„Ù…Ø§Ø¯Ø©: Ø§Ù„ÙÙ‚Ù‡ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ÙŠ
+Ø±Ù‚Ù… Ø§Ù„Ø¯Ø±Ø³: {lesson_num}
+Ø§Ø³Ù… Ø§Ù„Ø¯Ø±Ø³: {course_name or f'Ø§Ù„Ø¯Ø±Ø³ {lesson_num}'}
+Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹/Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ù†Ø´Ø·: {theme or 'Ø¹Ø§Ù…'}
+Ø§Ù„Ù†Øµ Ø§Ù„Ù…Ø±Ø¬Ø¹ÙŠ Ù„Ù„Ø¯Ø±Ø³:
+{chapter_content or 'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Øµ Ù…Ø±Ø¬Ø¹ÙŠ - Ø§Ø¹ØªÙ…Ø¯ Ø¹Ù„Ù‰ Ù…Ø¹Ø±ÙØªÙƒ Ø§Ù„Ø¹Ø§Ù…Ø© Ø¨Ø§Ù„Ù…Ø§Ø¯Ø©'}
 
-التعليمات الإضافية:
-{instructions if instructions else 'لا توجد تعليمات خاصة'}
+Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ø¥Ø¶Ø§ÙÙŠØ©:
+{instructions if instructions else 'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø®Ø§ØµØ©'}
 
-إستراتيجية التوزيع المستهدفة:
+Ø¥Ø³ØªØ±Ø§ØªÙŠØ¬ÙŠØ© Ø§Ù„ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ©:
 {strategy_instr}
 
-شروط صارمة للتوليد:
-1. كل سؤال يحتوي على 4 خيارات (أ ب ج د) باللغة العربية.
-2. إجابة صحيحة واحدة فقط.
-3. أضف شرحاً علمياً موجزاً ودقيقاً لكل سؤال يوضح سبب صحة الخيار المختار.
-4. **حقل الـ theme (المحور العام للدرس)**: يجب أن يحدد بدقة أحد المحاور التسعة التالية حصراً ليكون متوافقاً مع المنصة (اختر الأكثر ملاءمة لموضوع السؤال):
-[فرائض الصلاة، شروط الصلاة، سنن الصلاة، مندوبات الصلاة، مكروهات ومبطلات الصلاة، صلاة الجمعة، سجود السهو، فرض عين / فرض كفاية، شروط الإمام]
-5. **حقل الـ sub_theme (الجزئية الدقيقة / العنوان الفرعي الخاص)**: يجب أن يحدد بدقة اسم الشرط أو الفرض أو الجزئية المحددة التي يدور حولها السؤال من النص المرجعي (مثال: "ستر العورة"، "استقبال القبلة"، "طهارة الحدث"، "النية"، "تكبيرة الإحرام"...). لا تتركه فارغاً ولا تكرره كاسم المحور العام نفسه.
+Ø´Ø±ÙˆØ· ØµØ§Ø±Ù…Ø© Ù„Ù„ØªÙˆÙ„ÙŠØ¯:
+1. ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ 4 Ø®ÙŠØ§Ø±Ø§Øª (Ø£ Ø¨ Ø¬ Ø¯) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©.
+2. Ø¥Ø¬Ø§Ø¨Ø© ØµØ­ÙŠØ­Ø© ÙˆØ§Ø­Ø¯Ø© ÙÙ‚Ø·.
+3. Ø£Ø¶Ù Ø´Ø±Ø­Ø§Ù‹ Ø¹Ù„Ù…ÙŠØ§Ù‹ Ù…ÙˆØ¬Ø²Ø§Ù‹ ÙˆØ¯Ù‚ÙŠÙ‚Ø§Ù‹ Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠÙˆØ¶Ø­ Ø³Ø¨Ø¨ ØµØ­Ø© Ø§Ù„Ø®ÙŠØ§Ø± Ø§Ù„Ù…Ø®ØªØ§Ø±.
+4. **Ø­Ù‚Ù„ Ø§Ù„Ù€ theme (Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù… Ù„Ù„Ø¯Ø±Ø³)**: ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ­Ø¯Ø¯ Ø¨Ø¯Ù‚Ø© Ø£Ø­Ø¯ Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„ØªØ³Ø¹Ø© Ø§Ù„ØªØ§Ù„ÙŠØ© Ø­ØµØ±Ø§Ù‹ Ù„ÙŠÙƒÙˆÙ† Ù…ØªÙˆØ§ÙÙ‚Ø§Ù‹ Ù…Ø¹ Ø§Ù„Ù…Ù†ØµØ© (Ø§Ø®ØªØ± Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ù„Ø§Ø¡Ù…Ø© Ù„Ù…ÙˆØ¶ÙˆØ¹ Ø§Ù„Ø³Ø¤Ø§Ù„):
+[ÙØ±Ø§Ø¦Ø¶ Ø§Ù„ØµÙ„Ø§Ø©ØŒ Ø´Ø±ÙˆØ· Ø§Ù„ØµÙ„Ø§Ø©ØŒ Ø³Ù†Ù† Ø§Ù„ØµÙ„Ø§Ø©ØŒ Ù…Ù†Ø¯ÙˆØ¨Ø§Øª Ø§Ù„ØµÙ„Ø§Ø©ØŒ Ù…ÙƒØ±ÙˆÙ‡Ø§Øª ÙˆÙ…Ø¨Ø·Ù„Ø§Øª Ø§Ù„ØµÙ„Ø§Ø©ØŒ ØµÙ„Ø§Ø© Ø§Ù„Ø¬Ù…Ø¹Ø©ØŒ Ø³Ø¬ÙˆØ¯ Ø§Ù„Ø³Ù‡ÙˆØŒ ÙØ±Ø¶ Ø¹ÙŠÙ† / ÙØ±Ø¶ ÙƒÙØ§ÙŠØ©ØŒ Ø´Ø±ÙˆØ· Ø§Ù„Ø¥Ù…Ø§Ù…]
+5. **Ø­Ù‚Ù„ Ø§Ù„Ù€ sub_theme (Ø§Ù„Ø¬Ø²Ø¦ÙŠØ© Ø§Ù„Ø¯Ù‚ÙŠÙ‚Ø© / Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„Ø®Ø§Øµ)**: ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ­Ø¯Ø¯ Ø¨Ø¯Ù‚Ø© Ø§Ø³Ù… Ø§Ù„Ø´Ø±Ø· Ø£Ùˆ Ø§Ù„ÙØ±Ø¶ Ø£Ùˆ Ø§Ù„Ø¬Ø²Ø¦ÙŠØ© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø© Ø§Ù„ØªÙŠ ÙŠØ¯ÙˆØ± Ø­ÙˆÙ„Ù‡Ø§ Ø§Ù„Ø³Ø¤Ø§Ù„ Ù…Ù† Ø§Ù„Ù†Øµ Ø§Ù„Ù…Ø±Ø¬Ø¹ÙŠ (Ù…Ø«Ø§Ù„: "Ø³ØªØ± Ø§Ù„Ø¹ÙˆØ±Ø©"ØŒ "Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ Ø§Ù„Ù‚Ø¨Ù„Ø©"ØŒ "Ø·Ù‡Ø§Ø±Ø© Ø§Ù„Ø­Ø¯Ø«"ØŒ "Ø§Ù„Ù†ÙŠØ©"ØŒ "ØªÙƒØ¨ÙŠØ±Ø© Ø§Ù„Ø¥Ø­Ø±Ø§Ù…"...). Ù„Ø§ ØªØªØ±ÙƒÙ‡ ÙØ§Ø±ØºØ§Ù‹ ÙˆÙ„Ø§ ØªÙƒØ±Ø±Ù‡ ÙƒØ§Ø³Ù… Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù… Ù†ÙØ³Ù‡.
 
-أعد النتيجة كـ JSON فقط (مصفوفة) بالشكل التالي بدون أي نص إضافي:
+Ø£Ø¹Ø¯ Ø§Ù„Ù†ØªÙŠØ¬Ø© ÙƒÙ€ JSON ÙÙ‚Ø· (Ù…ØµÙÙˆÙØ©) Ø¨Ø§Ù„Ø´ÙƒÙ„ Ø§Ù„ØªØ§Ù„ÙŠ Ø¨Ø¯ÙˆÙ† Ø£ÙŠ Ù†Øµ Ø¥Ø¶Ø§ÙÙŠ:
 [
   {{
-    "question": "نص السؤال الفقهي الدقيق",
-    "choice_a": "الخيار أ",
-    "choice_b": "الخيار ب",
-    "choice_c": "الخيار ج",
-    "choice_d": "الخيار د",
+    "question": "Ù†Øµ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„ÙÙ‚Ù‡ÙŠ Ø§Ù„Ø¯Ù‚ÙŠÙ‚",
+    "choice_a": "Ø§Ù„Ø®ÙŠØ§Ø± Ø£",
+    "choice_b": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¨",
+    "choice_c": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¬",
+    "choice_d": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¯",
     "correct_answer": "a",
-    "explanation": "شرح الإجابة الفقهية بالتفصيل",
-    "theme": "شروط الصلاة",
-    "sub_theme": "ستر العورة"
+    "explanation": "Ø´Ø±Ø­ Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø© Ø§Ù„ÙÙ‚Ù‡ÙŠØ© Ø¨Ø§Ù„ØªÙØµÙŠÙ„",
+    "theme": "Ø´Ø±ÙˆØ· Ø§Ù„ØµÙ„Ø§Ø©",
+    "sub_theme": "Ø³ØªØ± Ø§Ù„Ø¹ÙˆØ±Ø©"
   }}
 ]"""
-        elif subj_clean in ("sira", "السيرة"):
-            prompt = f"""أنت خبير في السيرة النبوية ومصمم اختبارات تعليمية.
-قم بتوليد {num_questions} أسئلة اختيار من متعدد (QCM) باللغة العربية الفصحى.
+        elif subj_clean in ("sira", "Ø§Ù„Ø³ÙŠØ±Ø©"):
+            prompt = f"""Ø£Ù†Øª Ø®Ø¨ÙŠØ± ÙÙŠ Ø§Ù„Ø³ÙŠØ±Ø© Ø§Ù„Ù†Ø¨ÙˆÙŠØ© ÙˆÙ…ØµÙ…Ù… Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ØªØ¹Ù„ÙŠÙ…ÙŠØ©.
+Ù‚Ù… Ø¨ØªÙˆÙ„ÙŠØ¯ {num_questions} Ø£Ø³Ø¦Ù„Ø© Ø§Ø®ØªÙŠØ§Ø± Ù…Ù† Ù…ØªØ¹Ø¯Ø¯ (QCM) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© Ø§Ù„ÙØµØ­Ù‰.
 
-المادة: السيرة النبوية
-رقم الدرس: {lesson_num}
-اسم الدرس: {course_name or f'الدرس {lesson_num}'}
-الموضوع/المحور النشط: {theme or 'عام'}
-النص المرجعي للدرس:
-{chapter_content or 'لا يوجد نص مرجعي - اعتمد على معرفتك العامة بالمادة'}
+Ø§Ù„Ù…Ø§Ø¯Ø©: Ø§Ù„Ø³ÙŠØ±Ø© Ø§Ù„Ù†Ø¨ÙˆÙŠØ©
+Ø±Ù‚Ù… Ø§Ù„Ø¯Ø±Ø³: {lesson_num}
+Ø§Ø³Ù… Ø§Ù„Ø¯Ø±Ø³: {course_name or f'Ø§Ù„Ø¯Ø±Ø³ {lesson_num}'}
+Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹/Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ù†Ø´Ø·: {theme or 'Ø¹Ø§Ù…'}
+Ø§Ù„Ù†Øµ Ø§Ù„Ù…Ø±Ø¬Ø¹ÙŠ Ù„Ù„Ø¯Ø±Ø³:
+{chapter_content or 'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Øµ Ù…Ø±Ø¬Ø¹ÙŠ - Ø§Ø¹ØªÙ…Ø¯ Ø¹Ù„Ù‰ Ù…Ø¹Ø±ÙØªÙƒ Ø§Ù„Ø¹Ø§Ù…Ø© Ø¨Ø§Ù„Ù…Ø§Ø¯Ø©'}
 
-التعليمات الإضافية:
-{instructions if instructions else 'لا توجد تعليمات خاصة'}
+Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ø¥Ø¶Ø§ÙÙŠØ©:
+{instructions if instructions else 'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø®Ø§ØµØ©'}
 
-إستراتيجية التوزيع المستهدفة:
+Ø¥Ø³ØªØ±Ø§ØªÙŠØ¬ÙŠØ© Ø§Ù„ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ©:
 {strategy_instr}
 
-شروط صارمة للتوليد:
-1. كل سؤال يحتوي على 4 خيارات (أ ب ج د) باللغة العربية.
-2. إجابة صحيحة واحدة فقط.
-3. أضف شرحاً علمياً موجزاً ودقيقاً لكل سؤال يوضح سبب صحة الخيار المختار.
-4. **حقل الـ theme (المحور الرئيسي)**: يجب أن يحدد بدقة أحد المحاور الستة التالية حصراً ليكون متوافقاً مع المنصة:
-[الغزوات والسرايا، بيت النبوة والحياة الشخصية، العبادات والمعاملات والتشريعات، الصحابة والمجتمع المدني، العهود والوفود والعلاقات الخارجية، الشمائل والأخلاق النبوية]
-5. **حقل الـ sub_theme (الجزئية الدقيقة / العنوان الفرعي الخاص)**: يجب أن يحدد بدقة الحدث أو المفهوم الفرعي المحدد للسؤال من النص المرجعي (مثال: "غزوة بدر الكبرى"، "وفاة زينب بنت خزيمة"، "تحويل القبلة"...). لا تتركه فارغاً.
-6. **حقل الـ hijra_year (السنة الهجرية)**: حدد السنة الهجرية التي وقع فيها هذا الحدث بدقة كعدد صحيح (إنتجر) (مثال: 2 لغزوة بدر، 3 لغزوة أحد، 9 لغزوة تبوك). إذا لم يكن للسؤال تاريخ هجري محدد ضع null.
+Ø´Ø±ÙˆØ· ØµØ§Ø±Ù…Ø© Ù„Ù„ØªÙˆÙ„ÙŠØ¯:
+1. ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ 4 Ø®ÙŠØ§Ø±Ø§Øª (Ø£ Ø¨ Ø¬ Ø¯) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©.
+2. Ø¥Ø¬Ø§Ø¨Ø© ØµØ­ÙŠØ­Ø© ÙˆØ§Ø­Ø¯Ø© ÙÙ‚Ø·.
+3. Ø£Ø¶Ù Ø´Ø±Ø­Ø§Ù‹ Ø¹Ù„Ù…ÙŠØ§Ù‹ Ù…ÙˆØ¬Ø²Ø§Ù‹ ÙˆØ¯Ù‚ÙŠÙ‚Ø§Ù‹ Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠÙˆØ¶Ø­ Ø³Ø¨Ø¨ ØµØ­Ø© Ø§Ù„Ø®ÙŠØ§Ø± Ø§Ù„Ù…Ø®ØªØ§Ø±.
+4. **Ø­Ù‚Ù„ Ø§Ù„Ù€ theme (Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ)**: ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ­Ø¯Ø¯ Ø¨Ø¯Ù‚Ø© Ø£Ø­Ø¯ Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„Ø³ØªØ© Ø§Ù„ØªØ§Ù„ÙŠØ© Ø­ØµØ±Ø§Ù‹ Ù„ÙŠÙƒÙˆÙ† Ù…ØªÙˆØ§ÙÙ‚Ø§Ù‹ Ù…Ø¹ Ø§Ù„Ù…Ù†ØµØ©:
+[Ø§Ù„ØºØ²ÙˆØ§Øª ÙˆØ§Ù„Ø³Ø±Ø§ÙŠØ§ØŒ Ø¨ÙŠØª Ø§Ù„Ù†Ø¨ÙˆØ© ÙˆØ§Ù„Ø­ÙŠØ§Ø© Ø§Ù„Ø´Ø®ØµÙŠØ©ØŒ Ø§Ù„Ø¹Ø¨Ø§Ø¯Ø§Øª ÙˆØ§Ù„Ù…Ø¹Ø§Ù…Ù„Ø§Øª ÙˆØ§Ù„ØªØ´Ø±ÙŠØ¹Ø§ØªØŒ Ø§Ù„ØµØ­Ø§Ø¨Ø© ÙˆØ§Ù„Ù…Ø¬ØªÙ…Ø¹ Ø§Ù„Ù…Ø¯Ù†ÙŠØŒ Ø§Ù„Ø¹Ù‡ÙˆØ¯ ÙˆØ§Ù„ÙˆÙÙˆØ¯ ÙˆØ§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ø§Ù„Ø®Ø§Ø±Ø¬ÙŠØ©ØŒ Ø§Ù„Ø´Ù…Ø§Ø¦Ù„ ÙˆØ§Ù„Ø£Ø®Ù„Ø§Ù‚ Ø§Ù„Ù†Ø¨ÙˆÙŠØ©]
+5. **Ø­Ù‚Ù„ Ø§Ù„Ù€ sub_theme (Ø§Ù„Ø¬Ø²Ø¦ÙŠØ© Ø§Ù„Ø¯Ù‚ÙŠÙ‚Ø© / Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„Ø®Ø§Øµ)**: ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ­Ø¯Ø¯ Ø¨Ø¯Ù‚Ø© Ø§Ù„Ø­Ø¯Ø« Ø£Ùˆ Ø§Ù„Ù…ÙÙ‡ÙˆÙ… Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„Ù…Ø­Ø¯Ø¯ Ù„Ù„Ø³Ø¤Ø§Ù„ Ù…Ù† Ø§Ù„Ù†Øµ Ø§Ù„Ù…Ø±Ø¬Ø¹ÙŠ (Ù…Ø«Ø§Ù„: "ØºØ²ÙˆØ© Ø¨Ø¯Ø± Ø§Ù„ÙƒØ¨Ø±Ù‰"ØŒ "ÙˆÙØ§Ø© Ø²ÙŠÙ†Ø¨ Ø¨Ù†Øª Ø®Ø²ÙŠÙ…Ø©"ØŒ "ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ù‚Ø¨Ù„Ø©"...). Ù„Ø§ ØªØªØ±ÙƒÙ‡ ÙØ§Ø±ØºØ§Ù‹.
+6. **Ø­Ù‚Ù„ Ø§Ù„Ù€ hijra_year (Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ù‡Ø¬Ø±ÙŠØ©)**: Ø­Ø¯Ø¯ Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ù‡Ø¬Ø±ÙŠØ© Ø§Ù„ØªÙŠ ÙˆÙ‚Ø¹ ÙÙŠÙ‡Ø§ Ù‡Ø°Ø§ Ø§Ù„Ø­Ø¯Ø« Ø¨Ø¯Ù‚Ø© ÙƒØ¹Ø¯Ø¯ ØµØ­ÙŠØ­ (Ø¥Ù†ØªØ¬Ø±) (Ù…Ø«Ø§Ù„: 2 Ù„ØºØ²ÙˆØ© Ø¨Ø¯Ø±ØŒ 3 Ù„ØºØ²ÙˆØ© Ø£Ø­Ø¯ØŒ 9 Ù„ØºØ²ÙˆØ© ØªØ¨ÙˆÙƒ). Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Ù„Ù„Ø³Ø¤Ø§Ù„ ØªØ§Ø±ÙŠØ® Ù‡Ø¬Ø±ÙŠ Ù…Ø­Ø¯Ø¯ Ø¶Ø¹ null.
 
-أعد النتيجة كـ JSON فقط (مصفوفة) بالشكل التالي بدون أي نص إضافي:
+Ø£Ø¹Ø¯ Ø§Ù„Ù†ØªÙŠØ¬Ø© ÙƒÙ€ JSON ÙÙ‚Ø· (Ù…ØµÙÙˆÙØ©) Ø¨Ø§Ù„Ø´ÙƒÙ„ Ø§Ù„ØªØ§Ù„ÙŠ Ø¨Ø¯ÙˆÙ† Ø£ÙŠ Ù†Øµ Ø¥Ø¶Ø§ÙÙŠ:
 [
   {{
-    "question": "نص السؤال التاريخي الدقيق",
-    "choice_a": "الخيار أ",
-    "choice_b": "الخيار ب",
-    "choice_c": "الخيار ج",
-    "choice_d": "الخيار د",
+    "question": "Ù†Øµ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„ØªØ§Ø±ÙŠØ®ÙŠ Ø§Ù„Ø¯Ù‚ÙŠÙ‚",
+    "choice_a": "Ø§Ù„Ø®ÙŠØ§Ø± Ø£",
+    "choice_b": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¨",
+    "choice_c": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¬",
+    "choice_d": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¯",
     "correct_answer": "a",
-    "explanation": "شرح الإجابة التاريخية بالتفصيل",
-    "theme": "الغزوات والسرايا",
-    "sub_theme": "غزوة بدر الكبرى",
+    "explanation": "Ø´Ø±Ø­ Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø© Ø§Ù„ØªØ§Ø±ÙŠØ®ÙŠØ© Ø¨Ø§Ù„ØªÙØµÙŠÙ„",
+    "theme": "Ø§Ù„ØºØ²ÙˆØ§Øª ÙˆØ§Ù„Ø³Ø±Ø§ÙŠØ§",
+    "sub_theme": "ØºØ²ÙˆØ© Ø¨Ø¯Ø± Ø§Ù„ÙƒØ¨Ø±Ù‰",
     "hijra_year": 2
   }}
 ]"""
-        elif subj_clean in ("nahw", "النحو"):
-            calculated_theme = "باب المرفوعات"
+        elif subj_clean in ("nahw", "Ø§Ù„Ù†Ø­Ùˆ"):
+            calculated_theme = "Ø¨Ø§Ø¨ Ø§Ù„Ù…Ø±ÙÙˆØ¹Ø§Øª"
             try:
                 l_num = int(lesson_num)
                 if l_num == 14:
-                    calculated_theme = "باب النكرة والمعرفة"
+                    calculated_theme = "Ø¨Ø§Ø¨ Ø§Ù„Ù†ÙƒØ±Ø© ÙˆØ§Ù„Ù…Ø¹Ø±ÙØ©"
                 elif l_num == 21:
                     # Check active theme or block name
-                    if theme and "المفعول" in theme:
-                        calculated_theme = "باب المنصوبات"
+                    if theme and "Ø§Ù„Ù…ÙØ¹ÙˆÙ„" in theme:
+                        calculated_theme = "Ø¨Ø§Ø¨ Ø§Ù„Ù…Ù†ØµÙˆØ¨Ø§Øª"
                     else:
-                        calculated_theme = "باب المرفوعات"
+                        calculated_theme = "Ø¨Ø§Ø¨ Ø§Ù„Ù…Ø±ÙÙˆØ¹Ø§Øª"
                 elif l_num > 21:
-                    calculated_theme = "باب المنصوبات"
+                    calculated_theme = "Ø¨Ø§Ø¨ Ø§Ù„Ù…Ù†ØµÙˆØ¨Ø§Øª"
             except:
                 pass
 
-            prompt = f"""أنت خبير في النحو العربي ومصمم اختبارات تعليمية.
-قم بتوليد {num_questions} أسئلة اختيار من متعدد (QCM) باللغة العربية الفصحى.
+            prompt = f"""Ø£Ù†Øª Ø®Ø¨ÙŠØ± ÙÙŠ Ø§Ù„Ù†Ø­Ùˆ Ø§Ù„Ø¹Ø±Ø¨ÙŠ ÙˆÙ…ØµÙ…Ù… Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ØªØ¹Ù„ÙŠÙ…ÙŠØ©.
+Ù‚Ù… Ø¨ØªÙˆÙ„ÙŠØ¯ {num_questions} Ø£Ø³Ø¦Ù„Ø© Ø§Ø®ØªÙŠØ§Ø± Ù…Ù† Ù…ØªØ¹Ø¯Ø¯ (QCM) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© Ø§Ù„ÙØµØ­Ù‰.
 
-المادة: النحو
-رقم الدرس: {lesson_num}
-اسم الدرس: {course_name or f'الدرس {lesson_num}'}
-الموضوع/المحور النشط: {theme or 'عام'}
-النص المرجعي للدرس:
-{chapter_content or 'لا يوجد نص مرجعي - اعتمد على معرفتك العامة بالمادة'}
+Ø§Ù„Ù…Ø§Ø¯Ø©: Ø§Ù„Ù†Ø­Ùˆ
+Ø±Ù‚Ù… Ø§Ù„Ø¯Ø±Ø³: {lesson_num}
+Ø§Ø³Ù… Ø§Ù„Ø¯Ø±Ø³: {course_name or f'Ø§Ù„Ø¯Ø±Ø³ {lesson_num}'}
+Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹/Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ù†Ø´Ø·: {theme or 'Ø¹Ø§Ù…'}
+Ø§Ù„Ù†Øµ Ø§Ù„Ù…Ø±Ø¬Ø¹ÙŠ Ù„Ù„Ø¯Ø±Ø³:
+{chapter_content or 'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Øµ Ù…Ø±Ø¬Ø¹ÙŠ - Ø§Ø¹ØªÙ…Ø¯ Ø¹Ù„Ù‰ Ù…Ø¹Ø±ÙØªÙƒ Ø§Ù„Ø¹Ø§Ù…Ø© Ø¨Ø§Ù„Ù…Ø§Ø¯Ø©'}
 
-شروط صارمة للتوليد:
-1. كل سؤال يحتوي على 4 خيارات (أ ب ج د) باللغة العربية.
-2. إجابة صحيحة واحدة فقط.
-3. أضف شرحاً علمياً موجزاً ودقيقاً لكل سؤال يوضح سبب صحة الخيار المختار.
-4. **حقل الـ theme (المحور العام)**: يجب أن يحدد بدقة القيمة التالية ليكون متوافقاً مع المنصة:
+Ø´Ø±ÙˆØ· ØµØ§Ø±Ù…Ø© Ù„Ù„ØªÙˆÙ„ÙŠØ¯:
+1. ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ 4 Ø®ÙŠØ§Ø±Ø§Øª (Ø£ Ø¨ Ø¬ Ø¯) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©.
+2. Ø¥Ø¬Ø§Ø¨Ø© ØµØ­ÙŠØ­Ø© ÙˆØ§Ø­Ø¯Ø© ÙÙ‚Ø·.
+3. Ø£Ø¶Ù Ø´Ø±Ø­Ø§Ù‹ Ø¹Ù„Ù…ÙŠØ§Ù‹ Ù…ÙˆØ¬Ø²Ø§Ù‹ ÙˆØ¯Ù‚ÙŠÙ‚Ø§Ù‹ Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠÙˆØ¶Ø­ Ø³Ø¨Ø¨ ØµØ­Ø© Ø§Ù„Ø®ÙŠØ§Ø± Ø§Ù„Ù…Ø®ØªØ§Ø±.
+4. **Ø­Ù‚Ù„ Ø§Ù„Ù€ theme (Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù…)**: ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ­Ø¯Ø¯ Ø¨Ø¯Ù‚Ø© Ø§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„ØªØ§Ù„ÙŠØ© Ù„ÙŠÙƒÙˆÙ† Ù…ØªÙˆØ§ÙÙ‚Ø§Ù‹ Ù…Ø¹ Ø§Ù„Ù…Ù†ØµØ©:
 "{calculated_theme}"
-5. **حقل الـ sub_theme (الجزئية الدقيقة / العنوان الفرعي الخاص)**: يجب أن يطابق بدقة الجزئية الدقيقة النحوية التي يدور حولها السؤال من القائمة التالية بناءً على المحور العام:
-- إذا كان المحور العام "باب النكرة والمعرفة"، اختر أحد الخيارين: ["الاسم الموصول وصلته"، "المعرّف بأداة"]
-- إذا كان المحور العام "باب المرفوعات"، اختر أحد الخيارات النحوية التالية:
-  ["الفاعل"، "المفعول الذي لم يسم فاعله"، "المبتدأ والخبر"، "العوامل - كان وأخواتها"، "العوامل - الحروف المشبهة بـ \"ليس\""، "العوامل - أفعال المقاربة"، "العوامل - إنّ وأخواتها"، "العوامل - لا النافية للجنس"، "العوامل - ظنّ وأخواتها"]
-- إذا كان المحور العام "باب المنصوبات"، اختر: ["المفعول به"]
+5. **Ø­Ù‚Ù„ Ø§Ù„Ù€ sub_theme (Ø§Ù„Ø¬Ø²Ø¦ÙŠØ© Ø§Ù„Ø¯Ù‚ÙŠÙ‚Ø© / Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ÙØ±Ø¹ÙŠ Ø§Ù„Ø®Ø§Øµ)**: ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ·Ø§Ø¨Ù‚ Ø¨Ø¯Ù‚Ø© Ø§Ù„Ø¬Ø²Ø¦ÙŠØ© Ø§Ù„Ø¯Ù‚ÙŠÙ‚Ø© Ø§Ù„Ù†Ø­ÙˆÙŠØ© Ø§Ù„ØªÙŠ ÙŠØ¯ÙˆØ± Ø­ÙˆÙ„Ù‡Ø§ Ø§Ù„Ø³Ø¤Ø§Ù„ Ù…Ù† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„ØªØ§Ù„ÙŠØ© Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù…:
+- Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù… "Ø¨Ø§Ø¨ Ø§Ù„Ù†ÙƒØ±Ø© ÙˆØ§Ù„Ù…Ø¹Ø±ÙØ©"ØŒ Ø§Ø®ØªØ± Ø£Ø­Ø¯ Ø§Ù„Ø®ÙŠØ§Ø±ÙŠÙ†: ["Ø§Ù„Ø§Ø³Ù… Ø§Ù„Ù…ÙˆØµÙˆÙ„ ÙˆØµÙ„ØªÙ‡"ØŒ "Ø§Ù„Ù…Ø¹Ø±Ù‘Ù Ø¨Ø£Ø¯Ø§Ø©"]
+- Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù… "Ø¨Ø§Ø¨ Ø§Ù„Ù…Ø±ÙÙˆØ¹Ø§Øª"ØŒ Ø§Ø®ØªØ± Ø£Ø­Ø¯ Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ù†Ø­ÙˆÙŠØ© Ø§Ù„ØªØ§Ù„ÙŠØ©:
+  ["Ø§Ù„ÙØ§Ø¹Ù„"ØŒ "Ø§Ù„Ù…ÙØ¹ÙˆÙ„ Ø§Ù„Ø°ÙŠ Ù„Ù… ÙŠØ³Ù… ÙØ§Ø¹Ù„Ù‡"ØŒ "Ø§Ù„Ù…Ø¨ØªØ¯Ø£ ÙˆØ§Ù„Ø®Ø¨Ø±"ØŒ "Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ - ÙƒØ§Ù† ÙˆØ£Ø®ÙˆØ§ØªÙ‡Ø§"ØŒ "Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ - Ø§Ù„Ø­Ø±ÙˆÙ Ø§Ù„Ù…Ø´Ø¨Ù‡Ø© Ø¨Ù€ \"Ù„ÙŠØ³\""ØŒ "Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ - Ø£ÙØ¹Ø§Ù„ Ø§Ù„Ù…Ù‚Ø§Ø±Ø¨Ø©"ØŒ "Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ - Ø¥Ù†Ù‘ ÙˆØ£Ø®ÙˆØ§ØªÙ‡Ø§"ØŒ "Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ - Ù„Ø§ Ø§Ù„Ù†Ø§ÙÙŠØ© Ù„Ù„Ø¬Ù†Ø³"ØŒ "Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ - Ø¸Ù†Ù‘ ÙˆØ£Ø®ÙˆØ§ØªÙ‡Ø§"]
+- Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù… "Ø¨Ø§Ø¨ Ø§Ù„Ù…Ù†ØµÙˆØ¨Ø§Øª"ØŒ Ø§Ø®ØªØ±: ["Ø§Ù„Ù…ÙØ¹ÙˆÙ„ Ø¨Ù‡"]
 
-أعد النتيجة كـ JSON فقط (مصفوفة) بالشكل التالي بدون أي نص إضافي:
+Ø£Ø¹Ø¯ Ø§Ù„Ù†ØªÙŠØ¬Ø© ÙƒÙ€ JSON ÙÙ‚Ø· (Ù…ØµÙÙˆÙØ©) Ø¨Ø§Ù„Ø´ÙƒÙ„ Ø§Ù„ØªØ§Ù„ÙŠ Ø¨Ø¯ÙˆÙ† Ø£ÙŠ Ù†Øµ Ø¥Ø¶Ø§ÙÙŠ:
 [
   {{
-    "question": "نص السؤال النحوي الدقيق",
-    "choice_a": "الخيار أ",
-    "choice_b": "الخيار ب",
-    "choice_c": "الخيار ج",
-    "choice_d": "الخيار د",
+    "question": "Ù†Øµ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„Ù†Ø­ÙˆÙŠ Ø§Ù„Ø¯Ù‚ÙŠÙ‚",
+    "choice_a": "Ø§Ù„Ø®ÙŠØ§Ø± Ø£",
+    "choice_b": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¨",
+    "choice_c": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¬",
+    "choice_d": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¯",
     "correct_answer": "a",
-    "explanation": "شرح الإجابة النحوية والقاعدة بالتفصيل",
+    "explanation": "Ø´Ø±Ø­ Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø© Ø§Ù„Ù†Ø­ÙˆÙŠØ© ÙˆØ§Ù„Ù‚Ø§Ø¹Ø¯Ø© Ø¨Ø§Ù„ØªÙØµÙŠÙ„",
     "theme": "{calculated_theme}",
-    "sub_theme": "الفاعل"
+    "sub_theme": "Ø§Ù„ÙØ§Ø¹Ù„"
   }}
 ]"""
         else:
-            prompt = f"""أنت خبير في العلوم الإسلامية ومصمم اختبارات تعليمية.
-قم بتوليد {num_questions} أسئلة اختيار من متعدد (QCM) باللغة العربية الفصحى.
+            prompt = f"""Ø£Ù†Øª Ø®Ø¨ÙŠØ± ÙÙŠ Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ÙŠØ© ÙˆÙ…ØµÙ…Ù… Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ØªØ¹Ù„ÙŠÙ…ÙŠØ©.
+Ù‚Ù… Ø¨ØªÙˆÙ„ÙŠØ¯ {num_questions} Ø£Ø³Ø¦Ù„Ø© Ø§Ø®ØªÙŠØ§Ø± Ù…Ù† Ù…ØªØ¹Ø¯Ø¯ (QCM) Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© Ø§Ù„ÙØµØ­Ù‰.
 
-المادة: {subject}
-رقم الدرس: {lesson_num}
-اسم الدرس: {course_name or f'الدرس {lesson_num}'}
-الموضوع/المحور: {theme or 'عام'}
-النص المرجعي للدرس:
-{chapter_content or 'لا يوجد نص مرجعي'}
+Ø§Ù„Ù…Ø§Ø¯Ø©: {subject}
+Ø±Ù‚Ù… Ø§Ù„Ø¯Ø±Ø³: {lesson_num}
+Ø§Ø³Ù… Ø§Ù„Ø¯Ø±Ø³: {course_name or f'Ø§Ù„Ø¯Ø±Ø³ {lesson_num}'}
+Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹/Ø§Ù„Ù…Ø­ÙˆØ±: {theme or 'Ø¹Ø§Ù…'}
+Ø§Ù„Ù†Øµ Ø§Ù„Ù…Ø±Ø¬Ø¹ÙŠ Ù„Ù„Ø¯Ø±Ø³:
+{chapter_content or 'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Øµ Ù…Ø±Ø¬Ø¹ÙŠ'}
 
-التعليمات الإضافية:
-{instructions if instructions else 'لا توجد تعليمات خاصة'}
+Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ø¥Ø¶Ø§ÙÙŠØ©:
+{instructions if instructions else 'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø®Ø§ØµØ©'}
 
-إستراتيجية التوزيع المستهدفة:
+Ø¥Ø³ØªØ±Ø§ØªÙŠØ¬ÙŠØ© Ø§Ù„ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ©:
 {strategy_instr}
 
-شروط:
-1. كل سؤال يحتوي على 4 خيارات (أ ب ج د).
-2. إجابة صحيحة واحدة فقط.
-3. أضف شرحاً علمياً موجزاً لكل سؤال.
+Ø´Ø±ÙˆØ·:
+1. ÙƒÙ„ Ø³Ø¤Ø§Ù„ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ 4 Ø®ÙŠØ§Ø±Ø§Øª (Ø£ Ø¨ Ø¬ Ø¯).
+2. Ø¥Ø¬Ø§Ø¨Ø© ØµØ­ÙŠØ­Ø© ÙˆØ§Ø­Ø¯Ø© ÙÙ‚Ø·.
+3. Ø£Ø¶Ù Ø´Ø±Ø­Ø§Ù‹ Ø¹Ù„Ù…ÙŠØ§Ù‹ Ù…ÙˆØ¬Ø²Ø§Ù‹ Ù„ÙƒÙ„ Ø³Ø¤Ø§Ù„.
 
-أعد النتيجة كـ JSON فقط (مصفوفة) بالشكل التالي بدون أي نص إضافي:
+Ø£Ø¹Ø¯ Ø§Ù„Ù†ØªÙŠØ¬Ø© ÙƒÙ€ JSON ÙÙ‚Ø· (Ù…ØµÙÙˆÙØ©) Ø¨Ø§Ù„Ø´ÙƒÙ„ Ø§Ù„ØªØ§Ù„ÙŠ Ø¨Ø¯ÙˆÙ† Ø£ÙŠ Ù†Øµ Ø¥Ø¶Ø§ÙÙŠ:
 [
   {{
-    "question": "نص السؤال",
-    "choice_a": "الخيار أ",
-    "choice_b": "الخيار ب",
-    "choice_c": "الخيار ج",
-    "choice_d": "الخيار د",
+    "question": "Ù†Øµ Ø§Ù„Ø³Ø¤Ø§Ù„",
+    "choice_a": "Ø§Ù„Ø®ÙŠØ§Ø± Ø£",
+    "choice_b": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¨",
+    "choice_c": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¬",
+    "choice_d": "Ø§Ù„Ø®ÙŠØ§Ø± Ø¯",
     "correct_answer": "a",
-    "explanation": "شرح الإجابة",
-    "theme": "المحور العام",
-    "sub_theme": "الجزئية العامة"
+    "explanation": "Ø´Ø±Ø­ Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø©",
+    "theme": "Ø§Ù„Ù…Ø­ÙˆØ± Ø§Ù„Ø¹Ø§Ù…",
+    "sub_theme": "Ø§Ù„Ø¬Ø²Ø¦ÙŠØ© Ø§Ù„Ø¹Ø§Ù…Ø©"
   }}
 ]"""
         # --- Use exact same SDK pattern as handlers/admin.py ---
@@ -1381,7 +1381,7 @@ async def generate_questions_ia(request):
                 continue
 
         if not response_text:
-            raise last_error or Exception("Toutes les clés API ont échoué lors de la génération.")
+            raise last_error or Exception("Toutes les clÃ©s API ont Ã©chouÃ© lors de la gÃ©nÃ©ration.")
 
         questions = json.loads(response_text)
         if isinstance(questions, dict) and "questions" in questions:
@@ -1825,19 +1825,19 @@ async def resolve_admin_proposal(request):
             # Notify student on Telegram
             bot = request.app['bot']
             try:
-                status_label = "✅ تم قبول سؤالك المقترح وإضافته للأسئلة الرسمية بالأكاديمية!"
+                status_label = "âœ… ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø³Ø¤Ø§Ù„Ùƒ Ø§Ù„Ù…Ù‚ØªØ±Ø­ ÙˆØ¥Ø¶Ø§ÙØªÙ‡ Ù„Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ø±Ø³Ù…ÙŠØ© Ø¨Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ©!"
                 if rejection_reason and action == 'approved':
-                    status_label += f"\n💬 تعليق الإدارة: {rejection_reason}"
+                    status_label += f"\nðŸ’¬ ØªØ¹Ù„ÙŠÙ‚ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©: {rejection_reason}"
                 elif action != 'approved':
-                    status_label = f"❌ عذراً، تم رفض سؤالك المقترح.\n💬 السبب: {rejection_reason}"
+                    status_label = f"âŒ Ø¹Ø°Ø±Ø§Ù‹ØŒ ØªÙ… Ø±ÙØ¶ Ø³Ø¤Ø§Ù„Ùƒ Ø§Ù„Ù…Ù‚ØªØ±Ø­.\nðŸ’¬ Ø§Ù„Ø³Ø¨Ø¨: {rejection_reason}"
                     
                 notif = (
-                    f"📣 <b>تحديث بخصوص مقترحك لأسئلة المراجعة (البوت البديل)</b>\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"السؤال: <i>\"{proposal['question']}\"</i>\n\n"
+                    f"ðŸ“£ <b>ØªØ­Ø¯ÙŠØ« Ø¨Ø®ØµÙˆØµ Ù…Ù‚ØªØ±Ø­Ùƒ Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© (Ø§Ù„Ø¨ÙˆØª Ø§Ù„Ø¨Ø¯ÙŠÙ„)</b>\n"
+                    f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+                    f"Ø§Ù„Ø³Ø¤Ø§Ù„: <i>\"{proposal['question']}\"</i>\n\n"
                     f"{status_label}\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"شكراً لمساهمتك في بناء الأكاديمية!"
+                    f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+                    f"Ø´ÙƒØ±Ø§Ù‹ Ù„Ù…Ø³Ø§Ù‡Ù…ØªÙƒ ÙÙŠ Ø¨Ù†Ø§Ø¡ Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ©!"
                 )
                 await bot.send_message(proposal['user_id'], notif, parse_mode="HTML")
             except Exception as notify_err:
@@ -2049,24 +2049,24 @@ async def reply_ticket_message_api(request):
                 if row:
                     try:
                         type_labels = {
-                            'suggestion': '💡 اقتراحك',
-                            'question_error': '🚩 بلاغ الخطأ',
-                            'tech': '🔧 مشكلتك التقنية',
-                            'other': '📩 رسالتك'
+                            'suggestion': 'ðŸ’¡ Ø§Ù‚ØªØ±Ø§Ø­Ùƒ',
+                            'question_error': 'ðŸš© Ø¨Ù„Ø§Øº Ø§Ù„Ø®Ø·Ø£',
+                            'tech': 'ðŸ”§ Ù…Ø´ÙƒÙ„ØªÙƒ Ø§Ù„ØªÙ‚Ù†ÙŠØ©',
+                            'other': 'ðŸ“© Ø±Ø³Ø§Ù„ØªÙƒ'
                         }
-                        label = type_labels.get(row["report_type"], "📩 رسالتك")
+                        label = type_labels.get(row["report_type"], "ðŸ“© Ø±Ø³Ø§Ù„ØªÙƒ")
                         
                         host = request.host
                         webapp_url = f"https://{host}/support.html?view=chat&ticket_id={ticket_id}"
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="💬 فتح المحادثة (Mini App)", web_app=WebAppInfo(url=webapp_url))]
+                            [InlineKeyboardButton(text="ðŸ’¬ ÙØªØ­ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø© (Mini App)", web_app=WebAppInfo(url=webapp_url))]
                         ])
                         
                         await bot.send_message(
                             chat_id=row["user_id"],
-                            text=f"📬 <b>رد جديد من الإدارة على {label} :</b>\n\n<i>\"{message}\"</i>",
+                            text=f"ðŸ“¬ <b>Ø±Ø¯ Ø¬Ø¯ÙŠØ¯ Ù…Ù† Ø§Ù„Ø¥Ø¯Ø§Ø±Ø© Ø¹Ù„Ù‰ {label} :</b>\n\n<i>\"{message}\"</i>",
                             reply_markup=reply_markup,
                             parse_mode="HTML"
                         )
@@ -2082,7 +2082,7 @@ async def reply_ticket_message_api(request):
                     try:
                         await bot.send_message(
                             chat_id=int(TELEGRAM_SUPPORT_GROUP_ID),
-                            text=f"💬 <b>رد جديد من الطالب على التذكرة #{ticket_id} :</b>\n\n<i>\"{message}\"</i>",
+                            text=f"ðŸ’¬ <b>Ø±Ø¯ Ø¬Ø¯ÙŠØ¯ Ù…Ù† Ø§Ù„Ø·Ø§Ù„Ø¨ Ø¹Ù„Ù‰ Ø§Ù„ØªØ°ÙƒØ±Ø© #{ticket_id} :</b>\n\n<i>\"{message}\"</i>",
                             parse_mode="HTML"
                         )
                     except Exception as e:
@@ -2186,7 +2186,7 @@ async def admin_questions_list(request):
                 params = []
                 
                 base_query += " AND 1=1"
-                # Normalize aqida/aqeeda — DB may use either spelling
+                # Normalize aqida/aqeeda â€” DB may use either spelling
                 subj_variants = [subject]
                 if subject.lower() in ('aqida', 'aqeeda'):
                     subj_variants = ['aqida', 'aqeeda']
@@ -2230,7 +2230,7 @@ async def admin_questions_list(request):
                 def clean_words(text):
                     if not text:
                         return set()
-                    stop_words = {'le', 'la', 'de', 'en', 'et', 'في', 'من', 'على', 'ان', 'أن', 'هو', 'هي', 'هل'}
+                    stop_words = {'le', 'la', 'de', 'en', 'et', 'ÙÙŠ', 'Ù…Ù†', 'Ø¹Ù„Ù‰', 'Ø§Ù†', 'Ø£Ù†', 'Ù‡Ùˆ', 'Ù‡ÙŠ', 'Ù‡Ù„'}
                     words = "".join(c if c.isalnum() or c.isspace() else " " for c in text.lower()).split()
                     return {w for w in words if w not in stop_words and len(w) > 2}
                 
@@ -2299,7 +2299,7 @@ async def admin_questions_list(request):
             params = []
             
             if subject:
-                # Normalize aqida/aqeeda — DB may use either spelling
+                # Normalize aqida/aqeeda â€” DB may use either spelling
                 subj_variants = [subject]
                 if subject.lower() in ('aqida', 'aqeeda'):
                     subj_variants = ['aqida', 'aqeeda']
@@ -2554,7 +2554,7 @@ async def reorder_admin_thematics(request: web.Request):
                 
             parent_id, program_id = target_row
             
-            # 2. Obtenir tous les noeuds frères (siblings) ordonnés
+            # 2. Obtenir tous les noeuds frÃ¨res (siblings) ordonnÃ©s
             if parent_id is None:
                 query = "SELECT id FROM thematic_nodes WHERE program_id = ? AND level = ? AND parent_id IS NULL ORDER BY order_index, title"
                 params = (program_id, level)
@@ -2567,14 +2567,14 @@ async def reorder_admin_thematics(request: web.Request):
                 
             sibling_ids = [row[0] for row in rows]
             
-            # 3. Réorganiser la liste
+            # 3. RÃ©organiser la liste
             if source_node_id in sibling_ids and target_node_id in sibling_ids:
                 sibling_ids.remove(source_node_id)
                 target_index = sibling_ids.index(target_node_id)
                 # Inserer le source juste avant le target
                 sibling_ids.insert(target_index, source_node_id)
                 
-                # 4. Mettre à jour la base de données
+                # 4. Mettre Ã  jour la base de donnÃ©es
                 for idx, node_id in enumerate(sibling_ids):
                     await db.execute("UPDATE thematic_nodes SET order_index = ? WHERE id = ?", (idx, node_id))
                 await db.commit()
@@ -2718,7 +2718,7 @@ async def get_questions_stats_api(request):
         def clean_words(text):
             if not text:
                 return set()
-            stop_words = {'le', 'la', 'de', 'en', 'et', 'في', 'من', 'على', 'ان', 'أن', 'هو', 'هي', 'هل'}
+            stop_words = {'le', 'la', 'de', 'en', 'et', 'ÙÙŠ', 'Ù…Ù†', 'Ø¹Ù„Ù‰', 'Ø§Ù†', 'Ø£Ù†', 'Ù‡Ùˆ', 'Ù‡ÙŠ', 'Ù‡Ù„'}
             words = "".join(c if c.isalnum() or c.isspace() else " " for c in text.lower()).split()
             return {w for w in words if w not in stop_words and len(w) > 2}
 
@@ -2876,7 +2876,7 @@ async def resolve_admin_ticket(request):
 
             # Insert message into ticket_chat_messages
             if admin_reply:
-                admin_name = "الإدارة"
+                admin_name = "Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©"
                 async with db_conn.execute("SELECT first_name, username FROM admins WHERE telegram_id = ?", (int(user_id),)) as cur:
                     r = await cur.fetchone()
                     if r:
@@ -2894,12 +2894,12 @@ async def resolve_admin_ticket(request):
                 if bot:
                     try:
                         type_labels = {
-                            'suggestion': '💡 اقتراحك',
-                            'question_error': '🚩 بلاغ الخطأ',
-                            'tech': '🔧 مشكلتك التقنية',
-                            'other': '📩 رسالتك'
+                            'suggestion': 'ðŸ’¡ Ø§Ù‚ØªØ±Ø§Ø­Ùƒ',
+                            'question_error': 'ðŸš© Ø¨Ù„Ø§Øº Ø§Ù„Ø®Ø·Ø£',
+                            'tech': 'ðŸ”§ Ù…Ø´ÙƒÙ„ØªÙƒ Ø§Ù„ØªÙ‚Ù†ÙŠØ©',
+                            'other': 'ðŸ“© Ø±Ø³Ø§Ù„ØªÙƒ'
                         }
-                        label = type_labels.get(row["report_type"] or "other", "📩 رسالتك")
+                        label = type_labels.get(row["report_type"] or "other", "ðŸ“© Ø±Ø³Ø§Ù„ØªÙƒ")
                         
                         # Force https for WebApp compatibility on Telegram
                         host = request.host
@@ -2907,12 +2907,12 @@ async def resolve_admin_ticket(request):
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="💬 فتح المحادثة (Mini App)", web_app=WebAppInfo(url=webapp_url))]
+                            [InlineKeyboardButton(text="ðŸ’¬ ÙØªØ­ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø© (Mini App)", web_app=WebAppInfo(url=webapp_url))]
                         ])
                         
                         await bot.send_message(
                             chat_id=row["user_id"],
-                            text=f"📬 رد الإدارة على {label}:\n\n<i>\"{admin_reply}\"</i>",
+                            text=f"ðŸ“¬ Ø±Ø¯ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø© Ø¹Ù„Ù‰ {label}:\n\n<i>\"{admin_reply}\"</i>",
                             reply_markup=reply_markup,
                             parse_mode="HTML"
                         )
@@ -3094,7 +3094,7 @@ async def claim_admin_ticket(request):
         
         from config import DATABASE_PATH
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
-            admin_name = "مشرف"
+            admin_name = "Ù…Ø´Ø±Ù"
             db_conn.row_factory = aiosqlite.Row
             # 1. Try checking admins table first
             async with db_conn.execute("SELECT first_name, username FROM admins WHERE telegram_id = ?", (int(user_id),)) as cur:
@@ -3103,7 +3103,7 @@ async def claim_admin_ticket(request):
                     admin_name = r["first_name"] or r["username"]
             
             # 2. Try checking users table if still generic
-            if admin_name == "مشرف" or not admin_name:
+            if admin_name == "Ù…Ø´Ø±Ù" or not admin_name:
                 async with db_conn.execute("SELECT first_name, username FROM users WHERE telegram_id = ?", (int(user_id),)) as cur:
                     r = await cur.fetchone()
                     if r and (r["first_name"] or r["username"]):
@@ -3114,7 +3114,7 @@ async def claim_admin_ticket(request):
                         )
             
             # 3. Try checking Telegram Bot API if still generic
-            if admin_name == "مشرف" or not admin_name:
+            if admin_name == "Ù…Ø´Ø±Ù" or not admin_name:
                 bot = request.app.get('bot')
                 if bot:
                     try:
@@ -3129,7 +3129,7 @@ async def claim_admin_ticket(request):
                         logger.warning(f"Could not retrieve admin chat info from Telegram in claim_admin_ticket: {tg_err}")
             
             from config import TELEGRAM_ADMIN_IDS
-            if admin_name == "مشرف" and (int(user_id) in TELEGRAM_ADMIN_IDS or int(user_id) in [2045194295]):
+            if admin_name == "Ù…Ø´Ø±Ù" and (int(user_id) in TELEGRAM_ADMIN_IDS or int(user_id) in [2045194295]):
                 admin_name = "Super Admin"
                 
             db_id = int(ticket_id) if item_type != 'report' else ticket_id
@@ -3267,7 +3267,7 @@ async def update_admin_permissions(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views — List accessible views for this admin
+# Admin API: Custom Views â€” List accessible views for this admin
 async def list_custom_views(request):
     try:
         data = await request.json()
@@ -3315,7 +3315,7 @@ async def list_custom_views(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views — Save (create or update)
+# Admin API: Custom Views â€” Save (create or update)
 async def save_custom_view(request):
     try:
         data = await request.json()
@@ -3326,7 +3326,7 @@ async def save_custom_view(request):
         role = await get_admin_role(user_id)
         view_id = data.get('id')  # None = create new
         name = data.get('name', 'Vue')
-        icon = data.get('icon', '📌')
+        icon = data.get('icon', 'ðŸ“Œ')
         filters_obj = data.get('filters', {})
         visibility = data.get('visibility', 'private')
         target_ids = data.get('targetIds', [])
@@ -3366,7 +3366,7 @@ async def save_custom_view(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views — Delete
+# Admin API: Custom Views â€” Delete
 async def delete_custom_view(request):
     try:
         data = await request.json()
@@ -3385,9 +3385,9 @@ async def delete_custom_view(request):
                 return web.json_response({"success": False, "error": "View not found"}, status=404)
             # Only owner or super_admin can delete; locked views need super_admin
             if view['is_locked'] and role != 'super_admin':
-                return web.json_response({"success": False, "error": "Vue verrouillée"}, status=403)
+                return web.json_response({"success": False, "error": "Vue verrouillÃ©e"}, status=403)
             if view['created_by'] != int(user_id) and role != 'super_admin':
-                return web.json_response({"success": False, "error": "Non autorisé"}, status=403)
+                return web.json_response({"success": False, "error": "Non autorisÃ©"}, status=403)
             await db_conn.execute("DELETE FROM admin_custom_views WHERE id = ?", (view_id,))
             await db_conn.commit()
         return web.json_response({"success": True})
@@ -3396,7 +3396,7 @@ async def delete_custom_view(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views — Reorder
+# Admin API: Custom Views â€” Reorder
 async def reorder_custom_views(request):
     try:
         data = await request.json()
@@ -3489,7 +3489,7 @@ async def get_media_stats_api(request):
                     if item_subject in (subject_normalized, subject_normalized.replace('aqida', 'aqeeda')):
                         ln = item.get('lessonNum') or item.get('lesson_num')
                         if ln is not None:
-                            lessons_by_num[int(ln)] = item.get('title') or item.get('lesson') or f"درس {ln}"
+                            lessons_by_num[int(ln)] = item.get('title') or item.get('lesson') or f"Ø¯Ø±Ø³ {ln}"
             except Exception as e:
                 logger.warning(f"Could not read transcripts.json: {e}")
 
@@ -3524,7 +3524,7 @@ async def get_media_stats_api(request):
             res = lesson_resources_map.get(ln, {})
             lessons_list.append({
                 'course_number': ln,
-                'title': lessons_by_num.get(ln, f"درس {ln}"),
+                'title': lessons_by_num.get(ln, f"Ø¯Ø±Ø³ {ln}"),
                 'mind_map_file_id': res.get('mind_map_file_id') or '',
                 'summary_file_id': res.get('summary_file_id') or '',
                 'has_mind_map': bool(res.get('mind_map_file_id')),
@@ -3553,7 +3553,7 @@ async def get_media_stats_api(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# ─── Student Practice & Quiz API Endpoints ───
+# â”€â”€â”€ Student Practice & Quiz API Endpoints â”€â”€â”€
 
 async def get_student_stats(request):
     try:
@@ -3601,7 +3601,7 @@ async def get_student_stats(request):
             "remaining": rems,
             "emojis": emojis,
             "streak": streak,
-            "preferredName": user_info.get("preferred_name") or user_info.get("first_name") or "طالب" if user_info else "طالب",
+            "preferredName": user_info.get("preferred_name") or user_info.get("first_name") or "Ø·Ø§Ù„Ø¨" if user_info else "Ø·Ø§Ù„Ø¨",
             "courseProgress": course_progress,
             "detailedProgress": detailed_progress
         })
@@ -3944,9 +3944,9 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/admin/lesson-resources', get_lesson_resources_api)
     app.router.add_post('/admin/save-lesson-resources', save_lesson_resources_api)
     app.router.add_post('/admin/media/stats', get_media_stats_api)
-    # Phase 2 — Admin permissions by subject/section
+    # Phase 2 â€” Admin permissions by subject/section
     app.router.add_post('/admin/update-permissions', update_admin_permissions)
-    # Phase 3 — Shared custom views (DB-backed)
+    # Phase 3 â€” Shared custom views (DB-backed)
     app.router.add_post('/admin/custom-views/list', list_custom_views)
     app.router.add_post('/admin/custom-views/save', save_custom_view)
     app.router.add_post('/admin/custom-views/delete', delete_custom_view)
@@ -3963,7 +3963,7 @@ async def start_web_server(bot: Bot):
     await init_static_cache()
     site = web.TCPSite(runner, '0.0.0.0', port)
     
-    logger.info(f"🌐 [Backup Web Server] launched on port {port}")
+    logger.info(f"ðŸŒ [Backup Web Server] launched on port {port}")
     await site.start()
     
     while True:
@@ -3981,13 +3981,13 @@ async def on_startup(bot: Bot):
     
     # Set bot description (shown before starting the bot)
     welcome_description = (
-        "مرحباً بك في البوت البديل لأكاديمية الباجي! 🎓\n\n"
-        "هذا البوت مخصص لمساعدتك في اختبار معلوماتك الشرعية ومراجعة الدروس "
-        "وتتبع تقدمك الدراسي بطريقة تفاعلية وميسرة.\n\n"
-        "اضغط على زر البدء (Start) للبدء في رحلتك التعليمية!"
+        "Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ùƒ ÙÙŠ Ø§Ù„Ø¨ÙˆØª Ø§Ù„Ø¨Ø¯ÙŠÙ„ Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ© Ø§Ù„Ø¨Ø§Ø¬ÙŠ! ðŸŽ“\n\n"
+        "Ù‡Ø°Ø§ Ø§Ù„Ø¨ÙˆØª Ù…Ø®ØµØµ Ù„Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ ÙÙŠ Ø§Ø®ØªØ¨Ø§Ø± Ù…Ø¹Ù„ÙˆÙ…Ø§ØªÙƒ Ø§Ù„Ø´Ø±Ø¹ÙŠØ© ÙˆÙ…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø¯Ø±ÙˆØ³ "
+        "ÙˆØªØªØ¨Ø¹ ØªÙ‚Ø¯Ù…Ùƒ Ø§Ù„Ø¯Ø±Ø§Ø³ÙŠ Ø¨Ø·Ø±ÙŠÙ‚Ø© ØªÙØ§Ø¹Ù„ÙŠØ© ÙˆÙ…ÙŠØ³Ø±Ø©.\n\n"
+        "Ø§Ø¶ØºØ· Ø¹Ù„Ù‰ Ø²Ø± Ø§Ù„Ø¨Ø¯Ø¡ (Start) Ù„Ù„Ø¨Ø¯Ø¡ ÙÙŠ Ø±Ø­Ù„ØªÙƒ Ø§Ù„ØªØ¹Ù„ÙŠÙ…ÙŠØ©!"
     )
     welcome_short_description = (
-        "البوت البديل لأكاديمية الباجي للأسئلة المنهجية واختبار المعلومات الشرعية. 🎓"
+        "Ø§Ù„Ø¨ÙˆØª Ø§Ù„Ø¨Ø¯ÙŠÙ„ Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ© Ø§Ù„Ø¨Ø§Ø¬ÙŠ Ù„Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ù…Ù†Ù‡Ø¬ÙŠØ© ÙˆØ§Ø®ØªØ¨Ø§Ø± Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø´Ø±Ø¹ÙŠØ©. ðŸŽ“"
     )
     try:
         await bot.set_my_description(welcome_description)
@@ -4021,7 +4021,7 @@ class AccessCheckMiddleware(BaseMiddleware):
             # Check Maintenance Mode
             maint_active = await db.get_setting("maintenance_mode", "False")
             if maint_active == "True" and not is_adm:
-                maint_msg = await db.get_setting("maintenance_message", "🚧 البوت في وضع الصيانة مؤقتاً. سيعود قريباً بإذن الله.")
+                maint_msg = await db.get_setting("maintenance_message", "ðŸš§ Ø§Ù„Ø¨ÙˆØª ÙÙŠ ÙˆØ¶Ø¹ Ø§Ù„ØµÙŠØ§Ù†Ø© Ù…Ø¤Ù‚ØªØ§Ù‹. Ø³ÙŠØ¹ÙˆØ¯ Ù‚Ø±ÙŠØ¨Ø§Ù‹ Ø¨Ø¥Ø°Ù† Ø§Ù„Ù„Ù‡.")
                 if isinstance(event, Message):
                     await event.answer(maint_msg, parse_mode="HTML")
                 elif isinstance(event, CallbackQuery):
@@ -4031,7 +4031,7 @@ class AccessCheckMiddleware(BaseMiddleware):
             # Check Ban
             is_banned = await db.is_user_banned(user_id)
             if is_banned and not is_adm:
-                ban_text = "🚫 <b>تمت بنجاح معالجة حسابك. هذا الحساب محظور حالياً من استخدام البوت. يرجى التواصل مع الإدارة للمساعدة.</b>"
+                ban_text = "ðŸš« <b>ØªÙ…Øª Ø¨Ù†Ø¬Ø§Ø­ Ù…Ø¹Ø§Ù„Ø¬Ø© Ø­Ø³Ø§Ø¨Ùƒ. Ù‡Ø°Ø§ Ø§Ù„Ø­Ø³Ø§Ø¨ Ù…Ø­Ø¸ÙˆØ± Ø­Ø§Ù„ÙŠØ§Ù‹ Ù…Ù† Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ø¨ÙˆØª. ÙŠØ±Ø¬Ù‰ Ø§Ù„ØªÙˆØ§ØµÙ„ Ù…Ø¹ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø© Ù„Ù„Ù…Ø³Ø§Ø¹Ø¯Ø©.</b>"
                 if isinstance(event, Message):
                     await event.answer(ban_text, parse_mode="HTML")
                 elif isinstance(event, CallbackQuery):
@@ -4069,8 +4069,8 @@ async def main():
     # Register startup hook
     dp.startup.register(on_startup)
 
-    # ─── RAILWAY ZERO-DOWNTIME CONFLICT RESOLUTION ───
-    logger.info(f"Démarrage de l'instance courante avec ID: {INSTANCE_ID}")
+    # â”€â”€â”€ RAILWAY ZERO-DOWNTIME CONFLICT RESOLUTION â”€â”€â”€
+    logger.info(f"DÃ©marrage de l'instance courante avec ID: {INSTANCE_ID}")
     
     async def watch_for_new_instance():
         while True:
@@ -4083,14 +4083,14 @@ async def main():
                     async with db_conn.execute("SELECT value FROM settings WHERE key = 'current_instance_id'") as cur:
                         row = await cur.fetchone()
                         if row and row[0] and row[0] != INSTANCE_ID:
-                            logger.warning(f"🚨 NOUVELLE INSTANCE DÉTECTÉE ({row[0]}). Arrêt du polling pour éviter les conflits Telegram !")
+                            logger.warning(f"ðŸš¨ NOUVELLE INSTANCE DÃ‰TECTÃ‰E ({row[0]}). ArrÃªt du polling pour Ã©viter les conflits Telegram !")
                             await dp.stop_polling()
                             break
             except Exception:
                 pass
         
     asyncio.create_task(watch_for_new_instance())
-    # ──────────────────────────────────────────────────
+    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     logger.info("Starting Telegram Backup Bot polling...")
     try:
