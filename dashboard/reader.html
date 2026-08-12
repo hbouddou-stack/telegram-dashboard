@@ -326,11 +326,17 @@
 
         <div id="practice-active-state" style="display:none; padding: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <button onclick="quizEngine.quit()" style="background:transparent; border:none; font-size:24px; color:var(--text-2); cursor:pointer;">✕</button>
-                <div style="flex:1; margin: 0 16px; background:var(--surface); height:12px; border-radius:6px; overflow:hidden;">
-                    <div id="quiz-progress-bar" style="height:100%; background:var(--primary); width:0%; transition:width 0.3s ease;"></div>
+                <button onclick="quizEngine.quit()" style="background:transparent; border:none; font-size:24px; color:var(--text-2); cursor:pointer;" title="إغلاق">✖</button>
+                <div style="flex:1; margin: 0 16px; display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold; color:var(--text-2);">
+                        <span id="quiz-question-counter">السؤال 1 من 10</span>
+                        <span style="color:var(--primary);"><span id="quiz-lives">3</span> محاولات ❤️</span>
+                    </div>
+                    <div style="background:var(--surface); height:8px; border-radius:4px; overflow:hidden;">
+                        <div id="quiz-progress-bar" style="height:100%; background:var(--primary); width:0%; transition:width 0.3s ease;"></div>
+                    </div>
                 </div>
-                <div style="font-weight:bold; color:var(--primary);" id="quiz-score-badge">❤️ <span id="quiz-lives">3</span></div>
+                <button onclick="openMindMap()" style="background:var(--surface-2); border:none; width:40px; height:40px; border-radius:12px; font-size:20px; cursor:pointer; color:var(--primary);" title="ملاحظاتي">📝</button>
             </div>
 
             <div id="quiz-question-container" style="background:var(--surface); border-radius:16px; padding:24px; box-shadow:0 4px 15px rgba(0,0,0,0.05); margin-bottom:24px; text-align:center;">

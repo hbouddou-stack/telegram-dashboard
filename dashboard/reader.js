@@ -2370,57 +2370,114 @@ const quizEngine = {
         this.showQuestion();
     },
     
-        formatExplanationHtml(explanation) {
-        if (!explanation) return "";
-        let text = explanation;
-        text = text.replace("📌 <b>ملاحظة الأستاذ</b> :", "📌 <b>ملاحظة الأستاذ :</b>");
-        text = text.replace("📌 <b>ملاحظة الأستاذ</b>", "📌 <b>ملاحظة الأستاذ :</b>");
+        formatExplanationHtml(q) {
+        if (!q || !q.explanation) return "";
+        let text = q.explanation;
         
         let pedagogicalText = "";
         let profNote = "";
         let sourceText = "";
+        let videoId = null;
+        let timeInSeconds = 0;
         
-        if (text.includes("💡 <b>الشرح التربوي</b> :")) {
-            let parts = text.split("💡 <b>الشرح التربوي</b> :");
-            let afterTitle = parts[1] || "";
-            if (text.includes("📌 <b>ملاحظة الأستاذ :</b>")) {
-                let subparts = afterTitle.split("📌 <b>ملاحظة الأستاذ :</b>");
+        let ytMatch = text.match(/href="https:\/\/www\.youtube\.com\/watch\?v=([^&"]+)&t=([0-9]+)s?"/);
+        if (ytMatch) {
+            videoId = ytMatch[1];
+            timeInSeconds = parseInt(ytMatch[2]);
+        }
+        
+        text = text.replace(/💡 <b>التفسير التربوي(.*?)<\/b>\s*:/g, "AI_MARKER");
+        text = text.replace(/📖 <b>قول الشيخ(.*?)<\/b>\s*:/g, "PROF_MARKER");
+        text = text.replace(/📍 <b>المصدر(.*?)<\/b>\s*:/g, "SRC_MARKER");
+        text = text.replace(/<blockquote>/g, "").replace(/<\/blockquote>/g, "");
+        
+        if (text.includes("AI_MARKER")) {
+            let parts = text.split("AI_MARKER");
+            let afterAI = parts[1] || "";
+            if (afterAI.includes("PROF_MARKER")) {
+                let subparts = afterAI.split("PROF_MARKER");
                 pedagogicalText = subparts[0];
-                let rest = subparts[1];
-                if (text.includes("📚 <b>المصدر :</b>")) {
-                    let subsub = rest.split("📚 <b>المصدر :</b>");
-                    profNote = subsub[0];
-                    sourceText = subsub[1];
+                let afterProf = subparts[1];
+                if (afterProf.includes("SRC_MARKER")) {
+                    let srcParts = afterProf.split("SRC_MARKER");
+                    profNote = srcParts[0];
+                    sourceText = srcParts[1];
                 } else {
-                    profNote = rest;
+                    profNote = afterProf;
                 }
-            } else if (text.includes("📚 <b>المصدر :</b>")) {
-                let subparts = afterTitle.split("📚 <b>المصدر :</b>");
-                pedagogicalText = subparts[0];
-                sourceText = subparts[1];
+            } else if (afterAI.includes("SRC_MARKER")) {
+                let srcParts = afterAI.split("SRC_MARKER");
+                pedagogicalText = srcParts[0];
+                sourceText = srcParts[1];
             } else {
-                pedagogicalText = afterTitle;
+                pedagogicalText = afterAI;
             }
         } else {
-            let temp = document.createElement('div');
-            temp.innerHTML = text;
-            pedagogicalText = temp.textContent || "";
+            pedagogicalText = text;
         }
         
         let html = "";
+        
         if (pedagogicalText.trim()) {
-            html += `<div style="margin-bottom:12px; font-size:15px; color:var(--text); line-height:1.6;"><strong>الشرح التربوي:</strong><br>${pedagogicalText.trim()}</div>`;
+            html += `<div style="margin-bottom:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.5); padding:16px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.02); text-align:right;">
+                        <div style="font-weight:900; color:var(--primary); margin-bottom:8px; font-size:15px; display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">🤖</span> الشرح المبسط
+                        </div>
+                        <div style="color:var(--text); font-size:14.5px; line-height:1.6;">${pedagogicalText.trim()}</div>
+                     </div>`;
         }
+        
         if (profNote.trim()) {
-            html += `<div style="margin-bottom:12px; background:var(--surface-2); padding:12px; border-radius:8px; border-right:3px solid var(--primary); font-size:14.5px;"><span style="font-size:16px;">📌</span> <strong>ملاحظة الأستاذ:</strong><br>${profNote.trim()}</div>`;
+            html += `<div style="margin-bottom:16px; background:var(--surface-2); padding:16px; border-radius:12px; border-right:4px solid #f59e0b; text-align:right;">
+                        <div style="font-weight:900; color:#b45309; margin-bottom:8px; font-size:14px; display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">👨‍🏫</span> قال الشيخ
+                        </div>
+                        <div style="color:var(--text-2); font-size:14px; line-height:1.6; font-style:italic;">"${profNote.trim()}"</div>
+                     </div>`;
         }
+        
         if (sourceText.trim()) {
-            html += `<div style="font-size:13px; color:var(--text-3); margin-top:8px;">📚 <strong>المصدر:</strong> ${sourceText.trim()}</div>`;
-        }
-        if(!html) {
-            html = `<div style="margin-bottom:12px; font-size:15px;">${text}</div>`;
+            let cleanSourceText = sourceText.replace(/<a.*?>.*?<\/a>/g, '').trim();
+            cleanSourceText = cleanSourceText.replace(/،\s*الدقيقة\s*,?/g, '').trim();
+            html += `<div style="font-size:12px; color:var(--text-3); text-align:left; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div>📚 المصدر: ${cleanSourceText}</div>`;
+            
+            if (videoId) {
+                html += `<button onclick="quizEngine.playVideoTimestamp('${videoId}', ${timeInSeconds})" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                            ▶ شاهد الشرح بالفيديو
+                         </button>`;
+            }
+            html += `</div>`;
         }
         return html;
+    },
+    
+    playVideoTimestamp(videoId, timeSeconds) {
+        if (typeof switchTab === 'function') switchTab('reader');
+        const segVideo = document.getElementById('btn-seg-video');
+        if (segVideo) segVideo.click();
+        
+        let returnBtn = document.getElementById('quiz-return-btn');
+        if (!returnBtn) {
+            returnBtn = document.createElement('button');
+            returnBtn.id = 'quiz-return-btn';
+            returnBtn.innerHTML = '⬅️ العودة للتدريب';
+            returnBtn.style.cssText = 'position:absolute; top:10px; left:10px; z-index:100; background:rgba(0,0,0,0.6); color:white; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; backdrop-filter:blur(4px);';
+            returnBtn.onclick = () => {
+                if (typeof player !== 'undefined' && player && player.pauseVideo) player.pauseVideo();
+                if (typeof switchTab === 'function') switchTab('practice');
+                returnBtn.style.display = 'none';
+            };
+            const videoWrapper = document.getElementById('video-wrapper');
+            if (videoWrapper) videoWrapper.appendChild(returnBtn);
+        }
+        returnBtn.style.display = 'block';
+        
+        if (typeof player !== 'undefined' && player && player.loadVideoById) {
+            player.loadVideoById({'videoId': videoId, 'startSeconds': timeSeconds});
+            player.playVideo();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
     },
 
     showQuestion() {
@@ -2430,6 +2487,11 @@ const quizEngine = {
         }
         
         const q = this.questions[this.currentIndex];
+        
+        const counterEl = document.getElementById('quiz-question-counter');
+        if (counterEl) {
+            counterEl.textContent = `السؤال ${this.currentIndex + 1} من ${this.questions.length}`;
+        }
         
         document.getElementById('quiz-lives').textContent = this.lives;
         const progressPercent = (this.currentIndex / this.questions.length) * 100;
@@ -2529,7 +2591,7 @@ const quizEngine = {
             ? '<div style="color:var(--success,#10b981); font-weight:bold; margin-bottom:12px; font-size:18px;">إجابة صحيحة ✅</div>'
             : '<div style="color:#ef4444; font-weight:bold; margin-bottom:12px; font-size:18px;">إجابة خاطئة ❌</div>';
             
-        let html = this.formatExplanationHtml(q.explanation);
+        let html = this.formatExplanationHtml(q);
         expContent.innerHTML = title + html;
     },
     
@@ -2594,7 +2656,7 @@ const quizEngine = {
             errorsContainer.style.display = 'block';
             let html = '';
             this.wrongAnswers.forEach((q, idx) => {
-                let expHtml = this.formatExplanationHtml(q.explanation);
+                let expHtml = this.formatExplanationHtml(q);
                 html += `
                     <div style="margin-bottom:16px; border-bottom:1px solid var(--surface-2); padding-bottom:16px;">
                         <p style="font-weight:bold; color:var(--text); margin-bottom:8px;">السؤال: ${q.question}</p>
