@@ -3336,7 +3336,7 @@ function submitCustomQuizAnswer(selectedIdx) {
             <div style="font-weight:800; color:${isCorrect ? '#10b981' : '#ef4444'}; font-size:13.5px; margin-bottom:4px;">
                 ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
             </div>
-            <div style="font-size:12px; color:var(--text-2); line-height:1.5;">${q.explanation}</div>
+            ${formatExplanationHtml(q)}
         </div>
         
         <div style="display: flex; gap: 8px;">
