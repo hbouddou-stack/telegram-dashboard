@@ -3336,7 +3336,7 @@ function submitCustomQuizAnswer(selectedIdx) {
               <div style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; font-weight: bold;">
                   ${isCorrect ? '✅ إجابة صحيحة!' : '❌ إجابة خاطئة'}
               </div>
-              ${formatQuizExplanation(q.explanation)}
+              ${formatQuizExplanation(q.explanation, q)}
           </div>
         
         <div style="display: flex; gap: 8px;">
@@ -5963,7 +5963,8 @@ function renderQuizQuestion() {
 }
 
 
-  function formatQuizExplanation(text) {
+  
+  function formatQuizExplanation(text, questionObj = null) {
       if (!text) return "";
       
       let pedagogicalText = "";
@@ -5977,6 +5978,12 @@ function renderQuizQuestion() {
           videoId = ytMatch[1];
           timeInSeconds = parseInt(ytMatch[2]);
       }
+      
+      // Aggressively strip any youtube anchor tags from the raw text so they NEVER render!
+      text = text.replace(/<a[^>]*href="https:\/\/www\.youtube\.com[^>]*>.*?<\/a>/gi, "");
+      // Also strip the text "(يمكنك الضغط على الوقت للوصول إلى الفيديو)" or similar if it exists
+      text = text.replace(/\(يمكنك الضغط على الوقت للوصول إلى الفيديو\)/gi, "");
+      text = text.replace(/\(سينقلك إلى يوتيوب خارج التطبيق\)/gi, "");
       
       text = text.replace(/💡 <b>التفسير التربوي(.*?)<\/b>\s*:/g, "AI_MARKER");
       text = text.replace(/📖 <b>قول الشيخ(.*?)<\/b>\s*:/g, "PROF_MARKER");
@@ -6028,14 +6035,20 @@ function renderQuizQuestion() {
                    </div>`;
       }
       
-      if (sourceText.trim()) {
+      if (sourceText.trim() || videoId) {
           let cleanSourceText = sourceText.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1').trim();
           cleanSourceText = cleanSourceText.replace(/،\s*الدقيقة\s*,?/g, '').trim();
-          html += `<div style="font-size:12px; color:var(--text-3); text-align:left; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                      <div>📚 المصدر: ${cleanSourceText}</div>`;
           
-          if (videoId && typeof quizState !== 'undefined' && quizState.subject && quizState.lessonNum) {
-              html += `<button onclick="window.location.href='reader.html?subject=${quizState.subject}&lesson=${quizState.lessonNum}&v=p15'" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:8px;">
+          let sourceHtml = cleanSourceText ? `<div>📚 المصدر: ${cleanSourceText}</div>` : '';
+          html += `<div style="font-size:12px; color:var(--text-3); text-align:left; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                      ${sourceHtml}`;
+          
+          // Determine subject and lesson based on either quizState (global) or questionObj
+          let subj = questionObj ? questionObj.subject : (typeof quizState !== 'undefined' ? quizState.subject : null);
+          let less = questionObj ? (questionObj.course_number || questionObj.lessonNum) : (typeof quizState !== 'undefined' ? quizState.lessonNum : null);
+          
+          if (videoId && subj && less) {
+              html += `<button onclick="window.location.href='reader.html?subject=${subj}&lesson=${less}&v=p16'" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:8px;">
                           📖 افتح اللمحة في القارئ (Liseuse)
                        </button>`;
           }
@@ -6043,6 +6056,7 @@ function renderQuizQuestion() {
       }
       return html;
   }
+
 
   function submitAnswer(selectedIdx) {
     const state = quizState;
@@ -6085,7 +6099,7 @@ function renderQuizQuestion() {
               <div class="quiz-feedback-title" style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px;">
                   ${isCorrect ? '✅ إجابة صحيحة!' : '❌ إجابة خاطئة'}
               </div>
-              ${formatQuizExplanation(q.explanation)}
+              ${formatQuizExplanation(q.explanation, q)}
           </div>
       `;
     
