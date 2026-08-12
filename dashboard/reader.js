@@ -2432,12 +2432,12 @@ const quizEngine = {
                         <div style="font-weight:900; color:#b45309; margin-bottom:8px; font-size:14px; display:flex; align-items:center; gap:8px;">
                             <span style="font-size:20px;">👨‍🏫</span> قال الشيخ
                         </div>
-                        <div style="color:var(--text-2); font-size:14px; line-height:1.6; font-style:italic;">"${profNote.trim()}"</div>
+                        <blockquote style="margin:0; padding:0 12px; border-right:2px solid #b45309; color:var(--text-2); font-size:14px; line-height:1.6; font-style:italic;">${profNote.trim()}</blockquote>
                      </div>`;
         }
         
         if (sourceText.trim()) {
-            let cleanSourceText = sourceText.replace(/<a.*?>.*?<\/a>/g, '').trim();
+            let cleanSourceText = sourceText.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1').trim();
             cleanSourceText = cleanSourceText.replace(/،\s*الدقيقة\s*,?/g, '').trim();
             html += `<div style="font-size:12px; color:var(--text-3); text-align:left; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                         <div>📚 المصدر: ${cleanSourceText}</div>`;
