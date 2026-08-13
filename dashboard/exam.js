@@ -44,17 +44,30 @@ let examWizard = {
     },
 
     useFallbackOptions(subj) {
-        // Fallback: 30 lessons per subject if API is unreachable
         const lessons = Array.from({length: 30}, (_, i) => i + 1);
+        
+        let fallbackThemes = [];
+        if (subj === 'fiqh') {
+            fallbackThemes = [
+                {id: 1, title: 'الفصل الأول: الطهارة وأحكامها', level: 2},
+                {id: 2, title: 'الفصل الثاني: الصلاة وشروطها', level: 2}
+            ];
+        } else if (subj === 'sira') {
+            fallbackThemes = [
+                {id: 3, title: 'العهد المكي', level: 2},
+                {id: 4, title: 'العهد المدني', level: 2}
+            ];
+        } else {
+            fallbackThemes = [
+                {id: 5, title: 'المحور الأول', level: 2},
+                {id: 6, title: 'المحور الثاني', level: 2}
+            ];
+        }
+        
         this.options = {
             success: true,
             lessons: lessons,
-            themes: [
-                {id: 1, title: 'المحور الأول: الأحكام العامة'},
-                {id: 2, title: 'المحور الثاني: الفرائض والشروط'},
-                {id: 3, title: 'المحور الثالث: المندوبات والآداب'},
-                {id: 4, title: 'المحور الرابع: المبطلات والنواقض'}
-            ],
+            themes: fallbackThemes,
             years: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         };
     },
@@ -69,14 +82,18 @@ let examWizard = {
         listDiv.innerHTML = '';
         
         let items = [];
-        if (mode === 'lessons') {
-            document.getElementById('exam-step-3-title').textContent = '3️⃣ اختر الدروس المراد مراجعتها:';
-            items = (this.options.lessons || []).map(l => ({id: l, title: 'الدرس ' + l}));
-            
-            // Render as Grid for lessons for maximum UX!
+        if (mode === 'lessons' || mode === 'years') {
             listDiv.style.display = 'grid';
             listDiv.style.gridTemplateColumns = 'repeat(auto-fill, minmax(80px, 1fr))';
             listDiv.style.gap = '8px';
+
+            if (mode === 'lessons') {
+                document.getElementById('exam-step-3-title').textContent = '3️⃣ اختر أرقام الدروس:';
+                items = (this.options.lessons || []).map(l => ({id: l, title: 'درس ' + l}));
+            } else {
+                document.getElementById('exam-step-3-title').textContent = '3️⃣ اختر السنوات الهجرية:';
+                items = (this.options.years || []).map(y => ({id: y, title: 'سنة ' + y}));
+            }
 
             items.forEach(item => {
                 const btn = document.createElement('button');
@@ -89,19 +106,69 @@ let examWizard = {
                 listDiv.appendChild(btn);
             });
             return;
-        } else {
+        } else if (mode === 'themes') {
+            document.getElementById('exam-step-3-title').textContent = '3️⃣ اختر المحاور والموضوعات:';
             listDiv.style.display = 'flex';
             listDiv.style.flexDirection = 'column';
-            listDiv.style.gap = '10px';
-
-            if (mode === 'themes') {
-                document.getElementById('exam-step-3-title').textContent = '3️⃣ اختر المحاور العلميّة:';
-                items = (this.options.themes || []).map(t => ({id: t.id, title: t.title}));
-            } else if (mode === 'years') {
-                document.getElementById('exam-step-3-title').textContent = '3️⃣ اختر السنوات الهجرية:';
-                items = (this.options.years || []).map(y => ({id: y, title: 'السنة ' + y + ' هـ'}));
+            listDiv.style.gap = '16px';
+            
+            const themes = this.options.themes || [];
+            // Group themes into hierarchy: Level 2 -> [Level 3...]
+            const level2Themes = themes.filter(t => t.level === 2);
+            const level3Themes = themes.filter(t => t.level === 3);
+            
+            if (level2Themes.length === 0) {
+                // Fallback to flat list if no level 2 found
+                themes.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'exam-sel-btn';
+                    btn.dataset.id = item.id;
+                    btn.style.cssText = 'text-align:right; width:100%; padding:14px; border-radius:12px; border:2px solid var(--border-color); background:var(--bg); color:var(--text); font-weight:bold; cursor:pointer; font-size:14px; transition:all 0.15s; display:flex; justify-content:space-between; align-items:center;';
+                    btn.innerHTML = `<span>📂 ${item.title}</span><span class="chk-icon" style="opacity:0.2;">✔️</span>`;
+                    btn.onclick = () => this.toggleSelection(item.id, btn);
+                    listDiv.appendChild(btn);
+                });
+                return;
             }
+
+            level2Themes.forEach(l2 => {
+                const groupDiv = document.createElement('div');
+                groupDiv.style.cssText = 'background:var(--surface); border:1px solid var(--border-color); border-radius:14px; overflow:hidden;';
+                
+                // Group Header (Level 2)
+                const headerBtn = document.createElement('button');
+                headerBtn.type = 'button';
+                headerBtn.className = 'exam-sel-btn';
+                headerBtn.dataset.id = l2.id;
+                headerBtn.style.cssText = 'text-align:right; width:100%; padding:14px; border:none; border-bottom:1px solid var(--border-color); background:var(--primary-light); color:var(--primary); font-weight:900; cursor:pointer; font-size:15px; display:flex; justify-content:space-between; align-items:center;';
+                headerBtn.innerHTML = `<span>📁 ${l2.title}</span><span class="chk-icon" style="opacity:0.2;">✔️</span>`;
+                headerBtn.onclick = () => this.toggleSelection(l2.id, headerBtn);
+                groupDiv.appendChild(headerBtn);
+                
+                // Sub-themes (Level 3) belonging to this Level 2
+                const children = level3Themes.filter(t => t.parent_id === l2.id);
+                if (children.length > 0) {
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.style.cssText = 'padding:12px; display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:8px; background:var(--bg);';
+                    
+                    children.forEach(l3 => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'exam-grid-chip';
+                        chip.dataset.id = l3.id;
+                        chip.style.cssText = 'padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--surface); color:var(--text-2); font-weight:700; cursor:pointer; font-size:12.5px; text-align:center; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:4px;';
+                        chip.innerHTML = `<span>${l3.title}</span>`;
+                        chip.onclick = () => this.toggleChipSelection(l3.id, chip);
+                        childrenContainer.appendChild(chip);
+                    });
+                    groupDiv.appendChild(childrenContainer);
+                }
+                listDiv.appendChild(groupDiv);
+            });
+            return;
         }
+    },
         
         if (items.length === 0) {
             listDiv.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-3);">لا توجد بيانات متاحة حالياً</div>';

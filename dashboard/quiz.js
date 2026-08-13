@@ -2,7 +2,7 @@ const quizEngine = {
     questions: [],
     currentIndex: 0,
     score: 0,
-    lives: 3,
+    
     currentSubject: null,
     currentLessonNum: null,
     audioSuccess: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3') : null,
@@ -96,7 +96,7 @@ const quizEngine = {
     start: function() {
         this.currentIndex = 0;
         this.score = 0;
-        this.lives = 3;
+        
         
         document.getElementById('practice-loading').style.display = 'none';
         document.getElementById('practice-empty-state').style.display = 'none';
@@ -160,7 +160,7 @@ const quizEngine = {
     },
 
     showQuestion: function() {
-        if (this.currentIndex >= this.questions.length || this.lives <= 0) {
+        if (this.currentIndex >= this.questions.length ) {
             this.showResult();
             return;
         }

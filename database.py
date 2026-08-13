@@ -3179,17 +3179,17 @@ async def get_questions_by_lesson_for_flashcards(subject: str, course_number: in
 
 
 async def get_available_themes(subject: str) -> list[dict]:
-    """Retrieve all unique Level 2 themes available for a subject."""
+    """Retrieve all unique Level 2 and Level 3 themes available for a subject, forming a hierarchy."""
     import aiosqlite
     from config import DATABASE_PATH
     async with aiosqlite.connect(DATABASE_PATH) as db:
         db.row_factory = aiosqlite.Row
         async with db.execute("""
-            SELECT tn.id, tn.title 
+            SELECT tn.id, tn.title, tn.level, tn.parent_id 
             FROM thematic_nodes tn
             JOIN programs p ON tn.program_id = p.id
-            WHERE p.subject = ? AND tn.level = 2
-            ORDER BY tn.order_index
+            WHERE p.subject = ? AND tn.level IN (2, 3)
+            ORDER BY tn.level ASC, tn.order_index ASC
         """, (subject.lower().strip(),)) as cursor:
             rows = await cursor.fetchall()
             return [dict(r) for r in rows]

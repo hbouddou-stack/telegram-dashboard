@@ -3420,9 +3420,45 @@ function renderCustomQuizQuestion() {
 function submitCustomQuizAnswer(selectedIdx) {
     const state = customQuizState;
     const q = state.questions[state.currentIndex];
-    state.answers[state.currentIndex] = selectedIdx;
+    
+    // Setup question specific state if not present
+    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
     
     const isCorrect = selectedIdx === q.correct;
+    
+    // Audio
+    try {
+        if (isCorrect) {
+            document.getElementById('audio-correct').currentTime = 0;
+            document.getElementById('audio-correct').play();
+        } else {
+            document.getElementById('audio-incorrect').currentTime = 0;
+            document.getElementById('audio-incorrect').play();
+        }
+    } catch(e) {}
+
+    // SECOND CHANCE LOGIC
+    if (!isCorrect && !q.meta.failedOnce) {
+        q.meta.failedOnce = true;
+        const btn = document.getElementById(`cq-opt-${selectedIdx}`);
+        if (btn) {
+            btn.style.borderColor = '#ef4444';
+            btn.style.background = '#fef2f2';
+            btn.classList.add('anim-shake');
+            btn.disabled = true; // disable this wrong option
+            const bullet = btn.querySelector('.bullet');
+            if (bullet) {
+                bullet.style.borderColor = '#ef4444';
+                bullet.style.background = '#ef4444';
+            }
+        }
+        if (tg) { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
+        return; // Stop here, give them a second chance!
+    }
+
+    // IF CORRECT OR FAILED TWICE -> Show explanation and save
+    state.answers[state.currentIndex] = selectedIdx;
+    
     if (isCorrect) {
         state.score++;
     }
@@ -3440,23 +3476,23 @@ function submitCustomQuizAnswer(selectedIdx) {
         })
     }).catch(err => console.error("Failed to sync answer with DB:", err));
     
-    // Disable buttons and highlights
+    // Disable all buttons and highlight
     q.options.forEach((_, idx) => {
         const btn = document.getElementById(`cq-opt-${idx}`);
         if (btn) {
             btn.disabled = true;
             const bullet = btn.querySelector('.bullet');
-                        if (idx === q.correct) {
+            if (idx === q.correct) {
                 btn.style.borderColor = '#10b981';
                 btn.style.background = '#f0fdf4';
                 if (bullet) {
                     bullet.style.borderColor = '#10b981';
                     bullet.style.background = '#10b981';
                 }
-            } else if (idx === selectedIdx) {
+            } else if (idx === selectedIdx && !isCorrect) {
                 btn.style.borderColor = '#ef4444';
                 btn.style.background = '#fef2f2';
-                btn.classList.add('anim-shake'); // ADD SHAKE ANIMATION
+                btn.classList.add('anim-shake');
                 if (bullet) {
                     bullet.style.borderColor = '#ef4444';
                     bullet.style.background = '#ef4444';
@@ -3465,13 +3501,17 @@ function submitCustomQuizAnswer(selectedIdx) {
         }
     });
     
-        // Display feedback
+    // Hide hint button if present
+    const hintBtn = document.getElementById('custom-quiz-hint-btn');
+    if (hintBtn) hintBtn.style.display = 'none';
+    
+    // Display feedback
     const feedbackBox = document.getElementById('custom-quiz-feedback-box');
     if (feedbackBox) {
         feedbackBox.innerHTML = `
         <div class="quiz-feedback-box" style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right; padding: 16px; margin-bottom: 20px;">
               <div style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                  ${isCorrect ? '✅ إجابة صحيحة!' : '❌ إجابة خاطئة'}
+                  ${isCorrect ? '✅ إجابة صحيحة!' : '❌ للأسف، الإجابة غير صحيحة'}
               </div>
               ${formatQuizExplanation(q.explanation, q)}
           </div>
@@ -3490,13 +3530,42 @@ function submitCustomQuizAnswer(selectedIdx) {
     const nextBtn = document.getElementById('custom-quiz-next-btn');
     if (nextBtn) {
         const isLast = state.currentIndex === state.questions.length - 1;
-        nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ➡️';
+        nextBtn.innerHTML = isLast ? 'عرض النتيجة 🏆' : 'السؤال التالي ➡️';
         nextBtn.style.display = 'inline-flex';
     }
     
     if (tg) {
         try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
     }
+}
+
+function useCustomQuizHint() {
+    const state = customQuizState;
+    const q = state.questions[state.currentIndex];
+    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
+    if (q.meta.hintUsed) return;
+    
+    q.meta.hintUsed = true;
+    const hintBtn = document.getElementById('custom-quiz-hint-btn');
+    if (hintBtn) hintBtn.style.display = 'none';
+    
+    // Find 2 wrong options to disable
+    let wrongIndices = [];
+    q.options.forEach((_, idx) => {
+        if (idx !== q.correct) wrongIndices.push(idx);
+    });
+    
+    // Shuffle and pick up to 2
+    wrongIndices.sort(() => Math.random() - 0.5);
+    let toDisable = wrongIndices.slice(0, 2);
+    
+    toDisable.forEach(idx => {
+        const btn = document.getElementById(`cq-opt-${idx}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.3';
+        }
+    });
 }
 
 function toggleCustomQuizFavorite(qId, btn) {
@@ -6636,78 +6705,122 @@ function renderQuizQuestion() {
 }
 
 function submitAnswer(selectedIdx) {
-    if (quizSettings.correction === 'end') {
-        // In 'end' mode: just record the answer and move forward
-        const state = quizState;
-        if (state.answers[state.currentIndex] !== null) return;
-        state.answers[state.currentIndex] = selectedIdx;
-        const q = state.questions[state.currentIndex];
-        if (selectedIdx === q.answerIndex) state.score++;
-        // Highlight selected only (no correct/incorrect)
-        const optionsDiv = document.getElementById('quiz-options');
-        if (optionsDiv) {
-            optionsDiv.querySelectorAll('.quiz-option-btn').forEach((btn, idx) => {
-                btn.disabled = true;
-                if (idx === selectedIdx) btn.style.background = 'var(--primary-light)';
-            });
+    const state = quizState;
+    const q = state.questions[state.currentIndex];
+    
+    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
+    const isCorrect = selectedIdx === q.answerIndex;
+
+    // Audio
+    try {
+        if (isCorrect) {
+            document.getElementById('audio-correct').currentTime = 0;
+            document.getElementById('audio-correct').play();
+        } else {
+            document.getElementById('audio-incorrect').currentTime = 0;
+            document.getElementById('audio-incorrect').play();
         }
-        const nextBtn = document.getElementById('quiz-next-btn');
-        if (nextBtn) nextBtn.style.display = 'flex';
+    } catch(e) {}
+
+    // SECOND CHANCE LOGIC
+    if (!isCorrect && !q.meta.failedOnce) {
+        q.meta.failedOnce = true;
+        const optionsDiv = document.getElementById('quiz-options');
+        const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
+        const btn = buttons[selectedIdx];
+        if (btn) {
+            btn.style.borderColor = '#ef4444';
+            btn.style.background = '#fef2f2';
+            btn.classList.add('anim-shake');
+            btn.disabled = true;
+            const bullet = btn.querySelector('.bullet');
+            if (bullet) {
+                bullet.style.borderColor = '#ef4444';
+                bullet.style.background = '#ef4444';
+            }
+        }
+        if (tg) { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
         return;
     }
-    const state = quizState;
-    if (state.answers[state.currentIndex] !== null) return;
     
-    const q = state.questions[state.currentIndex];
     state.answers[state.currentIndex] = selectedIdx;
+    if (isCorrect) state.score++;
     
     const optionsDiv = document.getElementById('quiz-options');
     const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
-    
-    const isCorrect = selectedIdx === q.answerIndex;
-    if (isCorrect) {
-        state.score++;
-    }
     
     buttons.forEach((btn, idx) => {
         btn.disabled = true;
         const bullet = btn.querySelector('.bullet');
         if (idx === q.answerIndex) {
-            btn.classList.add('correct');
+            btn.style.borderColor = '#10b981';
+            btn.style.background = '#f0fdf4';
             if (bullet) {
                 bullet.style.borderColor = '#10b981';
                 bullet.style.background = '#10b981';
-                bullet.innerHTML = '<span style="color:white; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; font-weight:900;">✓</span>';
             }
-        } else if (idx === selectedIdx) {
-            btn.classList.add('incorrect');
+        } else if (idx === selectedIdx && !isCorrect) {
+            btn.style.borderColor = '#ef4444';
+            btn.style.background = '#fef2f2';
+            btn.classList.add('anim-shake');
             if (bullet) {
                 bullet.style.borderColor = '#ef4444';
                 bullet.style.background = '#ef4444';
-                bullet.innerHTML = '<span style="color:white; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; font-weight:900;">✕</span>';
             }
         }
     });
     
-    const feedbackDiv = document.getElementById('quiz-feedback-container');
-    feedbackDiv.innerHTML = `
-        <div class="quiz-feedback-box" style="border-right-color: ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right; background: transparent; border: none; padding: 0;">
-              <div class="quiz-feedback-title" style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px;">
-                  ${isCorrect ? '✅ إجابة صحيحة!' : '❌ إجابة خاطئة'}
+    const hintBtn = document.getElementById('quiz-hint-btn');
+    if (hintBtn) hintBtn.style.display = 'none';
+    
+    const feedbackBox = document.getElementById('quiz-feedback-box');
+    if (feedbackBox) {
+        feedbackBox.innerHTML = `
+          <div class="quiz-feedback-box" style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding: 16px; margin-bottom: 20px; direction: rtl; text-align: right;">
+              <div style="font-weight: 800; color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                  ${isCorrect ? '✅ إجابة صحيحة!' : '❌ للأسف، الإجابة غير صحيحة'}
               </div>
               ${formatQuizExplanation(q.explanation, q)}
-          </div>
-      `;
-
+          </div>`;
+    }
     
     const nextBtn = document.getElementById('quiz-next-btn');
-    const isLast = state.currentIndex === state.questions.length - 1;
-    nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ⬅️';
-    nextBtn.style.display = 'inline-flex';
-    
-    if (tg) {
-        try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
+    if (nextBtn) {
+        const isLast = state.currentIndex === state.questions.length - 1;
+        nextBtn.innerHTML = isLast ? 'عرض النتيجة 🏆' : 'السؤال التالي ➡️';
+        nextBtn.style.display = 'inline-flex';
     }
+    
+    if (tg) { try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){} }
+}
+
+function useQuizHint() {
+    const state = quizState;
+    const q = state.questions[state.currentIndex];
+    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
+    if (q.meta.hintUsed) return;
+    
+    q.meta.hintUsed = true;
+    const hintBtn = document.getElementById('quiz-hint-btn');
+    if (hintBtn) hintBtn.style.display = 'none';
+    
+    let wrongIndices = [];
+    q.options.forEach((_, idx) => {
+        if (idx !== q.answerIndex) wrongIndices.push(idx);
+    });
+    
+    wrongIndices.sort(() => Math.random() - 0.5);
+    let toDisable = wrongIndices.slice(0, 2);
+    
+    const optionsDiv = document.getElementById('quiz-options');
+    const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
+    toDisable.forEach(idx => {
+        const btn = buttons[idx];
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.3';
+        }
+    });
 }
 
 function nextQuestion() {
@@ -7349,6 +7462,11 @@ function resolveProposal(proposalId, action) {
         </div>
     </div>
 </div>
+
+
+<!-- AUDIO ELEMENTS -->
+<audio id="audio-correct" src="https://cdn.freesound.org/previews/320/320655_527080-lq.mp3" preload="auto"></audio>
+<audio id="audio-incorrect" src="https://cdn.freesound.org/previews/142/142608_1840739-lq.mp3" preload="auto"></audio>
 
 </body>
 </html>

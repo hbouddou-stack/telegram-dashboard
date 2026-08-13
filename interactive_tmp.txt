@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -8,103 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js">
-const supportFlowIndex = {
-    category: '', subcategory: '', message: '', currentOptsId: '',
-    selectCategory: function(cat) {
-        this.category = cat;
-        this.addMessage(cat, 'user');
-        document.getElementById('support-step-1-options-index').style.display = 'none';
-        
-        setTimeout(() => {
-            let subText = ''; let subBtns = '';
-            if(cat === 'تقنية') {
-                subText = 'هل المشكلة متعلقة بـ:';
-                subBtns = 
-                    <button onclick="supportFlowIndex.selectSubcategory('الفيديو لا يعمل')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">الفيديو لا يعمل</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('لا يوجد صوت')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">لا يوجد صوت</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('مشكلة في التطبيق')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">مشكلة في التطبيق</button>
-                ;
-            } else if(cat === 'إدارية') {
-                subText = 'المرجو تحديد المشكلة:';
-                subBtns = 
-                    <button onclick="supportFlowIndex.selectSubcategory('تجديد الاشتراك')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">تجديد الاشتراك</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('مشكلة في الدفع')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">مشكلة في الدفع</button>
-                ;
-            } else {
-                subText = 'هل المشكلة في:';
-                subBtns = 
-                    <button onclick="supportFlowIndex.selectSubcategory('فهم الدرس')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">فهم الدرس</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('سؤال حول الاختبار')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">سؤال حول الاختبار</button>
-                ;
-            }
-            this.addMessage(subText, 'bot');
-            const optsId = 'subopts-idx-' + Date.now();
-            const optsHtml = <div id="" style="display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; max-width: 85%;"></div>;
-            document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', optsHtml);
-            this.currentOptsId = optsId;
-            this.scrollToBottom();
-        }, 500);
-    },
-    selectSubcategory: function(sub) {
-        this.subcategory = sub;
-        this.addMessage(sub, 'user');
-        if(this.currentOptsId) { document.getElementById(this.currentOptsId).style.display = 'none'; }
-        
-        setTimeout(() => {
-            let tip = '';
-            if (sub === 'الفيديو لا يعمل' || sub === 'لا يوجد صوت') { tip = '💡 نصيحة سريعة: 90% من مشاكل الفيديو تُحل بمجرد تحديث الصفحة أو مسح ذاكرة التخزين المؤقت (Cache). هل تريد تجربة ذلك؟<br><br>'; }
-            else if (sub === 'مشكلة في الدفع' || sub === 'تجديد الاشتراك') { tip = '💡 ملاحظة: تفعيل الاشتراكات قد يأخذ ما بين 5 إلى 15 دقيقة للظهور في التطبيق بعد الدفع.<br><br>'; }
-            else if (sub === 'فهم الدرس') { tip = '💡 هل تعلم؟ يمكنك استخدام "الخريطة الذهنية" أو "ملخص الدرس" المتوفرة في قائمة الدرس للحصول على فكرة أوضح قبل طرح السؤال.<br><br>'; }
-            this.addMessage(tip + 'إذا كانت المشكلة مستمرة، يرجى كتابة التفاصيل أدناه:', 'bot');
-            document.getElementById('support-chat-input-area-index').style.display = 'flex';
-            document.getElementById('support-chat-input-index').focus();
-            this.scrollToBottom();
-        }, 500);
-    },
-    sendMessage: function() {
-        const inp = document.getElementById('support-chat-input-index');
-        const text = inp.value.trim();
-        if(!text) return;
-        this.message = text; inp.value = '';
-        document.getElementById('support-chat-input-area-index').style.display = 'none';
-        this.addMessage(text, 'user');
-        setTimeout(() => {
-            const typingId = 'typing-idx-' + Date.now();
-            const typingHtml = <div id="" style="align-self: flex-start; background: white; padding: 12px 16px; border-radius: 16px 16px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; gap: 4px; align-items: center;"><span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></span><span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span><span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span><span style="font-size: 12px; color: #6b7280; margin-right: 8px;">جاري البحث...</span></div>;
-            document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', typingHtml);
-            this.scrollToBottom();
-            setTimeout(() => {
-                document.getElementById(typingId).remove();
-                this.showFaqAndEscalate();
-            }, 2500);
-        }, 400);
-    },
-    showFaqAndEscalate: function() {
-        this.addMessage(للأسف لم أجد إجابة مباشرة. يمكنك تصفح الأسئلة الشائعة أو إرسال المشكلة للإدارة., 'bot');
-        const faqs = <div style="background: white; border-radius: 12px; padding: 10px; align-self: flex-start; width: 100%; max-width: 90%; margin-top: 5px;"><details style="padding: 8px; border-bottom: 1px solid #f3f4f6;"><summary style="font-weight: bold; cursor: pointer;">كيف أجد ملخص الدرس؟</summary><p style="margin-top: 8px; font-size: 13px;">الملخص متوفر في قائمة الدرس عبر زر (الخريطة الذهنية).</p></details></div><div style="align-self: center; margin-top: 15px;"><button onclick="supportFlowIndex.escalateToAdmin()" style="background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 24px; font-weight: bold; cursor: pointer;">إرسال المشكلة إلى الإدارة 📩</button></div>;
-        document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', faqs);
-        this.scrollToBottom();
-    },
-    escalateToAdmin: function() {
-        event.target.style.display = 'none';
-        this.addMessage("إرسال المشكلة إلى الإدارة", "user");
-        setTimeout(() => { this.addMessage("✅ تمت إحالة طلبك بنجاح. ستتلقى رداً في صندوق الوارد.", "bot"); }, 800);
-    },
-    addMessage: function(text, sender) {
-        const isBot = sender === 'bot';
-        const bg = isBot ? 'white' : 'var(--primary)';
-        const color = isBot ? 'var(--text-1)' : 'white';
-        const align = isBot ? 'flex-start' : 'flex-end';
-        const radius = isBot ? '16px 16px 0 16px' : '16px 16px 16px 0';
-        const html = <div style="align-self: ; background: ; color: ; padding: 12px 16px; border-radius: ; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 85%;"></div>;
-        document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', html);
-        this.scrollToBottom();
-    },
-    scrollToBottom: function() { const hist = document.getElementById('support-chat-history-index'); hist.scrollTop = hist.scrollHeight; }
-};
+        <script src="bot-config.js"></script>
 
-</script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         /* ─── Design Tokens ─── */
         :root {
@@ -1123,7 +1029,6 @@ const supportFlowIndex = {
             z-index: 2;
         }
         .roadmap-node-dot {
-            display: none;
             position: absolute;
             right: -21px;
             left: auto;
@@ -1137,13 +1042,11 @@ const supportFlowIndex = {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .roadmap-node.completed .roadmap-node-dot {
-            display: none;
             border-color: var(--subj-color);
             background: var(--subj-color);
             box-shadow: 0 0 8px var(--subj-color);
         }
         .roadmap-node.in-progress .roadmap-node-dot {
-            display: none;
             border-color: var(--subj-color);
             background: var(--surface);
             animation: pulse-dot 2s infinite;
@@ -1825,6 +1728,207 @@ const supportFlowIndex = {
             margin-bottom: 10px;
             border: 2px dashed var(--primary-border);
         }
+        /* ── Quiz Settings Screen ── */
+        .quiz-settings-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            padding: 28px 20px 40px;
+            direction: rtl;
+            animation: fadeIn 0.3s ease;
+        }
+        .qs-section-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-3);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .qs-count-row {
+            display: flex;
+            gap: 10px;
+        }
+        .qs-count-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 14px 8px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            background: var(--bg);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.18s ease;
+            position: relative;
+        }
+        .qs-count-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .qs-count-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+        }
+        .qs-count-btn .qs-num {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--text);
+        }
+        .qs-count-btn.selected .qs-num {
+            color: var(--primary);
+        }
+        .qs-count-btn .qs-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-3);
+        }
+        .qs-count-btn.selected .qs-label {
+            color: var(--primary);
+        }
+        .qs-count-btn .qs-check {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            font-size: 13px;
+            display: none;
+        }
+        .qs-count-btn.selected .qs-check {
+            display: block;
+        }
+        .qs-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: border-color 0.18s;
+        }
+        .qs-toggle-row.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .qs-toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .qs-toggle-icon {
+            font-size: 22px;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qs-toggle-row.active .qs-toggle-icon {
+            background: rgba(79,70,229,0.1);
+        }
+        .qs-toggle-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .qs-toggle-desc {
+            font-size: 11.5px;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+        .qs-pill-toggle {
+            width: 44px;
+            height: 24px;
+            border-radius: 12px;
+            background: var(--border);
+            position: relative;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .qs-pill-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            transition: right 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        }
+        .qs-toggle-row.active .qs-pill-toggle {
+            background: var(--primary);
+        }
+        .qs-toggle-row.active .qs-pill-toggle::after {
+            right: 23px;
+        }
+        .qs-correction-row {
+            display: flex;
+            gap: 10px;
+        }
+        .qs-correction-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 8px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: var(--bg);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.18s ease;
+        }
+        .qs-correction-btn:hover {
+            border-color: var(--primary);
+        }
+        .qs-correction-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .qs-correction-btn .qs-c-icon { font-size: 20px; }
+        .qs-correction-btn .qs-c-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .qs-correction-btn.selected .qs-c-title { color: var(--primary); }
+        .qs-correction-btn .qs-c-desc {
+            font-size: 10.5px;
+            color: var(--text-3);
+            text-align: center;
+        }
+        .quiz-chrono-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: #fef3c7;
+            border-bottom: 1px solid #fde68a;
+            font-size: 13px;
+            font-weight: 800;
+            color: #b45309;
+            direction: rtl;
+        }
+        .quiz-chrono-bar.warning {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.65; }
+        }
         /* Admin Dashboard & Editor Styles */
         .admin-badge {
             background: rgba(217, 119, 6, 0.08);
@@ -2077,86 +2181,35 @@ const supportFlowIndex = {
         .switch-toggle input:checked + .slider-round::before {
             transform: translateX(20px);
         }
-    
-        /* Quiz Animations & Visuals */
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Progression Tab Styles */
+        .progress-toggle-btn {
+            flex: 1;
+            border: none;
+            padding: 10px 0;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 12.5px;
+            cursor: pointer;
+            background: none;
+            color: var(--text-3);
+            transition: all 0.2s;
         }
-        @keyframes popIn {
-            0% { transform: scale(0.95); opacity: 0; }
-            70% { transform: scale(1.02); }
-            100% { transform: scale(1); opacity: 1; }
+        .progress-toggle-btn.active {
+            background: #ffffff;
+            color: var(--text-1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        @keyframes shakeIncorrect {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
-        .quiz-option-btn {
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        .quiz-option-btn:active:not(:disabled) {
-            transform: scale(0.97);
-        }
-        .quiz-option-btn.anim-shake {
-            animation: shakeIncorrect 0.4s ease-in-out;
-        }
-        .quiz-feedback-box {
-            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-            border-radius: 16px;
-        }
-        #quiz-progress-fill {
-            box-shadow: 0 0 10px var(--primary);
-        }
+    </style>
 
-</style>
 </head>
 <body>
 <div id="app">
 
-    <!-- INBOX -->
-    <div class="tab-panel active" id="tab-inbox" style="padding: 20px; direction: rtl; text-align: right; background: var(--bg); min-height: 100vh; padding-bottom: 90px;">
-        <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px; text-align: center;">📥 صندوق الوارد</h2>
-        
-        <div style="background: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 4px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                <strong style="color: var(--text-1);">إدارة الأكاديمية</strong>
-                <span style="font-size: 11px; color: var(--text-3);">الآن</span>
-            </div>
-            <div style="font-size: 14px; color: var(--text-2);">مرحباً بك في منصة التعلم التفاعلية! نحن هنا لمساعدتك في أي وقت.</div>
-        </div>
-
-        <div style="background: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 4px solid #10b981; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                <strong style="color: var(--text-1);">تذكرة الدعم #102</strong>
-                <span style="font-size: 11px; color: var(--text-3);">أمس</span>
-            </div>
-            <div style="font-size: 14px; color: var(--text-2);">تم حل المشكلة التقنية التي أبلغت عنها. شكراً لصبرك!</div>
-            <div id="ticket-resolve-actions-102" style="display: flex; gap: 10px; margin-top: 15px;">
-                <button onclick="document.getElementById('ticket-resolve-actions-102').innerHTML='<span style=\'color: #10b981; font-weight: bold; font-size: 13px;\'>✅ شكراً لك! يسعدنا أن المشكلة حُلت.</span>';" style="flex: 1; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;">👍 المشكلة حُلت</button>
-                <button onclick="document.getElementById('ticket-resolve-actions-102').innerHTML='<span style=\'color: #ef4444; font-weight: bold; font-size: 13px;\'>سيتم إعادة فتح التذكرة وإبلاغ الإدارة...</span>';" style="flex: 1; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;">👎 أحتاج للمزيد من الدعم</button>
-            </div>
-        </div>
-    </div>
-
     <!-- HOME -->
-    <div class="tab-panel" id="tab-home">
-        <div class="greeting-bar" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2 id="greeting-text">مرحباً بك 👋</h2>
-                <p>استمر في رحلتك العلمية اليوم</p>
-            </div>
-            <button onclick="window.location.href='support.html'" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; width: 44px; height: 44px; font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: background 0.2s;">
-                📬
-            </button>
+    <div class="tab-panel active" id="tab-home">
+        <div class="greeting-bar">
+            <h2 id="greeting-text">مرحباً بك 👋</h2>
+            <p>استمر في رحلتك العلمية اليوم</p>
         </div>
         
         <div class="sec-header"><h1>▶️ استمر في التعلم</h1><p>الدروس التي بدأت دراستها مؤخراً</p></div>
@@ -2365,33 +2418,32 @@ const supportFlowIndex = {
         </div>
     </div>
 
-    <!-- PROFILE -->
-    <div class="tab-panel" id="tab-support" style="background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; direction: rtl; padding-bottom: 90px;">
-        <div style="background: var(--primary); color: white; padding: 15px 20px; text-align: center; font-weight: bold; font-size: 18px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            🎧 المساعد الذكي
-        </div>
-        
-        <div id="support-chat-history-index" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 120px;">
-            <!-- Initial Bot Message -->
-            <div style="align-self: flex-start; background: white; padding: 12px 16px; border-radius: 16px 16px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 85%;">
-                مرحباً بك! 👋<br>أي نوع من المشاكل تواجه حالياً؟
+    <!-- PROGRESSION -->
+    <div class="tab-panel" id="tab-progress">
+        <div style="display:flex; flex-direction:column; gap:16px; direction:rtl; text-align:right;">
+            <!-- Header section -->
+            <div style="background:var(--card-bg); padding:20px; border-radius:20px; border:1px solid var(--border); display:flex; flex-direction:column; gap:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.01);">
+                <h2 style="margin:0; font-size:17px; font-weight:800; color:var(--text-1); display:flex; align-items:center; gap:8px;">📈 مستوى التقدم الدراسي</h2>
+                <p style="margin:0; font-size:12px; color:var(--text-3);">تابع مسار تعلمك ونسبة إنجازك لكل مادة دراسية بالتفصيل.</p>
             </div>
             
-            <div id="support-step-1-options-index" style="display: flex; flex-direction: column; gap: 8px; align-self: flex-start; width: 100%; max-width: 85%;">
-                <button onclick="supportFlowIndex.selectCategory('تقنية')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 12px; font-weight: bold;">🛠 مشكلة تقنية</button>
-                <button onclick="supportFlowIndex.selectCategory('إدارية')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 12px; font-weight: bold;">📁 مشكلة إدارية (دفع، تسجيل)</button>
-                <button onclick="supportFlowIndex.selectCategory('بيداغوجية')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 10px; border-radius: 12px; font-weight: bold;">📚 مشكلة في الدروس (بيداغوجية)</button>
+            <!-- Toggle selector -->
+            <div style="background:#f1f5f9; padding:4px; border-radius:14px; display:flex; gap:4px; border:1px solid #e2e8f0; margin-bottom: 4px;">
+                <button id="progress-view-official-btn" class="progress-toggle-btn active" onclick="switchProgressView('official')">📋 المنهج الرسمي</button>
+                <button id="progress-view-thematic-btn" class="progress-toggle-btn" onclick="switchProgressView('thematic')">📂 التقسيم الموضوعي</button>
+            </div>
+
+            <!-- Content containers -->
+            <div id="progress-view-official" style="display:flex; flex-direction:column; gap:14px;">
+                <div style="text-align:center; padding:30px; color:var(--text-3); font-size:13px;">جاري تحميل بيانات التقدم...</div>
+            </div>
+            <div id="progress-view-thematic" style="display:none; flex-direction:column; gap:14px;">
+                <div style="text-align:center; padding:30px; color:var(--text-3); font-size:13px;">جاري تحميل بيانات التقدم...</div>
             </div>
         </div>
-
-        <div id="support-chat-input-area-index" style="display: none; background: white; padding: 10px 15px; border-top: 1px solid #e5e7eb; position: fixed; bottom: 70px; width: 100%; box-sizing: border-box; align-items: center; gap: 10px; z-index: 20;">
-            <input type="text" id="support-chat-input-index" placeholder="اكتب تفاصيل مشكلتك هنا..." style="flex: 1; border: none; background: #f3f4f6; padding: 12px 16px; border-radius: 24px; outline: none; font-family: inherit;">
-            <button onclick="supportFlowIndex.sendMessage()" style="background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
     </div>
-    
+
+    <!-- PROFILE -->
     <div class="tab-panel" id="tab-profile">
         <!-- Admin secret switch toggle bar -->
         <div class="admin-toggle-bar">
@@ -2432,17 +2484,6 @@ const supportFlowIndex = {
         <div class="profile-sub">أكاديمية الباجي للعلوم الشرعية</div>
         <div class="stats-grid" id="stats-grid"></div>
         
-        <button onclick="window.location.href='support.html'" style="width: 100%; margin-top: 20px; padding: 18px; background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%); border: none; border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 16px -2px rgba(79, 70, 229, 0.25);">
-           <div style="display: flex; align-items: center; gap: 14px;">
-              <span style="font-size: 26px; background: rgba(255,255,255,0.2); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">💬</span>
-              <div style="text-align: right; color: white;">
-                 <h3 style="font-size: 15.5px; font-weight: 800; margin-bottom: 2px;">تذاكري والدعم الفني</h3>
-                 <p style="font-size: 12px; opacity: 0.9;">طرح سؤال، مشكلة تقنية، ومتابعة الردود</p>
-              </div>
-           </div>
-           <span style="color: white; font-size: 20px; font-weight: 800;">←</span>
-        </button>
-        
         <div class="sec-header" style="margin-top:20px;"><h1>📊 إنجاز المواد الدراسية</h1><p>نسبة اكتمال المحاور لكل مادة علمية</p></div>
         <div id="profile-subjects-progress" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;"></div>
         
@@ -2454,13 +2495,13 @@ const supportFlowIndex = {
 
     <!-- NAV -->
     <nav>
-        <button class="nav-btn active" onclick="switchTab('inbox',this)"><span class="icon">📥</span><span>صندوق الوارد</span></button>
+        <button class="nav-btn active" onclick="switchTab('home',this)"><span class="icon">🏠</span><span>الرئيسية</span></button>
         <button class="nav-btn" onclick="switchTab('search',this)"><span class="icon">🔍</span><span>البحث</span></button>
         <button class="nav-btn" onclick="switchTab('syllabus',this)"><span class="icon">🗺️</span><span>المقرر</span></button>
         <button class="nav-btn" onclick="switchTab('mylibrary',this)"><span class="icon">📚</span><span>مكتبتي</span></button>
         <button class="nav-btn" onclick="switchTab('flashcards',this)"><span class="icon">🃏</span><span>المراجعة</span></button>
+        <button class="nav-btn" onclick="switchTab('progress',this)"><span class="icon">📈</span><span>التقدم</span></button>
         <button class="nav-btn" onclick="switchTab('profile',this)"><span class="icon">👤</span><span>ملفي</span></button>
-        <button class="nav-btn" onclick="switchTab('faq',this)"><span class="icon">🤖</span><span>FAQ Intelligent</span></button>
     </nav>
 </div>
 
@@ -2645,7 +2686,7 @@ fetch('/quran_db.json?v=1')
     .catch(() => {});
 
 // Load transcripts.json lazily so it never blocks the user interface
-fetch('/transcripts.json?v=22')
+fetch('/transcripts.json?v=23')
     .then(r => r.ok ? r.json() : [])
     .then(transcriptsJson => {
         if (!Array.isArray(transcriptsJson) || transcriptsJson.length === 0) {
@@ -2697,6 +2738,7 @@ function switchTab(name, btn) {
     
     if(name==='search') setTimeout(()=>document.getElementById('search-input').focus(),100);
     if(name==='mylibrary') renderMyLibrary();
+    if(name==='progress') renderProgressionTab();
     
     try {
         if(tg && tg.CloudStorage) tg.CloudStorage.setItem('active_tab', name);
@@ -3059,7 +3101,16 @@ function selectFcSubject(subj) {
             <span>مراجعة جميع محاور المادة</span>
         </div>
     </div>
-    <div style="margin: 12px 4px 6px 0; font-size: 11px; font-weight: 700; color: var(--text-3);">اختر درساً معيناً للمراجعة:</div>`;
+    <div style="margin: 14px 0 8px 0; direction: rtl;">
+        <div style="font-size: 12px; font-weight: 800; color: var(--text-2); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">
+            📋 الدروس
+            <span style="background:#16a34a; color:#fff; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:8px; letter-spacing:0.03em;">رسمي</span>
+        </div>
+        <div style="background: #f0fdf4; border: 1.2px solid #bbf7d0; border-radius: 12px; padding: 10px 14px; font-size: 11.5px; color: #166534; line-height: 1.6; direction: rtl;">
+            ⭐ هذه الدروس مرتبة حسب تسلسل المنهج الرسمي للأكاديمية. أسئلتها مراجعة ومعتمدة من قِبل الإدارة.
+        </div>
+    </div>`;
+
     
     html += lessons.map(l => {
         return `
@@ -3142,9 +3193,12 @@ function renderFc() {
             <div id="fc-back" style="display:none; border-top:1px dashed #e2e8f0; margin-top:14px; padding-top:12px;">
                 <div class="block-citation" style="font-size:13px; line-height:1.6; color:var(--text-2);">${fc.citation}</div>
                 ${fc.video_link ? `
-                <a href="${fc.video_link}" target="_blank" class="btn-sm" style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; background:var(--primary-light); color:var(--primary); text-decoration:none; font-weight:700;" onclick="event.stopPropagation()">
-                    🎬 شاهد الشرح في الفيديو (${fc.timestamp})
-                </a>` : ''}
+                <div style="display: flex; flex-direction: column; align-items: flex-start; margin-top: 10px;">
+                    <a href="${fc.video_link}" target="_blank" class="btn-sm" style="display:inline-flex; align-items:center; gap:6px; background:var(--primary-light); color:var(--primary); text-decoration:none; font-weight:700;" onclick="event.stopPropagation()">
+                        🎬 شاهد الشرح في الفيديو (${fc.timestamp})
+                    </a>
+                    <span style="font-size: 11px; font-style: italic; color: var(--text-3); margin-top: 4px;">(يمكنك الضغط على الوقت للوصول إلى الفيديو)</span>
+                </div>` : ''}
             </div>
         </div>
         
@@ -3325,45 +3379,9 @@ function renderCustomQuizQuestion() {
 function submitCustomQuizAnswer(selectedIdx) {
     const state = customQuizState;
     const q = state.questions[state.currentIndex];
-    
-    // Setup question specific state if not present
-    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
-    
-    const isCorrect = selectedIdx === q.correct;
-    
-    // Audio
-    try {
-        if (isCorrect) {
-            document.getElementById('audio-correct').currentTime = 0;
-            document.getElementById('audio-correct').play();
-        } else {
-            document.getElementById('audio-incorrect').currentTime = 0;
-            document.getElementById('audio-incorrect').play();
-        }
-    } catch(e) {}
-
-    // SECOND CHANCE LOGIC
-    if (!isCorrect && !q.meta.failedOnce) {
-        q.meta.failedOnce = true;
-        const btn = document.getElementById(`cq-opt-${selectedIdx}`);
-        if (btn) {
-            btn.style.borderColor = '#ef4444';
-            btn.style.background = '#fef2f2';
-            btn.classList.add('anim-shake');
-            btn.disabled = true; // disable this wrong option
-            const bullet = btn.querySelector('.bullet');
-            if (bullet) {
-                bullet.style.borderColor = '#ef4444';
-                bullet.style.background = '#ef4444';
-            }
-        }
-        if (tg) { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
-        return; // Stop here, give them a second chance!
-    }
-
-    // IF CORRECT OR FAILED TWICE -> Show explanation and save
     state.answers[state.currentIndex] = selectedIdx;
     
+    const isCorrect = selectedIdx === q.correct;
     if (isCorrect) {
         state.score++;
     }
@@ -3381,7 +3399,7 @@ function submitCustomQuizAnswer(selectedIdx) {
         })
     }).catch(err => console.error("Failed to sync answer with DB:", err));
     
-    // Disable all buttons and highlight
+    // Disable buttons and highlights
     q.options.forEach((_, idx) => {
         const btn = document.getElementById(`cq-opt-${idx}`);
         if (btn) {
@@ -3394,10 +3412,9 @@ function submitCustomQuizAnswer(selectedIdx) {
                     bullet.style.borderColor = '#10b981';
                     bullet.style.background = '#10b981';
                 }
-            } else if (idx === selectedIdx && !isCorrect) {
+            } else if (idx === selectedIdx) {
                 btn.style.borderColor = '#ef4444';
                 btn.style.background = '#fef2f2';
-                btn.classList.add('anim-shake');
                 if (bullet) {
                     bullet.style.borderColor = '#ef4444';
                     bullet.style.background = '#ef4444';
@@ -3406,20 +3423,16 @@ function submitCustomQuizAnswer(selectedIdx) {
         }
     });
     
-    // Hide hint button if present
-    const hintBtn = document.getElementById('custom-quiz-hint-btn');
-    if (hintBtn) hintBtn.style.display = 'none';
-    
     // Display feedback
     const feedbackBox = document.getElementById('custom-quiz-feedback-box');
     if (feedbackBox) {
         feedbackBox.innerHTML = `
-        <div class="quiz-feedback-box" style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right; padding: 16px; margin-bottom: 20px;">
-              <div style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                  ${isCorrect ? '✅ إجابة صحيحة!' : '❌ للأسف، الإجابة غير صحيحة'}
-              </div>
-              ${formatQuizExplanation(q.explanation, q)}
-          </div>
+        <div style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding:10px 14px; background:#f8fafc; border-radius:8px; text-align:right; margin-bottom: 12px;">
+            <div style="font-weight:800; color:${isCorrect ? '#10b981' : '#ef4444'}; font-size:13.5px; margin-bottom:4px;">
+                ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
+            </div>
+            <div style="font-size:12px; color:var(--text-2); line-height:1.5;">${q.explanation}</div>
+        </div>
         
         <div style="display: flex; gap: 8px;">
             <button class="btn-sm btn-outline" onclick="toggleCustomQuizFavorite(${q.id}, this)" style="flex: 1; justify-content: center; font-weight: 800;">
@@ -3435,42 +3448,13 @@ function submitCustomQuizAnswer(selectedIdx) {
     const nextBtn = document.getElementById('custom-quiz-next-btn');
     if (nextBtn) {
         const isLast = state.currentIndex === state.questions.length - 1;
-        nextBtn.innerHTML = isLast ? 'عرض النتيجة 🏆' : 'السؤال التالي ➡️';
+        nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ➡️';
         nextBtn.style.display = 'inline-flex';
     }
     
     if (tg) {
         try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
     }
-}
-
-function useCustomQuizHint() {
-    const state = customQuizState;
-    const q = state.questions[state.currentIndex];
-    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
-    if (q.meta.hintUsed) return;
-    
-    q.meta.hintUsed = true;
-    const hintBtn = document.getElementById('custom-quiz-hint-btn');
-    if (hintBtn) hintBtn.style.display = 'none';
-    
-    // Find 2 wrong options to disable
-    let wrongIndices = [];
-    q.options.forEach((_, idx) => {
-        if (idx !== q.correct) wrongIndices.push(idx);
-    });
-    
-    // Shuffle and pick up to 2
-    wrongIndices.sort(() => Math.random() - 0.5);
-    let toDisable = wrongIndices.slice(0, 2);
-    
-    toDisable.forEach(idx => {
-        const btn = document.getElementById(`cq-opt-${idx}`);
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = '0.3';
-        }
-    });
 }
 
 function toggleCustomQuizFavorite(qId, btn) {
@@ -3529,34 +3513,31 @@ function finishCustomQuiz() {
     localStorage.setItem('academy_user_xp', totalXp + xpGained);
     renderProfile();
     
-    let medal = pct === 100 ? '💎' : (pct >= 80 ? '🥇' : (pct >= 50 ? '🥈' : '🎯'));
-    let msg = pct === 100 ? 'ممتاز! نتيجة مثالية' : (pct >= 80 ? 'عمل رائع جداً!' : (pct >= 50 ? 'نتيجة جيدة، واصل' : 'حاول مرة أخرى'));
-    
     playArea.innerHTML = `
-        <div class="card quiz-feedback-box" style="padding:32px 20px; text-align:center; direction:rtl; margin-top: 20px; border: 1px solid rgba(255,255,255,0.8);">
-            <div style="font-size:72px; margin-bottom:12px; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 10px 20px rgba(0,0,0,0.1);">${medal}</div>
-            <h2 style="font-size:24px; font-weight:900; margin-bottom:6px; color:var(--primary);">${msg}</h2>
-            <p style="font-size:14px; color:var(--text-2); margin-bottom:24px;">لقد أنهيت الاختبار المخصص بنجاح</p>
+        <div class="card" style="padding:24px 16px; text-align:center; direction:rtl;">
+            <div style="font-size:48px; margin-bottom:12px;">🏆</div>
+            <h2 style="font-size:18px; font-weight:900; margin-bottom:6px; color:var(--text-1);">اكتمل الاختبار المخصص!</h2>
+            <p style="font-size:12.5px; color:var(--text-3); margin-bottom:20px;">لقد أنهيت الإجابة على جميع الأسئلة</p>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; background:rgba(255,255,255,0.5); padding:20px; border-radius:16px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="flex:1; text-align:center;">
-                    <div style="font-size:28px; font-weight:900; color:var(--primary);">${state.score} / ${state.questions.length}</div>
-                    <div style="font-size:12px; color:var(--text-3); font-weight: 700; margin-top:4px;">إجابة صحيحة</div>
+            <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:24px; background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #cbd5e1;">
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${state.score} / ${state.questions.length}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الأسئلة الصحيحة</div>
                 </div>
-                <div style="width:2px; height:40px; background:rgba(0,0,0,0.05); border-radius: 2px;"></div>
-                <div style="flex:1; text-align:center;">
-                    <div style="font-size:28px; font-weight:900; color:#10b981;">+${xpGained}</div>
-                    <div style="font-size:12px; color:var(--text-3); font-weight: 700; margin-top:4px;">مكتسبة XP</div>
+                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:#10b981;">+${xpGained}</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الدرجات المحصلة</div>
                 </div>
-                <div style="width:2px; height:40px; background:rgba(0,0,0,0.05); border-radius: 2px;"></div>
-                <div style="flex:1; text-align:center;">
-                    <div style="font-size:28px; font-weight:900; color:var(--text-1);">${pct}%</div>
-                    <div style="font-size:12px; color:var(--text-3); font-weight: 700; margin-top:4px;">معدل النجاح</div>
+                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--text-1);">${pct}%</div>
+                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">معدل النجاح</div>
                 </div>
             </div>
             
-            <button class="btn-sm btn-primary" onclick="exitCustomQuiz()" style="width:100%; padding:16px; border-radius:14px; font-size:16px; font-weight:800; border:none; color:#fff; cursor:pointer; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4); transition: transform 0.2s;">
-                🔄 العودة لمركز المراجعة
+            <button class="btn-sm btn-primary" onclick="exitCustomQuiz()" style="width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:800; border:none; color:#fff; cursor:pointer;">
+                ➡️ العودة لمركز المراجعة
             </button>
         </div>`;
 }
@@ -3763,9 +3744,179 @@ function loadStudentStatsFromDb() {
                     <div class="stat-card"><div class="stat-val" style="color: #ef4444;">${wrong}</div><div class="stat-lbl">الإجابات الخاطئة</div></div>
                     <div class="stat-card"><div class="stat-val" style="color: #f59e0b;">🔥 ${streak}</div><div class="stat-lbl">أيام النشاط المتتالي</div></div>`;
             }
+            
+            // Save progression data globally
+            window.studentCourseProgress = res.courseProgress || [];
+            window.studentDetailedProgress = res.detailedProgress || {};
+            
+            // Render progress tab if it's currently selected
+            const progressTab = document.getElementById('tab-progress');
+            if (progressTab && progressTab.classList.contains('active')) {
+                renderProgressionTab();
+            }
         }
     })
     .catch(err => console.error("Error loading student stats from DB:", err));
+}
+
+// ── PROGRESSION TAB ──
+let currentProgressView = 'official';
+let siraThematicView = 'themes';
+
+function switchProgressView(view) {
+    currentProgressView = view;
+    document.getElementById('progress-view-official-btn').className = view === 'official' ? 'progress-toggle-btn active' : 'progress-toggle-btn';
+    document.getElementById('progress-view-thematic-btn').className = view === 'thematic' ? 'progress-toggle-btn active' : 'progress-toggle-btn';
+    
+    document.getElementById('progress-view-official').style.display = view === 'official' ? 'flex' : 'none';
+    document.getElementById('progress-view-thematic').style.display = view === 'thematic' ? 'flex' : 'none';
+    
+    renderProgressionTab();
+}
+
+function switchSiraThematicView(view) {
+    siraThematicView = view;
+    renderProgressionTab();
+}
+
+function renderProgressionTab() {
+    const officialContainer = document.getElementById('progress-view-official');
+    const thematicContainer = document.getElementById('progress-view-thematic');
+    if (!officialContainer || !thematicContainer) return;
+    
+    const subjects = ['sira', 'fiqh', 'aqeeda', 'nahw', 'tajweed'];
+    const detailedProgress = window.studentDetailedProgress || {};
+    
+    if (currentProgressView === 'official') {
+        let html = '';
+        subjects.forEach(sub => {
+            const meta = SUBJECT_METADATA[sub] || { title: sub.toUpperCase(), icon: '📚', cls: '' };
+            const subProgress = detailedProgress[sub] || {};
+            const lessonsP = subProgress.lessons || [];
+            if (lessonsP.length === 0) return;
+            
+            // Calculate total correct/total questions across all official lessons
+            const totalQ = lessonsP.reduce((acc, l) => acc + l.total, 0);
+            const correctQ = lessonsP.reduce((acc, l) => acc + l.correct, 0);
+            const pct = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
+            
+            html += `
+            <div class="card" style="padding:16px; margin-bottom:12px; border-radius:16px; background:var(--card-bg); border:1px solid var(--border); direction:rtl; text-align:right;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="font-weight:800; font-size:15px; color:var(--text-1); display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px;">${meta.icon}</span>
+                        <span>${meta.title}</span>
+                    </div>
+                    <span style="font-size:12px; font-weight:800; color:var(--primary);">${correctQ} / ${totalQ} أسئلة صحيحة (${pct}%)</span>
+                </div>
+                <div class="subj-progress-bar" style="height:8px; border-radius:4px; background:#f1f5f9; overflow:hidden; margin-bottom:14px; direction:rtl;">
+                    <div class="subj-progress-fill" style="width:${pct}%; height:100%; background:var(--${sub}); border-radius:4px; margin-right:0; margin-left:auto;"></div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px; padding-right:4px;">
+            `;
+            
+            lessonsP.forEach(l => {
+                const correctPct = l.total > 0 ? (l.correct / l.total) * 100 : 0;
+                const errorsPct = l.total > 0 ? (l.errors / l.total) * 100 : 0;
+                
+                html += `
+                    <div style="padding:10px 0; border-bottom:1px solid #f8fafc; font-size:12.5px; display:flex; flex-direction:column; gap:6px;">
+                        <span style="font-weight:700; color:var(--text-2);">${l.emoji || '📖'} الدرس ${l.course_number}</span>
+                        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+                            <div style="height:6px; border-radius:3px; background:#f1f5f9; overflow:hidden; display:flex; direction:ltr; width:100%;">
+                                <div style="width:${correctPct}%; height:100%; background:#10b981;"></div>
+                                <div style="width:${errorsPct}%; height:100%; background:#ef4444;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-3);">
+                                <span>${l.correct} صحيحة / ${l.errors} خطأ / ${l.total} سؤال</span>
+                                <span style="font-weight:800; color:${l.correct === l.total ? '#10b981' : '#f59e0b'};">${Math.round(correctPct)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+            </div>
+            `;
+        });
+        officialContainer.innerHTML = html;
+    } else {
+        let html = '';
+        subjects.forEach(sub => {
+            const meta = SUBJECT_METADATA[sub] || { title: sub.toUpperCase(), icon: '📚', cls: '' };
+            const subData = detailedProgress[sub] || {};
+            
+            let itemsToRender = subData.themes || [];
+            let isYearsMode = false;
+            if (sub === 'sira' && siraThematicView === 'years') {
+                itemsToRender = subData.years || [];
+                isYearsMode = true;
+            }
+            
+            if (itemsToRender.length === 0) return;
+            
+            const totalQ = itemsToRender.reduce((acc, t) => acc + t.total, 0);
+            const correctQ = itemsToRender.reduce((acc, t) => acc + t.correct, 0);
+            const pct = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
+            
+            let toggleHtml = '';
+            if (sub === 'sira') {
+                toggleHtml = `
+                <div style="display:flex; gap:6px; margin-bottom:12px; font-size:11px; background:#f1f5f9; padding:2px; border-radius:8px; width:fit-content; margin-right:auto; margin-left:0;">
+                    <button class="sira-toggle-btn" style="border:none; background:${!isYearsMode ? '#ffffff' : 'none'}; padding:2px 8px; border-radius:6px; cursor:pointer; font-weight:800; color:${!isYearsMode ? 'var(--text-1)' : 'var(--text-3)'};" onclick="switchSiraThematicView('themes')">📂 المحاور</button>
+                    <button class="sira-toggle-btn" style="border:none; background:${isYearsMode ? '#ffffff' : 'none'}; padding:2px 8px; border-radius:6px; cursor:pointer; font-weight:800; color:${isYearsMode ? 'var(--text-1)' : 'var(--text-3)'};" onclick="switchSiraThematicView('years')">📅 السنوات</button>
+                </div>
+                `;
+            }
+            
+            html += `
+            <div class="card" style="padding:16px; margin-bottom:12px; border-radius:16px; background:var(--card-bg); border:1px solid var(--border); direction:rtl; text-align:right;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <div style="font-weight:800; font-size:15px; color:var(--text-1); display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px;">${meta.icon}</span>
+                        <span>${meta.title}</span>
+                    </div>
+                    <span style="font-size:12px; font-weight:800; color:var(--primary);">${correctQ} / ${totalQ} أسئلة صحيحة (${pct}%)</span>
+                </div>
+                
+                ${toggleHtml}
+                
+                <div class="subj-progress-bar" style="height:8px; border-radius:4px; background:#f1f5f9; overflow:hidden; margin-bottom:14px; direction:rtl;">
+                    <div class="subj-progress-fill" style="width:${pct}%; height:100%; background:var(--${sub}); border-radius:4px; margin-right:0; margin-left:auto;"></div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px; padding-right:4px;">
+            `;
+            
+            itemsToRender.forEach(t => {
+                const displayName = isYearsMode ? `السنة ${t.year} هـ` : (t.theme || 'غير مصنف');
+                const themePct = t.total > 0 ? Math.round((t.correct / t.total) * 100) : 0;
+                
+                let masterColor = '#ef4444';
+                if (themePct >= 80) masterColor = '#10b981';
+                else if (themePct >= 40) masterColor = '#f59e0b';
+                
+                html += `
+                    <div style="display:flex; flex-direction:column; gap:4px; padding:6px 0; border-bottom:1px solid #f8fafc; font-size:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:700; color:var(--text-2);">${isYearsMode ? '📅' : (t.emoji || '📂')} ${displayName}</span>
+                            <span style="font-weight:800; color:${t.total > 0 ? masterColor : 'var(--text-3)'};">${t.correct} / ${t.total} (${themePct}%)</span>
+                        </div>
+                        <div style="height:4px; border-radius:2px; background:#f1f5f9; overflow:hidden; width:100%; direction:rtl;">
+                            <div style="width:${themePct}%; height:100%; background:${masterColor}; border-radius:2px; margin-right:0; margin-left:auto;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+            </div>
+            `;
+        });
+        thematicContainer.innerHTML = html;
+    }
 }
 
 // ── PROFILE ──
@@ -4142,7 +4293,9 @@ function openModal(subject, lessonNum, tab) {
     document.getElementById('modal-overlay').classList.add('open');
     
     // Telegram API Integrations
-    if (tg) {
+    if (tg && tg.BackButton) {
+        if (typeof backToSubjects === 'function') tg.BackButton.offClick(backToSubjects);
+        if (typeof backToSyllabusSubjects === 'function') tg.BackButton.offClick(backToSyllabusSubjects);
         tg.BackButton.show();
         tg.BackButton.onClick(closeModal);
         try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
@@ -4576,11 +4729,16 @@ function closeModal(){
     activeLesson = null;
     
     // Telegram API Integrations
-    if (tg) {
+    if (tg && tg.BackButton) {
+        tg.BackButton.offClick(closeModal);
+        
         if (typeof selectedSubjectKey !== 'undefined' && selectedSubjectKey && typeof backToSubjects === 'function') {
             // Restore BackButton action to return to subjects grid
             tg.BackButton.show();
             tg.BackButton.onClick(backToSubjects);
+        } else if (typeof selectedSyllabusSubject !== 'undefined' && selectedSyllabusSubject && typeof backToSyllabusSubjects === 'function') {
+            tg.BackButton.show();
+            tg.BackButton.onClick(backToSyllabusSubjects);
         } else {
             // Hide BackButton if not inside a specific subject lessons list
             tg.BackButton.hide();
@@ -4783,6 +4941,10 @@ function renderChapterFlashQuestion(lesson, cIdx) {
         <div class="flash-q-explanation">
             <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
             <p>${qObj.explanation || ''}</p>
+            ${cIdx < (lesson.thematic_blocks ? lesson.thematic_blocks.length - 1 : 0) ? `
+            <button class="btn-sm btn-primary" onclick="scrollToChapter(${cIdx + 1})" style="width: 100%; margin-top: 12px; padding: 10px; justify-content: center; font-weight: 800; border-radius: 10px;">
+                السؤال التالي ⬇️
+            </button>` : ''}
         </div>`;
     }
     
@@ -4862,6 +5024,10 @@ function submitFlashAnswer(btn, subject, lessonNum, chIdx, selectedIdx) {
         <div class="flash-q-explanation">
             <strong>${isCorrect ? '✨ إجابة صحيحة!' : '❌ إجابة خاطئة.'}</strong>
             <p>${qObj.explanation || ''}</p>
+            ${chIdx < (lesson.thematic_blocks ? lesson.thematic_blocks.length - 1 : 0) ? `
+            <button class="btn-sm btn-primary" onclick="scrollToChapter(${chIdx + 1})" style="width: 100%; margin-top: 12px; padding: 10px; justify-content: center; font-weight: 800; border-radius: 10px;">
+                السؤال التالي ⬇️
+            </button>` : ''}
         </div>`;
     }
 }
@@ -5230,15 +5396,6 @@ function toggleSyllabusRemaining() {
     }
 }
 
-function toggleSyllabusRemaining() {
-    const checkbox = document.getElementById('syllabus-toggle-remaining');
-    syllabusShowRemainingOnly = checkbox ? checkbox.checked : false;
-    localStorage.setItem('academy_syllabus_remaining_only', syllabusShowRemainingOnly ? 'true' : 'false');
-    if (selectedSyllabusSubject) {
-        renderRoadmapTimeline(selectedSyllabusSubject);
-    }
-}
-
 function toggleChapterCompletion(event, subject, lessonNum, chapterIdx) {
     if (event) event.stopPropagation();
     const key = `${subject}_${lessonNum}_${chapterIdx}`;
@@ -5281,8 +5438,11 @@ function toggleChapterFavorite(event, subject, lessonNum, chapterIdx) {
 }
 
 function goToChapter(event, subject, lessonNum, chapterIdx) {
-    if (event) event.stopPropagation();
-    window.location.href = 'reader.html?subject=' + subject + '&lesson=' + lessonNum + '&v=p6';
+    // Open the reader modal at this specific chapter (transcription tab)
+    openModal(subject, lessonNum, 'trans');
+    setTimeout(() => {
+        scrollToChapter(chapterIdx);
+    }, 200);
 }
 
 function highlightChapterInReader(chapterIdx) {
@@ -6003,303 +6163,38 @@ let quizState = {
     answers: []
 };
 
+// Quiz Settings State
+let quizSettings = {
+    count: 10,
+    chrono: false,
+    correction: 'immediate'  // 'immediate' | 'end'
+};
+let quizChronoInterval = null;
+let quizChronoSeconds = 0;
+
 function startQuiz(subject, lessonNum) {
     const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
     if (!lesson || !lesson.quiz || !lesson.quiz.length) {
         alert('لا يوجد اختبار متوفر لهذا الدرس حالياً.');
         return;
     }
-    
+
     // Close modal if open
     closeModal();
-    
-    quizState = {
-        subject: subject,
-        lessonNum: lessonNum,
-        questions: lesson.quiz,
-        currentIndex: 0,
-        score: 0,
-        answers: new Array(lesson.quiz.length).fill(null)
-    };
-    
+
     const meta = SUBJECT_METADATA[subject] || { title: 'الدرس', icon: '📝', cls: 'subj-sira' };
     document.getElementById('quiz-badge').className = `badge badge-${subject}`;
     document.getElementById('quiz-badge').textContent = meta.title;
-    document.getElementById('quiz-title').textContent = `تقييم الدرس ${lessonNum}`;
-    
+    document.getElementById('quiz-title').textContent = `تقييم الدرس ${lessonNum} — رسمي ✅`;
+
+
     document.getElementById('quiz-overlay').classList.add('open');
-    
-    renderQuizQuestion();
-    
+
+    // Show settings screen first
+    renderQuizSettingsScreen(subject, lessonNum, lesson.quiz);
+
     if (tg) {
         try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
-    }
-}
-
-function closeQuiz() {
-    document.getElementById('quiz-overlay').classList.remove('open');
-}
-
-function renderQuizQuestion() {
-    const state = quizState;
-    const q = state.questions[state.currentIndex];
-    const total = state.questions.length;
-    const percent = Math.round(((state.currentIndex) / total) * 100);
-    
-    document.getElementById('quiz-progress-fill').style.width = `${percent}%`;
-    
-    const container = document.getElementById('quiz-body');
-    if (!container) return;
-    
-    const optionsHtml = q.options.map((opt, idx) => {
-        return `
-        <button class="quiz-option-btn" id="option-${idx}" onclick="submitAnswer(${idx})">
-            <span>${opt}</span>
-            <span class="bullet" style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--border); display: inline-block;"></span>
-        </button>
-        `;
-    }).join('');
-    
-    container.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-3); font-weight: 700; direction: rtl;">
-            <span>السؤال ${state.currentIndex + 1} من ${total}</span>
-            <span>الدرجة الحالية: ${state.score} / ${total}</span>
-        </div>
-        <div class="quiz-q-title" style="direction: rtl; text-align: right; margin-top: 10px;">${q.question}</div>
-        <div class="quiz-options" id="quiz-options" style="margin-top: 10px;">
-            ${optionsHtml}
-        </div>
-        <div id="quiz-feedback-container" style="margin-top: 15px;"></div>
-        <button class="btn-sm btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display: none; padding: 12px; width: 100%; border-radius: 14px; font-size: 13px; justify-content: center; font-weight: 700; margin-top: 15px; border: none; cursor: pointer; font-family: inherit;">
-            السؤال التالي ⬅️
-        </button>
-    `;
-}
-
-
-  
-  function formatQuizExplanation(text, questionObj = null) {
-      if (!text) return "";
-      
-      let pedagogicalText = "";
-      let profNote = "";
-      let sourceText = "";
-      let videoId = null;
-      let timeInSeconds = 0;
-      
-      let ytMatch = text.match(/href="https:\/\/www\.youtube\.com\/watch\?v=([^&"]+)&t=([0-9]+)s?"/);
-      if (ytMatch) {
-          videoId = ytMatch[1];
-          timeInSeconds = parseInt(ytMatch[2]);
-      }
-      
-      // Aggressively strip any youtube anchor tags from the raw text so they NEVER render!
-      text = text.replace(/<a[^>]*href="https:\/\/www\.youtube\.com[^>]*>.*?<\/a>/gi, "");
-      // Also strip the text "(يمكنك الضغط على الوقت للوصول إلى الفيديو)" or similar if it exists
-      text = text.replace(/\(يمكنك الضغط على الوقت للوصول إلى الفيديو\)/gi, "");
-      text = text.replace(/\(سينقلك إلى يوتيوب خارج التطبيق\)/gi, "");
-      
-      // Match markers — colons may be INSIDE or OUTSIDE the <b> tag depending on DB entry
-      text = text.replace(/💡\s*<b>[^<]*التفسير التربوي[^<]*:?<\/b>\s*:?/g, "AI_MARKER");
-      text = text.replace(/📖\s*<b>[^<]*قول الشيخ[^<]*:?<\/b>\s*:?/g, "PROF_MARKER");
-      text = text.replace(/📍\s*<b>[^<]*المصدر[^<]*:?<\/b>\s*:?/g, "SRC_MARKER");
-      text = text.replace(/<blockquote>/g, "").replace(/<\/blockquote>/g, "");
-      
-      if (text.includes("AI_MARKER")) {
-          let parts = text.split("AI_MARKER");
-          let afterAI = parts[1] || "";
-          if (afterAI.includes("PROF_MARKER")) {
-              let subparts = afterAI.split("PROF_MARKER");
-              pedagogicalText = subparts[0];
-              let afterProf = subparts[1];
-              if (afterProf.includes("SRC_MARKER")) {
-                  let srcParts = afterProf.split("SRC_MARKER");
-                  profNote = srcParts[0];
-                  sourceText = srcParts[1];
-              } else {
-                  profNote = afterProf;
-              }
-          } else if (afterAI.includes("SRC_MARKER")) {
-              let srcParts = afterAI.split("SRC_MARKER");
-              pedagogicalText = srcParts[0];
-              sourceText = srcParts[1];
-          } else {
-              pedagogicalText = afterAI;
-          }
-      } else {
-          pedagogicalText = text;
-      }
-      
-      let html = "";
-      
-      if (pedagogicalText.trim()) {
-          html += `<div style="margin-bottom:16px; background:rgba(255,255,255,0.7); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.5); padding:16px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.02); text-align:right;">
-                      <div style="font-weight:900; color:var(--primary); margin-bottom:8px; font-size:15px; display:flex; align-items:center; gap:8px;">
-                          <span style="font-size:20px;">🤖</span> الشرح المبسط
-                      </div>
-                      <div style="color:var(--text); font-size:14.5px; line-height:1.6;">${pedagogicalText.trim()}</div>
-                   </div>`;
-      }
-      
-      if (profNote.trim()) {
-          html += `<div style="margin-bottom:16px; background:var(--surface-2); padding:16px; border-radius:12px; border-right:4px solid #f59e0b; text-align:right;">
-                      <div style="font-weight:900; color:#b45309; margin-bottom:8px; font-size:14px; display:flex; align-items:center; gap:8px;">
-                          <span style="font-size:20px;">👨‍🏫</span> قال الشيخ
-                      </div>
-                      <blockquote style="margin:0; padding:0 12px; border-right:2px solid #b45309; color:var(--text-2); font-size:14px; line-height:1.6; font-style:italic;">${profNote.trim()}</blockquote>
-                   </div>`;
-      }
-      
-      // Determine subject and lesson — always try, regardless of videoId
-      let subj = questionObj ? questionObj.subject : (typeof quizState !== 'undefined' ? quizState.subject : null);
-      let less = questionObj ? (questionObj.course_number || questionObj.lessonNum) : (typeof quizState !== 'undefined' ? quizState.lessonNum : null);
-
-      if (sourceText.trim() || videoId || (subj && less)) {
-          let cleanSourceText = sourceText.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1').trim();
-          cleanSourceText = cleanSourceText.replace(/،\s*الدقيقة\s*,?/g, '').trim();
-          
-          let sourceHtml = cleanSourceText ? `<div style="font-size:12px; color:var(--text-3);">📚 المصدر: ${cleanSourceText}</div>` : '';
-          html += `<div style="margin-top:12px; display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-                      ${sourceHtml}`;
-          
-          // Always show Liseuse button when we know subject + lesson
-          if (subj && less) {
-              html += `<button onclick="window.location.href='reader.html?subject=${subj}&lesson=${less}&v=p17'" style="background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:20px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); font-size:13px;">
-                          📖 افتح اللمحة في القارئ (Liseuse)
-                       </button>`;
-          }
-          html += `</div>`;
-      }
-      return html;
-  }
-
-
-  function submitAnswer(selectedIdx) {
-    const state = quizState;
-    const q = state.questions[state.currentIndex];
-    
-    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
-    const isCorrect = selectedIdx === q.answerIndex;
-
-    // Audio
-    try {
-        if (isCorrect) {
-            document.getElementById('audio-correct').currentTime = 0;
-            document.getElementById('audio-correct').play();
-        } else {
-            document.getElementById('audio-incorrect').currentTime = 0;
-            document.getElementById('audio-incorrect').play();
-        }
-    } catch(e) {}
-
-    // SECOND CHANCE LOGIC
-    if (!isCorrect && !q.meta.failedOnce) {
-        q.meta.failedOnce = true;
-        const optionsDiv = document.getElementById('quiz-options');
-        const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
-        const btn = buttons[selectedIdx];
-        if (btn) {
-            btn.style.borderColor = '#ef4444';
-            btn.style.background = '#fef2f2';
-            btn.classList.add('anim-shake');
-            btn.disabled = true;
-            const bullet = btn.querySelector('.bullet');
-            if (bullet) {
-                bullet.style.borderColor = '#ef4444';
-                bullet.style.background = '#ef4444';
-            }
-        }
-        if (tg) { try { tg.HapticFeedback.notificationOccurred('error'); } catch(e){} }
-        return;
-    }
-    
-    state.answers[state.currentIndex] = selectedIdx;
-    if (isCorrect) state.score++;
-    
-    const optionsDiv = document.getElementById('quiz-options');
-    const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
-    
-    buttons.forEach((btn, idx) => {
-        btn.disabled = true;
-        const bullet = btn.querySelector('.bullet');
-        if (idx === q.answerIndex) {
-            btn.style.borderColor = '#10b981';
-            btn.style.background = '#f0fdf4';
-            if (bullet) {
-                bullet.style.borderColor = '#10b981';
-                bullet.style.background = '#10b981';
-            }
-        } else if (idx === selectedIdx && !isCorrect) {
-            btn.style.borderColor = '#ef4444';
-            btn.style.background = '#fef2f2';
-            btn.classList.add('anim-shake');
-            if (bullet) {
-                bullet.style.borderColor = '#ef4444';
-                bullet.style.background = '#ef4444';
-            }
-        }
-    });
-    
-    const hintBtn = document.getElementById('quiz-hint-btn');
-    if (hintBtn) hintBtn.style.display = 'none';
-    
-    const feedbackBox = document.getElementById('quiz-feedback-box');
-    if (feedbackBox) {
-        feedbackBox.innerHTML = `
-          <div class="quiz-feedback-box" style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; padding: 16px; margin-bottom: 20px; direction: rtl; text-align: right;">
-              <div style="font-weight: 800; color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                  ${isCorrect ? '✅ إجابة صحيحة!' : '❌ للأسف، الإجابة غير صحيحة'}
-              </div>
-              ${formatQuizExplanation(q.explanation, q)}
-          </div>`;
-    }
-    
-    const nextBtn = document.getElementById('quiz-next-btn');
-    if (nextBtn) {
-        const isLast = state.currentIndex === state.questions.length - 1;
-        nextBtn.innerHTML = isLast ? 'عرض النتيجة 🏆' : 'السؤال التالي ➡️';
-        nextBtn.style.display = 'inline-flex';
-    }
-    
-    if (tg) { try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){} }
-}
-
-function useQuizHint() {
-    const state = quizState;
-    const q = state.questions[state.currentIndex];
-    if (!q.meta) q.meta = { failedOnce: false, hintUsed: false };
-    if (q.meta.hintUsed) return;
-    
-    q.meta.hintUsed = true;
-    const hintBtn = document.getElementById('quiz-hint-btn');
-    if (hintBtn) hintBtn.style.display = 'none';
-    
-    let wrongIndices = [];
-    q.options.forEach((_, idx) => {
-        if (idx !== q.answerIndex) wrongIndices.push(idx);
-    });
-    
-    wrongIndices.sort(() => Math.random() - 0.5);
-    let toDisable = wrongIndices.slice(0, 2);
-    
-    const optionsDiv = document.getElementById('quiz-options');
-    const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
-    toDisable.forEach(idx => {
-        const btn = buttons[idx];
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = '0.3';
-        }
-    });
-}
-
-function nextQuestion() {
-    const state = quizState;
-    if (state.currentIndex < state.questions.length - 1) {
-        state.currentIndex++;
-        renderQuizQuestion();
-    } else {
-        finishQuiz();
     }
 }
 
@@ -6355,6 +6250,19 @@ function finishQuiz() {
         }
     }
     
+    // Stop chrono and capture time
+    const finalSeconds = quizChronoSeconds;
+    stopQuizChrono();
+    const chronoBarEl = document.getElementById('quiz-chrono-bar');
+    if (chronoBarEl) chronoBarEl.style.display = 'none';
+    const pad = n => n < 10 ? '0' + n : '' + n;
+    const chronoDisplay = quizSettings.chrono
+        ? `<div style="background:#fef3c7; border:1.5px solid #fde68a; border-radius:12px; padding:10px 18px; font-size:13px; font-weight:700; color:#b45309; display:flex; align-items:center; gap:8px; margin-top:12px; direction:rtl;">
+               <span>&#x23F1;&#xFE0F; الوقت المستغرق:</span>
+               <strong>${Math.floor(finalSeconds/60)}:${pad(finalSeconds%60)}</strong>
+           </div>`
+        : '';
+    
     renderHome();
     renderProfile();
     renderSyllabusSubjects();
@@ -6366,7 +6274,7 @@ function finishQuiz() {
     container.innerHTML = `
         <div class="quiz-score-screen" style="direction: rtl;">
             <div class="quiz-score-badge">
-                ${passed ? '🎉' : '📚'}
+                ${passed ? '&#x1F389;' : '&#x1F4DA;'}
             </div>
             <div style="font-size: 18px; font-weight: 900; color: ${passed ? '#10b981' : '#475569'}">
                 ${passed ? 'تهانينا، لقد نجحت في التقييم!' : 'تحتاج للمزيد من المراجعة'}
@@ -6374,21 +6282,332 @@ function finishQuiz() {
             <div style="font-size: 14px; color: var(--text-2); margin-top: 10px;">
                 لقد أجبت بشكل صحيح على <strong>${state.score}</strong> من أصل <strong>${total}</strong> أسئلة (${scorePercent}%).
             </div>
-            <div style="background: var(--primary-light); border: 1.1px solid var(--primary-border); border-radius: 12px; padding: 10px 18px; font-size: 13px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; margin-top: 15px;">
-                <span>⭐ نقاط الخبرة المكتسبة:</span>
+            ${chronoDisplay}
+            <div style="background: var(--primary-light); border: 1.1px solid var(--primary-border); border-radius: 12px; padding: 10px 18px; font-size: 13px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; margin-top: 12px;">
+                <span>&#x2B50; نقاط الخبرة المكتسبة:</span>
                 <strong>+${xpGained} XP</strong>
             </div>
             <div style="display: flex; gap: 10px; width: 100%; margin-top: 25px;">
                 <button class="btn-sm btn-outline" style="flex: 1; padding: 12px; justify-content: center; font-weight: 700; border-radius: 14px; cursor: pointer; font-family: inherit;" onclick="startQuiz('${state.subject}', ${state.lessonNum})">
-                    🔄 إعادة الاختبار
+                    &#x1F504; إعادة الاختبار
                 </button>
                 <button class="btn-sm btn-primary" style="flex: 1; padding: 12px; justify-content: center; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; font-family: inherit;" onclick="closeQuiz()">
-                    إنهاء 🏁
+                    إنهاء &#x1F3C1;
                 </button>
             </div>
         </div>
     `;
 }
+
+function renderQuizSettingsScreen(subject, lessonNum, allQuestions) {
+    // Clear chrono bar
+    const chronoBar = document.getElementById('quiz-chrono-bar');
+    if (chronoBar) chronoBar.style.display = 'none';
+
+    const maxAvailable = allQuestions.length;
+    const counts = [
+        { n: 5,  label: 'اختبار سريع' },
+        { n: 10, label: 'تدريب معتدل' },
+        { n: 20, label: 'تدريب مكثف' }
+    ];
+
+    const container = document.getElementById('quiz-body');
+    if (!container) return;
+
+    document.getElementById('quiz-progress-fill').style.width = '0%';
+
+    function render() {
+        const sel = quizSettings.count;
+        const chronoOn = quizSettings.chrono;
+        const corrMode = quizSettings.correction;
+
+        container.innerHTML = `
+        <div class="quiz-settings-screen">
+            <!-- Number of questions -->
+            <div>
+                <div class="qs-section-label">عدد الأسئلة</div>
+                <div class="qs-count-row">
+                    ${counts.map(c => {
+                        const disabled = c.n > maxAvailable;
+                        const isSelected = sel === c.n && !disabled;
+                        const arabic = c.n === 5 ? '٥' : c.n === 10 ? '١٠' : '٢٠';
+                        return `
+                        <button class="qs-count-btn ${isSelected ? 'selected' : ''} ${disabled ? 'disabled-opt' : ''}" 
+                            onclick="${disabled ? '' : `quizSettings.count=${c.n}; renderQuizSettingsScreen('${subject}', ${lessonNum}, quizAllQuestions)`}"
+                            ${disabled ? 'disabled title="لا يوجد عدد كافٍ من الأسئلة"' : ''}>
+                            <span class="qs-check">✅</span>
+                            <span class="qs-num">${arabic} أسئلة</span>
+                            <span class="qs-label">(${c.label})</span>
+                        </button>`;
+                    }).join('')}
+                </div>
+            </div>
+
+            <!-- Chrono -->
+            <div>
+                <div class="qs-section-label">الإعدادات</div>
+                <div class="qs-toggle-row ${chronoOn ? 'active' : ''}" onclick="quizSettings.chrono=!quizSettings.chrono; renderQuizSettingsScreen('${subject}', ${lessonNum}, quizAllQuestions)">
+                    <div class="qs-toggle-left">
+                        <div class="qs-toggle-icon">⏱️</div>
+                        <div>
+                            <div class="qs-toggle-title">المؤقت (كرونو)</div>
+                            <div class="qs-toggle-desc">${chronoOn ? 'سيتم توقيت الاختبار' : 'بدون توقيت'}</div>
+                        </div>
+                    </div>
+                    <div class="qs-pill-toggle"></div>
+                </div>
+            </div>
+
+            <!-- Correction Mode -->
+            <div>
+                <div class="qs-section-label">وضع التصحيح</div>
+                <div class="qs-correction-row">
+                    <button class="qs-correction-btn ${corrMode === 'immediate' ? 'selected' : ''}" 
+                        onclick="quizSettings.correction='immediate'; renderQuizSettingsScreen('${subject}', ${lessonNum}, quizAllQuestions)">
+                        <span class="qs-c-icon">⚡</span>
+                        <span class="qs-c-title">فوري</span>
+                        <span class="qs-c-desc">نتيجة كل سؤال مباشرة</span>
+                    </button>
+                    <button class="qs-correction-btn ${corrMode === 'end' ? 'selected' : ''}" 
+                        onclick="quizSettings.correction='end'; renderQuizSettingsScreen('${subject}', ${lessonNum}, quizAllQuestions)">
+                        <span class="qs-c-icon">📋</span>
+                        <span class="qs-c-title">في النهاية</span>
+                        <span class="qs-c-desc">ملخص كامل عند الانتهاء</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start button -->
+            <button class="btn-sm btn-primary" style="width:100%; padding:15px; border-radius:16px; font-size:15px; justify-content:center; font-weight:900; border:none; cursor:pointer; font-family:inherit; margin-top:8px;"
+                onclick="launchQuizWithSettings('${subject}', ${lessonNum})">
+                ابدأ الاختبار 🚀
+            </button>
+        </div>
+        `;
+    }
+
+    // Store questions globally for re-render access
+    window.quizAllQuestions = allQuestions;
+    render();
+}
+
+function launchQuizWithSettings(subject, lessonNum) {
+    const allQ = window.quizAllQuestions || [];
+    if (!allQ.length) return;
+
+    // Shuffle & slice
+    const shuffled = [...allQ].sort(() => Math.random() - 0.5);
+    const count = Math.min(quizSettings.count, shuffled.length);
+    const selected = shuffled.slice(0, count);
+
+    quizState = {
+        subject: subject,
+        lessonNum: lessonNum,
+        questions: selected,
+        currentIndex: 0,
+        score: 0,
+        answers: new Array(selected.length).fill(null)
+    };
+
+    // Show chrono bar if enabled
+    if (quizSettings.chrono) {
+        startQuizChrono();
+    } else {
+        const chronoBar = document.getElementById('quiz-chrono-bar');
+        if (chronoBar) chronoBar.style.display = 'none';
+    }
+
+    renderQuizQuestion();
+}
+
+function startQuizChrono() {
+    quizChronoSeconds = 0;
+    if (quizChronoInterval) clearInterval(quizChronoInterval);
+    const bar = document.getElementById('quiz-chrono-bar');
+    if (bar) {
+        bar.style.display = 'flex';
+        bar.className = 'quiz-chrono-bar';
+        bar.innerHTML = '⏱️ &nbsp;<span id="quiz-chrono-time">٠:٠٠</span>';
+    }
+    quizChronoInterval = setInterval(() => {
+        quizChronoSeconds++;
+        const mins = Math.floor(quizChronoSeconds / 60);
+        const secs = quizChronoSeconds % 60;
+        const pad = n => n < 10 ? '0' + n : '' + n;
+        const timeEl = document.getElementById('quiz-chrono-time');
+        if (timeEl) timeEl.textContent = `${mins}:${pad(secs)}`;
+    }, 1000);
+}
+
+function stopQuizChrono() {
+    if (quizChronoInterval) {
+        clearInterval(quizChronoInterval);
+        quizChronoInterval = null;
+    }
+}
+
+// ── Format explanation sections for quiz feedback ──
+function formatQuizExplanation(rawHtml) {
+    if (!rawHtml) return '';
+    // Already contains HTML — split by the section markers and wrap each section
+    // Sections: 💡 التفسير التربوي, 📖 قول الشيخ, 📍 المصدر
+    // We'll render them as-is but wrap المصدر in a highlighted box
+    let html = rawHtml;
+    
+    // Highlight 📍 المصدر section with a special amber box
+    html = html.replace(
+        /(📍\s*<b>المصدر\s*:<\/b>\s*\n?<blockquote>)([\s\S]*?)(<\/blockquote>)/g,
+        function(match, p1, p2, p3) {
+            // Convert newlines in the blockquote content to <br> so the line breaks are respected
+            const contentWithBr = p2.trim().replace(/\n/g, '<br>');
+            return '<div style="background:#fef9c3; border:1.5px solid #fde047; border-radius:10px; padding:8px 12px; margin-top:8px; font-size:12px; direction:rtl;">' +
+                   '📍 <strong style="color:#854d0e;">المصدر</strong><br>' + contentWithBr +
+                   '</div>';
+        }
+    );
+    
+    // Also try to format the specific text in italics if it's there
+    html = html.replace(/\(يمكنك الضغط على الوقت للوصول إلى الفيديو\)/g, '<br><span style="font-size: 11px; font-style: italic; color: #854d0e;">(يمكنك الضغط على الوقت للوصول إلى الفيديو)</span>');
+    
+    return html;
+}
+
+
+function closeQuiz() {
+    stopQuizChrono();
+    document.getElementById('quiz-overlay').classList.remove('open');
+    const chronoBar = document.getElementById('quiz-chrono-bar');
+    if (chronoBar) chronoBar.style.display = 'none';
+}
+
+function renderQuizQuestion() {
+    const state = quizState;
+    const q = state.questions[state.currentIndex];
+    const total = state.questions.length;
+    const percent = Math.round(((state.currentIndex) / total) * 100);
+    
+    document.getElementById('quiz-progress-fill').style.width = `${percent}%`;
+    
+    const container = document.getElementById('quiz-body');
+    if (!container) return;
+    
+    const optionsHtml = q.options.map((opt, idx) => {
+        return `
+        <button class="quiz-option-btn" id="option-${idx}" onclick="submitAnswer(${idx})">
+            <span>${opt}</span>
+            <span class="bullet" style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--border); display: inline-block;"></span>
+        </button>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-3); font-weight: 700; direction: rtl;">
+            <span>السؤال ${state.currentIndex + 1} من ${total}</span>
+            <span>الدرجة الحالية: ${state.score} / ${total}</span>
+        </div>
+        <div class="quiz-q-title" style="direction: rtl; text-align: right; margin-top: 10px;">${q.question}</div>
+        <div class="quiz-options" id="quiz-options" style="margin-top: 10px;">
+            ${optionsHtml}
+        </div>
+        <div id="quiz-feedback-container" style="margin-top: 15px;"></div>
+        <button class="btn-sm btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display: none; padding: 12px; width: 100%; border-radius: 14px; font-size: 13px; justify-content: center; font-weight: 700; margin-top: 15px; border: none; cursor: pointer; font-family: inherit;">
+            السؤال التالي ⬅️
+        </button>
+    `;
+}
+
+function submitAnswer(selectedIdx) {
+    if (quizSettings.correction === 'end') {
+        // In 'end' mode: just record the answer and move forward
+        const state = quizState;
+        if (state.answers[state.currentIndex] !== null) return;
+        state.answers[state.currentIndex] = selectedIdx;
+        const q = state.questions[state.currentIndex];
+        if (selectedIdx === q.answerIndex) state.score++;
+        // Highlight selected only (no correct/incorrect)
+        const optionsDiv = document.getElementById('quiz-options');
+        if (optionsDiv) {
+            optionsDiv.querySelectorAll('.quiz-option-btn').forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === selectedIdx) btn.style.background = 'var(--primary-light)';
+            });
+        }
+        const nextBtn = document.getElementById('quiz-next-btn');
+        if (nextBtn) nextBtn.style.display = 'flex';
+        return;
+    }
+    const state = quizState;
+    if (state.answers[state.currentIndex] !== null) return;
+    
+    const q = state.questions[state.currentIndex];
+    state.answers[state.currentIndex] = selectedIdx;
+    
+    const optionsDiv = document.getElementById('quiz-options');
+    const buttons = optionsDiv.querySelectorAll('.quiz-option-btn');
+    
+    const isCorrect = selectedIdx === q.answerIndex;
+    if (isCorrect) {
+        state.score++;
+    }
+    
+    buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        const bullet = btn.querySelector('.bullet');
+        if (idx === q.answerIndex) {
+            btn.classList.add('correct');
+            if (bullet) {
+                bullet.style.borderColor = '#10b981';
+                bullet.style.background = '#10b981';
+                bullet.innerHTML = '<span style="color:white; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; font-weight:900;">✓</span>';
+            }
+        } else if (idx === selectedIdx) {
+            btn.classList.add('incorrect');
+            if (bullet) {
+                bullet.style.borderColor = '#ef4444';
+                bullet.style.background = '#ef4444';
+                bullet.innerHTML = '<span style="color:white; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; font-weight:900;">✕</span>';
+            }
+        }
+    });
+    
+    const feedbackDiv = document.getElementById('quiz-feedback-container');
+    feedbackDiv.innerHTML = `
+        <div class="quiz-feedback-box" style="border-right-color: ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right;">
+            <div class="quiz-feedback-title" style="color: ${isCorrect ? '#10b981' : '#ef4444'};">
+                ${isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة'}
+            </div>
+            <div class="quiz-feedback-text" style="margin-top: 6px;">${formatQuizExplanation(q.explanation)}</div>
+            ${q.video_link ? `
+            <div style="display: flex; flex-direction: column; align-items: flex-start; margin-top: 8px;">
+                <a href="${q.video_link}" target="_blank" class="reader-p-play" style="display: inline-flex; text-decoration: none;" onclick="event.stopPropagation()">
+                    🎬 شاهد الشرح في الفيديو (دقيقة ${q.timestamp})
+                </a>
+                <span style="font-size: 11px; font-style: italic; color: var(--text-3); margin-top: 4px;">(يمكنك الضغط على الوقت للوصول إلى الفيديو)</span>
+            </div>` : ''}
+        </div>
+    `;
+
+    
+    const nextBtn = document.getElementById('quiz-next-btn');
+    const isLast = state.currentIndex === state.questions.length - 1;
+    nextBtn.textContent = isLast ? 'عرض النتيجة 🏁' : 'السؤال التالي ⬅️';
+    nextBtn.style.display = 'inline-flex';
+    
+    if (tg) {
+        try { tg.HapticFeedback.notificationOccurred(isCorrect ? 'success' : 'error'); } catch(e){}
+    }
+}
+
+function nextQuestion() {
+    const state = quizState;
+    if (state.currentIndex < state.questions.length - 1) {
+        state.currentIndex++;
+        renderQuizQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
 // ── Admin Mode Logic ──
 function toggleAdminMode() {
     isAdminMode = !isAdminMode;
@@ -6960,102 +7179,6 @@ function resolveProposal(proposalId, action) {
         });
     } catch(e){}
 })();
-
-const supportFlowIndex = {
-    category: '', subcategory: '', message: '', currentOptsId: '',
-    selectCategory: function(cat) {
-        this.category = cat;
-        this.addMessage(cat, 'user');
-        document.getElementById('support-step-1-options-index').style.display = 'none';
-        
-        setTimeout(() => {
-            let subText = ''; let subBtns = '';
-            if(cat === 'تقنية') {
-                subText = 'هل المشكلة متعلقة بـ:';
-                subBtns = 
-                    <button onclick="supportFlowIndex.selectSubcategory('الفيديو لا يعمل')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">الفيديو لا يعمل</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('لا يوجد صوت')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">لا يوجد صوت</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('مشكلة في التطبيق')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">مشكلة في التطبيق</button>
-                ;
-            } else if(cat === 'إدارية') {
-                subText = 'المرجو تحديد المشكلة:';
-                subBtns = 
-                    <button onclick="supportFlowIndex.selectSubcategory('تجديد الاشتراك')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">تجديد الاشتراك</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('مشكلة في الدفع')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">مشكلة في الدفع</button>
-                ;
-            } else {
-                subText = 'هل المشكلة في:';
-                subBtns = 
-                    <button onclick="supportFlowIndex.selectSubcategory('فهم الدرس')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">فهم الدرس</button>
-                    <button onclick="supportFlowIndex.selectSubcategory('سؤال حول الاختبار')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">سؤال حول الاختبار</button>
-                ;
-            }
-            this.addMessage(subText, 'bot');
-            const optsId = 'subopts-idx-' + Date.now();
-            const optsHtml = <div id="" style="display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; max-width: 85%;"></div>;
-            document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', optsHtml);
-            this.currentOptsId = optsId;
-            this.scrollToBottom();
-        }, 500);
-    },
-    selectSubcategory: function(sub) {
-        this.subcategory = sub;
-        this.addMessage(sub, 'user');
-        if(this.currentOptsId) { document.getElementById(this.currentOptsId).style.display = 'none'; }
-        
-        setTimeout(() => {
-            let tip = '';
-            if (sub === 'الفيديو لا يعمل' || sub === 'لا يوجد صوت') { tip = '💡 نصيحة سريعة: 90% من مشاكل الفيديو تُحل بمجرد تحديث الصفحة أو مسح ذاكرة التخزين المؤقت (Cache). هل تريد تجربة ذلك؟<br><br>'; }
-            else if (sub === 'مشكلة في الدفع' || sub === 'تجديد الاشتراك') { tip = '💡 ملاحظة: تفعيل الاشتراكات قد يأخذ ما بين 5 إلى 15 دقيقة للظهور في التطبيق بعد الدفع.<br><br>'; }
-            else if (sub === 'فهم الدرس') { tip = '💡 هل تعلم؟ يمكنك استخدام "الخريطة الذهنية" أو "ملخص الدرس" المتوفرة في قائمة الدرس للحصول على فكرة أوضح قبل طرح السؤال.<br><br>'; }
-            this.addMessage(tip + 'إذا كانت المشكلة مستمرة، يرجى كتابة التفاصيل أدناه:', 'bot');
-            document.getElementById('support-chat-input-area-index').style.display = 'flex';
-            document.getElementById('support-chat-input-index').focus();
-            this.scrollToBottom();
-        }, 500);
-    },
-    sendMessage: function() {
-        const inp = document.getElementById('support-chat-input-index');
-        const text = inp.value.trim();
-        if(!text) return;
-        this.message = text; inp.value = '';
-        document.getElementById('support-chat-input-area-index').style.display = 'none';
-        this.addMessage(text, 'user');
-        setTimeout(() => {
-            const typingId = 'typing-idx-' + Date.now();
-            const typingHtml = <div id="" style="align-self: flex-start; background: white; padding: 12px 16px; border-radius: 16px 16px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; gap: 4px; align-items: center;"><span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></span><span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span><span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span><span style="font-size: 12px; color: #6b7280; margin-right: 8px;">جاري البحث...</span></div>;
-            document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', typingHtml);
-            this.scrollToBottom();
-            setTimeout(() => {
-                document.getElementById(typingId).remove();
-                this.showFaqAndEscalate();
-            }, 2500);
-        }, 400);
-    },
-    showFaqAndEscalate: function() {
-        this.addMessage(للأسف لم أجد إجابة مباشرة. يمكنك تصفح الأسئلة الشائعة أو إرسال المشكلة للإدارة., 'bot');
-        const faqs = <div style="background: white; border-radius: 12px; padding: 10px; align-self: flex-start; width: 100%; max-width: 90%; margin-top: 5px;"><details style="padding: 8px; border-bottom: 1px solid #f3f4f6;"><summary style="font-weight: bold; cursor: pointer;">كيف أجد ملخص الدرس؟</summary><p style="margin-top: 8px; font-size: 13px;">الملخص متوفر في قائمة الدرس عبر زر (الخريطة الذهنية).</p></details></div><div style="align-self: center; margin-top: 15px;"><button onclick="supportFlowIndex.escalateToAdmin()" style="background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 24px; font-weight: bold; cursor: pointer;">إرسال المشكلة إلى الإدارة 📩</button></div>;
-        document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', faqs);
-        this.scrollToBottom();
-    },
-    escalateToAdmin: function() {
-        event.target.style.display = 'none';
-        this.addMessage("إرسال المشكلة إلى الإدارة", "user");
-        setTimeout(() => { this.addMessage("✅ تمت إحالة طلبك بنجاح. ستتلقى رداً في صندوق الوارد.", "bot"); }, 800);
-    },
-    addMessage: function(text, sender) {
-        const isBot = sender === 'bot';
-        const bg = isBot ? 'white' : 'var(--primary)';
-        const color = isBot ? 'var(--text-1)' : 'white';
-        const align = isBot ? 'flex-start' : 'flex-end';
-        const radius = isBot ? '16px 16px 0 16px' : '16px 16px 16px 0';
-        const html = <div style="align-self: ; background: ; color: ; padding: 12px 16px; border-radius: ; box-shadow: 0 1px 2px rgba(0,0,0,0.1); max-width: 85%;"></div>;
-        document.getElementById('support-chat-history-index').insertAdjacentHTML('beforeend', html);
-        this.scrollToBottom();
-    },
-    scrollToBottom: function() { const hist = document.getElementById('support-chat-history-index'); hist.scrollTop = hist.scrollHeight; }
-};
-
 </script>
 
 <!-- NOTES EDIT MODAL -->
@@ -7100,7 +7223,11 @@ const supportFlowIndex = {
             </div>
             <div style="width:34px;"></div>
         </div>
-        
+
+        <div class="quiz-chrono-bar" id="quiz-chrono-bar" style="display:none;">
+            ⏱️ &nbsp;<span id="quiz-chrono-time">0:00</span>
+        </div>
+
         <div style="height: 4px; background: var(--border); width: 100%;">
             <div id="quiz-progress-fill" style="height: 100%; background: var(--primary); width: 0%; transition: width 0.3s ease;"></div>
         </div>
@@ -7111,10 +7238,6 @@ const supportFlowIndex = {
     </div>
 </div>
 
-
-<!-- AUDIO ELEMENTS -->
-<audio id="audio-correct" src="https://cdn.freesound.org/previews/320/320655_527080-lq.mp3" preload="auto"></audio>
-<audio id="audio-incorrect" src="https://cdn.freesound.org/previews/142/142608_1840739-lq.mp3" preload="auto"></audio>
-
 </body>
 </html>
+
