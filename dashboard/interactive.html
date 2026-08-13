@@ -2199,7 +2199,47 @@
             color: var(--text-1);
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-    </style>
+    
+        /* Quiz Animations & Visuals */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            70% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shakeIncorrect {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .quiz-option-btn {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .quiz-option-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+        .quiz-option-btn.anim-shake {
+            animation: shakeIncorrect 0.4s ease-in-out;
+        }
+        .quiz-feedback-box {
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+        }
+        #quiz-progress-fill {
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+</style>
 
 </head>
 <body>
@@ -3406,7 +3446,7 @@ function submitCustomQuizAnswer(selectedIdx) {
         if (btn) {
             btn.disabled = true;
             const bullet = btn.querySelector('.bullet');
-            if (idx === q.correct) {
+                        if (idx === q.correct) {
                 btn.style.borderColor = '#10b981';
                 btn.style.background = '#f0fdf4';
                 if (bullet) {
@@ -3416,6 +3456,7 @@ function submitCustomQuizAnswer(selectedIdx) {
             } else if (idx === selectedIdx) {
                 btn.style.borderColor = '#ef4444';
                 btn.style.background = '#fef2f2';
+                btn.classList.add('anim-shake'); // ADD SHAKE ANIMATION
                 if (bullet) {
                     bullet.style.borderColor = '#ef4444';
                     bullet.style.background = '#ef4444';
@@ -3424,12 +3465,12 @@ function submitCustomQuizAnswer(selectedIdx) {
         }
     });
     
-    // Display feedback
+        // Display feedback
     const feedbackBox = document.getElementById('custom-quiz-feedback-box');
     if (feedbackBox) {
         feedbackBox.innerHTML = `
-        <div style="border-right-color: ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right; background: transparent; border: none; padding: 0;">
-              <div style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; font-weight: bold;">
+        <div class="quiz-feedback-box" style="border-right: 4px solid ${isCorrect ? '#10b981' : '#ef4444'}; direction: rtl; text-align: right; padding: 16px; margin-bottom: 20px;">
+              <div style="color: ${isCorrect ? '#10b981' : '#ef4444'}; font-size: 18px; margin-bottom: 12px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
                   ${isCorrect ? '✅ إجابة صحيحة!' : '❌ إجابة خاطئة'}
               </div>
               ${formatQuizExplanation(q.explanation, q)}
@@ -3514,31 +3555,34 @@ function finishCustomQuiz() {
     localStorage.setItem('academy_user_xp', totalXp + xpGained);
     renderProfile();
     
+    let medal = pct === 100 ? '💎' : (pct >= 80 ? '🥇' : (pct >= 50 ? '🥈' : '🎯'));
+    let msg = pct === 100 ? 'ممتاز! نتيجة مثالية' : (pct >= 80 ? 'عمل رائع جداً!' : (pct >= 50 ? 'نتيجة جيدة، واصل' : 'حاول مرة أخرى'));
+    
     playArea.innerHTML = `
-        <div class="card" style="padding:24px 16px; text-align:center; direction:rtl;">
-            <div style="font-size:48px; margin-bottom:12px;">🏆</div>
-            <h2 style="font-size:18px; font-weight:900; margin-bottom:6px; color:var(--text-1);">اكتمل الاختبار المخصص!</h2>
-            <p style="font-size:12.5px; color:var(--text-3); margin-bottom:20px;">لقد أنهيت الإجابة على جميع الأسئلة</p>
+        <div class="card quiz-feedback-box" style="padding:32px 20px; text-align:center; direction:rtl; margin-top: 20px; border: 1px solid rgba(255,255,255,0.8);">
+            <div style="font-size:72px; margin-bottom:12px; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 10px 20px rgba(0,0,0,0.1);">${medal}</div>
+            <h2 style="font-size:24px; font-weight:900; margin-bottom:6px; color:var(--primary);">${msg}</h2>
+            <p style="font-size:14px; color:var(--text-2); margin-bottom:24px;">لقد أنهيت الاختبار المخصص بنجاح</p>
             
-            <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:24px; background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #cbd5e1;">
-                <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${state.score} / ${state.questions.length}</div>
-                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الأسئلة الصحيحة</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; background:rgba(255,255,255,0.5); padding:20px; border-radius:16px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                <div style="flex:1; text-align:center;">
+                    <div style="font-size:28px; font-weight:900; color:var(--primary);">${state.score} / ${state.questions.length}</div>
+                    <div style="font-size:12px; color:var(--text-3); font-weight: 700; margin-top:4px;">إجابة صحيحة</div>
                 </div>
-                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
-                <div>
-                    <div style="font-size:20px; font-weight:900; color:#10b981;">+${xpGained}</div>
-                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">الدرجات المحصلة</div>
+                <div style="width:2px; height:40px; background:rgba(0,0,0,0.05); border-radius: 2px;"></div>
+                <div style="flex:1; text-align:center;">
+                    <div style="font-size:28px; font-weight:900; color:#10b981;">+${xpGained}</div>
+                    <div style="font-size:12px; color:var(--text-3); font-weight: 700; margin-top:4px;">مكتسبة XP</div>
                 </div>
-                <div style="width:1.2px; height:32px; background:#cbd5e1;"></div>
-                <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--text-1);">${pct}%</div>
-                    <div style="font-size:11px; color:var(--text-3); margin-top:2px;">معدل النجاح</div>
+                <div style="width:2px; height:40px; background:rgba(0,0,0,0.05); border-radius: 2px;"></div>
+                <div style="flex:1; text-align:center;">
+                    <div style="font-size:28px; font-weight:900; color:var(--text-1);">${pct}%</div>
+                    <div style="font-size:12px; color:var(--text-3); font-weight: 700; margin-top:4px;">معدل النجاح</div>
                 </div>
             </div>
             
-            <button class="btn-sm btn-primary" onclick="exitCustomQuiz()" style="width:100%; padding:12px; border-radius:10px; font-size:13px; font-weight:800; border:none; color:#fff; cursor:pointer;">
-                ➡️ العودة لمركز المراجعة
+            <button class="btn-sm btn-primary" onclick="exitCustomQuiz()" style="width:100%; padding:16px; border-radius:14px; font-size:16px; font-weight:800; border:none; color:#fff; cursor:pointer; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4); transition: transform 0.2s;">
+                🔄 العودة لمركز المراجعة
             </button>
         </div>`;
 }
