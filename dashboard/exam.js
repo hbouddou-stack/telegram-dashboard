@@ -119,15 +119,20 @@ let examWizard = {
             
             if (level2Themes.length === 0) {
                 // Fallback to flat list if no level 2 found
+                if (themes.length === 0) {
+                    listDiv.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-3);">لا توجد بيانات متاحة حالياً</div>';
+                    return;
+                }
                 themes.forEach(item => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'exam-sel-btn';
-                    btn.dataset.id = item.id;
-                    btn.style.cssText = 'text-align:right; width:100%; padding:14px; border-radius:12px; border:2px solid var(--border-color); background:var(--bg); color:var(--text); font-weight:bold; cursor:pointer; font-size:14px; transition:all 0.15s; display:flex; justify-content:space-between; align-items:center;';
-                    btn.innerHTML = `<span>📂 ${item.title}</span><span class="chk-icon" style="opacity:0.2;">✔️</span>`;
-                    btn.onclick = () => this.toggleSelection(item.id, btn);
-                    listDiv.appendChild(btn);
+                    const row = document.createElement('div');
+                    row.style.cssText = 'background:var(--bg); border:1px solid var(--border-color); padding:10px 14px; border-radius:10px; display:flex; align-items:center; cursor:pointer;';
+                    row.innerHTML = `
+                        <label style="display:flex; align-items:center; width:100%; cursor:pointer;">
+                            <input type="checkbox" value="${item.id}" onchange="examWizard.toggleSelection('${item.id}', this.checked)" style="margin-left:12px; transform:scale(1.3); accent-color:var(--primary);">
+                            <span style="font-size:15px; font-weight:600; color:var(--text);">${item.title}</span>
+                        </label>
+                    `;
+                    listDiv.appendChild(row);
                 });
                 return;
             }
@@ -137,14 +142,15 @@ let examWizard = {
                 groupDiv.style.cssText = 'background:var(--surface); border:1px solid var(--border-color); border-radius:14px; overflow:hidden;';
                 
                 // Group Header (Level 2)
-                const headerBtn = document.createElement('button');
-                headerBtn.type = 'button';
-                headerBtn.className = 'exam-sel-btn';
-                headerBtn.dataset.id = l2.id;
-                headerBtn.style.cssText = 'text-align:right; width:100%; padding:14px; border:none; border-bottom:1px solid var(--border-color); background:var(--primary-light); color:var(--primary); font-weight:900; cursor:pointer; font-size:15px; display:flex; justify-content:space-between; align-items:center;';
-                headerBtn.innerHTML = `<span>📁 ${l2.title}</span><span class="chk-icon" style="opacity:0.2;">✔️</span>`;
-                headerBtn.onclick = () => this.toggleSelection(l2.id, headerBtn);
-                groupDiv.appendChild(headerBtn);
+                const headerDiv = document.createElement('div');
+                headerDiv.style.cssText = 'text-align:right; width:100%; padding:14px; border-bottom:1px solid var(--border-color); background:var(--primary-light); display:flex; justify-content:space-between; align-items:center;';
+                headerDiv.innerHTML = `
+                    <label style="display:flex; align-items:center; width:100%; cursor:pointer; gap:12px;">
+                        <input type="checkbox" value="${l2.id}" onchange="examWizard.toggleSelection('${l2.id}', this.checked)" style="transform:scale(1.3); accent-color:var(--primary);">
+                        <span style="font-size:15px; font-weight:900; color:var(--primary);">📁 ${l2.title}</span>
+                    </label>
+                `;
+                groupDiv.appendChild(headerDiv);
                 
                 // Sub-themes (Level 3) belonging to this Level 2
                 const children = level3Themes.filter(t => t.parent_id === l2.id);
@@ -168,24 +174,6 @@ let examWizard = {
             });
             return;
         }
-    },
-        
-        if (items.length === 0) {
-            listDiv.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-3);">لا توجد بيانات متاحة حالياً</div>';
-            return;
-        }
-        
-        items.forEach(item => {
-            const row = document.createElement('div');
-            row.style.cssText = 'background:var(--bg); border:1px solid var(--border-color); padding:10px 14px; border-radius:10px; display:flex; align-items:center; cursor:pointer;';
-            row.innerHTML = `
-                <label style="display:flex; align-items:center; width:100%; cursor:pointer;">
-                    <input type="checkbox" value="${item.id}" onchange="examWizard.toggleSelection('${item.id}', this.checked)" style="margin-left:12px; transform:scale(1.3); accent-color:var(--primary);">
-                    <span style="font-size:15px; font-weight:600; color:var(--text);">${item.title}</span>
-                </label>
-            `;
-            listDiv.appendChild(row);
-        });
     },
 
     toggleChipSelection(id, btn) {
