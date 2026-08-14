@@ -90,7 +90,6 @@ const quizEngine = {
             alert('حدث خطأ');
             switchTab('exams');
         });
-    }
     },
     
     start: function() {
@@ -319,7 +318,6 @@ const quizEngine = {
         .then(function(res) { return res.json(); })
         .then(function(data) {})
         .catch(function(e) { console.error(e); });
-    }
     },
 
     
