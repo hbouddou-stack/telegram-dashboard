@@ -40,13 +40,13 @@ var quizEngine = {
                 self.start();
             } else {
                 document.getElementById('practice-loading').style.display = 'none';
-                alert('?? ??? ?????? ??? ?????');
+                alert('لم يتم العثور على أسئلة');
                 switchTab('exams');
             }
         })
         .catch(function(e) {
             console.error(e);
-            alert('??? ???');
+            alert('حدث خطأ');
             switchTab('exams');
         });
     },
@@ -113,24 +113,19 @@ var quizEngine = {
         let profNote = "";
         let sourceText = "";
         
-        // Extract 💡 التفسير التربوي :
         let pedMatch = text.match(/💡\s*<b>\s*التفسير التربوي\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
         if (pedMatch) pedagogicalText = pedMatch[1];
         
-        // Extract 📖 قول الشيخ :
         let profMatch = text.match(/📖\s*<b>\s*قول الشيخ\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
         if (profMatch) profNote = profMatch[1];
         
-        // Extract 📍 المصدر :
         let srcMatch = text.match(/📍\s*<b>\s*المصدر\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
         if (srcMatch) sourceText = srcMatch[1];
         
-        // Fallback if nothing matched
         if (!pedagogicalText && !profNote && !sourceText) {
             pedagogicalText = text;
         }
         
-        // Rewrite YouTube links for the reader internally
         if (sourceText) {
             let q = this.questions[this.currentIndex] || {};
             let subj = q.subject || this.currentSubject;
@@ -170,14 +165,111 @@ var quizEngine = {
         return html;
     },
 
+    showQuestion: function() {
+        if (this.currentIndex >= this.questions.length ) {
+            this.showResult();
+            return;
+        }
+        
+        const q = this.questions[this.currentIndex];
+        
+        // lives display removed
+        const progressPercent = (this.currentIndex / this.questions.length) * 100;
+        document.getElementById('quiz-progress-bar').style.width = progressPercent + '%';
+        
+        document.getElementById('quiz-question-text').textContent = q.question;
+        document.getElementById('quiz-explanation-container').style.display = 'none';
+        
+        const optsContainer = document.getElementById('quiz-options-container');
+        optsContainer.innerHTML = '';
+        
+        const choices = [];
+        if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
+        if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
+        if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
+        if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
+        
+        choices.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option-btn';
+            btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
+            btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
+            optsContainer.appendChild(btn);
+        });
+
+        // Handle Timer
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        const timerBar = document.getElementById('quiz-timer-bar');
+        if (this.timer > 0) {
+            timerBar.style.display = 'block';
+            timerBar.style.width = '100%';
+            timerBar.style.transition = 'none';
+            
+            // force reflow
+            void timerBar.offsetWidth;
+            
+            this.timeLeft = this.timer;
+            timerBar.style.transition = `width ${this.timer}s linear`;
+            timerBar.style.width = '0%';
+            
+            this.timerInterval = setInterval(() => {
+                this.timeLeft--;
+                if (this.timeLeft <= 0) {
+                    clearInterval(this.timerInterval);
+                    this.checkAnswer(null, q.correct_answer, null); // Timeout
+                }
+            }, 1000);
+        } else {
+            timerBar.style.display = 'none';
+        }
+    },
+    
+    checkAnswer: function(selectedId, correctId, btnEl) {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        const isCorrect = selectedId && (selectedId.toLowerCase() === correctId.toLowerCase());
+        const q = this.questions[this.currentIndex];
+        
+        const allBtns = document.querySelectorAll('.quiz-option-btn');
+        allBtns.forEach(b => b.style.pointerEvents = 'none'); 
+        
+        if (isCorrect) {
+            if (btnEl) btnEl.classList.add('correct');
+            this.score++;
+            if (this.correctionMode === 'instant') {
+                if (this.audioSuccess) this.audioSuccess.play().catch(e=>{});
+                this.showExplanation(q, true);
+            } else {
+                this.nextQuestion();
+            }
+        } else {
+            if (btnEl) btnEl.classList.add('wrong');
+            this.lives--;
+            this.wrongAnswers.push(q);
+            // lives display removed
+            
+            if (this.correctionMode === 'instant') {
+                allBtns.forEach(b => {
+                    if (b.querySelector('.opt-letter').textContent.toLowerCase() === correctId.toLowerCase()) {
+                        b.classList.add('correct');
+                    }
+                });
+                if (this.audioFail) this.audioFail.play().catch(e=>{});
+                this.showExplanation(q, false);
+            } else {
+                this.nextQuestion();
+            }
+        }
+    },
+
     showExplanation: function(q, isCorrect) {
         const expContainer = document.getElementById('quiz-explanation-container');
         const expContent = document.getElementById('quiz-explanation-content');
         expContainer.style.display = 'block';
         
         let title = isCorrect 
-            ? '<div style="color:var(--success,#10b981); font-weight:bold; margin-bottom:12px; font-size:18px;">ÏÑÏ¼ÏºÏ¿Ï® ÏÁÏ¡┘èÏ¡Ï® Ô£à</div>'
-            : '<div style="color:#ef4444; font-weight:bold; margin-bottom:12px; font-size:18px;">ÏÑÏ¼ÏºÏ¿Ï® Ï«ÏºÏÀÏªÏ® ÔØî</div>';
+            ? '<div style="color:var(--success,#10b981); font-weight:bold; margin-bottom:12px; font-size:18px;">إجابة صحيحة ✅</div>'
+            : '<div style="color:#ef4444; font-weight:bold; margin-bottom:12px; font-size:18px;">إجابة خاطئة ❌</div>';
             
         let html = this.formatExplanationHtml(q.explanation);
         expContent.innerHTML = title + html;
@@ -244,8 +336,8 @@ var quizEngine = {
                 let expHtml = this.formatExplanationHtml(q.explanation);
                 html += `
                     <div style="margin-bottom:16px; border-bottom:1px solid var(--surface-2); padding-bottom:16px;">
-                        <p style="font-weight:bold; color:var(--text); margin-bottom:8px;">Ïº┘äÏ│ÏñÏº┘ä: ${q.question}</p>
-                        <div style="font-size:14px; color:var(--text-2); background:#fef2f2; padding:8px; border-radius:8px; margin-bottom:8px;">Ïº┘äÏÑÏ¼ÏºÏ¿Ï® Ïº┘äÏÁÏ¡┘èÏ¡Ï® ┘âÏº┘åÏ¬: <strong>${q['choice_' + q.correct_answer]}</strong></div>
+                        <p style="font-weight:bold; color:var(--text); margin-bottom:8px;">السؤال: ${q.question}</p>
+                        <div style="font-size:14px; color:var(--text-2); background:#fef2f2; padding:8px; border-radius:8px; margin-bottom:8px;">الإجابة الصحيحة كانت: <strong>${q['choice_' + q.correct_answer]}</strong></div>
                         <div style="font-size:14px;">${expHtml}</div>
                     </div>
                 `;
@@ -257,24 +349,24 @@ var quizEngine = {
         const subEl = document.getElementById('quiz-final-sub');
         
         if (this.lives <= 0) {
-            msgEl.textContent = 'Ïº┘åÏ¬┘çÏ¬ Ïº┘ä┘àÏ¡Ïº┘ê┘äÏºÏ¬ ­ƒÆö';
+            msgEl.textContent = 'انتهت المحاولات 💔';
             msgEl.style.color = '#ef4444';
-            subEl.textContent = '┘äÏº Ï¿ÏúÏ│Ïî ┘è┘à┘â┘å┘â ÏÑÏ╣ÏºÏ»Ï® ┘àÏ▒ÏºÏ¼Ï╣Ï® Ïº┘äÏ»Ï▒Ï│ ┘êÏº┘ä┘àÏ¡Ïº┘ê┘äÏ® ┘àÏ¼Ï»Ï»Ïº┘ï.';
+            subEl.textContent = 'لا بأس، يمكنك إعادة مراجعة الدرس والمحاولة مجدداً.';
             document.getElementById('quiz-final-circle').style.stroke = '#ef4444';
         } else if (pct === 100) {
-            msgEl.textContent = '┘à┘àÏ¬ÏºÏ▓ Ï¼Ï»Ïº┘ï! ­ƒîƒ';
+            msgEl.textContent = 'ممتاز جداً! 🌟';
             msgEl.style.color = '#10b981';
-            subEl.textContent = '┘ä┘éÏ» ÏúÏ¬┘é┘åÏ¬ ┘çÏ░Ïº Ïº┘äÏ»Ï▒Ï│ Ï¬┘àÏº┘àÏº┘ï.';
+            subEl.textContent = 'لقد أتقنت هذا الدرس تماماً.';
             document.getElementById('quiz-final-circle').style.stroke = '#10b981';
         } else if (pct >= 50) {
-            msgEl.textContent = 'Ï¼┘èÏ» Ï¼Ï»Ïº┘ï! ­ƒæì';
+            msgEl.textContent = 'جيد جداً! 👍';
             msgEl.style.color = 'var(--primary)';
-            subEl.textContent = '┘ä┘éÏ» ÏºÏ¼Ï¬Ï▓Ï¬ Ïº┘äÏ¬Ï»Ï▒┘èÏ¿Ïî ┘ä┘â┘å ┘è┘à┘â┘å┘â Ï¬Ï¡Ï│┘è┘å ┘åÏ¬┘èÏ¼Ï¬┘â.';
+            subEl.textContent = 'لقد اجتزت التدريب، لكن يمكنك تحسين نتيجتك.';
             document.getElementById('quiz-final-circle').style.stroke = 'var(--primary)';
         } else {
-            msgEl.textContent = 'Ï¡Ïº┘ê┘ä ┘àÏ¼Ï»Ï»Ïº┘ï ­ƒñö';
+            msgEl.textContent = 'حاول مجدداً 🤔';
             msgEl.style.color = '#f59e0b';
-            subEl.textContent = '┘å┘åÏÁÏ¡┘â Ï¿┘àÏ▒ÏºÏ¼Ï╣Ï® Ïº┘äÏ»Ï▒Ï│ ┘àÏ▒Ï® ÏúÏ«Ï▒┘ë.';
+            subEl.textContent = 'ننصحك بمراجعة الدرس مرة أخرى.';
             document.getElementById('quiz-final-circle').style.stroke = '#f59e0b';
         }
     },
