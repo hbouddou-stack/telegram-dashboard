@@ -108,166 +108,66 @@ var quizEngine = {
         formatExplanationHtml(explanation) {
         if (!explanation) return "";
         let text = explanation;
-        text = text.replace("­ƒôî <b>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░</b> :", "­ƒôî <b>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░ :</b>");
-        text = text.replace("­ƒôî <b>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░</b>", "­ƒôî <b>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░ :</b>");
         
         let pedagogicalText = "";
         let profNote = "";
         let sourceText = "";
         
-        if (text.includes("­ƒÆí <b>Ïº┘äÏ┤Ï▒Ï¡ Ïº┘äÏ¬Ï▒Ï¿┘ê┘è</b> :")) {
-            let parts = text.split("­ƒÆí <b>Ïº┘äÏ┤Ï▒Ï¡ Ïº┘äÏ¬Ï▒Ï¿┘ê┘è</b> :");
-            let afterTitle = parts[1] || "";
-            if (text.includes("­ƒôî <b>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░ :</b>")) {
-                let subparts = afterTitle.split("­ƒôî <b>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░ :</b>");
-                pedagogicalText = subparts[0];
-                let rest = subparts[1];
-                if (text.includes("­ƒôÜ <b>Ïº┘ä┘àÏÁÏ»Ï▒ :</b>")) {
-                    let subsub = rest.split("­ƒôÜ <b>Ïº┘ä┘àÏÁÏ»Ï▒ :</b>");
-                    profNote = subsub[0];
-                    sourceText = subsub[1];
-                } else {
-                    profNote = rest;
-                }
-            } else if (text.includes("­ƒôÜ <b>Ïº┘ä┘àÏÁÏ»Ï▒ :</b>")) {
-                let subparts = afterTitle.split("­ƒôÜ <b>Ïº┘ä┘àÏÁÏ»Ï▒ :</b>");
-                pedagogicalText = subparts[0];
-                sourceText = subparts[1];
-            } else {
-                pedagogicalText = afterTitle;
-            }
-        } else {
-            let temp = document.createElement('div');
-            temp.innerHTML = text;
-            pedagogicalText = temp.textContent || "";
+        // Extract 💡 التفسير التربوي :
+        let pedMatch = text.match(/💡\s*<b>\s*التفسير التربوي\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
+        if (pedMatch) pedagogicalText = pedMatch[1];
+        
+        // Extract 📖 قول الشيخ :
+        let profMatch = text.match(/📖\s*<b>\s*قول الشيخ\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
+        if (profMatch) profNote = profMatch[1];
+        
+        // Extract 📍 المصدر :
+        let srcMatch = text.match(/📍\s*<b>\s*المصدر\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
+        if (srcMatch) sourceText = srcMatch[1];
+        
+        // Fallback if nothing matched
+        if (!pedagogicalText && !profNote && !sourceText) {
+            pedagogicalText = text;
+        }
+        
+        // Rewrite YouTube links for the reader internally
+        if (sourceText) {
+            let q = this.questions[this.currentIndex] || {};
+            let subj = q.subject || this.currentSubject;
+            let lessonNum = q.lessonNum || q.lesson_id || this.currentLessonNum;
+            
+            sourceText = sourceText.replace(/<a\s+href="https?:\/\/www\.youtube\.com\/watch\?.*?&t=(\d+)s?".*?>([\s\S]*?)<\/a>/gi, function(match, seconds, content) {
+                return `<button onclick="openSearchResult('${subj}', ${lessonNum}, ${seconds})" style="background:var(--primary); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; margin-right:6px; display:inline-flex; align-items:center; gap:4px;">▶️ مشاهدة في اللوحة ${content.replace(/<\/?b>/g, '')}</button>`;
+            });
         }
         
         let html = "";
         if (pedagogicalText.trim()) {
-            html += `<div style="margin-bottom:14px; padding:14px 16px; background:linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius:12px; border-right:4px solid #22c55e; font-size:14.5px; color:#15803d; line-height:1.7;">
+            html += `<div style="margin-bottom:14px; padding:14px 16px; background:linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius:12px; border-right:4px solid #22c55e; font-size:14.5px; color:#15803d; line-height:1.7; text-align:right;">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:900; font-size:15px; color:#166534;">
-                    <span style="font-size:18px;">📖</span> الشرح التربوي
+                    <span style="font-size:18px;">💡</span> التفسير التربوي
                 </div>
                 ${pedagogicalText.trim()}
             </div>`;
         }
         if (profNote.trim()) {
-            html += `<div style="margin-bottom:14px; padding:14px 16px; background:linear-gradient(135deg, #fffbeb, #fef3c7); border-radius:12px; border-right:4px solid #f59e0b; font-size:14px; color:#92400e; line-height:1.7; font-style:italic;">
+            html += `<div style="margin-bottom:14px; padding:14px 16px; background:linear-gradient(135deg, #fffbeb, #fef3c7); border-radius:12px; border-right:4px solid #f59e0b; font-size:14px; color:#92400e; line-height:1.7; font-style:italic; text-align:right;">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:900; font-size:15px; color:#b45309; font-style:normal;">
-                    <span style="font-size:18px;">💡</span> ملاحظة الأستاذ
+                    <span style="font-size:18px;">📖</span> قول الشيخ
                 </div>
                 « ${profNote.trim()} »
             </div>`;
         }
         if (sourceText.trim()) {
-            html += `<div style="margin-bottom:8px; padding:10px 14px; background:linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius:10px; border-right:4px solid #94a3b8; font-size:12.5px; color:#64748b; line-height:1.6;">
-                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px; font-weight:800; font-size:13px; color:#475569;">
-                    <span style="font-size:16px;">📚</span> المصدر
+            html += `<div style="margin-bottom:8px; padding:12px 14px; background:linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius:10px; border-right:4px solid #94a3b8; font-size:13px; color:#475569; line-height:1.6; text-align:right;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px; font-weight:800; font-size:14px; color:#334155;">
+                    <span style="font-size:18px;">📍</span> المصدر
                 </div>
                 ${sourceText.trim()}
             </div>`;
         }
-        if(!html) {
-            html = `<div style="margin-bottom:12px; font-size:15px; padding:14px; background:var(--surface); border-radius:12px; line-height:1.7;">${text}</div>`;
-        }
+        
         return html;
-    },
-
-    showQuestion: function() {
-        if (this.currentIndex >= this.questions.length ) {
-            this.showResult();
-            return;
-        }
-        
-        const q = this.questions[this.currentIndex];
-        
-        // lives display removed
-        const progressPercent = (this.currentIndex / this.questions.length) * 100;
-        document.getElementById('quiz-progress-bar').style.width = progressPercent + '%';
-        
-        document.getElementById('quiz-question-text').textContent = q.question;
-        document.getElementById('quiz-explanation-container').style.display = 'none';
-        
-        const optsContainer = document.getElementById('quiz-options-container');
-        optsContainer.innerHTML = '';
-        
-        const choices = [];
-        if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
-        if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
-        if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
-        if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
-        
-        choices.forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = 'quiz-option-btn';
-            btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
-            btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
-            optsContainer.appendChild(btn);
-        });
-
-        // Handle Timer
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        const timerBar = document.getElementById('quiz-timer-bar');
-        if (this.timer > 0) {
-            timerBar.style.display = 'block';
-            timerBar.style.width = '100%';
-            timerBar.style.transition = 'none';
-            
-            // force reflow
-            void timerBar.offsetWidth;
-            
-            this.timeLeft = this.timer;
-            timerBar.style.transition = `width ${this.timer}s linear`;
-            timerBar.style.width = '0%';
-            
-            this.timerInterval = setInterval(() => {
-                this.timeLeft--;
-                if (this.timeLeft <= 0) {
-                    clearInterval(this.timerInterval);
-                    this.checkAnswer(null, q.correct_answer, null); // Timeout
-                }
-            }, 1000);
-        } else {
-            timerBar.style.display = 'none';
-        }
-    },
-    
-    checkAnswer: function(selectedId, correctId, btnEl) {
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        
-        const isCorrect = selectedId && (selectedId.toLowerCase() === correctId.toLowerCase());
-        const q = this.questions[this.currentIndex];
-        
-        const allBtns = document.querySelectorAll('.quiz-option-btn');
-        allBtns.forEach(b => b.style.pointerEvents = 'none'); 
-        
-        if (isCorrect) {
-            if (btnEl) btnEl.classList.add('correct');
-            this.score++;
-            if (this.correctionMode === 'instant') {
-                if (this.audioSuccess) this.audioSuccess.play().catch(e=>{});
-                this.showExplanation(q, true);
-            } else {
-                this.nextQuestion();
-            }
-        } else {
-            if (btnEl) btnEl.classList.add('wrong');
-            this.lives--;
-            this.wrongAnswers.push(q);
-            // lives display removed
-            
-            if (this.correctionMode === 'instant') {
-                allBtns.forEach(b => {
-                    if (b.querySelector('.opt-letter').textContent.toLowerCase() === correctId.toLowerCase()) {
-                        b.classList.add('correct');
-                    }
-                });
-                if (this.audioFail) this.audioFail.play().catch(e=>{});
-                this.showExplanation(q, false);
-            } else {
-                this.nextQuestion();
-            }
-        }
     },
 
     showExplanation: function(q, isCorrect) {
