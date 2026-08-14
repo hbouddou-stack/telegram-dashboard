@@ -7468,5 +7468,137 @@ function resolveProposal(proposalId, action) {
 <audio id="audio-correct" src="https://cdn.freesound.org/previews/320/320655_527080-lq.mp3" preload="auto"></audio>
 <audio id="audio-incorrect" src="https://cdn.freesound.org/previews/142/142608_1840739-lq.mp3" preload="auto"></audio>
 
+
+<script>
+function toggleFAQ(button) {
+    const item = button.parentElement;
+    const answer = item.querySelector('.faq-answer');
+    const icon = item.querySelector('.faq-icon');
+    
+    // Close all other FAQs
+    document.querySelectorAll('.faq-item').forEach(otherItem => {
+        if (otherItem !== item) {
+            const otherAnswer = otherItem.querySelector('.faq-answer');
+            const otherIcon = otherItem.querySelector('.faq-icon');
+            otherAnswer.style.maxHeight = '0px';
+            otherAnswer.style.padding = '0 16px';
+            otherIcon.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    if (answer.style.maxHeight === '0px' || answer.style.maxHeight === '') {
+        // Calculate the height needed
+        answer.style.padding = '0 16px 16px 16px';
+        answer.style.maxHeight = answer.scrollHeight + 16 + 'px';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        answer.style.maxHeight = '0px';
+        answer.style.padding = '0 16px';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+function filterFAQ() {
+    const query = document.getElementById('faq-search-input').value.toLowerCase();
+    const categories = document.querySelectorAll('.faq-category');
+    let hasAnyVisible = false;
+
+    categories.forEach(cat => {
+        let hasVisibleInCat = false;
+        const items = cat.querySelectorAll('.faq-item');
+        
+        items.forEach(item => {
+            const questionText = item.querySelector('.faq-question').innerText.toLowerCase();
+            const answerText = item.querySelector('.faq-answer').innerText.toLowerCase();
+            
+            if (questionText.includes(query) || answerText.includes(query)) {
+                item.style.display = 'block';
+                hasVisibleInCat = true;
+                hasAnyVisible = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        if (hasVisibleInCat) {
+            cat.style.display = 'block';
+        } else {
+            cat.style.display = 'none';
+        }
+    });
+
+    const emptyState = document.getElementById('faq-empty-state');
+    if (emptyState) {
+        emptyState.style.display = hasAnyVisible ? 'none' : 'block';
+    }
+}
+</script>
+
+
+<script>
+function toggleFAQ(button) {
+    const item = button.parentElement;
+    const answer = item.querySelector('.faq-answer');
+    const icon = item.querySelector('.faq-icon');
+    
+    // Close all other FAQs
+    document.querySelectorAll('.faq-item').forEach(otherItem => {
+        if (otherItem !== item) {
+            const otherAnswer = otherItem.querySelector('.faq-answer');
+            const otherIcon = otherItem.querySelector('.faq-icon');
+            otherAnswer.style.maxHeight = '0px';
+            otherAnswer.style.padding = '0 16px';
+            otherIcon.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    if (answer.style.maxHeight === '0px' || answer.style.maxHeight === '') {
+        // Calculate the height needed
+        answer.style.padding = '0 16px 16px 16px';
+        answer.style.maxHeight = answer.scrollHeight + 16 + 'px';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        answer.style.maxHeight = '0px';
+        answer.style.padding = '0 16px';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+function filterFAQ() {
+    const query = document.getElementById('faq-search-input').value.toLowerCase();
+    const categories = document.querySelectorAll('.faq-category');
+    let hasAnyVisible = false;
+
+    categories.forEach(cat => {
+        let hasVisibleInCat = false;
+        const items = cat.querySelectorAll('.faq-item');
+        
+        items.forEach(item => {
+            const questionText = item.querySelector('.faq-question').innerText.toLowerCase();
+            const answerText = item.querySelector('.faq-answer').innerText.toLowerCase();
+            
+            if (questionText.includes(query) || answerText.includes(query)) {
+                item.style.display = 'block';
+                hasVisibleInCat = true;
+                hasAnyVisible = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        if (hasVisibleInCat) {
+            cat.style.display = 'block';
+        } else {
+            cat.style.display = 'none';
+        }
+    });
+
+    const emptyState = document.getElementById('faq-empty-state');
+    if (emptyState) {
+        emptyState.style.display = hasAnyVisible ? 'none' : 'block';
+    }
+}
+</script>
+
 </body>
 </html>
