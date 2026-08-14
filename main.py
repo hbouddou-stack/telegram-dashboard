@@ -153,13 +153,13 @@ async def cors_middleware(request, handler):
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_index(request):
-        resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'index.html'))
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'index.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     resp.headers['Pragma'] = 'no-cache'
     return resp
 
 async def handle_interactive(request):
-        resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'interactive.html'))
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'interactive.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     resp.headers['Pragma'] = 'no-cache'
     return resp
@@ -239,7 +239,7 @@ async def handle_quran(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'quran_db.json'))
 
 async def handle_reader(request):
-        resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.html'))
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     resp.headers['Pragma'] = 'no-cache'
     return resp
