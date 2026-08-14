@@ -5,8 +5,45 @@ var quizEngine = {
     
     currentSubject: null,
     currentLessonNum: null,
-    audioSuccess: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3') : null,
-    audioFail: (typeof Audio !== 'undefined') ? new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3') : null,
+
+    playSound: function(type) {
+        try {
+            if (!window.AudioContext && !window.webkitAudioContext) return;
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!this.audioCtx) this.audioCtx = new Ctx();
+            const ctx = this.audioCtx;
+            if (ctx.state === 'suspended') ctx.resume();
+            
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            const now = ctx.currentTime;
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(659.25, now); // E5
+                osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.1); // E6
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        } catch(e) { console.warn('Audio failed:', e); }
+    },
+
+    // audio properties removed in favor of synthesized sounds
+    // audio properties removed in favor of synthesized sounds
     
     
     fetchQuestionsCustom: function(options) {
@@ -129,7 +166,7 @@ var quizEngine = {
         if (sourceText) {
             let q = this.questions[this.currentIndex] || {};
             let subj = q.subject || this.currentSubject;
-            let lessonNum = q.lessonNum || q.lesson_id || this.currentLessonNum;
+            let lessonNum = q.course_number || q.lessonNum || q.lesson_id || this.currentLessonNum;
             
             sourceText = sourceText.replace(/<a\s+href="https?:\/\/www\.youtube\.com\/watch\?.*?&t=(\d+)s?".*?>([\s\S]*?)<\/a>/gi, function(match, seconds, content) {
                 return `<button onclick="openSearchResult('${subj}', ${lessonNum}, ${seconds})" style="background:var(--primary); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; margin-right:6px; display:inline-flex; align-items:center; gap:4px;">▶️ مشاهدة في اللوحة ${content.replace(/<\/?b>/g, '')}</button>`;
@@ -237,7 +274,7 @@ var quizEngine = {
             if (btnEl) btnEl.classList.add('correct');
             this.score++;
             if (this.correctionMode === 'instant') {
-                if (this.audioSuccess) this.audioSuccess.play().catch(e=>{});
+                this.playSound('success');
                 this.showExplanation(q, true);
             } else {
                 this.nextQuestion();
@@ -254,7 +291,7 @@ var quizEngine = {
                         b.classList.add('correct');
                     }
                 });
-                if (this.audioFail) this.audioFail.play().catch(e=>{});
+                this.playSound('fail');
                 this.showExplanation(q, false);
             } else {
                 this.nextQuestion();
