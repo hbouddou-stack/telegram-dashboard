@@ -250,6 +250,9 @@ async def handle_reader_js(request):
 async def handle_exam_js(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'exam.js'))
 
+async def handle_quiz_js(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'quiz.js'))
+
 async def handle_reader_css(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.css'))
 
@@ -3894,6 +3897,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/reader.html', handle_reader)
     app.router.add_get('/reader.js', handle_reader_js)
     app.router.add_get('/exam.js', handle_exam_js)
+    app.router.add_get('/quiz.js', handle_quiz_js)
     app.router.add_get('/reader.css', handle_reader_css)
     app.router.add_get('/support', handle_support)
     app.router.add_get('/support.html', handle_support)
