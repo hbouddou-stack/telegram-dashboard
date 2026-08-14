@@ -238,33 +238,24 @@
             <div id="exam-step-2" style="display:none;">
                 <h3 style="color:var(--text); text-align:center; margin-bottom:18px; font-size:18px; font-weight:700;">2️⃣ اختر نمط وطريقة التقسيم:</h3>
                 
-                <div id="exam-mode-cards" style="display:flex; flex-direction:column; gap:14px; max-width:500px; margin:0 auto;">
+                <div id="exam-mode-cards" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:500px; margin:0 auto;">
                     
                     <!-- Mode Lessons -->
-                    <div class="exam-mode-card" onclick="examWizard.selectMode('lessons')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid var(--primary-light);">
-                        <div style="font-size:32px; margin-bottom:8px;">📚</div>
-                        <div style="font-weight:800; font-size:18px; color:var(--primary); margin-bottom:4px;">حسب أرقام الدروس</div>
-                        <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
-                            📌 مثال: اختبر نفسك في (الدرس 12، الدرس 13، الدرس 14...)
-                        </div>
+                    <div class="exam-mode-card" onclick="examWizard.selectMode('lessons')" style="background:var(--surface); border-radius:12px; padding:14px 8px; text-align:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:2px solid var(--primary-light); transition:all 0.2s;">
+                        <div style="font-size:24px; margin-bottom:4px;">📚</div>
+                        <div style="font-weight:800; font-size:13px; color:var(--primary);">حسب الدروس</div>
                     </div>
 
                     <!-- Mode Themes -->
-                    <div class="exam-mode-card" onclick="examWizard.selectMode('themes')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid #fef3c7;">
-                        <div style="font-size:32px; margin-bottom:8px;">🎯</div>
-                        <div style="font-weight:800; font-size:18px; color:#d97706; margin-bottom:4px;">حسب المحاور العلمية</div>
-                        <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
-                            🎯 مثال: اختبر نفسك في (أحكام الصيام، شروط الإمامة، النون الساكنة...)
-                        </div>
+                    <div class="exam-mode-card" onclick="examWizard.selectMode('themes')" style="background:var(--surface); border-radius:12px; padding:14px 8px; text-align:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:2px solid #fef3c7; transition:all 0.2s;">
+                        <div style="font-size:24px; margin-bottom:4px;">🎯</div>
+                        <div style="font-weight:800; font-size:13px; color:#d97706;">حسب المحاور</div>
                     </div>
 
                     <!-- Mode Years (Sira only) -->
-                    <div class="exam-mode-card" id="exam-mode-years" onclick="examWizard.selectMode('years')" style="background:var(--surface); border-radius:16px; padding:18px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid #dcfce7; display:none;">
-                        <div style="font-size:32px; margin-bottom:8px;">⏳</div>
-                        <div style="font-weight:800; font-size:18px; color:#166534; margin-bottom:4px;">حسب السنوات الهجرية</div>
-                        <div style="font-size:13.5px; color:var(--text-2); background:var(--bg); padding:8px 12px; border-radius:8px; display:inline-block;">
-                            ⏳ مثال: أحداث (السنة 2 هـ، السنة 8 هـ...)
-                        </div>
+                    <div class="exam-mode-card" id="exam-mode-years" onclick="examWizard.selectMode('years')" style="background:var(--surface); border-radius:12px; padding:14px 8px; text-align:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:2px solid #dcfce7; display:none; transition:all 0.2s;">
+                        <div style="font-size:24px; margin-bottom:4px;">⏳</div>
+                        <div style="font-weight:800; font-size:13px; color:#166534;">حسب السنوات</div>
                     </div>
                 </div>
             </div>

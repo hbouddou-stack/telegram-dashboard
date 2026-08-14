@@ -145,16 +145,31 @@ const quizEngine = {
         
         let html = "";
         if (pedagogicalText.trim()) {
-            html += `<div style="margin-bottom:12px; font-size:15px; color:var(--text); line-height:1.6;"><strong>Ïº┘äÏ┤Ï▒Ï¡ Ïº┘äÏ¬Ï▒Ï¿┘ê┘è:</strong><br>${pedagogicalText.trim()}</div>`;
+            html += `<div style="margin-bottom:14px; padding:14px 16px; background:linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius:12px; border-right:4px solid #22c55e; font-size:14.5px; color:#15803d; line-height:1.7;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:900; font-size:15px; color:#166534;">
+                    <span style="font-size:18px;">📖</span> الشرح التربوي
+                </div>
+                ${pedagogicalText.trim()}
+            </div>`;
         }
         if (profNote.trim()) {
-            html += `<div style="margin-bottom:12px; background:var(--surface-2); padding:12px; border-radius:8px; border-right:3px solid var(--primary); font-size:14.5px;"><span style="font-size:16px;">­ƒôî</span> <strong>┘à┘äÏºÏ¡Ï©Ï® Ïº┘äÏúÏ│Ï¬ÏºÏ░:</strong><br>${profNote.trim()}</div>`;
+            html += `<div style="margin-bottom:14px; padding:14px 16px; background:linear-gradient(135deg, #fffbeb, #fef3c7); border-radius:12px; border-right:4px solid #f59e0b; font-size:14px; color:#92400e; line-height:1.7; font-style:italic;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:900; font-size:15px; color:#b45309; font-style:normal;">
+                    <span style="font-size:18px;">💡</span> ملاحظة الأستاذ
+                </div>
+                « ${profNote.trim()} »
+            </div>`;
         }
         if (sourceText.trim()) {
-            html += `<div style="font-size:13px; color:var(--text-3); margin-top:8px;">­ƒôÜ <strong>Ïº┘ä┘àÏÁÏ»Ï▒:</strong> ${sourceText.trim()}</div>`;
+            html += `<div style="margin-bottom:8px; padding:10px 14px; background:linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius:10px; border-right:4px solid #94a3b8; font-size:12.5px; color:#64748b; line-height:1.6;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px; font-weight:800; font-size:13px; color:#475569;">
+                    <span style="font-size:16px;">📚</span> المصدر
+                </div>
+                ${sourceText.trim()}
+            </div>`;
         }
         if(!html) {
-            html = `<div style="margin-bottom:12px; font-size:15px;">${text}</div>`;
+            html = `<div style="margin-bottom:12px; font-size:15px; padding:14px; background:var(--surface); border-radius:12px; line-height:1.7;">${text}</div>`;
         }
         return html;
     },
@@ -167,7 +182,7 @@ const quizEngine = {
         
         const q = this.questions[this.currentIndex];
         
-        document.getElementById('quiz-lives').textContent = this.lives;
+        // lives display removed
         const progressPercent = (this.currentIndex / this.questions.length) * 100;
         document.getElementById('quiz-progress-bar').style.width = progressPercent + '%';
         
@@ -240,7 +255,7 @@ const quizEngine = {
             if (btnEl) btnEl.classList.add('wrong');
             this.lives--;
             this.wrongAnswers.push(q);
-            document.getElementById('quiz-lives').textContent = this.lives;
+            // lives display removed
             
             if (this.correctionMode === 'instant') {
                 allBtns.forEach(b => {

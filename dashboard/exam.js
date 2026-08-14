@@ -28,6 +28,14 @@ let examWizard = {
             const data = await res.json();
             if (data && data.success) {
                 this.options = data;
+                // If API returned empty themes, apply fallback themes
+                if (!this.options.themes || this.options.themes.length === 0) {
+                    const fallback = {};
+                    this.useFallbackOptions(subj);
+                    const fb = this.options;
+                    this.options = data;
+                    this.options.themes = fb.themes;
+                }
             } else {
                 this.useFallbackOptions(subj);
             }
