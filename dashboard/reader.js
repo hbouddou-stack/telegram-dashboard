@@ -1,4 +1,4 @@
-﻿let isReadingMode = false;
+let isReadingMode = false;
 let player; 
 let currentLessonData = null;
 let currentSubject = null;
@@ -1653,9 +1653,10 @@ function resetSearch() {
 }
 
 function openSearchResult(subject, lessonNum, startTime) {
-    const lesson = DB.find(l => l.subject === subject && l.lessonNum === lessonNum);
+    if (startTime !== null && startTime !== undefined) startTime = parseInt(startTime);
+    const lesson = DB.find(l => l.subject.toLowerCase() === subject.toLowerCase() && parseInt(l.lessonNum) === parseInt(lessonNum));
     if(lesson) {
-        if (startTime !== null) pendingSeekTime = startTime;
+        if (startTime !== null && !isNaN(startTime)) pendingSeekTime = startTime;
         openLesson(lesson);
         switchTab('reader');
         
