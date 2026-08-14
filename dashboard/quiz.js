@@ -1,4 +1,4 @@
-const quizEngine = {
+var quizEngine = {
     questions: [],
     currentIndex: 0,
     score: 0,
