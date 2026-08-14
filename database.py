@@ -3226,3 +3226,88 @@ async def get_questions_for_theme_nodes(theme_ids: list[int]) -> list[dict]:
         async with db.execute(query_questions, node_ids) as cursor:
             rows = await cursor.fetchall()
             return [dict(r) for r in rows]
+
+
+async def get_student_global_stats(user_id: int):
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        
+        # Get total questions and correct questions
+        async with db.execute("SELECT status, COUNT(*) as cnt FROM question_progress WHERE user_id = ? GROUP BY status", (user_id,)) as cur:
+            rows = await cur.fetchall()
+            
+        total = 0
+        correct = 0
+        for r in rows:
+            total += r['cnt']
+            if r['status'] == 'correct':
+                correct = r['cnt']
+                
+        # Calculate streak
+        async with db.execute("SELECT DISTINCT date(last_answered_at) as d FROM question_progress WHERE user_id = ? AND last_answered_at IS NOT NULL ORDER BY d DESC", (user_id,)) as cur:
+            date_rows = await cur.fetchall()
+            
+        import datetime
+        streak = 0
+        if date_rows:
+            dates = [datetime.datetime.strptime(r['d'], '%Y-%m-%d').date() for r in date_rows]
+            today = datetime.datetime.utcnow().date()
+            current_date = today
+            
+            # If the user hasn't played today, but played yesterday, streak is still active
+            if dates[0] == today:
+                streak = 1
+                idx = 1
+                current_date = today - datetime.timedelta(days=1)
+            elif dates[0] == today - datetime.timedelta(days=1):
+                streak = 1
+                idx = 1
+                current_date = today - datetime.timedelta(days=2)
+            else:
+                streak = 0
+                idx = 0
+                
+            if streak > 0:
+                while idx < len(dates):
+                    if dates[idx] == current_date:
+                        streak += 1
+                        current_date -= datetime.timedelta(days=1)
+                        idx += 1
+                    else:
+                        break
+                        
+        return {
+            "total_answered": total,
+            "correct_answers": correct,
+            "success_rate": round((correct / total * 100) if total > 0 else 0),
+            "streak": streak
+        }
+
+async def get_student_global_radar(user_id: int):
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        query = """
+            SELECT q.subject, p.status, COUNT(*) as cnt
+            FROM question_progress p
+            JOIN questions q ON p.question_id = q.id
+            WHERE p.user_id = ?
+            GROUP BY q.subject, p.status
+        """
+        async with db.execute(query, (user_id,)) as cur:
+            rows = await cur.fetchall()
+            
+        stats = {}
+        for r in rows:
+            subj = r['subject']
+            if subj not in stats:
+                stats[subj] = {'total': 0, 'correct': 0}
+            stats[subj]['total'] += r['cnt']
+            if r['status'] == 'correct':
+                stats[subj]['correct'] += r['cnt']
+                
+        radar = []
+        for subj, data in stats.items():
+            rate = round((data['correct'] / data['total'] * 100) if data['total'] > 0 else 0)
+            radar.append({"subject": subj, "rate": rate})
+            
+        return radar

@@ -3913,6 +3913,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/student/quiz/options', get_student_quiz_options)
     app.router.add_post('/api/student/quiz/setup', get_student_quiz_questions)
     app.router.add_post('/api/student/quiz/submit', submit_student_quiz_answer)
+    app.router.add_post('/api/student/dashboard-data', get_student_dashboard_data)
     app.router.add_post('/api/student/favorites/toggle', toggle_student_favorite)
     app.router.add_post('/admin/reports', get_admin_reports)
     app.router.add_post('/admin/dashboard-stats', get_admin_dashboard_stats_api)
@@ -4121,3 +4122,35 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.info("Bot stopped.")
+
+
+async def get_student_dashboard_data(request):
+    try:
+        data = await request.json()
+        user_id = data.get('userId')
+        if not user_id:
+            return web.json_response({"success": False, "error": "Missing userId"}, status=400)
+            
+        import database as db
+        global_stats = await db.get_student_global_stats(user_id)
+        radar = await db.get_student_global_radar(user_id)
+        
+        # For the interactive map, we can return the progress of the default subject (e.g., fiqh)
+        # or we can let the client fetch it via another call. Let's send fiqh and sira to start.
+        fiqh_lessons, _, _ = await db.get_detailed_subject_progress(user_id, 'fiqh')
+        sira_lessons, _, _ = await db.get_detailed_subject_progress(user_id, 'sira')
+        
+        map_data = {
+            "fiqh": fiqh_lessons,
+            "sira": sira_lessons
+        }
+        
+        return web.json_response({
+            "success": True,
+            "global_stats": global_stats,
+            "radar": radar,
+            "map_data": map_data
+        })
+    except Exception as e:
+        logger.error(f"Error in get_student_dashboard_data: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)

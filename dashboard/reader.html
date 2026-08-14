@@ -57,7 +57,82 @@
         };
     </script>
 
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+    /* SERPENTINE MAP CSS */
+    .map-node {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 4px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        z-index: 2;
+        margin: 24px 0;
+        position: relative;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .map-node:active { transform: scale(0.95); }
+    .map-node.completed {
+        background: #4ade80;
+        border-color: #22c55e;
+        color: white;
+    }
+    .map-node.current {
+        background: #fbbf24;
+        border-color: #f59e0b;
+        color: white;
+        box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.3);
+        animation: pulseMap 2s infinite;
+    }
+    .map-node.locked {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #94a3b8;
+        opacity: 0.8;
+    }
+    /* Zig-zag offset */
+    .map-node:nth-child(4n+1) { transform: translateX(35px); }
+    .map-node:nth-child(4n+2) { transform: translateX(0px); }
+    .map-node:nth-child(4n+3) { transform: translateX(-35px); }
+    .map-node:nth-child(4n+4) { transform: translateX(0px); }
+    
+    .map-node-label {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-size: 11px;
+        font-weight: bold;
+        color: var(--text-2);
+        margin-top: 6px;
+    }
+    
+    /* Connectors */
+    .map-connector {
+        position: absolute;
+        width: 6px;
+        background: var(--border-color);
+        z-index: 1;
+    }
+    .map-connector.completed {
+        background: #4ade80;
+    }
+    
+    @keyframes pulseMap {
+        0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+        70% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+    }
+    </style>
+    </head>
 
     <!-- Vertical Scroll Progress Bar -->
     <div id="vertical-scroll-progress-container" style="position: fixed; top: 0; right: 0; width: 4px; height: 100vh; background: transparent; z-index: 9999; pointer-events: none; display: none;">
@@ -68,7 +143,73 @@
 
     <!-- TAB: HOME -->
     
-    <div class="tab-panel active" id="tab-inbox" style="padding: 20px; direction: rtl; text-align: right; background: var(--bg); min-height: 100vh;">
+    
+    <!-- DASHBOARD TAB -->
+    <div class="tab-panel active" id="tab-dashboard" style="background: var(--bg); min-height: 100vh; padding-bottom: 90px; direction: rtl; text-align: right;">
+        
+        <!-- HEADER STATS -->
+        <div style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); padding: 30px 20px; border-radius: 0 0 24px 24px; color: white; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="margin:0; font-size: 24px; font-weight: 800;">مرحباً بك 👋</h2>
+                    <p style="margin:5px 0 0; opacity: 0.9; font-size:14px;">إليك ملخص تقدمك في الأكاديمية</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 12px; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">🔥</span>
+                    <div>
+                        <div style="font-size:18px; font-weight:bold; line-height:1;" id="dash-streak">0</div>
+                        <div style="font-size:10px; opacity:0.9;">أيام متتالية</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:24px;">
+                <div style="background: rgba(255,255,255,0.15); padding:16px; border-radius:16px; text-align:center;">
+                    <div style="font-size:28px; font-weight:800; margin-bottom:4px;" id="dash-total-q">0</div>
+                    <div style="font-size:12px; opacity:0.9;">سؤال مجاب</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.15); padding:16px; border-radius:16px; text-align:center;">
+                    <div style="font-size:28px; font-weight:800; margin-bottom:4px;" id="dash-success-rate">0%</div>
+                    <div style="font-size:12px; opacity:0.9;">نسبة النجاح</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SKILL RADAR -->
+        <div style="padding: 0 20px; margin-bottom:30px;">
+            <div style="background: var(--surface); padding:20px; border-radius:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
+                <h3 style="margin-top:0; margin-bottom:16px; color:var(--text); font-size:16px; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                    <span>🕸️</span> شبكة المهارات
+                </h3>
+                <div style="position: relative; height:250px; width:100%;">
+                    <canvas id="skillRadarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTERACTIVE PROGRESS MAP -->
+        <div style="padding: 0 20px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="margin:0; color:var(--text); font-size:16px; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                    <span>🗺️</span> مسار التعلم
+                </h3>
+                <select id="dash-map-subject" onchange="window.dashUpdateMap()" style="background:var(--surface); border:1px solid var(--border-color); border-radius:8px; padding:6px 12px; color:var(--text); font-family:inherit; outline:none;">
+                    <option value="fiqh">الفقه</option>
+                    <option value="sira">السيرة</option>
+                </select>
+            </div>
+            
+            <div style="background: var(--surface); border-radius:20px; padding: 30px 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color); overflow:hidden;">
+                <div id="dash-serpentine-map" style="position:relative; display:flex; flex-direction:column; align-items:center; padding:10px 0;">
+                    <!-- Nodes will be injected here by JS -->
+                    <div style="text-align:center; padding:20px; color:var(--text-3);">جاري التحميل...</div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="tab-panel" id="tab-inbox" style="padding: 20px; direction: rtl; text-align: right; background: var(--bg); min-height: 100vh;">
         <h2 style="color:var(--primary); font-weight:800; margin-bottom:20px; text-align: center;">?? ????? ??????</h2>
         
         <div style="background: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 4px solid var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
@@ -565,7 +706,11 @@
     <!-- BOTTOM NAV -->
     
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="switchTab('inbox', this)">
+        <button class="nav-btn active" id="btn-nav-dashboard" onclick="switchTab('dashboard', this)">
+            <span class="icon">📊</span><span>تقدمي</span>
+        </button>
+
+        <button class="nav-btn" onclick="switchTab('inbox', this)">
             <span class="icon">🏠</span><span>الرئيسية</span>
         </button>
         <button class="nav-btn" onclick="switchTab('syllabus', this)">
@@ -646,6 +791,7 @@
 
     <script src="reader.js?v=practice-7" charset="UTF-8"></script>
     <script src="exam.js?v=7" charset="UTF-8"></script>
+    <script src="dashboard.js?v=1" charset="UTF-8"></script>
     <script src="quiz.js?v=9" charset="UTF-8"></script>
 
     <div id="report-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">

@@ -76,10 +76,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 openLesson(found);
                 switchTab('reader');
             } else {
-                switchTab('home');
+                switchTab('dashboard');
             }
         } else {
-            switchTab('home');
+            switchTab('dashboard');
         }
 
     } catch (e) {
