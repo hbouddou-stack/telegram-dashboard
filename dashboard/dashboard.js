@@ -137,7 +137,7 @@ window.dashUpdateMap = function() {
         
         let action = `onclick="window.startPracticeForLesson('${subj}', ${lesson.course_number})"`;
         if (stateClass === 'locked') {
-            action = 'onclick="alert(\\'أكمل الدروس السابقة أولاً لتفتح هذا الدرس\\')"';
+            action = 'onclick="alert('هذا الدرس مغلق، عليك إتمام ما قبله')"';
         }
         
         html += `
