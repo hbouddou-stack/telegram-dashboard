@@ -1,0 +1,15 @@
+        
+        let srcMatch = text.match(/📍\s*<b>\s*المصدر\s*:\s*<\/b>\s*(?:<br>|\n)*\s*<blockquote>([\s\S]*?)<\/blockquote>/);
+        if (srcMatch) sourceText = srcMatch[1];
+        
+        if (!pedagogicalText && !profNote && !sourceText) {
+            pedagogicalText = text;
+        }
+        
+        if (sourceText) {
+            let q = this.questions[this.currentIndex] || {};
+            let subj = q.subject || this.currentSubject;
+            let lessonNum = q.course_number || q.lessonNum || q.lesson_id || this.currentLessonNum;
+            
+            sourceText = sourceText.replace(/<a\s+href="https?:\/\/www\.youtube\.com\/watch\?.*?&t=(\d+)s?".*?>([\s\S]*?)<\/a>/gi, function(match, seconds, content) {
+                return `<button onclick="openSearchResult('${subj}', ${lessonNum}, ${seconds})" style="background:var(--primary); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; margin-right:6px; display:inline-flex; align-items:center; gap:4px;">▶️ مشاهدة في اللوحة ${content.replace(/<\/?b>/g, '')}</button>`;

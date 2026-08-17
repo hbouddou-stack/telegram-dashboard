@@ -209,6 +209,7 @@ var quizEngine = {
         }
         
         const q = this.questions[this.currentIndex];
+        const qType = q.question_type || 'mcq';
         
         // lives display removed
         const progressPercent = (this.currentIndex / this.questions.length) * 100;
@@ -220,19 +221,103 @@ var quizEngine = {
         const optsContainer = document.getElementById('quiz-options-container');
         optsContainer.innerHTML = '';
         
+        // Handle image media
+        if (q.media_url) {
+            const img = document.createElement('img');
+            img.src = q.media_url;
+            img.style.maxWidth = '100%';
+            img.style.borderRadius = '12px';
+            img.style.marginBottom = '16px';
+            optsContainer.appendChild(img);
+        }
+        
         const choices = [];
         if (q.choice_a) choices.push({ id: 'a', text: q.choice_a });
         if (q.choice_b) choices.push({ id: 'b', text: q.choice_b });
         if (q.choice_c) choices.push({ id: 'c', text: q.choice_c });
         if (q.choice_d) choices.push({ id: 'd', text: q.choice_d });
         
-        choices.forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = 'quiz-option-btn';
-            btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
-            btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
-            optsContainer.appendChild(btn);
-        });
+        if (qType === 'ordering') {
+            const list = document.createElement('ul');
+            list.id = 'ordering-list';
+            list.style.listStyle = 'none';
+            list.style.padding = '0';
+            list.style.margin = '0 0 20px 0';
+            
+            // Shuffle choices for ordering
+            const shuffledChoices = choices.sort(() => Math.random() - 0.5);
+            
+            shuffledChoices.forEach(c => {
+                const li = document.createElement('li');
+                li.className = 'quiz-option-btn';
+                li.style.cursor = 'grab';
+                li.dataset.id = c.id;
+                li.innerHTML = `<span class="opt-letter">☰</span><span class="opt-text">${c.text}</span>`;
+                list.appendChild(li);
+            });
+            optsContainer.appendChild(list);
+            
+            // Initialize Sortable
+            if (typeof Sortable !== 'undefined') {
+                new Sortable(list, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost'
+                });
+            }
+            
+            // Validate button
+            const validateBtn = document.createElement('button');
+            validateBtn.className = 'quiz-option-btn';
+            validateBtn.style.background = 'var(--primary)';
+            validateBtn.style.color = 'white';
+            validateBtn.style.fontWeight = 'bold';
+            validateBtn.style.justifyContent = 'center';
+            validateBtn.innerHTML = `تحقق من الترتيب`;
+            validateBtn.onclick = () => {
+                const currentOrder = Array.from(list.children).map(li => li.dataset.id).join(',');
+                this.checkAnswer(currentOrder, q.correct_answer, validateBtn);
+            };
+            optsContainer.appendChild(validateBtn);
+            
+        } else if (qType === 'true_false') {
+            const tfChoices = [
+                { id: 'a', text: 'صحيح', color: '#10b981' },
+                { id: 'b', text: 'خطأ', color: '#ef4444' }
+            ];
+            
+            const tfContainer = document.createElement('div');
+            tfContainer.style.display = 'grid';
+            tfContainer.style.gridTemplateColumns = '1fr 1fr';
+            tfContainer.style.gap = '16px';
+            
+            tfChoices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option-btn';
+                btn.style.justifyContent = 'center';
+                btn.style.fontSize = '20px';
+                btn.style.fontWeight = 'bold';
+                btn.style.border = `2px solid ${c.color}`;
+                btn.style.color = c.color;
+                btn.innerHTML = c.text;
+                btn.onclick = () => {
+                    btn.style.background = c.color;
+                    btn.style.color = 'white';
+                    this.checkAnswer(c.id, q.correct_answer, btn);
+                };
+                tfContainer.appendChild(btn);
+            });
+            optsContainer.appendChild(tfContainer);
+            
+        } else {
+            // Default MCQ
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option-btn';
+                btn.innerHTML = `<span class="opt-letter">${c.id.toUpperCase()}</span><span class="opt-text">${c.text}</span>`;
+                btn.onclick = () => this.checkAnswer(c.id, q.correct_answer, btn);
+                optsContainer.appendChild(btn);
+            });
+        }
 
         // Handle Timer
         if (this.timerInterval) clearInterval(this.timerInterval);

@@ -73,7 +73,9 @@ async def init_db():
                 created_at TEXT,
                 hijra_year INTEGER,
                 theme TEXT,
-                sub_theme TEXT
+                sub_theme TEXT,
+                question_type TEXT DEFAULT 'mcq',
+                media_url TEXT
             );
         """)
         await db.execute("CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject);")
@@ -379,6 +381,19 @@ async def init_db():
               AND source = 'official'
             """
         )
+        
+        # --- MIGRATIONS ---
+        try:
+            await db.execute("ALTER TABLE questions ADD COLUMN question_type TEXT DEFAULT 'mcq'")
+        except Exception:
+            pass # Column already exists
+            
+        try:
+            await db.execute("ALTER TABLE questions ADD COLUMN media_url TEXT")
+        except Exception:
+            pass # Column already exists
+        # ------------------
+
         await db.commit()
 
         # Migration: Load course_chapters from sync file if present

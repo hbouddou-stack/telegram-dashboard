@@ -24,6 +24,55 @@
         .exam-subject-card.active { border-color: var(--primary) !important; background: var(--primary-light) !important; }
         .exam-selection-row { padding: 8px 0; border-bottom: 1px solid var(--border-color); }
         .exam-selection-row:last-child { border-bottom: none; }
+    
+    /* FAQ CSS */
+    .faq-item {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .faq-question {
+        width: 100%;
+        text-align: right;
+        padding: 16px;
+        background: none;
+        border: none;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    .faq-icon {
+        font-size: 12px;
+        color: var(--text-3);
+        transition: transform 0.3s ease;
+    }
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+        color: var(--primary);
+    }
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+        background: rgba(0,0,0,0.02);
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.6;
+    }
+    .faq-item.active .faq-answer {
+        max-height: 200px; /* arbitrary max height for animation */
+        padding: 0 16px 16px 16px;
+    }
+
     </style>
 
 
@@ -131,8 +180,58 @@
         70% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
         100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
     }
+    
+    /* FAQ CSS */
+    .faq-item {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .faq-question {
+        width: 100%;
+        text-align: right;
+        padding: 16px;
+        background: none;
+        border: none;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    .faq-icon {
+        font-size: 12px;
+        color: var(--text-3);
+        transition: transform 0.3s ease;
+    }
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+        color: var(--primary);
+    }
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+        background: rgba(0,0,0,0.02);
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.6;
+    }
+    .faq-item.active .faq-answer {
+        max-height: 200px; /* arbitrary max height for animation */
+        padding: 0 16px 16px 16px;
+    }
+
     </style>
-    </head>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
 
     <!-- Vertical Scroll Progress Bar -->
     <div id="vertical-scroll-progress-container" style="position: fixed; top: 0; right: 0; width: 4px; height: 100vh; background: transparent; z-index: 9999; pointer-events: none; display: none;">
@@ -207,6 +306,94 @@
             </div>
         </div>
         
+    </div>
+
+    
+    <!-- FAQ TAB -->
+    <div class="tab-panel" id="tab-faq" style="background: var(--bg); min-height: 100vh; padding-bottom: 90px; direction: rtl; text-align: right;">
+        
+        <div style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); padding: 30px 20px; border-radius: 0 0 24px 24px; color: white; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+            <h2 style="margin:0; font-size: 24px; font-weight: 800;">الأسئلة الشائعة 💡</h2>
+            <p style="margin:5px 0 0; opacity: 0.9; font-size:14px;">ابحث عن إجابات لأسئلتك بسرعة</p>
+            
+            <div style="margin-top: 20px; position: relative;">
+                <input type="text" id="faq-search" oninput="filterFAQ()" placeholder="ابحث عن سؤال... (مثال: الصوت)" style="width: 100%; padding: 12px 16px 12px 40px; border-radius: 12px; border: none; outline: none; font-family: inherit; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <span style="position: absolute; left: 14px; top: 12px; font-size: 16px;">🔍</span>
+            </div>
+        </div>
+
+        <div id="faq-container" style="padding: 0 20px;">
+            <!-- Category 1 -->
+            <div class="faq-category" data-cat="tech">
+                <h3 style="color: var(--primary); font-size: 16px; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+                    <span style="background:var(--surface); padding:4px; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">🔧</span> مشاكل تقنية
+                </h3>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>لا أسمع الصوت في الفيديوهات أو التطبيق؟</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>تأكد من أن هاتفك ليس في الوضع الصامت (الزر الجانبي في الآيفون). وارفع مستوى الصوت (صوت الوسائط).</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>التطبيق بطيء أو يعلق؟</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>حاول إغلاق التطبيق المصغر وفتحه مجدداً. إذا استمرت المشكلة، قم بمسح ذاكرة التخزين المؤقت لتطبيق تليجرام (الإعدادات > البيانات والتخزين > استخدام التخزين).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category 2 -->
+            <div class="faq-category" data-cat="quiz">
+                <h3 style="color: var(--primary); font-size: 16px; margin-top: 24px; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+                    <span style="background:var(--surface); padding:4px; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">📝</span> الاختبارات والأسئلة
+                </h3>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>كيف أستخدم زر التلميح (Tidbit)؟</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>زر التلميح (المصباح) يقوم بحذف إجابتين خاطئتين لتسهيل السؤال عليك. استخدمه بحكمة!</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>ماذا يحدث إذا أخطأت في الاختبار؟</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>لا تقلق، ستظهر لك بطاقة شرح (Explanation) لتعرف الجواب الصحيح والسبب، ويمكنك إعادة المحاولة لاحقاً لتحسين نتيجتك.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category 3 -->
+            <div class="faq-category" data-cat="course">
+                <h3 style="color: var(--primary); font-size: 16px; margin-top: 24px; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+                    <span style="background:var(--surface); padding:4px; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">📚</span> الدروس والمقرر
+                </h3>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>أين أجد ملفات PDF الخاصة بالدروس؟</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>ستجد جميع ملفات الـ PDF والملخصات في قسم "المكتبة" أو بداخل صفحة كل درس.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="faq-no-results" style="display:none; text-align:center; padding: 40px 20px; color: var(--text-3);">
+                <div style="font-size:40px; margin-bottom:10px;">🔍</div>
+                <p>لم نجد أي سؤال يطابق بحثك.</p>
+            </div>
+        </div>
     </div>
 
     <div class="tab-panel" id="tab-inbox" style="padding: 20px; direction: rtl; text-align: right; background: var(--bg); min-height: 100vh;">
