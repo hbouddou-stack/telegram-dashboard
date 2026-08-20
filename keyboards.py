@@ -810,8 +810,8 @@ def get_webapp_base_url() -> str:
                 return f"https://{r_url}"
             return r_url
         
-    # For local testing
-    return "http://192.168.1.3:8080"
+    # Hardcoded Railway production URL as final fallback
+    return "https://web-production-64c9ab.up.railway.app"
 
 def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 0, show_settings: bool = False, role: str = None) -> InlineKeyboardMarkup:
     """Keyboard for the Admin Panel with inbox first, stats, settings, and student mode switcher."""
