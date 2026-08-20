@@ -4062,8 +4062,10 @@ async def main():
     # Initialize bot and dispatcher
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     
-    # Start Web Server in concurrent background task
-    asyncio.create_task(start_web_server(bot))
+    # Start Web Server FIRST and wait for it to bind to port
+    # This ensures Railway health checks pass before Telegram polling starts
+    web_task = asyncio.ensure_future(start_web_server(bot))
+    await asyncio.sleep(2)  # Give web server 2 seconds to bind to port
     
     dp = Dispatcher(storage=MemoryStorage())
 
