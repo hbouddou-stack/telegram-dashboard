@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 
 # --- DB TRANSCRIPTS HELPERS ---
 async def load_lessons_from_db():
