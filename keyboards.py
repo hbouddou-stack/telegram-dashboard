@@ -796,6 +796,7 @@ def get_report_error_options_keyboard(question_id: int, source: str = "quiz") ->
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_webapp_base_url() -> str:
+    """Get the base URL for the web app. Supports all Railway URL env variables."""
     url = os.getenv("WEBAPP_URL")
     if url and url.strip():
         return url.strip().rstrip('/')
@@ -809,7 +810,7 @@ def get_webapp_base_url() -> str:
                 return f"https://{r_url}"
             return r_url
         
-    # For local testing, use the local IP instead of localhost so it's accessible on mobile devices
+    # For local testing
     return "http://192.168.1.3:8080"
 
 def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 0, show_settings: bool = False, role: str = None) -> InlineKeyboardMarkup:
