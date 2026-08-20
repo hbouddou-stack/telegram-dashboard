@@ -800,12 +800,14 @@ def get_webapp_base_url() -> str:
     if url and url.strip():
         return url.strip().rstrip('/')
     
-    railway_url = os.getenv("RAILWAY_STATIC_URL")
-    if railway_url and railway_url.strip():
-        r_url = railway_url.strip().rstrip('/')
-        if not r_url.startswith("http"):
-            return f"https://{r_url}"
-        return r_url
+    # Support all Railway URL env variable names (old and new)
+    for env_key in ["RAILWAY_PUBLIC_DOMAIN", "RAILWAY_SERVICE_URL", "RAILWAY_STATIC_URL"]:
+        railway_url = os.getenv(env_key)
+        if railway_url and railway_url.strip():
+            r_url = railway_url.strip().rstrip('/')
+            if not r_url.startswith("http"):
+                return f"https://{r_url}"
+            return r_url
         
     # For local testing, use the local IP instead of localhost so it's accessible on mobile devices
     return "http://192.168.1.3:8080"
