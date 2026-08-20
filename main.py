@@ -3974,11 +3974,12 @@ async def start_web_server(bot: Bot):
     port = int(os.environ.get("PORT", 8080))
     runner = web.AppRunner(app)
     await runner.setup()
-    await init_static_cache()
     site = web.TCPSite(runner, '0.0.0.0', port)
     
     logger.info(f"ðŸŒ [Backup Web Server] launched on port {port}")
     await site.start()
+    logger.info(f"[Web Server] now accepting connections on port {port}")
+    asyncio.create_task(init_static_cache())
     
     while True:
         await asyncio.sleep(3600)
@@ -4064,8 +4065,14 @@ async def main():
     
     # Start Web Server FIRST and wait for it to bind to port
     # This ensures Railway health checks pass before Telegram polling starts
-    web_task = asyncio.ensure_future(start_web_server(bot))
-    await asyncio.sleep(2)  # Give web server 2 seconds to bind to port
+    async def _web_server_with_logging():
+        try:
+            await start_web_server(bot)
+        except Exception as e:
+            logger.critical(f"[Web Server] FATAL ERROR: {e}", exc_info=True)
+    
+    web_task = asyncio.ensure_future(_web_server_with_logging())
+    await asyncio.sleep(3)  # Give web server 3 seconds to bind to port
     
     dp = Dispatcher(storage=MemoryStorage())
 
