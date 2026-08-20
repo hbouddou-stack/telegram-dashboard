@@ -4126,11 +4126,7 @@ async def main():
     while True:
         await asyncio.sleep(3600)
 
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logger.info("Bot stopped.")
+
 
 
 async def get_student_dashboard_data(request):
@@ -4163,3 +4159,9 @@ async def get_student_dashboard_data(request):
     except Exception as e:
         logger.error(f"Error in get_student_dashboard_data: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Bot stopped.")
