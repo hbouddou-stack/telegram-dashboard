@@ -2678,8 +2678,8 @@ function startSpecificQuiz(questionsArray) {
     // We override the quizEngine's internal questions array
     quizEngine.questions = questionsArray;
     
-    // Switch to quiz view manually if needed (quizEngine.start usually handles this)
-    if (typeof openTab === 'function') openTab('quiz');
+    // Switch to practice view manually
+    if (typeof switchTab === 'function') switchTab('practice');
     
     // Reset internal state and start using the proper API
     quizEngine.start();
