@@ -210,7 +210,7 @@
             alert('في التطبيق المستقل، هذا الزر سيربط بمحرك الاختبار مباشرة!');
         }
 
-        fetch('quran_db.json').then(r=>r.json()).then(data => { window.quranData = data; renderJourneyTimeline(); }).catch(e => { document.getElementById('smart-tracker-container').innerHTML = 'Error loading quran_db.json'; }); // Initialize
+        fetch('/quran_db.json').then(r=>r.json()).then(data => { window.quranData = data; renderJourneyTimeline(); }).catch(e => { document.getElementById('smart-tracker-container').innerHTML = 'Error loading quran_db.json: ' + e.message + ''; }); // Initialize
          // Give time for quran_db.js to load
     </script>
 </body>

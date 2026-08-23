@@ -2438,7 +2438,7 @@ const supportFlow = {
 let currentJourneyLesson = null;
 
 function renderJourneyTimeline() {
-    if(!window.quranData) { fetch('quran_db.json').then(r=>r.json()).then(d=>{ window.quranData=d; renderJourneyTimeline(); }); return; }
+    if(!window.quranData) { fetch('/quran_db.json').then(r=>r.json()).then(d=>{ window.quranData=d; renderJourneyTimeline(); }); return; }
     const container = document.getElementById('smart-tracker-container');
     if (!container) return;
     
