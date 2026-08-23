@@ -2438,107 +2438,104 @@ const supportFlow = {
 let currentJourneyLesson = null;
 
 function renderJourneyTimeline() {
-    const container = document.getElementById('journey-path');
+    const container = document.getElementById('smart-tracker-container');
     if (!container) return;
     
-    // Default subject or current subject
     const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
     
-    // Extract unique lessons for the current subject from the question bank
+    // Group lessons by a mock theme if not provided in data
     let lessonStats = {};
     if (window.quranData) {
         window.quranData.forEach(q => {
             if (q.subject && q.subject.toLowerCase() !== subject.toLowerCase()) return;
             const ln = q.lessonNum || 1;
             if (!lessonStats[ln]) {
-                lessonStats[ln] = { total: 0, done: 0, wrong: 0, qs: [] };
+                lessonStats[ln] = { total: 0, qs: [] };
             }
             lessonStats[ln].total++;
             lessonStats[ln].qs.push(q);
         });
     }
     
-    // Inject mock user stats if real stats are missing
-    // In production, sync with quizEngine.stats
-    
     const lessons = Object.keys(lessonStats).map(k => parseInt(k)).sort((a,b)=>a-b);
-    
-    // Clear old nodes, keep SVG
-    const nodes = container.querySelectorAll('.node-wrapper');
-    nodes.forEach(n => n.remove());
+    container.innerHTML = '';
     
     if (lessons.length === 0) {
-        // Fallback fake nodes for demo if DB is empty
-        [1,2,3,4,5].forEach(l => {
-            container.innerHTML += `<div class="node-wrapper locked" onclick="alert('Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø³Ø¦Ù„Ø© Ù„Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø§Ø¯Ø© Ø­Ø§Ù„ÙŠØ§Ù‹.')">
-                <div class="node-icon"><i class="fa-solid fa-lock"></i></div>
-                <div class="node-label">الدرس ${l}</div>
-            </div>`;
-        });
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-3);">لا توجد أسئلة لهذه المادة حالياً.</div>`;
         return;
     }
     
-    // Icons pool
-    const icons = ['fa-kaaba', 'fa-book-quran', 'fa-route', 'fa-mosque', 'fa-moon', 'fa-star-and-crescent', 'fa-scroll', 'fa-hands-praying'];
+    // Read user progress from localStorage
+    let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
+    let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
     
-    lessons.forEach((l, index) => {
-        const stats = lessonStats[l];
-        // Calculate mock/real status
-        // Since we don't have per-question user state tracked granularly in browser yet, we'll fake it for the demo or use whatever is in localStorage
-        
-        // Let's check localStorage for 'correct_q_id' arrays if any
-        let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
-        let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
-        
-        let correctCount = 0;
-        let wrongCount = 0;
-        
-        stats.qs.forEach(q => {
-            if (correctIds.includes(q.id)) correctCount++;
-            if (wrongIds.includes(q.id)) wrongCount++;
-        });
-        
-        let status = 'locked';
-        if (index === 0 || correctCount > 0 || wrongCount > 0) status = 'active'; // first lesson always active
-        if (correctCount === stats.total) status = 'completed';
-        if (index > 0 && lessonStats[lessons[index-1]] && (correctIds.includes(lessonStats[lessons[index-1]].qs[0].id) || lessonStats[lessons[index-1]].total > 0)) {
-             status = 'active'; // Unlock if previous has some activity
-        }
-        
-        const icon = icons[index % icons.length];
-        
-        const node = document.createElement('div');
-        node.className = `node-wrapper ${status}`;
-        node.onclick = () => openJourneyLesson(l, stats, status);
-        
-        let progressHTML = '';
-        if (status === 'active' || status === 'completed') {
-            progressHTML = `<div class="node-progress-bar">
-                ${status === 'completed' ? '<i class="fa-solid fa-check" style="color:#b45309"></i>' : ''}
-                <span>${correctCount}/${stats.total}</span>
-            </div>`;
-        }
-
-        node.innerHTML = `
-            ${progressHTML}
-            <div class="node-icon">
-                <i class="fa-solid ${icon}"></i>
-            </div>
-            <div class="node-label">الدرس ${l}</div>
+    // Group by mock themes (e.g., every 3 lessons is a new theme for demo purposes)
+    let themes = {};
+    lessons.forEach(l => {
+        let themeName = "الوحدة " + Math.ceil(l / 3);
+        if (!themes[themeName]) themes[themeName] = [];
+        themes[themeName].push(l);
+    });
+    
+    // Render Themes
+    Object.keys(themes).forEach(tName => {
+        let themeHtml = `
+            <div style="background:var(--surface); border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
+                <h3 style="margin:0 0 16px 0; color:var(--text); font-size:1.1rem; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                    <i class="fa-solid fa-layer-group" style="color:var(--primary); margin-left:8px;"></i> ${tName}
+                </h3>
+                <div style="display:grid; grid-template-columns:1fr; gap:12px;">
         `;
         
-        container.appendChild(node);
+        themes[tName].forEach(l => {
+            const stats = lessonStats[l];
+            let correctCount = 0;
+            stats.qs.forEach(q => { if (correctIds.includes(q.id)) correctCount++; });
+            
+            let progressPercent = stats.total > 0 ? Math.round((correctCount / stats.total) * 100) : 0;
+            let isDone = progressPercent === 100;
+            
+            let cardColor = isDone ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg)';
+            let borderColor = isDone ? '#10b981' : 'var(--border-color)';
+            let titleColor = isDone ? '#10b981' : 'var(--text-1)';
+            
+            themeHtml += `
+                <div onclick="openJourneyLesson(${l}, ${progressPercent})" style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="position:relative; width:45px; height:45px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--surface); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                            <!-- Simple SVG Circular Progress -->
+                            <svg width="45" height="45" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
+                                <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="var(--border-color)" stroke-width="3"></circle>
+                                <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="${isDone ? '#10b981' : 'var(--primary)'}" stroke-width="3" stroke-dasharray="125.6" stroke-dashoffset="${125.6 - (125.6 * progressPercent / 100)}" style="transition:0.5s;"></circle>
+                            </svg>
+                            <span style="font-size:0.75rem; font-weight:bold; color:var(--text-2); z-index:1;">${progressPercent}%</span>
+                        </div>
+                        <div>
+                            <div style="font-weight:bold; font-size:1rem; color:${titleColor};">الدرس ${l}</div>
+                            <div style="font-size:0.8rem; color:var(--text-3);">${correctCount} من ${stats.total} مكتمل</div>
+                        </div>
+                    </div>
+                    <div style="color:var(--text-3);"><i class="fa-solid fa-chevron-left"></i></div>
+                </div>
+            `;
+        });
+        
+        themeHtml += `</div></div>`;
+        container.innerHTML += themeHtml;
     });
 }
 
-function openJourneyLesson(lessonNum, stats, status) {
-    if (status === 'locked') {
-        alert('Ù‡Ø°Ø§ Ø§Ù„Ø¯Ø±Ø³ Ù…ØºÙ„Ù‚. Ø£ÙƒÙ…Ù„ Ø§Ù„Ø¯Ø±ÙˆØ³ Ø§Ù„Ø³Ø§Ø¨Ù‚Ø© Ø£ÙˆÙ„Ø§Ù‹!');
-        return;
-    }
-    
+function openJourneyLesson(lessonNum, progressPercent) {
     currentJourneyLesson = lessonNum;
     document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
+    
+    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
+    
+    // Filter questions for this lesson
+    let lessonQs = [];
+    if (window.quranData) {
+        lessonQs = window.quranData.filter(q => q.subject && q.subject.toLowerCase() === subject.toLowerCase() && q.lessonNum == lessonNum);
+    }
     
     const grid = document.getElementById('journey-q-grid');
     grid.innerHTML = '';
@@ -2546,7 +2543,7 @@ function openJourneyLesson(lessonNum, stats, status) {
     let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
     let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
     
-    stats.qs.forEach((q, idx) => {
+    lessonQs.forEach((q, idx) => {
         const stone = document.createElement('div');
         stone.className = 'q-stone';
         
@@ -2566,22 +2563,33 @@ function openJourneyLesson(lessonNum, stats, status) {
         
         stone.onclick = () => {
             closeJourneySheet();
-            // Start Quiz specifically for this lesson
-            // We use setTimeout to allow sheet animation to finish
             setTimeout(() => {
                 if(window.quizEngine) {
-                    // Quick hack to force lesson filter
-                    const oldSub = document.getElementById('subject-select').value;
-                    const oldLesson = document.getElementById('lesson-select').value;
-                    document.getElementById('subject-select').value = q.subject;
-                    document.getElementById('lesson-select').value = lessonNum;
+                    const sb = document.getElementById('subject-select');
+                    const ls = document.getElementById('lesson-select');
+                    if(sb) sb.value = q.subject;
+                    if(ls) ls.value = lessonNum;
                     quizEngine.start();
-                    // Optional: reset selects after starting
                 }
             }, 300);
         };
         grid.appendChild(stone);
     });
+    
+    // Change Play button text based on progress
+    const btn = document.getElementById('btn-play-all-lesson');
+    if(btn) {
+        if(progressPercent === 100) {
+            btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> إعادة جميع الأسئلة';
+            btn.style.background = 'var(--text-2)';
+        } else if(progressPercent > 0) {
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> إكمال الأسئلة المتبقية';
+            btn.style.background = 'var(--primary)';
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> ابدأ أسئلة الدرس';
+            btn.style.background = 'var(--primary)';
+        }
+    }
     
     document.getElementById('journey-bottom-sheet').classList.add('open');
     document.getElementById('journey-sheet-overlay').classList.add('open');

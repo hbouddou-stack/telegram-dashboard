@@ -1082,18 +1082,14 @@
 
     
     <!-- TAB: JOURNEY (SIRA PATH) -->
-    <div class="tab-panel" id="tab-journey" style=" padding: 20px 10px; background: var(--bg); min-height: 100vh;">
-        <div style="text-align:center; margin-bottom: 20px;">
-            <h2 style="color:var(--primary); font-weight:800; font-size:1.5rem;">مسار السيرة النبوية</h2>
-            <p style="color:var(--text-2); font-size:0.9rem; margin-top:5px;">تقدم في الدروس عبر الإجابة على الأسئلة</p>
+    <div class="tab-panel" id="tab-journey" style="padding: 20px 10px 100px 10px; background: var(--bg); min-height: 100vh;">
+        <div style="text-align:center; margin-bottom: 24px;">
+            <h2 style="color:var(--primary); font-weight:800; font-size:1.5rem;">مسار الإنجاز</h2>
+            <p style="color:var(--text-2); font-size:0.9rem; margin-top:5px;">اختر الدرس الذي ترغب في التدرب عليه</p>
         </div>
 
-        <div class="journey-container" id="journey-path">
-            <svg class="svg-path" viewBox="0 0 160 1200" preserveAspectRatio="none">
-                <path id="svg-winding-path" d="M80,1200 C150,1050 10,900 80,750 C150,600 10,450 80,300 C150,150 10,50 80,0" 
-                      fill="none" stroke="var(--border-color)" stroke-width="4" stroke-linecap="round" stroke-dasharray="8, 12"/>
-            </svg>
-            <!-- Nodes injected by reader.js -->
+        <div id="smart-tracker-container" style="display:flex; flex-direction:column; gap:20px; max-width:600px; margin:0 auto;">
+            <!-- Categories/Themes and Lesson Cards injected by reader.js -->
         </div>
     </div>
     
