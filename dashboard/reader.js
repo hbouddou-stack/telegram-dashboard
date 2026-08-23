@@ -2469,7 +2469,13 @@ async function fetchTaxonomy() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, subject })
         });
-        const data = await res.json();
+        const textData = await res.text();
+        let data;
+        try {
+            data = JSON.parse(textData);
+        } catch(parseErr) {
+            throw new Error("Invalid JSON from server. Status: " + res.status + " | First 50 chars: " + textData.substring(0, 50));
+        }
         if(data.success) {
             taxonomyData = data.questions || [];
             renderView();
@@ -2478,7 +2484,7 @@ async function fetchTaxonomy() {
         }
     } catch(e) {
         console.error(e);
-        document.getElementById('smart-tracker-container').innerHTML = `<div style="text-align:center; padding:20px; color:red;">فشل الاتصال بالخادم</div>`;
+        document.getElementById('smart-tracker-container').innerHTML = `<div style="text-align:center; padding:20px; color:red;">فشل الاتصال: ${e.message}</div>`;
     }
 }
 
