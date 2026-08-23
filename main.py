@@ -238,6 +238,10 @@ async def handle_transcripts(request):
 async def handle_quran(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'quran_db.json'))
 
+
+async def handle_quiz_journey(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'quiz_journey.html'))
+
 async def handle_test(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'test.html'))
 
@@ -3896,6 +3900,9 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/search.html', handle_search)
     app.router.add_get('/transcripts.json', handle_transcripts)
     app.router.add_get('/quran_db.json', handle_quran)
+
+    app.router.add_get('/quiz_journey', handle_quiz_journey)
+    app.router.add_get('/quiz_journey.html', handle_quiz_journey)
     app.router.add_get('/test', handle_test)
     app.router.add_get('/test.html', handle_test)
     app.router.add_get('/reader', handle_reader)
