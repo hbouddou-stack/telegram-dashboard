@@ -73,6 +73,104 @@
         padding: 0 16px 16px 16px;
     }
 
+    
+        /* JOURNEY TAB CSS */
+        .journey-container {
+            padding: 20px 0 100px 0;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+            gap: 50px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .svg-path {
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 160px; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .node-wrapper {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 100%;
+        }
+        .node-wrapper:active { transform: scale(0.95); }
+        .node-wrapper:nth-child(even) { transform: translateX(50px); }
+        .node-wrapper:nth-child(odd) { transform: translateX(-50px); }
+        .node-wrapper:nth-child(even):active { transform: translateX(50px) scale(0.95); }
+        .node-wrapper:nth-child(odd):active { transform: translateX(-50px) scale(0.95); }
+
+        .node-icon {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--surface); border: 4px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; color: var(--text-2); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .node-label {
+            margin-top: 10px; font-weight: 700; font-size: 0.95rem; color: var(--text-2);
+            text-align: center; background: var(--bg); padding: 4px 12px;
+            border-radius: 12px; border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .node-wrapper.completed .node-icon {
+            border-color: #f59e0b; background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #b45309; box-shadow: 0 0 20px rgba(245,158,11,0.4);
+        }
+        .node-wrapper.completed .node-label { color: #b45309; border-color: #f59e0b; }
+
+        .node-wrapper.active .node-icon {
+            border-color: var(--primary); background: var(--surface); color: var(--primary);
+            box-shadow: 0 0 25px rgba(79,70,229,0.4); animation: pulse-ring 2s infinite;
+        }
+        .node-wrapper.active .node-label { color: var(--primary); border-color: var(--primary); }
+
+        .node-progress-bar {
+            position: absolute; top: -15px; background: var(--surface);
+            border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 4px;
+            color: var(--text-1); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Bottom Sheet Questions */
+        .bottom-sheet {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--surface); border-top-left-radius: 24px; border-top-right-radius: 24px;
+            padding: 24px; transform: translateY(100%); transition: transform 0.3s ease;
+            z-index: 1000; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); max-height: 80vh; overflow-y: auto;
+        }
+        .bottom-sheet.open { transform: translateY(0); }
+        .sheet-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .questions-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 12px; justify-items: center; padding: 15px 0;
+        }
+        .q-stone {
+            width: 45px; height: 45px; border-radius: 12px; background: var(--bg);
+            border: 2px solid var(--border-color); display: grid; place-items: center;
+            font-weight: 700; font-size: 1rem; color: var(--text-2); cursor: pointer;
+            transition: all 0.2s;
+        }
+        .q-stone:active { transform: scale(0.9); }
+        .q-stone.status-correct {
+            background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981;
+        }
+        .q-stone.status-wrong {
+            background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444;
+        }
+
     </style>
 
 
@@ -228,6 +326,104 @@
         max-height: 200px; /* arbitrary max height for animation */
         padding: 0 16px 16px 16px;
     }
+
+    
+        /* JOURNEY TAB CSS */
+        .journey-container {
+            padding: 20px 0 100px 0;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+            gap: 50px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .svg-path {
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 160px; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .node-wrapper {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 100%;
+        }
+        .node-wrapper:active { transform: scale(0.95); }
+        .node-wrapper:nth-child(even) { transform: translateX(50px); }
+        .node-wrapper:nth-child(odd) { transform: translateX(-50px); }
+        .node-wrapper:nth-child(even):active { transform: translateX(50px) scale(0.95); }
+        .node-wrapper:nth-child(odd):active { transform: translateX(-50px) scale(0.95); }
+
+        .node-icon {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--surface); border: 4px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; color: var(--text-2); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .node-label {
+            margin-top: 10px; font-weight: 700; font-size: 0.95rem; color: var(--text-2);
+            text-align: center; background: var(--bg); padding: 4px 12px;
+            border-radius: 12px; border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .node-wrapper.completed .node-icon {
+            border-color: #f59e0b; background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #b45309; box-shadow: 0 0 20px rgba(245,158,11,0.4);
+        }
+        .node-wrapper.completed .node-label { color: #b45309; border-color: #f59e0b; }
+
+        .node-wrapper.active .node-icon {
+            border-color: var(--primary); background: var(--surface); color: var(--primary);
+            box-shadow: 0 0 25px rgba(79,70,229,0.4); animation: pulse-ring 2s infinite;
+        }
+        .node-wrapper.active .node-label { color: var(--primary); border-color: var(--primary); }
+
+        .node-progress-bar {
+            position: absolute; top: -15px; background: var(--surface);
+            border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 4px;
+            color: var(--text-1); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Bottom Sheet Questions */
+        .bottom-sheet {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--surface); border-top-left-radius: 24px; border-top-right-radius: 24px;
+            padding: 24px; transform: translateY(100%); transition: transform 0.3s ease;
+            z-index: 1000; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); max-height: 80vh; overflow-y: auto;
+        }
+        .bottom-sheet.open { transform: translateY(0); }
+        .sheet-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .questions-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 12px; justify-items: center; padding: 15px 0;
+        }
+        .q-stone {
+            width: 45px; height: 45px; border-radius: 12px; background: var(--bg);
+            border: 2px solid var(--border-color); display: grid; place-items: center;
+            font-weight: 700; font-size: 1rem; color: var(--text-2); cursor: pointer;
+            transition: all 0.2s;
+        }
+        .q-stone:active { transform: scale(0.9); }
+        .q-stone.status-correct {
+            background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981;
+        }
+        .q-stone.status-wrong {
+            background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444;
+        }
 
     </style>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -888,6 +1084,41 @@
         </button>
 
         <div id="test-quiz-result" style="margin-top: 30px; text-align: right; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: none;"></div>
+    </div>
+
+    
+    <!-- TAB: JOURNEY (SIRA PATH) -->
+    <div class="tab-panel" id="tab-journey" style="display:none; padding: 20px 10px; background: var(--bg); min-height: 100vh;">
+        <div style="text-align:center; margin-bottom: 20px;">
+            <h2 style="color:var(--primary); font-weight:800; font-size:1.5rem;">مسار السيرة النبوية</h2>
+            <p style="color:var(--text-2); font-size:0.9rem; margin-top:5px;">تقدم في الدروس عبر الإجابة على الأسئلة</p>
+        </div>
+
+        <div class="journey-container" id="journey-path">
+            <svg class="svg-path" viewBox="0 0 160 1200" preserveAspectRatio="none">
+                <path id="svg-winding-path" d="M80,1200 C150,1050 10,900 80,750 C150,600 10,450 80,300 C150,150 10,50 80,0" 
+                      fill="none" stroke="var(--border-color)" stroke-width="4" stroke-linecap="round" stroke-dasharray="8, 12"/>
+            </svg>
+            <!-- Nodes injected by reader.js -->
+        </div>
+    </div>
+    
+    <!-- BOTTOM SHEET FOR QUESTIONS -->
+    <div class="sheet-overlay" id="journey-sheet-overlay" onclick="closeJourneySheet()"></div>
+    <div class="bottom-sheet" id="journey-bottom-sheet">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 id="sheet-title" style="font-size:1.2rem; color:var(--text-1);">الدرس</h2>
+            <button onclick="closeJourneySheet()" style="background:var(--border-color); border:none; width:32px; height:32px; border-radius:50%; color:var(--text-1);"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p style="color:var(--text-2); font-size:0.9rem; margin-bottom:15px;">اضغط على سؤال للتدرب عليه.</p>
+        
+        <button id="btn-play-all-lesson" onclick="playWholeLesson()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:bold; margin-bottom:15px; box-shadow:0 4px 10px rgba(79,70,229,0.3);">
+            🎮 ابدأ كل الأسئلة
+        </button>
+        
+        <div class="questions-grid" id="journey-q-grid">
+            <!-- Questions injected here -->
+        </div>
     </div>
 
     <!-- BOTTOM NAV -->

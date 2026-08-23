@@ -2428,3 +2428,194 @@ const supportFlow = {
 };
 
 
+
+
+// ==========================================
+// JOURNEY TAB (ROADMAP) LOGIC
+// ==========================================
+
+let currentJourneyLesson = null;
+
+function renderJourneyTimeline() {
+    const container = document.getElementById('journey-path');
+    if (!container) return;
+    
+    // Default subject or current subject
+    const subject = state.subject || 'Sira';
+    
+    // Extract unique lessons for the current subject from the question bank
+    let lessonStats = {};
+    if (window.quranData) {
+        window.quranData.forEach(q => {
+            if (q.subject !== subject) return;
+            const ln = q.lessonNum || 1;
+            if (!lessonStats[ln]) {
+                lessonStats[ln] = { total: 0, done: 0, wrong: 0, qs: [] };
+            }
+            lessonStats[ln].total++;
+            lessonStats[ln].qs.push(q);
+        });
+    }
+    
+    // Inject mock user stats if real stats are missing
+    // In production, sync with quizEngine.stats
+    
+    const lessons = Object.keys(lessonStats).map(k => parseInt(k)).sort((a,b)=>a-b);
+    
+    // Clear old nodes, keep SVG
+    const nodes = container.querySelectorAll('.node-wrapper');
+    nodes.forEach(n => n.remove());
+    
+    if (lessons.length === 0) {
+        // Fallback fake nodes for demo if DB is empty
+        [1,2,3,4,5].forEach(l => {
+            container.innerHTML += `<div class="node-wrapper locked" onclick="alert('لا توجد أسئلة لهذه المادة حالياً.')">
+                <div class="node-icon"><i class="fa-solid fa-lock"></i></div>
+                <div class="node-label">الدرس ${l}</div>
+            </div>`;
+        });
+        return;
+    }
+    
+    // Icons pool
+    const icons = ['fa-kaaba', 'fa-book-quran', 'fa-route', 'fa-mosque', 'fa-moon', 'fa-star-and-crescent', 'fa-scroll', 'fa-hands-praying'];
+    
+    lessons.forEach((l, index) => {
+        const stats = lessonStats[l];
+        // Calculate mock/real status
+        // Since we don't have per-question user state tracked granularly in browser yet, we'll fake it for the demo or use whatever is in localStorage
+        
+        // Let's check localStorage for 'correct_q_id' arrays if any
+        let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
+        let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
+        
+        let correctCount = 0;
+        let wrongCount = 0;
+        
+        stats.qs.forEach(q => {
+            if (correctIds.includes(q.id)) correctCount++;
+            if (wrongIds.includes(q.id)) wrongCount++;
+        });
+        
+        let status = 'locked';
+        if (index === 0 || correctCount > 0 || wrongCount > 0) status = 'active'; // first lesson always active
+        if (correctCount === stats.total) status = 'completed';
+        if (index > 0 && lessonStats[lessons[index-1]] && (correctIds.includes(lessonStats[lessons[index-1]].qs[0].id) || lessonStats[lessons[index-1]].total > 0)) {
+             status = 'active'; // Unlock if previous has some activity
+        }
+        
+        const icon = icons[index % icons.length];
+        
+        const node = document.createElement('div');
+        node.className = `node-wrapper ${status}`;
+        node.onclick = () => openJourneyLesson(l, stats, status);
+        
+        let progressHTML = '';
+        if (status === 'active' || status === 'completed') {
+            progressHTML = `<div class="node-progress-bar">
+                ${status === 'completed' ? '<i class="fa-solid fa-check" style="color:#b45309"></i>' : ''}
+                <span>${correctCount}/${stats.total}</span>
+            </div>`;
+        }
+
+        node.innerHTML = `
+            ${progressHTML}
+            <div class="node-icon">
+                <i class="fa-solid ${icon}"></i>
+            </div>
+            <div class="node-label">الدرس ${l}</div>
+        `;
+        
+        container.appendChild(node);
+    });
+}
+
+function openJourneyLesson(lessonNum, stats, status) {
+    if (status === 'locked') {
+        alert('هذا الدرس مغلق. أكمل الدروس السابقة أولاً!');
+        return;
+    }
+    
+    currentJourneyLesson = lessonNum;
+    document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
+    
+    const grid = document.getElementById('journey-q-grid');
+    grid.innerHTML = '';
+    
+    let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
+    let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
+    
+    stats.qs.forEach((q, idx) => {
+        const stone = document.createElement('div');
+        stone.className = 'q-stone';
+        
+        let qStatus = 'unanswered';
+        if (correctIds.includes(q.id)) qStatus = 'correct';
+        else if (wrongIds.includes(q.id)) qStatus = 'wrong';
+        
+        if(qStatus === 'correct') {
+            stone.classList.add('status-correct');
+            stone.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else if(qStatus === 'wrong') {
+            stone.classList.add('status-wrong');
+            stone.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        } else {
+            stone.innerText = idx + 1;
+        }
+        
+        stone.onclick = () => {
+            closeJourneySheet();
+            // Start Quiz specifically for this lesson
+            // We use setTimeout to allow sheet animation to finish
+            setTimeout(() => {
+                if(window.quizEngine) {
+                    // Quick hack to force lesson filter
+                    const oldSub = document.getElementById('subject-select').value;
+                    const oldLesson = document.getElementById('lesson-select').value;
+                    document.getElementById('subject-select').value = q.subject;
+                    document.getElementById('lesson-select').value = lessonNum;
+                    quizEngine.start();
+                    // Optional: reset selects after starting
+                }
+            }, 300);
+        };
+        grid.appendChild(stone);
+    });
+    
+    document.getElementById('journey-bottom-sheet').classList.add('open');
+    document.getElementById('journey-sheet-overlay').classList.add('open');
+}
+
+function closeJourneySheet() {
+    document.getElementById('journey-bottom-sheet').classList.remove('open');
+    document.getElementById('journey-sheet-overlay').classList.remove('open');
+}
+
+function playWholeLesson() {
+    closeJourneySheet();
+    setTimeout(() => {
+        if(window.quizEngine) {
+            document.getElementById('subject-select').value = state.subject || 'Sira';
+            document.getElementById('lesson-select').value = currentJourneyLesson;
+            quizEngine.start();
+        }
+    }, 300);
+}
+
+// Hook into tab switching
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tabId, btn) {
+    if (originalSwitchTab) {
+        originalSwitchTab(tabId, btn);
+    } else {
+        // Fallback if not defined
+        document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if(document.getElementById('tab-' + tabId)) document.getElementById('tab-' + tabId).style.display = 'block';
+        if(btn) btn.classList.add('active');
+    }
+    
+    if (tabId === 'journey') {
+        renderJourneyTimeline();
+    }
+};
