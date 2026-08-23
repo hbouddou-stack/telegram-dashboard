@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مسار الإنجاز التفاعلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #f8fafc; --surface: #ffffff; --primary: #3b82f6; --border-color: #e2e8f0; --text-1: #1e293b; --text-2: #64748b; --text-3: #94a3b8; }
+        body.dark { --bg: #0f172a; --surface: #1e293b; --border-color: #334155; --text-1: #f8fafc; --text-2: #cbd5e1; --text-3: #64748b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: var(--bg); color: var(--text-1); transition: background 0.3s; padding: 20px 10px 100px 10px; }
+        
+        /* BOTTOM SHEET STYLES */
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; right: 0; background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px; box-shadow: 0 -5px 20px rgba(0,0,0,0.15); transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; max-height: 85vh; overflow-y: auto; }
+        .bottom-sheet.open { bottom: 0; }
+        .sheet-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1999; }
+        .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+        .q-stone { aspect-ratio: 1; border-radius: 12px; background: var(--bg); border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; cursor: pointer; transition: 0.2s; color: var(--text-2); }
+        .q-stone.status-correct { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981; }
+        .q-stone.status-wrong { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; }
+    </style>
+</head>
+<body class="dark">
+    <div style="text-align:center; margin-bottom: 24px;">
+        <h2 style="color:var(--primary); font-weight:800; font-size:1.5rem;">مسار الإنجاز</h2>
+        <p style="color:var(--text-2); font-size:0.9rem; margin-top:5px;">اختر الدرس الذي ترغب في التدرب عليه</p>
+    </div>
+
+    <div id="smart-tracker-container" style="display:flex; flex-direction:column; gap:20px; max-width:600px; margin:0 auto;">
+        <!-- Categories/Themes and Lesson Cards injected by JS -->
+    </div>
+    
+    <!-- BOTTOM SHEET -->
+    <div class="sheet-overlay" id="journey-sheet-overlay" onclick="closeJourneySheet()"></div>
+    <div class="bottom-sheet" id="journey-bottom-sheet">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 id="sheet-title" style="font-size:1.2rem; color:var(--text-1);">الدرس</h2>
+            <button onclick="closeJourneySheet()" style="background:var(--border-color); border:none; width:32px; height:32px; border-radius:50%; color:var(--text-1);"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p style="color:var(--text-2); font-size:0.9rem; margin-bottom:15px;">اضغط على سؤال للتدرب عليه.</p>
+        
+        <button id="btn-play-all-lesson" onclick="playWholeLesson()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:bold; margin-bottom:15px; box-shadow:0 4px 10px rgba(79,70,229,0.3);">
+            🎮 ابدأ كل الأسئلة
+        </button>
+        
+        <div class="q-grid" id="journey-q-grid">
+            <!-- Question stones injected by JS -->
+        </div>
+    </div>
+    
+    <!-- MOCK DATA SCRIPT -->
+    <script src="quran_db.js"></script>
+    <script>
+        let currentJourneyLesson = null;
+        
+        function renderJourneyTimeline() {
+            const container = document.getElementById('smart-tracker-container');
+            if (!container) return;
+            
+            const subject = 'sira';
+            
+            // Group lessons by a mock theme if not provided in data
+            let lessonStats = {};
+            if (window.quranData) {
+                window.quranData.forEach(q => {
+                    if (q.subject && q.subject.toLowerCase() !== subject) return;
+                    const ln = q.lessonNum || 1;
+                    if (!lessonStats[ln]) {
+                        lessonStats[ln] = { total: 0, qs: [] };
+                    }
+                    lessonStats[ln].total++;
+                    lessonStats[ln].qs.push(q);
+                });
+            } else {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3);">جاري التحميل... (تأكد من وجود quran_db.js)</div>';
+                return;
+            }
+            
+            const lessons = Object.keys(lessonStats).map(k => parseInt(k)).sort((a,b)=>a-b);
+            container.innerHTML = '';
+            
+            if (lessons.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-3);">لا توجد أسئلة لهذه المادة حالياً.</div>`;
+                return;
+            }
+            
+            // Read user progress from localStorage
+            let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
+            
+            // Group by mock themes (e.g., every 3 lessons is a new theme for demo purposes)
+            let themes = {};
+            lessons.forEach(l => {
+                let themeName = "الوحدة " + Math.ceil(l / 3);
+                if (!themes[themeName]) themes[themeName] = [];
+                themes[themeName].push(l);
+            });
+            
+            // Render Themes
+            Object.keys(themes).forEach(tName => {
+                let themeHtml = `
+                    <div style="background:var(--surface); border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
+                        <h3 style="margin:0 0 16px 0; color:var(--text-1); font-size:1.1rem; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                            <i class="fa-solid fa-layer-group" style="color:var(--primary); margin-left:8px;"></i> ${tName}
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr; gap:12px;">
+                `;
+                
+                themes[tName].forEach(l => {
+                    const stats = lessonStats[l];
+                    let correctCount = 0;
+                    stats.qs.forEach(q => { if (correctIds.includes(q.id)) correctCount++; });
+                    
+                    let progressPercent = stats.total > 0 ? Math.round((correctCount / stats.total) * 100) : 0;
+                    let isDone = progressPercent === 100;
+                    
+                    let cardColor = isDone ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg)';
+                    let borderColor = isDone ? '#10b981' : 'var(--border-color)';
+                    let titleColor = isDone ? '#10b981' : 'var(--text-1)';
+                    
+                    themeHtml += `
+                        <div onclick="openJourneyLesson(${l}, ${progressPercent})" style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="position:relative; width:45px; height:45px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--surface); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                                    <svg width="45" height="45" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
+                                        <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="var(--border-color)" stroke-width="3"></circle>
+                                        <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="${isDone ? '#10b981' : 'var(--primary)'}" stroke-width="3" stroke-dasharray="125.6" stroke-dashoffset="${125.6 - (125.6 * progressPercent / 100)}" style="transition:0.5s;"></circle>
+                                    </svg>
+                                    <span style="font-size:0.75rem; font-weight:bold; color:var(--text-2); z-index:1;">${progressPercent}%</span>
+                                </div>
+                                <div>
+                                    <div style="font-weight:bold; font-size:1rem; color:${titleColor};">الدرس ${l}</div>
+                                    <div style="font-size:0.8rem; color:var(--text-3);">${correctCount} من ${stats.total} مكتمل</div>
+                                </div>
+                            </div>
+                            <div style="color:var(--text-3);"><i class="fa-solid fa-chevron-left"></i></div>
+                        </div>
+                    `;
+                });
+                
+                themeHtml += `</div></div>`;
+                container.innerHTML += themeHtml;
+            });
+        }
+        
+        function openJourneyLesson(lessonNum, progressPercent) {
+            currentJourneyLesson = lessonNum;
+            document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
+            
+            const subject = 'sira';
+            let lessonQs = window.quranData.filter(q => q.subject && q.subject.toLowerCase() === subject && q.lessonNum == lessonNum);
+            
+            const grid = document.getElementById('journey-q-grid');
+            grid.innerHTML = '';
+            
+            let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
+            let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
+            
+            lessonQs.forEach((q, idx) => {
+                const stone = document.createElement('div');
+                stone.className = 'q-stone';
+                
+                let qStatus = 'unanswered';
+                if (correctIds.includes(q.id)) qStatus = 'correct';
+                else if (wrongIds.includes(q.id)) qStatus = 'wrong';
+                
+                if(qStatus === 'correct') {
+                    stone.classList.add('status-correct');
+                    stone.innerHTML = '<i class="fa-solid fa-check"></i>';
+                } else if(qStatus === 'wrong') {
+                    stone.classList.add('status-wrong');
+                    stone.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                } else {
+                    stone.innerText = idx + 1;
+                }
+                
+                stone.onclick = () => {
+                    alert('في التطبيق المستقل، هذا الزر سيربط بمحرك الاختبار مباشرة! (Lesson ' + lessonNum + ' - Q' + (idx+1) + ')');
+                };
+                grid.appendChild(stone);
+            });
+            
+            const btn = document.getElementById('btn-play-all-lesson');
+            if(btn) {
+                if(progressPercent === 100) {
+                    btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> إعادة جميع الأسئلة';
+                    btn.style.background = 'var(--text-2)';
+                } else if(progressPercent > 0) {
+                    btn.innerHTML = '<i class="fa-solid fa-play"></i> إكمال الأسئلة المتبقية';
+                    btn.style.background = 'var(--primary)';
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-play"></i> ابدأ أسئلة الدرس';
+                    btn.style.background = 'var(--primary)';
+                }
+            }
+            
+            document.getElementById('journey-bottom-sheet').classList.add('open');
+            document.getElementById('journey-sheet-overlay').classList.add('open');
+        }
+        
+        function closeJourneySheet() {
+            document.getElementById('journey-bottom-sheet').classList.remove('open');
+            document.getElementById('journey-sheet-overlay').classList.remove('open');
+        }
+        
+        function playWholeLesson() {
+            alert('في التطبيق المستقل، هذا الزر سيربط بمحرك الاختبار مباشرة!');
+        }
+
+        // Initialize
+        setTimeout(() => {
+            renderJourneyTimeline();
+        }, 500); // Give time for quran_db.js to load
+    </script>
+</body>
+</html>
