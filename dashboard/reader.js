@@ -1439,6 +1439,7 @@ function switchTab(name, btn) {
         if(targetBtn) targetBtn.classList.add('active');
     }
     
+    if(name === 'journey') { if(typeof renderJourneyTimeline === 'function') renderJourneyTimeline(); }
     if(name === 'home') {
         renderHomeProgress();
     }
@@ -2441,13 +2442,13 @@ function renderJourneyTimeline() {
     if (!container) return;
     
     // Default subject or current subject
-    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'Sira') || 'Sira';
+    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
     
     // Extract unique lessons for the current subject from the question bank
     let lessonStats = {};
     if (window.quranData) {
         window.quranData.forEach(q => {
-            if (q.subject !== subject) return;
+            if (q.subject && q.subject.toLowerCase() !== subject.toLowerCase()) return;
             const ln = q.lessonNum || 1;
             if (!lessonStats[ln]) {
                 lessonStats[ln] = { total: 0, done: 0, wrong: 0, qs: [] };
@@ -2595,27 +2596,10 @@ function playWholeLesson() {
     closeJourneySheet();
     setTimeout(() => {
         if(window.quizEngine) {
-            document.getElementById('subject-select').value = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'Sira') || 'Sira';
+            document.getElementById('subject-select').value = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
             document.getElementById('lesson-select').value = currentJourneyLesson;
             quizEngine.start();
         }
     }, 300);
 }
 
-// Hook into tab switching
-const originalSwitchTab = window.switchTab;
-window.switchTab = function(tabId, btn) {
-    if (originalSwitchTab) {
-        originalSwitchTab(tabId, btn);
-    } else {
-        // Fallback if not defined
-        document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        if(document.getElementById('tab-' + tabId)) document.getElementById('tab-' + tabId).style.display = 'block';
-        if(btn) btn.classList.add('active');
-    }
-    
-    if (tabId === 'journey') {
-        renderJourneyTimeline();
-    }
-};
