@@ -1406,7 +1406,8 @@ async def generate_questions_ia(request):
         if isinstance(questions, dict) and "questions" in questions:
             questions = questions["questions"]
 
-        return web.json_response({"success": True, "questions": questions})
+        import json
+        return web.json_response({"success": True, "questions": questions}, dumps=lambda obj: json.dumps(obj, ensure_ascii=False))
     except Exception as e:
         logger.error(f"Error generating questions: {e}", exc_info=True)
         return web.json_response({"success": False, "error": str(e)}, status=500)
@@ -2544,7 +2545,8 @@ async def get_node_questions(request: web.Request):
             async with db.execute(query, (node_id,)) as cursor:
                 questions = [dict(r) for r in await cursor.fetchall()]
                 
-        return web.json_response({"success": True, "questions": questions})
+        import json
+        return web.json_response({"success": True, "questions": questions}, dumps=lambda obj: json.dumps(obj, ensure_ascii=False))
     except Exception as e:
         import logging
         logging.getLogger('bot').error(f"Error in get_node_questions: {e}")
@@ -3666,7 +3668,8 @@ async def get_student_quiz_taxonomy(request):
                     "title": row["question"][:50] + "..." if row["question"] else "سؤال"
                 })
                 
-        return web.json_response({"success": True, "questions": questions})
+        import json
+        return web.json_response({"success": True, "questions": questions}, dumps=lambda obj: json.dumps(obj, ensure_ascii=False))
         
     except Exception as e:
         logger.error(f"Error in get_student_quiz_taxonomy: {e}")
@@ -3855,7 +3858,8 @@ async def get_student_quiz_questions(request):
             q['correct_choice'] = db.get_correct_choice_letter(q)
             q['is_favorite'] = q['id'] in favorites_list
 
-        return web.json_response({"success": True, "questions": questions})
+        import json
+        return web.json_response({"success": True, "questions": questions}, dumps=lambda obj: json.dumps(obj, ensure_ascii=False))
     except Exception as e:
         logger.error(f"Error in get_student_quiz_questions: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)

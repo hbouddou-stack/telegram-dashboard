@@ -2515,7 +2515,7 @@ function renderView() {
     container.innerHTML = '';
     
     if (taxonomyData.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-3);">لا توجد أسئلة لهذه المادة حالياً.</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-3); font-family: 'Tajawal', sans-serif;">لا توجد أسئلة لهذه المادة حالياً.</div>`;
         return;
     }
     
@@ -2534,7 +2534,7 @@ function renderView() {
             let titleColor = prog.isDone ? '#10b981' : 'var(--text-1)';
             
             container.innerHTML += `
-                <div onclick='openSheet("${l.title}", "تمرين شامل على الدرس", ${JSON.stringify(l.qs).replace(/'/g, "&apos;")})' style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                <div onclick='openSheet("${l.title}", "تمرين شامل على الدرس", ${JSON.stringify(l.qs).replace(/'/g, "&apos;")})' style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-family: 'Tajawal', sans-serif;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         ${renderProgressRing(prog)}
                         <div>
@@ -2548,6 +2548,7 @@ function renderView() {
         });
         
     } else if (currentView === 'theme') {
+        // V2: TREE VIEW
         let themes = {};
         taxonomyData.forEach(q => {
             if(!themes[q.theme]) themes[q.theme] = {};
@@ -2562,31 +2563,32 @@ function renderView() {
             let themeProg = getProgressStats(themeQs);
             
             let html = `
-            <div style="background:var(--surface); border-radius:16px; margin-bottom:12px; border:1px solid var(--border-color); overflow:hidden;">
-                <div onclick="const c = this.nextElementSibling; c.style.display = c.style.display === 'none' ? 'block' : 'none';" style="padding:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
-                    <div style="font-weight:bold; font-size:1.1rem; color:var(--text-1); display:flex; align-items:center; gap:8px;">
-                        <i class="fa-solid fa-folder" style="color:var(--primary);"></i> ${tName}
+            <div style="margin-bottom:20px; font-family: 'Tajawal', sans-serif;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:var(--primary); box-shadow:0 0 8px rgba(59,130,246,0.5);"></div>
+                    <div style="font-weight:bold; font-size:1.2rem; color:var(--text-1);">${tName}</div>
+                    <div style="flex-grow:1; height:2px; background:var(--border-color); border-radius:2px; overflow:hidden;">
+                        <div style="width:${themeProg.percent}%; height:100%; background:var(--primary); transition:0.5s;"></div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:0.8rem; font-weight:bold; color:var(--text-2);">${themeProg.percent}%</span>
-                        <i class="fa-solid fa-chevron-down" style="color:var(--text-3); font-size:0.8rem;"></i>
-                    </div>
+                    <div style="font-size:0.85rem; font-weight:bold; color:var(--text-2);">${themeProg.percent}%</div>
                 </div>
-                <div style="padding:0 16px 16px 16px; display:none;">
+                <div style="padding-right:24px; border-right:2px solid var(--border-color); margin-right:5px; padding-top:8px;">
             `;
             
             Object.keys(subThemes).forEach(stName => {
                 let qs = subThemes[stName];
                 let prog = getProgressStats(qs);
-                let dotColor = prog.isDone ? '#10b981' : (prog.percent > 0 ? '#f59e0b' : 'var(--text-3)');
+                let isDone = prog.isDone;
+                let dotColor = isDone ? '#10b981' : (prog.percent > 0 ? '#f59e0b' : 'var(--text-3)');
                 
                 html += `
-                    <div onclick='event.stopPropagation(); openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:8px; background:var(--bg); margin-bottom:8px; cursor:pointer; border:1px solid transparent;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="width:8px; height:8px; border-radius:50%; background:${dotColor};"></div>
-                            <div style="font-size:0.9rem; font-weight:bold; color:var(--text-1);">${stName}</div>
+                    <div onclick='openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--border-color); margin-bottom:8px; cursor:pointer; position:relative; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                        <div style="position:absolute; right:-26px; top:50%; width:24px; height:2px; background:var(--border-color);"></div>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <i class="${isDone ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'}" style="color:${dotColor}; font-size:1.1rem;"></i>
+                            <div style="font-size:0.95rem; font-weight:bold; color:${isDone ? '#10b981' : 'var(--text-1)'};">${stName}</div>
                         </div>
-                        <div style="font-size:0.8rem; color:var(--text-3);">${prog.count}/${prog.total}</div>
+                        <div style="font-size:0.8rem; font-weight:bold; color:white; background:${dotColor}; padding:2px 8px; border-radius:12px;">${prog.count}/${prog.total}</div>
                     </div>
                 `;
             });
@@ -2602,7 +2604,7 @@ function renderView() {
             chronos[q.hijriYear].push(q);
         });
         
-        let html = `<div style="position:relative; padding-right:20px;">
+        let html = `<div style="position:relative; padding-right:20px; font-family: 'Tajawal', sans-serif;">
                     <div style="position:absolute; top:0; bottom:0; right:9px; width:2px; background:var(--border-color);"></div>`;
                     
         Object.keys(chronos).forEach(year => {
@@ -2612,7 +2614,7 @@ function renderView() {
                 <div onclick='openSheet("${year}", "الفترة الزمنية", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="position:relative; padding-right:20px; margin-bottom:20px;">
                     <div style="position:absolute; right:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--primary); border:4px solid var(--surface);"></div>
                     <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:12px; padding:12px; cursor:pointer;">
-                        <div style="font-weight:bold; color:var(--primary); margin-bottom:4px;">${year}</div>
+                        <div style="font-weight:bold; color:var(--primary); margin-bottom:4px; font-size:1.1rem;">${year}</div>
                         <div style="font-size:0.85rem; color:var(--text-2); display:flex; justify-content:space-between;">
                             <span>${qs.length} أسئلة في هذه الفترة</span>
                             <span style="font-weight:bold;">${prog.percent}%</span>
@@ -2623,19 +2625,87 @@ function renderView() {
         });
         html += `</div>`;
         container.innerHTML = html;
+        
+    } else if (currentView === 'weak') {
+        // V2: WEAK POINTS TAB
+        let weakQs = taxonomyData.filter(q => typeof state !== 'undefined' && state && state.progress && state.progress[q.id] === 'wrong');
+        
+        if (weakQs.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:40px 20px; font-family: 'Tajawal', sans-serif;">
+                    <i class="fa-solid fa-trophy" style="font-size:3rem; color:#10b981; margin-bottom:16px;"></i>
+                    <h3 style="color:var(--text-1); margin-bottom:8px;">أنت رائع!</h3>
+                    <p style="color:var(--text-2);">لا توجد لديك أي أخطاء متراكمة في هذه المادة حالياً.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div style="background:linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1)); border-radius:16px; padding:24px; text-align:center; margin-bottom:20px; border:1px solid rgba(239, 68, 68, 0.2); font-family: 'Tajawal', sans-serif;">
+                <i class="fa-solid fa-brain" style="font-size:2.5rem; color:#ef4444; margin-bottom:12px;"></i>
+                <h3 style="color:#ef4444; margin-bottom:8px;">${weakQs.length} نقاط ضعف تحتاج للمراجعة</h3>
+                <p style="color:var(--text-2); font-size:0.9rem; margin-bottom:20px;">الأسئلة التي أجبت عليها بشكل خاطئ سابقاً. المراجعة المتباعدة هي سر الإتقان.</p>
+                
+                <button onclick='startSpecificQuiz(${JSON.stringify(weakQs).replace(/'/g, "&apos;")})' style="background:#ef4444; color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer; width:100%; box-shadow:0 4px 12px rgba(239,68,68,0.3); font-family: 'Tajawal', sans-serif;">
+                    <i class="fa-solid fa-dumbbell"></i> ابدأ مراجعة الأخطاء
+                </button>
+            </div>
+        `;
+        
+        // List them by theme
+        let html = '<div style="display:flex; flex-direction:column; gap:10px; font-family: \'Tajawal\', sans-serif;">';
+        weakQs.forEach(q => {
+            html += `
+                <div style="background:var(--surface); border-left:4px solid #ef4444; border-radius:8px; padding:12px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="font-weight:bold; font-size:0.95rem; color:var(--text-1); margin-bottom:4px;">${q.title}</div>
+                    <div style="display:flex; gap:8px; font-size:0.75rem;">
+                        <span style="background:rgba(59,130,246,0.1); color:var(--primary); padding:2px 8px; border-radius:6px;">الدرس ${q.lessonNum}</span>
+                        <span style="background:var(--bg); color:var(--text-2); padding:2px 8px; border-radius:6px;">${q.subTheme}</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML += html;
     }
+}
+
+// BUG FIX: Directly start quiz with specific questions array without relying on select elements
+function startSpecificQuiz(questionsArray) {
+    if(!window.quizEngine) return;
+    
+    // We override the quizEngine's internal questions array
+    quizEngine.questions = questionsArray;
+    
+    // Switch to quiz view manually if needed (quizEngine.start usually handles this)
+    if (typeof openTab === 'function') openTab('quiz');
+    
+    // Reset internal state and start
+    quizEngine.currentQuestionIndex = 0;
+    quizEngine.correctAnswers = 0;
+    quizEngine.wrongAnswers = 0;
+    quizEngine.startTimer();
+    quizEngine.showQuestion();
+    
+    // Update UI elements if they exist
+    const container = document.getElementById('quiz-container');
+    const resultDiv = document.getElementById('quiz-result');
+    const paramsDiv = document.getElementById('quiz-params');
+    if(container) container.style.display = 'block';
+    if(resultDiv) resultDiv.style.display = 'none';
+    if(paramsDiv) paramsDiv.style.display = 'none';
 }
 
 function openSheet(title, subtitle, questions) {
     document.getElementById('sheet-title').innerText = title;
     
-    // Add subtitle div dynamically if missing
     let sheetHeader = document.getElementById('sheet-title').parentNode;
     let sub = document.getElementById('sheet-subtitle');
     if(!sub) {
         sub = document.createElement('div');
         sub.id = 'sheet-subtitle';
-        sub.style = "font-size:0.8rem; color:var(--text-3); margin-top:4px;";
+        sub.style = "font-size:0.85rem; color:var(--text-3); margin-top:4px; font-family: 'Tajawal', sans-serif;";
         sheetHeader.insertBefore(sub, sheetHeader.childNodes[1]);
     }
     sub.innerText = subtitle;
@@ -2645,17 +2715,15 @@ function openSheet(title, subtitle, questions) {
     
     let progressProg = getProgressStats(questions);
     
-    // Change Grid Layout to Rows for detailed view
     grid.style.display = 'grid';
     grid.style.gridTemplateColumns = '1fr';
     grid.style.gap = '10px';
     
     questions.forEach((q, idx) => {
         const row = document.createElement('div');
-        
         let qStatus = (typeof state !== 'undefined' && state && state.progress) ? state.progress[q.id] || 'unanswered' : 'unanswered';
         
-        let rowClass = 'background:var(--bg); border:1px solid var(--border-color); border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s;';
+        let rowClass = 'background:var(--bg); border:1px solid var(--border-color); border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s; font-family: \'Tajawal\', sans-serif;';
         if(qStatus === 'correct') rowClass += ' border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05);';
         if(qStatus === 'wrong') rowClass += ' border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);';
         row.style.cssText = rowClass;
@@ -2664,14 +2732,13 @@ function openSheet(title, subtitle, questions) {
         if(qStatus === 'correct') iconHtml = `<div style="width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; color:#10b981; background:rgba(16, 185, 129, 0.1); border:1px solid #10b981; flex-shrink:0;"><i class="fa-solid fa-check"></i></div>`;
         if(qStatus === 'wrong') iconHtml = `<div style="width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; color:#ef4444; background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; flex-shrink:0;"><i class="fa-solid fa-xmark"></i></div>`;
         
-        let badgeHtml = currentView !== 'lesson' ? `<div style="font-size:0.7rem; background:var(--primary); color:white; padding:2px 6px; border-radius:6px; font-weight:bold;">الدرس ${q.lessonNum}</div>` : '';
-        
-        let truncatedTitle = q.title ? q.title.substring(0, 40) + (q.title.length > 40 ? '...' : '') : 'سؤال';
+        let badgeHtml = currentView !== 'lesson' ? `<div style="font-size:0.7rem; background:var(--primary); color:white; padding:2px 8px; border-radius:6px; font-weight:bold;">الدرس ${q.lessonNum}</div>` : '';
+        let truncatedTitle = q.title ? q.title.substring(0, 45) + (q.title.length > 45 ? '...' : '') : 'سؤال';
         
         row.innerHTML = `
             <div style="display:flex; align-items:center; gap:12px;">
                 ${iconHtml}
-                <div style="font-size:0.9rem; font-weight:bold; color:var(--text-1);">${truncatedTitle}</div>
+                <div style="font-size:0.95rem; font-weight:bold; color:var(--text-1);">${truncatedTitle}</div>
             </div>
             ${badgeHtml}
         `;
@@ -2679,19 +2746,29 @@ function openSheet(title, subtitle, questions) {
         row.onclick = () => {
             closeJourneySheet();
             setTimeout(() => {
-                if(window.quizEngine) {
-                    const sb = document.getElementById('subject-select');
-                    const ls = document.getElementById('lesson-select');
-                    if(sb) sb.value = q.subject || 'sira';
-                    if(ls) ls.value = q.lessonNum || 1;
-                    // Trigger the quiz engine for THIS specific question? 
-                    // Actually, we should just start the quiz for the lesson it belongs to for now.
-                    quizEngine.start();
-                }
+                startSpecificQuiz([q]);
             }, 300);
         };
         grid.appendChild(row);
     });
+    
+    // Update the main button to play ALL questions in this sheet
+    const btn = document.getElementById('btn-play-all-lesson');
+    if(btn) {
+        if(progressProg.isDone) {
+            btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> إعادة التدريب';
+            btn.style.background = 'var(--text-2)';
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> ابدأ التدريب';
+            btn.style.background = 'var(--primary)';
+        }
+        btn.onclick = () => {
+            closeJourneySheet();
+            setTimeout(() => {
+                startSpecificQuiz(questions);
+            }, 300);
+        };
+    }
     
     document.getElementById('journey-bottom-sheet').classList.add('open');
     document.getElementById('journey-sheet-overlay').classList.add('open');
