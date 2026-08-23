@@ -2491,7 +2491,7 @@ async function fetchTaxonomy() {
 function getProgressStats(qs) {
     let count = 0;
     qs.forEach(q => { 
-        if (state && state.progress && state.progress[q.id] === 'correct') count++; 
+        if (typeof state !== 'undefined' && state && state.progress && state.progress[q.id] === 'correct') count++; 
     });
     let percent = qs.length > 0 ? Math.round((count / qs.length) * 100) : 0;
     return { count, total: qs.length, percent, isDone: percent === 100 };
@@ -2653,7 +2653,7 @@ function openSheet(title, subtitle, questions) {
     questions.forEach((q, idx) => {
         const row = document.createElement('div');
         
-        let qStatus = state && state.progress ? state.progress[q.id] || 'unanswered' : 'unanswered';
+        let qStatus = (typeof state !== 'undefined' && state && state.progress) ? state.progress[q.id] || 'unanswered' : 'unanswered';
         
         let rowClass = 'background:var(--bg); border:1px solid var(--border-color); border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s;';
         if(qStatus === 'correct') rowClass += ' border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05);';
