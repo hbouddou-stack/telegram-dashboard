@@ -2526,26 +2526,31 @@ function renderView() {
             lessons[q.lessonNum].qs.push(q);
         });
 
+        let html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; padding-top:10px;">';
         Object.keys(lessons).sort((a,b)=>a-b).forEach(k => {
             let l = lessons[k];
             let prog = getProgressStats(l.qs);
-            let cardColor = prog.isDone ? 'rgba(16, 185, 129, 0.05)' : 'var(--bg)';
-            let borderColor = prog.isDone ? '#10b981' : 'var(--border-color)';
-            let titleColor = prog.isDone ? '#10b981' : 'var(--text-1)';
+            let isDone = prog.isDone;
+            let bgColor = isDone ? 'rgba(16, 185, 129, 0.05)' : 'var(--surface)';
+            let borderColor = isDone ? '#10b981' : 'var(--border-color)';
+            let titleColor = isDone ? '#10b981' : 'var(--text-1)';
+            let dotColor = isDone ? '#10b981' : (prog.percent > 0 ? 'var(--primary)' : 'var(--text-3)');
             
-            container.innerHTML += `
-                <div onclick='openSheet("${l.title}", "تمرين شامل على الدرس", ${JSON.stringify(l.qs).replace(/'/g, "&apos;")})' style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-family: 'Tajawal', sans-serif;">
-                    <div style="display:flex; align-items:center; gap:12px;">
+            html += `
+                <div onclick='openSheet("${l.title}", "تمرين شامل على الدرس", ${JSON.stringify(l.qs).replace(/'/g, "&apos;")})' style="display:flex; flex-direction:column; justify-content:center; align-items:center; padding:16px 12px; border-radius:16px; background:${bgColor}; border:1px solid ${borderColor}; cursor:pointer; position:relative; box-shadow:0 4px 10px rgba(0,0,0,0.03); transition:transform 0.2s; text-align:center;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+                    
+                    <div style="margin-bottom:12px;">
                         ${renderProgressRing(prog)}
-                        <div>
-                            <div style="font-weight:bold; font-size:1rem; color:${titleColor};">${l.title}</div>
-                            <div style="font-size:0.8rem; color:var(--text-3);">${prog.count} من ${prog.total} مكتمل</div>
-                        </div>
                     </div>
-                    <div style="color:var(--text-3);"><i class="fa-solid fa-chevron-left"></i></div>
+                    
+                    <div style="font-size:1.1rem; font-weight:bold; color:${titleColor}; margin-bottom:4px;">${l.title}</div>
+                    
+                    <div style="font-size:0.75rem; font-weight:bold; color:var(--text-3);">${prog.count}/${prog.total} مكتمل</div>
                 </div>
             `;
         });
+        html += '</div>';
+        container.innerHTML += html;
         
     } else if (currentView === 'theme') {
         // V2: TREE VIEW
@@ -2572,26 +2577,36 @@ function renderView() {
                     </div>
                     <div style="font-size:0.85rem; font-weight:bold; color:var(--text-2);">${themeProg.percent}%</div>
                 </div>
-                <div style="padding-right:24px; border-right:2px solid var(--border-color); margin-right:5px; padding-top:8px;">
+                <div style="padding-top:8px;">
             `;
             
+            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; padding-top:10px;">';
             Object.keys(subThemes).forEach(stName => {
                 let qs = subThemes[stName];
                 let prog = getProgressStats(qs);
                 let isDone = prog.isDone;
                 let dotColor = isDone ? '#10b981' : (prog.percent > 0 ? '#f59e0b' : 'var(--text-3)');
+                let bgColor = isDone ? 'rgba(16, 185, 129, 0.05)' : 'var(--surface)';
+                let borderColor = isDone ? '#10b981' : 'var(--border-color)';
                 
                 html += `
-                    <div onclick='openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--border-color); margin-bottom:8px; cursor:pointer; position:relative; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                        <div style="position:absolute; right:-26px; top:50%; width:24px; height:2px; background:var(--border-color);"></div>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <i class="${isDone ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'}" style="color:${dotColor}; font-size:1.1rem;"></i>
-                            <div style="font-size:0.95rem; font-weight:bold; color:${isDone ? '#10b981' : 'var(--text-1)'};">${stName}</div>
+                    <div onclick='openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; flex-direction:column; justify-content:center; align-items:center; padding:16px 12px; border-radius:16px; background:${bgColor}; border:1px solid ${borderColor}; cursor:pointer; position:relative; box-shadow:0 4px 10px rgba(0,0,0,0.03); transition:transform 0.2s, box-shadow 0.2s; text-align:center;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
+                        
+                        <div style="width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,0.5); display:flex; justify-content:center; align-items:center; margin-bottom:12px; border:1px solid rgba(0,0,0,0.05);">
+                            <i class="${isDone ? 'fa-solid fa-check' : 'fa-solid fa-layer-group'}" style="color:${dotColor}; font-size:1.2rem;"></i>
                         </div>
-                        <div style="font-size:0.8rem; font-weight:bold; color:white; background:${dotColor}; padding:2px 8px; border-radius:12px;">${prog.count}/${prog.total}</div>
+                        
+                        <div style="font-size:0.9rem; font-weight:bold; color:${isDone ? '#10b981' : 'var(--text-1)'}; margin-bottom:8px; line-height:1.3; min-height:2.6em; display:flex; align-items:center;">${stName}</div>
+                        
+                        <div style="width:100%; height:4px; background:var(--bg); border-radius:2px; overflow:hidden; margin-bottom:6px;">
+                            <div style="width:${prog.percent}%; height:100%; background:${dotColor};"></div>
+                        </div>
+                        
+                        <div style="font-size:0.75rem; font-weight:bold; color:var(--text-3);">${prog.count}/${prog.total} مكتمل</div>
                     </div>
                 `;
             });
+            html += '</div>';
             
             html += `</div></div>`;
             container.innerHTML += html;
@@ -2604,22 +2619,26 @@ function renderView() {
             chronos[q.hijriYear].push(q);
         });
         
-        let html = `<div style="position:relative; padding-right:20px; font-family: 'Tajawal', sans-serif;">
-                    <div style="position:absolute; top:0; bottom:0; right:9px; width:2px; background:var(--border-color);"></div>`;
+        let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:16px; font-family: 'Tajawal', sans-serif; padding-top:10px;">`;
                     
         Object.keys(chronos).forEach(year => {
             let qs = chronos[year];
             let prog = getProgressStats(qs);
+            let isDone = prog.isDone;
+            let dotColor = isDone ? '#10b981' : (prog.percent > 0 ? 'var(--primary)' : 'var(--text-3)');
+            let bgColor = isDone ? 'rgba(16, 185, 129, 0.05)' : 'var(--surface)';
+            
             html += `
-                <div onclick='openSheet("${year}", "الفترة الزمنية", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="position:relative; padding-right:20px; margin-bottom:20px;">
-                    <div style="position:absolute; right:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--primary); border:4px solid var(--surface);"></div>
-                    <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:12px; padding:12px; cursor:pointer;">
-                        <div style="font-weight:bold; color:var(--primary); margin-bottom:4px; font-size:1.1rem;">${year}</div>
-                        <div style="font-size:0.85rem; color:var(--text-2); display:flex; justify-content:space-between;">
-                            <span>${qs.length} أسئلة في هذه الفترة</span>
-                            <span style="font-weight:bold;">${prog.percent}%</span>
-                        </div>
+                <div onclick='openSheet("${year}", "الفترة الزمنية", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px 12px; border-radius:16px; background:${bgColor}; border:1px solid var(--border-color); cursor:pointer; position:relative; box-shadow:0 4px 10px rgba(0,0,0,0.03); transition:transform 0.2s; text-align:center;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+                    
+                    <div style="font-size:1.4rem; font-weight:800; color:${dotColor}; margin-bottom:4px;">${year}</div>
+                    <div style="font-size:0.8rem; color:var(--text-2); margin-bottom:12px;">فترة زمنية</div>
+                    
+                    <div style="width:80%; height:4px; background:var(--bg); border-radius:2px; overflow:hidden; margin-bottom:8px;">
+                        <div style="width:${prog.percent}%; height:100%; background:${dotColor};"></div>
                     </div>
+                    
+                    <div style="font-size:0.75rem; font-weight:bold; color:var(--text-3);">${prog.count}/${prog.total} أسئلة</div>
                 </div>
             `;
         });
