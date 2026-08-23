@@ -2,11 +2,11 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 import os
 
 SUBJECT_LABELS = {
-    "fiqh": "Ø§Ù„ÙÙ‚Ù‡",
-    "sira": "Ø§Ù„Ø³ÙŠرة Ø§Ù„Ù†Ø¨ÙˆÙŠة",
-    "nahw": "Ø§Ù„Ù†Ø­Ùˆ",
-    "aqeeda": "Ø§Ù„Ø¹Ù‚ÙŠدة",
-    "tajweed": "Ø¹Ù„Ù… Ø§Ù„ØªØ¬ÙˆÙŠد"
+    "fiqh": "ا„ف‚Ù‡",
+    "sira": "ا„سŠرة ا„Ù†بˆÙŠة",
+    "nahw": "ا„Ù†حˆ",
+    "aqeeda": "ا„ع‚ÙŠدة",
+    "tajweed": "ع„Ù… ا„تجˆÙŠد"
 }
 
 def get_hidden_items_sync(category: str) -> list:
@@ -31,15 +31,15 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     """Create the inline main menu keyboard with standard categories."""
     hidden_buttons = get_hidden_items_sync("buttons")
     
-    inbox_label = "ðŸ“¬ ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ø±Ø³Ø§Ø¦Ù„"
+    inbox_label = "📬 صندوق الرسائل"
     if unread_count > 0:
-        inbox_label += f" ({unread_count} ðŸ”´)"
+        inbox_label += f" ({unread_count} 🔴)"
         
     rows = []
     
     # Row 1: Training Menu
     row1 = [
-        InlineKeyboardButton(text="ðŸ“  أتدرب", callback_data="main_training_menu")
+        InlineKeyboardButton(text="📝 أتدرب", callback_data="main_training_menu")
     ]
     rows.append(row1)
     
@@ -56,21 +56,21 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     
     # Row 1.5: Revision Library (full width)
     if "revision" not in hidden_buttons:
-        rows.append([InlineKeyboardButton(text="ðŸ“– Ù…ÙƒØªØ¨ØªÙŠ Ø§Ù„Ø´Ø§Ù…Ù„ة", callback_data="main_revision")])
+        rows.append([InlineKeyboardButton(text="📖 مكتبتي الشاملة", callback_data="main_revision")])
 
     # Row 2: Favorites, Errors
     row2 = []
     if "favorites" not in hidden_buttons:
-        row2.append(InlineKeyboardButton(text="⭐ Ø§Ù„Ù…ÙØ¶Ù„ة", callback_data="main_favorites"))
+        row2.append(InlineKeyboardButton(text="⭐ المفضلة", callback_data="main_favorites"))
     if "errors" not in hidden_buttons:
-        row2.append(InlineKeyboardButton(text="âŒ أخطائي", callback_data="main_errors"))
+        row2.append(InlineKeyboardButton(text="❌ أخطائي", callback_data="main_errors"))
     if row2:
         rows.append(row2)
         
     # Row 3: Progress, Inbox
     row3 = []
     if "progress" not in hidden_buttons:
-        row3.append(InlineKeyboardButton(text="ðŸ“Š ØªÙ‚Ø¯Ù‘Ù…ي", callback_data="main_progress"))
+        row3.append(InlineKeyboardButton(text="📊 تقدمي", callback_data="main_progress"))
     if "inbox" not in hidden_buttons:
         row3.append(InlineKeyboardButton(text=inbox_label, callback_data="student_inbox"))
     if row3:
@@ -79,16 +79,15 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     # Row 4: Support & Settings (Merged)
     row4 = []
     if "support" not in hidden_buttons:
-        row4.append(InlineKeyboardButton(text="ðŸ“ž Ø§Ù„Ø¯Ø¹Ù…", callback_data="main_support"))
+        row4.append(InlineKeyboardButton(text="💬 الدعم والمساعدة", callback_data="main_support"))
     if "settings" not in hidden_buttons:
-        row4.append(InlineKeyboardButton(text="âš™️ إعداداتي", callback_data="main_settings"))
+        row4.append(InlineKeyboardButton(text="⚙️ إعداداتي", callback_data="main_settings"))
     if row4:
         rows.append(row4)
         
     if is_admin:
-        # Mini App and Admin Dashboard are moved to get_admin_panel_keyboard, only keep Admin Mode here
         rows.append([
-            InlineKeyboardButton(text="ðŸ› ï¸ Ùˆضع Ø§Ù„Ù…شرف", callback_data="main_admin")
+            InlineKeyboardButton(text="🛠️ وضع المشرف", callback_data="main_admin")
         ])
         
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -96,9 +95,9 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
 def get_training_menu_keyboard() -> InlineKeyboardMarkup:
     """Sub-menu for training options."""
     rows = [
-        [InlineKeyboardButton(text="ðŸŽ¯ Ø§Ù„ØªØ¯Ø±Ù‘ب Ø¹Ù„Ù‰ Ù…ادة / درس Ù…Ø¹ÙŠÙ†", callback_data="main_new_quiz")],
-        [InlineKeyboardButton(text="ðŸŽ“ Ø§Ø¬ØªÙŠاز Ø§Ù…ØªØ­Ø§Ù† ØªØ¬Ø±ÙŠØ¨ÙŠ Ø´Ø§Ù…Ù„", callback_data="exam_blanc_start")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data="main_cancel")]
+        [InlineKeyboardButton(text="ðŸŽ¯ ا„تدر‘ب ع„Ù‰ Ù…ادة / درس Ù…عŠÙ†", callback_data="main_new_quiz")],
+        [InlineKeyboardButton(text="ðŸŽ“ اجتŠاز ا…تحا† تجرŠبŠ شا…Ù„", callback_data="exam_blanc_start")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù‚ائ…ة", callback_data="main_cancel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -117,15 +116,15 @@ def get_academic_year_keyboard() -> InlineKeyboardMarkup:
     """Create an inline academic year selection keyboard for user registration."""
     rows = [
         [
-            InlineKeyboardButton(text="ðŸŽ“ Ø§Ù„Ø³Ù†ة Ø§Ù„Ø£ÙˆÙ„Ù‰", callback_data="register_year:1"),
-            InlineKeyboardButton(text="ðŸŽ“ Ø§Ù„Ø³Ù†ة Ø§Ù„Ø«Ø§Ù†ÙŠة", callback_data="register_year:2")
+            InlineKeyboardButton(text="ðŸŽ“ ا„س†ة ا„أˆÙ„Ù‰", callback_data="register_year:1"),
+            InlineKeyboardButton(text="ðŸŽ“ ا„س†ة ا„ثا†ÙŠة", callback_data="register_year:2")
         ],
         [
-            InlineKeyboardButton(text="ðŸŽ“ Ø§Ù„Ø³Ù†ة Ø§Ù„Ø«Ø§Ù„ثة", callback_data="register_year:3"),
-            InlineKeyboardButton(text="ðŸŽ“ Ø§Ù„Ø³Ù†ة Ø§Ù„رابعة", callback_data="register_year:4")
+            InlineKeyboardButton(text="ðŸŽ“ ا„س†ة ا„ثا„ثة", callback_data="register_year:3"),
+            InlineKeyboardButton(text="ðŸŽ“ ا„س†ة ا„رابعة", callback_data="register_year:4")
         ],
         [
-            InlineKeyboardButton(text="⏭️ ØªØ®Ø·ÙŠ (Ù„ا Ø£Ø±ÙŠد Ø§Ù„ØªØ­Ø¯ÙŠد)", callback_data="register_year:skip")
+            InlineKeyboardButton(text="⏭️ تخطŠ (Ù„ا أرŠد ا„تحدŠد)", callback_data="register_year:skip")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -135,7 +134,7 @@ def get_start_onboarding_keyboard() -> InlineKeyboardMarkup:
     """Create a button to start onboarding."""
     rows = [
         [
-            InlineKeyboardButton(text="Ø¯Ø¹Ù†ا Ù†تعرف! ðŸ¤", callback_data="start_onboarding")
+            InlineKeyboardButton(text="دع†ا Ù†تعرف! ðŸ¤", callback_data="start_onboarding")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -145,14 +144,14 @@ def get_name_choice_keyboard(first_name: str, last_name: str, username: str) -> 
     """Create keyboard for selecting how the bot should call the user."""
     rows = []
     if first_name:
-        rows.append([InlineKeyboardButton(text=f"ðŸ‘¤ Ø§Ù„Ø§Ø³Ù… Ø§Ù„Ø£ÙˆÙ„: {first_name}", callback_data="name_choice:first")])
+        rows.append([InlineKeyboardButton(text=f"ðŸ‘¤ ا„اس… ا„أˆÙ„: {first_name}", callback_data="name_choice:first")])
     
     full_name = f"{first_name or ''} {last_name or ''}".strip()
     if last_name and first_name:
-        rows.append([InlineKeyboardButton(text=f"ðŸ‘¤ Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„: {full_name}", callback_data="name_choice:full")])
+        rows.append([InlineKeyboardButton(text=f"ðŸ‘¤ ا„اس… ا„Ùƒا…Ù„: {full_name}", callback_data="name_choice:full")])
         
-    rows.append([InlineKeyboardButton(text="ðŸš« Ù„ا ØªØ°Ùƒر Ø§Ø³Ù…ÙŠ (Ù„Ù‚ب Ø¹Ø§Ù… ÙÙ‚ط)", callback_data="name_choice:generic")])
-    rows.append([InlineKeyboardButton(text="âœï¸ Ùƒتابة Ø§Ø³Ù… Ù…خصص...", callback_data="name_choice:custom")])
+    rows.append([InlineKeyboardButton(text="ðŸš« Ù„ا تذƒر اس…ÙŠ (Ù„Ù‚ب عا… ف‚ط)", callback_data="name_choice:generic")])
+    rows.append([InlineKeyboardButton(text="âœï¸ Ùƒتابة اس… Ù…خصص...", callback_data="name_choice:custom")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -160,19 +159,19 @@ def get_guide_page_keyboard(page: int) -> InlineKeyboardMarkup:
     """Create navigation keyboard for the onboarding guide."""
     rows = []
     if page == 1:
-        rows.append([InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data="guide_page:2")])
+        rows.append([InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data="guide_page:2")])
     elif page == 2:
         rows.append([
-            InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data="guide_page:1"),
-            InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data="guide_page:3")
+            InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data="guide_page:1"),
+            InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data="guide_page:3")
         ])
     elif page == 3:
         rows.append([
-            InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data="guide_page:2")
+            InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data="guide_page:2")
         ])
         rows.append([InlineKeyboardButton(text="ðŸŸ¢ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ ðŸŸ¢", callback_data="q_ignored")])
         rows.append([
-            InlineKeyboardButton(text="ðŸš€ ابدأ Ø§Ù„ØªÙ…Ø±ÙŠÙ†", callback_data="guide_finish")
+            InlineKeyboardButton(text="ðŸš€ ابدأ ا„ت…رŠÙ†", callback_data="guide_finish")
         ])
         rows.append([InlineKeyboardButton(text="ðŸŸ¢ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ ðŸŸ¢", callback_data="q_ignored")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -180,41 +179,41 @@ def get_guide_page_keyboard(page: int) -> InlineKeyboardMarkup:
 THEMES = {
     "fiqh": {
         "عبادات": {
-            "label": "Ø£Ø­ÙƒØ§Ù… Ø§Ù„عبادات",
+            "label": "أحƒا… ا„عبادات",
             "lessons": [14, 15, 16]
         },
-        "Ù…Ø¹Ø§Ù…Ù„ات": {
-            "label": "Ø§Ù„Ù…Ø¹Ø§Ù…Ù„ات ÙˆÙÙ‚Ù‡ Ø§Ù„Ù†ÙˆØ§Ø²Ù„",
+        "Ù…عا…Ù„ات": {
+            "label": "ا„Ù…عا…Ù„ات Ùˆف‚Ù‡ ا„Ù†Ùˆاز„",
             "lessons": [17, 18, 19, 20, 21, 22, 23, 24]
         }
     },
     "sira": {
         "makki": {
-            "label": "Ø§Ù„Ø¹Ù‡د Ø§Ù„Ù…ÙƒÙŠ ÙˆØ§Ù„Ù†شأة",
+            "label": "ا„ع‡د ا„Ù…ÙƒÙŠ Ùˆا„Ù†شأة",
             "lessons": [14, 15, 16, 17, 18]
         },
         "madani": {
-            "label": "Ø§Ù„Ø¹Ù‡د Ø§Ù„Ù…Ø¯Ù†ÙŠ ÙˆØ§Ù„ØºØ²Ùˆات",
+            "label": "ا„ع‡د ا„Ù…د†ÙŠ Ùˆا„غزˆات",
             "lessons": [19, 20, 21, 22, 23, 24]
         }
     },
     "nahw": {
         "marfouat": {
-            "label": "Ø§Ù„Ù…Ø±ÙÙˆعات ÙˆØ§Ù„Ù…Ù†ØµÙˆبات",
+            "label": "ا„Ù…رفˆعات Ùˆا„Ù…Ù†صˆبات",
             "lessons": [14, 15, 16]
         },
         "tawabi": {
-            "label": "Ø§Ù„ØªÙˆابع ÙˆØ§Ù„Ø£Ø³Ø§Ù„ÙŠب Ø§Ù„Ù†Ø­ÙˆÙŠة",
+            "label": "ا„تˆابع Ùˆا„أسا„ÙŠب ا„Ù†حˆÙŠة",
             "lessons": [17, 18, 19, 20, 21, 22, 23, 24]
         }
     },
     "aqeeda": {
         "tawhid": {
-            "label": "Ø£ØµÙˆÙ„ Ø§Ù„Ø¹Ù‚ÙŠدة ÙˆØ§Ù„ØªÙˆØ­ÙŠد",
+            "label": "أصˆÙ„ ا„ع‚ÙŠدة Ùˆا„تˆحŠد",
             "lessons": [14, 15, 16]
         },
         "firaq": {
-            "label": "Ø§Ù„Ù…Ø°Ø§Ù‡ب ÙˆØ§Ù„ÙØ±Ù‚ ÙˆØ§Ù„ÙˆÙ„اء ÙˆØ§Ù„براء",
+            "label": "ا„Ù…ذا‡ب Ùˆا„فر‚ Ùˆا„ÙˆÙ„اء Ùˆا„براء",
             "lessons": [17, 18, 19, 20, 21, 22, 23, 24]
         }
     }
@@ -253,7 +252,7 @@ def get_subject_list_keyboard(remaining_counts: dict = None) -> InlineKeyboardMa
             row = []
     if row:
         rows.append(row)
-    rows.append([InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="quiz_cancel")])
+    rows.append([InlineKeyboardButton(text="âŒ إ„غاء", callback_data="quiz_cancel")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_quiz_mode_selection_keyboard(subject: str) -> InlineKeyboardMarkup:
@@ -261,18 +260,18 @@ def get_quiz_mode_selection_keyboard(subject: str) -> InlineKeyboardMarkup:
     rows = []
     if subject == "sira":
         rows.append([
-            InlineKeyboardButton(text="ðŸ“– حسب Ø§Ù„Ø¯Ø±Ùˆس", callback_data="sel_mode:lessons"),
-            InlineKeyboardButton(text="ðŸ“… حسب Ø§Ù„Ø³Ù†Ùˆات", callback_data="sel_mode:years")
+            InlineKeyboardButton(text="ðŸ“– حسب ا„درˆس", callback_data="sel_mode:lessons"),
+            InlineKeyboardButton(text="ðŸ“… حسب ا„س†Ùˆات", callback_data="sel_mode:years")
         ])
         rows.append([
-            InlineKeyboardButton(text="ðŸŽ¯ حسب Ø§Ù„Ù…Ø­Ø§Ùˆر", callback_data="sel_mode:themes")
+            InlineKeyboardButton(text="ðŸŽ¯ حسب ا„Ù…حاˆر", callback_data="sel_mode:themes")
         ])
     else:
         rows.append([
-            InlineKeyboardButton(text="ðŸ“– حسب Ø§Ù„Ø¯Ø±Ùˆس", callback_data="sel_mode:lessons"),
-            InlineKeyboardButton(text="ðŸŽ¯ حسب Ø§Ù„Ù…Ø­Ø§Ùˆر", callback_data="sel_mode:themes")
+            InlineKeyboardButton(text="ðŸ“– حسب ا„درˆس", callback_data="sel_mode:lessons"),
+            InlineKeyboardButton(text="ðŸŽ¯ حسب ا„Ù…حاˆر", callback_data="sel_mode:themes")
         ])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ ØªØºÙŠÙŠر Ø§Ù„Ù…ادة", callback_data="mode_back")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ تغŠÙŠر ا„Ù…ادة", callback_data="mode_back")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_lessons_grid_keyboard(subject: str, available_lessons: list[int], selected_lessons: list[int], progress_stats: dict = None, remaining_counts: dict = None, new_lessons: list[int] = None) -> InlineKeyboardMarkup:
@@ -310,13 +309,13 @@ def get_lessons_grid_keyboard(subject: str, available_lessons: list[int], select
         
     # Checkbox actions: All / None
     rows.append([
-        InlineKeyboardButton(text="ðŸ”” ØªØ­Ø¯ÙŠد Ø§Ù„ÙƒÙ„", callback_data="les_act:all"),
-        InlineKeyboardButton(text="ðŸ”• Ø¥Ù„غاء Ø§Ù„ÙƒÙ„", callback_data="les_act:none")
+        InlineKeyboardButton(text="ðŸ”” تحدŠد ا„ÙƒÙ„", callback_data="les_act:all"),
+        InlineKeyboardButton(text="ðŸ”• إ„غاء ا„ÙƒÙ„", callback_data="les_act:none")
     ])
     
     # Confirm & Back (separated rows)
-    rows.append([InlineKeyboardButton(text="ðŸš€ ØªØ£ÙƒÙŠد Ø§Ù„Ø§Ø®ØªÙŠار", callback_data="les_confirm")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="les_back")])
+    rows.append([InlineKeyboardButton(text="ðŸš€ تأƒÙŠد ا„اختŠار", callback_data="les_confirm")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="les_back")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_themes_grid_keyboard(subject: str, selected_themes: list[int] = None, available_themes: list[dict] = None) -> InlineKeyboardMarkup:
@@ -364,7 +363,7 @@ def get_themes_grid_keyboard(subject: str, selected_themes: list[int] = None, av
         if row:
             rows.append(row)
             
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="th_back")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="th_back")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_sub_themes_grid_keyboard(subject: str, selected_sub_themes: list[str], available_sub_themes: list[str] = None) -> InlineKeyboardMarkup:
@@ -388,13 +387,13 @@ def get_sub_themes_grid_keyboard(subject: str, selected_sub_themes: list[str], a
             
     # Select All / Deselect All
     rows.append([
-        InlineKeyboardButton(text="âœ… ØªØ­Ø¯ÙŠد Ø§Ù„ÙƒÙ„", callback_data="subth_all"),
-        InlineKeyboardButton(text="â¬œ Ø¥Ù„غاء ØªØ­Ø¯ÙŠد Ø§Ù„ÙƒÙ„", callback_data="subth_none")
+        InlineKeyboardButton(text="âœ… تحدŠد ا„ÙƒÙ„", callback_data="subth_all"),
+        InlineKeyboardButton(text="â¬œ إ„غاء تحدŠد ا„ÙƒÙ„", callback_data="subth_none")
     ])
     
     # Confirm & Back
-    rows.append([InlineKeyboardButton(text="ðŸš€ ØªØ£ÙƒÙŠد Ø§Ù„Ø§Ø®ØªÙŠار", callback_data="subth_confirm")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ø®ÙŠارات Ø§Ù„Ù…Ø­Ø§Ùˆر", callback_data="subth_back")])
+    rows.append([InlineKeyboardButton(text="ðŸš€ تأƒÙŠد ا„اختŠار", callback_data="subth_confirm")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„خŠارات ا„Ù…حاˆر", callback_data="subth_back")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -417,12 +416,12 @@ def get_years_grid_keyboard(selected_years: list[int]) -> InlineKeyboardMarkup:
         rows.append(row)
         
     rows.append([
-        InlineKeyboardButton(text="ðŸ”” ØªØ­Ø¯ÙŠد Ø§Ù„ÙƒÙ„", callback_data="yr_act:all"),
-        InlineKeyboardButton(text="ðŸ”• Ø¥Ù„غاء Ø§Ù„ÙƒÙ„", callback_data="yr_act:none")
+        InlineKeyboardButton(text="ðŸ”” تحدŠد ا„ÙƒÙ„", callback_data="yr_act:all"),
+        InlineKeyboardButton(text="ðŸ”• إ„غاء ا„ÙƒÙ„", callback_data="yr_act:none")
     ])
     
-    rows.append([InlineKeyboardButton(text="ðŸš€ ØªØ£ÙƒÙŠد Ø§Ù„Ø§Ø®ØªÙŠار", callback_data="yr_confirm")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="yr_back")])
+    rows.append([InlineKeyboardButton(text="ðŸš€ تأƒÙŠد ا„اختŠار", callback_data="yr_confirm")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="yr_back")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_exam_settings_keyboard(settings: dict, layout: str = 'classic', ai_disabled: bool = False) -> InlineKeyboardMarkup:
@@ -432,36 +431,36 @@ def get_exam_settings_keyboard(settings: dict, layout: str = 'classic', ai_disab
         InlineKeyboardButton(text="3", callback_data="q_ignored"),
         InlineKeyboardButton(text="2", callback_data="q_ignored"),
         InlineKeyboardButton(text="1", callback_data="q_ignored"),
-        InlineKeyboardButton(text="âš™️ Ø§Ù„ضبط", callback_data="q_ignored")
+        InlineKeyboardButton(text="âš™️ ا„ضبط", callback_data="q_ignored")
     ]
     
-    # Row 1: Timer (Ø§Ù„ÙˆÙ‚ت)
+    # Row 1: Timer (ا„ÙˆÙ‚ت)
     timer_val = settings.get("timer", "unlimited")
     t_15s = "âœ… 15ث" if timer_val == "15s" else "âšª 15ث"
     t_30s = "âœ… 30ث" if timer_val == "30s" else "âšª 30ث"
-    t_unlimited = "âœ… Ù…ÙØªÙˆح" if timer_val == "unlimited" else "âšª Ù…ÙØªÙˆح"
+    t_unlimited = "âœ… Ù…فتˆح" if timer_val == "unlimited" else "âšª Ù…فتˆح"
     
     row_timer = [
         InlineKeyboardButton(text=t_unlimited, callback_data="set_val:timer:unlimited"),
         InlineKeyboardButton(text=t_30s, callback_data="set_val:timer:30s"),
         InlineKeyboardButton(text=t_15s, callback_data="set_val:timer:15s"),
-        InlineKeyboardButton(text="⏱️ Ø§Ù„ÙˆÙ‚ت", callback_data="q_ignored")
+        InlineKeyboardButton(text="⏱️ ا„ÙˆÙ‚ت", callback_data="q_ignored")
     ]
     
-    # Row 2: Correction (Ø§Ù„ØªØµØ­ÙŠح)
+    # Row 2: Correction (ا„تصحŠح)
     corr_val = settings.get("correction", "immediate")
-    c_immediate = "âœ… ÙÙˆØ±ÙŠ" if corr_val == "immediate" else "âšª ÙÙˆØ±ÙŠ"
-    c_end = "âœ… Ø§Ù„Ù†Ù‡Ø§ÙŠة" if corr_val == "end" else "âšª Ø§Ù„Ù†Ù‡Ø§ÙŠة"
-    c_strict = "âœ… Ø§Ù…ØªØ­Ø§Ù†" if corr_val == "strict" else "âšª Ø§Ù…ØªØ­Ø§Ù†"
+    c_immediate = "âœ… فˆرŠ" if corr_val == "immediate" else "âšª فˆرŠ"
+    c_end = "âœ… ا„Ù†Ù‡اŠة" if corr_val == "end" else "âšª ا„Ù†Ù‡اŠة"
+    c_strict = "âœ… ا…تحا†" if corr_val == "strict" else "âšª ا…تحا†"
     
     row_correction = [
         InlineKeyboardButton(text=c_strict, callback_data="set_val:correction:strict"),
         InlineKeyboardButton(text=c_end, callback_data="set_val:correction:end"),
         InlineKeyboardButton(text=c_immediate, callback_data="set_val:correction:immediate"),
-        InlineKeyboardButton(text="ðŸ’¬ Ø§Ù„ØªØµØ­ÙŠح", callback_data="q_ignored")
+        InlineKeyboardButton(text="ðŸ’¬ ا„تصحŠح", callback_data="q_ignored")
     ]
     
-    # Row 3: Question Limit (Ø§Ù„عدد)
+    # Row 3: Question Limit (ا„عدد)
     limit_val = int(settings.get("limit", 10))
     l_5 = "âœ… 5" if limit_val == 5 else "âšª 5"
     l_10 = "âœ… 10" if limit_val == 10 else "âšª 10"
@@ -471,25 +470,25 @@ def get_exam_settings_keyboard(settings: dict, layout: str = 'classic', ai_disab
         InlineKeyboardButton(text=l_20, callback_data="set_val:limit:20"),
         InlineKeyboardButton(text=l_10, callback_data="set_val:limit:10"),
         InlineKeyboardButton(text=l_5, callback_data="set_val:limit:5"),
-        InlineKeyboardButton(text="ðŸ”¢ Ø§Ù„عدد", callback_data="q_ignored")
+        InlineKeyboardButton(text="ðŸ”¢ ا„عدد", callback_data="q_ignored")
     ]
     
-    # Row 4: Source (Ø§Ù„ÙÙ„ترة)
+    # Row 4: Source (ا„ف„ترة)
     source_val = settings.get("source", "smart")
-    s_smart = "âœ… Ø§Ù„ذكي" if source_val == "smart" else "âšª Ø§Ù„ذكي"
-    s_errors = "âœ… Ø§Ù„أخطاء" if source_val == "errors" else "âšª Ø§Ù„أخطاء"
-    s_all = "âœ… Ø§Ù„ÙƒÙ„" if source_val == "all" else "âšª Ø§Ù„ÙƒÙ„"
+    s_smart = "âœ… ا„ذكي" if source_val == "smart" else "âšª ا„ذكي"
+    s_errors = "âœ… ا„أخطاء" if source_val == "errors" else "âšª ا„أخطاء"
+    s_all = "âœ… ا„ÙƒÙ„" if source_val == "all" else "âšª ا„ÙƒÙ„"
     
     row_source = [
         InlineKeyboardButton(text=s_all, callback_data="set_val:source:all"),
         InlineKeyboardButton(text=s_smart, callback_data="set_val:source:smart"),
         InlineKeyboardButton(text=s_errors, callback_data="set_val:source:errors"),
-        InlineKeyboardButton(text="ðŸŽ¯ Ø§Ù„ÙÙ„ترة", callback_data="q_ignored")
+        InlineKeyboardButton(text="ðŸŽ¯ ا„ف„ترة", callback_data="q_ignored")
     ]
     
     # Action buttons
-    btn_start = InlineKeyboardButton(text="ðŸš€ ابدأ Ø§Ù„ØªÙ…Ø±ÙŠÙ† Ø§Ù„Ø¢Ù† ðŸš€", callback_data="settings_start")
-    btn_back = InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ø®ÙŠارات Ø§Ù„ØªØ­Ø¯ÙŠد", callback_data="settings_back")
+    btn_start = InlineKeyboardButton(text="ðŸš€ ابدأ ا„ت…رŠÙ† ا„آ† ðŸš€", callback_data="settings_start")
+    btn_back = InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„خŠارات ا„تحدŠد", callback_data="settings_back")
     btn_sep = InlineKeyboardButton(text="ðŸŸ¢ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ ðŸŸ¢", callback_data="q_ignored")
     
     rows = [
@@ -553,61 +552,61 @@ def get_answer_keyboard(choices: dict, force_letters: bool = False, is_fav: bool
         
     bottom_row = []
     if question_id is not None:
-        fav_text = "⭐ Ø£Ø²Ù„ Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„ة" if is_fav else "⭐ أضف Ù„Ù„Ù…ÙØ¶Ù„ة"
+        fav_text = "⭐ أز„ Ù…Ù† ا„Ù…فض„ة" if is_fav else "⭐ أضف Ù„Ù„Ù…فض„ة"
         fav_cb = f"fav_q_rem:{question_id}" if is_fav else f"fav_q_add:{question_id}"
         bottom_row.append(InlineKeyboardButton(text=fav_text, callback_data=fav_cb))
         
-    bottom_row.append(InlineKeyboardButton(text="ðŸšª Ø¥Ù†Ù‡اء Ø§Ù„اختبار", callback_data="quiz_exit"))
+    bottom_row.append(InlineKeyboardButton(text="ðŸšª إ†Ù‡اء ا„اختبار", callback_data="quiz_exit"))
     rows.append(bottom_row)
     
     if is_admin and question_id is not None:
         rows.append([
-            InlineKeyboardButton(text="âš™️ [إدارة] ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_direct_edit:{question_id}:quiz")
+            InlineKeyboardButton(text="âš™️ [إدارة] تعدŠÙ„ ا„سؤا„", callback_data=f"admin_direct_edit:{question_id}:quiz")
         ])
         
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_feedback_keyboard(question_id: int, is_fav: bool, is_last: bool = False, has_explanation: bool = False, has_prev: bool = False, is_admin: bool = False, has_mind_map: bool = False) -> InlineKeyboardMarkup:
     """Create a keyboard showing immediately after answering a question in Normal Mode."""
-    fav_text = "⭐ Ø£Ø²Ù„ Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„ة" if is_fav else "⭐ أضف Ù„Ù„Ù…ÙØ¶Ù„ة"
+    fav_text = "⭐ أز„ Ù…Ù† ا„Ù…فض„ة" if is_fav else "⭐ أضف Ù„Ù„Ù…فض„ة"
     fav_cb = f"fav_rem:{question_id}" if is_fav else f"fav_add:{question_id}"
     
-    next_btn_text = "ðŸ Ø¥Ù†Ù‡اء ÙˆØ±Ø¤ÙŠة Ø§Ù„Ù†ØªÙŠجة" if is_last else "âž¡ï¸ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„ØªØ§Ù„ي"
+    next_btn_text = "ðŸ إ†Ù‡اء ÙˆرؤŠة ا„Ù†تŠجة" if is_last else "âž¡ï¸ ا„سؤا„ ا„تا„ي"
     next_cb = "quiz_finish" if is_last else "quiz_next"
     
     rows = []
     
     nav_row = []
     if has_prev:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data="quiz_prev"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„سؤا„ ا„ساب‚", callback_data="quiz_prev"))
     nav_row.append(InlineKeyboardButton(text=next_btn_text, callback_data=next_cb))
     rows.append(nav_row)
     
     # 2. Show professor quote button / mind map button
     feedback_row = []
     if has_explanation:
-        feedback_row.append(InlineKeyboardButton(text="ðŸ“– ÙƒÙ„Ø§Ù… Ø§Ù„Ø´ÙŠخ ÙˆØªÙˆØ¬ÙŠÙ‡Ù‡", callback_data=f"prof_quote:{question_id}"))
+        feedback_row.append(InlineKeyboardButton(text="ðŸ“– ÙƒÙ„ا… ا„شŠخ ÙˆتˆجŠÙ‡Ù‡", callback_data=f"prof_quote:{question_id}"))
     if has_mind_map:
-        feedback_row.append(InlineKeyboardButton(text="ðŸ—ºï¸ Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة Ù„Ù„درس", callback_data=f"student_show_map_q:{question_id}"))
+        feedback_row.append(InlineKeyboardButton(text="ðŸ—ºï¸ ا„خرŠطة ا„ذ‡Ù†ÙŠة Ù„Ù„درس", callback_data=f"student_show_map_q:{question_id}"))
     if feedback_row:
         rows.append(feedback_row)
         
     # 3. Favorite and Report Error on a single row below
     rows.append([
         InlineKeyboardButton(text=fav_text, callback_data=fav_cb),
-        InlineKeyboardButton(text="âš ï¸ Ø¥Ø¨Ù„اغ Ø¹Ù† خطأ", callback_data=f"rep_q:{question_id}:quiz")
+        InlineKeyboardButton(text="âš ï¸ إب„اغ ع† خطأ", callback_data=f"rep_q:{question_id}:quiz")
     ])
     
     if is_admin:
         rows.append([
-            InlineKeyboardButton(text="âš™️ [إدارة] ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_direct_edit:{question_id}:quiz")
+            InlineKeyboardButton(text="âš™️ [إدارة] تعدŠÙ„ ا„سؤا„", callback_data=f"admin_direct_edit:{question_id}:quiz")
         ])
         
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_sprint_next_keyboard(is_last: bool = False) -> InlineKeyboardMarkup:
     """Create keyboard for Sprint mode to advance when time has run out or similar."""
-    next_btn_text = "ðŸ Ø¥Ù†Ù‡اء ÙˆØ±Ø¤ÙŠة Ø§Ù„Ù†ØªÙŠجة" if is_last else "âž¡ï¸ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„ØªØ§Ù„ي"
+    next_btn_text = "ðŸ إ†Ù‡اء ÙˆرؤŠة ا„Ù†تŠجة" if is_last else "âž¡ï¸ ا„سؤا„ ا„تا„ي"
     next_cb = "quiz_finish" if is_last else "quiz_next"
     
     rows = [
@@ -618,7 +617,7 @@ def get_sprint_next_keyboard(is_last: bool = False) -> InlineKeyboardMarkup:
 def get_support_keyboard() -> ReplyKeyboardMarkup:
     """Keyboard active during Technical Support ticket drafting."""
     kb = [
-        [KeyboardButton(text="âŒ Ø¥Ù†Ù‡اء Ø§Ù„Ø¯Ø¹Ù…")]
+        [KeyboardButton(text="âŒ إ†Ù‡اء ا„دع…")]
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
@@ -627,18 +626,18 @@ def get_favorites_nav_keyboard(question_id: int, has_prev: bool, has_next: bool,
     nav_row = []
     # RTL order: Next on the left, Prev on the right
     if has_next:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data="fav_next"))
+        nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data="fav_next"))
     
-    nav_row.append(InlineKeyboardButton(text="⭐ Ø¥Ø²Ø§Ù„ة", callback_data=f"fav_del_browse:{question_id}"))
+    nav_row.append(InlineKeyboardButton(text="⭐ إزا„ة", callback_data=f"fav_del_browse:{question_id}"))
     
     if has_prev:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data="fav_prev"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data="fav_prev"))
         
     rows = []
     if nav_row:
         rows.append(nav_row)
         
-    rows.append([InlineKeyboardButton(text="ðŸšª Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data="fav_close")])
+    rows.append([InlineKeyboardButton(text="ðŸšª ا„عˆدة Ù„Ù„Ù‚ائ…ة", callback_data="fav_close")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_errors_nav_keyboard(question_id: int, choices: dict, has_prev: bool, has_next: bool) -> InlineKeyboardMarkup:
@@ -663,15 +662,15 @@ def get_errors_nav_keyboard(question_id: int, choices: dict, has_prev: bool, has
     # 2. Navigation row (RTL inverted)
     nav_row = []
     if has_next:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data="err_next"))
+        nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data="err_next"))
     if has_prev:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data="err_prev"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data="err_prev"))
         
     if nav_row:
         rows.append(nav_row)
         
     # 3. Close button
-    rows.append([InlineKeyboardButton(text="ðŸšª Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data="err_close")])
+    rows.append([InlineKeyboardButton(text="ðŸšª ا„عˆدة Ù„Ù„Ù‚ائ…ة", callback_data="err_close")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -680,46 +679,46 @@ def get_errors_nav_keyboard(question_id: int, choices: dict, has_prev: bool, has
 def get_support_menu_keyboard(unread_count: int = 0) -> InlineKeyboardMarkup:
     """Keyboard for support portal menu with unified categories and inbox."""
     hidden_buttons = get_hidden_items_sync("buttons")
-    inbox_label = "ðŸ“¬ ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ø±Ø³Ø§Ø¦Ù„"
+    inbox_label = "ðŸ“¬ ص†دˆÙ‚ ا„رسائ„"
     if unread_count > 0:
         inbox_label += f" ({unread_count} ðŸ”´)"
         
     rows = [
         [
-            InlineKeyboardButton(text="ðŸ› ï¸ Ø®Ù„Ù„ ØªÙ‚Ù†ÙŠ ÙÙŠ Ø§Ù„Ø¨Ùˆت", callback_data="support_tech"),
-            InlineKeyboardButton(text="ðŸŽ“ استفسار Ø£ÙƒØ§Ø¯ÙŠÙ…ي / إداري", callback_data="support_schooling")
+            InlineKeyboardButton(text="ðŸ› ï¸ خ„Ù„ ت‚Ù†ÙŠ فŠ ا„بˆت", callback_data="support_tech"),
+            InlineKeyboardButton(text="ðŸŽ“ استفسار أƒادŠÙ…ي / إداري", callback_data="support_schooling")
         ],
         [
-            InlineKeyboardButton(text="â“ Ø³Ø¤Ø§Ù„ ÙÙŠ Ø§Ù„Ù…Ù‚رر", callback_data="support_course_question"),
-            InlineKeyboardButton(text="âœï¸ Ø§Ù‚تراح Ø³Ø¤Ø§Ù„ Ù„Ù„Ù…Ù‚رر", callback_data="support_propose_question")
+            InlineKeyboardButton(text="â“ سؤا„ فŠ ا„Ù…Ù‚رر", callback_data="support_course_question"),
+            InlineKeyboardButton(text="âœï¸ ا‚تراح سؤا„ Ù„Ù„Ù…Ù‚رر", callback_data="support_propose_question")
         ],
         [
-            InlineKeyboardButton(text="âš ï¸ خطأ ÙÙŠ Ø§Ù„Ù…Ø­ØªÙˆÙ‰", callback_data="support_content_error"),
-            InlineKeyboardButton(text="ðŸ’¡ Ø§Ù‚تراح Ø£Ùˆ ØºÙŠر Ø°Ù„ك", callback_data="support_suggest")
+            InlineKeyboardButton(text="âš ï¸ خطأ فŠ ا„Ù…حتˆÙ‰", callback_data="support_content_error"),
+            InlineKeyboardButton(text="ðŸ’¡ ا‚تراح أˆ غŠر ذ„ك", callback_data="support_suggest")
         ]
     ]
     if "inbox" not in hidden_buttons:
         rows.append([InlineKeyboardButton(text=inbox_label, callback_data="student_inbox")])
         
-    rows.append([InlineKeyboardButton(text="ðŸ“– Ø¯Ù„ÙŠÙ„ Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ø³Ø±ÙŠع", callback_data="support_guide")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="support_cancel")])
+    rows.append([InlineKeyboardButton(text="ðŸ“– د„ÙŠÙ„ ا„استخدا… ا„سرŠع", callback_data="support_guide")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù‚ائ…ة ا„رئŠسŠة", callback_data="support_cancel")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_student_report_menu_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for reporting choices submenu."""
     rows = [
-        [InlineKeyboardButton(text="ðŸ› ï¸ Ù…Ø´ÙƒÙ„ة ØªÙ‚Ù†ÙŠة", callback_data="support_tech")],
-        [InlineKeyboardButton(text="ðŸ“š خطأ ÙÙŠ Ø³Ø¤Ø§Ù„", callback_data="support_report_question")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="support_guide_back")]
+        [InlineKeyboardButton(text="ðŸ› ï¸ Ù…شƒÙ„ة ت‚Ù†ÙŠة", callback_data="support_tech")],
+        [InlineKeyboardButton(text="ðŸ“š خطأ فŠ سؤا„", callback_data="support_report_question")],
+        [InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="support_guide_back")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_student_contribute_menu_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for development contribution choices submenu."""
     rows = [
-        [InlineKeyboardButton(text="ðŸš€ Ø§Ù‚تراح ØªØ­Ø³ÙŠÙ†", callback_data="support_suggest")],
-        [InlineKeyboardButton(text="⭐ ØªÙ‚ÙŠÙŠÙ… / رأي", callback_data="support_review")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="support_guide_back")]
+        [InlineKeyboardButton(text="ðŸš€ ا‚تراح تحسŠÙ†", callback_data="support_suggest")],
+        [InlineKeyboardButton(text="⭐ ت‚ÙŠÙŠÙ… / رأي", callback_data="support_review")],
+        [InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="support_guide_back")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -727,10 +726,10 @@ def get_browser_type_keyboard() -> InlineKeyboardMarkup:
     """Choose how to find the question to report."""
     rows = [
         [
-            InlineKeyboardButton(text="ðŸ“– تصفح حسب Ø§Ù„Ø¯Ø±Ùˆس", callback_data="brtype:lessons"),
-            InlineKeyboardButton(text="ðŸ—‚️ تصفح حسب Ø§Ù„Ù…Ùˆاد", callback_data="brtype:subjects")
+            InlineKeyboardButton(text="ðŸ“– تصفح حسب ا„درˆس", callback_data="brtype:lessons"),
+            InlineKeyboardButton(text="ðŸ—‚️ تصفح حسب ا„Ù…Ùˆاد", callback_data="brtype:subjects")
         ],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="qb_close")]
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data="qb_close")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -741,9 +740,9 @@ def get_browser_lesson_keyboard() -> InlineKeyboardMarkup:
     for i in range(0, len(lessons), 3):
         row = []
         for l in lessons[i:i+3]:
-            row.append(InlineKeyboardButton(text=f"Ø§Ù„درس {l}", callback_data=f"br_les:{l}"))
+            row.append(InlineKeyboardButton(text=f"ا„درس {l}", callback_data=f"br_les:{l}"))
         rows.append(row)
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="support_report_question")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="support_report_question")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_browser_subject_keyboard() -> InlineKeyboardMarkup:
@@ -760,28 +759,28 @@ def get_browser_subject_keyboard() -> InlineKeyboardMarkup:
             row = []
     if row:
         rows.append(row)
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة", callback_data="support_report_question")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة", callback_data="support_report_question")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_question_browser_nav_keyboard(question_id: int, has_prev: bool, has_next: bool, is_admin: bool = False) -> InlineKeyboardMarkup:
     """Navigation keyboard for the support question browser."""
     nav_row = []
     if has_prev:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data="qb_prev"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data="qb_prev"))
     if has_next:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data="qb_next"))
+        nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data="qb_next"))
         
     rows = []
     if nav_row:
         rows.append(nav_row)
         
     # Actions
-    rows.append([InlineKeyboardButton(text="âš ï¸ Ø¥Ø¨Ù„اغ Ø¹Ù† خطأ", callback_data=f"rep_q:{question_id}:browse")])
+    rows.append([InlineKeyboardButton(text="âš ï¸ إب„اغ ع† خطأ", callback_data=f"rep_q:{question_id}:browse")])
     if is_admin:
         rows.append([
-            InlineKeyboardButton(text="âš™️ [إدارة] ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_direct_edit:{question_id}:browse")
+            InlineKeyboardButton(text="âš™️ [إدارة] تعدŠÙ„ ا„سؤا„", callback_data=f"admin_direct_edit:{question_id}:browse")
         ])
-    rows.append([InlineKeyboardButton(text="ðŸšª Ø¥Ù†Ù‡اء Ø§Ù„تصفح", callback_data="qb_close")])
+    rows.append([InlineKeyboardButton(text="ðŸšª إ†Ù‡اء ا„تصفح", callback_data="qb_close")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_report_error_options_keyboard(question_id: int, source: str = "quiz") -> InlineKeyboardMarkup:
@@ -790,11 +789,11 @@ def get_report_error_options_keyboard(question_id: int, source: str = "quiz") ->
     'source' indicates where the user reported from: 'quiz' or 'browse'.
     """
     rows = [
-        [InlineKeyboardButton(text="âŒ خطأ ÙÙŠ Ø§Ù„إجابة Ø§Ù„ØµØ­ÙŠحة", callback_data=f"rep_err:{question_id}:ans:{source}")],
-        [InlineKeyboardButton(text="âœï¸ خطأ ÙÙŠ Ù†ص Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"rep_err:{question_id}:text:{source}")],
-        [InlineKeyboardButton(text="ðŸ”€ خطأ ÙÙŠ أحد Ø§Ù„Ø®ÙŠارات", callback_data=f"rep_err:{question_id}:choices:{source}")],
-        [InlineKeyboardButton(text="ðŸ’¬ سبب آخر / Ù…Ø´ÙƒÙ„ة Ø£Ø®Ø±Ù‰", callback_data=f"rep_err:{question_id}:other:{source}")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø¥Ù„غاء", callback_data=f"rep_cancel:{question_id}:{source}")]
+        [InlineKeyboardButton(text="âŒ خطأ فŠ ا„إجابة ا„صحŠحة", callback_data=f"rep_err:{question_id}:ans:{source}")],
+        [InlineKeyboardButton(text="âœï¸ خطأ فŠ Ù†ص ا„سؤا„", callback_data=f"rep_err:{question_id}:text:{source}")],
+        [InlineKeyboardButton(text="ðŸ”€ خطأ فŠ أحد ا„خŠارات", callback_data=f"rep_err:{question_id}:choices:{source}")],
+        [InlineKeyboardButton(text="ðŸ’¬ سبب آخر / Ù…شƒÙ„ة أخر‰", callback_data=f"rep_err:{question_id}:other:{source}")],
+        [InlineKeyboardButton(text="â†©ï¸ إ„غاء", callback_data=f"rep_cancel:{question_id}:{source}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -834,16 +833,16 @@ def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 
     if role == "improvement_admin":
         rows = []
         if editor_webapp.startswith("https"):
-            btn_editor = InlineKeyboardButton(text="ðŸ“ Ù„Ùˆحة ØªØ­Ø±ÙŠر Ø§Ù„Ø¯Ø±Ùˆس Editor ðŸ“±", web_app=WebAppInfo(url=editor_webapp))
+            btn_editor = InlineKeyboardButton(text="ðŸ“ Ù„Ùˆحة تحرŠر ا„درˆس Editor ðŸ“±", web_app=WebAppInfo(url=editor_webapp))
             rows.append([btn_editor])
-        rows.append([InlineKeyboardButton(text="ðŸŽ“ Ùˆضع Ø§Ù„Ø·Ø§Ù„ب", callback_data="admin_switch_student")])
+        rows.append([InlineKeyboardButton(text="ðŸŽ“ Ùˆضع ا„طا„ب", callback_data="admin_switch_student")])
         return InlineKeyboardMarkup(inline_keyboard=rows)
 
-    inbox_text = "ðŸ“¬ Ø¨Ø±ÙŠد Ø§Ù„إدارة"
+    inbox_text = "ðŸ“¬ برŠد ا„إدارة"
     if pending_reports > 0:
         inbox_text += f" ({pending_reports} ðŸ”´)"
         
-    prop_text = "ðŸ“¥ Ù…Ù‚ترحات Ø§Ù„Ø£Ø³Ø¦Ù„ة"
+    prop_text = "ðŸ“¥ Ù…Ù‚ترحات ا„أسئ„ة"
     if pending_proposals > 0:
         prop_text += f" ({pending_proposals} ðŸ”´)"
         
@@ -852,12 +851,12 @@ def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 
     # WebApp buttons
     web_app_buttons = []
     if admin_webapp.startswith("https"):
-        web_app_buttons.append(InlineKeyboardButton(text="ðŸ–¥ï¸ Ù„Ùˆحة Ø§Ù„ØªØ­ÙƒÙ… Admin ðŸ“±", web_app=WebAppInfo(url=admin_webapp)))
+        web_app_buttons.append(InlineKeyboardButton(text="ðŸ–¥ï¸ Ù„Ùˆحة ا„تحƒÙ… Admin ðŸ“±", web_app=WebAppInfo(url=admin_webapp)))
     if editor_webapp.startswith("https"):
-        web_app_buttons.append(InlineKeyboardButton(text="ðŸ“ Ù„Ùˆحة Ø§Ù„Ù…حرر Editor ðŸ“±", web_app=WebAppInfo(url=editor_webapp)))
+        web_app_buttons.append(InlineKeyboardButton(text="ðŸ“ Ù„Ùˆحة ا„Ù…حرر Editor ðŸ“±", web_app=WebAppInfo(url=editor_webapp)))
         
     if base_url.startswith("https"):
-        web_app_buttons.append(InlineKeyboardButton(text="ðŸ–¥ï¸ Ø§Ù„Ù…Ù†صة Ø§Ù„ØªØ¹Ù„ÙŠÙ…ÙŠة ÙˆØ§Ù„Ù„Ù‘ÙŠØ³Ùˆز ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2")))
+        web_app_buttons.append(InlineKeyboardButton(text="ðŸ–¥ï¸ ا„Ù…Ù†صة ا„تع„ÙŠÙ…ÙŠة Ùˆا„Ù„Ù‘ÙŠسˆز ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2")))
         
     for btn in web_app_buttons:
         rows.append([btn])
@@ -867,42 +866,42 @@ def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 
     rows.extend([
         [InlineKeyboardButton(text=inbox_text, callback_data="admin_reports_center")],
         [
-            InlineKeyboardButton(text="âž• إضافة Ø³Ø¤Ø§Ù„", callback_data="admin_add_question"),
-            InlineKeyboardButton(text="ðŸ” بحث Ùˆعرض Ø³Ø¤Ø§Ù„", callback_data="admin_search_question")
+            InlineKeyboardButton(text="âž• إضافة سؤا„", callback_data="admin_add_question"),
+            InlineKeyboardButton(text="ðŸ” بحث Ùˆعرض سؤا„", callback_data="admin_search_question")
         ],
         [
-            InlineKeyboardButton(text="ðŸ‘¥ إدارة Ø§Ù„Ø·Ù„اب", callback_data="admin_manage_students"),
+            InlineKeyboardButton(text="ðŸ‘¥ إدارة ا„ط„اب", callback_data="admin_manage_students"),
             InlineKeyboardButton(text=prop_text, callback_data="admin_view_proposals")
         ],
         [
-            InlineKeyboardButton(text="ðŸ“Š عرض Ø§Ù„Ø¥Ø­ØµØ§Ø¦ÙŠات", callback_data="admin_stats"),
-            InlineKeyboardButton(text="ðŸ“¢ Ø¥Ø±Ø³Ø§Ù„ Ø¥Ø¹Ù„Ø§Ù† (Broadcast)", callback_data="admin_broadcast")
+            InlineKeyboardButton(text="ðŸ“Š عرض ا„إحصائŠات", callback_data="admin_stats"),
+            InlineKeyboardButton(text="ðŸ“¢ إرسا„ إع„ا† (Broadcast)", callback_data="admin_broadcast")
         ],
         [
-            InlineKeyboardButton(text="âš™️ Ù…ØµÙ†ع Ø§Ù„Ø£Ø³Ø¦Ù„ة (IA)", callback_data="admin_q_factory_menu"),
-            InlineKeyboardButton(text="ðŸ“‚ Ù…Ù„فات Ø§Ù„Ù…راجعة", callback_data="admin_manage_resources")
+            InlineKeyboardButton(text="âš™️ Ù…ص†ع ا„أسئ„ة (IA)", callback_data="admin_q_factory_menu"),
+            InlineKeyboardButton(text="ðŸ“‚ Ù…Ù„فات ا„Ù…راجعة", callback_data="admin_manage_resources")
         ],
         [
-            InlineKeyboardButton(text="ðŸ§ª اختبار Ø§Ù„Ø£Ø³Ø¦Ù„ة (Test IA)", callback_data="admin_test_ai_questions"),
-            InlineKeyboardButton(text="ðŸ“– Ù…سارات Ø§Ù„Ù‚راءة (Study Path)", callback_data="admin_study_path_mgmt")
+            InlineKeyboardButton(text="ðŸ§ª اختبار ا„أسئ„ة (Test IA)", callback_data="admin_test_ai_questions"),
+            InlineKeyboardButton(text="ðŸ“– Ù…سارات ا„Ù‚راءة (Study Path)", callback_data="admin_study_path_mgmt")
         ]
     ])
     if show_settings:
-        rows.append([InlineKeyboardButton(text="âš™️ إعدادات Ø§Ù„Ù†Ø¸Ø§Ù…", callback_data="admin_settings_menu")])
+        rows.append([InlineKeyboardButton(text="âš™️ إعدادات ا„Ù†ظا…", callback_data="admin_settings_menu")])
         
-    rows.append([InlineKeyboardButton(text="ðŸŽ“ Ùˆضع Ø§Ù„Ø·Ø§Ù„ب", callback_data="admin_switch_student")])
+    rows.append([InlineKeyboardButton(text="ðŸŽ“ Ùˆضع ا„طا„ب", callback_data="admin_switch_student")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_admin_settings_keyboard(restrict_active: bool = True, show_admin_mgmt: bool = False, display_pref: str = "grid") -> InlineKeyboardMarkup:
     """Settings submenu keyboard containing the 6 specialized direction buttons."""
     rows = [
-        [InlineKeyboardButton(text="ðŸ‘¥ إدارة Ø§Ù„Ù…Ø´Ø±ÙÙŠÙ† (Direction des Admins)", callback_data="admin_manage_list")],
-        [InlineKeyboardButton(text="ðŸ”˜ أزرار Ø§Ù„Ø·Ù„اب (Direction des Boutons)", callback_data="admin_dir_buttons")],
-        [InlineKeyboardButton(text="ðŸ“š Ø§Ù„Ù…Ùˆاد ÙˆØ§Ù„Ø¯Ø±Ùˆس (Direction des Leçons)", callback_data="admin_dir_subjects_lessons")],
-        [InlineKeyboardButton(text="ðŸ“Š إدارة Ø§Ù„Ø¨ÙŠØ§Ù†ات (Direction des Données)", callback_data="admin_dir_data")],
-        [InlineKeyboardButton(text="ðŸ‘ï¸ إعدادات Ø§Ù„عرض (Direction de l'Affichage)", callback_data="admin_dir_display")],
-        [InlineKeyboardButton(text="ðŸ”’ إعدادات Ø§Ù„Ø£Ù…Ø§Ù† (Direction de la Sécurité)", callback_data="admin_dir_security")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_back_panel")]
+        [InlineKeyboardButton(text="ðŸ‘¥ إدارة ا„Ù…شرفŠÙ† (Direction des Admins)", callback_data="admin_manage_list")],
+        [InlineKeyboardButton(text="ðŸ”˜ أزرار ا„ط„اب (Direction des Boutons)", callback_data="admin_dir_buttons")],
+        [InlineKeyboardButton(text="ðŸ“š ا„Ù…Ùˆاد Ùˆا„درˆس (Direction des Leçons)", callback_data="admin_dir_subjects_lessons")],
+        [InlineKeyboardButton(text="ðŸ“Š إدارة ا„بŠا†ات (Direction des Données)", callback_data="admin_dir_data")],
+        [InlineKeyboardButton(text="ðŸ‘ï¸ إعدادات ا„عرض (Direction de l'Affichage)", callback_data="admin_dir_display")],
+        [InlineKeyboardButton(text="ðŸ”’ إعدادات ا„أ…ا† (Direction de la Sécurité)", callback_data="admin_dir_security")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ùˆحة ا„إدارة", callback_data="admin_back_panel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -910,22 +909,22 @@ def get_admin_settings_keyboard(restrict_active: bool = True, show_admin_mgmt: b
 def get_admin_dir_buttons_keyboard(hidden_buttons: list) -> InlineKeyboardMarkup:
     buttons_map = {
         "revision": "?? ????? ????????",
-        "favorites": "⭐ Ø§Ù„Ù…ÙØ¶Ù„ة",
-        "errors": "âŒ Ø£Ø®Ø·Ø§Ø¦ÙŠ",
-        "progress": "ðŸ“Š ØªÙ‚Ø¯Ù‘Ù…ÙŠ",
-        "inbox": "ðŸ“¬ ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ø±Ø³Ø§Ø¦Ù„",
-        "support": "ðŸ“ž Ø§Ù„Ø¯Ø¹Ù…",
+        "favorites": "⭐ ا„Ù…فض„ة",
+        "errors": "âŒ أخطائŠ",
+        "progress": "ðŸ“Š ت‚د‘Ù…ÙŠ",
+        "inbox": "ðŸ“¬ ص†دˆÙ‚ ا„رسائ„",
+        "support": "ðŸ“ž ا„دع…",
         "settings": "?? ?????????",
         "mini_app": "?? Mini App"
     }
     rows = []
     for btn_id, label in buttons_map.items():
         is_hidden = btn_id in hidden_buttons
-        status_icon = "ðŸš« Ù…Ø®ÙÙŠ" if is_hidden else "ðŸ‘ï¸ Ù…رئي"
+        status_icon = "ðŸš« Ù…خفŠ" if is_hidden else "ðŸ‘ï¸ Ù…رئي"
         rows.append([
             InlineKeyboardButton(text=f"{label} | {status_icon}", callback_data=f"tog_btn:{btn_id}")
         ])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -933,20 +932,20 @@ def get_admin_dir_subjects_keyboard(hidden_subjects: list) -> InlineKeyboardMark
     rows = []
     for sub_id, label in SUBJECT_LABELS.items():
         is_hidden = sub_id in hidden_subjects
-        status_icon = "ðŸš« Ù…Ø®ÙÙŠ" if is_hidden else "ðŸ‘ï¸ Ù…رئي"
+        status_icon = "ðŸš« Ù…خفŠ" if is_hidden else "ðŸ‘ï¸ Ù…رئي"
         rows.append([
             InlineKeyboardButton(text=f"{label} | {status_icon}", callback_data=f"tog_sub:{sub_id}")
         ])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ùˆاد ÙˆØ§Ù„Ø¯Ø±Ùˆس", callback_data="admin_dir_subjects_lessons")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù…Ùˆاد Ùˆا„درˆس", callback_data="admin_dir_subjects_lessons")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_admin_dir_subjects_lessons_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="ðŸ“‚ Ø¥Ø¸Ù‡ار/إخفاء Ø§Ù„Ù…Ùˆاد", callback_data="admin_dir_subjects")],
-        [InlineKeyboardButton(text="ðŸ“– Ø¥Ø¸Ù‡ار/إخفاء Ø§Ù„Ø¯Ø±Ùˆس", callback_data="admin_dir_lessons_select")],
-        [InlineKeyboardButton(text="ðŸŽ¯ Ø¥Ø¸Ù‡ار/إخفاء Ø§Ù„Ù…Ø­Ø§Ùˆر", callback_data="admin_dir_themes_select")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")]
+        [InlineKeyboardButton(text="ðŸ“‚ إظ‡ار/إخفاء ا„Ù…Ùˆاد", callback_data="admin_dir_subjects")],
+        [InlineKeyboardButton(text="ðŸ“– إظ‡ار/إخفاء ا„درˆس", callback_data="admin_dir_lessons_select")],
+        [InlineKeyboardButton(text="ðŸŽ¯ إظ‡ار/إخفاء ا„Ù…حاˆر", callback_data="admin_dir_themes_select")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -957,7 +956,7 @@ def get_admin_dir_lessons_subjects_keyboard(mode: str) -> InlineKeyboardMarkup:
         rows.append([
             InlineKeyboardButton(text=label, callback_data=f"dir_sel_sub:{mode}:{sub_id}")
         ])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ùˆاد ÙˆØ§Ù„Ø¯Ø±Ùˆس", callback_data="admin_dir_subjects_lessons")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù…Ùˆاد Ùˆا„درˆس", callback_data="admin_dir_subjects_lessons")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -969,7 +968,7 @@ def get_admin_dir_lessons_keyboard(subject: str, hidden_lessons: list) -> Inline
         is_hidden = str(l) in hidden_lessons or l in hidden_lessons
         status_icon = "ðŸš«" if is_hidden else "ðŸ‘ï¸"
         row.append(InlineKeyboardButton(
-            text=f"{status_icon} Ø§Ù„درس {l}",
+            text=f"{status_icon} ا„درس {l}",
             callback_data=f"tog_dir_les:{subject}:{l}"
         ))
         if len(row) == 2:
@@ -977,8 +976,8 @@ def get_admin_dir_lessons_keyboard(subject: str, hidden_lessons: list) -> Inline
             row = []
     if row:
         rows.append(row)
-    rows.append([InlineKeyboardButton(text="â†©ï¸ ØªØºÙŠÙŠر Ø§Ù„Ù…ادة", callback_data="admin_dir_lessons_select")])
-    rows.append([InlineKeyboardButton(text="ðŸ  Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ùˆاد ÙˆØ§Ù„Ø¯Ø±Ùˆس", callback_data="admin_dir_subjects_lessons")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ تغŠÙŠر ا„Ù…ادة", callback_data="admin_dir_lessons_select")])
+    rows.append([InlineKeyboardButton(text="ðŸ  ا„عˆدة Ù„Ù„Ù…Ùˆاد Ùˆا„درˆس", callback_data="admin_dir_subjects_lessons")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -994,23 +993,23 @@ def get_admin_dir_themes_keyboard(subject: str, hidden_themes: list) -> InlineKe
                 callback_data=f"tog_dir_th:{subject}:{th_key}"
             )
         ])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ ØªØºÙŠÙŠر Ø§Ù„Ù…ادة", callback_data="admin_dir_themes_select")])
-    rows.append([InlineKeyboardButton(text="ðŸ  Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ùˆاد ÙˆØ§Ù„Ø¯Ø±Ùˆس", callback_data="admin_dir_subjects_lessons")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ تغŠÙŠر ا„Ù…ادة", callback_data="admin_dir_themes_select")])
+    rows.append([InlineKeyboardButton(text="ðŸ  ا„عˆدة Ù„Ù„Ù…Ùˆاد Ùˆا„درˆس", callback_data="admin_dir_subjects_lessons")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_admin_dir_data_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="ðŸ”„ Ù…Ø²Ø§Ù…Ù†ة Ø§Ù„Ø£Ø³Ø¦Ù„ة (Google Sheets)", callback_data="admin_sync_questions")],
-        [InlineKeyboardButton(text="ðŸ“¥ ØªØµØ¯ÙŠر Ø§Ù„Ø£Ø³Ø¦Ù„ة (CSV)", callback_data="admin_data_export_csv")],
-        [InlineKeyboardButton(text="ðŸ“¦ Ù†سخة Ø§Ø­ØªÙŠØ§Ø·ÙŠة (SQLite DB)", callback_data="admin_data_backup_db")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")]
+        [InlineKeyboardButton(text="ðŸ”„ Ù…زا…Ù†ة ا„أسئ„ة (Google Sheets)", callback_data="admin_sync_questions")],
+        [InlineKeyboardButton(text="ðŸ“¥ تصدŠر ا„أسئ„ة (CSV)", callback_data="admin_data_export_csv")],
+        [InlineKeyboardButton(text="ðŸ“¦ Ù†سخة احتŠاطŠة (SQLite DB)", callback_data="admin_data_backup_db")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_admin_dir_display_keyboard(display_pref: str, ticket_detail_level: str = "compact", show_ticket_level: bool = False) -> InlineKeyboardMarkup:
-    display_pref_label = "ðŸ‘ï¸ Ùˆضع Ø§Ù„عرض: Ø¬Ø¯ÙˆÙ„ ðŸ“Š" if display_pref == "grid" else "ðŸ‘ï¸ Ùˆضع Ø§Ù„عرض: Ù‚Ø§Ø¦Ù…ة ðŸ“‚"
+    display_pref_label = "ðŸ‘ï¸ Ùˆضع ا„عرض: جدˆÙ„ ðŸ“Š" if display_pref == "grid" else "ðŸ‘ï¸ Ùˆضع ا„عرض: Ù‚ائ…ة ðŸ“‚"
     
     rows = [
         [InlineKeyboardButton(text=display_pref_label, callback_data="admin_toggle_pref_display")]
@@ -1018,22 +1017,22 @@ def get_admin_dir_display_keyboard(display_pref: str, ticket_detail_level: str =
     
     if show_ticket_level:
         if ticket_detail_level == "compact":
-            level_label = "ðŸŽ« ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¨Ù„اغات: Ù…Ø¹Ø§ÙŠÙ†ة Ø®ÙÙŠفة ðŸ‘ï¸"
+            level_label = "ðŸŽ« تفاصŠÙ„ ا„ب„اغات: Ù…عاŠÙ†ة خفŠفة ðŸ‘ï¸"
         else:
-            level_label = "ðŸŽ« ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¨Ù„اغات: Ù…Ø®ÙÙŠ Ø¨Ø§Ù„ÙƒØ§Ù…Ù„ ðŸ”’"
+            level_label = "ðŸŽ« تفاصŠÙ„ ا„ب„اغات: Ù…خفŠ با„Ùƒا…Ù„ ðŸ”’"
         rows.append([InlineKeyboardButton(text=level_label, callback_data="admin_toggle_ticket_level")])
         
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_admin_dir_security_keyboard(restrict_active: bool, ai_disabled: bool = False) -> InlineKeyboardMarkup:
-    toggle_text = "ðŸ”’ ØªÙ‚ÙŠÙŠد Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ù„Ø·Ù„اب" if restrict_active else "ðŸ”“ Ø§Ù„Ø³Ù…اح Ø¨Ø¯Ø®ÙˆÙ„ Ø§Ù„Ø¬Ù…ÙŠع"
-    toggle_ai_text = "âœ¨ ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø£Ø³Ø¦Ù„ة Ø§Ù„Ø¥Ø¶Ø§ÙÙŠة Ù„Ù„Ø·Ù„اب" if ai_disabled else "ðŸš« ØªØ¹Ø·ÙŠÙ„ Ø§Ù„Ø£Ø³Ø¦Ù„ة Ø§Ù„Ø¥Ø¶Ø§ÙÙŠة Ù„Ù„Ø·Ù„اب"
+    toggle_text = "ðŸ”’ ت‚ÙŠÙŠد ا„دخˆÙ„ Ù„Ù„ط„اب" if restrict_active else "ðŸ”“ ا„س…اح بدخˆÙ„ ا„ج…ÙŠع"
+    toggle_ai_text = "âœ¨ تفعŠÙ„ ا„أسئ„ة ا„إضافŠة Ù„Ù„ط„اب" if ai_disabled else "ðŸš« تعطŠÙ„ ا„أسئ„ة ا„إضافŠة Ù„Ù„ط„اب"
     rows = [
         [InlineKeyboardButton(text=toggle_text, callback_data="admin_toggle_restrict")],
         [InlineKeyboardButton(text=toggle_ai_text, callback_data="admin_toggle_ai_questions")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")]
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„إعدادات", callback_data="admin_settings_menu")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1044,8 +1043,8 @@ def get_broadcast_confirm_keyboard() -> InlineKeyboardMarkup:
     """Keyboard to confirm sending a broadcast message."""
     rows = [
         [
-            InlineKeyboardButton(text="âœ… ØªØ£ÙƒÙŠد Ø§Ù„Ø¥Ø±Ø³Ø§Ù„", callback_data="admin_broad_confirm"),
-            InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="admin_broad_cancel")
+            InlineKeyboardButton(text="âœ… تأƒÙŠد ا„إرسا„", callback_data="admin_broad_confirm"),
+            InlineKeyboardButton(text="âŒ إ„غاء", callback_data="admin_broad_cancel")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1056,10 +1055,10 @@ def get_quiz_results_keyboard(wrong_count: int, targeted_subject: str = None, ta
     Optionally injects a targeted drill button if the student made >= 2 errors in one specific course.
     """
     SUBJECT_LABELS_LOCAL = {
-        "fiqh": "Ø§Ù„ÙÙ‚Ù‡",
-        "sira": "Ø§Ù„Ø³ÙŠرة Ø§Ù„Ù†Ø¨ÙˆÙŠة",
-        "nahw": "Ø§Ù„Ù†Ø­Ùˆ",
-        "aqeeda": "Ø§Ù„Ø¹Ù‚ÙŠدة"
+        "fiqh": "ا„ف‚Ù‡",
+        "sira": "ا„سŠرة ا„Ù†بˆÙŠة",
+        "nahw": "ا„Ù†حˆ",
+        "aqeeda": "ا„ع‚ÙŠدة"
     }
     rows = []
     
@@ -1068,16 +1067,16 @@ def get_quiz_results_keyboard(wrong_count: int, targeted_subject: str = None, ta
         subj_ar = SUBJECT_LABELS_LOCAL.get(targeted_subject, targeted_subject)
         rows.append([
             InlineKeyboardButton(
-                text=f"ðŸŽ¯ Ù…راجعة {subj_ar} - Ø§Ù„درس {targeted_course} ({targeted_errors} أخطاء)",
+                text=f"ðŸŽ¯ Ù…راجعة {subj_ar} - ا„درس {targeted_course} ({targeted_errors} أخطاء)",
                 callback_data=f"err_drill:{targeted_subject}:{targeted_course}"
             )
         ])
     
     if wrong_count > 0:
-        rows.append([InlineKeyboardButton(text=f"ðŸ”„ إعادة Ù…Ø­Ø§ÙˆÙ„ة Ø§Ù„أخطاء ({wrong_count})", callback_data="quiz_retry_errors")])
+        rows.append([InlineKeyboardButton(text=f"ðŸ”„ إعادة Ù…حاˆÙ„ة ا„أخطاء ({wrong_count})", callback_data="quiz_retry_errors")])
     else:
-        rows.append([InlineKeyboardButton(text="ðŸ“ اختبار Ø¬Ø¯ÙŠد", callback_data="quiz_new_direct")])
-    rows.append([InlineKeyboardButton(text="ðŸšª Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data="quiz_exit_results")])
+        rows.append([InlineKeyboardButton(text="ðŸ“ اختبار جدŠد", callback_data="quiz_new_direct")])
+    rows.append([InlineKeyboardButton(text="ðŸšª ا„عˆدة Ù„Ù„Ù‚ائ…ة", callback_data="quiz_exit_results")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -1086,22 +1085,22 @@ def get_progress_browser_keyboard(current_idx: int, total_count: int) -> InlineK
     nav_row = []
     # RTL logic: Previous on the left, Next on the right
     if current_idx > 0:
-        nav_row.append(InlineKeyboardButton(text="â—€️ Ø§Ù„Ù…ادة Ø§Ù„Ø³Ø§Ø¨Ù‚ة", callback_data=f"prog_browse:{current_idx - 1}"))
+        nav_row.append(InlineKeyboardButton(text="â—€️ ا„Ù…ادة ا„ساب‚ة", callback_data=f"prog_browse:{current_idx - 1}"))
     if current_idx < total_count - 1:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„Ù…ادة Ø§Ù„ØªØ§Ù„ÙŠة â–¶ï¸", callback_data=f"prog_browse:{current_idx + 1}"))
+        nav_row.append(InlineKeyboardButton(text="ا„Ù…ادة ا„تا„ÙŠة â–¶ï¸", callback_data=f"prog_browse:{current_idx + 1}"))
         
     rows = []
     if nav_row:
         rows.append(nav_row)
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="prog_close")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù‚ائ…ة ا„رئŠسŠة", callback_data="prog_close")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_report_comment_keyboard(question_id: int, error_type: str, source: str) -> InlineKeyboardMarkup:
     """Keyboard offering quick submit without comment and cancel buttons during report comment drafting."""
     rows = [
-        [InlineKeyboardButton(text="ðŸ“¤ Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø¨Ù„اغ Ø¨Ø¯ÙˆÙ† ØªØ¹Ù„ÙŠÙ‚", callback_data=f"rep_send_no_comment:{question_id}:{error_type}:{source}")],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data=f"rep_cancel:{question_id}:{source}")]
+        [InlineKeyboardButton(text="ðŸ“¤ إرسا„ ا„ب„اغ بدˆÙ† تع„ÙŠÙ‚", callback_data=f"rep_send_no_comment:{question_id}:{error_type}:{source}")],
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data=f"rep_cancel:{question_id}:{source}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1109,10 +1108,10 @@ def get_report_comment_keyboard(question_id: int, error_type: str, source: str) 
 def get_admin_ticket_keyboard(report_id: int) -> InlineKeyboardMarkup:
     """Interactive action buttons sent along with the support ticket in the admin group."""
     rows = [
-        [InlineKeyboardButton(text="âœï¸ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_rep_edit:{report_id}")],
+        [InlineKeyboardButton(text="âœï¸ تعدŠÙ„ ا„سؤا„", callback_data=f"admin_rep_edit:{report_id}")],
         [
-            InlineKeyboardButton(text="âœ… ØªÙ… ØªØµØ­ÙŠح Ø§Ù„خطأ", callback_data=f"admin_rep_resolve:{report_id}"),
-            InlineKeyboardButton(text="âŒ رفض Ø§Ù„Ø¨Ù„اغ", callback_data=f"admin_rep_reject:{report_id}")
+            InlineKeyboardButton(text="âœ… ت… تصحŠح ا„خطأ", callback_data=f"admin_rep_resolve:{report_id}"),
+            InlineKeyboardButton(text="âŒ رفض ا„ب„اغ", callback_data=f"admin_rep_reject:{report_id}")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1129,20 +1128,20 @@ def get_student_inbox_keyboard(reports: list[dict], page: int = 1, show_archive:
         "rejected": "âŒ"
     }
     type_labels = {
-        "tech": "ØªÙ‚Ù†ÙŠ",
-        "suggestion": "Ø§Ù‚تراح",
-        "improvement": "Ø§Ù‚تراح",
-        "review": "ØªÙ‚ÙŠÙŠÙ…",
-        "question_error": "خطأ Ø³Ø¤Ø§Ù„",
-        "content": "خطأ Ø³Ø¤Ø§Ù„",
+        "tech": "ت‚Ù†ÙŠ",
+        "suggestion": "ا‚تراح",
+        "improvement": "ا‚تراح",
+        "review": "ت‚ÙŠÙŠÙ…",
+        "question_error": "خطأ سؤا„",
+        "content": "خطأ سؤا„",
         "expl_error": "خطأ شرح",
-        "course_question": "Ø³Ø¤Ø§Ù„",
-        "content_error": "خطأ Ù…Ø­ØªÙˆÙ‰",
-        "Ø£Ø®Ø±Ù‰ / سبب آخر": "Ø£Ø®Ø±Ù‰",
-        "خطأ ÙÙŠ Ø§Ù„إجابة Ø§Ù„ØµØ­ÙŠحة": "إجابة",
-        "خطأ ÙÙŠ Ù†ص Ø§Ù„Ø³Ø¤Ø§Ù„": "Ù†ص",
-        "خطأ ÙÙŠ أحد Ø§Ù„Ø®ÙŠارات": "Ø®ÙŠارات",
-        "سبب آخر / Ù…Ø´ÙƒÙ„ة Ø£Ø®Ø±Ù‰": "Ø£Ø®Ø±Ù‰"
+        "course_question": "سؤا„",
+        "content_error": "خطأ Ù…حتˆÙ‰",
+        "أخر‰ / سبب آخر": "أخر‰",
+        "خطأ فŠ ا„إجابة ا„صحŠحة": "إجابة",
+        "خطأ فŠ Ù†ص ا„سؤا„": "Ù†ص",
+        "خطأ فŠ أحد ا„خŠارات": "خŠارات",
+        "سبب آخر / Ù…شƒÙ„ة أخر‰": "أخر‰"
     }
     
     # Filter and sort reports: unread first, then pending/in_progress
@@ -1163,30 +1162,30 @@ def get_student_inbox_keyboard(reports: list[dict], page: int = 1, show_archive:
     # Grid Layout Header
     if filtered_reports:
         rows.append([
-            InlineKeyboardButton(text="Ø§Ù„Ø­Ø§Ù„ة ðŸ””", callback_data="noop"),
-            InlineKeyboardButton(text="Ø§Ù„Ù…ÙˆØ¶Ùˆع ðŸ“‚", callback_data="noop"),
-            InlineKeyboardButton(text="Ø§Ù„Ø±Ù‚Ù… ðŸ†”", callback_data="noop")
+            InlineKeyboardButton(text="ا„حا„ة ðŸ””", callback_data="noop"),
+            InlineKeyboardButton(text="ا„Ù…Ùˆضˆع ðŸ“‚", callback_data="noop"),
+            InlineKeyboardButton(text="ا„ر‚Ù… ðŸ†”", callback_data="noop")
         ])
     
     for r in filtered_reports[start_idx:end_idx]:
         status_val = r.get("status")
         is_unread = r.get("student_read", 1) == 0
         raw_type = r.get("report_type")
-        type_str = type_labels.get(raw_type, raw_type if raw_type else "Ø¨Ù„اغ")
+        type_str = type_labels.get(raw_type, raw_type if raw_type else "ب„اغ")
         
         ret_page_str = f"archive:{page}" if show_archive else f"active:{page}"
         cb_data = f"st_rep_view:{r['id']}:{ret_page_str}"
         
         if is_unread:
-            status_btn_text = "ðŸ”” رد Ø¬Ø¯ÙŠد"
+            status_btn_text = "ðŸ”” رد جدŠد"
         elif status_val == "in_progress":
-            status_btn_text = "ðŸŸ¡ Ù‚ÙŠد Ø§Ù„Ù…Ø¹Ø§Ù„جة"
+            status_btn_text = "ðŸŸ¡ Ù‚ÙŠد ا„Ù…عا„جة"
         elif status_val == "pending":
-            status_btn_text = "⏳ ÙÙŠ Ø§Ù„Ø§Ù†تظار"
+            status_btn_text = "⏳ فŠ ا„ا†تظار"
         elif status_val == "resolved":
-            status_btn_text = "ðŸŸ¢ ØªÙ… Ø§Ù„Ø­Ù„"
+            status_btn_text = "ðŸŸ¢ ت… ا„ح„"
         elif status_val == "rejected":
-            status_btn_text = "âŒ Ù…Ø±ÙÙˆض"
+            status_btn_text = "âŒ Ù…رفˆض"
         else:
             status_btn_text = status_icons.get(status_val, "⏳")
             
@@ -1200,10 +1199,10 @@ def get_student_inbox_keyboard(reports: list[dict], page: int = 1, show_archive:
         nav_row = []
         prefix = "student_inbox:archive" if show_archive else "student_inbox:active"
         if page > 1:
-            nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data=f"{prefix}:{page-1}"))
+            nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data=f"{prefix}:{page-1}"))
         nav_row.append(InlineKeyboardButton(text=f"{page}/{total_pages}", callback_data="noop"))
         if page < total_pages:
-            nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data=f"{prefix}:{page+1}"))
+            nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data=f"{prefix}:{page+1}"))
         rows.append(nav_row)
         
     # Toggle between active/archive
@@ -1211,29 +1210,29 @@ def get_student_inbox_keyboard(reports: list[dict], page: int = 1, show_archive:
     archive_count = len([r for r in reports if r.get("status") in ("resolved", "rejected") and r.get("student_read", 1) == 1])
     
     if show_archive:
-        rows.append([InlineKeyboardButton(text=f"â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ù†شطة ({active_count})", callback_data="student_inbox:active:1")])
+        rows.append([InlineKeyboardButton(text=f"â†©ï¸ ا„عˆدة Ù„Ù„رسائ„ ا„Ù†شطة ({active_count})", callback_data="student_inbox:active:1")])
     else:
         if archive_count > 0:
-            rows.append([InlineKeyboardButton(text=f"ðŸ“ Ø£Ø±Ø´ÙŠف Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ù…ØºÙ„Ù‚ة ({archive_count})", callback_data="student_inbox:archive:1")])
+            rows.append([InlineKeyboardButton(text=f"ðŸ“ أرشŠف ا„رسائ„ ا„Ù…غ„Ù‚ة ({archive_count})", callback_data="student_inbox:archive:1")])
             
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ù„Ø¯Ø¹Ù…", callback_data="support_guide_back")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„Ù„دع…", callback_data="support_guide_back")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_student_report_detail_keyboard(report_id: int, can_reply: bool = True, return_page = 1) -> InlineKeyboardMarkup:
     """Keyboard for viewing a single report detail with optional reply button."""
     rows = []
     if can_reply:
-        rows.append([InlineKeyboardButton(text="ðŸ’¬ إضافة رد / ØªØ¹Ù„ÙŠÙ‚", callback_data=f"student_rep_reply:{report_id}")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ù„ØµÙ†Ø¯ÙˆÙ‚", callback_data=f"student_inbox:{return_page}")])
+        rows.append([InlineKeyboardButton(text="ðŸ’¬ إضافة رد / تع„ÙŠÙ‚", callback_data=f"student_rep_reply:{report_id}")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„Ù„ص†دˆÙ‚", callback_data=f"student_inbox:{return_page}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_admin_reports_center_keyboard(pending_count: int, in_progress_count: int, resolved_count: int) -> InlineKeyboardMarkup:
     """Keyboard for admin reports dashboard selection with tri-status."""
     rows = [
-        [InlineKeyboardButton(text=f"⏳ ØºÙŠر Ù…Ø¹Ø§Ù„جة ({pending_count})", callback_data="admin_db_rep_filter:pending")],
-        [InlineKeyboardButton(text=f"ðŸŸ¡ Ù‚ÙŠد Ø§Ù„Ù…Ø¹Ø§Ù„جة ({in_progress_count})", callback_data="admin_db_rep_filter:in_progress")],
-        [InlineKeyboardButton(text=f"âœ… ØªÙ…ت Ø§Ù„Ù…Ø¹Ø§Ù„جة ({resolved_count})", callback_data="admin_db_rep_filter:resolved")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_close")]
+        [InlineKeyboardButton(text=f"⏳ غŠر Ù…عا„جة ({pending_count})", callback_data="admin_db_rep_filter:pending")],
+        [InlineKeyboardButton(text=f"ðŸŸ¡ Ù‚ÙŠد ا„Ù…عا„جة ({in_progress_count})", callback_data="admin_db_rep_filter:in_progress")],
+        [InlineKeyboardButton(text=f"âœ… ت…ت ا„Ù…عا„جة ({resolved_count})", callback_data="admin_db_rep_filter:resolved")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ùˆحة ا„إدارة", callback_data="admin_close")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1252,19 +1251,19 @@ def get_admin_matrix_dashboard_keyboard(matrix_counts: dict, role: str) -> Inlin
     
     # Header Row (RTL)
     rows.append([
-        InlineKeyboardButton(text="âœ… Ù…Ø¹Ø§Ù„ج", callback_data="noop"),
-        InlineKeyboardButton(text="⏳ Ù‚ÙŠد Ø§Ù„Ù…راجعة", callback_data="noop"),
-        InlineKeyboardButton(text="ðŸ”´ ØºÙŠر Ù…Ø¹Ø§Ù„ج", callback_data="noop"),
-        InlineKeyboardButton(text="ðŸ“ Ø§Ù„Ù‚Ø³Ù…", callback_data="noop")
+        InlineKeyboardButton(text="âœ… Ù…عا„ج", callback_data="noop"),
+        InlineKeyboardButton(text="⏳ Ù‚ÙŠد ا„Ù…راجعة", callback_data="noop"),
+        InlineKeyboardButton(text="ðŸ”´ غŠر Ù…عا„ج", callback_data="noop"),
+        InlineKeyboardButton(text="ðŸ“ ا„Ù‚س…", callback_data="noop")
     ])
     
     # List of categories with their label, internal code, and role check
     all_cats = [
-        ("tech", "ðŸš¨ Ù…Ø´Ø§ÙƒÙ„ ØªÙ‚Ù†ÙŠة", is_super or is_support),
-        ("question_error", "ðŸ“š خطأ Ø³Ø¤Ø§Ù„", is_super or is_mod),
+        ("tech", "ðŸš¨ Ù…شاƒÙ„ ت‚Ù†ÙŠة", is_super or is_support),
+        ("question_error", "ðŸ“š خطأ سؤا„", is_super or is_mod),
         ("expl_error", "âš ï¸ خطأ شرح", is_super or is_mod),
-        ("course_question", "â“ Ø³Ø¤Ø§Ù„ Ù…Ù‚رر", is_super or is_mod),
-        ("suggestion", "ðŸ’¡ Ø§Ù‚تراح/رأي", is_super or is_improvement)
+        ("course_question", "â“ سؤا„ Ù…Ù‚رر", is_super or is_mod),
+        ("suggestion", "ðŸ’¡ ا‚تراح/رأي", is_super or is_improvement)
     ]
     
     for cat_code, label, has_access in all_cats:
@@ -1285,7 +1284,7 @@ def get_admin_matrix_dashboard_keyboard(matrix_counts: dict, role: str) -> Inlin
         ])
         
     # Return button
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_back_panel")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ùˆحة ا„إدارة", callback_data="admin_back_panel")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1296,9 +1295,9 @@ def get_admin_reports_list_keyboard(reports: list[dict], current_filter: str, pa
     
     # Header in RTL: [Num/Status, Type, Sender]
     rows.append([
-        InlineKeyboardButton(text="ðŸ”¢ Ø§Ù„Ø±Ù‚Ù…", callback_data="noop"),
-        InlineKeyboardButton(text="ðŸ’¬ Ø§Ù„Ù†Ùˆع", callback_data="noop"),
-        InlineKeyboardButton(text="ðŸ‘¤ Ø§Ù„Ù…Ø±Ø³Ù„", callback_data="noop")
+        InlineKeyboardButton(text="ðŸ”¢ ا„ر‚Ù…", callback_data="noop"),
+        InlineKeyboardButton(text="ðŸ’¬ ا„Ù†Ùˆع", callback_data="noop"),
+        InlineKeyboardButton(text="ðŸ‘¤ ا„Ù…رس„", callback_data="noop")
     ])
     
     status_icons = {
@@ -1309,12 +1308,12 @@ def get_admin_reports_list_keyboard(reports: list[dict], current_filter: str, pa
     }
     
     type_labels = {
-        "tech": "ðŸ› ï¸ ØªÙ‚Ù†ÙŠ",
-        "course_question": "â“ Ø³Ø¤Ø§Ù„",
-        "content_error": "âš ï¸ Ù…Ø­ØªÙˆÙ‰",
-        "suggestion": "ðŸ’¡ Ø§Ù‚تراح",
+        "tech": "ðŸ› ï¸ ت‚Ù†ÙŠ",
+        "course_question": "â“ سؤا„",
+        "content_error": "âš ï¸ Ù…حتˆÙ‰",
+        "suggestion": "ðŸ’¡ ا‚تراح",
         "expl_error": "âš ï¸ شرح",
-        "content": "ðŸ“š Ù…Ø­ØªÙˆÙ‰"
+        "content": "ðŸ“š Ù…حتˆÙ‰"
     }
     
     items_per_page = 10
@@ -1326,9 +1325,9 @@ def get_admin_reports_list_keyboard(reports: list[dict], current_filter: str, pa
     
     for r in reports[start_idx:end_idx]:
         status_icon = status_icons.get(r.get("status"), "ðŸ”´")
-        name_str = (r.get("first_name") or "Ø·Ø§Ù„ب")[:10]
+        name_str = (r.get("first_name") or "طا„ب")[:10]
         raw_type = r.get("report_type")
-        type_str = type_labels.get(raw_type, "Ø¨Ù„اغ")
+        type_str = type_labels.get(raw_type, "ب„اغ")
         
         cb_data = f"admin_db_rep_view:{r['id']}:{current_filter}:{page}"
         
@@ -1342,13 +1341,13 @@ def get_admin_reports_list_keyboard(reports: list[dict], current_filter: str, pa
     if total_pages > 1:
         nav_row = []
         if page < total_pages:
-            nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data=f"admin_db_rep_page:{current_filter}:{page+1}"))
+            nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data=f"admin_db_rep_page:{current_filter}:{page+1}"))
         nav_row.append(InlineKeyboardButton(text=f"{page}/{total_pages}", callback_data="noop"))
         if page > 1:
-            nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data=f"admin_db_rep_page:{current_filter}:{page-1}"))
+            nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data=f"admin_db_rep_page:{current_filter}:{page-1}"))
         rows.append(nav_row)
         
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ùˆحة Ø§Ù„Ø¨Ù„اغات", callback_data="admin_reports_center")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„Ùˆحة ا„ب„اغات", callback_data="admin_reports_center")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_admin_category_first_keyboard(matrix_counts: dict, role: str) -> InlineKeyboardMarkup:
@@ -1362,11 +1361,11 @@ def get_admin_category_first_keyboard(matrix_counts: dict, role: str) -> InlineK
     
     # List of categories with their label, internal code, and role check
     all_cats = [
-        ("tech", "ðŸš¨ Ù…Ø´Ø§ÙƒÙ„ ØªÙ‚Ù†ÙŠة", is_super or is_support),
-        ("question_error", "ðŸ“š خطأ Ø³Ø¤Ø§Ù„", is_super or is_mod),
+        ("tech", "ðŸš¨ Ù…شاƒÙ„ ت‚Ù†ÙŠة", is_super or is_support),
+        ("question_error", "ðŸ“š خطأ سؤا„", is_super or is_mod),
         ("expl_error", "âš ï¸ خطأ شرح", is_super or is_mod),
-        ("course_question", "â“ Ø³Ø¤Ø§Ù„ Ù…Ù‚رر", is_super or is_mod),
-        ("suggestion", "ðŸ’¡ Ø§Ù‚تراح/رأي", is_super or is_improvement)
+        ("course_question", "â“ سؤا„ Ù…Ù‚رر", is_super or is_mod),
+        ("suggestion", "ðŸ’¡ ا‚تراح/رأي", is_super or is_improvement)
     ]
     
     for cat_code, label, has_access in all_cats:
@@ -1376,10 +1375,10 @@ def get_admin_category_first_keyboard(matrix_counts: dict, role: str) -> InlineK
         cat_counts = matrix_counts.get(cat_code, {"pending": 0, "in_progress": 0, "resolved": 0})
         p = cat_counts.get("pending", 0)
         
-        btn_label = f"{label} ({p} ðŸ”´)" if p > 0 else f"{label} (Ù…ÙƒØªÙ…Ù„ âœ…)"
+        btn_label = f"{label} ({p} ðŸ”´)" if p > 0 else f"{label} (Ù…Ùƒت…Ù„ âœ…)"
         rows.append([InlineKeyboardButton(text=btn_label, callback_data=f"admin_reports_cat:{cat_code}")])
         
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_back_panel")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ùˆحة ا„إدارة", callback_data="admin_back_panel")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_admin_category_status_keyboard(category: str, cat_counts: dict) -> InlineKeyboardMarkup:
@@ -1389,10 +1388,10 @@ def get_admin_category_status_keyboard(category: str, cat_counts: dict) -> Inlin
     r = cat_counts.get("resolved", 0)
     
     rows = [
-        [InlineKeyboardButton(text=f"ðŸ”´ ØºÙŠر Ù…Ø¹Ø§Ù„ج ({p})", callback_data=f"admin_matrix_list:{category}:pending:1" if p > 0 else "noop")],
-        [InlineKeyboardButton(text=f"⏳ Ù‚ÙŠد Ø§Ù„Ù…راجعة ({ip})", callback_data=f"admin_matrix_list:{category}:in_progress:1" if ip > 0 else "noop")],
-        [InlineKeyboardButton(text=f"âœ… Ù…Ø¹Ø§Ù„ج ({r})", callback_data=f"admin_matrix_list:{category}:resolved:1" if r > 0 else "noop")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø£Ù‚Ø³Ø§Ù…", callback_data="admin_reports_center")]
+        [InlineKeyboardButton(text=f"ðŸ”´ غŠر Ù…عا„ج ({p})", callback_data=f"admin_matrix_list:{category}:pending:1" if p > 0 else "noop")],
+        [InlineKeyboardButton(text=f"⏳ Ù‚ÙŠد ا„Ù…راجعة ({ip})", callback_data=f"admin_matrix_list:{category}:in_progress:1" if ip > 0 else "noop")],
+        [InlineKeyboardButton(text=f"âœ… Ù…عا„ج ({r})", callback_data=f"admin_matrix_list:{category}:resolved:1" if r > 0 else "noop")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù‚ائ…ة ا„أ‚سا…", callback_data="admin_reports_center")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1400,33 +1399,33 @@ def get_admin_report_actions_keyboard(report_id: int, has_question: bool, return
     """Action buttons under an admin report detail view."""
     rows = []
     if timestamp_url and timestamp_display:
-        rows.append([InlineKeyboardButton(text=f"ðŸŽ¥ ØªØ´ØºÙŠÙ„ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ Ø¹Ù†د {timestamp_display}", url=timestamp_url)])
-    rows.append([InlineKeyboardButton(text="ðŸ’¬ Ø§Ù„رد Ø¹Ù„Ù‰ Ø§Ù„Ø·Ø§Ù„ب", callback_data=f"admin_db_rep_reply:{report_id}:{return_page}")])
+        rows.append([InlineKeyboardButton(text=f"ðŸŽ¥ تشغŠÙ„ ا„فŠدŠÙˆ ع†د {timestamp_display}", url=timestamp_url)])
+    rows.append([InlineKeyboardButton(text="ðŸ’¬ ا„رد ع„Ù‰ ا„طا„ب", callback_data=f"admin_db_rep_reply:{report_id}:{return_page}")])
     rows.append([
-        InlineKeyboardButton(text="âœ… ØªÙ… Ø§Ù„Ø­Ù„", callback_data=f"admin_db_rep_resolve:{report_id}:{return_page}"),
-        InlineKeyboardButton(text="âŒ رفض Ø§Ù„Ø¨Ù„اغ", callback_data=f"admin_db_rep_reject:{report_id}:{return_page}")
+        InlineKeyboardButton(text="âœ… ت… ا„ح„", callback_data=f"admin_db_rep_resolve:{report_id}:{return_page}"),
+        InlineKeyboardButton(text="âŒ رفض ا„ب„اغ", callback_data=f"admin_db_rep_reject:{report_id}:{return_page}")
     ])
     if has_question:
-        rows.append([InlineKeyboardButton(text="âœï¸ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„Ù…رتبط", callback_data=f"admin_db_rep_edit_q:{report_id}:{return_page}")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data=f"admin_db_rep_back_list:{return_page}")])
+        rows.append([InlineKeyboardButton(text="âœï¸ تعدŠÙ„ ا„سؤا„ ا„Ù…رتبط", callback_data=f"admin_db_rep_edit_q:{report_id}:{return_page}")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù‚ائ…ة", callback_data=f"admin_db_rep_back_list:{return_page}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_expl_error_options_keyboard(q_id: int) -> InlineKeyboardMarkup:
     """Inline keyboard to select explanation error type."""
     rows = [
-        [InlineKeyboardButton(text="⏱️ Ø¹Ø¯Ù… ØªØ·Ø§Ø¨Ù‚ Ø§Ù„Ù†ص ÙˆØ¯Ù‚ÙŠÙ‚ة Ø§Ù„ÙÙŠØ¯ÙŠÙˆ", callback_data=f"rep_expl_type:{q_id}:mismatch_time")],
-        [InlineKeyboardButton(text="ðŸŽ“ خطأ ÙÙŠ Ø§Ù„شرح / Ø§Ù„Ù…Ø­ØªÙˆÙ‰ Ø§Ù„Ø¹Ù„Ù…ي", callback_data=f"rep_expl_type:{q_id}:pedagogical")],
-        [InlineKeyboardButton(text="âœï¸ خطأ Ø¥Ù…Ù„Ø§Ø¦ÙŠ Ø£Ùˆ Ù…طبعي", callback_data=f"rep_expl_type:{q_id}:spelling")],
+        [InlineKeyboardButton(text="⏱️ عد… تطاب‚ ا„Ù†ص Ùˆد‚ÙŠÙ‚ة ا„فŠدŠÙˆ", callback_data=f"rep_expl_type:{q_id}:mismatch_time")],
+        [InlineKeyboardButton(text="ðŸŽ“ خطأ فŠ ا„شرح / ا„Ù…حتˆÙ‰ ا„ع„Ù…ي", callback_data=f"rep_expl_type:{q_id}:pedagogical")],
+        [InlineKeyboardButton(text="âœï¸ خطأ إ…Ù„ائŠ أˆ Ù…طبعي", callback_data=f"rep_expl_type:{q_id}:spelling")],
         [InlineKeyboardButton(text="â“ سبب آخر", callback_data=f"rep_expl_type:{q_id}:other")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø¥Ù„غاء", callback_data=f"prof_quote:{q_id}")]
+        [InlineKeyboardButton(text="â†©ï¸ إ„غاء", callback_data=f"prof_quote:{q_id}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_expl_report_comment_keyboard(q_id: int, error_type: str) -> InlineKeyboardMarkup:
     """Keyboard offering quick submit without comment and cancel buttons during explanation report comment drafting."""
     rows = [
-        [InlineKeyboardButton(text="ðŸ“¤ Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø¨Ù„اغ Ø¨Ø¯ÙˆÙ† ØªØ¹Ù„ÙŠÙ‚", callback_data=f"rep_expl_send:{q_id}:{error_type}")],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data=f"prof_quote:{q_id}")]
+        [InlineKeyboardButton(text="ðŸ“¤ إرسا„ ا„ب„اغ بدˆÙ† تع„ÙŠÙ‚", callback_data=f"rep_expl_send:{q_id}:{error_type}")],
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data=f"prof_quote:{q_id}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1435,33 +1434,33 @@ def get_admin_group_ticket_keyboard(report_id: int, has_question: bool = False, 
     rows = []
     
     if timestamp_url and timestamp_display:
-        rows.append([InlineKeyboardButton(text=f"ðŸŽ¥ ØªØ´ØºÙŠÙ„ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ Ø¹Ù†د {timestamp_display}", url=timestamp_url)])
+        rows.append([InlineKeyboardButton(text=f"ðŸŽ¥ تشغŠÙ„ ا„فŠدŠÙˆ ع†د {timestamp_display}", url=timestamp_url)])
         
     # Detail toggle button row (Option 1 / Collapsible Details)
     if has_question:
         if show_details:
-            rows.append([InlineKeyboardButton(text="ðŸ™ˆ إخفاء Ø§Ù„ØªÙØ§ØµÙŠÙ„", callback_data=f"admin_group_details:{report_id}:hide")])
+            rows.append([InlineKeyboardButton(text="ðŸ™ˆ إخفاء ا„تفاصŠÙ„", callback_data=f"admin_group_details:{report_id}:hide")])
         else:
-            rows.append([InlineKeyboardButton(text="ðŸ” ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_group_details:{report_id}:show")])
+            rows.append([InlineKeyboardButton(text="ðŸ” تفاصŠÙ„ ا„سؤا„", callback_data=f"admin_group_details:{report_id}:show")])
 
     if status == 'pending':
         # Add ONLY Claim button initially
-        rows.append([InlineKeyboardButton(text="ðŸ™‹â€â™‚️ Ø§Ø³ØªÙ„Ø§Ù… Ø§Ù„Ø¨Ù„اغ (Claim)", callback_data=f"admin_rep_claim:{report_id}")])
+        rows.append([InlineKeyboardButton(text="ðŸ™‹â€â™‚️ است„ا… ا„ب„اغ (Claim)", callback_data=f"admin_rep_claim:{report_id}")])
     else:
         # Once claimed, show resolution actions
         if has_question:
             # Row 1: Edit question
-            rows.append([InlineKeyboardButton(text="âœï¸ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_rep_edit:{report_id}")])
+            rows.append([InlineKeyboardButton(text="âœï¸ تعدŠÙ„ ا„سؤا„", callback_data=f"admin_rep_edit:{report_id}")])
             # Row 2: Quick Resolve/Reject Templates
             rows.append([
-                InlineKeyboardButton(text="âœ”️ Ø§Ù„Ø³Ø¤Ø§Ù„ ØµØ­ÙŠح", callback_data=f"admin_rep_quick_reject:{report_id}"),
-                InlineKeyboardButton(text="âœ… ØªÙ… ØªØµØ­ÙŠح Ø§Ù„خطأ", callback_data=f"admin_rep_resolve:{report_id}")
+                InlineKeyboardButton(text="âœ”️ ا„سؤا„ صحŠح", callback_data=f"admin_rep_quick_reject:{report_id}"),
+                InlineKeyboardButton(text="âœ… ت… تصحŠح ا„خطأ", callback_data=f"admin_rep_resolve:{report_id}")
             ])
         else:
             # No question (e.g. tech issue, suggestion)
             rows.append([
-                InlineKeyboardButton(text="âœ… ØªÙ… Ø§Ù„Ø­Ù„", callback_data=f"admin_rep_resolve:{report_id}"),
-                InlineKeyboardButton(text="âŒ رفض Ø§Ù„Ø¨Ù„اغ", callback_data=f"admin_rep_reject:{report_id}")
+                InlineKeyboardButton(text="âœ… ت… ا„ح„", callback_data=f"admin_rep_resolve:{report_id}"),
+                InlineKeyboardButton(text="âŒ رفض ا„ب„اغ", callback_data=f"admin_rep_reject:{report_id}")
             ])
         
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1471,10 +1470,10 @@ def get_student_notification_keyboard(report_id: int) -> InlineKeyboardMarkup:
     """Create keyboard under student notification query reply."""
     rows = [
         [
-            InlineKeyboardButton(text="ðŸ“¬ Ø§Ù„Ø°Ù‡اب Ù„ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ø±Ø³Ø§Ø¦Ù„", callback_data=f"st_rep_view:{report_id}:1"),
-            InlineKeyboardButton(text="ðŸ’¬ إضافة رد / ØªØ¹Ù„ÙŠÙ‚", callback_data=f"student_rep_reply:{report_id}")
+            InlineKeyboardButton(text="ðŸ“¬ ا„ذ‡اب Ù„ص†دˆÙ‚ ا„رسائ„", callback_data=f"st_rep_view:{report_id}:1"),
+            InlineKeyboardButton(text="ðŸ’¬ إضافة رد / تع„ÙŠÙ‚", callback_data=f"student_rep_reply:{report_id}")
         ],
-        [InlineKeyboardButton(text="ðŸšª Ø§Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="support_cancel")]
+        [InlineKeyboardButton(text="ðŸšª ا„Ù‚ائ…ة ا„رئŠسŠة", callback_data="support_cancel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1483,13 +1482,13 @@ def get_admin_status_decision_keyboard(report_id: int, return_page: str = "1") -
     """Create keyboard for admin to choose ticket status after reply."""
     rows = [
         [
-            InlineKeyboardButton(text="âœ… ØªÙ… Ø§Ù„Ø­Ù„ (Résolu)", callback_data=f"admin_decide:{report_id}:resolved:{return_page}"),
-            InlineKeyboardButton(text="âŒ ØªÙ… Ø§Ù„رفض (Rejeté)", callback_data=f"admin_decide:{report_id}:rejected:{return_page}")
+            InlineKeyboardButton(text="âœ… ت… ا„ح„ (Résolu)", callback_data=f"admin_decide:{report_id}:resolved:{return_page}"),
+            InlineKeyboardButton(text="âŒ ت… ا„رفض (Rejeté)", callback_data=f"admin_decide:{report_id}:rejected:{return_page}")
         ],
         [
-            InlineKeyboardButton(text="ðŸŸ¡ Ù‚ÙŠد Ø§Ù„Ù…Ø¹Ø§Ù„جة (Laisser en cours)", callback_data=f"admin_decide:{report_id}:in_progress:{return_page}")
+            InlineKeyboardButton(text="ðŸŸ¡ Ù‚ÙŠد ا„Ù…عا„جة (Laisser en cours)", callback_data=f"admin_decide:{report_id}:in_progress:{return_page}")
         ],
-        [InlineKeyboardButton(text="â†©ï¸ Ø¥Ù„غاء", callback_data=f"admin_db_rep_view:{report_id}:{return_page}" if return_page != "group" else "noop")]
+        [InlineKeyboardButton(text="â†©ï¸ إ„غاء", callback_data=f"admin_db_rep_view:{report_id}:{return_page}" if return_page != "group" else "noop")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1519,16 +1518,16 @@ def get_admin_management_keyboard(admins: list, page: int = 1) -> InlineKeyboard
     # Pagination
     nav_row = []
     if page > 1:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data=f"adm_pg:{page-1}"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data=f"adm_pg:{page-1}"))
     total_pages = (len(admins) + limit - 1) // limit
     if page < total_pages:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data=f"adm_pg:{page+1}"))
+        nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data=f"adm_pg:{page+1}"))
     if nav_row:
         rows.append(nav_row)
         
     # Actions
-    rows.append([InlineKeyboardButton(text="âž• إضافة Ù…شرف Ø¬Ø¯ÙŠد", callback_data="adm_add")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„إعدادات", callback_data="admin_settings_menu")])
+    rows.append([InlineKeyboardButton(text="âž• إضافة Ù…شرف جدŠد", callback_data="adm_add")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„Ù‚ائ…ة ا„إعدادات", callback_data="admin_settings_menu")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1536,12 +1535,12 @@ def get_admin_management_keyboard(admins: list, page: int = 1) -> InlineKeyboard
 def get_admin_role_selection_keyboard(telegram_id: int) -> InlineKeyboardMarkup:
     """Keyboard to select the role for a new administrator."""
     rows = [
-        [InlineKeyboardButton(text="ðŸ‘‘ Ù…Ø¯ÙŠر Ø¹Ø§Ù… (super_admin)", callback_data=f"adm_role:{telegram_id}:super_admin")],
-        [InlineKeyboardButton(text="ðŸ›¡ï¸ Ù…Ø¯ÙŠر Ø§Ø­ØªÙŠØ§Ø·ÙŠ (backup_admin)", callback_data=f"adm_role:{telegram_id}:backup_admin")],
-        [InlineKeyboardButton(text="ðŸ› ï¸ Ù…شرف Ø¯Ø¹Ù… (support_admin)", callback_data=f"adm_role:{telegram_id}:support_admin")],
+        [InlineKeyboardButton(text="ðŸ‘‘ Ù…دŠر عا… (super_admin)", callback_data=f"adm_role:{telegram_id}:super_admin")],
+        [InlineKeyboardButton(text="ðŸ›¡ï¸ Ù…دŠر احتŠاطŠ (backup_admin)", callback_data=f"adm_role:{telegram_id}:backup_admin")],
+        [InlineKeyboardButton(text="ðŸ› ï¸ Ù…شرف دع… (support_admin)", callback_data=f"adm_role:{telegram_id}:support_admin")],
         [InlineKeyboardButton(text="âœï¸ Ù…شرف تربوي (moderator)", callback_data=f"adm_role:{telegram_id}:moderator")],
-        [InlineKeyboardButton(text="ðŸš€ Ù…شرف ØªØ·ÙˆÙŠر (improvement_admin)", callback_data=f"adm_role:{telegram_id}:improvement_admin")],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="admin_manage_list")]
+        [InlineKeyboardButton(text="ðŸš€ Ù…شرف تطˆÙŠر (improvement_admin)", callback_data=f"adm_role:{telegram_id}:improvement_admin")],
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data="admin_manage_list")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1549,8 +1548,8 @@ def get_admin_role_selection_keyboard(telegram_id: int) -> InlineKeyboardMarkup:
 def get_admin_detail_keyboard(telegram_id: int, return_page: int = 1) -> InlineKeyboardMarkup:
     """Keyboard for admin detail card, allowing removal of permissions."""
     rows = [
-        [InlineKeyboardButton(text="âŒ Ø¥Ø²Ø§Ù„ة ØµÙ„Ø§Ø­ÙŠات Ø§Ù„Ù…شرف", callback_data=f"adm_del:{telegram_id}")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data=f"admin_manage_list:{return_page}")]
+        [InlineKeyboardButton(text="âŒ إزا„ة ص„احŠات ا„Ù…شرف", callback_data=f"adm_del:{telegram_id}")],
+        [InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„Ù„Ù‚ائ…ة", callback_data=f"admin_manage_list:{return_page}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1595,39 +1594,39 @@ def get_student_settings_keyboard(inbox_layout: str, gender: str = None, setting
     rows = []
     
     # Inbox Layout Toggle
-    layout_text = "ðŸ“® ØªØ®Ø·ÙŠط Ø§Ù„Ø¨Ø±ÙŠد: ðŸ’¬ Ù…حادثة (Ù…بسط) ðŸ”„" if inbox_layout == "chat" else "ðŸ“® ØªØ®Ø·ÙŠط Ø§Ù„Ø¨Ø±ÙŠد: ðŸ“Š Ø¬Ø¯ÙˆÙ„ (3 Ø£Ø¹Ù…دة) ðŸ”„"
+    layout_text = "ðŸ“® تخطŠط ا„برŠد: ðŸ’¬ Ù…حادثة (Ù…بسط) ðŸ”„" if inbox_layout == "chat" else "ðŸ“® تخطŠط ا„برŠد: ðŸ“Š جدˆÙ„ (3 أع…دة) ðŸ”„"
     rows.append([InlineKeyboardButton(text=layout_text, callback_data=f"set_inbox_layout:{inbox_layout}")])
     
     # Quiz Settings Layout Toggle
     layout_names = {
-        'classic': 'ÙƒÙ„Ø§Ø³ÙŠÙƒÙŠ (Ø¹Ù…ÙˆØ¯ÙŠ Ù…ع ÙØ§ØµÙ„)',
-        'grid': 'Ø´Ø¨Ùƒة (أزرار Ù…ØªØ¬Ø§Ùˆرة)',
-        'top': 'زر Ø§Ù„بدء ÙÙŠ Ø§Ù„Ø£Ø¹Ù„Ù‰ (Ø¹Ù…ÙˆØ¯ÙŠ)',
-        'hybrid': 'Ù…Ø®ØªÙ„ط (Ø§Ù„بدء ÙÙŠ Ø§Ù„Ø£Ø¹Ù„Ù‰ + Ø´Ø¨Ùƒة)'
+        'classic': 'ÙƒÙ„اسŠÙƒÙŠ (ع…ÙˆدŠ Ù…ع فاص„)',
+        'grid': 'شبƒة (أزرار Ù…تجاˆرة)',
+        'top': 'زر ا„بدء فŠ ا„أع„Ù‰ (ع…ÙˆدŠ)',
+        'hybrid': 'Ù…خت„ط (ا„بدء فŠ ا„أع„Ù‰ + شبƒة)'
     }
-    current_layout_name = layout_names.get(settings_layout, 'ÙƒÙ„Ø§Ø³ÙŠÙƒÙŠ (Ø¹Ù…ÙˆØ¯ÙŠ Ù…ع ÙØ§ØµÙ„)')
+    current_layout_name = layout_names.get(settings_layout, 'ÙƒÙ„اسŠÙƒÙŠ (ع…ÙˆدŠ Ù…ع فاص„)')
     rows.append([InlineKeyboardButton(
-        text=f"âš™️ ØªØ®Ø·ÙŠط Ù„Ùˆحة Ø§Ù„ØªÙ…Ø±ÙŠÙ†: {current_layout_name} ðŸ”„",
+        text=f"âš™️ تخطŠط Ù„Ùˆحة ا„ت…رŠÙ†: {current_layout_name} ðŸ”„",
         callback_data=f"set_settings_layout:{settings_layout}"
     )])
     
     # Gender Address Toggle
-    gender_label = "ðŸ‘¦ أخ (Ø°Ùƒر)" if gender == "male" else "ðŸ‘§ أخت (Ø£Ù†Ø«Ù‰)" if gender == "female" else "ðŸŽ­ حدد Ø§Ù„Ø¬Ù†س (ØµÙŠغة Ø§Ù„Ù…خاطبة)"
+    gender_label = "ðŸ‘¦ أخ (ذƒر)" if gender == "male" else "ðŸ‘§ أخت (أ†ث‰)" if gender == "female" else "ðŸŽ­ حدد ا„ج†س (صŠغة ا„Ù…خاطبة)"
     gender_next = "female" if gender == "male" else "male" if gender == "female" else "male"
-    rows.append([InlineKeyboardButton(text=f"ðŸŽ­ ØµÙŠغة Ø§Ù„Ù…خاطبة: {gender_label} ðŸ”„", callback_data=f"set_gender_toggle:{gender_next}")])
+    rows.append([InlineKeyboardButton(text=f"ðŸŽ­ صŠغة ا„Ù…خاطبة: {gender_label} ðŸ”„", callback_data=f"set_gender_toggle:{gender_next}")])
     
     # Subject editing buttons
     rows.append([
-        InlineKeyboardButton(text="⭐ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ùˆاد Ø§Ù„Ù…ÙØ¶Ù„ة", callback_data="edit_fav_subjects"),
-        InlineKeyboardButton(text="âš ï¸ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ùˆاد Ø§Ù„صعبة", callback_data="edit_diff_subjects")
+        InlineKeyboardButton(text="⭐ تعدŠÙ„ ا„Ù…Ùˆاد ا„Ù…فض„ة", callback_data="edit_fav_subjects"),
+        InlineKeyboardButton(text="âš ï¸ تعدŠÙ„ ا„Ù…Ùˆاد ا„صعبة", callback_data="edit_diff_subjects")
     ])
     
     rows.append([
-        InlineKeyboardButton(text="ðŸŽ¯ ØªØ­Ø¯ÙŠد Ø§Ù„Ù…ادة Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠة (ØªØ®Ø·ÙŠ Ø§Ù„Ø§Ø®ØªÙŠار)", callback_data="edit_preferred_subject")
+        InlineKeyboardButton(text="ðŸŽ¯ تحدŠد ا„Ù…ادة ا„ت„Ù‚ائŠة (تخطŠ ا„اختŠار)", callback_data="edit_preferred_subject")
     ])
     
     # Back to main menu
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="support_cancel")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù‚ائ…ة ا„رئŠسŠة", callback_data="support_cancel")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1662,7 +1661,7 @@ def get_preferred_subject_keyboard(current_pref: str = None) -> InlineKeyboardMa
         rows.append(row)
         
     # None/Reset Option
-    none_text = "âŒ ØªØ¹Ø·ÙŠÙ„ Ø§Ù„Ù…ادة Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠة (تصفح Ø¬Ù…ÙŠع Ø§Ù„Ù…Ùˆاد)" if current_pref else "âŒ ØªØ®Ø·ÙŠ (Ø¹Ø¯Ù… Ø§Ù„ØªÙØ¹ÙŠÙ„)"
+    none_text = "âŒ تعطŠÙ„ ا„Ù…ادة ا„ت„Ù‚ائŠة (تصفح ج…ÙŠع ا„Ù…Ùˆاد)" if current_pref else "âŒ تخطŠ (عد… ا„تفعŠÙ„)"
     rows.append([InlineKeyboardButton(text=none_text, callback_data="pref_sub:select:none")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1672,7 +1671,7 @@ def get_admin_students_keyboard(users: list[dict], page: int = 1, total_pages: i
     # Display each student
     for u in users:
         telegram_id = u.get("telegram_id")
-        first_name = u.get("first_name") or "Ø·Ø§Ù„ب"
+        first_name = u.get("first_name") or "طا„ب"
         preferred_name = u.get("preferred_name")
         username = u.get("username")
         is_banned = bool(u.get("is_banned"))
@@ -1694,27 +1693,27 @@ def get_admin_students_keyboard(users: list[dict], page: int = 1, total_pages: i
     # Navigation row
     nav_row = []
     if page > 1:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚", callback_data=f"admin_students_page:{page - 1}"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚", callback_data=f"admin_students_page:{page - 1}"))
     
     nav_row.append(InlineKeyboardButton(text=f"ðŸ“„ {page} / {total_pages}", callback_data="admin_students_noop"))
     
     if page < total_pages:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠ âž¡ï¸", callback_data=f"admin_students_page:{page + 1}"))
+        nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠ âž¡ï¸", callback_data=f"admin_students_page:{page + 1}"))
         
     rows.append(nav_row)
     
     # Search and back buttons
     rows.append([
-        InlineKeyboardButton(text="ðŸ” بحث Ø¹Ù† Ø·Ø§Ù„ب", callback_data="admin_student_search"),
-        InlineKeyboardButton(text="â†©ï¸ Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_back_panel")
+        InlineKeyboardButton(text="ðŸ” بحث ع† طا„ب", callback_data="admin_student_search"),
+        InlineKeyboardButton(text="â†©ï¸ Ù„Ùˆحة ا„إدارة", callback_data="admin_back_panel")
     ])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_admin_student_detail_keyboard(student_id: int, is_currently_banned: bool, is_currently_admin: bool, return_page: int) -> InlineKeyboardMarkup:
-    ban_text = "ðŸŸ¢ Ø¥Ù„غاء Ø§Ù„حظر" if is_currently_banned else "ðŸš« حظر Ø§Ù„حساب"
-    admin_text = "ðŸŽ“ ØªÙ†Ø²ÙŠÙ„ Ø¥Ù„Ù‰ Ø·Ø§Ù„ب" if is_currently_admin else "ðŸ‘‘ ØªØ±Ù‚ÙŠة Ù„Ù…شرف"
+    ban_text = "ðŸŸ¢ إ„غاء ا„حظر" if is_currently_banned else "ðŸš« حظر ا„حساب"
+    admin_text = "ðŸŽ“ ت†زŠÙ„ إ„Ù‰ طا„ب" if is_currently_admin else "ðŸ‘‘ تر‚ÙŠة Ù„Ù…شرف"
     
     rows = [
         [
@@ -1722,7 +1721,7 @@ def get_admin_student_detail_keyboard(student_id: int, is_currently_banned: bool
             InlineKeyboardButton(text=admin_text, callback_data=f"admin_student_toggle_admin:{student_id}:{return_page}")
         ],
         [
-            InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة", callback_data=f"admin_students_page:{return_page}")
+            InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù‚ائ…ة", callback_data=f"admin_students_page:{return_page}")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1731,8 +1730,8 @@ def get_admin_student_detail_keyboard(student_id: int, is_currently_banned: bool
 def get_question_confirm_keyboard() -> InlineKeyboardMarkup:
     rows = [
         [
-            InlineKeyboardButton(text="âœ… ØªØ£ÙƒÙŠد Ø§Ù„حفظ", callback_data="admin_q_confirm_save"),
-            InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="admin_q_confirm_cancel")
+            InlineKeyboardButton(text="âœ… تأƒÙŠد ا„حفظ", callback_data="admin_q_confirm_save"),
+            InlineKeyboardButton(text="âŒ إ„غاء", callback_data="admin_q_confirm_cancel")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1741,11 +1740,11 @@ def get_question_confirm_keyboard() -> InlineKeyboardMarkup:
 def get_admin_question_view_keyboard(question_id: int) -> InlineKeyboardMarkup:
     rows = [
         [
-            InlineKeyboardButton(text="âš™️ [إدارة] ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_direct_edit:{question_id}:search"),
-            InlineKeyboardButton(text="ðŸ—‘️ حذف Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data=f"admin_question_delete:{question_id}")
+            InlineKeyboardButton(text="âš™️ [إدارة] تعدŠÙ„ ا„سؤا„", callback_data=f"admin_direct_edit:{question_id}:search"),
+            InlineKeyboardButton(text="ðŸ—‘️ حذف ا„سؤا„", callback_data=f"admin_question_delete:{question_id}")
         ],
         [
-            InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_back_panel")
+            InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ùˆحة ا„إدارة", callback_data="admin_back_panel")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1754,7 +1753,7 @@ def get_admin_question_view_keyboard(question_id: int) -> InlineKeyboardMarkup:
 def get_admin_question_delete_confirm_keyboard(question_id: int) -> InlineKeyboardMarkup:
     rows = [
         [
-            InlineKeyboardButton(text="âš ï¸ Ù†Ø¹Ù…ØŒ احذف Ù†Ù‡Ø§Ø¦ÙŠØ§Ù‹", callback_data=f"admin_question_delete_confirm:{question_id}"),
+            InlineKeyboardButton(text="âš ï¸ Ù†ع…ØŒ احذف Ù†Ù‡ائŠا‹", callback_data=f"admin_question_delete_confirm:{question_id}"),
             InlineKeyboardButton(text="âŒ تراجع", callback_data=f"admin_search_question_by_id:{question_id}")
         ]
     ]
@@ -1765,8 +1764,8 @@ def get_admin_edit_options_keyboard() -> InlineKeyboardMarkup:
     """Clavier avec options de saut et d'annulation pour l'édition de question."""
     rows = [
         [
-            InlineKeyboardButton(text="âž¡ï¸ ØªØ®Ø·ÙŠ (Ø§Ù„Ø¥Ø¨Ù‚اء Ø¹Ù„Ù‰ Ø§Ù„Ø­Ø§Ù„ي)", callback_data="admin_edit_skip"),
-            InlineKeyboardButton(text="âŒ Ø¥Ù„غاء Ø§Ù„ØªØ¹Ø¯ÙŠÙ„", callback_data="admin_edit_cancel")
+            InlineKeyboardButton(text="âž¡ï¸ تخطŠ (ا„إب‚اء ع„Ù‰ ا„حا„ي)", callback_data="admin_edit_skip"),
+            InlineKeyboardButton(text="âŒ إ„غاء ا„تعدŠÙ„", callback_data="admin_edit_cancel")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1784,8 +1783,8 @@ def get_admin_edit_correct_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="د (D)", callback_data="admin_edit_ans:D")
         ],
         [
-            InlineKeyboardButton(text="âž¡ï¸ ØªØ®Ø·ÙŠ (Ø§Ù„Ø¥Ø¨Ù‚اء Ø¹Ù„Ù‰ Ø§Ù„Ø­Ø§Ù„ي)", callback_data="admin_edit_skip"),
-            InlineKeyboardButton(text="âŒ Ø¥Ù„غاء Ø§Ù„ØªØ¹Ø¯ÙŠÙ„", callback_data="admin_edit_cancel")
+            InlineKeyboardButton(text="âž¡ï¸ تخطŠ (ا„إب‚اء ع„Ù‰ ا„حا„ي)", callback_data="admin_edit_skip"),
+            InlineKeyboardButton(text="âŒ إ„غاء ا„تعدŠÙ„", callback_data="admin_edit_cancel")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1803,8 +1802,8 @@ def get_revision_subjects_keyboard() -> InlineKeyboardMarkup:
     if current_row:
         rows.append(current_row)
         
-    rows.append([InlineKeyboardButton(text="ðŸ” بحث ÙÙŠ Ø¬Ù…ÙŠع Ø§Ù„Ù…Ùˆاد", callback_data="rev_study_search_start")])
-    rows.append([InlineKeyboardButton(text="â—€️ Ø§Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="support_cancel")])
+    rows.append([InlineKeyboardButton(text="ðŸ” بحث فŠ ج…ÙŠع ا„Ù…Ùˆاد", callback_data="rev_study_search_start")])
+    rows.append([InlineKeyboardButton(text="â—€️ ا„Ù‚ائ…ة ا„رئŠسŠة", callback_data="support_cancel")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_exam_blanc_subjects_keyboard() -> InlineKeyboardMarkup:
@@ -1819,7 +1818,7 @@ def get_exam_blanc_subjects_keyboard() -> InlineKeyboardMarkup:
     if current_row:
         rows.append(current_row)
         
-    rows.append([InlineKeyboardButton(text="â—€️ Ø§Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="support_cancel")])
+    rows.append([InlineKeyboardButton(text="â—€️ ا„Ù‚ائ…ة ا„رئŠسŠة", callback_data="support_cancel")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -1831,7 +1830,7 @@ def get_revision_lessons_keyboard(subject: str, lessons_status: list[dict]) -> I
     rows = []
     
     # Add Examen Blanc par matiere
-    rows.append([InlineKeyboardButton(text="ðŸŽ“ Ø§Ù…ØªØ­Ø§Ù† ØªØ¬Ø±ÙŠØ¨ÙŠ (20 Ø³Ø¤Ø§Ù„)", callback_data=f"exam_blanc_sub:{subject}")])
+    rows.append([InlineKeyboardButton(text="ðŸŽ“ ا…تحا† تجرŠبŠ (20 سؤا„)", callback_data=f"exam_blanc_sub:{subject}")])
     
     row = []
     for item in lessons_status:
@@ -1848,7 +1847,7 @@ def get_revision_lessons_keyboard(subject: str, lessons_status: list[dict]) -> I
             status_markers = " ðŸŸ¡"
             
         row.append(InlineKeyboardButton(
-            text=f"ðŸ“š Ø§Ù„درس {l}{status_markers}",
+            text=f"ðŸ“š ا„درس {l}{status_markers}",
             callback_data=f"rev_les:{subject}:{l}"
         ))
         if len(row) == 2:
@@ -1857,7 +1856,7 @@ def get_revision_lessons_keyboard(subject: str, lessons_status: list[dict]) -> I
     if row:
         rows.append(row)
         
-    rows.append([InlineKeyboardButton(text="â—€️ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ø®Ù„ف", callback_data="main_revision")])
+    rows.append([InlineKeyboardButton(text="â—€️ ا„عˆدة Ù„Ù„خ„ف", callback_data="main_revision")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -1865,28 +1864,28 @@ def get_revision_resources_keyboard(subject: str, lesson_num: int, has_map: bool
     """Keyboard showing available resources for a specific lesson (text menu, used when no map)."""
     rows = []
     if has_map:
-        rows.append([InlineKeyboardButton(text="ðŸ—ºï¸ عرض Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة (PNG)", callback_data=f"rev_get_map:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ—ºï¸ عرض ا„خرŠطة ا„ذ‡Ù†ÙŠة (PNG)", callback_data=f"rev_get_map:{subject}:{lesson_num}")])
     else:
-        rows.append([InlineKeyboardButton(text="ðŸ—ºï¸ Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة (ØºÙŠر Ù…ØªÙˆفرة âŒ)", callback_data="rev_noop")])
+        rows.append([InlineKeyboardButton(text="ðŸ—ºï¸ ا„خرŠطة ا„ذ‡Ù†ÙŠة (غŠر Ù…تˆفرة âŒ)", callback_data="rev_noop")])
         
     if has_summary:
-        rows.append([InlineKeyboardButton(text="ðŸ“„ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ù„خص (PDF)", callback_data=f"rev_get_sum:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“„ تح…ÙŠÙ„ ا„Ù…Ù„خص (PDF)", callback_data=f"rev_get_sum:{subject}:{lesson_num}")])
     else:
-        rows.append([InlineKeyboardButton(text="ðŸ“„ Ø§Ù„Ù…Ù„خص (ØºÙŠر Ù…ØªÙˆفر âŒ)", callback_data="rev_noop")])
+        rows.append([InlineKeyboardButton(text="ðŸ“„ ا„Ù…Ù„خص (غŠر Ù…تˆفر âŒ)", callback_data="rev_noop")])
         
     if has_transcription:
-        rows.append([InlineKeyboardButton(text="ðŸ“ Ù‚راءة Ø§Ù„ØªÙØ±ÙŠغ (PNG)", callback_data=f"rev_read_trans_start:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“ Ù‚راءة ا„تفرŠغ (PNG)", callback_data=f"rev_read_trans_start:{subject}:{lesson_num}")])
         
         base_url = get_webapp_base_url()
         if base_url.startswith("https"):
-            rows.append([InlineKeyboardButton(text="ðŸ“– Ùˆضع Ø§Ù„Ù‚راءة Ø§Ù„ØªÙØ§Ø¹Ù„ÙŠ (Liseuse) ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p5"))])
+            rows.append([InlineKeyboardButton(text="ðŸ“– Ùˆضع ا„Ù‚راءة ا„تفاع„ÙŠ (Liseuse) ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p5"))])
     else:
-        rows.append([InlineKeyboardButton(text="ðŸ“ Ø§Ù„ØªÙØ±ÙŠغ (ØºÙŠر Ù…ØªÙˆفر âŒ)", callback_data="rev_noop")])
+        rows.append([InlineKeyboardButton(text="ðŸ“ ا„تفرŠغ (غŠر Ù…تˆفر âŒ)", callback_data="rev_noop")])
         
     if has_study_path:
-        rows.append([InlineKeyboardButton(text="ðŸ“– Ù…سار Ø§Ù„Ù‚راءة Ø§Ù„ØªÙØ§Ø¹Ù„ي (Active Study) ✨", callback_data=f"rev_study_path_start:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“– Ù…سار ا„Ù‚راءة ا„تفاع„ي (Active Study) ✨", callback_data=f"rev_study_path_start:{subject}:{lesson_num}")])
         
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø¯Ø±Ùˆس", callback_data=f"rev_sub:{subject}")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ Ù‚ائ…ة ا„درˆس", callback_data=f"rev_sub:{subject}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -1902,7 +1901,7 @@ def get_map_as_menu_keyboard(subject: str, lesson_num: int, has_summary: bool, h
         nav_row = []
         if page > 1:
             nav_row.append(InlineKeyboardButton(
-                text="â—€️ Ø§Ù„Ø³Ø§Ø¨Ù‚",
+                text="â—€️ ا„ساب‚",
                 callback_data=f"rev_map_page:{subject}:{lesson_num}:{page - 1}"
             ))
         nav_row.append(InlineKeyboardButton(
@@ -1911,26 +1910,26 @@ def get_map_as_menu_keyboard(subject: str, lesson_num: int, has_summary: bool, h
         ))
         if page < total_pages:
             nav_row.append(InlineKeyboardButton(
-                text="Ø§Ù„ØªØ§Ù„ÙŠ â–¶ï¸",
+                text="ا„تا„ÙŠ â–¶ï¸",
                 callback_data=f"rev_map_page:{subject}:{lesson_num}:{page + 1}"
             ))
         rows.append(nav_row)
     # Resource buttons
     if has_summary:
-        rows.append([InlineKeyboardButton(text="ðŸ“„ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ù„خص (PDF)", callback_data=f"rev_get_sum:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“„ تح…ÙŠÙ„ ا„Ù…Ù„خص (PDF)", callback_data=f"rev_get_sum:{subject}:{lesson_num}")])
     else:
-        rows.append([InlineKeyboardButton(text="ðŸ“„ Ø§Ù„Ù…Ù„خص (ØºÙŠر Ù…ØªÙˆفر âŒ)", callback_data="rev_noop")])
+        rows.append([InlineKeyboardButton(text="ðŸ“„ ا„Ù…Ù„خص (غŠر Ù…تˆفر âŒ)", callback_data="rev_noop")])
     if has_transcription:
-        rows.append([InlineKeyboardButton(text="ðŸ“ Ù‚راءة Ø§Ù„ØªÙØ±ÙŠغ (PNG)", callback_data=f"rev_read_trans_start:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“ Ù‚راءة ا„تفرŠغ (PNG)", callback_data=f"rev_read_trans_start:{subject}:{lesson_num}")])
         
         base_url = get_webapp_base_url()
         if base_url.startswith("https"):
-            rows.append([InlineKeyboardButton(text="ðŸ“– Ùˆضع Ø§Ù„Ù‚راءة Ø§Ù„ØªÙØ§Ø¹Ù„ÙŠ (Liseuse) ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p5"))])
+            rows.append([InlineKeyboardButton(text="ðŸ“– Ùˆضع ا„Ù‚راءة ا„تفاع„ÙŠ (Liseuse) ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?subject={subject}&lesson={lesson_num}&v=p5"))])
     else:
-        rows.append([InlineKeyboardButton(text="ðŸ“ Ø§Ù„ØªÙØ±ÙŠغ (ØºÙŠر Ù…ØªÙˆفر âŒ)", callback_data="rev_noop")])
+        rows.append([InlineKeyboardButton(text="ðŸ“ ا„تفرŠغ (غŠر Ù…تˆفر âŒ)", callback_data="rev_noop")])
     if has_study_path:
-        rows.append([InlineKeyboardButton(text="ðŸ“– Ù…سار Ø§Ù„Ù‚راءة Ø§Ù„ØªÙØ§Ø¹Ù„ي (Active Study) ✨", callback_data=f"rev_study_path_start:{subject}:{lesson_num}")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø¯Ø±Ùˆس", callback_data=f"rev_sub:{subject}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“– Ù…سار ا„Ù‚راءة ا„تفاع„ي (Active Study) ✨", callback_data=f"rev_study_path_start:{subject}:{lesson_num}")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ Ù‚ائ…ة ا„درˆس", callback_data=f"rev_sub:{subject}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -1939,7 +1938,7 @@ def get_admin_resources_subject_keyboard() -> InlineKeyboardMarkup:
     rows = []
     for sub_id, label in SUBJECT_LABELS.items():
         rows.append([InlineKeyboardButton(text=label, callback_data=f"adm_res_sub:{sub_id}")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ùˆحة Ø§Ù„إدارة", callback_data="admin_back_panel")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ùˆحة ا„إدارة", callback_data="admin_back_panel")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -1965,7 +1964,7 @@ def get_admin_resources_lessons_keyboard(subject: str, lessons_status: list[dict
             markers = "âŒ"
             
         row.append(InlineKeyboardButton(
-            text=f"Ø§Ù„درس {l} ({markers})",
+            text=f"ا„درس {l} ({markers})",
             callback_data=f"adm_res_les:{subject}:{l}"
         ))
         if len(row) == 2:
@@ -1974,21 +1973,21 @@ def get_admin_resources_lessons_keyboard(subject: str, lessons_status: list[dict
     if row:
         rows.append(row)
         
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ùˆاد", callback_data="admin_manage_resources")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù„Ù…Ùˆاد", callback_data="admin_manage_resources")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_admin_resources_manage_keyboard(subject: str, lesson_num: int, has_map: bool, has_summary: bool, has_transcription: bool = False) -> InlineKeyboardMarkup:
     """Admin manage resource page (upload buttons)."""
-    map_text = "ðŸ”„ ØªØ­Ø¯ÙŠث Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة (PNG)" if has_map else "âž• رفع Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة (PNG)"
-    sum_text = "ðŸ”„ ØªØ­Ø¯ÙŠث Ù…Ù„خص Ø§Ù„درس (PDF)" if has_summary else "âž• رفع Ù…Ù„خص Ø§Ù„درس (PDF)"
-    trans_text = f"ðŸ“ إدارة صفحات Ø§Ù„ØªÙØ±ÙŠغ (PNG) {'(Ù…ØªÙˆفر âœ…)' if has_transcription else '(Ø¨Ø¯ÙˆÙ† ØªÙØ±ÙŠغ âš ï¸)'}"
+    map_text = "ðŸ”„ تحدŠث ا„خرŠطة ا„ذ‡Ù†ÙŠة (PNG)" if has_map else "âž• رفع ا„خرŠطة ا„ذ‡Ù†ÙŠة (PNG)"
+    sum_text = "ðŸ”„ تحدŠث Ù…Ù„خص ا„درس (PDF)" if has_summary else "âž• رفع Ù…Ù„خص ا„درس (PDF)"
+    trans_text = f"ðŸ“ إدارة صفحات ا„تفرŠغ (PNG) {'(Ù…تˆفر âœ…)' if has_transcription else '(بدˆÙ† تفرŠغ âš ï¸)'}"
     
     rows = [
         [InlineKeyboardButton(text=map_text, callback_data=f"adm_upl_map:{subject}:{lesson_num}")],
         [InlineKeyboardButton(text=sum_text, callback_data=f"adm_upl_sum:{subject}:{lesson_num}")],
         [InlineKeyboardButton(text=trans_text, callback_data=f"adm_manage_trans_pages:{subject}:{lesson_num}")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø¯Ø±Ùˆس", callback_data=f"adm_res_sub:{subject}")]
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù‚ائ…ة ا„درˆس", callback_data=f"adm_res_sub:{subject}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -1998,8 +1997,8 @@ def get_admin_trans_pages_keyboard(subject: str, lesson_num: int, pages_count: i
     rows = []
     rows.append([InlineKeyboardButton(text="âž• إضافة صفحة (PNG)", callback_data=f"adm_add_trans_page:{subject}:{lesson_num}")])
     if pages_count > 0:
-        rows.append([InlineKeyboardButton(text="ðŸ—‘️ Ù…سح ÙƒÙ„ صفحات Ø§Ù„ØªÙØ±ÙŠغ", callback_data=f"adm_clear_trans_pages:{subject}:{lesson_num}")])
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø¹Ùˆدة Ù„ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ù„فات", callback_data=f"adm_res_les:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ—‘️ Ù…سح ÙƒÙ„ صفحات ا„تفرŠغ", callback_data=f"adm_clear_trans_pages:{subject}:{lesson_num}")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ عˆدة Ù„تعدŠÙ„ ا„Ù…Ù„فات", callback_data=f"adm_res_les:{subject}:{lesson_num}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -2008,12 +2007,12 @@ def get_transcription_reader_keyboard(subject: str, lesson_num: int, current_pag
     rows = []
     nav_row = []
     if current_page > 1:
-        nav_row.append(InlineKeyboardButton(text="â¬…️ Ø§Ù„Ø³Ø§Ø¨Ù‚ة", callback_data=f"rev_read_page:{subject}:{lesson_num}:{current_page-1}"))
+        nav_row.append(InlineKeyboardButton(text="â¬…️ ا„ساب‚ة", callback_data=f"rev_read_page:{subject}:{lesson_num}:{current_page-1}"))
     nav_row.append(InlineKeyboardButton(text=f"{current_page} / {total_pages}", callback_data="rev_noop"))
     if current_page < total_pages:
-        nav_row.append(InlineKeyboardButton(text="Ø§Ù„ØªØ§Ù„ÙŠة âž¡ï¸", callback_data=f"rev_read_page:{subject}:{lesson_num}:{current_page+1}"))
+        nav_row.append(InlineKeyboardButton(text="ا„تا„ÙŠة âž¡ï¸", callback_data=f"rev_read_page:{subject}:{lesson_num}:{current_page+1}"))
     rows.append(nav_row)
-    rows.append([InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù…Ù„فات Ø§Ù„درس", callback_data=f"rev_les:{subject}:{lesson_num}")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù…Ù„فات ا„درس", callback_data=f"rev_les:{subject}:{lesson_num}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -2021,14 +2020,14 @@ def get_admin_q_factory_review_keyboard() -> InlineKeyboardMarkup:
     """AI Question Factory review actions."""
     rows = [
         [
-            InlineKeyboardButton(text="âœ… Ù‚Ø¨ÙˆÙ„ Ùˆحفظ", callback_data="admin_q_fac_accept"),
-            InlineKeyboardButton(text="âœï¸ ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„", callback_data="admin_q_fac_edit")
+            InlineKeyboardButton(text="âœ… Ù‚بˆÙ„ Ùˆحفظ", callback_data="admin_q_fac_accept"),
+            InlineKeyboardButton(text="âœï¸ تعدŠÙ„ ا„سؤا„", callback_data="admin_q_fac_edit")
         ],
         [
             InlineKeyboardButton(text="âŒ رفض وتخطي", callback_data="admin_q_fac_reject")
         ],
         [
-            InlineKeyboardButton(text="ðŸ›‘ Ø¥Ù„غاء Ø§Ù„Ø¹Ù…Ù„ÙŠة Ø¨Ø§Ù„ÙƒØ§Ù…Ù„", callback_data="admin_q_fac_cancel")
+            InlineKeyboardButton(text="ðŸ›‘ إ„غاء ا„ع…Ù„ÙŠة با„Ùƒا…Ù„", callback_data="admin_q_fac_cancel")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -2041,7 +2040,7 @@ def get_map_reader_keyboard(subject: str, lesson_num: int, page: int, total_page
         nav_row = []
         if page > 1:
             nav_row.append(InlineKeyboardButton(
-                text="â—€️ Ø§Ù„Ø³Ø§Ø¨Ù‚",
+                text="â—€️ ا„ساب‚",
                 callback_data=f"rev_map_page:{subject}:{lesson_num}:{page - 1}"
             ))
         nav_row.append(InlineKeyboardButton(
@@ -2050,12 +2049,12 @@ def get_map_reader_keyboard(subject: str, lesson_num: int, page: int, total_page
         ))
         if page < total_pages:
             nav_row.append(InlineKeyboardButton(
-                text="Ø§Ù„ØªØ§Ù„ÙŠ â–¶ï¸",
+                text="ا„تا„ÙŠ â–¶ï¸",
                 callback_data=f"rev_map_page:{subject}:{lesson_num}:{page + 1}"
             ))
         rows.append(nav_row)
     rows.append([InlineKeyboardButton(
-        text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ù„فات",
+        text="â†©ï¸ ا„عˆدة Ù„Ù„Ù…Ù„فات",
         callback_data=f"rev_map_back:{subject}:{lesson_num}"
     )])
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -2065,14 +2064,14 @@ def get_admin_map_action_keyboard(subject: str, lesson_num: int, existing_count:
     """Admin: choose whether to replace all mind map pages or add a new page."""
     rows = [
         [InlineKeyboardButton(
-            text=f"ðŸ”„ Ø§Ø³ØªØ¨Ø¯Ø§Ù„ Ø¬Ù…ÙŠع Ø§Ù„صفحات ({existing_count} Ù…ÙˆØ¬Ùˆدة)",
+            text=f"ðŸ”„ استبدا„ ج…ÙŠع ا„صفحات ({existing_count} Ù…Ùˆجˆدة)",
             callback_data=f"adm_map_replace:{subject}:{lesson_num}"
         )],
         [InlineKeyboardButton(
-            text=f"âž• إضافة صفحة Ø¬Ø¯ÙŠدة (Ø§Ù„صفحة {existing_count + 1})",
+            text=f"âž• إضافة صفحة جدŠدة (ا„صفحة {existing_count + 1})",
             callback_data=f"adm_map_add_page:{subject}:{lesson_num}"
         )],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data=f"adm_res_les:{subject}:{lesson_num}")]
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data=f"adm_res_les:{subject}:{lesson_num}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2081,7 +2080,7 @@ def get_quiz_map_keyboard(question_id: int) -> InlineKeyboardMarkup:
     """Keyboard shown on a mind map sent from the quiz correction â€” just a back button."""
     return InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(
-            text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù„ØªØµØ­ÙŠح",
+            text="â†©ï¸ ا„عˆدة Ù„Ù„تصحŠح",
             callback_data=f"student_map_back:{question_id}"
         )
     ]])
@@ -2090,10 +2089,10 @@ def get_quiz_map_keyboard(question_id: int) -> InlineKeyboardMarkup:
 def get_admin_model_selection_keyboard() -> InlineKeyboardMarkup:
     """Keyboard to select AI Model for Question Generation."""
     rows = [
-        [InlineKeyboardButton(text="Gemini Flash Latest (⭐ Ù…ØªÙˆØ§Ø²Ù† ÙˆØ¯Ù‚ÙŠÙ‚)", callback_data="adm_fac_model:gemini-flash-latest")],
-        [InlineKeyboardButton(text="Gemini 2.5 Flash (âš¡ ÙØ§Ø¦Ù‚ Ø§Ù„سرعة)", callback_data="adm_fac_model:gemini-2.5-flash")],
-        [InlineKeyboardButton(text="Gemini Pro Latest (ðŸ§  Ø§Ø³ØªØ¯Ù„Ø§Ù„ Ø¹Ù…ÙŠÙ‚)", callback_data="adm_fac_model:gemini-pro-latest")],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="admin_q_factory_cancel")]
+        [InlineKeyboardButton(text="Gemini Flash Latest (⭐ Ù…تˆاز† Ùˆد‚ÙŠÙ‚)", callback_data="adm_fac_model:gemini-flash-latest")],
+        [InlineKeyboardButton(text="Gemini 2.5 Flash (âš¡ فائ‚ ا„سرعة)", callback_data="adm_fac_model:gemini-2.5-flash")],
+        [InlineKeyboardButton(text="Gemini Pro Latest (ðŸ§  استد„ا„ ع…ÙŠÙ‚)", callback_data="adm_fac_model:gemini-pro-latest")],
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data="admin_q_factory_cancel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2102,11 +2101,11 @@ def get_admin_count_selection_keyboard() -> InlineKeyboardMarkup:
     """Keyboard to select Question Count."""
     rows = [
         [
-            InlineKeyboardButton(text="5 Ø£Ø³Ø¦Ù„ة", callback_data="adm_fac_count:5"),
-            InlineKeyboardButton(text="10 Ø£Ø³Ø¦Ù„ة", callback_data="adm_fac_count:10"),
-            InlineKeyboardButton(text="15 Ø³Ø¤Ø§Ù„Ø§Ù‹", callback_data="adm_fac_count:15")
+            InlineKeyboardButton(text="5 أسئ„ة", callback_data="adm_fac_count:5"),
+            InlineKeyboardButton(text="10 أسئ„ة", callback_data="adm_fac_count:10"),
+            InlineKeyboardButton(text="15 سؤا„ا‹", callback_data="adm_fac_count:15")
         ],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="admin_q_factory_cancel")]
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data="admin_q_factory_cancel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2114,8 +2113,8 @@ def get_admin_count_selection_keyboard() -> InlineKeyboardMarkup:
 def get_admin_skip_instruction_keyboard() -> InlineKeyboardMarkup:
     """Keyboard to skip custom instructions."""
     rows = [
-        [InlineKeyboardButton(text="ØªØ®Ø·ÙŠ Ø§Ù„Ø®Ø·Ùˆة ⏭️", callback_data="adm_fac_inst:skip")],
-        [InlineKeyboardButton(text="âŒ Ø¥Ù„غاء", callback_data="admin_q_factory_cancel")]
+        [InlineKeyboardButton(text="تخطŠ ا„خطˆة ⏭️", callback_data="adm_fac_inst:skip")],
+        [InlineKeyboardButton(text="âŒ إ„غاء", callback_data="admin_q_factory_cancel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2123,10 +2122,10 @@ def get_admin_skip_instruction_keyboard() -> InlineKeyboardMarkup:
 def get_library_menu_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for My Library main menu."""
     rows = [
-        [InlineKeyboardButton(text="ðŸ” Ø§Ù„بحث Ø§Ù„Ø°ÙƒÙŠ ÙÙŠ Ø§Ù„Ø¯Ø±Ùˆس", callback_data="rev_study_search_start")],
-        [InlineKeyboardButton(text="ðŸ“š Ù…Ù„خصات Ùˆخرائط Ø§Ù„Ù…Ùˆاد", callback_data="library_subjects")],
-        [InlineKeyboardButton(text="ðŸš€ Ù…سار Ø§Ù„Ù…راجعة Ø§Ù„Ù…ÙˆØ¬Ù‡", callback_data="guided_path_start")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠة", callback_data="support_cancel")]
+        [InlineKeyboardButton(text="ðŸ” ا„بحث ا„ذƒÙŠ فŠ ا„درˆس", callback_data="rev_study_search_start")],
+        [InlineKeyboardButton(text="ðŸ“š Ù…Ù„خصات Ùˆخرائط ا„Ù…Ùˆاد", callback_data="library_subjects")],
+        [InlineKeyboardButton(text="ðŸš€ Ù…سار ا„Ù…راجعة ا„Ù…Ùˆج‡", callback_data="guided_path_start")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„Ù‚ائ…ة ا„رئŠسŠة", callback_data="support_cancel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2141,7 +2140,7 @@ def get_guided_subjects_keyboard() -> InlineKeyboardMarkup:
             current_row = []
     if current_row:
         rows.append(current_row)
-    rows.append([InlineKeyboardButton(text="â—€️ Ù…ÙƒØªØ¨ØªÙŠ Ø§Ù„Ø´Ø§Ù…Ù„ة", callback_data="main_revision")])
+    rows.append([InlineKeyboardButton(text="â—€️ Ù…ÙƒتبتŠ ا„شا…Ù„ة", callback_data="main_revision")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 def get_guided_lessons_keyboard(subject: str, lessons: list[int], progress_map: dict) -> InlineKeyboardMarkup:
     """
@@ -2166,7 +2165,7 @@ def get_guided_lessons_keyboard(subject: str, lessons: list[int], progress_map: 
             status_emoji = "â¬œ"
             
         row.append(InlineKeyboardButton(
-            text=f"Ø§Ù„درس {l} {status_emoji}",
+            text=f"ا„درس {l} {status_emoji}",
             callback_data=f"guided_path_les:{subject}:{l}"
         ))
         if len(row) == 2:
@@ -2174,7 +2173,7 @@ def get_guided_lessons_keyboard(subject: str, lessons: list[int], progress_map: 
             row = []
     if row:
         rows.append(row)
-    rows.append([InlineKeyboardButton(text="â†©ï¸ ØªØºÙŠÙŠر Ø§Ù„Ù…ادة", callback_data="guided_path_start")])
+    rows.append([InlineKeyboardButton(text="â†©ï¸ تغŠÙŠر ا„Ù…ادة", callback_data="guided_path_start")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_guided_lesson_hub_keyboard(subject: str, lesson_num: int, prog: dict) -> InlineKeyboardMarkup:
@@ -2185,11 +2184,11 @@ def get_guided_lesson_hub_keyboard(subject: str, lesson_num: int, prog: dict) ->
     quiz_emoji = "ðŸŸ©" if prog.get('quiz_done', 0) else "â¬œ"
     
     rows = [
-        [InlineKeyboardButton(text=f"{resume_emoji} Ø§Ù„Ø®Ø·Ùˆة 1: Ù‚راءة Ø§Ù„Ù…Ù„خص", callback_data=f"guided_step:{subject}:{lesson_num}:summary")],
-        [InlineKeyboardButton(text=f"{flash_emoji} Ø§Ù„Ø®Ø·Ùˆة 2: Ø¨Ø·Ø§Ù‚ات Ø§Ù„Ø§Ø³ØªØ°Ùƒار", callback_data=f"guided_step:{subject}:{lesson_num}:flashcards")],
-        [InlineKeyboardButton(text=f"{map_emoji} Ø§Ù„Ø®Ø·Ùˆة 3: Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة", callback_data=f"guided_step:{subject}:{lesson_num}:mindmap")],
-        [InlineKeyboardButton(text=f"{quiz_emoji} Ø§Ù„Ø®Ø·Ùˆة 4: ØªÙ…Ø±ÙŠÙ† Ø§Ù„ØªÙ‚ÙŠÙŠÙ…", callback_data=f"guided_step:{subject}:{lesson_num}:quiz")],
-        [InlineKeyboardButton(text="â†©ï¸ Ø§Ù„Ø¹Ùˆدة Ù„Ù…سار Ø§Ù„Ø¯Ø±Ùˆس", callback_data=f"guided_path_sub:{subject}")]
+        [InlineKeyboardButton(text=f"{resume_emoji} ا„خطˆة 1: Ù‚راءة ا„Ù…Ù„خص", callback_data=f"guided_step:{subject}:{lesson_num}:summary")],
+        [InlineKeyboardButton(text=f"{flash_emoji} ا„خطˆة 2: بطا‚ات ا„استذƒار", callback_data=f"guided_step:{subject}:{lesson_num}:flashcards")],
+        [InlineKeyboardButton(text=f"{map_emoji} ا„خطˆة 3: ا„خرŠطة ا„ذ‡Ù†ÙŠة", callback_data=f"guided_step:{subject}:{lesson_num}:mindmap")],
+        [InlineKeyboardButton(text=f"{quiz_emoji} ا„خطˆة 4: ت…رŠÙ† ا„ت‚ÙŠÙŠÙ…", callback_data=f"guided_step:{subject}:{lesson_num}:quiz")],
+        [InlineKeyboardButton(text="â†©ï¸ ا„عˆدة Ù„Ù…سار ا„درˆس", callback_data=f"guided_path_sub:{subject}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2201,26 +2200,26 @@ def get_active_study_overview_keyboard(subject: str, lesson_num: int, current_ch
     rows = []
     
     if current_chapter_index > 0 and current_chapter_index < total_chapters:
-        start_btn_text = f"â–¶ï¸ Ø§Ø³ØªØ¦Ù†اف Ø§Ù„ØªØ¹Ù„Ù… (Ù…Ù† Ø§Ù„Ù…Ø­Ùˆر {current_chapter_index + 1})"
+        start_btn_text = f"â–¶ï¸ استئ†اف ا„تع„Ù… (Ù…Ù† ا„Ù…حˆر {current_chapter_index + 1})"
     elif current_chapter_index >= total_chapters:
-        start_btn_text = "ðŸ” إعادة Ø§Ù„Ù…سار Ø§Ù„ØªÙØ§Ø¹Ù„ي"
+        start_btn_text = "ðŸ” إعادة ا„Ù…سار ا„تفاع„ي"
     else:
-        start_btn_text = "â–¶ï¸ بدء Ø§Ù„ØªØ¹Ù„Ù… Ø§Ù„ØªÙØ§Ø¹Ù„ي"
+        start_btn_text = "â–¶ï¸ بدء ا„تع„Ù… ا„تفاع„ي"
         
     rows.append([InlineKeyboardButton(text=start_btn_text, callback_data=f"active_study_go:{subject}:{lesson_num}")])
     
     # If they completed it, give them a shortcut to the end? Or let's just keep it simple.
     if current_chapter_index >= total_chapters:
-        rows.append([InlineKeyboardButton(text="ðŸ—ºï¸ عرض Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة", callback_data=f"active_study_mindmap:{subject}:{lesson_num}")])
-        rows.append([InlineKeyboardButton(text="ðŸ“‘ عرض Ø§Ù„Ù…Ù„خص Ø§Ù„Ø´Ø§Ù…Ù„", callback_data=f"guided_step:{subject}:{lesson_num}:summary")])
+        rows.append([InlineKeyboardButton(text="ðŸ—ºï¸ عرض ا„خرŠطة ا„ذ‡Ù†ÙŠة", callback_data=f"active_study_mindmap:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="ðŸ“‘ عرض ا„Ù…Ù„خص ا„شا…Ù„", callback_data=f"guided_step:{subject}:{lesson_num}:summary")])
     
-    rows.append([InlineKeyboardButton(text="â—€️ Ø§Ù„Ø¹Ùˆدة Ù„صفحة Ø§Ù„درس", callback_data=f"rev_les:{subject}:{lesson_num}")])
+    rows.append([InlineKeyboardButton(text="â—€️ ا„عˆدة Ù„صفحة ا„درس", callback_data=f"rev_les:{subject}:{lesson_num}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_active_study_chapter_summary_keyboard(subject: str, lesson_num: int, chapter_id: int) -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="ðŸ“ Ø§Ù„Ø§Ù†ØªÙ‚Ø§Ù„ Ù„Ø³Ø¤Ø§Ù„ Ø§Ù„Ù…Ø­Ùˆر", callback_data=f"active_study_q:{subject}:{lesson_num}:{chapter_id}")],
-        [InlineKeyboardButton(text="â—€️ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø³Ø§Ø¨Ù‚ة", callback_data=f"rev_study_path_start:{subject}:{lesson_num}")]
+        [InlineKeyboardButton(text="ðŸ“ ا„ا†ت‚ا„ Ù„سؤا„ ا„Ù…حˆر", callback_data=f"active_study_q:{subject}:{lesson_num}:{chapter_id}")],
+        [InlineKeyboardButton(text="â—€️ ا„عˆدة Ù„Ù„Ù‚ائ…ة ا„ساب‚ة", callback_data=f"rev_study_path_start:{subject}:{lesson_num}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -2251,26 +2250,26 @@ def get_active_study_question_keyboard(subject: str, lesson_num: int, chapter_id
             rows.append(row)
             
     # Add skip button
-    rows.append([InlineKeyboardButton(text="⏭️ ÙÙ‡Ù…ت Ø§Ù„Ù…Ø­Ùˆر (ØªØ¬Ø§Ùˆز)", callback_data=f"active_study_skip:{subject}:{lesson_num}:{chapter_id}")])
+    rows.append([InlineKeyboardButton(text="⏭️ ف‡Ù…ت ا„Ù…حˆر (تجاˆز)", callback_data=f"active_study_skip:{subject}:{lesson_num}:{chapter_id}")])
     
     # Add back button
-    rows.append([InlineKeyboardButton(text="â—€️ Ø§Ù„Ø¹Ùˆدة Ù„Ù„Ù…Ù„خص", callback_data=f"active_study_resume:{subject}:{lesson_num}:{chapter_id}")])
+    rows.append([InlineKeyboardButton(text="â—€️ ا„عˆدة Ù„Ù„Ù…Ù„خص", callback_data=f"active_study_resume:{subject}:{lesson_num}:{chapter_id}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_active_study_next_chapter_keyboard(subject: str, lesson_num: int, is_last: bool) -> InlineKeyboardMarkup:
     rows = []
     if is_last:
-        rows.append([InlineKeyboardButton(text="âœ… Ø¥Ù†Ù‡اء Ùˆعرض Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة", callback_data=f"active_study_mindmap:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="âœ… إ†Ù‡اء Ùˆعرض ا„خرŠطة ا„ذ‡Ù†ÙŠة", callback_data=f"active_study_mindmap:{subject}:{lesson_num}")])
     else:
-        rows.append([InlineKeyboardButton(text="â–¶ï¸ Ø§Ù„Ù…Ø­Ùˆر Ø§Ù„ØªØ§Ù„ي", callback_data=f"active_study_go:{subject}:{lesson_num}")])
+        rows.append([InlineKeyboardButton(text="â–¶ï¸ ا„Ù…حˆر ا„تا„ي", callback_data=f"active_study_go:{subject}:{lesson_num}")])
         
-    rows.append([InlineKeyboardButton(text="â—€️ Ø§Ù„Ø¹Ùˆدة Ù„صفحة Ø§Ù„درس", callback_data=f"rev_les:{subject}:{lesson_num}")])
+    rows.append([InlineKeyboardButton(text="â—€️ ا„عˆدة Ù„صفحة ا„درس", callback_data=f"rev_les:{subject}:{lesson_num}")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_active_study_end_keyboard(subject: str, lesson_num: int) -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="ðŸ“‘ عرض Ø§Ù„Ù…Ù„خص Ø§Ù„Ø´Ø§Ù…Ù„ (Fiche Express)", callback_data=f"guided_step:{subject}:{lesson_num}:summary")],
-        [InlineKeyboardButton(text="ðŸ“ Ø§Ù„Ø§Ù†ØªÙ‚Ø§Ù„ Ù„Ù„اختبار Ø§Ù„Ø´Ø§Ù…Ù„", callback_data=f"guided_step:{subject}:{lesson_num}:quiz")],
-        [InlineKeyboardButton(text="â—€️ Ø§Ù„Ø¹Ùˆدة Ù„صفحة Ø§Ù„درس", callback_data=f"rev_les:{subject}:{lesson_num}")]
+        [InlineKeyboardButton(text="ðŸ“‘ عرض ا„Ù…Ù„خص ا„شا…Ù„ (Fiche Express)", callback_data=f"guided_step:{subject}:{lesson_num}:summary")],
+        [InlineKeyboardButton(text="ðŸ“ ا„ا†ت‚ا„ Ù„Ù„اختبار ا„شا…Ù„", callback_data=f"guided_step:{subject}:{lesson_num}:quiz")],
+        [InlineKeyboardButton(text="â—€️ ا„عˆدة Ù„صفحة ا„درس", callback_data=f"rev_les:{subject}:{lesson_num}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
