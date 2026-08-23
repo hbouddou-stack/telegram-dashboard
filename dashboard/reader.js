@@ -2553,7 +2553,7 @@ function renderView() {
         container.innerHTML += html;
         
     } else if (currentView === 'theme') {
-        // V2: TREE VIEW
+        // V3: SKILL TREE VIEW
         let themes = {};
         taxonomyData.forEach(q => {
             if(!themes[q.theme]) themes[q.theme] = {};
@@ -2561,54 +2561,84 @@ function renderView() {
             themes[q.theme][q.subTheme].push(q);
         });
 
+        // Add specific CSS for the skill tree
+        let treeStyles = `
+        <style>
+            .skill-tree-container { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 20px 0; font-family: 'Tajawal', sans-serif; position: relative; }
+            .skill-tier { display: flex; gap: 20px; justify-content: center; position: relative; flex-wrap: wrap; width: 100%; }
+            .skill-node { width: 100px; height: 100px; background: var(--surface); border: 3px solid var(--border-color); border-radius: 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; z-index: 2; }
+            .skill-node:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+            .skill-node.max { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.3); background: linear-gradient(135deg, var(--surface) 0%, rgba(245,158,11,0.1) 100%); }
+            .skill-node.started { border-color: #10b981; }
+            .skill-node i { font-size: 1.8rem; margin-bottom: 8px; color: var(--text-3); transition:0.3s; }
+            .skill-node.started i { color: #10b981; }
+            .skill-node.max i { color: #f59e0b; text-shadow: 0 0 10px rgba(245,158,11,0.5); }
+            .skill-name { font-size: 0.8rem; font-weight: bold; text-align: center; color: var(--text-1); padding: 0 4px; line-height:1.2; }
+            .skill-level { position: absolute; bottom: -12px; background: var(--bg); border: 2px solid var(--border-color); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; color: var(--text-2); box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 3; }
+            .skill-node.max .skill-level { border-color: #f59e0b; color: #f59e0b; }
+            .skill-node.started .skill-level { border-color: #10b981; color: #10b981; }
+            
+            .theme-title-node { background: var(--primary); color: white; padding: 12px 24px; border-radius: 16px; font-weight: 800; font-size: 1.1rem; box-shadow: 0 6px 15px rgba(59,130,246,0.4); margin-bottom: 10px; position:relative; z-index:2; text-align:center; border: 2px solid rgba(255,255,255,0.2); }
+            
+            /* Connectors */
+            .connector-line { position: absolute; width: 2px; background: var(--primary); opacity: 0.3; z-index: 1; }
+            .vertical-line { height: 40px; left: 50%; top: -40px; transform: translateX(-50%); }
+            
+        </style>
+        `;
+        
+        container.innerHTML += treeStyles;
+
         Object.keys(themes).forEach(tName => {
             let subThemes = themes[tName];
-            let themeQs = [];
-            Object.values(subThemes).forEach(qs => themeQs = themeQs.concat(qs));
-            let themeProg = getProgressStats(themeQs);
             
-            let html = `
-            <div style="margin-bottom:20px; font-family: 'Tajawal', sans-serif;">
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
-                    <div style="width:12px; height:12px; border-radius:50%; background:var(--primary); box-shadow:0 0 8px rgba(59,130,246,0.5);"></div>
-                    <div style="font-weight:bold; font-size:1.2rem; color:var(--text-1);">${tName}</div>
-                    <div style="flex-grow:1; height:2px; background:var(--border-color); border-radius:2px; overflow:hidden;">
-                        <div style="width:${themeProg.percent}%; height:100%; background:var(--primary); transition:0.5s;"></div>
-                    </div>
-                    <div style="font-size:0.85rem; font-weight:bold; color:var(--text-2);">${themeProg.percent}%</div>
-                </div>
-                <div style="padding-top:8px;">
-            `;
+            let html = `<div class="skill-tree-container">`;
             
-            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; padding-top:10px;">';
-            Object.keys(subThemes).forEach(stName => {
-                let qs = subThemes[stName];
-                let prog = getProgressStats(qs);
-                let isDone = prog.isDone;
-                let dotColor = isDone ? '#10b981' : (prog.percent > 0 ? '#f59e0b' : 'var(--text-3)');
-                let bgColor = isDone ? 'rgba(16, 185, 129, 0.05)' : 'var(--surface)';
-                let borderColor = isDone ? '#10b981' : 'var(--border-color)';
+            // Root Node (Theme)
+            html += `<div class="theme-title-node"><i class="fa-solid fa-crown" style="margin-left:8px; color:#fef08a;"></i> ${tName}</div>`;
+            
+            let stKeys = Object.keys(subThemes);
+            let i = 0;
+            while(i < stKeys.length) {
+                // For a balanced tree, let's do 1 node, then 2 nodes, then 3 nodes per tier, etc.
+                // Or simply stick to 2 nodes per tier for a nice vertical tree
+                let itemsPerTier = (i % 2 === 0) ? 2 : 3; 
+                if (stKeys.length <= 3) itemsPerTier = 3;
                 
-                html += `
-                    <div onclick='openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; flex-direction:column; justify-content:center; align-items:center; padding:16px 12px; border-radius:16px; background:${bgColor}; border:1px solid ${borderColor}; cursor:pointer; position:relative; box-shadow:0 4px 10px rgba(0,0,0,0.03); transition:transform 0.2s, box-shadow 0.2s; text-align:center;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
-                        
-                        <div style="width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,0.5); display:flex; justify-content:center; align-items:center; margin-bottom:12px; border:1px solid rgba(0,0,0,0.05);">
-                            <i class="${isDone ? 'fa-solid fa-check' : 'fa-solid fa-layer-group'}" style="color:${dotColor}; font-size:1.2rem;"></i>
+                let chunk = stKeys.slice(i, i+itemsPerTier);
+                html += `<div class="skill-tier">`;
+                
+                chunk.forEach(stName => {
+                    let qs = subThemes[stName];
+                    let prog = getProgressStats(qs);
+                    let isDone = prog.isDone;
+                    
+                    let nodeClass = "skill-node";
+                    let icon = "fa-book-open"; // default
+                    
+                    if (isDone) {
+                        nodeClass += " max";
+                        icon = "fa-medal";
+                    } else if (prog.percent > 0) {
+                        nodeClass += " started";
+                        icon = "fa-fire";
+                    }
+                    
+                    html += `
+                        <div style="position:relative; display:flex; justify-content:center;">
+                            <div class="connector-line vertical-line"></div>
+                            <div class="${nodeClass}" onclick='openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})'>
+                                <i class="fa-solid ${icon}"></i>
+                                <div class="skill-name">${stName}</div>
+                                <div class="skill-level">${prog.count}/${prog.total}</div>
+                            </div>
                         </div>
-                        
-                        <div style="font-size:0.9rem; font-weight:bold; color:${isDone ? '#10b981' : 'var(--text-1)'}; margin-bottom:8px; line-height:1.3; min-height:2.6em; display:flex; align-items:center;">${stName}</div>
-                        
-                        <div style="width:100%; height:4px; background:var(--bg); border-radius:2px; overflow:hidden; margin-bottom:6px;">
-                            <div style="width:${prog.percent}%; height:100%; background:${dotColor};"></div>
-                        </div>
-                        
-                        <div style="font-size:0.75rem; font-weight:bold; color:var(--text-3);">${prog.count}/${prog.total} مكتمل</div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            
-            html += `</div></div>`;
+                    `;
+                });
+                html += `</div>`;
+                i += itemsPerTier;
+            }
+            html += `</div>`;
             container.innerHTML += html;
         });
         
