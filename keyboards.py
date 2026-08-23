@@ -39,7 +39,7 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     
     # Row 1: Training Menu
     row1 = [
-        InlineKeyboardButton(text="ðŸ“ Ø£ØªØ¯Ø±Ø¨", callback_data="main_training_menu")
+        InlineKeyboardButton(text="ðŸ“  Ø£ØªØ¯Ø±Ø¨", callback_data="main_training_menu")
     ]
     rows.append(row1)
     
@@ -48,7 +48,10 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     base_url = get_webapp_base_url()
     if base_url.startswith("https"):
         rows.append([
-            InlineKeyboardButton(text="ðŸ–¥ï¸ Ø§Ù„Ù…Ù†ØµØ© Ø§Ù„ØªØ¹Ù„ÙŠÙ…ÙŠØ© ÙˆØ§Ù„Ù„Ù‘ÙŠØ³ÙˆØ² ðŸ“±", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))
+            InlineKeyboardButton(text="💻 منصة الطالب والتطبيقات 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))
+        ])
+        rows.append([
+            InlineKeyboardButton(text="🧪 اختبار سريع (Test Mini App)", web_app=WebAppInfo(url=f"{base_url}/test.html?v=1"))
         ])
     
     # Row 1.5: Revision Library (full width)
