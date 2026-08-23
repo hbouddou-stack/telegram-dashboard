@@ -2681,20 +2681,8 @@ function startSpecificQuiz(questionsArray) {
     // Switch to quiz view manually if needed (quizEngine.start usually handles this)
     if (typeof openTab === 'function') openTab('quiz');
     
-    // Reset internal state and start
-    quizEngine.currentQuestionIndex = 0;
-    quizEngine.correctAnswers = 0;
-    quizEngine.wrongAnswers = 0;
-    quizEngine.startTimer();
-    quizEngine.showQuestion();
-    
-    // Update UI elements if they exist
-    const container = document.getElementById('quiz-container');
-    const resultDiv = document.getElementById('quiz-result');
-    const paramsDiv = document.getElementById('quiz-params');
-    if(container) container.style.display = 'block';
-    if(resultDiv) resultDiv.style.display = 'none';
-    if(paramsDiv) paramsDiv.style.display = 'none';
+    // Reset internal state and start using the proper API
+    quizEngine.start();
 }
 
 function openSheet(title, subtitle, questions) {
