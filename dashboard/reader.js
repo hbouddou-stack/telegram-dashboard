@@ -2437,83 +2437,103 @@ const supportFlow = {
 
 let currentJourneyLesson = null;
 
-function renderJourneyTimeline() {
-    if(!window.quranData) { fetch('/quran_db.json').then(r=>r.json()).then(d=>{ window.quranData=d; renderJourneyTimeline(); }); return; }
-    const container = document.getElementById('smart-tracker-container');
-    if (!container) return;
+let currentView = 'lesson';
+let taxonomyData = [];
+
+function switchView(viewName) {
+    currentView = viewName;
+    document.querySelectorAll('.view-btn').forEach(b => {
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-2)';
+        b.classList.remove('active');
+    });
     
-    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
-    
-    // Group lessons by a mock theme if not provided in data
-    let lessonStats = {};
-    if (window.quranData) {
-        window.quranData.forEach(q => {
-            if (q.subject && q.subject.toLowerCase() !== subject.toLowerCase()) return;
-            const ln = q.lessonNum || 1;
-            if (!lessonStats[ln]) {
-                lessonStats[ln] = { total: 0, qs: [] };
-            }
-            lessonStats[ln].total++;
-            lessonStats[ln].qs.push(q);
-        });
+    const activeBtn = document.getElementById('btn-' + viewName);
+    if(activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.style.background = 'var(--primary)';
+        activeBtn.style.color = 'white';
+        activeBtn.style.boxShadow = '0 2px 10px rgba(59,130,246,0.3)';
     }
     
-    const lessons = Object.keys(lessonStats).map(k => parseInt(k)).sort((a,b)=>a-b);
+    renderView();
+}
+
+async function fetchTaxonomy() {
+    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
+    const userId = (typeof state !== 'undefined' && state ? state.userId : 1);
+    
+    try {
+        const res = await fetch('/api/student/quiz/taxonomy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, subject })
+        });
+        const data = await res.json();
+        if(data.success) {
+            taxonomyData = data.questions || [];
+            renderView();
+        } else {
+            document.getElementById('smart-tracker-container').innerHTML = `<div style="text-align:center; padding:20px; color:red;">خطأ في تحميل البيانات</div>`;
+        }
+    } catch(e) {
+        console.error(e);
+        document.getElementById('smart-tracker-container').innerHTML = `<div style="text-align:center; padding:20px; color:red;">فشل الاتصال بالخادم</div>`;
+    }
+}
+
+function getProgressStats(qs) {
+    let count = 0;
+    qs.forEach(q => { 
+        if (state && state.progress && state.progress[q.id] === 'correct') count++; 
+    });
+    let percent = qs.length > 0 ? Math.round((count / qs.length) * 100) : 0;
+    return { count, total: qs.length, percent, isDone: percent === 100 };
+}
+
+function renderProgressRing(prog) {
+    let color = prog.isDone ? '#10b981' : 'var(--primary)';
+    let offset = 125.6 - (125.6 * prog.percent / 100);
+    return `
+    <div style="position:relative; width:45px; height:45px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--surface); box-shadow:0 2px 5px rgba(0,0,0,0.1); flex-shrink:0;">
+        <svg width="45" height="45" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
+            <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="var(--border-color)" stroke-width="3"></circle>
+            <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="${color}" stroke-width="3" stroke-dasharray="125.6" stroke-dashoffset="${offset}" style="transition:0.5s;"></circle>
+        </svg>
+        <span style="font-size:0.75rem; font-weight:bold; color:var(--text-2); z-index:1;">${prog.percent}%</span>
+    </div>`;
+}
+
+function renderView() {
+    const container = document.getElementById('smart-tracker-container');
     container.innerHTML = '';
     
-    if (lessons.length === 0) {
+    if (taxonomyData.length === 0) {
         container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-3);">لا توجد أسئلة لهذه المادة حالياً.</div>`;
         return;
     }
     
-    // Read user progress from localStorage
-    let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
-    let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
-    
-    // Group by mock themes (e.g., every 3 lessons is a new theme for demo purposes)
-    let themes = {};
-    lessons.forEach(l => {
-        let themeName = "الوحدة " + Math.ceil(l / 3);
-        if (!themes[themeName]) themes[themeName] = [];
-        themes[themeName].push(l);
-    });
-    
-    // Render Themes
-    Object.keys(themes).forEach(tName => {
-        let themeHtml = `
-            <div style="background:var(--surface); border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
-                <h3 style="margin:0 0 16px 0; color:var(--text); font-size:1.1rem; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
-                    <i class="fa-solid fa-layer-group" style="color:var(--primary); margin-left:8px;"></i> ${tName}
-                </h3>
-                <div style="display:grid; grid-template-columns:1fr; gap:12px;">
-        `;
-        
-        themes[tName].forEach(l => {
-            const stats = lessonStats[l];
-            let correctCount = 0;
-            stats.qs.forEach(q => { if (correctIds.includes(q.id)) correctCount++; });
+    if (currentView === 'lesson') {
+        let lessons = {};
+        taxonomyData.forEach(q => {
+            if(!lessons[q.lessonNum]) lessons[q.lessonNum] = { title: `الدرس ${q.lessonNum}`, qs: [] };
+            lessons[q.lessonNum].qs.push(q);
+        });
+
+        Object.keys(lessons).sort((a,b)=>a-b).forEach(k => {
+            let l = lessons[k];
+            let prog = getProgressStats(l.qs);
+            let cardColor = prog.isDone ? 'rgba(16, 185, 129, 0.05)' : 'var(--bg)';
+            let borderColor = prog.isDone ? '#10b981' : 'var(--border-color)';
+            let titleColor = prog.isDone ? '#10b981' : 'var(--text-1)';
             
-            let progressPercent = stats.total > 0 ? Math.round((correctCount / stats.total) * 100) : 0;
-            let isDone = progressPercent === 100;
-            
-            let cardColor = isDone ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg)';
-            let borderColor = isDone ? '#10b981' : 'var(--border-color)';
-            let titleColor = isDone ? '#10b981' : 'var(--text-1)';
-            
-            themeHtml += `
-                <div onclick="openJourneyLesson(${l}, ${progressPercent})" style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s;">
+            container.innerHTML += `
+                <div onclick='openSheet("${l.title}", "تمرين شامل على الدرس", ${JSON.stringify(l.qs).replace(/'/g, "&apos;")})' style="background:${cardColor}; border:1px solid ${borderColor}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="position:relative; width:45px; height:45px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--surface); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                            <!-- Simple SVG Circular Progress -->
-                            <svg width="45" height="45" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
-                                <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="var(--border-color)" stroke-width="3"></circle>
-                                <circle cx="22.5" cy="22.5" r="20" fill="none" stroke="${isDone ? '#10b981' : 'var(--primary)'}" stroke-width="3" stroke-dasharray="125.6" stroke-dashoffset="${125.6 - (125.6 * progressPercent / 100)}" style="transition:0.5s;"></circle>
-                            </svg>
-                            <span style="font-size:0.75rem; font-weight:bold; color:var(--text-2); z-index:1;">${progressPercent}%</span>
-                        </div>
+                        ${renderProgressRing(prog)}
                         <div>
-                            <div style="font-weight:bold; font-size:1rem; color:${titleColor};">الدرس ${l}</div>
-                            <div style="font-size:0.8rem; color:var(--text-3);">${correctCount} من ${stats.total} مكتمل</div>
+                            <div style="font-weight:bold; font-size:1rem; color:${titleColor};">${l.title}</div>
+                            <div style="font-size:0.8rem; color:var(--text-3);">${prog.count} من ${prog.total} مكتمل</div>
                         </div>
                     </div>
                     <div style="color:var(--text-3);"><i class="fa-solid fa-chevron-left"></i></div>
@@ -2521,76 +2541,151 @@ function renderJourneyTimeline() {
             `;
         });
         
-        themeHtml += `</div></div>`;
-        container.innerHTML += themeHtml;
-    });
+    } else if (currentView === 'theme') {
+        let themes = {};
+        taxonomyData.forEach(q => {
+            if(!themes[q.theme]) themes[q.theme] = {};
+            if(!themes[q.theme][q.subTheme]) themes[q.theme][q.subTheme] = [];
+            themes[q.theme][q.subTheme].push(q);
+        });
+
+        Object.keys(themes).forEach(tName => {
+            let subThemes = themes[tName];
+            let themeQs = [];
+            Object.values(subThemes).forEach(qs => themeQs = themeQs.concat(qs));
+            let themeProg = getProgressStats(themeQs);
+            
+            let html = `
+            <div style="background:var(--surface); border-radius:16px; margin-bottom:12px; border:1px solid var(--border-color); overflow:hidden;">
+                <div onclick="const c = this.nextElementSibling; c.style.display = c.style.display === 'none' ? 'block' : 'none';" style="padding:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                    <div style="font-weight:bold; font-size:1.1rem; color:var(--text-1); display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-folder" style="color:var(--primary);"></i> ${tName}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:0.8rem; font-weight:bold; color:var(--text-2);">${themeProg.percent}%</span>
+                        <i class="fa-solid fa-chevron-down" style="color:var(--text-3); font-size:0.8rem;"></i>
+                    </div>
+                </div>
+                <div style="padding:0 16px 16px 16px; display:none;">
+            `;
+            
+            Object.keys(subThemes).forEach(stName => {
+                let qs = subThemes[stName];
+                let prog = getProgressStats(qs);
+                let dotColor = prog.isDone ? '#10b981' : (prog.percent > 0 ? '#f59e0b' : 'var(--text-3)');
+                
+                html += `
+                    <div onclick='event.stopPropagation(); openSheet("${stName}", "موضوع: ${tName}", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:8px; background:var(--bg); margin-bottom:8px; cursor:pointer; border:1px solid transparent;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:8px; height:8px; border-radius:50%; background:${dotColor};"></div>
+                            <div style="font-size:0.9rem; font-weight:bold; color:var(--text-1);">${stName}</div>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text-3);">${prog.count}/${prog.total}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div></div>`;
+            container.innerHTML += html;
+        });
+        
+    } else if (currentView === 'chrono') {
+        let chronos = {};
+        taxonomyData.forEach(q => {
+            if(!chronos[q.hijriYear]) chronos[q.hijriYear] = [];
+            chronos[q.hijriYear].push(q);
+        });
+        
+        let html = `<div style="position:relative; padding-right:20px;">
+                    <div style="position:absolute; top:0; bottom:0; right:9px; width:2px; background:var(--border-color);"></div>`;
+                    
+        Object.keys(chronos).forEach(year => {
+            let qs = chronos[year];
+            let prog = getProgressStats(qs);
+            html += `
+                <div onclick='openSheet("${year}", "الفترة الزمنية", ${JSON.stringify(qs).replace(/'/g, "&apos;")})' style="position:relative; padding-right:20px; margin-bottom:20px;">
+                    <div style="position:absolute; right:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--primary); border:4px solid var(--surface);"></div>
+                    <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:12px; padding:12px; cursor:pointer;">
+                        <div style="font-weight:bold; color:var(--primary); margin-bottom:4px;">${year}</div>
+                        <div style="font-size:0.85rem; color:var(--text-2); display:flex; justify-content:space-between;">
+                            <span>${qs.length} أسئلة في هذه الفترة</span>
+                            <span style="font-weight:bold;">${prog.percent}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+    }
 }
 
-function openJourneyLesson(lessonNum, progressPercent) {
-    currentJourneyLesson = lessonNum;
-    document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
+function openSheet(title, subtitle, questions) {
+    document.getElementById('sheet-title').innerText = title;
     
-    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'sira') || 'sira';
-    
-    // Filter questions for this lesson
-    let lessonQs = [];
-    if (window.quranData) {
-        lessonQs = window.quranData.filter(q => q.subject && q.subject.toLowerCase() === subject.toLowerCase() && q.lessonNum == lessonNum);
+    // Add subtitle div dynamically if missing
+    let sheetHeader = document.getElementById('sheet-title').parentNode;
+    let sub = document.getElementById('sheet-subtitle');
+    if(!sub) {
+        sub = document.createElement('div');
+        sub.id = 'sheet-subtitle';
+        sub.style = "font-size:0.8rem; color:var(--text-3); margin-top:4px;";
+        sheetHeader.insertBefore(sub, sheetHeader.childNodes[1]);
     }
+    sub.innerText = subtitle;
     
     const grid = document.getElementById('journey-q-grid');
     grid.innerHTML = '';
     
-    let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
-    let wrongIds = JSON.parse(localStorage.getItem('quiz_wrong_ids') || '[]');
+    let progressProg = getProgressStats(questions);
     
-    lessonQs.forEach((q, idx) => {
-        const stone = document.createElement('div');
-        stone.className = 'q-stone';
+    // Change Grid Layout to Rows for detailed view
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = '1fr';
+    grid.style.gap = '10px';
+    
+    questions.forEach((q, idx) => {
+        const row = document.createElement('div');
         
-        let qStatus = 'unanswered';
-        if (correctIds.includes(q.id)) qStatus = 'correct';
-        else if (wrongIds.includes(q.id)) qStatus = 'wrong';
+        let qStatus = state && state.progress ? state.progress[q.id] || 'unanswered' : 'unanswered';
         
-        if(qStatus === 'correct') {
-            stone.classList.add('status-correct');
-            stone.innerHTML = '<i class="fa-solid fa-check"></i>';
-        } else if(qStatus === 'wrong') {
-            stone.classList.add('status-wrong');
-            stone.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-        } else {
-            stone.innerText = idx + 1;
-        }
+        let rowClass = 'background:var(--bg); border:1px solid var(--border-color); border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:0.2s;';
+        if(qStatus === 'correct') rowClass += ' border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05);';
+        if(qStatus === 'wrong') rowClass += ' border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);';
+        row.style.cssText = rowClass;
         
-        stone.onclick = () => {
+        let iconHtml = `<div style="width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; color:var(--text-2); background:var(--surface); border:1px solid var(--border-color); flex-shrink:0;">${idx+1}</div>`;
+        if(qStatus === 'correct') iconHtml = `<div style="width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; color:#10b981; background:rgba(16, 185, 129, 0.1); border:1px solid #10b981; flex-shrink:0;"><i class="fa-solid fa-check"></i></div>`;
+        if(qStatus === 'wrong') iconHtml = `<div style="width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; color:#ef4444; background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; flex-shrink:0;"><i class="fa-solid fa-xmark"></i></div>`;
+        
+        let badgeHtml = currentView !== 'lesson' ? `<div style="font-size:0.7rem; background:var(--primary); color:white; padding:2px 6px; border-radius:6px; font-weight:bold;">الدرس ${q.lessonNum}</div>` : '';
+        
+        let truncatedTitle = q.title ? q.title.substring(0, 40) + (q.title.length > 40 ? '...' : '') : 'سؤال';
+        
+        row.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+                ${iconHtml}
+                <div style="font-size:0.9rem; font-weight:bold; color:var(--text-1);">${truncatedTitle}</div>
+            </div>
+            ${badgeHtml}
+        `;
+        
+        row.onclick = () => {
             closeJourneySheet();
             setTimeout(() => {
                 if(window.quizEngine) {
                     const sb = document.getElementById('subject-select');
                     const ls = document.getElementById('lesson-select');
-                    if(sb) sb.value = q.subject;
-                    if(ls) ls.value = lessonNum;
+                    if(sb) sb.value = q.subject || 'sira';
+                    if(ls) ls.value = q.lessonNum || 1;
+                    // Trigger the quiz engine for THIS specific question? 
+                    // Actually, we should just start the quiz for the lesson it belongs to for now.
                     quizEngine.start();
                 }
             }, 300);
         };
-        grid.appendChild(stone);
+        grid.appendChild(row);
     });
-    
-    // Change Play button text based on progress
-    const btn = document.getElementById('btn-play-all-lesson');
-    if(btn) {
-        if(progressPercent === 100) {
-            btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> إعادة جميع الأسئلة';
-            btn.style.background = 'var(--text-2)';
-        } else if(progressPercent > 0) {
-            btn.innerHTML = '<i class="fa-solid fa-play"></i> إكمال الأسئلة المتبقية';
-            btn.style.background = 'var(--primary)';
-        } else {
-            btn.innerHTML = '<i class="fa-solid fa-play"></i> ابدأ أسئلة الدرس';
-            btn.style.background = 'var(--primary)';
-        }
-    }
     
     document.getElementById('journey-bottom-sheet').classList.add('open');
     document.getElementById('journey-sheet-overlay').classList.add('open');
@@ -2600,6 +2695,11 @@ function closeJourneySheet() {
     document.getElementById('journey-bottom-sheet').classList.remove('open');
     document.getElementById('journey-sheet-overlay').classList.remove('open');
 }
+
+function renderJourneyTimeline() {
+    fetchTaxonomy();
+}
+
 
 function playWholeLesson() {
     closeJourneySheet();

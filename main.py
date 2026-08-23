@@ -3629,6 +3629,50 @@ async def get_student_stats(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
+async def get_student_quiz_taxonomy(request):
+    try:
+        data = await request.json()
+        user_id = data.get('userId')
+        subject = data.get('subject')
+        
+        if not user_id or not subject:
+            return web.json_response({"success": False, "error": "Missing userId or subject"}, status=400)
+            
+        import aiosqlite
+        from config import DATABASE_PATH
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            
+            # Fetch all active questions for the subject to build the taxonomy tree
+            subj_variants = [subject]
+            if subject.lower() in ('aqeeda', 'aqida'):
+                subj_variants = ['aqeeda', 'aqida']
+            
+            placeholders = ",".join("?" for _ in subj_variants)
+            query = f"SELECT id, course_number, theme, sub_theme, hijra_year, question FROM questions WHERE subject IN ({placeholders}) AND is_active = 1"
+            
+            async with db.execute(query, subj_variants) as cursor:
+                rows = await cursor.fetchall()
+                
+            questions = []
+            for row in rows:
+                questions.append({
+                    "id": row["id"],
+                    "lessonNum": row["course_number"] or 1,
+                    "theme": row["theme"] or "مواضيع عامة",
+                    "subTheme": row["sub_theme"] or "أساسيات",
+                    "hijriYear": row["hijra_year"] or "غير محدد",
+                    "title": row["question"][:50] + "..." if row["question"] else "سؤال"
+                })
+                
+        return web.json_response({"success": True, "questions": questions})
+        
+    except Exception as e:
+        logger.error(f"Error in get_student_quiz_taxonomy: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+
 async def get_student_quiz_options(request):
     try:
         subject = request.query.get('subject')
@@ -3926,6 +3970,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/report-chapter', report_chapter)
     # Student Practice & Quiz API routes
     app.router.add_post('/api/student/stats', get_student_stats)
+    app.router.add_post('/api/student/quiz/taxonomy', get_student_quiz_taxonomy)
     app.router.add_get('/api/student/quiz/options', get_student_quiz_options)
     app.router.add_post('/api/student/quiz/setup', get_student_quiz_questions)
     app.router.add_post('/api/student/quiz/submit', submit_student_quiz_answer)

@@ -1084,12 +1084,18 @@
     <!-- TAB: JOURNEY (SIRA PATH) -->
     <div class="tab-panel" id="tab-journey" style="padding: 20px 10px 100px 10px; background: var(--bg); min-height: 100vh;">
         <div style="text-align:center; margin-bottom: 24px;">
-            <h2 style="color:var(--primary); font-weight:800; font-size:1.5rem;">مسار الإنجاز</h2>
-            <p style="color:var(--text-2); font-size:0.9rem; margin-top:5px;">اختر الدرس الذي ترغب في التدرب عليه</p>
+            <h2 style="color:var(--primary); font-weight:800; font-size:1.5rem;">التدريب الذكي</h2>
+            <p style="color:var(--text-2); font-size:0.9rem; margin-top:5px; margin-bottom: 20px;">كيف تفضل استعراض الأسئلة؟</p>
+            
+            <div style="display:flex; background:var(--surface); border-radius:12px; padding:4px; border:1px solid var(--border-color); margin-bottom:24px; max-width:600px; margin-left:auto; margin-right:auto;">
+                <div class="view-btn active" onclick="switchView('lesson')" id="btn-lesson" style="flex:1; padding:10px; text-align:center; border-radius:8px; font-weight:bold; font-size:0.9rem; cursor:pointer; color:var(--text-2);"><i class="fa-solid fa-list-ol"></i> حسب الدرس</div>
+                <div class="view-btn" onclick="switchView('theme')" id="btn-theme" style="flex:1; padding:10px; text-align:center; border-radius:8px; font-weight:bold; font-size:0.9rem; cursor:pointer; color:var(--text-2);"><i class="fa-solid fa-folder-tree"></i> حسب الموضوع</div>
+                <div class="view-btn" onclick="switchView('chrono')" id="btn-chrono" style="flex:1; padding:10px; text-align:center; border-radius:8px; font-weight:bold; font-size:0.9rem; cursor:pointer; color:var(--text-2);"><i class="fa-solid fa-clock-rotate-left"></i> التسلسل الزمني</div>
+            </div>
         </div>
 
         <div id="smart-tracker-container" style="display:flex; flex-direction:column; gap:20px; max-width:600px; margin:0 auto;">
-            <!-- Categories/Themes and Lesson Cards injected by reader.js -->
+            <div style="text-align:center; padding:20px; color:var(--text-3);"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</div>
         </div>
     </div>
     
