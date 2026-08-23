@@ -39,11 +39,11 @@ function playCompletionSound() {
 }
 
 const SUBJECT_LABELS = {
-    'sira': 'Ø§Ù„Ø³ÙŠرة Ø§Ù„Ù†Ø¨ÙˆÙŠة',
-    'fiqh': 'Ø§Ù„ÙÙ‚Ù‡',
-    'tahawi': 'Ø§Ù„Ø¹Ù‚ÙŠدة Ø§Ù„Ø·Ø­Ø§ÙˆÙŠة',
-    'adab': 'Ø§Ù„أدب',
-    'nahw': 'Ø§Ù„Ù†حو'
+    'sira': 'Ã˜Â§Ã™â€žÃ˜Â³Ã™Å Ø±Ø© Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Ë†Ã™Å Ø©',
+    'fiqh': 'Ã˜Â§Ã™â€žÃ™ÂÃ™â€šÃ™â€¡',
+    'tahawi': 'Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€šÃ™Å Ø¯Ø© Ã˜Â§Ã™â€žÃ˜Â·Ã˜Â­Ã˜Â§Ã™Ë†Ã™Å Ø©',
+    'adab': 'Ã˜Â§Ã™â€žØ£Ø¯Ø¨',
+    'nahw': 'Ã˜Â§Ã™â€žÃ™â€ Ø­Ùˆ'
 };
 
 
@@ -257,14 +257,14 @@ function initUIControls() {
                 videoWrapper.classList.remove('pinned');
                 videoWrapper.style.position = 'relative';
                 btnSticky.style.opacity = '0.5';
-                btnSticky.title = "Ã‰pingler la vidÃ©o";
+                btnSticky.title = "Ãƒâ€°pingler la vidÃƒÂ©o";
                 sommaireWrapper.style.top = '0px';
             } else {
                 // Pin
                 videoWrapper.classList.add('pinned');
                 videoWrapper.style.position = 'sticky';
                 btnSticky.style.opacity = '1';
-                btnSticky.title = "DÃ©sÃ©pingler la vidÃ©o";
+                btnSticky.title = "DÃƒÂ©sÃƒÂ©pingler la vidÃƒÂ©o";
                 sommaireWrapper.style.top = videoWrapper.offsetHeight + 'px';
             }
         });
@@ -311,9 +311,9 @@ function initUIControls() {
     // Initialize UI theme toggle button
     const themeBtn = document.getElementById('btn-theme-toggle');
     if(themeBtn) {
-        if(currentTheme === 'dark') themeBtn.textContent = 'â˜€ï¸';
-        else if(currentTheme === 'sepia') themeBtn.textContent = 'ðŸ“œ';
-        else themeBtn.textContent = 'ðŸŒ™';
+        if(currentTheme === 'dark') themeBtn.textContent = 'Ã¢Ëœâ‚¬Ã¯Â¸Â';
+        else if(currentTheme === 'sepia') themeBtn.textContent = 'Ã°Å¸â€œÅ“';
+        else themeBtn.textContent = 'Ã°Å¸Å’â„¢';
 
         themeBtn.addEventListener('click', () => {
             if (currentTheme === 'light') currentTheme = 'sepia';
@@ -323,9 +323,9 @@ function initUIControls() {
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('readerTheme', currentTheme);
             
-            if (currentTheme === 'dark') themeBtn.textContent = 'â˜€ï¸';
-            else if (currentTheme === 'sepia') themeBtn.textContent = 'ðŸ“œ';
-            else themeBtn.textContent = 'ðŸŒ™';
+            if (currentTheme === 'dark') themeBtn.textContent = 'Ã¢Ëœâ‚¬Ã¯Â¸Â';
+            else if (currentTheme === 'sepia') themeBtn.textContent = 'Ã°Å¸â€œÅ“';
+            else themeBtn.textContent = 'Ã°Å¸Å’â„¢';
         });
     }
     
@@ -419,8 +419,8 @@ function buildSyllabusTab(transcripts) {
             card.innerHTML = `
                 <div class="card-info">
                     <h3>${data.label}</h3>
-                    <p style="margin-bottom: 4px; font-weight: 600; color: var(--subject-color, var(--primary));">Ø§Ù„Ø¯Ø±Ùˆس: ${data.lessons.length}</p>
-                    <p style="color: var(--text-2); font-size: 13px;">Ø§Ù„Ù…Ø­Ø§Ùˆر Ø§Ù„Ù…Ù†جزة: ${completedBlocks}/${totalBlocks}</p>
+                    <p style="margin-bottom: 4px; font-weight: 600; color: var(--subject-color, var(--primary));">Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â±Ã™Ë†Ø³: ${data.lessons.length}</p>
+                    <p style="color: var(--text-2); font-size: 13px;">Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ø± Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ø¬Ø²Ø©: ${completedBlocks}/${totalBlocks}</p>
                 </div>
                 <div class="card-progress">
                     <div class="circular-progress-wrap" style="background: conic-gradient(var(--subject-color, var(--primary, var(--accent-color))) ${deg}deg, var(--surface-2) 0deg);">
@@ -438,7 +438,7 @@ function buildSyllabusTab(transcripts) {
             // Mode Programme (List) - Old Accordion
             const subjHeader = document.createElement('div');
             subjHeader.className = 'subject-header';
-            subjHeader.innerHTML = `<h3>${data.label}</h3><span class="chev">â–¼</span>`;
+            subjHeader.innerHTML = `<h3>${data.label}</h3><span class="chev">Ã¢â€“Â¼</span>`;
             
             const subjContent = document.createElement('div');
             subjContent.className = 'subject-content subject-list';
@@ -446,7 +446,7 @@ function buildSyllabusTab(transcripts) {
             data.lessons.forEach(l => {
                 let html = `<div style="background:var(--bg); border-radius:12px; margin-bottom:10px; overflow:hidden;">
                     <div style="padding:12px; background:var(--surface); border-bottom:1px solid var(--border-color); font-weight:bold; display:flex; justify-content:space-between; align-items:center;" onclick="openLessonFromList('${l.subject}', ${l.lessonNum})">
-                        <span>Ø§Ù„درس ${l.lessonNum} - ${l.title || ''}</span>
+                        <span>Ã˜Â§Ã™â€žØ¯Ø±Ø³ ${l.lessonNum} - ${l.title || ''}</span>
                     </div>
                     <div style="padding:10px;">`;
                 
@@ -455,7 +455,7 @@ function buildSyllabusTab(transcripts) {
                         const compKey = `${l.subject}_${l.lessonNum}_${idx}`;
                         const isComp = !!syllabusCompletion[compKey];
                         html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:white; margin-bottom:6px; border-radius:8px; border:1px solid ${isComp ? 'var(--primary)' : 'var(--border-color)'};">
-                            <button onclick="toggleChapterCompletion(event, '${l.subject}', ${l.lessonNum}, ${idx})" style="width:24px; height:24px; border-radius:50%; border:2px solid ${isComp ? 'var(--primary)' : '#cbd5e1'}; background:${isComp ? 'var(--primary)' : 'none'}; color:white; font-size:12px; cursor:pointer; display:flex; justify-content:center; align-items:center; flex-shrink:0;">${isComp ? 'âœ“' : ''}</button>
+                            <button onclick="toggleChapterCompletion(event, '${l.subject}', ${l.lessonNum}, ${idx})" style="width:24px; height:24px; border-radius:50%; border:2px solid ${isComp ? 'var(--primary)' : '#cbd5e1'}; background:${isComp ? 'var(--primary)' : 'none'}; color:white; font-size:12px; cursor:pointer; display:flex; justify-content:center; align-items:center; flex-shrink:0;">${isComp ? 'Ã¢Å“â€œ' : ''}</button>
                             <span onclick="openLessonFromList('${l.subject}', ${l.lessonNum}, ${b.start_seconds})" style="flex:1; margin-right:12px; font-size:13px; color:var(--text); cursor:pointer; text-align:right;">${b.title}</span>
                         </div>`;
                     });
@@ -484,7 +484,7 @@ function openSubjectDetail(data, colorClass) {
     const header = document.createElement('div');
     header.className = `subject-detail-header ${colorClass}`;
     header.innerHTML = `
-        <button class="back-btn" onclick="buildSyllabusTab(DB)">Ø±Ø¬Ùˆع âž¡ï¸</button>
+        <button class="back-btn" onclick="buildSyllabusTab(DB)">Ã˜Â±Ã˜Â¬Ã™Ë†Ø¹ Ã¢Å¾Â¡Ã¯Â¸Â</button>
         <h2 style="color: var(--subject-color, var(--primary, var(--accent-color)));">${data.label}</h2>
     `;
     listContainer.appendChild(header);
@@ -512,11 +512,11 @@ function openSubjectDetail(data, colorClass) {
         let badgeHtml = '';
         if (total > 0) {
             if (isComplete) {
-                badgeHtml = `<div style="font-size: 11px; font-weight: bold; color: var(--success, #10b981); background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 4px; line-height: 1.2;">âœ… ${comp}/${total} Ù…Ø­Ø§Ùˆر</div>`;
+                badgeHtml = `<div style="font-size: 11px; font-weight: bold; color: var(--success, #10b981); background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 4px; line-height: 1.2;">Ã¢Å“â€¦ ${comp}/${total} Ã™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ø±</div>`;
             } else if (comp > 0) {
-                badgeHtml = `<div style="font-size: 11px; font-weight: bold; color: var(--subject-color, var(--primary, var(--accent-color))); background: rgba(0, 0, 0, 0.05); padding: 2px 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 4px; line-height: 1.2;">â–¶ï¸ ${comp}/${total} Ù…Ø­Ø§Ùˆر</div>`;
+                badgeHtml = `<div style="font-size: 11px; font-weight: bold; color: var(--subject-color, var(--primary, var(--accent-color))); background: rgba(0, 0, 0, 0.05); padding: 2px 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 4px; line-height: 1.2;">Ã¢â€“Â¶Ã¯Â¸Â ${comp}/${total} Ã™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ø±</div>`;
             } else {
-                badgeHtml = `<div style="font-size: 11px; font-weight: bold; color: var(--text-3); background: rgba(0, 0, 0, 0.05); padding: 2px 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 4px; line-height: 1.2;">${total} Ù…Ø­Ø§Ùˆر</div>`;
+                badgeHtml = `<div style="font-size: 11px; font-weight: bold; color: var(--text-3); background: rgba(0, 0, 0, 0.05); padding: 2px 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 4px; line-height: 1.2;">${total} Ã™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ø±</div>`;
             }
         }
 
@@ -581,7 +581,7 @@ function renderLessonHeader(lesson) {
     const videoId = extractYoutubeId(lesson.video_url || lesson.videoLink || lesson.url);
     const videoWrapper = document.getElementById('video-wrapper');
     if (!videoId) {
-        videoWrapper.innerHTML = '<div style="background:#1e293b; color:white; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column;"><span style="font-size:32px;margin-bottom:8px;">ðŸŽ¥</span><span style="font-size:14px;">Ø§Ù„ÙÙŠØ¯ÙŠÙˆ ØºÙŠر Ù…ØªÙˆÙر Ù„Ù‡ذا Ø§Ù„درس</span></div>';
+        videoWrapper.innerHTML = '<div style="background:#1e293b; color:white; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column;"><span style="font-size:32px;margin-bottom:8px;">Ã°Å¸Å½Â¥</span><span style="font-size:14px;">Ã˜Â§Ã™â€žÃ™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë† Ã˜ÂºÃ™Å Ø± Ã™â€¦Ã˜ÂªÃ™Ë†Ã™ÂØ± Ã™â€žÃ™â€¡Ø°Ø§ Ã˜Â§Ã™â€žØ¯Ø±Ø³</span></div>';
     } else {
         if (!document.getElementById('youtube-player')) {
             videoWrapper.innerHTML = '<div id="youtube-player"></div>';
@@ -589,7 +589,7 @@ function renderLessonHeader(lesson) {
         if (window.YT && window.YT.Player) {
             initYouTubePlayer(videoId);
         } else {
-            // API non prÃªte
+            // API non prÃƒÂªte
             const interval = setInterval(() => {
                 if (window.YT && window.YT.Player) {
                     initYouTubePlayer(videoId);
@@ -605,7 +605,7 @@ function prepareThematicData(lesson) {
     if (!lesson.segments || lesson.segments.length === 0) {
         // Fallback if no segments
         thematicData.push({
-            title: "LeÃ§on complÃ¨te",
+            title: "LeÃƒÂ§on complÃƒÂ¨te",
             startTime: 0,
             endTime: 99999,
             htmlContent: `<div class="reader-paragraph">${lesson.full_text || lesson.summary}</div>`,
@@ -710,7 +710,7 @@ function prepareThematicData(lesson) {
             } else {
                 const s1 = injectKaraokeSpans(formatProse(part.shatr1.trim()));
                 const s2 = part.shatr2 ? injectKaraokeSpans(formatProse(part.shatr2.trim())) : '';
-                const numBadge = part.num ? `<div style="position: absolute; top: -14px; right: 20px; background: var(--gold, #d4af37); color: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid white;">Ø¨ÙŠت ${part.num}</div>` : '';
+                const numBadge = part.num ? `<div style="position: absolute; top: -14px; right: 20px; background: var(--gold, #d4af37); color: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid white;">Ã˜Â¨Ã™Å Øª ${part.num}</div>` : '';
                 
                 htmlContent += `
                 <div class="poetry-verse-container" style="position: relative; margin: 28px auto 18px auto; max-width: 90%; direction: rtl; text-align: center;">
@@ -727,8 +727,8 @@ function prepareThematicData(lesson) {
             htmlContent += `
             <div class="reader-chapter-explanation">
                 <div class="explanation-header">
-                    <span class="explanation-icon">ðŸ’¡</span>
-                    <span class="explanation-title">ØªÙˆØ¬ÙŠÙ‡ ÙˆÙائدة (Note du Professeur)</span>
+                    <span class="explanation-icon">Ã°Å¸â€™Â¡</span>
+                    <span class="explanation-title">Ã˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã™Ë†Ã™ÂØ§Ø¦Ø¯Ø© (Note du Professeur)</span>
                 </div>
                 <div class="explanation-content">${block.explanation}</div>
             </div>`;
@@ -770,7 +770,7 @@ function renderSommaire() {
     
     const sheetTitle = document.querySelector('#sommaire-sheet .bottom-sheet-header h3');
     if (sheetTitle && currentLessonData) {
-        sheetTitle.textContent = `Ù…Ø­Ø§Ùˆر Ø§Ù„درس ${currentLessonData.lessonNum}`;
+        sheetTitle.textContent = `Ã™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ø± Ã˜Â§Ã™â€žØ¯Ø±Ø³ ${currentLessonData.lessonNum}`;
     }
 
     thematicData.forEach((data, index) => {
@@ -789,14 +789,14 @@ function renderSommaire() {
         
         let checkBtn = document.createElement('button');
         checkBtn.className = 'sommaire-check-btn ' + (isComp ? 'completed' : '');
-        checkBtn.innerHTML = isComp ? 'âœ“' : '';
+        checkBtn.innerHTML = isComp ? 'Ã¢Å“â€œ' : '';
         checkBtn.onclick = (e) => {
             e.stopPropagation();
             isComp = !isComp;
             syllabusCompletion[compKey] = isComp;
             localStorage.setItem('academy_syllabus_completions', JSON.stringify(syllabusCompletion));
             checkBtn.className = 'sommaire-check-btn ' + (isComp ? 'completed' : '');
-            checkBtn.innerHTML = isComp ? 'âœ“' : '';
+            checkBtn.innerHTML = isComp ? 'Ã¢Å“â€œ' : '';
             
             updateDashboardProgress();
             
@@ -804,7 +804,7 @@ function renderSommaire() {
                 const vBtn = document.querySelector('.validate-chapter-btn');
                 if (vBtn) {
                     vBtn.className = isComp ? 'validate-chapter-btn completed' : 'validate-chapter-btn';
-                    vBtn.innerHTML = isComp ? 'âœ“ ØªÙ… Ø¥Ù†جاز Ø§Ù„Ù…Ø­Ùˆر' : 'ØªØ¹Ù„ÙŠÙ… ÙƒÙ…Ù‚Ø±Ùˆء';
+                    vBtn.innerHTML = isComp ? 'Ã¢Å“â€œ Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ø¬Ø§Ø² Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø±' : 'Ã˜ÂªÃ˜Â¹Ã™â€žÃ™Å Ã™â€¦ Ã™Æ’Ã™â€¦Ã™â€šÃ˜Â±Ã™Ë†Ø¡';
                 }
             }
         };
@@ -856,7 +856,7 @@ function switchThemeTab(index, shouldSeek = true) {
         courseBadge.style.color = 'var(--text-3)';
         courseBadge.style.marginBottom = '6px';
         const subjLabel = SUBJECT_LABELS[currentSubject] || currentSubject;
-        courseBadge.textContent = `${subjLabel} â€¢ Ø§Ù„درس ${currentLessonNum}`;
+        courseBadge.textContent = `${subjLabel} Ã¢â‚¬Â¢ Ã˜Â§Ã™â€žØ¯Ø±Ø³ ${currentLessonNum}`;
         contentDiv.appendChild(courseBadge);
     }
 
@@ -887,17 +887,17 @@ function switchThemeTab(index, shouldSeek = true) {
         finishBtnWrapper.style.marginBottom = '12px';
         let finishBtn = document.createElement('button');
         finishBtn.className = 'finish-theme-btn';
-        finishBtn.innerHTML = 'âœ… Ø£ÙƒÙ…Ù„ت Ù‡ذا Ø§Ù„Ù…Ø­Ùˆر';
+        finishBtn.innerHTML = 'Ã¢Å“â€¦ Ã˜Â£Ã™Æ’Ã™â€¦Ã™â€žØª Ã™â€¡Ø°Ø§ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø±';
         finishBtn.onclick = (e) => {
             toggleChapterCompletion(e, currentSubject, currentLessonNum, index);
             if (finishBtn.classList.contains('completed')) {
                 finishBtn.classList.remove('completed');
-                finishBtn.innerHTML = 'âœ… Ø£ÙƒÙ…Ù„ت Ù‡ذا Ø§Ù„Ù…Ø­Ùˆر';
+                finishBtn.innerHTML = 'Ã¢Å“â€¦ Ã˜Â£Ã™Æ’Ã™â€¦Ã™â€žØª Ã™â€¡Ø°Ø§ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø±';
                 finishBtn.style.background = 'var(--surface)';
                 finishBtn.style.color = 'var(--text)';
             } else {
                 finishBtn.classList.add('completed');
-                finishBtn.innerHTML = 'âœ”ï¸ ØªÙ… Ø¥Ù†جاز Ø§Ù„Ù…Ø­Ùˆر';
+                finishBtn.innerHTML = 'Ã¢Å“â€Ã¯Â¸Â Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ø¬Ø§Ø² Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø±';
                 finishBtn.style.background = 'var(--success, #10b981)';
                 finishBtn.style.color = 'white';
             }
@@ -907,7 +907,7 @@ function switchThemeTab(index, shouldSeek = true) {
         const compKey = `${currentSubject}_${currentLessonNum}_${index}`;
         if (syllabusCompletion[compKey]) {
             finishBtn.classList.add('completed');
-            finishBtn.innerHTML = 'âœ”ï¸ ØªÙ… Ø¥Ù†جاز Ø§Ù„Ù…Ø­Ùˆر';
+            finishBtn.innerHTML = 'Ã¢Å“â€Ã¯Â¸Â Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ø¬Ø§Ø² Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø±';
             finishBtn.style.background = 'var(--success, #10b981)';
             finishBtn.style.color = 'white';
         } else {
@@ -934,7 +934,7 @@ function switchThemeTab(index, shouldSeek = true) {
         
         let nextBtn = document.createElement('button');
         nextBtn.className = 'next-tab-btn';
-        nextBtn.innerHTML = `Ø§Ù„ØªØ§Ù„ي: ${thematicData[index+1].title} â¬…ï¸`;
+        nextBtn.innerHTML = `Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â§Ã™â€žÙŠ: ${thematicData[index+1].title} Ã¢Â¬â€¦Ã¯Â¸Â`;
         nextBtn.onclick = () => switchThemeTab(index + 1, true);
         
         nextBtnWrapper.appendChild(nextBtn);
@@ -966,23 +966,23 @@ function switchThemeTab(index, shouldSeek = true) {
     if (isCompleted) {
         markBtn.style.background = '#e2e8f0';
         markBtn.style.color = '#64748b';
-        markBtn.textContent = 'âœ“ Ù…ÙƒØªÙ…Ù„';
+        markBtn.textContent = 'Ã¢Å“â€œ Ã™â€¦Ã™Æ’Ã˜ÂªÃ™â€¦Ã™â€ž';
         markBtn.disabled = true;
     } else {
         markBtn.style.background = 'var(--primary)';
         markBtn.style.color = 'white';
-        markBtn.textContent = 'âœ… Ø¥Ù†Ù‡اء Ù‡ذا Ø§Ù„Ù…Ø­Ùˆر';
+        markBtn.textContent = 'Ã¢Å“â€¦ Ã˜Â¥Ã™â€ Ã™â€¡Ø§Ø¡ Ã™â€¡Ø°Ø§ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø±';
         markBtn.onclick = () => {
             if (currentLessonData) {
                 toggleChapterCompletion(null, currentLessonData.subject, currentLessonData.lessonNum, index);
                 markBtn.style.background = '#e2e8f0';
                 markBtn.style.color = '#64748b';
-                markBtn.textContent = 'âœ“ Ù…ÙƒØªÙ…Ù„';
+                markBtn.textContent = 'Ã¢Å“â€œ Ã™â€¦Ã™Æ’Ã˜ÂªÃ™â€¦Ã™â€ž';
                 markBtn.disabled = true;
                 
                 // Show completion toast or visual effect
                 let tst = document.createElement('div');
-                tst.textContent = 'ØªÙ… ØªØ³Ø¬ÙŠÙ„ Ø§Ù„ØªÙ‚Ø¯Ù…!';
+                tst.textContent = 'Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ˜Â¯Ã™â€¦!';
                 tst.style.position = 'fixed';
                 tst.style.bottom = '80px';
                 tst.style.left = '50%';
@@ -1007,7 +1007,7 @@ function switchThemeTab(index, shouldSeek = true) {
         practiceBtnWrapper.style.marginTop = '12px';
         practiceBtnWrapper.style.marginBottom = '24px';
         let practiceBtn = document.createElement('button');
-        practiceBtn.innerHTML = 'ðŸŽ¯ Ø§Ù„ØªØ¯Ø±ÙŠب Ø¹Ù„Ù‰ Ù‡ذا Ø§Ù„درس';
+        practiceBtn.innerHTML = 'Ã°Å¸Å½Â¯ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¯Ã˜Â±Ã™Å Ø¨ Ã˜Â¹Ã™â€žÃ™â€° Ã™â€¡Ø°Ø§ Ã˜Â§Ã™â€žØ¯Ø±Ø³';
         practiceBtn.style.background = 'var(--primary)';
         practiceBtn.style.color = 'white';
         practiceBtn.style.border = 'none';
@@ -1058,18 +1058,18 @@ function createQuizElement(questionData) {
     // Parse explanation like Telegram
     let text = cleanExplanation.trim();
     let sourceText = "";
-    if (text.includes("ðŸ“")) {
-        let parts = text.split("ðŸ“");
+    if (text.includes("Ã°Å¸â€œÂ")) {
+        let parts = text.split("Ã°Å¸â€œÂ");
         text = parts[0].trim();
-        sourceText = "ðŸ“ " + parts[1].trim();
-    } else if (text.includes("Ø§Ù„Ù…صدر")) {
-        let parts = text.split("Ø§Ù„Ù…صدر");
+        sourceText = "Ã°Å¸â€œÂ " + parts[1].trim();
+    } else if (text.includes("Ã˜Â§Ã™â€žÃ™â€¦ØµØ¯Ø±")) {
+        let parts = text.split("Ã˜Â§Ã™â€žÃ™â€¦ØµØ¯Ø±");
         text = parts[0].trim();
-        sourceText = "ðŸ“ Ø§Ù„Ù…صدر " + parts[1].trim();
+        sourceText = "Ã°Å¸â€œÂ Ã˜Â§Ã™â€žÃ™â€¦ØµØ¯Ø± " + parts[1].trim();
     }
 
     let profNote = "";
-    const profPatterns = ["ØªÙˆØ¬ÙŠÙ‡ ÙˆÙائدة :", "Ù…Ù„احظة Ø§Ù„أستاذ :", "Ùائدة :"];
+    const profPatterns = ["Ã˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã™Ë†Ã™ÂØ§Ø¦Ø¯Ø© :", "Ã™â€¦Ã™â€žØ§Ø­Ø¸Ø© Ã˜Â§Ã™â€žØ£Ø³ØªØ§Ø° :", "Ã™ÂØ§Ø¦Ø¯Ø© :"];
     for (let p of profPatterns) {
         if (text.includes(p)) {
             let parts = text.split(p);
@@ -1081,17 +1081,17 @@ function createQuizElement(questionData) {
 
     let parsedHtml = '';
     if (text) {
-        parsedHtml += `<div class="exp-main" style="margin-bottom:12px; font-size:14px;"><strong>Ø§Ù„ØªÙˆØ¶ÙŠح:</strong><br>${text}</div>`;
+        parsedHtml += `<div class="exp-main" style="margin-bottom:12px; font-size:14px;"><strong>Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜Â¶Ã™Å Ø­:</strong><br>${text}</div>`;
     }
     if (profNote) {
-        parsedHtml += `<div class="exp-prof" style="margin-bottom:12px; background:var(--surface-2); padding:12px; border-radius:8px; border-right:3px solid var(--primary); font-size:13.5px;"><span style="font-size:16px;">ðŸ’¡</span> <strong>ØªÙˆØ¬ÙŠÙ‡ ÙˆÙائدة:</strong><br>${profNote}</div>`;
+        parsedHtml += `<div class="exp-prof" style="margin-bottom:12px; background:var(--surface-2); padding:12px; border-radius:8px; border-right:3px solid var(--primary); font-size:13.5px;"><span style="font-size:16px;">Ã°Å¸â€™Â¡</span> <strong>Ã˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã™Ë†Ã™ÂØ§Ø¦Ø¯Ø©:</strong><br>${profNote}</div>`;
     }
     if (sourceText) {
         parsedHtml += `<div class="exp-source" style="font-size:12px; color:var(--text-3); margin-top:8px;">${sourceText}</div>`;
     }
 
     container.innerHTML = `
-        <div class="quiz-header">Ø³Ø¤Ø§Ù„ ØªÙØ§Ø¹Ù„ي</div>
+        <div class="quiz-header">Ã˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã˜ÂªÃ™ÂÃ˜Â§Ã˜Â¹Ã™â€žÙŠ</div>
         <div class="quiz-question">${questionData.question}</div>
         <div class="quiz-options">
             ${optionsHtml}
@@ -1147,14 +1147,14 @@ function extractSecondsFromExplanation(html) {
     return -1;
 }
 
-// â”€â”€ RICH TEXT PARSERS â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ RICH TEXT PARSERS Ã¢â€â‚¬Ã¢â€â‚¬
 function formatProse(text) {
     if (!text) return '';
     let result = text;
     // Quranic verses inside {}
     result = result.replace(/\{([^{}]+)\}/g, (match, verse) => {
         const cleanVerse = verse.trim();
-        return `<span class="quran-verse">ï´¿ ${cleanVerse} ï´¾</span>`;
+        return `<span class="quran-verse">Ã¯Â´Â¿ ${cleanVerse} Ã¯Â´Â¾</span>`;
     });
     result = highlightGlossary(result);
     return result;
@@ -1165,61 +1165,61 @@ function highlightGlossary(text) {
     
     // Order matters: longer/more specific patterns first to avoid partial matches
     const GLOSSARY_MATCHERS = [
-        // â”€â”€ Ù†ساء (rose/pink) â”€â”€
-        { term: "Ø®Ø¯ÙŠجة Ø¨Ù†ت Ø®ÙˆÙŠÙ„د",         pattern: "Ø®Ø¯ÙŠج[Ø©Ù‡] Ø¨Ù†ت Ø®ÙˆÙŠÙ„د|Ø®Ø¯ÙŠج[Ø©Ù‡] Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡ا|Ø®Ø¯ÙŠج[Ø©Ù‡]" },
-        { term: "عائشة Ø¨Ù†ت Ø£Ø¨ÙŠ Ø¨Ùƒر",        pattern: "عائش[Ø©Ù‡] Ø¨Ù†ت [أا]Ø¨ÙŠ Ø¨Ùƒر|عائش[Ø©Ù‡] Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡ا|عائش[Ø©Ù‡]|Ø§Ù„Ø³ÙŠدة عائش[Ø©Ù‡]" },
-        { term: "ÙØ§Ø·Ù…ة Ø§Ù„Ø²Ù‡راء",            pattern: "ÙØ§Ø·Ù…[Ø©Ù‡] Ø§Ù„Ø²Ù‡راء|ÙØ§Ø·Ù…[Ø©Ù‡] Ø¨Ù†ت Ù…Ø­Ù…د|ÙØ§Ø·Ù…[Ø©Ù‡]" },
-        { term: "Ø²ÙŠÙ†ب Ø¨Ù†ت جحش",            pattern: "Ø²ÙŠÙ†ب Ø¨Ù†ت جحش|Ø§Ù„Ø³ÙŠدة Ø²ÙŠÙ†ب" },
-        { term: "Ø²ÙŠÙ†ب Ø¨Ù†ت Ù…Ø­Ù…د",            pattern: "Ø²ÙŠÙ†ب Ø¨Ù†ت Ù…Ø­Ù…د|Ø²ÙŠÙ†ب Ø¨Ù†ت Ø§Ù„Ù†بي|Ø²ÙŠÙ†ب" },
-        { term: "Ø£Ù… Ø³Ù„Ù…ة",                 pattern: "[أا]Ù… Ø³Ù„Ù…[Ø©Ù‡]|Ù‡Ù†د Ø¨Ù†ت [أا]Ø¨ÙŠ [أا]Ù…ÙŠ[Ø©Ù‡]" },
-        { term: "ØµÙÙŠة Ø¨Ù†ت Ø­ÙŠÙŠ",            pattern: "ØµÙÙŠ[Ø©Ù‡] Ø¨Ù†ت حيي|ØµÙÙŠ[Ø©Ù‡]" },
-        { term: "Ø­Ùصة Ø¨Ù†ت Ø¹Ù…ر",            pattern: "Ø­Ùص[Ø©Ù‡] Ø¨Ù†ت Ø¹Ù…ر|Ø­Ùص[Ø©Ù‡]" },
-        { term: "Ø±Ù‚ÙŠة Ø¨Ù†ت Ù…Ø­Ù…د",            pattern: "Ø±Ù‚ÙŠ[Ø©Ù‡] Ø¨Ù†ت Ù…Ø­Ù…د|Ø±Ù‚ÙŠ[Ø©Ù‡]" },
-        { term: "Ø£Ù… ÙƒÙ„Ø«ÙˆÙ… Ø¨Ù†ت Ù…Ø­Ù…د",        pattern: "[أا]Ù… ÙƒÙ„Ø«ÙˆÙ… Ø¨Ù†ت Ù…Ø­Ù…د|[أا]Ù… ÙƒÙ„Ø«ÙˆÙ…" },
-        { term: "Ù‡Ù†د Ø¨Ù†ت عتبة",             pattern: "Ù‡Ù†د Ø¨Ù†ت عتب[Ø©Ù‡]|Ù‡Ù†د" },
-        { term: "Ø£Ø³Ù…اء Ø¨Ù†ت Ø£Ø¨ÙŠ Ø¨Ùƒر",        pattern: "[أا]Ø³Ù…اء Ø¨Ù†ت [أا]Ø¨ÙŠ Ø¨Ùƒر|[أا]Ø³Ù…اء|ذات Ø§Ù„Ù†Ø·Ø§Ù‚ÙŠÙ†" },
-        { term: "Ù…Ø§Ø±ÙŠا Ø§Ù„Ù‚Ø¨Ø·ÙŠة",            pattern: "Ù…Ø§Ø±ÙŠ[ةا] Ø§Ù„Ù‚Ø¨Ø·ÙŠ[Ø©Ù‡]|Ù…Ø§Ø±ÙŠ[ةا]" },
-        // â”€â”€ Ø±Ø¬Ø§Ù„ (bleu) â”€â”€
-        { term: "Ø£Ø¨Ùˆ Ø¨Ùƒر Ø§Ù„ØµØ¯ÙŠÙ‚",           pattern: "[أا]Ø¨Ùˆ Ø¨Ùƒر Ø§Ù„ØµØ¯ÙŠÙ‚|Ø§Ù„ØµØ¯ÙŠÙ‚|[أا]Ø¨Ùˆ Ø¨Ùƒر" },
-        { term: "Ø¹Ù…ر Ø¨Ù† Ø§Ù„خطاب",            pattern: "Ø¹Ù…ر Ø¨Ù† Ø§Ù„خطاب|Ø§Ù„ÙØ§Ø±ÙˆÙ‚ Ø¹Ù…ر|Ø¹Ù…ر Ø¨Ù† Ø§Ù„خطاب|Ø¹Ù…ر" },
-        { term: "Ø¹Ø«Ù…Ø§Ù† Ø¨Ù† Ø¹ÙØ§Ù†",            pattern: "Ø¹Ø«Ù…Ø§Ù† Ø¨Ù† Ø¹ÙØ§Ù†|Ø°Ùˆ Ø§Ù„Ù†ÙˆØ±ÙŠÙ†|Ø¹Ø«Ù…Ø§Ù†" },
-        { term: "Ø¹Ù„ÙŠ Ø¨Ù† Ø£Ø¨ÙŠ Ø·Ø§Ù„ب",          pattern: "Ø¹Ù„ÙŠ Ø¨Ù† [أا]Ø¨ÙŠ Ø·Ø§Ù„ب|Ø¹Ù„ÙŠ Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡|Ø¹Ù„ي" },
-        { term: "Ø®Ø§Ù„د Ø¨Ù† Ø§Ù„ÙˆÙ„ÙŠد",           pattern: "Ø®Ø§Ù„د Ø¨Ù† Ø§Ù„ÙˆÙ„ÙŠد|Ø³ÙŠÙ Ø§Ù„Ù„Ù‡ Ø§Ù„Ù…Ø³Ù„ÙˆÙ„|Ø®Ø§Ù„د" },
-        { term: "Ø¨Ù„Ø§Ù„ Ø¨Ù† رباح",             pattern: "Ø¨Ù„Ø§Ù„ Ø¨Ù† رباح|Ø¨Ù„Ø§Ù„" },
-        { term: "Ø£Ø¨Ùˆ Ù‡Ø±ÙŠرة",               pattern: "[أا]Ø¨Ùˆ Ù‡Ø±ÙŠر[Ø©Ù‡]" },
-        { term: "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ù…Ø³Ø¹Ùˆد",        pattern: "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ù…Ø³Ø¹Ùˆد|Ø§Ø¨Ù† Ù…Ø³Ø¹Ùˆد" },
-        { term: "Ø­Ù…زة Ø¨Ù† عبد Ø§Ù„Ù…Ø·Ù„ب",       pattern: "Ø­Ù…ز[Ø©Ù‡] Ø¨Ù† عبد Ø§Ù„Ù…Ø·Ù„ب|Ø­Ù…ز[Ø©Ù‡]" },
-        { term: "Ù…صعب Ø¨Ù† Ø¹Ù…ÙŠر",            pattern: "Ù…صعب Ø¨Ù† Ø¹Ù…ÙŠر|Ù…صعب" },
-        { term: "Ø¹Ù…Ø±Ùˆ Ø¨Ù† Ø§Ù„عاص",            pattern: "Ø¹Ù…Ø±Ùˆ Ø¨Ù† Ø§Ù„عاص|Ø¹Ù…رو" },
-        { term: "Ø·Ù„حة Ø¨Ù† Ø¹Ø¨ÙŠد Ø§Ù„Ù„Ù‡",        pattern: "Ø·Ù„ح[Ø©Ù‡] Ø¨Ù† Ø¹Ø¨ÙŠد Ø§Ù„Ù„Ù‡|Ø·Ù„ح[Ø©Ù‡]" },
-        { term: "Ø§Ù„Ø²Ø¨ÙŠر Ø¨Ù† Ø§Ù„Ø¹ÙˆØ§Ù…",          pattern: "Ø§Ù„Ø²Ø¨ÙŠر Ø¨Ù† Ø§Ù„Ø¹ÙˆØ§Ù…|Ø§Ù„Ø²Ø¨ÙŠر" },
-        { term: "Ùƒعب Ø¨Ù† Ø§Ù„Ø£Ø´Ø±Ù",           pattern: "Ùƒعب Ø¨Ù† Ø§Ù„Ø£Ø´Ø±Ù|Ùƒعب" },
-        { term: "سعد Ø¨Ù† عبادة",            pattern: "سعد Ø¨Ù† عباد[Ø©Ù‡]" },
-        { term: "Ø²ÙŠد Ø¨Ù† حارثة",            pattern: "Ø²ÙŠد Ø¨Ù† حارث[Ø©Ù‡]|Ø²ÙŠد" },
-        { term: "Ø³Ù„Ù…Ø§Ù† Ø§Ù„ÙØ§Ø±Ø³ÙŠ",           pattern: "Ø³Ù„Ù…Ø§Ù† Ø§Ù„ÙØ§Ø±Ø³ÙŠ|Ø³Ù„Ù…Ø§Ù†" },
-        { term: "سعد Ø¨Ù† Ù…عاذ",             pattern: "سعد Ø¨Ù† Ù…عاذ|سعد" },
-        { term: "Ø­ÙŠÙŠ Ø¨Ù† أخطب",             pattern: "Ø­ÙŠÙŠ Ø¨Ù† [أا]خطب|حيي" },
-        { term: "Ù†Ø¹ÙŠÙ… Ø¨Ù† Ù…Ø³Ø¹Ùˆد",           pattern: "Ù†Ø¹ÙŠÙ… Ø¨Ù† Ù…Ø³Ø¹Ùˆد|Ù†Ø¹ÙŠÙ…" },
-        { term: "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ø³Ù„Ø§Ù…",         pattern: "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ø³Ù„Ø§Ù…|Ø§Ø¨Ù† Ø³Ù„Ø§Ù…" },
-        { term: "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ø£Ø¨ÙŠ Ø¨Ù† Ø³Ù„ÙˆÙ„",  pattern: "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† [أا]Ø¨ÙŠ Ø¨Ù† Ø³Ù„ÙˆÙ„|Ø§Ø¨Ù† Ø³Ù„ÙˆÙ„|عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† [أا]بي" },
-        { term: "ØµÙÙˆØ§Ù† Ø¨Ù† Ø§Ù„Ù…Ø¹Ø·Ù„",          pattern: "ØµÙÙˆØ§Ù† Ø¨Ù† Ø§Ù„Ù…Ø¹Ø·Ù„|ØµÙÙˆØ§Ù†" },
-        { term: "ÙˆØ­Ø´ÙŠ Ø¨Ù† حرب",             pattern: "ÙˆØ­Ø´ÙŠ Ø¨Ù† حرب|وحشي" },
-        { term: "Ø£Ø¨Ùˆ Ø¬Ù‡Ù„",                 pattern: "[أا]Ø¨Ùˆ Ø¬Ù‡Ù„|ÙØ±Ø¹ÙˆÙ† [أا]Ù…ة" },
-        { term: "Ø£Ø¨Ùˆ Ù„Ù‡ب",                 pattern: "[أا]Ø¨Ùˆ Ù„Ù‡ب" },
-        { term: "Ø£Ø¨Ùˆ Ø³ÙÙŠØ§Ù†",               pattern: "[أا]Ø¨Ùˆ Ø³ÙÙŠØ§Ù†|[أا]Ø¨ÙŠ Ø³ÙÙŠØ§Ù†|[أا]با Ø³ÙÙŠØ§Ù†" },
-        { term: "Ø£Ù…ÙŠة Ø¨Ù† Ø®Ù„Ù",             pattern: "[أا]Ù…ÙŠ[Ø©Ù‡] Ø¨Ù† Ø®Ù„Ù" },
-        { term: "Ø§Ù„Ø­Ø³Ù† Ø¨Ù† Ø¹Ù„ÙŠ",            pattern: "Ø§Ù„Ø­Ø³Ù† Ø¨Ù† Ø¹Ù„ي|Ø§Ù„سبط Ø§Ù„Ø­Ø³Ù†|Ø§Ù„Ø­Ø³Ù†" },
-        { term: "Ø§Ù„Ø­Ø³ÙŠÙ† Ø¨Ù† Ø¹Ù„ÙŠ",           pattern: "Ø§Ù„Ø­Ø³ÙŠÙ† Ø¨Ù† Ø¹Ù„ي|Ø§Ù„سبط Ø§Ù„Ø­Ø³ÙŠÙ†|Ø§Ù„Ø­Ø³ÙŠÙ†" },
-        { term: "Ø§Ù„Ù†Ø¬Ø§Ø´ÙŠ",                 pattern: "Ø§Ù„Ù†جاشي|Ù†Ø¬Ø§Ø´ÙŠ Ø§Ù„حبش[Ø©Ù‡]" },
-        // â”€â”€ Ù‚Ø¨Ø§Ø¦Ù„ Ùˆأحداث â”€â”€
-        { term: "Ø¨Ù†Ùˆ Ù‚Ø±ÙŠظة",               pattern: "Ø¨Ù†Ùˆ Ù‚Ø±ÙŠظ[Ø©Ù‡]|Ø¨Ù†ÙŠ Ù‚Ø±ÙŠظ[Ø©Ù‡]" },
-        { term: "Ø¨Ù†Ùˆ Ù‚ÙŠÙ†Ù‚اع",              pattern: "Ø¨Ù†Ùˆ Ù‚ÙŠÙ†Ù‚اع|Ø¨Ù†ÙŠ Ù‚ÙŠÙ†Ù‚اع" },
-        { term: "Ø¨Ù†Ùˆ Ø§Ù„Ù†Ø¶ÙŠر",              pattern: "Ø¨Ù†Ùˆ Ø§Ù„Ù†Ø¶ÙŠر|Ø¨Ù†ÙŠ Ø§Ù„Ù†Ø¶ÙŠر" },
-        { term: "ØºØ²Ùˆة Ø§Ù„أحزاب",            pattern: "ØºØ²Ùˆ[Ø©Ù‡] Ø§Ù„أحزاب|Ø§Ù„أحزاب" },
-        { term: "بدر Ø§Ù„Ù…Ùˆعد",              pattern: "بدر Ø§Ù„Ù…Ùˆعد" },
-        { term: "ذات Ø§Ù„Ø±Ù‚اع",              pattern: "ذات Ø§Ù„Ø±Ù‚اع" },
-        { term: "Ø¯ÙˆÙ…ة Ø§Ù„Ø¬Ù†Ø¯Ù„",             pattern: "Ø¯ÙˆÙ…[Ø©Ù‡] Ø§Ù„Ø¬Ù†Ø¯Ù„" },
-        { term: "ØºØ²Ùˆة Ø¨Ù†ÙŠ Ø§Ù„Ù…ØµØ·Ù„Ù‚",        pattern: "ØºØ²Ùˆ[Ø©Ù‡] Ø¨Ù†ÙŠ Ø§Ù„Ù…ØµØ·Ù„Ù‚|Ø¨Ù†ÙŠ Ø§Ù„Ù…ØµØ·Ù„Ù‚|Ø§Ù„Ù…Ø±ÙŠØ³ÙŠع" }
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Ã™â€ Ø³Ø§Ø¡ (rose/pink) Ã¢â€â‚¬Ã¢â€â‚¬
+        { term: "Ã˜Â®Ã˜Â¯Ã™Å Ø¬Ø© Ã˜Â¨Ã™â€ Øª Ã˜Â®Ã™Ë†Ã™Å Ã™â€žØ¯",         pattern: "Ã˜Â®Ã˜Â¯Ã™Å Ø¬[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Øª Ã˜Â®Ã™Ë†Ã™Å Ã™â€žØ¯|Ã˜Â®Ã˜Â¯Ã™Å Ø¬[Ã˜Â©Ã™â€¡] Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡Ø§|Ã˜Â®Ã˜Â¯Ã™Å Ø¬[Ã˜Â©Ã™â€¡]" },
+        { term: "Ø¹Ø§Ø¦Ø´Ø© Ã˜Â¨Ã™â€ Øª Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â¨Ã™Æ’Ø±",        pattern: "Ø¹Ø§Ø¦Ø´[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Øª [Ø£Ø§]Ã˜Â¨Ã™Å  Ã˜Â¨Ã™Æ’Ø±|Ø¹Ø§Ø¦Ø´[Ã˜Â©Ã™â€¡] Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡Ø§|Ø¹Ø§Ø¦Ø´[Ã˜Â©Ã™â€¡]|Ã˜Â§Ã™â€žÃ˜Â³Ã™Å Ø¯Ø© Ø¹Ø§Ø¦Ø´[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ˜Â²Ã™â€¡Ø±Ø§Ø¡",            pattern: "Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦[Ã˜Â©Ã™â€¡] Ã˜Â§Ã™â€žÃ˜Â²Ã™â€¡Ø±Ø§Ø¡|Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯|Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ø¬Ø­Ø´",            pattern: "Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ø¬Ø­Ø´|Ã˜Â§Ã™â€žÃ˜Â³Ã™Å Ø¯Ø© Ã˜Â²Ã™Å Ã™â€ Ø¨" },
+        { term: "Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯",            pattern: "Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯|Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ã˜Â§Ã™â€žÃ™â€ Ø¨ÙŠ|Ã˜Â²Ã™Å Ã™â€ Ø¨" },
+        { term: "Ã˜Â£Ã™â€¦ Ã˜Â³Ã™â€žÃ™â€¦Ø©",                 pattern: "[Ø£Ø§]Ã™â€¦ Ã˜Â³Ã™â€žÃ™â€¦[Ã˜Â©Ã™â€¡]|Ã™â€¡Ã™â€ Ø¯ Ã˜Â¨Ã™â€ Øª [Ø£Ø§]Ã˜Â¨Ã™Å  [Ø£Ø§]Ã™â€¦Ã™Å [Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜ÂµÃ™ÂÃ™Å Ø© Ã˜Â¨Ã™â€ Øª Ã˜Â­Ã™Å Ã™Å ",            pattern: "Ã˜ÂµÃ™ÂÃ™Å [Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Øª Ø­ÙŠÙŠ|Ã˜ÂµÃ™ÂÃ™Å [Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â­Ã™ÂØµØ© Ã˜Â¨Ã™â€ Øª Ã˜Â¹Ã™â€¦Ø±",            pattern: "Ã˜Â­Ã™ÂØµ[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Øª Ã˜Â¹Ã™â€¦Ø±|Ã˜Â­Ã™ÂØµ[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â±Ã™â€šÃ™Å Ø© Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯",            pattern: "Ã˜Â±Ã™â€šÃ™Å [Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯|Ã˜Â±Ã™â€šÃ™Å [Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â£Ã™â€¦ Ã™Æ’Ã™â€žÃ˜Â«Ã™Ë†Ã™â€¦ Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯",        pattern: "[Ø£Ø§]Ã™â€¦ Ã™Æ’Ã™â€žÃ˜Â«Ã™Ë†Ã™â€¦ Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯|[Ø£Ø§]Ã™â€¦ Ã™Æ’Ã™â€žÃ˜Â«Ã™Ë†Ã™â€¦" },
+        { term: "Ã™â€¡Ã™â€ Ø¯ Ã˜Â¨Ã™â€ Øª Ø¹ØªØ¨Ø©",             pattern: "Ã™â€¡Ã™â€ Ø¯ Ã˜Â¨Ã™â€ Øª Ø¹ØªØ¨[Ã˜Â©Ã™â€¡]|Ã™â€¡Ã™â€ Ø¯" },
+        { term: "Ã˜Â£Ã˜Â³Ã™â€¦Ø§Ø¡ Ã˜Â¨Ã™â€ Øª Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â¨Ã™Æ’Ø±",        pattern: "[Ø£Ø§]Ã˜Â³Ã™â€¦Ø§Ø¡ Ã˜Â¨Ã™â€ Øª [Ø£Ø§]Ã˜Â¨Ã™Å  Ã˜Â¨Ã™Æ’Ø±|[Ø£Ø§]Ã˜Â³Ã™â€¦Ø§Ø¡|Ø°Ø§Øª Ã˜Â§Ã™â€žÃ™â€ Ã˜Â·Ã˜Â§Ã™â€šÃ™Å Ã™â€ " },
+        { term: "Ã™â€¦Ã˜Â§Ã˜Â±Ã™Å Ø§ Ã˜Â§Ã™â€žÃ™â€šÃ˜Â¨Ã˜Â·Ã™Å Ø©",            pattern: "Ã™â€¦Ã˜Â§Ã˜Â±Ã™Å [Ø©Ø§] Ã˜Â§Ã™â€žÃ™â€šÃ˜Â¨Ã˜Â·Ã™Å [Ã˜Â©Ã™â€¡]|Ã™â€¦Ã˜Â§Ã˜Â±Ã™Å [Ø©Ø§]" },
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Ã˜Â±Ã˜Â¬Ã˜Â§Ã™â€ž (bleu) Ã¢â€â‚¬Ã¢â€â‚¬
+        { term: "Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â¨Ã™Æ’Ø± Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â¯Ã™Å Ã™â€š",           pattern: "[Ø£Ø§]Ã˜Â¨Ã™Ë† Ã˜Â¨Ã™Æ’Ø± Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â¯Ã™Å Ã™â€š|Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â¯Ã™Å Ã™â€š|[Ø£Ø§]Ã˜Â¨Ã™Ë† Ã˜Â¨Ã™Æ’Ø±" },
+        { term: "Ã˜Â¹Ã™â€¦Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ®Ø·Ø§Ø¨",            pattern: "Ã˜Â¹Ã™â€¦Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ®Ø·Ø§Ø¨|Ã˜Â§Ã™â€žÃ™ÂÃ˜Â§Ã˜Â±Ã™Ë†Ã™â€š Ã˜Â¹Ã™â€¦Ø±|Ã˜Â¹Ã™â€¦Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ®Ø·Ø§Ø¨|Ã˜Â¹Ã™â€¦Ø±" },
+        { term: "Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™ÂÃ˜Â§Ã™â€ ",            pattern: "Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™ÂÃ˜Â§Ã™â€ |Ã˜Â°Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â±Ã™Å Ã™â€ |Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€ " },
+        { term: "Ã˜Â¹Ã™â€žÃ™Å  Ã˜Â¨Ã™â€  Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â·Ã˜Â§Ã™â€žØ¨",          pattern: "Ã˜Â¹Ã™â€žÃ™Å  Ã˜Â¨Ã™â€  [Ø£Ø§]Ã˜Â¨Ã™Å  Ã˜Â·Ã˜Â§Ã™â€žØ¨|Ã˜Â¹Ã™â€žÃ™Å  Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡|Ã˜Â¹Ã™â€žÙŠ" },
+        { term: "Ã˜Â®Ã˜Â§Ã™â€žØ¯ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™Ë†Ã™â€žÃ™Å Ø¯",           pattern: "Ã˜Â®Ã˜Â§Ã™â€žØ¯ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™Ë†Ã™â€žÃ™Å Ø¯|Ã˜Â³Ã™Å Ã™Â Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™Ë†Ã™â€ž|Ã˜Â®Ã˜Â§Ã™â€žØ¯" },
+        { term: "Ã˜Â¨Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¨Ã™â€  Ø±Ø¨Ø§Ø­",             pattern: "Ã˜Â¨Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¨Ã™â€  Ø±Ø¨Ø§Ø­|Ã˜Â¨Ã™â€žÃ˜Â§Ã™â€ž" },
+        { term: "Ã˜Â£Ã˜Â¨Ã™Ë† Ã™â€¡Ã˜Â±Ã™Å Ø±Ø©",               pattern: "[Ø£Ø§]Ã˜Â¨Ã™Ë† Ã™â€¡Ã˜Â±Ã™Å Ø±[Ã˜Â©Ã™â€¡]" },
+        { term: "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯",        pattern: "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯|Ã˜Â§Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯" },
+        { term: "Ã˜Â­Ã™â€¦Ø²Ø© Ã˜Â¨Ã™â€  Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â·Ã™â€žØ¨",       pattern: "Ã˜Â­Ã™â€¦Ø²[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€  Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â·Ã™â€žØ¨|Ã˜Â­Ã™â€¦Ø²[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã™â€¦ØµØ¹Ø¨ Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€¦Ã™Å Ø±",            pattern: "Ã™â€¦ØµØ¹Ø¨ Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€¦Ã™Å Ø±|Ã™â€¦ØµØ¹Ø¨" },
+        { term: "Ã˜Â¹Ã™â€¦Ã˜Â±Ã™Ë† Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ¹Ø§Øµ",            pattern: "Ã˜Â¹Ã™â€¦Ã˜Â±Ã™Ë† Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ¹Ø§Øµ|Ã˜Â¹Ã™â€¦Ø±Ùˆ" },
+        { term: "Ã˜Â·Ã™â€žØ­Ø© Ã˜Â¨Ã™â€  Ã˜Â¹Ã˜Â¨Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡",        pattern: "Ã˜Â·Ã™â€žØ­[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€  Ã˜Â¹Ã˜Â¨Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡|Ã˜Â·Ã™â€žØ­[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â§Ã™â€žÃ˜Â²Ã˜Â¨Ã™Å Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã™Ë†Ã˜Â§Ã™â€¦",          pattern: "Ã˜Â§Ã™â€žÃ˜Â²Ã˜Â¨Ã™Å Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã™Ë†Ã˜Â§Ã™â€¦|Ã˜Â§Ã™â€žÃ˜Â²Ã˜Â¨Ã™Å Ø±" },
+        { term: "Ã™Æ’Ø¹Ø¨ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â´Ã˜Â±Ã™Â",           pattern: "Ã™Æ’Ø¹Ø¨ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â´Ã˜Â±Ã™Â|Ã™Æ’Ø¹Ø¨" },
+        { term: "Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ø¹Ø¨Ø§Ø¯Ø©",            pattern: "Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ø¹Ø¨Ø§Ø¯[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â²Ã™Å Ø¯ Ã˜Â¨Ã™â€  Ø­Ø§Ø±Ø«Ø©",            pattern: "Ã˜Â²Ã™Å Ø¯ Ã˜Â¨Ã™â€  Ø­Ø§Ø±Ø«[Ã˜Â©Ã™â€¡]|Ã˜Â²Ã™Å Ø¯" },
+        { term: "Ã˜Â³Ã™â€žÃ™â€¦Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™ÂÃ˜Â§Ã˜Â±Ã˜Â³Ã™Å ",           pattern: "Ã˜Â³Ã™â€žÃ™â€¦Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™ÂÃ˜Â§Ã˜Â±Ã˜Â³Ã™Å |Ã˜Â³Ã™â€žÃ™â€¦Ã˜Â§Ã™â€ " },
+        { term: "Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ø¹Ø§Ø°",             pattern: "Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ø¹Ø§Ø°|Ø³Ø¹Ø¯" },
+        { term: "Ã˜Â­Ã™Å Ã™Å  Ã˜Â¨Ã™â€  Ø£Ø®Ø·Ø¨",             pattern: "Ã˜Â­Ã™Å Ã™Å  Ã˜Â¨Ã™â€  [Ø£Ø§]Ø®Ø·Ø¨|Ø­ÙŠÙŠ" },
+        { term: "Ã™â€ Ã˜Â¹Ã™Å Ã™â€¦ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯",           pattern: "Ã™â€ Ã˜Â¹Ã™Å Ã™â€¦ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯|Ã™â€ Ã˜Â¹Ã™Å Ã™â€¦" },
+        { term: "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦",         pattern: "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦|Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦" },
+        { term: "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ™Ë†Ã™â€ž",  pattern: "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  [Ø£Ø§]Ã˜Â¨Ã™Å  Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ™Ë†Ã™â€ž|Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ™Ë†Ã™â€ž|Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  [Ø£Ø§]Ø¨ÙŠ" },
+        { term: "Ã˜ÂµÃ™ÂÃ™Ë†Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â·Ã™â€ž",          pattern: "Ã˜ÂµÃ™ÂÃ™Ë†Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â·Ã™â€ž|Ã˜ÂµÃ™ÂÃ™Ë†Ã˜Â§Ã™â€ " },
+        { term: "Ã™Ë†Ã˜Â­Ã˜Â´Ã™Å  Ã˜Â¨Ã™â€  Ø­Ø±Ø¨",             pattern: "Ã™Ë†Ã˜Â­Ã˜Â´Ã™Å  Ã˜Â¨Ã™â€  Ø­Ø±Ø¨|ÙˆØ­Ø´ÙŠ" },
+        { term: "Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â¬Ã™â€¡Ã™â€ž",                 pattern: "[Ø£Ø§]Ã˜Â¨Ã™Ë† Ã˜Â¬Ã™â€¡Ã™â€ž|Ã™ÂÃ˜Â±Ã˜Â¹Ã™Ë†Ã™â€  [Ø£Ø§]Ã™â€¦Ø©" },
+        { term: "Ã˜Â£Ã˜Â¨Ã™Ë† Ã™â€žÃ™â€¡Ø¨",                 pattern: "[Ø£Ø§]Ã˜Â¨Ã™Ë† Ã™â€žÃ™â€¡Ø¨" },
+        { term: "Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â³Ã™ÂÃ™Å Ã˜Â§Ã™â€ ",               pattern: "[Ø£Ø§]Ã˜Â¨Ã™Ë† Ã˜Â³Ã™ÂÃ™Å Ã˜Â§Ã™â€ |[Ø£Ø§]Ã˜Â¨Ã™Å  Ã˜Â³Ã™ÂÃ™Å Ã˜Â§Ã™â€ |[Ø£Ø§]Ø¨Ø§ Ã˜Â³Ã™ÂÃ™Å Ã˜Â§Ã™â€ " },
+        { term: "Ã˜Â£Ã™â€¦Ã™Å Ø© Ã˜Â¨Ã™â€  Ã˜Â®Ã™â€žÃ™Â",             pattern: "[Ø£Ø§]Ã™â€¦Ã™Å [Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€  Ã˜Â®Ã™â€žÃ™Â" },
+        { term: "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÃ™Å ",            pattern: "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÙŠ|Ã˜Â§Ã™â€žØ³Ø¨Ø· Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™â€ |Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™â€ " },
+        { term: "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÃ™Å ",           pattern: "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÙŠ|Ã˜Â§Ã™â€žØ³Ø¨Ø· Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€ |Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€ " },
+        { term: "Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¬Ã˜Â§Ã˜Â´Ã™Å ",                 pattern: "Ã˜Â§Ã™â€žÃ™â€ Ø¬Ø§Ø´ÙŠ|Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â´Ã™Å  Ã˜Â§Ã™â€žØ­Ø¨Ø´[Ã˜Â©Ã™â€¡]" },
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Ã™â€šÃ˜Â¨Ã˜Â§Ã˜Â¦Ã™â€ž Ã™Ë†Ø£Ø­Ø¯Ø§Ø« Ã¢â€â‚¬Ã¢â€â‚¬
+        { term: "Ã˜Â¨Ã™â€ Ã™Ë† Ã™â€šÃ˜Â±Ã™Å Ø¸Ø©",               pattern: "Ã˜Â¨Ã™â€ Ã™Ë† Ã™â€šÃ˜Â±Ã™Å Ø¸[Ã˜Â©Ã™â€¡]|Ã˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ˜Â±Ã™Å Ø¸[Ã˜Â©Ã™â€¡]" },
+        { term: "Ã˜Â¨Ã™â€ Ã™Ë† Ã™â€šÃ™Å Ã™â€ Ã™â€šØ§Ø¹",              pattern: "Ã˜Â¨Ã™â€ Ã™Ë† Ã™â€šÃ™Å Ã™â€ Ã™â€šØ§Ø¹|Ã˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ™Å Ã™â€ Ã™â€šØ§Ø¹" },
+        { term: "Ã˜Â¨Ã™â€ Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ø±",              pattern: "Ã˜Â¨Ã™â€ Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ø±|Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ø±" },
+        { term: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨",            pattern: "Ã˜ÂºÃ˜Â²Ã™Ë†[Ã˜Â©Ã™â€¡] Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨|Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨" },
+        { term: "Ø¨Ø¯Ø± Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ø¹Ø¯",              pattern: "Ø¨Ø¯Ø± Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ø¹Ø¯" },
+        { term: "Ø°Ø§Øª Ã˜Â§Ã™â€žÃ˜Â±Ã™â€šØ§Ø¹",              pattern: "Ø°Ø§Øª Ã˜Â§Ã™â€žÃ˜Â±Ã™â€šØ§Ø¹" },
+        { term: "Ã˜Â¯Ã™Ë†Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â¯Ã™â€ž",             pattern: "Ã˜Â¯Ã™Ë†Ã™â€¦[Ã˜Â©Ã™â€¡] Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â¯Ã™â€ž" },
+        { term: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â·Ã™â€žÃ™â€š",        pattern: "Ã˜ÂºÃ˜Â²Ã™Ë†[Ã˜Â©Ã™â€¡] Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â·Ã™â€žÃ™â€š|Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â·Ã™â€žÃ™â€š|Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Å Ã˜Â³Ã™Å Ø¹" }
     ];
     
     GLOSSARY_MATCHERS.forEach((item, idx) => {
@@ -1227,7 +1227,7 @@ function highlightGlossary(text) {
         let cssClass = isFemale ? 'glossary-female' : 'glossary-male';
         // Removed lookbehind for iOS/Safari compatibility. Captured the preceding char in $1, the pattern in $2.
         try {
-            const regex = new RegExp(`(^|[^أ-ي])(${item.pattern})(?=$|[^أ-ي])(?![^<>]*>)`, 'g');
+            const regex = new RegExp(`(^|[^Ø£-ÙŠ])(${item.pattern})(?=$|[^Ø£-ÙŠ])(?![^<>]*>)`, 'g');
             result = result.replace(regex, `$1<span class="glossary-badge ${cssClass}" onclick="showGlossaryPopup(event, '${item.term}')">$2</span>`);
         } catch (e) {
             console.error("Regex error on term", item.term, e);
@@ -1236,65 +1236,65 @@ function highlightGlossary(text) {
     return result;
 }
 
-// â”€â”€ GLOSSARY & MINDMAP POPUPS â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ GLOSSARY & MINDMAP POPUPS Ã¢â€â‚¬Ã¢â€â‚¬
 const GLOSSARY = {
-    // Ø±Ø¬Ø§Ù„ Ø§Ù„صحابة ÙˆØ§Ù„Ù…Ø¹Ø§ØµØ±ÙˆÙ†
-    "Ø²ÙŠد Ø¨Ù† حارثة": { def: "ØµØ­Ø§Ø¨ÙŠ Ø¬Ù„ÙŠÙ„ØŒ ÙƒØ§Ù† ÙŠØ¯Ø¹Ù‰ Ø²ÙŠد Ø¨Ù† Ù…Ø­Ù…د Ø¨Ø§Ù„ØªØ¨Ù†ÙŠ Ù‚Ø¨Ù„ ØªØ­Ø±ÙŠÙ…Ù‡ØŒ ÙˆÙ‡Ùˆ Ø§Ù„ØµØ­Ø§Ø¨ÙŠ Ø§Ù„ÙˆØ­ÙŠد Ø§Ù„Ø°ÙŠ Ø°ÙÙƒر Ø§Ø³Ù…Ù‡ صراحة ÙÙŠ Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ….", type: "person", gender: "male" },
-    "Ø£Ø¨Ùˆ Ø³ÙÙŠØ§Ù†": { def: "Ø²Ø¹ÙŠÙ… Ù…Ø´Ø±ÙƒÙŠ Ù‚Ø±ÙŠش ÙˆÙ‚ائد Ù‚ÙˆØ§ÙÙ„Ù‡Ù… ÙˆØ¬ÙŠÙˆØ´Ù‡Ù… ÙÙŠ ØºØ²Ùˆ أحد ÙˆØ§Ù„أحزاب Ù‚Ø¨Ù„ Ø¥Ø³Ù„Ø§Ù…Ù‡ ÙŠÙˆÙ… Ùتح Ù…Ùƒة.", type: "person", gender: "male" },
-    "Ø³Ù„Ù…Ø§Ù† Ø§Ù„ÙØ§Ø±Ø³ÙŠ": { def: "ØµØ­Ø§Ø¨ÙŠ Ø¬Ù„ÙŠÙ„ Ù…Ù† Ø¨Ù„اد ÙØ§Ø±Ø³ØŒ ÙˆÙ‡Ùˆ صاحب ÙÙƒرة Ø­Ùر Ø§Ù„Ø®Ù†Ø¯Ù‚ Ù„Ø­Ù…Ø§ÙŠة Ø§Ù„Ù…Ø¯ÙŠÙ†ة ÙÙŠ ØºØ²Ùˆة Ø§Ù„أحزاب.", type: "person", gender: "male" },
-    "سعد Ø¨Ù† Ù…عاذ": { def: "Ø³ÙŠد Ø§Ù„Ø£Ùˆس ÙˆØµØ­Ø§Ø¨ÙŠ Ø¬Ù„ÙŠÙ„ Ø§Ù‡تز Ù„ÙˆÙØ§ØªÙ‡ عرش Ø§Ù„Ø±Ø­Ù…Ù†ØŒ ÙˆÙ‡Ùˆ Ø§Ù„Ø°ÙŠ Ø­ÙƒÙ… ÙÙŠ Ø¨Ù†ÙŠ Ù‚Ø±ÙŠظة Ø¨Ø­ÙƒÙ… Ø§Ù„Ù„Ù‡ ÙˆØ±Ø³ÙˆÙ„Ù‡.", type: "person", gender: "male" },
-    "Ø­ÙŠÙŠ Ø¨Ù† أخطب": { def: "Ø²Ø¹ÙŠÙ… Ø¨Ù†ÙŠ Ø§Ù„Ù†Ø¶ÙŠر Ùˆأحد Ø£Ù„د أعداء Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ØŒ Ø­Ø±Ù‘ض Ø§Ù„أحزاب ضد Ø§Ù„Ù…Ø¯ÙŠÙ†ة Ùˆغدر Ø¨Ø§Ù„Ø¹Ù‡د Ø«Ù… Ù‚ÙØªÙ„ Ù…ع Ø¨Ù†ÙŠ Ù‚Ø±ÙŠظة.", type: "person", gender: "male" },
-    "Ù†Ø¹ÙŠÙ… Ø¨Ù† Ù…Ø³Ø¹Ùˆد": { def: "ØµØ­Ø§Ø¨ÙŠ Ø¬Ù„ÙŠÙ„ Ø£Ø³Ù„Ù… Ø³Ø±Ù‘Ø§Ù‹ ÙŠÙˆÙ… Ø§Ù„أحزاب ÙˆÙ†جح Ø¨Ø¯Ù‡Ø§Ø¦Ù‡ ÙÙŠ Ø®Ø°Ù„ Ø§Ù„Ù…Ø´Ø±ÙƒÙŠÙ† ÙˆØ¥ÙŠÙ‚اع Ø§Ù„Ø®Ù„Ø§Ù Ø¨ÙŠÙ† Ù‚Ø±ÙŠش ÙˆØ¨Ù†ÙŠ Ù‚Ø±ÙŠظة.", type: "person", gender: "male" },
-    "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ø£Ø¨ÙŠ Ø¨Ù† Ø³Ù„ÙˆÙ„": { def: "رأس Ø§Ù„Ù†ÙØ§Ù‚ ÙÙŠ Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©ØŒ Ø§Ø³ØªØºÙ„ ØºØ²Ùˆة Ø¨Ù†ÙŠ Ø§Ù„Ù…ØµØ·Ù„Ù‚ Ù„إثارة Ø§Ù„ÙØªÙ† ÙˆØªÙˆÙ„Ù‰ ÙƒÙبر حادثة Ø§Ù„Ø¥ÙÙƒ Ø·Ø¹Ù†Ø§Ù‹ ÙÙŠ Ø£Ù… Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ† عائشة.", type: "person", gender: "male" },
-    "ØµÙÙˆØ§Ù† Ø¨Ù† Ø§Ù„Ù…Ø¹Ø·Ù„": { def: "ØµØ­Ø§Ø¨ÙŠ Ø¬Ù„ÙŠÙ„ Ù…Ù† Ø®ÙŠرة Ø§Ù„ØµØ­Ø§Ø¨Ø©ØŒ Ø§ØªÙ‡Ù…Ù‡ Ø§Ù„Ù…Ù†Ø§ÙÙ‚ÙˆÙ† Ø¸Ù„Ù…Ø§Ù‹ ÙˆØ²ÙˆØ±Ø§Ù‹ ÙÙŠ حادثة Ø§Ù„Ø¥ÙÙƒ ÙˆØ¨Ø±Ø£Ù‡ Ø§Ù„Ù„Ù‡ عز ÙˆØ¬Ù„ Ø¨Ø¢ÙŠات Ø³Ùˆرة Ø§Ù„Ù†Ùˆر.", type: "person", gender: "male" },
-    "Ø£Ù…ÙŠة Ø¨Ù† Ø®Ù„Ù": { def: "أحد Ø£Ø¦Ù…ة Ø§Ù„ÙƒÙر Ø¨Ù…ÙƒØ©ØŒ ÙƒØ§Ù† ÙŠعذب Ø¨Ù„Ø§Ù„ Ø¨Ù† Ø±Ø¨Ø§Ø­ØŒ ÙˆÙ‚ÙØªÙ„ ÙÙŠ Ù…Ø¹Ø±Ùƒة بدر Ø§Ù„ÙƒØ¨Ø±Ù‰ Ø¹Ù„Ù‰ ÙŠد Ø§Ù„Ù…Ø³Ù„Ù…ÙŠÙ†.", type: "person", gender: "male" },
-    "Ø­Ù…زة Ø¨Ù† عبد Ø§Ù„Ù…Ø·Ù„ب": { def: "أسد Ø§Ù„Ù„Ù‡ ÙˆØ±Ø³ÙˆÙ„Ù‡ ÙˆØ¹Ù… Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ Ø§Ø³ØªØ´Ù‡د ÙÙŠ ØºØ²Ùˆة أحد Ø¹Ù„Ù‰ ÙŠد ÙˆØ­Ø´ÙŠ ÙˆÙ…Ø«Ù„ Ø§Ù„Ù…Ø´Ø±ÙƒÙˆÙ† Ø¨Ø¬Ø³Ø¯Ù‡ Ø§Ù„Ø´Ø±ÙŠÙ.", type: "person", gender: "male" },
-    "Ù…صعب Ø¨Ù† Ø¹Ù…ÙŠر": { def: "Ø£ÙˆÙ„ Ø³ÙÙŠر ÙÙŠ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ØŒ Ø­Ù…Ù„ Ø±Ø§ÙŠة Ø§Ù„Ù…Ø³Ù„Ù…ÙŠÙ† ÙÙŠ ØºØ²Ùˆ Ø£Ùحد ÙˆØ§Ø³ØªØ´Ù‡د Ù…Ù‚Ø¨Ù„Ø§Ù‹ ØºÙŠر Ù…دبر Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡.", type: "person", gender: "male" },
-    "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ø³Ù„Ø§Ù…": { def: "حبر Ù…Ù† أحبار ÙŠÙ‡Ùˆد Ø¨Ù†ÙŠ Ù‚ÙŠÙ†Ù‚اع Ø¨Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©ØŒ Ø£Ø³Ù„Ù… Ù…ع Ø¨Ø¯Ø§ÙŠة Ù‡جرة Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ´Ù‡د Ø¨ØµØ¯Ù‚ Ù†Ø¨ÙˆØªÙ‡ ÙˆÙ‡Ùˆ Ù…Ù† Ùƒبار Ø§Ù„صحابة.", type: "person", gender: "male" },
-    "Ø£Ø¨Ùˆ Ø¨Ùƒر Ø§Ù„ØµØ¯ÙŠÙ‚": { def: "Ø£ÙˆÙ„ Ø§Ù„Ø®Ù„Ùاء Ø§Ù„Ø±Ø§Ø´Ø¯ÙŠÙ† ÙˆØ£Ù‚رب Ø§Ù„صحابة Ø¥Ù„Ù‰ Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ Ø±ÙÙŠÙ‚Ù‡ ÙÙŠ Ø§Ù„Ù‡جرة Ùˆصاحب Ø§Ù„ØºØ§Ø±ØŒ ÙˆØ£ÙˆÙ„ Ù…Ù† ØµØ¯Ù‘Ù‚ Ø¨Ø§Ù„إسراء ÙˆØ§Ù„Ù…عراج.", type: "person", gender: "male" },
-    "Ø¹Ù…ر Ø¨Ù† Ø§Ù„خطاب": { def: "Ø«Ø§Ù†ÙŠ Ø§Ù„Ø®Ù„Ùاء Ø§Ù„Ø±Ø§Ø´Ø¯ÙŠÙ†ØŒ Ø§Ù„ÙØ§Ø±ÙˆÙ‚ Ø§Ù„Ø°ÙŠ أعز Ø§Ù„Ù„Ù‡ Ø¨Ù‡ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ØŒ Ø¹ÙØ±Ù Ø¨Ø´Ø¯ØªÙ‡ ÙÙŠ Ø§Ù„Ø­Ù‚ ÙˆØ¹Ø¯Ù„Ù‡ Ø§Ù„Ø°ÙŠ ضرب Ø¨Ù‡ Ø§Ù„Ø£Ù…Ø«Ø§Ù„ ÙÙŠ ÙƒÙ„ Ù…ÙƒØ§Ù†.", type: "person", gender: "male" },
-    "Ø¹Ø«Ù…Ø§Ù† Ø¨Ù† Ø¹ÙØ§Ù†": { def: "Ø«Ø§Ù„ث Ø§Ù„Ø®Ù„Ùاء Ø§Ù„Ø±Ø§Ø´Ø¯ÙŠÙ† ÙˆØ°Ùˆ Ø§Ù„Ù†ÙˆØ±ÙŠÙ†ØŒ Ø²Ùˆج Ø±Ù‚ÙŠة Ø«Ù… Ø£Ù… ÙƒÙ„Ø«ÙˆÙ… Ø¨Ù†ØªÙŽÙŠ Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ Ø¬Ù‡Ù‘ز Ø¬ÙŠش Ø§Ù„عسرة Ù…Ù† Ù…Ø§Ù„Ù‡ ÙˆØ¬Ù…ع Ø§Ù„Ù‚Ø±Ø¢Ù†.", type: "person", gender: "male" },
-    "Ø¹Ù„ÙŠ Ø¨Ù† Ø£Ø¨ÙŠ Ø·Ø§Ù„ب": { def: "رابع Ø§Ù„Ø®Ù„Ùاء Ø§Ù„Ø±Ø§Ø´Ø¯ÙŠÙ† ÙˆØ§Ø¨Ù† Ø¹Ù… Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ²Ùˆج ÙØ§Ø·Ù…ة Ø§Ù„Ø²Ù‡Ø±Ø§Ø¡ØŒ Ø£Ø³Ù„Ù… ÙˆÙ‡Ùˆ ØµØºÙŠر ÙˆÙƒØ§Ù† Ù…Ù† أشجع ÙØ±Ø³Ø§Ù† Ø§Ù„Ø¥Ø³Ù„Ø§Ù….", type: "person", gender: "male" },
-    "Ø®Ø§Ù„د Ø¨Ù† Ø§Ù„ÙˆÙ„ÙŠد": { def: "Ø³ÙŠÙ Ø§Ù„Ù„Ù‡ Ø§Ù„Ù…Ø³Ù„ÙˆÙ„ØŒ Ø£Ø³Ù„Ù… Ù‚ÙØ¨ÙŠÙ„ Ùتح Ù…Ùƒة ÙˆÙ‚اد Ù…Ø¹Ø§Ø±Ùƒ Ø­Ø§Ø³Ù…ة ÙÙŠ Ø§Ù„ÙŠÙ…Ø§Ù…ة ÙˆØ§Ù„Ø´Ø§Ù… ÙˆØ§Ù„Ø¹Ø±Ø§Ù‚ ÙˆÙ„Ù… ÙŠÙÙ‡Ø²Ù… ÙÙŠ حرب Ù‚ط.", type: "person", gender: "male" },
-    "Ø¨Ù„Ø§Ù„ Ø¨Ù† رباح": { def: "Ø£ÙˆÙ„ Ù…Ø¤Ø°Ù† ÙÙŠ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ØŒ عبد Ø­Ø¨Ø´ÙŠ ÙƒØ§Ù† ÙŠØ¹Ø°Ø¨Ù‡ Ø£Ù…ÙŠة Ø¨Ù† Ø®Ù„Ù Ø¨Ø§Ù„Ø±Ù…ضاء Ù„ÙŠØªØ±Ùƒ Ø¯ÙŠÙ†Ù‡ØŒ Ø­ØªÙ‰ Ø§Ø´ØªØ±Ø§Ù‡ Ø£Ø¨Ùˆ Ø¨Ùƒر ÙˆØ£Ø¹ØªÙ‚Ù‡.", type: "person", gender: "male" },
-    "Ø£Ø¨Ùˆ Ù‡Ø±ÙŠرة": { def: "Ø£Ùƒثر Ø§Ù„صحابة Ø±ÙˆØ§ÙŠة Ù„Ù„Ø­Ø¯ÙŠث Ø§Ù„Ù†Ø¨ÙˆÙŠØŒ Ø£Ø³Ù„Ù… Ø¹Ø§Ù… Ø®ÙŠبر ÙˆØ¸Ù„ Ù…Ù„Ø§Ø²Ù…Ø§Ù‹ Ù„Ù„Ù†Ø¨ÙŠ ï·º Ø­ØªÙ‰ ÙˆÙØ§ØªÙ‡ ÙˆØ±ÙˆÙ‰ Ø£Ùƒثر Ù…Ù† Ø®Ù…سة Ø¢Ù„Ø§Ù Ø­Ø¯ÙŠث.", type: "person", gender: "male" },
-    "عبد Ø§Ù„Ù„Ù‡ Ø¨Ù† Ù…Ø³Ø¹Ùˆد": { def: "ØµØ­Ø§Ø¨ÙŠ Ù…Ù† Ø£ÙˆØ§Ø¦Ù„ Ø§Ù„Ù…Ø³Ù„Ù…ÙŠÙ†ØŒ Ø®Ø§Ø¯Ù… Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ£Ø¹Ù„Ù… Ø§Ù„صحابة Ø¨Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ… ÙˆØ§Ù„ØªÙØ³ÙŠØ±ØŒ Ù‚Ø§Ù„ Ø¹Ù†Ù‡ Ø§Ù„Ù†Ø¨ÙŠ ï·º: Ù…Ù† Ø³Ø±Ù‡ Ø£Ù† ÙŠÙ‚رأ Ø§Ù„Ù‚Ø±Ø¢Ù† ØºØ¶Ø§Ù‹ ÙÙ„ÙŠÙ‚رأ Ø¹Ù„Ù‰ Ù‚راءة Ø§Ø¨Ù† Ø£Ù… عبد.", type: "person", gender: "male" },
-    "ÙˆØ­Ø´ÙŠ Ø¨Ù† حرب": { def: "Ø§Ù„Ø­Ø¨Ø´ÙŠ Ø§Ù„Ø°ÙŠ Ù‚ØªÙ„ Ø­Ù…زة Ø¨Ù† عبد Ø§Ù„Ù…Ø·Ù„ب Ø¨Ø£Ù…ر Ù‡Ù†د ÙŠÙˆÙ… Ø£Ø­Ø¯ØŒ Ø«Ù… Ø£Ø³Ù„Ù… بعد Ùتح Ù…Ùƒة ÙˆÙ‚ØªÙ„ Ù…Ø³ÙŠÙ„Ù…ة Ø§Ù„Ùƒذاب ÙÙŠ Ø­Ø±Ùˆب Ø§Ù„ردة.", type: "person", gender: "male" },
-    "Ø¹Ù…Ø±Ùˆ Ø¨Ù† Ø§Ù„عاص": { def: "ØµØ­Ø§Ø¨ÙŠ ÙˆÙ‚ائد Ø¹Ø³ÙƒØ±ÙŠ Ø¨Ø§Ø±Ø¹ØŒ Ø£Ø³Ù„Ù… Ù‚ÙØ¨ÙŠÙ„ Ùتح Ù…Ùƒة ÙˆÙتح Ù…صر ÙÙŠ Ø¹Ù‡د Ø¹Ù…ر Ø¨Ù† Ø§Ù„خطاب Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡.", type: "person", gender: "male" },
-    "Ø§Ù„Ø­Ø³Ù† Ø¨Ù† Ø¹Ù„ي": { def: "سبط Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ±ÙŠØ­Ø§Ù†ØªÙ‡ØŒ Ø§Ø¨Ù† Ø¹Ù„ÙŠ ÙˆÙØ§Ø·Ù…Ø©ØŒ Ù‚Ø§Ù„ ÙÙŠÙ‡ Ø§Ù„Ù†Ø¨ÙŠ: Ø§Ù„Ø­Ø³Ù† ÙˆØ§Ù„Ø­Ø³ÙŠÙ† Ø³ÙŠدا شباب Ø£Ù‡Ù„ Ø§Ù„Ø¬Ù†ة.", type: "person", gender: "male" },
-    "Ø§Ù„Ø­Ø³ÙŠÙ† Ø¨Ù† Ø¹Ù„ي": { def: "سبط Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ±ÙŠØ­Ø§Ù†ØªÙ‡ØŒ Ø£ÙÙˆÙ„د ÙÙŠ Ø§Ù„Ø³Ù†ة Ø§Ù„رابعة Ù„Ù„Ù‡Ø¬Ø±Ø©ØŒ ÙˆÙ‚Ø§Ù„ ÙÙŠÙ‡ Ø§Ù„Ù†Ø¨ÙŠ: Ø§Ù„Ø­Ø³ÙŠÙ† Ù…Ù†ÙŠ ÙˆØ£Ù†ا Ù…Ù† Ø§Ù„Ø­Ø³ÙŠÙ†.", type: "person", gender: "male" },
-    "Ø§Ù„Ù†جاشي": { def: "Ù…Ù„Ùƒ Ø§Ù„حبشة Ø§Ù„Ø°ÙŠ أجار Ø§Ù„Ù…Ù‡Ø§Ø¬Ø±ÙŠÙ† Ø§Ù„Ø£ÙˆÙ„ÙŠÙ† ÙˆØ£Ù†ØµÙÙ‡Ù…ØŒ Ø£Ø³Ù„Ù… ÙÙŠ Ù‚Ù„Ø¨Ù‡ ÙˆØµÙ„Ù‰ Ø¹Ù„ÙŠÙ‡ Ø§Ù„Ù†Ø¨ÙŠ ï·º ØµÙ„اة Ø§Ù„غائب Ù„Ù…ا Ù…ات.", type: "person", gender: "male" },
-    "Ø£Ø¨Ùˆ Ø¬Ù‡Ù„": { def: "ÙØ±Ø¹ÙˆÙ† Ù‡Ø°Ù‡ Ø§Ù„Ø£Ù…ة ÙˆØ§Ø³Ù…Ù‡ Ø¹Ù…Ø±Ùˆ Ø¨Ù† Ù‡Ø´Ø§Ù…ØŒ Ù…Ù† أشد أعداء Ø§Ù„Ø¥Ø³Ù„Ø§Ù… ÙˆØ£ÙƒØ«Ø±Ù‡Ù… Ø¥ÙŠØ°Ø§Ø¡Ù‹ Ù„Ù„Ù…Ø³Ù„Ù…ÙŠÙ†ØŒ Ù‚ÙØªÙ„ ÙÙŠ ØºØ²Ùˆة بدر Ø§Ù„ÙƒØ¨Ø±Ù‰.", type: "person", gender: "male" },
-    "Ø£Ø¨Ùˆ Ù„Ù‡ب": { def: "Ø¹Ù… Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ¹Ø¯ÙˆÙ‡ Ø§Ù„Ù„Ø¯ÙˆØ¯ØŒ Ù†Ø²Ù„ت ÙÙŠÙ‡ ÙˆØ²ÙˆØ¬ØªÙ‡ Ø³Ùˆرة Ø§Ù„Ù…Ø³Ø¯ØŒ Ù„Ø¹Ù†Ù‡ Ø§Ù„Ù„Ù‡ Ù„شدة Ø¹Ø¯Ø§Ø¦Ù‡ Ù„Ù„Ø¥Ø³Ù„Ø§Ù… ÙˆØ±Ø³ÙˆÙ„Ù‡.", type: "person", gender: "male" },
-    "سعد Ø¨Ù† عبادة": { def: "Ø³ÙŠد Ø§Ù„خزرج ÙˆØ²Ø¹ÙŠÙ… Ø§Ù„Ø£Ù†ØµØ§Ø±ØŒ ÙƒØ§Ù† ÙŠÙ†Ø§Ùس سعد Ø¨Ù† Ù…عاذ Ø¹Ù„Ù‰ Ø¥Ù…ارة Ø§Ù„Ø£Ù†صار ÙˆØ´Ù‡د ØºØ²Ùˆات ÙƒØ«ÙŠرة Ù…ع Ø§Ù„Ù†بي ﷺ.", type: "person", gender: "male" },
-    "Ø·Ù„حة Ø¨Ù† Ø¹Ø¨ÙŠد Ø§Ù„Ù„Ù‡": { def: "أحد Ø§Ù„عشرة Ø§Ù„Ù…Ø¨Ø´Ø±ÙŠÙ† Ø¨Ø§Ù„Ø¬Ù†Ø©ØŒ ÙˆÙ‚Ù ÙŠÙˆÙ… Ø£Ùحد Ø¯Ø±Ø¹Ø§Ù‹ Ù„Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ£ØµÙŠبت ÙŠØ¯Ù‡ Ø­ÙŠÙ† Ø£Ù†Ù‚Ø°Ù‡ØŒ ÙÙ‚Ø§Ù„ Ø§Ù„Ù†Ø¨ÙŠ: Ø£Ùˆجب Ø·Ù„حة.", type: "person", gender: "male" },
-    "Ø§Ù„Ø²Ø¨ÙŠر Ø¨Ù† Ø§Ù„Ø¹ÙˆØ§Ù…": { def: "أحد Ø§Ù„عشرة Ø§Ù„Ù…Ø¨Ø´Ø±ÙŠÙ† Ø¨Ø§Ù„Ø¬Ù†ة ÙˆØ­ÙˆØ§Ø±ÙŠ Ø±Ø³ÙˆÙ„ Ø§Ù„Ù„Ù‡ ï·º ÙˆØ§Ø¨Ù† Ø¹Ù…ØªÙ‡ ØµÙÙŠØ©ØŒ ÙƒØ§Ù† ÙØ§Ø±Ø³Ø§Ù‹ Ø´Ø¬Ø§Ø¹Ø§Ù‹ Ù„ا ÙŠÙØ¨Ø§Ø±Ù‰ ÙÙŠ Ù…ÙŠØ§Ø¯ÙŠÙ† Ø§Ù„Ù‚ØªØ§Ù„.", type: "person", gender: "male" },
-    "Ùƒعب Ø¨Ù† Ø§Ù„Ø£Ø´Ø±Ù": { def: "Ø²Ø¹ÙŠÙ… ÙŠÙ‡ÙˆØ¯ÙŠ Ù…Ù† Ø¨Ù†ÙŠ Ø§Ù„Ù†Ø¶ÙŠØ±ØŒ Ø­Ø±Ù‘ض Ø§Ù„Ù…Ø´Ø±ÙƒÙŠÙ† ضد Ø§Ù„Ù…Ø³Ù„Ù…ÙŠÙ† ÙˆÙ‡جا Ø§Ù„Ù†Ø¨ÙŠ ï·º Ø¨Ø´Ø¹Ø±Ù‡ØŒ ÙØ£Ø°Ù† Ø§Ù„Ù†Ø¨ÙŠ Ø¨Ù‚ØªÙ„Ù‡ ÙÙ†Ùذ Ø§Ù„Ø£Ù…ر Ù…Ø­Ù…د Ø¨Ù† Ù…Ø³Ù„Ù…ة.", type: "person", gender: "male" },
-    // Ù†ساء Ø§Ù„صحابة ÙˆØ£Ù…Ù‡ات Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ†
-    "Ø²ÙŠÙ†ب Ø¨Ù†ت جحش": { def: "Ø£Ù… Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ†ØŒ Ø²Ùˆجة Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ ØªØ²ÙˆØ¬Ù‡ا Ø¨Ø£Ù…ر Ù…Ù† Ø§Ù„Ù„Ù‡ Ù„Ø¥Ø¨Ø·Ø§Ù„ Ø­ÙƒÙ… Ø§Ù„ØªØ¨Ù†ÙŠ Ø¹Ù…Ù„ÙŠØ§Ù‹ØŒ ÙˆÙƒØ§Ù†ت ØªÙخر Ø¨Ø£Ù† Ø§Ù„Ù„Ù‡ Ø²ÙˆÙ‘Ø¬Ù‡ا Ù…Ù† ÙÙˆÙ‚ سبع Ø³Ù…Ø§Ùˆات.", type: "person", gender: "female" },
-    "عائشة Ø¨Ù†ت Ø£Ø¨ÙŠ Ø¨Ùƒر": { def: "Ø£Ù… Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ† ÙˆØ­Ø¨ÙŠبة Ø±Ø³ÙˆÙ„ Ø§Ù„Ù„Ù‡ ï·ºØŒ Ø£Ùƒثر Ø§Ù„صحابة Ø±ÙˆØ§ÙŠة Ù„Ù„Ø­Ø¯ÙŠث بعد Ø£Ø¨ÙŠ Ù‡Ø±ÙŠØ±Ø©ØŒ Ø¨Ø±Ø£Ù‡ا Ø§Ù„Ù„Ù‡ ÙÙŠ Ø§Ù„Ù‚Ø±Ø¢Ù† Ù…Ù† حادثة Ø§Ù„Ø¥ÙÙƒ.", type: "person", gender: "female" },
-    "Ø®Ø¯ÙŠجة Ø¨Ù†ت Ø®ÙˆÙŠÙ„د": { def: "Ø£ÙˆÙ„ Ø£Ù…Ù‡ات Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ† ÙˆØ£ÙˆÙ„ Ù…Ù† Ø¢Ù…Ù† Ø¨Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ ÙˆÙ‡بت Ù…Ø§Ù„Ù‡ا ÙˆÙ†ÙØ³Ù‡ا Ù„Ù„Ø¯Ø¹ÙˆØ©ØŒ ÙˆØ¨Ø´Ù‘Ø±Ù‡ا Ø§Ù„Ù†Ø¨ÙŠ ï·º Ø¨Ø¨ÙŠت ÙÙŠ Ø§Ù„Ø¬Ù†ة Ù…Ù† Ù‚صب Ù„ا صخب ÙÙŠÙ‡ ÙˆÙ„ا Ù†صب.", type: "person", gender: "female" },
-    "ÙØ§Ø·Ù…ة Ø§Ù„Ø²Ù‡راء": { def: "Ø³ÙŠدة Ù†ساء Ø§Ù„Ø¹Ø§Ù„Ù…ÙŠÙ† ÙˆØ§Ø¨Ù†ة Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ²Ùˆجة Ø¹Ù„ÙŠ Ø¨Ù† Ø£Ø¨ÙŠ Ø·Ø§Ù„Ø¨ØŒ Ù‚Ø§Ù„ Ø¹Ù†Ù‡ا Ø§Ù„Ù†Ø¨ÙŠ: ÙØ§Ø·Ù…ة بضعة Ù…Ù†ÙŠ ÙÙ…Ù† Ø¢Ø°Ø§Ù‡ا ÙÙ‚د Ø¢Ø°Ø§Ù†ي.", type: "person", gender: "female" },
-    "Ø£Ù… Ø³Ù„Ù…ة": { def: "Ø£Ù… Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ† Ù‡Ù†د Ø¨Ù†ت Ø£Ø¨ÙŠ Ø£Ù…ÙŠØ©ØŒ Ù‡اجرت Ø¥Ù„Ù‰ Ø§Ù„حبشة Ø«Ù… Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©ØŒ Ø§Ø´ØªÙÙ‡رت Ø¨Ø­ÙƒÙ…ØªÙ‡ا ÙˆÙ†ØµØ­Ù‡ا Ù„Ù„Ù†Ø¨ÙŠ ï·º ÙŠÙˆÙ… Ø§Ù„Ø­Ø¯ÙŠØ¨ÙŠة.", type: "person", gender: "female" },
-    "ØµÙÙŠة Ø¨Ù†ت حيي": { def: "Ø£Ù… Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ†ØŒ Ø¨Ù†ت Ø²Ø¹ÙŠÙ… Ø¨Ù†ÙŠ Ø§Ù„Ù†Ø¶ÙŠر Ø­ÙŠÙŠ Ø¨Ù† Ø£Ø®Ø·Ø¨ØŒ ØªØ²ÙˆØ¬Ù‡ا Ø§Ù„Ù†Ø¨ÙŠ ï·º بعد ØºØ²Ùˆة Ø®ÙŠØ¨Ø±ØŒ ÙˆÙƒØ§Ù†ت ØªØ¯Ø§Ùع Ø¹Ù† Ø´Ø±Ù Ø§Ù„Ù†Ø¨ÙŠ ï·º Ø¨Ù„Ø³Ø§Ù†Ù‡ا.", type: "person", gender: "female" },
-    "Ø­Ùصة Ø¨Ù†ت Ø¹Ù…ر": { def: "Ø£Ù… Ø§Ù„Ù…Ø¤Ù…Ù†ÙŠÙ† ÙˆØ§Ø¨Ù†ة Ø¹Ù…ر Ø¨Ù† Ø§Ù„Ø®Ø·Ø§Ø¨ØŒ Ø§Ø´ØªÙ‡رت Ø¨Ø§Ù„ØµÙŠØ§Ù… ÙˆØ§Ù„Ù‚ÙŠØ§Ù…ØŒ ÙˆØ¹Ù†Ø¯Ù‡ا Ø­ÙÙظت Ø§Ù„Ù…ØµØ­Ù Ø§Ù„Ø£ÙˆÙ„ Ø§Ù„Ø°ÙŠ Ø¬Ù…Ø¹Ù‡ Ø£Ø¨Ùˆ Ø¨Ùƒر Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡.", type: "person", gender: "female" },
-    "Ø±Ù‚ÙŠة Ø¨Ù†ت Ù…Ø­Ù…د": { def: "Ø¨Ù†ت Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ²Ùˆجة Ø¹Ø«Ù…Ø§Ù† Ø¨Ù† Ø¹ÙØ§Ù†ØŒ Ù‡اجرت Ù…Ø¹Ù‡ Ø¥Ù„Ù‰ Ø§Ù„حبشة Ø«Ù… Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©ØŒ ÙˆØªÙˆÙÙŠت ÙŠÙˆÙ… ØºØ²Ùˆة بدر ÙˆÙ‡Ùˆ ÙÙŠ Ø§Ù„Ù…Ø¹Ø±Ùƒة.", type: "person", gender: "female" },
-    "Ø£Ù… ÙƒÙ„Ø«ÙˆÙ… Ø¨Ù†ت Ù…Ø­Ù…د": { def: "Ø¨Ù†ت Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙˆØ²Ùˆجة Ø¹Ø«Ù…Ø§Ù† Ø¨Ù† Ø¹ÙØ§Ù† بعد ÙˆÙاة Ø£Ø®ØªÙ‡ا Ø±Ù‚ÙŠØ©ØŒ ÙˆÙ„Ù‡ذا Ø³ÙÙ…ÙŠ Ø¹Ø«Ù…Ø§Ù† Ø¨Ø°ÙŠ Ø§Ù„Ù†ÙˆØ±ÙŠÙ†.", type: "person", gender: "female" },
-    "Ø²ÙŠÙ†ب Ø¨Ù†ت Ù…Ø­Ù…د": { def: "Ø£Ùƒبر Ø¨Ù†ات Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ ØªØ²Ùˆجت أبا Ø§Ù„عاص Ø¨Ù† Ø§Ù„Ø±Ø¨ÙŠع Ù‚Ø¨Ù„ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ØŒ ÙˆÙ‡اجرت Ø¥Ù„Ù‰ Ø§Ù„Ù…Ø¯ÙŠÙ†ة بعد ØºØ²Ùˆة بدر ÙˆØªÙˆÙÙŠت ÙÙŠ Ø§Ù„Ø³Ù†ة Ø§Ù„Ø«Ø§Ù…Ù†ة.", type: "person", gender: "female" },
-    "Ù‡Ù†د Ø¨Ù†ت عتبة": { def: "Ø²Ùˆجة Ø£Ø¨ÙŠ Ø³ÙÙŠØ§Ù† ÙˆØ£Ù… Ù…Ø¹Ø§ÙˆÙŠØ©ØŒ Ø£Ù…رت Ø¨Ù‚ØªÙ„ Ø­Ù…زة ÙŠÙˆÙ… Ø£Ùحد ÙˆØ´Ù‚ت ØµØ¯Ø±Ù‡ØŒ Ø£Ø³Ù„Ù…ت ÙŠÙˆÙ… Ùتح Ù…Ùƒة ÙˆØ­Ø³Ù† Ø¥Ø³Ù„Ø§Ù…Ù‡ا.", type: "person", gender: "female" },
-    "Ø£Ø³Ù…اء Ø¨Ù†ت Ø£Ø¨ÙŠ Ø¨Ùƒر": { def: "ذات Ø§Ù„Ù†Ø·Ø§Ù‚ÙŠÙ† Ùˆأخت Ø¹Ø§Ø¦Ø´Ø©ØŒ Ø£Ø¹Ø§Ù†ت Ø£Ø¨Ø§Ù‡ا ÙˆØ²Ùˆج Ø£Ø®ØªÙ‡ا Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙÙŠ Ø§Ù„Ù‡جرة Ø¨Ø­Ù…Ù„ Ø§Ù„Ø²Ø§Ø¯ØŒ ÙˆØ£Ù†جبت Ø£ÙˆÙ„ Ù…ÙˆÙ„Ùˆد ÙÙŠ Ø§Ù„Ø¥Ø³Ù„Ø§Ù… Ø¨Ø§Ù„Ù…Ø¯ÙŠÙ†ة.", type: "person", gender: "female" },
-    "Ù…Ø§Ø±ÙŠا Ø§Ù„Ù‚Ø¨Ø·ÙŠة": { def: "Ø£Ù… Ø¥Ø¨Ø±Ø§Ù‡ÙŠÙ… Ø§Ø¨Ù† Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ Ø£Ù‡Ø¯Ø§Ù‡ا Ø§Ù„Ù…Ù‚ÙˆÙ‚س Ù…Ù„Ùƒ Ù…صر Ø¥Ù„Ù‰ Ø§Ù„Ù†Ø¨ÙŠ ï·ºØŒ ÙˆØªÙˆÙÙŠ Ø§Ø¨Ù†Ù‡ا Ø¥Ø¨Ø±Ø§Ù‡ÙŠÙ… ØµØºÙŠØ±Ø§Ù‹ ÙØ¨ÙƒÙ‰ Ø§Ù„Ù†Ø¨ÙŠ ÙˆÙ‚Ø§Ù„: Ø¥Ù† Ø§Ù„Ø¹ÙŠÙ† ØªØ¯Ù…ع ÙˆØ§Ù„Ù‚Ù„ب ÙŠØ­Ø²Ù†.", type: "person", gender: "female" },
-    // Ø§Ù„أحداث ÙˆØ§Ù„ØºØ²Ùˆات
-    "Ø¨Ù†Ùˆ Ù‚ÙŠÙ†Ù‚اع": { def: "Ø£ÙˆÙ„ Ù‚Ø¨Ø§Ø¦Ù„ Ø§Ù„ÙŠÙ‡Ùˆد Ø¨Ø§Ù„Ù…Ø¯ÙŠÙ†ة Ù†Ù‚Ø¶Ø§Ù‹ Ù„Ù„Ø¹Ù‡د Ù…ع Ø§Ù„Ù†Ø¨ÙŠ ï·º بعد ØºØ²Ùˆة Ø¨Ø¯Ø±ØŒ ÙØªÙ… Ø­ØµØ§Ø±Ù‡Ù… ÙˆØ¥Ø¬Ù„Ø§Ø¤Ù‡Ù… Ø¹Ù† Ø§Ù„Ù…Ø¯ÙŠÙ†ة.", type: "tribe" },
-    "Ø¨Ù†Ùˆ Ù‚Ø±ÙŠظة": { def: "Ø¥Ø­Ø¯Ù‰ Ù‚Ø¨Ø§Ø¦Ù„ Ø§Ù„ÙŠÙ‡Ùˆد Ø¨Ø§Ù„Ù…Ø¯ÙŠÙ†ة Ø§Ù„Ø°ÙŠÙ† ØªØ­Ø§Ù„ÙÙˆا Ù…ع Ø§Ù„أحزاب ÙˆÙ†Ù‚Ø¶Ùˆا Ø¹Ù‡Ø¯Ù‡Ù… Ù…ع Ø§Ù„Ù…Ø³Ù„Ù…ÙŠÙ†ØŒ ÙØ­ÙÙˆØµØ±Ùˆا ÙˆØ­ÙƒÙ… ÙÙŠÙ‡Ù… سعد Ø¨Ù† Ù…عاذ.", type: "tribe" },
-    "Ø¨Ù†Ùˆ Ø§Ù„Ù†Ø¶ÙŠر": { def: "Ù‚Ø¨ÙŠÙ„ة ÙŠÙ‡ÙˆØ¯ÙŠة Ø¨Ø§Ù„Ù…Ø¯ÙŠÙ†ة ØªØ¢Ù…رت Ø¹Ù„Ù‰ Ù‚ØªÙ„ Ø§Ù„Ù†Ø¨ÙŠ ï·º Ø¨Ù„Ù‚اء ØµØ®Ø±Ø©ØŒ ÙØ­Ø§ØµØ±Ù‡Ù… ÙˆØ£Ø¬Ù„Ø§Ù‡Ù… Ø¥Ù„Ù‰ Ø®ÙŠبر ÙˆØ§Ù„Ø´Ø§Ù….", type: "tribe" },
-    "بدر Ø§Ù„Ù…Ùˆعد": { def: "ØºØ²Ùˆة بدر Ø§Ù„ØµØºØ±Ù‰ Ø£Ùˆ Ø§Ù„Ø«Ø§Ù†ÙŠØ©ØŒ خرج ÙÙŠÙ‡ا Ø§Ù„Ù…Ø³Ù„Ù…ÙˆÙ† Ù„Ù„Ù‚اء Ù‚Ø±ÙŠش ÙÙŠ Ø§Ù„Ø³Ù†ة Ø§Ù„رابعة Ù„Ù„Ù‡جرة Ùˆتراجع Ø§Ù„Ù…Ø´Ø±ÙƒÙˆÙ† Ø±Ø¹Ø¨Ø§Ù‹.", type: "event" },
-    "Ø²Ùƒاة Ø§Ù„Ùطر": { def: "ØµØ¯Ù‚ة تجب Ø¹Ù„Ù‰ ÙƒÙ„ Ù…Ø³Ù„Ù… Ù‚Ø¨Ù„ ØµÙ„اة Ø¹ÙŠد Ø§Ù„Ùطر Ø·Ù‡رة Ù„Ù„ØµØ§Ø¦Ù… ÙˆØ·Ø¹Ù…ة Ù„Ù„Ù…Ø³Ø§ÙƒÙŠÙ†ØŒ Ùرضت ÙÙŠ Ø´Ø¹Ø¨Ø§Ù† Ù…Ù† Ø§Ù„Ø³Ù†ة Ø§Ù„Ø«Ø§Ù†ÙŠة Ù„Ù„Ù‡جرة.", type: "concept" },
-    "Ø§Ù„ØªØ¨Ù†ي": { def: "ادعاء Ø¨Ù†Ùˆة Ø·ÙÙ„ Ù„ØºÙŠر Ø£Ø¨ÙŠÙ‡ Ø§Ù„Ø­Ù‚ÙŠÙ‚ÙŠØŒ ÙˆÙ‚د Ø£Ø¨Ø·Ù„Ù‡ Ø§Ù„Ø¥Ø³Ù„Ø§Ù… Ø¹Ù…Ù„ÙŠØ§Ù‹ ÙˆÙ†Ø¸Ø±ÙŠØ§Ù‹ Ù„ØµÙŠØ§Ù†ة Ø§Ù„Ø£Ù†ساب Ù…Ù† Ø§Ù„Ø¶ÙŠاع.", type: "concept" },
-    "ذات Ø§Ù„Ø±Ù‚اع": { def: "ØºØ²Ùˆة Ø³ÙÙ…ÙŠت Ø¨Ø°Ù„Ùƒ Ù„Ø£Ù† Ø§Ù„صحابة Ø±Ø¶ÙŠ Ø§Ù„Ù„Ù‡ Ø¹Ù†Ù‡Ù… Ù„ÙÙˆا Ø§Ù„Ø®Ø±Ù‚ Ø¹Ù„Ù‰ Ø£Ù‚Ø¯Ø§Ù…Ù‡Ù… Ù…Ù† شدة Ø§Ù„حر ÙˆØ§Ù„Ù…Ø´ÙŠØŒ ÙˆÙ†Ø²Ù„ت ÙÙŠÙ‡ا رخص ÙƒØµÙ„اة Ø§Ù„Ø®ÙˆÙ ÙˆØ§Ù„ØªÙŠÙ…Ù….", type: "event" },
-    "ØºØ²Ùˆة Ø§Ù„أحزاب": { def: "ØºØ²Ùˆة Ø§Ù„Ø®Ù†Ø¯Ù‚ (Ø§Ù„Ø³Ù†ة Ø§Ù„Ø®Ø§Ù…سة Ù„Ù„Ù‡جرة) Ø­ÙŠث ØªØ¬Ù…عت Ù‚Ø¨Ø§Ø¦Ù„ Ø§Ù„Ù…Ø´Ø±ÙƒÙŠÙ† ÙˆØ§Ù„ÙŠÙ‡Ùˆد Ù„Ù…حاصرة Ø§Ù„Ù…Ø³Ù„Ù…ÙŠÙ†ØŒ ÙÙ‡Ø²Ù…Ù‡Ù… Ø§Ù„Ù„Ù‡ Ø¨Ø§Ù„Ø±ÙŠح ÙˆØ§Ù„Ø¬Ù†Ùˆد.", type: "event" },
-    "ØºØ²Ùˆة Ø¨Ù†ÙŠ Ø§Ù„Ù…ØµØ·Ù„Ù‚": { def: "ØºØ²Ùˆة Ø§Ù„Ù…Ø±ÙŠØ³ÙŠع (Ø§Ù„Ø³Ù†ة Ø§Ù„سادسة Ù„Ù„Ù‡جرة) Ù‡Ø²Ù… ÙÙŠÙ‡ا Ø§Ù„Ù…Ø³Ù„Ù…ÙˆÙ† Ø¨Ù†ÙŠ Ø§Ù„Ù…ØµØ·Ù„Ù‚ Ùˆحدثت ÙÙŠÙ‡ا حادثة Ø§Ù„Ø¥ÙÙƒ Ø§Ù„Ù…ÙØªØ±ÙŠة.", type: "event" },
-    "Ø¯ÙˆÙ…ة Ø§Ù„Ø¬Ù†Ø¯Ù„": { def: "ØºØ²Ùˆة Ù‚Ø§Ø¯Ù‡ا Ø§Ù„Ù†Ø¨ÙŠ ï·º ÙÙŠ Ø§Ù„Ø³Ù†ة Ø§Ù„Ø®Ø§Ù…سة Ù„Ù„Ù‡جرة Ù„ØªØ£Ù…ÙŠÙ† Ø§Ù„Ø­Ø¯Ùˆد Ø§Ù„Ø´Ù…Ø§Ù„ÙŠة ÙˆØªÙØ±ÙŠÙ‚ Ù‚Ø¨Ø§Ø¦Ù„ Ù‡Ù†Ø§Ùƒ ÙƒØ§Ù†ت ØªØªÙ‡ÙŠأ Ù„ØºØ²Ùˆ Ø§Ù„Ù…Ø¯ÙŠÙ†ة.", type: "event" }
+    // Ã˜Â±Ã˜Â¬Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â§Ã˜ÂµÃ˜Â±Ã™Ë†Ã™â€ 
+    "Ã˜Â²Ã™Å Ø¯ Ã˜Â¨Ã™â€  Ø­Ø§Ø±Ø«Ø©": { def: "Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã˜Â¬Ã™â€žÃ™Å Ã™â€žÃ˜Å’ Ã™Æ’Ã˜Â§Ã™â€  Ã™Å Ã˜Â¯Ã˜Â¹Ã™â€° Ã˜Â²Ã™Å Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â­Ã™â€¦Ø¯ Ã˜Â¨Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜ÂªÃ˜Â­Ã˜Â±Ã™Å Ã™â€¦Ã™â€¡Ã˜Å’ Ã™Ë†Ã™â€¡Ã™Ë† Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â­Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ã˜Â°Ã™ÂÃ™Æ’Ø± Ã˜Â§Ã˜Â³Ã™â€¦Ã™â€¡ ØµØ±Ø§Ø­Ø© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€šÃ˜Â±Ã˜Â¢Ã™â€  Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â±Ã™Å Ã™â€¦.", type: "person", gender: "male" },
+    "Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â³Ã™ÂÃ™Å Ã˜Â§Ã™â€ ": { def: "Ã˜Â²Ã˜Â¹Ã™Å Ã™â€¦ Ã™â€¦Ã˜Â´Ã˜Â±Ã™Æ’Ã™Å  Ã™â€šÃ˜Â±Ã™Å Ø´ Ã™Ë†Ã™â€šØ§Ø¦Ø¯ Ã™â€šÃ™Ë†Ã˜Â§Ã™ÂÃ™â€žÃ™â€¡Ã™â€¦ Ã™Ë†Ã˜Â¬Ã™Å Ã™Ë†Ã˜Â´Ã™â€¡Ã™â€¦ Ã™ÂÃ™Å  Ã˜ÂºÃ˜Â²Ã™Ë† Ø£Ø­Ø¯ Ã™Ë†Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨ Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã™â€¡ Ã™Å Ã™Ë†Ã™â€¦ Ã™ÂØªØ­ Ã™â€¦Ã™Æ’Ø©.", type: "person", gender: "male" },
+    "Ã˜Â³Ã™â€žÃ™â€¦Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™ÂÃ˜Â§Ã˜Â±Ã˜Â³Ã™Å ": { def: "Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã˜Â¬Ã™â€žÃ™Å Ã™â€ž Ã™â€¦Ã™â€  Ã˜Â¨Ã™â€žØ§Ø¯ Ã™ÂÃ˜Â§Ã˜Â±Ã˜Â³Ã˜Å’ Ã™Ë†Ã™â€¡Ã™Ë† ØµØ§Ø­Ø¨ Ã™ÂÃ™Æ’Ø±Ø© Ã˜Â­Ã™ÂØ± Ã˜Â§Ã™â€žÃ˜Â®Ã™â€ Ã˜Â¯Ã™â€š Ã™â€žÃ˜Â­Ã™â€¦Ã˜Â§Ã™Å Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø© Ã™ÂÃ™Å  Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨.", type: "person", gender: "male" },
+    "Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ø¹Ø§Ø°": { def: "Ã˜Â³Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ø³ Ã™Ë†Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã˜Â¬Ã™â€žÃ™Å Ã™â€ž Ã˜Â§Ã™â€¡ØªØ² Ã™â€žÃ™Ë†Ã™ÂÃ˜Â§Ã˜ÂªÃ™â€¡ Ø¹Ø±Ø´ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â­Ã™â€¦Ã™â€ Ã˜Å’ Ã™Ë†Ã™â€¡Ã™Ë† Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ã˜Â­Ã™Æ’Ã™â€¦ Ã™ÂÃ™Å  Ã˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ˜Â±Ã™Å Ø¸Ø© Ã˜Â¨Ã˜Â­Ã™Æ’Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã™Ë†Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€žÃ™â€¡.", type: "person", gender: "male" },
+    "Ã˜Â­Ã™Å Ã™Å  Ã˜Â¨Ã™â€  Ø£Ø®Ø·Ø¨": { def: "Ã˜Â²Ã˜Â¹Ã™Å Ã™â€¦ Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ø± Ã™Ë†Ø£Ø­Ø¯ Ã˜Â£Ã™â€žØ¯ Ø£Ø¹Ø¯Ø§Ø¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã˜Å’ Ã˜Â­Ã˜Â±Ã™â€˜Ø¶ Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨ Ø¶Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø© Ã™Ë†ØºØ¯Ø± Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¡Ø¯ Ã˜Â«Ã™â€¦ Ã™â€šÃ™ÂÃ˜ÂªÃ™â€ž Ã™â€¦Ø¹ Ã˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ˜Â±Ã™Å Ø¸Ø©.", type: "person", gender: "male" },
+    "Ã™â€ Ã˜Â¹Ã™Å Ã™â€¦ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯": { def: "Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã˜Â¬Ã™â€žÃ™Å Ã™â€ž Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã˜Â³Ã˜Â±Ã™â€˜Ã˜Â§Ã™â€¹ Ã™Å Ã™Ë†Ã™â€¦ Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨ Ã™Ë†Ã™â€ Ø¬Ø­ Ã˜Â¨Ã˜Â¯Ã™â€¡Ã˜Â§Ã˜Â¦Ã™â€¡ Ã™ÂÃ™Å  Ã˜Â®Ã˜Â°Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Æ’Ã™Å Ã™â€  Ã™Ë†Ã˜Â¥Ã™Å Ã™â€šØ§Ø¹ Ã˜Â§Ã™â€žÃ˜Â®Ã™â€žÃ˜Â§Ã™Â Ã˜Â¨Ã™Å Ã™â€  Ã™â€šÃ˜Â±Ã™Å Ø´ Ã™Ë†Ã˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ˜Â±Ã™Å Ø¸Ø©.", type: "person", gender: "male" },
+    "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ™Ë†Ã™â€ž": { def: "Ø±Ø£Ø³ Ã˜Â§Ã™â€žÃ™â€ Ã™ÂÃ˜Â§Ã™â€š Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ã˜Â©Ã˜Å’ Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜ÂºÃ™â€ž Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â·Ã™â€žÃ™â€š Ã™â€žØ¥Ø«Ø§Ø±Ø© Ã˜Â§Ã™â€žÃ™ÂÃ˜ÂªÃ™â€  Ã™Ë†Ã˜ÂªÃ™Ë†Ã™â€žÃ™â€° Ã™Æ’Ã™ÂØ¨Ø± Ø­Ø§Ø¯Ø«Ø© Ã˜Â§Ã™â€žÃ˜Â¥Ã™ÂÃ™Æ’ Ã˜Â·Ã˜Â¹Ã™â€ Ã˜Â§Ã™â€¹ Ã™ÂÃ™Å  Ã˜Â£Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€  Ø¹Ø§Ø¦Ø´Ø©.", type: "person", gender: "male" },
+    "Ã˜ÂµÃ™ÂÃ™Ë†Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â·Ã™â€ž": { def: "Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã˜Â¬Ã™â€žÃ™Å Ã™â€ž Ã™â€¦Ã™â€  Ã˜Â®Ã™Å Ø±Ø© Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã˜Â©Ã˜Å’ Ã˜Â§Ã˜ÂªÃ™â€¡Ã™â€¦Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜Â§Ã™ÂÃ™â€šÃ™Ë†Ã™â€  Ã˜Â¸Ã™â€žÃ™â€¦Ã˜Â§Ã™â€¹ Ã™Ë†Ã˜Â²Ã™Ë†Ã˜Â±Ã˜Â§Ã™â€¹ Ã™ÂÃ™Å  Ø­Ø§Ø¯Ø«Ø© Ã˜Â§Ã™â€žÃ˜Â¥Ã™ÂÃ™Æ’ Ã™Ë†Ã˜Â¨Ã˜Â±Ã˜Â£Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ø¹Ø² Ã™Ë†Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â¢Ã™Å Ø§Øª Ã˜Â³Ã™Ë†Ø±Ø© Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ø±.", type: "person", gender: "male" },
+    "Ã˜Â£Ã™â€¦Ã™Å Ø© Ã˜Â¨Ã™â€  Ã˜Â®Ã™â€žÃ™Â": { def: "Ø£Ø­Ø¯ Ã˜Â£Ã˜Â¦Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ™Æ’Ã™ÂØ± Ã˜Â¨Ã™â€¦Ã™Æ’Ã˜Â©Ã˜Å’ Ã™Æ’Ã˜Â§Ã™â€  Ã™Å Ø¹Ø°Ø¨ Ã˜Â¨Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¨Ã™â€  Ã˜Â±Ã˜Â¨Ã˜Â§Ã˜Â­Ã˜Å’ Ã™Ë†Ã™â€šÃ™ÂÃ˜ÂªÃ™â€ž Ã™ÂÃ™Å  Ã™â€¦Ã˜Â¹Ã˜Â±Ã™Æ’Ø© Ø¨Ø¯Ø± Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â¨Ã˜Â±Ã™â€° Ã˜Â¹Ã™â€žÃ™â€° Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€ .", type: "person", gender: "male" },
+    "Ã˜Â­Ã™â€¦Ø²Ø© Ã˜Â¨Ã™â€  Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â·Ã™â€žØ¨": { def: "Ø£Ø³Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã™Ë†Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€žÃ™â€¡ Ã™Ë†Ã˜Â¹Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â´Ã™â€¡Ø¯ Ã™ÂÃ™Å  Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ø£Ø­Ø¯ Ã˜Â¹Ã™â€žÃ™â€° Ã™Å Ø¯ Ã™Ë†Ã˜Â­Ã˜Â´Ã™Å  Ã™Ë†Ã™â€¦Ã˜Â«Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â¨Ã˜Â¬Ã˜Â³Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â±Ã™Å Ã™Â.", type: "person", gender: "male" },
+    "Ã™â€¦ØµØ¹Ø¨ Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€¦Ã™Å Ø±": { def: "Ã˜Â£Ã™Ë†Ã™â€ž Ã˜Â³Ã™ÂÃ™Å Ø± Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã˜Å’ Ã˜Â­Ã™â€¦Ã™â€ž Ã˜Â±Ã˜Â§Ã™Å Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€  Ã™ÂÃ™Å  Ã˜ÂºÃ˜Â²Ã™Ë† Ã˜Â£Ã™ÂØ­Ø¯ Ã™Ë†Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â´Ã™â€¡Ø¯ Ã™â€¦Ã™â€šÃ˜Â¨Ã™â€žÃ˜Â§Ã™â€¹ Ã˜ÂºÃ™Å Ø± Ã™â€¦Ø¯Ø¨Ø± Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡.", type: "person", gender: "male" },
+    "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦": { def: "Ø­Ø¨Ø± Ã™â€¦Ã™â€  Ø£Ø­Ø¨Ø§Ø± Ã™Å Ã™â€¡Ã™Ë†Ø¯ Ã˜Â¨Ã™â€ Ã™Å  Ã™â€šÃ™Å Ã™â€ Ã™â€šØ§Ø¹ Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ã˜Â©Ã˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã™â€¦Ø¹ Ã˜Â¨Ã˜Â¯Ã˜Â§Ã™Å Ø© Ã™â€¡Ø¬Ø±Ø© Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â´Ã™â€¡Ø¯ Ã˜Â¨Ã˜ÂµÃ˜Â¯Ã™â€š Ã™â€ Ã˜Â¨Ã™Ë†Ã˜ÂªÃ™â€¡ Ã™Ë†Ã™â€¡Ã™Ë† Ã™â€¦Ã™â€  Ã™Æ’Ø¨Ø§Ø± Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø©.", type: "person", gender: "male" },
+    "Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â¨Ã™Æ’Ø± Ã˜Â§Ã™â€žÃ˜ÂµÃ˜Â¯Ã™Å Ã™â€š": { def: "Ã˜Â£Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â®Ã™â€žÃ™ÂØ§Ø¡ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â§Ã˜Â´Ã˜Â¯Ã™Å Ã™â€  Ã™Ë†Ã˜Â£Ã™â€šØ±Ø¨ Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã˜Â±Ã™ÂÃ™Å Ã™â€šÃ™â€¡ Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€¡Ø¬Ø±Ø© Ã™Ë†ØµØ§Ø­Ø¨ Ã˜Â§Ã™â€žÃ˜ÂºÃ˜Â§Ã˜Â±Ã˜Å’ Ã™Ë†Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€¦Ã™â€  Ã˜ÂµÃ˜Â¯Ã™â€˜Ã™â€š Ã˜Â¨Ã˜Â§Ã™â€žØ¥Ø³Ø±Ø§Ø¡ Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ø¹Ø±Ø§Ø¬.", type: "person", gender: "male" },
+    "Ã˜Â¹Ã™â€¦Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ®Ø·Ø§Ø¨": { def: "Ã˜Â«Ã˜Â§Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ˜Â®Ã™â€žÃ™ÂØ§Ø¡ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â§Ã˜Â´Ã˜Â¯Ã™Å Ã™â€ Ã˜Å’ Ã˜Â§Ã™â€žÃ™ÂÃ˜Â§Ã˜Â±Ã™Ë†Ã™â€š Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ø£Ø¹Ø² Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã˜Å’ Ã˜Â¹Ã™ÂÃ˜Â±Ã™Â Ã˜Â¨Ã˜Â´Ã˜Â¯Ã˜ÂªÃ™â€¡ Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â­Ã™â€š Ã™Ë†Ã˜Â¹Ã˜Â¯Ã™â€žÃ™â€¡ Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ø¶Ø±Ø¨ Ã˜Â¨Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€¦Ã˜Â«Ã˜Â§Ã™â€ž Ã™ÂÃ™Å  Ã™Æ’Ã™â€ž Ã™â€¦Ã™Æ’Ã˜Â§Ã™â€ .", type: "person", gender: "male" },
+    "Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™ÂÃ˜Â§Ã™â€ ": { def: "Ã˜Â«Ã˜Â§Ã™â€žØ« Ã˜Â§Ã™â€žÃ˜Â®Ã™â€žÃ™ÂØ§Ø¡ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â§Ã˜Â´Ã˜Â¯Ã™Å Ã™â€  Ã™Ë†Ã˜Â°Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â±Ã™Å Ã™â€ Ã˜Å’ Ã˜Â²Ã™Ë†Ø¬ Ã˜Â±Ã™â€šÃ™Å Ø© Ã˜Â«Ã™â€¦ Ã˜Â£Ã™â€¦ Ã™Æ’Ã™â€žÃ˜Â«Ã™Ë†Ã™â€¦ Ã˜Â¨Ã™â€ Ã˜ÂªÃ™Å½Ã™Å  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã˜Â¬Ã™â€¡Ã™â€˜Ø² Ã˜Â¬Ã™Å Ø´ Ã˜Â§Ã™â€žØ¹Ø³Ø±Ø© Ã™â€¦Ã™â€  Ã™â€¦Ã˜Â§Ã™â€žÃ™â€¡ Ã™Ë†Ã˜Â¬Ã™â€¦Ø¹ Ã˜Â§Ã™â€žÃ™â€šÃ˜Â±Ã˜Â¢Ã™â€ .", type: "person", gender: "male" },
+    "Ã˜Â¹Ã™â€žÃ™Å  Ã˜Â¨Ã™â€  Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â·Ã˜Â§Ã™â€žØ¨": { def: "Ø±Ø§Ø¨Ø¹ Ã˜Â§Ã™â€žÃ˜Â®Ã™â€žÃ™ÂØ§Ø¡ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â§Ã˜Â´Ã˜Â¯Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â²Ã™Ë†Ø¬ Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ˜Â²Ã™â€¡Ã˜Â±Ã˜Â§Ã˜Â¡Ã˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã™Ë†Ã™â€¡Ã™Ë† Ã˜ÂµÃ˜ÂºÃ™Å Ø± Ã™Ë†Ã™Æ’Ã˜Â§Ã™â€  Ã™â€¦Ã™â€  Ø£Ø´Ø¬Ø¹ Ã™ÂÃ˜Â±Ã˜Â³Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦.", type: "person", gender: "male" },
+    "Ã˜Â®Ã˜Â§Ã™â€žØ¯ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™Ë†Ã™â€žÃ™Å Ø¯": { def: "Ã˜Â³Ã™Å Ã™Â Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™Ë†Ã™â€žÃ˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã™â€šÃ™ÂÃ˜Â¨Ã™Å Ã™â€ž Ã™ÂØªØ­ Ã™â€¦Ã™Æ’Ø© Ã™Ë†Ã™â€šØ§Ø¯ Ã™â€¦Ã˜Â¹Ã˜Â§Ã˜Â±Ã™Æ’ Ã˜Â­Ã˜Â§Ã˜Â³Ã™â€¦Ø© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™Å Ã™â€¦Ã˜Â§Ã™â€¦Ø© Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â§Ã™â€¦ Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â§Ã™â€š Ã™Ë†Ã™â€žÃ™â€¦ Ã™Å Ã™ÂÃ™â€¡Ã˜Â²Ã™â€¦ Ã™ÂÃ™Å  Ø­Ø±Ø¨ Ã™â€šØ·.", type: "person", gender: "male" },
+    "Ã˜Â¨Ã™â€žÃ˜Â§Ã™â€ž Ã˜Â¨Ã™â€  Ø±Ø¨Ø§Ø­": { def: "Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€¦Ã˜Â¤Ã˜Â°Ã™â€  Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã˜Å’ Ø¹Ø¨Ø¯ Ã˜Â­Ã˜Â¨Ã˜Â´Ã™Å  Ã™Æ’Ã˜Â§Ã™â€  Ã™Å Ã˜Â¹Ã˜Â°Ã˜Â¨Ã™â€¡ Ã˜Â£Ã™â€¦Ã™Å Ø© Ã˜Â¨Ã™â€  Ã˜Â®Ã™â€žÃ™Â Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â±Ã™â€¦Ø¶Ø§Ø¡ Ã™â€žÃ™Å Ã˜ÂªÃ˜Â±Ã™Æ’ Ã˜Â¯Ã™Å Ã™â€ Ã™â€¡Ã˜Å’ Ã˜Â­Ã˜ÂªÃ™â€° Ã˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™â€¡ Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â¨Ã™Æ’Ø± Ã™Ë†Ã˜Â£Ã˜Â¹Ã˜ÂªÃ™â€šÃ™â€¡.", type: "person", gender: "male" },
+    "Ã˜Â£Ã˜Â¨Ã™Ë† Ã™â€¡Ã˜Â±Ã™Å Ø±Ø©": { def: "Ã˜Â£Ã™Æ’Ø«Ø± Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã˜Â±Ã™Ë†Ã˜Â§Ã™Å Ø© Ã™â€žÃ™â€žÃ˜Â­Ã˜Â¯Ã™Å Ø« Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Ë†Ã™Å Ã˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã˜Â¹Ã˜Â§Ã™â€¦ Ã˜Â®Ã™Å Ø¨Ø± Ã™Ë†Ã˜Â¸Ã™â€ž Ã™â€¦Ã™â€žÃ˜Â§Ã˜Â²Ã™â€¦Ã˜Â§Ã™â€¹ Ã™â€žÃ™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã˜Â­Ã˜ÂªÃ™â€° Ã™Ë†Ã™ÂÃ˜Â§Ã˜ÂªÃ™â€¡ Ã™Ë†Ã˜Â±Ã™Ë†Ã™â€° Ã˜Â£Ã™Æ’Ø«Ø± Ã™â€¦Ã™â€  Ã˜Â®Ã™â€¦Ø³Ø© Ã˜Â¢Ã™â€žÃ˜Â§Ã™Â Ã˜Â­Ã˜Â¯Ã™Å Ø«.", type: "person", gender: "male" },
+    "Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã˜Â¹Ã™Ë†Ø¯": { def: "Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã™â€¦Ã™â€  Ã˜Â£Ã™Ë†Ã˜Â§Ã˜Â¦Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€ Ã˜Å’ Ã˜Â®Ã˜Â§Ã˜Â¯Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â£Ã˜Â¹Ã™â€žÃ™â€¦ Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€šÃ˜Â±Ã˜Â¢Ã™â€  Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â±Ã™Å Ã™â€¦ Ã™Ë†Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â³Ã™Å Ã˜Â±Ã˜Å’ Ã™â€šÃ˜Â§Ã™â€ž Ã˜Â¹Ã™â€ Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº: Ã™â€¦Ã™â€  Ã˜Â³Ã˜Â±Ã™â€¡ Ã˜Â£Ã™â€  Ã™Å Ã™â€šØ±Ø£ Ã˜Â§Ã™â€žÃ™â€šÃ˜Â±Ã˜Â¢Ã™â€  Ã˜ÂºÃ˜Â¶Ã˜Â§Ã™â€¹ Ã™ÂÃ™â€žÃ™Å Ã™â€šØ±Ø£ Ã˜Â¹Ã™â€žÃ™â€° Ã™â€šØ±Ø§Ø¡Ø© Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â£Ã™â€¦ Ø¹Ø¨Ø¯.", type: "person", gender: "male" },
+    "Ã™Ë†Ã˜Â­Ã˜Â´Ã™Å  Ã˜Â¨Ã™â€  Ø­Ø±Ø¨": { def: "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¨Ã˜Â´Ã™Å  Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ã™â€šÃ˜ÂªÃ™â€ž Ã˜Â­Ã™â€¦Ø²Ø© Ã˜Â¨Ã™â€  Ø¹Ø¨Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â·Ã™â€žØ¨ Ã˜Â¨Ã˜Â£Ã™â€¦Ø± Ã™â€¡Ã™â€ Ø¯ Ã™Å Ã™Ë†Ã™â€¦ Ã˜Â£Ã˜Â­Ã˜Â¯Ã˜Å’ Ã˜Â«Ã™â€¦ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ø¨Ø¹Ø¯ Ã™ÂØªØ­ Ã™â€¦Ã™Æ’Ø© Ã™Ë†Ã™â€šÃ˜ÂªÃ™â€ž Ã™â€¦Ã˜Â³Ã™Å Ã™â€žÃ™â€¦Ø© Ã˜Â§Ã™â€žÃ™Æ’Ø°Ø§Ø¨ Ã™ÂÃ™Å  Ã˜Â­Ã˜Â±Ã™Ë†Ø¨ Ã˜Â§Ã™â€žØ±Ø¯Ø©.", type: "person", gender: "male" },
+    "Ã˜Â¹Ã™â€¦Ã˜Â±Ã™Ë† Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ¹Ø§Øµ": { def: "Ã˜ÂµÃ˜Â­Ã˜Â§Ã˜Â¨Ã™Å  Ã™Ë†Ã™â€šØ§Ø¦Ø¯ Ã˜Â¹Ã˜Â³Ã™Æ’Ã˜Â±Ã™Å  Ã˜Â¨Ã˜Â§Ã˜Â±Ã˜Â¹Ã˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã™â€šÃ™ÂÃ˜Â¨Ã™Å Ã™â€ž Ã™ÂØªØ­ Ã™â€¦Ã™Æ’Ø© Ã™Ë†Ã™ÂØªØ­ Ã™â€¦ØµØ± Ã™ÂÃ™Å  Ã˜Â¹Ã™â€¡Ø¯ Ã˜Â¹Ã™â€¦Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žØ®Ø·Ø§Ø¨ Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡.", type: "person", gender: "male" },
+    "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÙŠ": { def: "Ø³Ø¨Ø· Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â±Ã™Å Ã˜Â­Ã˜Â§Ã™â€ Ã˜ÂªÃ™â€¡Ã˜Å’ Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÃ™Å  Ã™Ë†Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦Ã˜Â©Ã˜Å’ Ã™â€šÃ˜Â§Ã™â€ž Ã™ÂÃ™Å Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å : Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€  Ã˜Â³Ã™Å Ø¯Ø§ Ø´Ø¨Ø§Ø¨ Ã˜Â£Ã™â€¡Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ø©.", type: "person", gender: "male" },
+    "Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€žÙŠ": { def: "Ø³Ø¨Ø· Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â±Ã™Å Ã˜Â­Ã˜Â§Ã™â€ Ã˜ÂªÃ™â€¡Ã˜Å’ Ã˜Â£Ã™ÂÃ™Ë†Ã™â€žØ¯ Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žØ±Ø§Ø¨Ø¹Ø© Ã™â€žÃ™â€žÃ™â€¡Ã˜Â¬Ã˜Â±Ã˜Â©Ã˜Å’ Ã™Ë†Ã™â€šÃ˜Â§Ã™â€ž Ã™ÂÃ™Å Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å : Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€  Ã™â€¦Ã™â€ Ã™Å  Ã™Ë†Ã˜Â£Ã™â€ Ø§ Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã™Å Ã™â€ .", type: "person", gender: "male" },
+    "Ã˜Â§Ã™â€žÃ™â€ Ø¬Ø§Ø´ÙŠ": { def: "Ã™â€¦Ã™â€žÃ™Æ’ Ã˜Â§Ã™â€žØ­Ø¨Ø´Ø© Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ø£Ø¬Ø§Ø± Ã˜Â§Ã™â€žÃ™â€¦Ã™â€¡Ã˜Â§Ã˜Â¬Ã˜Â±Ã™Å Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã™â€žÃ™Å Ã™â€  Ã™Ë†Ã˜Â£Ã™â€ Ã˜ÂµÃ™ÂÃ™â€¡Ã™â€¦Ã˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦ Ã™ÂÃ™Å  Ã™â€šÃ™â€žÃ˜Â¨Ã™â€¡ Ã™Ë†Ã˜ÂµÃ™â€žÃ™â€° Ã˜Â¹Ã™â€žÃ™Å Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã˜ÂµÃ™â€žØ§Ø© Ã˜Â§Ã™â€žØºØ§Ø¦Ø¨ Ã™â€žÃ™â€¦Ø§ Ã™â€¦Ø§Øª.", type: "person", gender: "male" },
+    "Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â¬Ã™â€¡Ã™â€ž": { def: "Ã™ÂÃ˜Â±Ã˜Â¹Ã™Ë†Ã™â€  Ã™â€¡Ã˜Â°Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€¦Ø© Ã™Ë†Ã˜Â§Ã˜Â³Ã™â€¦Ã™â€¡ Ã˜Â¹Ã™â€¦Ã˜Â±Ã™Ë† Ã˜Â¨Ã™â€  Ã™â€¡Ã˜Â´Ã˜Â§Ã™â€¦Ã˜Å’ Ã™â€¦Ã™â€  Ø£Ø´Ø¯ Ø£Ø¹Ø¯Ø§Ø¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦ Ã™Ë†Ã˜Â£Ã™Æ’Ã˜Â«Ã˜Â±Ã™â€¡Ã™â€¦ Ã˜Â¥Ã™Å Ã˜Â°Ã˜Â§Ã˜Â¡Ã™â€¹ Ã™â€žÃ™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€ Ã˜Å’ Ã™â€šÃ™ÂÃ˜ÂªÃ™â€ž Ã™ÂÃ™Å  Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ø¨Ø¯Ø± Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â¨Ã˜Â±Ã™â€°.", type: "person", gender: "male" },
+    "Ã˜Â£Ã˜Â¨Ã™Ë† Ã™â€žÃ™â€¡Ø¨": { def: "Ã˜Â¹Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â¹Ã˜Â¯Ã™Ë†Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€žÃ˜Â¯Ã™Ë†Ã˜Â¯Ã˜Å’ Ã™â€ Ã˜Â²Ã™â€žØª Ã™ÂÃ™Å Ã™â€¡ Ã™Ë†Ã˜Â²Ã™Ë†Ã˜Â¬Ã˜ÂªÃ™â€¡ Ã˜Â³Ã™Ë†Ø±Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â¯Ã˜Å’ Ã™â€žÃ˜Â¹Ã™â€ Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã™â€žØ´Ø¯Ø© Ã˜Â¹Ã˜Â¯Ã˜Â§Ã˜Â¦Ã™â€¡ Ã™â€žÃ™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦ Ã™Ë†Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€žÃ™â€¡.", type: "person", gender: "male" },
+    "Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ø¹Ø¨Ø§Ø¯Ø©": { def: "Ã˜Â³Ã™Å Ø¯ Ã˜Â§Ã™â€žØ®Ø²Ø±Ø¬ Ã™Ë†Ã˜Â²Ã˜Â¹Ã™Å Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€ Ã˜ÂµÃ˜Â§Ã˜Â±Ã˜Å’ Ã™Æ’Ã˜Â§Ã™â€  Ã™Å Ã™â€ Ã˜Â§Ã™ÂØ³ Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ø¹Ø§Ø° Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¥Ã™â€¦Ø§Ø±Ø© Ã˜Â§Ã™â€žÃ˜Â£Ã™â€ ØµØ§Ø± Ã™Ë†Ã˜Â´Ã™â€¡Ø¯ Ã˜ÂºÃ˜Â²Ã™Ë†Ø§Øª Ã™Æ’Ã˜Â«Ã™Å Ø±Ø© Ã™â€¦Ø¹ Ã˜Â§Ã™â€žÃ™â€ Ø¨ÙŠ ï·º.", type: "person", gender: "male" },
+    "Ã˜Â·Ã™â€žØ­Ø© Ã˜Â¨Ã™â€  Ã˜Â¹Ã˜Â¨Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡": { def: "Ø£Ø­Ø¯ Ã˜Â§Ã™â€žØ¹Ø´Ø±Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¨Ã˜Â´Ã˜Â±Ã™Å Ã™â€  Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â©Ã˜Å’ Ã™Ë†Ã™â€šÃ™Â Ã™Å Ã™Ë†Ã™â€¦ Ã˜Â£Ã™ÂØ­Ø¯ Ã˜Â¯Ã˜Â±Ã˜Â¹Ã˜Â§Ã™â€¹ Ã™â€žÃ™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â£Ã˜ÂµÃ™Å Ø¨Øª Ã™Å Ã˜Â¯Ã™â€¡ Ã˜Â­Ã™Å Ã™â€  Ã˜Â£Ã™â€ Ã™â€šÃ˜Â°Ã™â€¡Ã˜Å’ Ã™ÂÃ™â€šÃ˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å : Ã˜Â£Ã™Ë†Ø¬Ø¨ Ã˜Â·Ã™â€žØ­Ø©.", type: "person", gender: "male" },
+    "Ã˜Â§Ã™â€žÃ˜Â²Ã˜Â¨Ã™Å Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã™Ë†Ã˜Â§Ã™â€¦": { def: "Ø£Ø­Ø¯ Ã˜Â§Ã™â€žØ¹Ø´Ø±Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¨Ã˜Â´Ã˜Â±Ã™Å Ã™â€  Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ø© Ã™Ë†Ã˜Â­Ã™Ë†Ã˜Â§Ã˜Â±Ã™Å  Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã¯Â·Âº Ã™Ë†Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â¹Ã™â€¦Ã˜ÂªÃ™â€¡ Ã˜ÂµÃ™ÂÃ™Å Ã˜Â©Ã˜Å’ Ã™Æ’Ã˜Â§Ã™â€  Ã™ÂÃ˜Â§Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€¹ Ã˜Â´Ã˜Â¬Ã˜Â§Ã˜Â¹Ã˜Â§Ã™â€¹ Ã™â€žØ§ Ã™Å Ã™ÂÃ˜Â¨Ã˜Â§Ã˜Â±Ã™â€° Ã™ÂÃ™Å  Ã™â€¦Ã™Å Ã˜Â§Ã˜Â¯Ã™Å Ã™â€  Ã˜Â§Ã™â€žÃ™â€šÃ˜ÂªÃ˜Â§Ã™â€ž.", type: "person", gender: "male" },
+    "Ã™Æ’Ø¹Ø¨ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â´Ã˜Â±Ã™Â": { def: "Ã˜Â²Ã˜Â¹Ã™Å Ã™â€¦ Ã™Å Ã™â€¡Ã™Ë†Ã˜Â¯Ã™Å  Ã™â€¦Ã™â€  Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ã˜Â±Ã˜Å’ Ã˜Â­Ã˜Â±Ã™â€˜Ø¶ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Æ’Ã™Å Ã™â€  Ø¶Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€  Ã™Ë†Ã™â€¡Ø¬Ø§ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã˜Â¨Ã˜Â´Ã˜Â¹Ã˜Â±Ã™â€¡Ã˜Å’ Ã™ÂÃ˜Â£Ã˜Â°Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã˜Â¨Ã™â€šÃ˜ÂªÃ™â€žÃ™â€¡ Ã™ÂÃ™â€ Ã™ÂØ° Ã˜Â§Ã™â€žÃ˜Â£Ã™â€¦Ø± Ã™â€¦Ã˜Â­Ã™â€¦Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ø©.", type: "person", gender: "male" },
+    // Ã™â€ Ø³Ø§Ø¡ Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã™Ë†Ã˜Â£Ã™â€¦Ã™â€¡Ø§Øª Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€ 
+    "Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ø¬Ø­Ø´": { def: "Ã˜Â£Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€ Ã˜Å’ Ã˜Â²Ã™Ë†Ø¬Ø© Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã˜ÂªÃ˜Â²Ã™Ë†Ã˜Â¬Ã™â€¡Ø§ Ã˜Â¨Ã˜Â£Ã™â€¦Ø± Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã™â€žÃ˜Â¥Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€ž Ã˜Â­Ã™Æ’Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¨Ã™â€ Ã™Å  Ã˜Â¹Ã™â€¦Ã™â€žÃ™Å Ã˜Â§Ã™â€¹Ã˜Å’ Ã™Ë†Ã™Æ’Ã˜Â§Ã™â€ Øª Ã˜ÂªÃ™ÂØ®Ø± Ã˜Â¨Ã˜Â£Ã™â€  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â²Ã™Ë†Ã™â€˜Ã˜Â¬Ã™â€¡Ø§ Ã™â€¦Ã™â€  Ã™ÂÃ™Ë†Ã™â€š Ø³Ø¨Ø¹ Ã˜Â³Ã™â€¦Ã˜Â§Ã™Ë†Ø§Øª.", type: "person", gender: "female" },
+    "Ø¹Ø§Ø¦Ø´Ø© Ã˜Â¨Ã™â€ Øª Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â¨Ã™Æ’Ø±": { def: "Ã˜Â£Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€  Ã™Ë†Ã˜Â­Ã˜Â¨Ã™Å Ø¨Ø© Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã¯Â·ÂºÃ˜Å’ Ã˜Â£Ã™Æ’Ø«Ø± Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã˜Â±Ã™Ë†Ã˜Â§Ã™Å Ø© Ã™â€žÃ™â€žÃ˜Â­Ã˜Â¯Ã™Å Ø« Ø¨Ø¹Ø¯ Ã˜Â£Ã˜Â¨Ã™Å  Ã™â€¡Ã˜Â±Ã™Å Ã˜Â±Ã˜Â©Ã˜Å’ Ã˜Â¨Ã˜Â±Ã˜Â£Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€šÃ˜Â±Ã˜Â¢Ã™â€  Ã™â€¦Ã™â€  Ø­Ø§Ø¯Ø«Ø© Ã˜Â§Ã™â€žÃ˜Â¥Ã™ÂÃ™Æ’.", type: "person", gender: "female" },
+    "Ã˜Â®Ã˜Â¯Ã™Å Ø¬Ø© Ã˜Â¨Ã™â€ Øª Ã˜Â®Ã™Ë†Ã™Å Ã™â€žØ¯": { def: "Ã˜Â£Ã™Ë†Ã™â€ž Ã˜Â£Ã™â€¦Ã™â€¡Ø§Øª Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€  Ã™Ë†Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€¦Ã™â€  Ã˜Â¢Ã™â€¦Ã™â€  Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã™Ë†Ã™â€¡Ø¨Øª Ã™â€¦Ã˜Â§Ã™â€žÃ™â€¡Ø§ Ã™Ë†Ã™â€ Ã™ÂÃ˜Â³Ã™â€¡Ø§ Ã™â€žÃ™â€žÃ˜Â¯Ã˜Â¹Ã™Ë†Ã˜Â©Ã˜Å’ Ã™Ë†Ã˜Â¨Ã˜Â´Ã™â€˜Ã˜Â±Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã˜Â¨Ã˜Â¨Ã™Å Øª Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ø© Ã™â€¦Ã™â€  Ã™â€šØµØ¨ Ã™â€žØ§ ØµØ®Ø¨ Ã™ÂÃ™Å Ã™â€¡ Ã™Ë†Ã™â€žØ§ Ã™â€ ØµØ¨.", type: "person", gender: "female" },
+    "Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ˜Â²Ã™â€¡Ø±Ø§Ø¡": { def: "Ã˜Â³Ã™Å Ø¯Ø© Ã™â€ Ø³Ø§Ø¡ Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â§Ã™â€žÃ™â€¦Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã˜Â¨Ã™â€ Ø© Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â²Ã™Ë†Ø¬Ø© Ã˜Â¹Ã™â€žÃ™Å  Ã˜Â¨Ã™â€  Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â·Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Å’ Ã™â€šÃ˜Â§Ã™â€ž Ã˜Â¹Ã™â€ Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å : Ã™ÂÃ˜Â§Ã˜Â·Ã™â€¦Ø© Ø¨Ø¶Ø¹Ø© Ã™â€¦Ã™â€ Ã™Å  Ã™ÂÃ™â€¦Ã™â€  Ã˜Â¢Ã˜Â°Ã˜Â§Ã™â€¡Ø§ Ã™ÂÃ™â€šØ¯ Ã˜Â¢Ã˜Â°Ã˜Â§Ã™â€ ÙŠ.", type: "person", gender: "female" },
+    "Ã˜Â£Ã™â€¦ Ã˜Â³Ã™â€žÃ™â€¦Ø©": { def: "Ã˜Â£Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€  Ã™â€¡Ã™â€ Ø¯ Ã˜Â¨Ã™â€ Øª Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â£Ã™â€¦Ã™Å Ã˜Â©Ã˜Å’ Ã™â€¡Ø§Ø¬Ø±Øª Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žØ­Ø¨Ø´Ø© Ã˜Â«Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ã˜Â©Ã˜Å’ Ã˜Â§Ã˜Â´Ã˜ÂªÃ™ÂÃ™â€¡Ø±Øª Ã˜Â¨Ã˜Â­Ã™Æ’Ã™â€¦Ã˜ÂªÃ™â€¡Ø§ Ã™Ë†Ã™â€ Ã˜ÂµÃ˜Â­Ã™â€¡Ø§ Ã™â€žÃ™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Å Ã™Ë†Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â¨Ã™Å Ø©.", type: "person", gender: "female" },
+    "Ã˜ÂµÃ™ÂÃ™Å Ø© Ã˜Â¨Ã™â€ Øª Ø­ÙŠÙŠ": { def: "Ã˜Â£Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€ Ã˜Å’ Ã˜Â¨Ã™â€ Øª Ã˜Â²Ã˜Â¹Ã™Å Ã™â€¦ Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ø± Ã˜Â­Ã™Å Ã™Å  Ã˜Â¨Ã™â€  Ã˜Â£Ã˜Â®Ã˜Â·Ã˜Â¨Ã˜Å’ Ã˜ÂªÃ˜Â²Ã™Ë†Ã˜Â¬Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ø¨Ø¹Ø¯ Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â®Ã™Å Ã˜Â¨Ã˜Â±Ã˜Å’ Ã™Ë†Ã™Æ’Ã˜Â§Ã™â€ Øª Ã˜ÂªÃ˜Â¯Ã˜Â§Ã™ÂØ¹ Ã˜Â¹Ã™â€  Ã˜Â´Ã˜Â±Ã™Â Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã˜Â¨Ã™â€žÃ˜Â³Ã˜Â§Ã™â€ Ã™â€¡Ø§.", type: "person", gender: "female" },
+    "Ã˜Â­Ã™ÂØµØ© Ã˜Â¨Ã™â€ Øª Ã˜Â¹Ã™â€¦Ø±": { def: "Ã˜Â£Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¦Ã™â€ Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã˜Â¨Ã™â€ Ø© Ã˜Â¹Ã™â€¦Ø± Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â·Ã˜Â§Ã˜Â¨Ã˜Å’ Ã˜Â§Ã˜Â´Ã˜ÂªÃ™â€¡Ø±Øª Ã˜Â¨Ã˜Â§Ã™â€žÃ˜ÂµÃ™Å Ã˜Â§Ã™â€¦ Ã™Ë†Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã˜Â§Ã™â€¦Ã˜Å’ Ã™Ë†Ã˜Â¹Ã™â€ Ã˜Â¯Ã™â€¡Ø§ Ã˜Â­Ã™ÂÃ™ÂØ¸Øª Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â­Ã™Â Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â°Ã™Å  Ã˜Â¬Ã™â€¦Ã˜Â¹Ã™â€¡ Ã˜Â£Ã˜Â¨Ã™Ë† Ã˜Â¨Ã™Æ’Ø± Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡.", type: "person", gender: "female" },
+    "Ã˜Â±Ã™â€šÃ™Å Ø© Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯": { def: "Ã˜Â¨Ã™â€ Øª Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â²Ã™Ë†Ø¬Ø© Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™ÂÃ˜Â§Ã™â€ Ã˜Å’ Ã™â€¡Ø§Ø¬Ø±Øª Ã™â€¦Ã˜Â¹Ã™â€¡ Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žØ­Ø¨Ø´Ø© Ã˜Â«Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ã˜Â©Ã˜Å’ Ã™Ë†Ã˜ÂªÃ™Ë†Ã™ÂÃ™Å Øª Ã™Å Ã™Ë†Ã™â€¦ Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ø¨Ø¯Ø± Ã™Ë†Ã™â€¡Ã™Ë† Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â±Ã™Æ’Ø©.", type: "person", gender: "female" },
+    "Ã˜Â£Ã™â€¦ Ã™Æ’Ã™â€žÃ˜Â«Ã™Ë†Ã™â€¦ Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯": { def: "Ã˜Â¨Ã™â€ Øª Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™Ë†Ã˜Â²Ã™Ë†Ø¬Ø© Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€  Ã˜Â¹Ã™ÂÃ˜Â§Ã™â€  Ø¨Ø¹Ø¯ Ã™Ë†Ã™ÂØ§Ø© Ã˜Â£Ã˜Â®Ã˜ÂªÃ™â€¡Ø§ Ã˜Â±Ã™â€šÃ™Å Ã˜Â©Ã˜Å’ Ã™Ë†Ã™â€žÃ™â€¡Ø°Ø§ Ã˜Â³Ã™ÂÃ™â€¦Ã™Å  Ã˜Â¹Ã˜Â«Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã˜Â°Ã™Å  Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â±Ã™Å Ã™â€ .", type: "person", gender: "female" },
+    "Ã˜Â²Ã™Å Ã™â€ Ø¨ Ã˜Â¨Ã™â€ Øª Ã™â€¦Ã˜Â­Ã™â€¦Ø¯": { def: "Ã˜Â£Ã™Æ’Ø¨Ø± Ã˜Â¨Ã™â€ Ø§Øª Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã˜ÂªÃ˜Â²Ã™Ë†Ø¬Øª Ø£Ø¨Ø§ Ã˜Â§Ã™â€žØ¹Ø§Øµ Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¨Ã™Å Ø¹ Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã˜Å’ Ã™Ë†Ã™â€¡Ø§Ø¬Ø±Øª Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø© Ø¨Ø¹Ø¯ Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ø¨Ø¯Ø± Ã™Ë†Ã˜ÂªÃ™Ë†Ã™ÂÃ™Å Øª Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žÃ˜Â«Ã˜Â§Ã™â€¦Ã™â€ Ø©.", type: "person", gender: "female" },
+    "Ã™â€¡Ã™â€ Ø¯ Ã˜Â¨Ã™â€ Øª Ø¹ØªØ¨Ø©": { def: "Ã˜Â²Ã™Ë†Ø¬Ø© Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â³Ã™ÂÃ™Å Ã˜Â§Ã™â€  Ã™Ë†Ã˜Â£Ã™â€¦ Ã™â€¦Ã˜Â¹Ã˜Â§Ã™Ë†Ã™Å Ã˜Â©Ã˜Å’ Ã˜Â£Ã™â€¦Ø±Øª Ã˜Â¨Ã™â€šÃ˜ÂªÃ™â€ž Ã˜Â­Ã™â€¦Ø²Ø© Ã™Å Ã™Ë†Ã™â€¦ Ã˜Â£Ã™ÂØ­Ø¯ Ã™Ë†Ã˜Â´Ã™â€šØª Ã˜ÂµÃ˜Â¯Ã˜Â±Ã™â€¡Ã˜Å’ Ã˜Â£Ã˜Â³Ã™â€žÃ™â€¦Øª Ã™Å Ã™Ë†Ã™â€¦ Ã™ÂØªØ­ Ã™â€¦Ã™Æ’Ø© Ã™Ë†Ã˜Â­Ã˜Â³Ã™â€  Ã˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦Ã™â€¡Ø§.", type: "person", gender: "female" },
+    "Ã˜Â£Ã˜Â³Ã™â€¦Ø§Ø¡ Ã˜Â¨Ã™â€ Øª Ã˜Â£Ã˜Â¨Ã™Å  Ã˜Â¨Ã™Æ’Ø±": { def: "Ø°Ø§Øª Ã˜Â§Ã™â€žÃ™â€ Ã˜Â·Ã˜Â§Ã™â€šÃ™Å Ã™â€  Ã™Ë†Ø£Ø®Øª Ã˜Â¹Ã˜Â§Ã˜Â¦Ã˜Â´Ã˜Â©Ã˜Å’ Ã˜Â£Ã˜Â¹Ã˜Â§Ã™â€ Øª Ã˜Â£Ã˜Â¨Ã˜Â§Ã™â€¡Ø§ Ã™Ë†Ã˜Â²Ã™Ë†Ø¬ Ã˜Â£Ã˜Â®Ã˜ÂªÃ™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€¡Ø¬Ø±Ø© Ã˜Â¨Ã˜Â­Ã™â€¦Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â²Ã˜Â§Ã˜Â¯Ã˜Å’ Ã™Ë†Ã˜Â£Ã™â€ Ø¬Ø¨Øª Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€¦Ã™Ë†Ã™â€žÃ™Ë†Ø¯ Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦ Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø©.", type: "person", gender: "female" },
+    "Ã™â€¦Ã˜Â§Ã˜Â±Ã™Å Ø§ Ã˜Â§Ã™â€žÃ™â€šÃ˜Â¨Ã˜Â·Ã™Å Ø©": { def: "Ã˜Â£Ã™â€¦ Ã˜Â¥Ã˜Â¨Ã˜Â±Ã˜Â§Ã™â€¡Ã™Å Ã™â€¦ Ã˜Â§Ã˜Â¨Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã˜Â£Ã™â€¡Ã˜Â¯Ã˜Â§Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ™Ë†Ã™â€šØ³ Ã™â€¦Ã™â€žÃ™Æ’ Ã™â€¦ØµØ± Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·ÂºÃ˜Å’ Ã™Ë†Ã˜ÂªÃ™Ë†Ã™ÂÃ™Å  Ã˜Â§Ã˜Â¨Ã™â€ Ã™â€¡Ø§ Ã˜Â¥Ã˜Â¨Ã˜Â±Ã˜Â§Ã™â€¡Ã™Å Ã™â€¦ Ã˜ÂµÃ˜ÂºÃ™Å Ã˜Â±Ã˜Â§Ã™â€¹ Ã™ÂÃ˜Â¨Ã™Æ’Ã™â€° Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã™Ë†Ã™â€šÃ˜Â§Ã™â€ž: Ã˜Â¥Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã™Å Ã™â€  Ã˜ÂªÃ˜Â¯Ã™â€¦Ø¹ Ã™Ë†Ã˜Â§Ã™â€žÃ™â€šÃ™â€žØ¨ Ã™Å Ã˜Â­Ã˜Â²Ã™â€ .", type: "person", gender: "female" },
+    // Ã˜Â§Ã™â€žØ£Ø­Ø¯Ø§Ø« Ã™Ë†Ã˜Â§Ã™â€žÃ˜ÂºÃ˜Â²Ã™Ë†Ø§Øª
+    "Ã˜Â¨Ã™â€ Ã™Ë† Ã™â€šÃ™Å Ã™â€ Ã™â€šØ§Ø¹": { def: "Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€šÃ˜Â¨Ã˜Â§Ã˜Â¦Ã™â€ž Ã˜Â§Ã™â€žÃ™Å Ã™â€¡Ã™Ë†Ø¯ Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø© Ã™â€ Ã™â€šÃ˜Â¶Ã˜Â§Ã™â€¹ Ã™â€žÃ™â€žÃ˜Â¹Ã™â€¡Ø¯ Ã™â€¦Ø¹ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ø¨Ø¹Ø¯ Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â¨Ã˜Â¯Ã˜Â±Ã˜Å’ Ã™ÂÃ˜ÂªÃ™â€¦ Ã˜Â­Ã˜ÂµÃ˜Â§Ã˜Â±Ã™â€¡Ã™â€¦ Ã™Ë†Ã˜Â¥Ã˜Â¬Ã™â€žÃ˜Â§Ã˜Â¤Ã™â€¡Ã™â€¦ Ã˜Â¹Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø©.", type: "tribe" },
+    "Ã˜Â¨Ã™â€ Ã™Ë† Ã™â€šÃ˜Â±Ã™Å Ø¸Ø©": { def: "Ã˜Â¥Ã˜Â­Ã˜Â¯Ã™â€° Ã™â€šÃ˜Â¨Ã˜Â§Ã˜Â¦Ã™â€ž Ã˜Â§Ã™â€žÃ™Å Ã™â€¡Ã™Ë†Ø¯ Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø© Ã˜Â§Ã™â€žÃ˜Â°Ã™Å Ã™â€  Ã˜ÂªÃ˜Â­Ã˜Â§Ã™â€žÃ™ÂÃ™Ë†Ø§ Ã™â€¦Ø¹ Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨ Ã™Ë†Ã™â€ Ã™â€šÃ˜Â¶Ã™Ë†Ø§ Ã˜Â¹Ã™â€¡Ã˜Â¯Ã™â€¡Ã™â€¦ Ã™â€¦Ø¹ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€ Ã˜Å’ Ã™ÂÃ˜Â­Ã™ÂÃ™Ë†Ã˜ÂµÃ˜Â±Ã™Ë†Ø§ Ã™Ë†Ã˜Â­Ã™Æ’Ã™â€¦ Ã™ÂÃ™Å Ã™â€¡Ã™â€¦ Ø³Ø¹Ø¯ Ã˜Â¨Ã™â€  Ã™â€¦Ø¹Ø§Ø°.", type: "tribe" },
+    "Ã˜Â¨Ã™â€ Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¶Ã™Å Ø±": { def: "Ã™â€šÃ˜Â¨Ã™Å Ã™â€žØ© Ã™Å Ã™â€¡Ã™Ë†Ã˜Â¯Ã™Å Ø© Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø© Ã˜ÂªÃ˜Â¢Ã™â€¦Ø±Øª Ã˜Â¹Ã™â€žÃ™â€° Ã™â€šÃ˜ÂªÃ™â€ž Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã˜Â¨Ã™â€žÃ™â€šØ§Ø¡ Ã˜ÂµÃ˜Â®Ã˜Â±Ã˜Â©Ã˜Å’ Ã™ÂÃ˜Â­Ã˜Â§Ã˜ÂµÃ˜Â±Ã™â€¡Ã™â€¦ Ã™Ë†Ã˜Â£Ã˜Â¬Ã™â€žÃ˜Â§Ã™â€¡Ã™â€¦ Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â®Ã™Å Ø¨Ø± Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â§Ã™â€¦.", type: "tribe" },
+    "Ø¨Ø¯Ø± Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ø¹Ø¯": { def: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ø¨Ø¯Ø± Ã˜Â§Ã™â€žÃ˜ÂµÃ˜ÂºÃ˜Â±Ã™â€° Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜Â«Ã˜Â§Ã™â€ Ã™Å Ã˜Â©Ã˜Å’ Ø®Ø±Ø¬ Ã™ÂÃ™Å Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Ë†Ã™â€  Ã™â€žÃ™â€žÃ™â€šØ§Ø¡ Ã™â€šÃ˜Â±Ã™Å Ø´ Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žØ±Ø§Ø¨Ø¹Ø© Ã™â€žÃ™â€žÃ™â€¡Ø¬Ø±Ø© Ã™Ë†ØªØ±Ø§Ø¬Ø¹ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã˜Â¹Ã˜Â¨Ã˜Â§Ã™â€¹.", type: "event" },
+    "Ã˜Â²Ã™Æ’Ø§Ø© Ã˜Â§Ã™â€žÃ™ÂØ·Ø±": { def: "Ã˜ÂµÃ˜Â¯Ã™â€šØ© ØªØ¬Ø¨ Ã˜Â¹Ã™â€žÃ™â€° Ã™Æ’Ã™â€ž Ã™â€¦Ã˜Â³Ã™â€žÃ™â€¦ Ã™â€šÃ˜Â¨Ã™â€ž Ã˜ÂµÃ™â€žØ§Ø© Ã˜Â¹Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ™ÂØ·Ø± Ã˜Â·Ã™â€¡Ø±Ø© Ã™â€žÃ™â€žÃ˜ÂµÃ˜Â§Ã˜Â¦Ã™â€¦ Ã™Ë†Ã˜Â·Ã˜Â¹Ã™â€¦Ø© Ã™â€žÃ™â€žÃ™â€¦Ã˜Â³Ã˜Â§Ã™Æ’Ã™Å Ã™â€ Ã˜Å’ Ã™ÂØ±Ø¶Øª Ã™ÂÃ™Å  Ã˜Â´Ã˜Â¹Ã˜Â¨Ã˜Â§Ã™â€  Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žÃ˜Â«Ã˜Â§Ã™â€ Ã™Å Ø© Ã™â€žÃ™â€žÃ™â€¡Ø¬Ø±Ø©.", type: "concept" },
+    "Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¨Ã™â€ ÙŠ": { def: "Ø§Ø¯Ø¹Ø§Ø¡ Ã˜Â¨Ã™â€ Ã™Ë†Ø© Ã˜Â·Ã™ÂÃ™â€ž Ã™â€žÃ˜ÂºÃ™Å Ø± Ã˜Â£Ã˜Â¨Ã™Å Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â­Ã™â€šÃ™Å Ã™â€šÃ™Å Ã˜Å’ Ã™Ë†Ã™â€šØ¯ Ã˜Â£Ã˜Â¨Ã˜Â·Ã™â€žÃ™â€¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦ Ã˜Â¹Ã™â€¦Ã™â€žÃ™Å Ã˜Â§Ã™â€¹ Ã™Ë†Ã™â€ Ã˜Â¸Ã˜Â±Ã™Å Ã˜Â§Ã™â€¹ Ã™â€žÃ˜ÂµÃ™Å Ã˜Â§Ã™â€ Ø© Ã˜Â§Ã™â€žÃ˜Â£Ã™â€ Ø³Ø§Ø¨ Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¶Ã™Å Ø§Ø¹.", type: "concept" },
+    "Ø°Ø§Øª Ã˜Â§Ã™â€žÃ˜Â±Ã™â€šØ§Ø¹": { def: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â³Ã™ÂÃ™â€¦Ã™Å Øª Ã˜Â¨Ã˜Â°Ã™â€žÃ™Æ’ Ã™â€žÃ˜Â£Ã™â€  Ã˜Â§Ã™â€žØµØ­Ø§Ø¨Ø© Ã˜Â±Ã˜Â¶Ã™Å  Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¹Ã™â€ Ã™â€¡Ã™â€¦ Ã™â€žÃ™ÂÃ™Ë†Ø§ Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â±Ã™â€š Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â£Ã™â€šÃ˜Â¯Ã˜Â§Ã™â€¦Ã™â€¡Ã™â€¦ Ã™â€¦Ã™â€  Ø´Ø¯Ø© Ã˜Â§Ã™â€žØ­Ø± Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Å Ã˜Å’ Ã™Ë†Ã™â€ Ã˜Â²Ã™â€žØª Ã™ÂÃ™Å Ã™â€¡Ø§ Ø±Ø®Øµ Ã™Æ’Ã˜ÂµÃ™â€žØ§Ø© Ã˜Â§Ã™â€žÃ˜Â®Ã™Ë†Ã™Â Ã™Ë†Ã˜Â§Ã™â€žÃ˜ÂªÃ™Å Ã™â€¦Ã™â€¦.", type: "event" },
+    "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â§Ã™â€žØ£Ø­Ø²Ø§Ø¨": { def: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â§Ã™â€žÃ˜Â®Ã™â€ Ã˜Â¯Ã™â€š (Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â§Ã™â€¦Ø³Ø© Ã™â€žÃ™â€žÃ™â€¡Ø¬Ø±Ø©) Ã˜Â­Ã™Å Ø« Ã˜ÂªÃ˜Â¬Ã™â€¦Ø¹Øª Ã™â€šÃ˜Â¨Ã˜Â§Ã˜Â¦Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Æ’Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™Å Ã™â€¡Ã™Ë†Ø¯ Ã™â€žÃ™â€¦Ø­Ø§ØµØ±Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Å Ã™â€ Ã˜Å’ Ã™ÂÃ™â€¡Ã˜Â²Ã™â€¦Ã™â€¡Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€žÃ™â€¡ Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â±Ã™Å Ø­ Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã™Ë†Ø¯.", type: "event" },
+    "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â·Ã™â€žÃ™â€š": { def: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Å Ã˜Â³Ã™Å Ø¹ (Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žØ³Ø§Ø¯Ø³Ø© Ã™â€žÃ™â€žÃ™â€¡Ø¬Ø±Ø©) Ã™â€¡Ã˜Â²Ã™â€¦ Ã™ÂÃ™Å Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã™â€žÃ™â€¦Ã™Ë†Ã™â€  Ã˜Â¨Ã™â€ Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂµÃ˜Â·Ã™â€žÃ™â€š Ã™Ë†Ø­Ø¯Ø«Øª Ã™ÂÃ™Å Ã™â€¡Ø§ Ø­Ø§Ø¯Ø«Ø© Ã˜Â§Ã™â€žÃ˜Â¥Ã™ÂÃ™Æ’ Ã˜Â§Ã™â€žÃ™â€¦Ã™ÂÃ˜ÂªÃ˜Â±Ã™Å Ø©.", type: "event" },
+    "Ã˜Â¯Ã™Ë†Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€ Ã˜Â¯Ã™â€ž": { def: "Ã˜ÂºÃ˜Â²Ã™Ë†Ø© Ã™â€šÃ˜Â§Ã˜Â¯Ã™â€¡Ø§ Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Å  Ã¯Â·Âº Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â³Ã™â€ Ø© Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â§Ã™â€¦Ø³Ø© Ã™â€žÃ™â€žÃ™â€¡Ø¬Ø±Ø© Ã™â€žÃ˜ÂªÃ˜Â£Ã™â€¦Ã™Å Ã™â€  Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯Ã™Ë†Ø¯ Ã˜Â§Ã™â€žÃ˜Â´Ã™â€¦Ã˜Â§Ã™â€žÃ™Å Ø© Ã™Ë†Ã˜ÂªÃ™ÂÃ˜Â±Ã™Å Ã™â€š Ã™â€šÃ˜Â¨Ã˜Â§Ã˜Â¦Ã™â€ž Ã™â€¡Ã™â€ Ã˜Â§Ã™Æ’ Ã™Æ’Ã˜Â§Ã™â€ Øª Ã˜ÂªÃ˜ÂªÃ™â€¡Ã™Å Ø£ Ã™â€žÃ˜ÂºÃ˜Â²Ã™Ë† Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™Å Ã™â€ Ø©.", type: "event" }
 };
 
 function showGlossaryPopup(event, term) {
@@ -1302,22 +1302,22 @@ function showGlossaryPopup(event, term) {
     const item = GLOSSARY[term];
     if (!item) return;
     
-    let icon = 'ðŸ“Œ';
+    let icon = 'Ã°Å¸â€œÅ’';
     let color = '#4f46e5';
     let termColor = 'var(--primary)';
     
     if (item.type === 'person') {
         if (item.gender === 'female') {
-            icon = 'â™€ï¸'; color = '#ec4899'; termColor = '#be185d';
+            icon = 'Ã¢â„¢â‚¬Ã¯Â¸Â'; color = '#ec4899'; termColor = '#be185d';
         } else {
-            icon = 'â™‚ï¸'; color = '#3b82f6'; termColor = '#1d4ed8';
+            icon = 'Ã¢â„¢â€šÃ¯Â¸Â'; color = '#3b82f6'; termColor = '#1d4ed8';
         }
     } else if (item.type === 'event') {
-        icon = 'âš”ï¸'; color = '#10b981'; termColor = '#047857';
+        icon = 'Ã¢Å¡â€Ã¯Â¸Â'; color = '#10b981'; termColor = '#047857';
     } else if (item.type === 'tribe') {
-        icon = 'ðŸ¹'; color = '#7c3aed'; termColor = '#6d28d9';
+        icon = 'Ã°Å¸ÂÂ¹'; color = '#7c3aed'; termColor = '#6d28d9';
     } else if (item.type === 'concept') {
-        icon = 'ðŸ’¡'; color = '#f59e0b'; termColor = '#b45309';
+        icon = 'Ã°Å¸â€™Â¡'; color = '#f59e0b'; termColor = '#b45309';
     }
     
     const termEl = document.getElementById('glossary-popup-term');
@@ -1340,7 +1340,7 @@ function closeGlossaryPopup() {
 
 document.addEventListener('click', () => { closeGlossaryPopup(); });
 
-// â”€â”€ MIND MAP POPUP â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ MIND MAP POPUP Ã¢â€â‚¬Ã¢â€â‚¬
 function openMindMap() {
     const mindmapOverlay = document.getElementById('mindmap-overlay');
     const mindmapImg = document.getElementById('mindmap-image');
@@ -1359,7 +1359,7 @@ function closeMindMap() {
     if (mindmapOverlay) mindmapOverlay.style.display = 'none';
 }
 
-// â”€â”€â”€ AI SUPPORT ENGINE â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ AI SUPPORT ENGINE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const supportEngine = {
     analyzeAndSubmit: function() {
         const queryInput = document.getElementById('support-user-query');
@@ -1372,49 +1372,49 @@ const supportEngine = {
 
         const text = queryInput.value.trim();
         if (!text) {
-            alert('Ø§Ù„رجاء Ùƒتابة Ø§Ù„Ø³Ø¤Ø§Ù„ Ø£Ùˆ Ø§Ù„Ø§Ø³ØªÙسار Ø£ÙˆÙ„Ø§Ù‹');
+            alert('Ã˜Â§Ã™â€žØ±Ø¬Ø§Ø¡ Ã™Æ’ØªØ§Ø¨Ø© Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã˜ÂªÃ™ÂØ³Ø§Ø± Ã˜Â£Ã™Ë†Ã™â€žÃ˜Â§Ã™â€¹');
             return;
         }
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span>Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù„ÙŠÙ„ Ø¨Ø§Ù„Ø°Ùƒاء Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ... â³</span>';
+        submitBtn.innerHTML = '<span>Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã™â€žÃ™Å Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â°Ã™Æ’Ø§Ø¡ Ã˜Â§Ã™â€žÃ˜Â§Ã˜ÂµÃ˜Â·Ã™â€ Ã˜Â§Ã˜Â¹Ã™Å ... Ã¢ÂÂ³</span>';
         responseBox.style.display = 'block';
-        badgeEl.textContent = 'ðŸ” Ø¬Ø§Ø±ÙŠ ØªØ­Ù„ÙŠÙ„ ÙˆØªØµÙ†ÙŠÙ Ø§Ù„Ø³Ø¤Ø§Ù„...';
+        badgeEl.textContent = 'Ã°Å¸â€Â Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜ÂªÃ˜Â­Ã™â€žÃ™Å Ã™â€ž Ã™Ë†Ã˜ÂªÃ˜ÂµÃ™â€ Ã™Å Ã™Â Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž...';
         suggestionsEl.innerHTML = '';
         ticketConfEl.style.display = 'none';
 
         // 1. Detect Category automatically
-        let category = 'Ø¹Ø§Ù…';
-        if (text.match(/ÙÙŠØ¯ÙŠÙˆ|ØªØ·Ø¨ÙŠÙ‚|Ø¨Ø·ÙŠء|خطأ|Ù„ا ÙŠØ¹Ù…Ù„|Ù…Ø´ÙƒÙ„ة|شاشة/i)) {
-            category = 'ðŸ› ï¸ Ù…Ø´ÙƒÙ„ة ØªÙ‚Ù†ÙŠة';
-        } else if (text.match(/ØµÙ„اة|ÙˆØ¶Ùˆء|ÙÙ‚Ù‡|ØµÙŠØ§Ù…|Ø·Ù‡ارة|Ø¥Ù…Ø§Ù…|Ø²Ùƒاة/i)) {
-            category = 'âš–ï¸ Ø§Ù„ÙÙ‚Ù‡ Ø§Ù„Ø¥Ø³Ù„Ø§Ù…ي';
-        } else if (text.match(/ØªØ¬ÙˆÙŠد|Ø£Ø­ÙƒØ§Ù…|Ù†ÙˆÙ†|Ø¥Ø¸Ù‡ار|Ø¥Ø¯ØºØ§Ù…|Ù…خرج/i)) {
-            category = 'ðŸ“– Ø£Ø­ÙƒØ§Ù… Ø§Ù„ØªØ¬ÙˆÙŠد';
-        } else if (text.match(/Ø³ÙŠرة|ØºØ²Ùˆة|Ø±Ø³ÙˆÙ„|Ù†بي|صحابي/i)) {
-            category = 'ðŸ“œ Ø§Ù„Ø³ÙŠرة Ø§Ù„Ù†Ø¨ÙˆÙŠة';
+        let category = 'Ã˜Â¹Ã˜Â§Ã™â€¦';
+        if (text.match(/Ã™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë†|Ã˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š|Ã˜Â¨Ã˜Â·Ã™Å Ø¡|Ø®Ø·Ø£|Ã™â€žØ§ Ã™Å Ã˜Â¹Ã™â€¦Ã™â€ž|Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ©|Ø´Ø§Ø´Ø©/i)) {
+            category = 'Ã°Å¸â€ºÂ Ã¯Â¸Â Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã˜ÂªÃ™â€šÃ™â€ Ã™Å Ø©';
+        } else if (text.match(/Ã˜ÂµÃ™â€žØ§Ø©|Ã™Ë†Ã˜Â¶Ã™Ë†Ø¡|Ã™ÂÃ™â€šÃ™â€¡|Ã˜ÂµÃ™Å Ã˜Â§Ã™â€¦|Ã˜Â·Ã™â€¡Ø§Ø±Ø©|Ã˜Â¥Ã™â€¦Ã˜Â§Ã™â€¦|Ã˜Â²Ã™Æ’Ø§Ø©/i)) {
+            category = 'Ã¢Å¡â€“Ã¯Â¸Â Ã˜Â§Ã™â€žÃ™ÂÃ™â€šÃ™â€¡ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â³Ã™â€žÃ˜Â§Ã™â€¦ÙŠ';
+        } else if (text.match(/Ã˜ÂªÃ˜Â¬Ã™Ë†Ã™Å Ø¯|Ã˜Â£Ã˜Â­Ã™Æ’Ã˜Â§Ã™â€¦|Ã™â€ Ã™Ë†Ã™â€ |Ã˜Â¥Ã˜Â¸Ã™â€¡Ø§Ø±|Ã˜Â¥Ã˜Â¯Ã˜ÂºÃ˜Â§Ã™â€¦|Ã™â€¦Ø®Ø±Ø¬/i)) {
+            category = 'Ã°Å¸â€œâ€“ Ã˜Â£Ã˜Â­Ã™Æ’Ã˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã™Ë†Ã™Å Ø¯';
+        } else if (text.match(/Ã˜Â³Ã™Å Ø±Ø©|Ã˜ÂºÃ˜Â²Ã™Ë†Ø©|Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€ž|Ã™â€ Ø¨ÙŠ|ØµØ­Ø§Ø¨ÙŠ/i)) {
+            category = 'Ã°Å¸â€œÅ“ Ã˜Â§Ã™â€žÃ˜Â³Ã™Å Ø±Ø© Ã˜Â§Ã™â€žÃ™â€ Ã˜Â¨Ã™Ë†Ã™Å Ø©';
         }
 
         setTimeout(() => {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span>ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ø³Ø¤Ø§Ù„ Ø¨Ùˆاسطة Ø§Ù„Ø°Ùƒاء Ø§Ù„Ø§ØµØ·Ù†اعي ✨</span>';
+            submitBtn.innerHTML = '<span>Ã˜ÂªÃ˜Â­Ã™â€žÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã˜Â¨Ã™Ë†Ø§Ø³Ø·Ø© Ã˜Â§Ã™â€žÃ˜Â°Ã™Æ’Ø§Ø¡ Ã˜Â§Ã™â€žÃ˜Â§Ã˜ÂµÃ˜Â·Ã™â€ Ø§Ø¹ÙŠ âœ¨</span>';
 
             if (isPrivateInput.checked) {
-                badgeEl.textContent = `ðŸ”’ Ø³Ø¤Ø§Ù„ خاص / شخصي - ${category}`;
+                badgeEl.textContent = `Ã°Å¸â€â€™ Ã˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ø®Ø§Øµ / Ø´Ø®ØµÙŠ - ${category}`;
                 suggestionsEl.innerHTML = `
-                    <p style="color:var(--text-2); font-size:14px;">ØªÙ… Ø§Ù„Ù‚ÙÙ„ Ø¹Ù„Ù‰ Ø³Ø¤Ø§Ù„Ùƒ ÙƒØ³Ø¤Ø§Ù„ شخصي/خاص. ØªÙ…ت Ø¥Ø­Ø§Ù„ة Ø§Ù„Ø³Ø¤Ø§Ù„ Ù…باشرة Ø¥Ù„Ù‰ إدارة Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠة Ù„Ù„Ø­Ùاظ Ø¹Ù„Ù‰ خصوصيتك.</p>
+                    <p style="color:var(--text-2); font-size:14px;">Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€šÃ™ÂÃ™â€ž Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â³Ã˜Â¤Ã˜Â§Ã™â€žÃ™Æ’ Ã™Æ’Ã˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ø´Ø®ØµÙŠ/Ø®Ø§Øµ. Ã˜ÂªÃ™â€¦Øª Ã˜Â¥Ã˜Â­Ã˜Â§Ã™â€žØ© Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã™â€¦Ø¨Ø§Ø´Ø±Ø© Ã˜Â¥Ã™â€žÃ™â€° Ø¥Ø¯Ø§Ø±Ø© Ã˜Â§Ã™â€žÃ˜Â£Ã™Æ’Ã˜Â§Ã˜Â¯Ã™Å Ã™â€¦Ã™Å Ø© Ã™â€žÃ™â€žÃ˜Â­Ã™ÂØ§Ø¸ Ã˜Â¹Ã™â€žÃ™â€° Ø®ØµÙˆØµÙŠØªÙƒ.</p>
                 `;
                 ticketConfEl.style.display = 'block';
             } else {
-                badgeEl.textContent = `ðŸŽ¯ Ø§Ù„ØªØµÙ†ÙŠÙ Ø§Ù„ØªÙ„Ù‚ائي: ${category}`;
+                badgeEl.textContent = `Ã°Å¸Å½Â¯ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜ÂµÃ™â€ Ã™Å Ã™Â Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€žÃ™â€šØ§Ø¦ÙŠ: ${category}`;
                 suggestionsEl.innerHTML = `
-                    <h4 style="margin: 0 0 10px 0; color:var(--text); font-size:15px;">ðŸ’¡ إجابة Ù…Ù‚ترحة Ù…Ù† Ø§Ù„Ø£Ø±Ø´ÙŠÙ / Ø§Ù„ØªÙ„Ø®ÙŠص:</h4>
+                    <h4 style="margin: 0 0 10px 0; color:var(--text); font-size:15px;">Ã°Å¸â€™Â¡ Ø¥Ø¬Ø§Ø¨Ø© Ã™â€¦Ã™â€šØªØ±Ø­Ø© Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â±Ã˜Â´Ã™Å Ã™Â / Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€žÃ˜Â®Ã™Å Øµ:</h4>
                     <div style="background:var(--bg); border-right:4px solid var(--primary); padding:12px; border-radius:8px; font-size:14px; color:var(--text-2); line-height:1.6; margin-bottom:12px;">
-                        Ø¨Ù†Ø§Ø¡Ù‹ Ø¹Ù„Ù‰ ØªÙØ±ÙŠغ Ø§Ù„Ø¯Ø±Ùˆس Ø§Ù„Ù…ØªØ¹Ù„Ù‚ة Ø¨Ù€ <strong>${category}</strong>: ÙŠØªÙ… Ù…راجعة Ø§Ù„Ù…Ø³Ø£Ù„ة بحسب Ø§Ù„Ø´Ø±Ùˆط Ø§Ù„Ù…Ø°ÙƒÙˆرة ÙÙŠ Ø§Ù„Ø´Ø±Ø­ØŒ Ùˆإذا ÙƒØ§Ù† Ø§Ù„Ø³Ø¤Ø§Ù„ Ø¯Ù‚ÙŠÙ‚Ø§Ù‹ ÙŠÙ…ÙƒÙ†Ùƒ ØªØ£ÙƒÙŠد Ø¥Ø±Ø³Ø§Ù„Ù‡ Ù„Ù„إدارة.
+                        Ã˜Â¨Ã™â€ Ã˜Â§Ã˜Â¡Ã™â€¹ Ã˜Â¹Ã™â€žÃ™â€° Ã˜ÂªÃ™ÂÃ˜Â±Ã™Å Øº Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â±Ã™Ë†Ø³ Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¹Ã™â€žÃ™â€šØ© Ã˜Â¨Ã™â‚¬ <strong>${category}</strong>: Ã™Å Ã˜ÂªÃ™â€¦ Ã™â€¦Ø±Ø§Ø¬Ø¹Ø© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜Â£Ã™â€žØ© Ø¨Ø­Ø³Ø¨ Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â±Ã™Ë†Ø· Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â°Ã™Æ’Ã™Ë†Ø±Ø© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â±Ã˜Â­Ã˜Å’ Ã™Ë†Ø¥Ø°Ø§ Ã™Æ’Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã˜Â¯Ã™â€šÃ™Å Ã™â€šÃ˜Â§Ã™â€¹ Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜ÂªÃ˜Â£Ã™Æ’Ã™Å Ø¯ Ã˜Â¥Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€žÃ™â€¡ Ã™â€žÃ™â€žØ¥Ø¯Ø§Ø±Ø©.
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <button onclick="alert('Ø§Ù„Ø­Ù…د Ù„Ù„Ù‡! سعداء Ø¨Ø®Ø¯Ù…تك.')" style="flex:1; padding:10px; background:#dcfce7; color:#166534; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">إجابة Ùˆاضحة ðŸ‘</button>
-                        <button onclick="document.getElementById('support-ticket-confirmation').style.display='block'" style="flex:1; padding:10px; background:var(--primary-light); color:var(--primary); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Ø¥Ø±Ø³Ø§Ù„ Ù„Ù„إدارة ðŸ“©</button>
+                        <button onclick="alert('Ã˜Â§Ã™â€žÃ˜Â­Ã™â€¦Ø¯ Ã™â€žÃ™â€žÃ™â€¡! Ø³Ø¹Ø¯Ø§Ø¡ Ã˜Â¨Ã˜Â®Ã˜Â¯Ã™â€¦ØªÙƒ.')" style="flex:1; padding:10px; background:#dcfce7; color:#166534; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Ø¥Ø¬Ø§Ø¨Ø© Ã™Ë†Ø§Ø¶Ø­Ø© Ã°Å¸â€˜Â</button>
+                        <button onclick="document.getElementById('support-ticket-confirmation').style.display='block'" style="flex:1; padding:10px; background:var(--primary-light); color:var(--primary); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Ã˜Â¥Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€ž Ã™â€žÃ™â€žØ¥Ø¯Ø§Ø±Ø© Ã°Å¸â€œÂ©</button>
                     </div>
                 `;
             }
@@ -1422,7 +1422,7 @@ const supportEngine = {
     }
 };
 
-// â”€â”€â”€ SPA TAB LOGIC â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ SPA TAB LOGIC Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function switchTab(name, btn) {
 
     
@@ -1458,7 +1458,7 @@ function switchTab(name, btn) {
     }
 }
 
-// â”€â”€â”€ PROGRESS LOGIC â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ PROGRESS LOGIC Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function markLessonOpened(subject, lessonNum) {
     try {
         let opened = JSON.parse(localStorage.getItem('openedLessons') || '{}');
@@ -1496,12 +1496,12 @@ function renderHomeProgress() {
     
     if (circle) circle.style.strokeDasharray = `${percentage}, 100`;
     if (text) text.textContent = `${percentage}%`;
-    if (subtitle) subtitle.textContent = `${openedCount} / ${totalLessons} درس`;
+    if (subtitle) subtitle.textContent = `${openedCount} / ${totalLessons} Ø¯Ø±Ø³`;
 
     const recentContainer = document.getElementById('recent-lessons-container');
     if (recentContainer) {
         if (recent.length === 0) {
-            recentContainer.innerHTML = '<p style="color:var(--text-3); font-size:14px;">Ù„Ù… ØªÙتح Ø£ÙŠ درس بعد.</p>';
+            recentContainer.innerHTML = '<p style="color:var(--text-3); font-size:14px;">Ã™â€žÃ™â€¦ Ã˜ÂªÃ™ÂØªØ­ Ã˜Â£Ã™Å  Ø¯Ø±Ø³ Ø¨Ø¹Ø¯.</p>';
         } else {
             recentContainer.innerHTML = '';
             recent.forEach(r => {
@@ -1517,7 +1517,7 @@ function renderHomeProgress() {
                     btn.style.display = 'flex';
                     btn.style.alignItems = 'center';
                     btn.style.gap = '12px';
-                    btn.innerHTML = `<span style="font-size:20px;">ðŸ“˜</span> <div><h4 style="margin:0; font-size:15px;">${lessonObj.title}</h4><span style="font-size:12px; color:var(--text-2);">${lessonObj.subjectLabel}</span></div>`;
+                    btn.innerHTML = `<span style="font-size:20px;">Ã°Å¸â€œËœ</span> <div><h4 style="margin:0; font-size:15px;">${lessonObj.title}</h4><span style="font-size:12px; color:var(--text-2);">${lessonObj.subjectLabel}</span></div>`;
                     btn.onclick = () => {
                         openLesson(lessonObj);
                         switchTab('reader');
@@ -1529,12 +1529,12 @@ function renderHomeProgress() {
     }
 }
 
-// â”€â”€â”€ SEARCH LOGIC â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ SEARCH LOGIC Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function buildIndex() {
-    const stop = new Set(["ÙÙŠ","Ù…Ù†","Ø¹Ù„Ù‰","Ø¥Ù„Ù‰","Ø¹Ù†","Ù‡ذا","Ù‡Ø°Ù‡","Ø§Ù„ØªÙŠ","Ø§Ù„Ø°ÙŠ","Ø£Ù†","Ø¥Ù†","Ù„ا","Ù…ا","Ù…ع","ÙƒØ§Ù†","ÙƒØ§Ù†ت","Ø«Ù…","Ø£Ùˆ","Ø£Ù…","ÙƒÙ„","ÙŠÙˆÙ…","بعد","Ù‚Ø¨Ù„","Ø¹Ù†د","Ù‡Ùˆ","Ù‡ÙŠ","ÙˆÙ‚د","Ù‚د","ÙÙ‚د","ÙˆÙ‡Ùˆ","ÙˆÙ‡ÙŠ","ÙˆÙƒØ§Ù†"]);
+    const stop = new Set(["Ã™ÂÃ™Å ","Ã™â€¦Ã™â€ ","Ã˜Â¹Ã™â€žÃ™â€°","Ã˜Â¥Ã™â€žÃ™â€°","Ã˜Â¹Ã™â€ ","Ã™â€¡Ø°Ø§","Ã™â€¡Ã˜Â°Ã™â€¡","Ã˜Â§Ã™â€žÃ˜ÂªÃ™Å ","Ã˜Â§Ã™â€žÃ˜Â°Ã™Å ","Ã˜Â£Ã™â€ ","Ã˜Â¥Ã™â€ ","Ã™â€žØ§","Ã™â€¦Ø§","Ã™â€¦Ø¹","Ã™Æ’Ã˜Â§Ã™â€ ","Ã™Æ’Ã˜Â§Ã™â€ Øª","Ã˜Â«Ã™â€¦","Ã˜Â£Ã™Ë†","Ã˜Â£Ã™â€¦","Ã™Æ’Ã™â€ž","Ã™Å Ã™Ë†Ã™â€¦","Ø¨Ø¹Ø¯","Ã™â€šÃ˜Â¨Ã™â€ž","Ã˜Â¹Ã™â€ Ø¯","Ã™â€¡Ã™Ë†","Ã™â€¡Ã™Å ","Ã™Ë†Ã™â€šØ¯","Ã™â€šØ¯","Ã™ÂÃ™â€šØ¯","Ã™Ë†Ã™â€¡Ã™Ë†","Ã™Ë†Ã™â€¡Ã™Å ","Ã™Ë†Ã™Æ’Ã˜Â§Ã™â€ "]);
     const seen = new Set();
     DB.forEach(item => {
-        ((item.full_text||'')+' '+(item.blocks_search_text||'')).split(/[\sØŒ.ØŸ!():Ø›]+/).forEach(w=>{
+        ((item.full_text||'')+' '+(item.blocks_search_text||'')).split(/[\sÃ˜Å’.Ã˜Å¸!():Ã˜â€º]+/).forEach(w=>{
             const c=w.trim();
             if(c.length>=3&&c.length<=10&&!stop.has(c)&&!seen.has(c)){
                 seen.add(c);
@@ -1622,7 +1622,7 @@ function doSearch(queryText) {
     const top = results.slice(0,30);
     
     if(!top.length) {
-        resContainer.innerHTML = `<div class="empty-state"><p style="color:var(--text-3);">Ù„ا ØªÙˆجد Ù†تائج</p></div>`;
+        resContainer.innerHTML = `<div class="empty-state"><p style="color:var(--text-3);">Ã™â€žØ§ Ã˜ÂªÃ™Ë†Ø¬Ø¯ Ã™â€ ØªØ§Ø¦Ø¬</p></div>`;
         return;
     }
     
@@ -1638,7 +1638,7 @@ function doSearch(queryText) {
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="font-size:12px; color:var(--primary); font-weight:600; background:var(--primary-light, rgba(79, 70, 229, 0.1)); padding:4px 8px; border-radius:6px;">
-                        â± ${formatSeconds(b.start_seconds)}
+                        Ã¢ÂÂ± ${formatSeconds(b.start_seconds)}
                     </div>
                 </div>
             </div>
@@ -1649,7 +1649,7 @@ function doSearch(queryText) {
 
 function resetSearch() {
     const res = document.getElementById('search-results');
-    if(res) res.innerHTML = `<div class="empty-state"><p style="color:var(--text-3);">Ø§Ùƒتب ÙƒÙ„Ù…ة Ù„Ù„بحث</p></div>`;
+    if(res) res.innerHTML = `<div class="empty-state"><p style="color:var(--text-3);">Ã˜Â§Ã™Æ’ØªØ¨ Ã™Æ’Ã™â€žÃ™â€¦Ø© Ã™â€žÃ™â€žØ¨Ø­Ø«</p></div>`;
 }
 
 function openSearchResult(subject, lessonNum, startTime) {
@@ -2000,12 +2000,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoWrapper.style.display = 'flex';
                 stickyToggleBtn.style.background = 'var(--surface)';
                 stickyToggleBtn.style.color = 'var(--text)';
-                stickyToggleBtn.setAttribute('title', 'DÃ©sÃ©pingler la vidÃ©o');
+                stickyToggleBtn.setAttribute('title', 'DÃƒÂ©sÃƒÂ©pingler la vidÃƒÂ©o');
             } else {
                 videoWrapper.style.display = 'none';
                 stickyToggleBtn.style.background = 'var(--primary)';
                 stickyToggleBtn.style.color = 'white';
-                stickyToggleBtn.setAttribute('title', 'Ã‰pingler la vidÃ©o');
+                stickyToggleBtn.setAttribute('title', 'Ãƒâ€°pingler la vidÃƒÂ©o');
             }
         });
     }
@@ -2107,7 +2107,7 @@ function openLessonPreview(l) {
     const list = document.getElementById('lesson-preview-list');
     const startBtn = document.getElementById('start-reading-btn');
 
-    title.textContent = 'Ø§Ù„درس ' + l.lessonNum + ' - ' + (l.title || l.subjectLabel || l.subject);
+    title.textContent = 'Ã˜Â§Ã™â€žØ¯Ø±Ø³ ' + l.lessonNum + ' - ' + (l.title || l.subjectLabel || l.subject);
 
     let html = '';
     let firstUnreadIdx = 0;
@@ -2125,27 +2125,27 @@ function openLessonPreview(l) {
             if (isComp) totalCompleted++;
             
             html += `<div class="preview-chapter-item">
-                <div class="preview-checkbox ${isComp ? 'checked' : ''}" onclick="togglePreviewChapter(event, '${l.subject}', ${l.lessonNum}, ${idx}, this.parentElement)">${isComp ? 'âœ“' : ''}</div>
+                <div class="preview-checkbox ${isComp ? 'checked' : ''}" onclick="togglePreviewChapter(event, '${l.subject}', ${l.lessonNum}, ${idx}, this.parentElement)">${isComp ? 'Ã¢Å“â€œ' : ''}</div>
                 <div class="preview-chapter-info" style="margin-right: 12px; text-align: right; cursor: pointer; flex: 1;" onclick="startLessonFromChapter('${l.subject}', ${l.lessonNum}, ${b.start_seconds})">
                     <div class="preview-chapter-title" style="transition: color 0.2s;">${idx + 1}. ${b.title}</div>
                 </div>
             </div>`;
         });
     } else {
-        html = '<div style="text-align:center; color:var(--text-2); padding: 20px;">Ù„ا ØªÙˆجد Ù…Ø­Ø§Ùˆر Ù…تاحة</div>';
+        html = '<div style="text-align:center; color:var(--text-2); padding: 20px;">Ã™â€žØ§ Ã˜ÂªÃ™Ë†Ø¬Ø¯ Ã™â€¦Ã˜Â­Ã˜Â§Ã™Ë†Ø± Ã™â€¦ØªØ§Ø­Ø©</div>';
     }
     list.innerHTML = html;
 
     if (l.thematic_blocks && l.thematic_blocks.length > 0) {
         if (totalCompleted === 0) {
-            startBtn.innerHTML = `ðŸ“– ابدأ Ø§Ù„Ù‚راءة`;
+            startBtn.innerHTML = `Ã°Å¸â€œâ€“ Ø§Ø¨Ø¯Ø£ Ã˜Â§Ã™â€žÃ™â€šØ±Ø§Ø¡Ø©`;
         } else if (totalCompleted === l.thematic_blocks.length) {
-            startBtn.innerHTML = `ðŸ”„ أعد Ù‚راءة Ø§Ù„درس`;
+            startBtn.innerHTML = `Ã°Å¸â€â€ž Ø£Ø¹Ø¯ Ã™â€šØ±Ø§Ø¡Ø© Ã˜Â§Ã™â€žØ¯Ø±Ø³`;
         } else {
-            startBtn.innerHTML = `â–¶ï¸ Ø§Ø³ØªØ¦Ù†Ø§Ù (Ø§Ù„Ù…Ø­Ùˆر ${firstUnreadIdx + 1})`;
+            startBtn.innerHTML = `Ã¢â€“Â¶Ã¯Â¸Â Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â¦Ã™â€ Ã˜Â§Ã™Â (Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã™Ë†Ø± ${firstUnreadIdx + 1})`;
         }
     } else {
-        startBtn.innerHTML = `ðŸ“– ابدأ Ø§Ù„Ù‚راءة`;
+        startBtn.innerHTML = `Ã°Å¸â€œâ€“ Ø§Ø¨Ø¯Ø£ Ã˜Â§Ã™â€žÃ™â€šØ±Ø§Ø¡Ø©`;
     }
 
     startBtn.onclick = () => {
@@ -2184,7 +2184,7 @@ function togglePreviewChapter(e, subject, lessonNum, chapterIdx, el) {
     const cb = el.querySelector('.preview-checkbox');
     if (isComp) {
         cb.classList.add('checked');
-        cb.textContent = 'âœ“';
+        cb.textContent = 'Ã¢Å“â€œ';
         playCompletionSound();
     } else {
         cb.classList.remove('checked');
@@ -2256,7 +2256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// â”€â”€â”€ QUIZ ENGINE (PRACTICE TAB) â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ QUIZ ENGINE (PRACTICE TAB) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // ==========================================
 // SUPPORT CHAT FUNNEL LOGIC
 // ==========================================
@@ -2276,24 +2276,24 @@ const supportFlow = {
         setTimeout(() => {
             let subText = '';
             let subBtns = '';
-            if(cat === 'ØªÙ‚Ù†ÙŠة') {
-                subText = 'Ù‡Ù„ Ø§Ù„Ù…Ø´ÙƒÙ„ة Ù…ØªØ¹Ù„Ù‚ة Ø¨Ù€:';
+            if(cat === 'Ã˜ÂªÃ™â€šÃ™â€ Ã™Å Ø©') {
+                subText = 'Ã™â€¡Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™â€¦Ã˜ÂªÃ˜Â¹Ã™â€žÃ™â€šØ© Ã˜Â¨Ã™â‚¬:';
                 subBtns = `
-                    <button onclick="supportFlow.selectSubcategory('Ø§Ù„ÙÙŠØ¯ÙŠÙˆ Ù„ا ÙŠØ¹Ù…Ù„')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ø§Ù„ÙÙŠØ¯ÙŠÙˆ Ù„ا ÙŠØ¹Ù…Ù„</button>
-                    <button onclick="supportFlow.selectSubcategory('Ù„ا ÙŠÙˆجد ØµÙˆت')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ù„ا ÙŠÙˆجد ØµÙˆت</button>
-                    <button onclick="supportFlow.selectSubcategory('Ù…Ø´ÙƒÙ„ة ÙÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ù…Ø´ÙƒÙ„ة ÙÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã˜Â§Ã™â€žÃ™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë† Ã™â€žØ§ Ã™Å Ã˜Â¹Ã™â€¦Ã™â€ž')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã˜Â§Ã™â€žÃ™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë† Ã™â€žØ§ Ã™Å Ã˜Â¹Ã™â€¦Ã™â€ž</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã™â€žØ§ Ã™Å Ã™Ë†Ø¬Ø¯ Ã˜ÂµÃ™Ë†Øª')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã™â€žØ§ Ã™Å Ã™Ë†Ø¬Ø¯ Ã˜ÂµÃ™Ë†Øª</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š</button>
                 `;
-            } else if(cat === 'Ø¥Ø¯Ø§Ø±ÙŠة') {
-                subText = 'Ø§Ù„Ù…Ø±Ø¬Ùˆ ØªØ­Ø¯ÙŠد Ø§Ù„Ù…Ø´ÙƒÙ„ة:';
+            } else if(cat === 'Ã˜Â¥Ã˜Â¯Ã˜Â§Ã˜Â±Ã™Å Ø©') {
+                subText = 'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã˜Â¬Ã™Ë† Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ø¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ©:';
                 subBtns = `
-                    <button onclick="supportFlow.selectSubcategory('ØªØ¬Ø¯ÙŠد Ø§Ù„اشتراك')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">ØªØ¬Ø¯ÙŠد Ø§Ù„اشتراك</button>
-                    <button onclick="supportFlow.selectSubcategory('Ù…Ø´ÙƒÙ„ة ÙÙŠ Ø§Ù„Ø¯Ùع')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ù…Ø´ÙƒÙ„ة ÙÙŠ Ø§Ù„Ø¯Ùع</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã˜ÂªÃ˜Â¬Ã˜Â¯Ã™Å Ø¯ Ã˜Â§Ã™â€žØ§Ø´ØªØ±Ø§Ùƒ')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã˜ÂªÃ˜Â¬Ã˜Â¯Ã™Å Ø¯ Ã˜Â§Ã™â€žØ§Ø´ØªØ±Ø§Ùƒ</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂØ¹')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂØ¹</button>
                 `;
             } else {
-                subText = 'Ù‡Ù„ Ø§Ù„Ù…Ø´ÙƒÙ„ة ÙÙŠ:';
+                subText = 'Ã™â€¡Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™ÂÃ™Å :';
                 subBtns = `
-                    <button onclick="supportFlow.selectSubcategory('ÙÙ‡Ù… Ø§Ù„درس')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">ÙÙ‡Ù… Ø§Ù„درس</button>
-                    <button onclick="supportFlow.selectSubcategory('Ø³Ø¤Ø§Ù„ Ø­ÙˆÙ„ Ø§Ù„اختبار')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ø³Ø¤Ø§Ù„ Ø­ÙˆÙ„ Ø§Ù„اختبار</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã™ÂÃ™â€¡Ã™â€¦ Ã˜Â§Ã™â€žØ¯Ø±Ø³')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã™ÂÃ™â€¡Ã™â€¦ Ã˜Â§Ã™â€žØ¯Ø±Ø³</button>
+                    <button onclick="supportFlow.selectSubcategory('Ã˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã˜Â­Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žØ§Ø®ØªØ¨Ø§Ø±')" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 20px; font-weight: bold;">Ã˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž Ã˜Â­Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žØ§Ø®ØªØ¨Ø§Ø±</button>
                 `;
             }
             
@@ -2315,15 +2315,15 @@ const supportFlow = {
         
         setTimeout(() => {
             let tip = '';
-            if (sub === 'Ø§Ù„ÙÙŠØ¯ÙŠÙˆ Ù„ا ÙŠØ¹Ù…Ù„' || sub === 'Ù„ا ÙŠÙˆجد ØµÙˆت') {
-                tip = 'ðŸ’¡ Ù†ØµÙŠحة Ø³Ø±ÙŠعة: 90% Ù…Ù† Ù…Ø´Ø§ÙƒÙ„ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ ØªÙØ­Ù„ Ø¨Ù…جرد ØªØ­Ø¯ÙŠث Ø§Ù„ØµÙحة Ø£Ùˆ Ù…سح Ø°Ø§Ùƒرة Ø§Ù„ØªØ®Ø²ÙŠÙ† Ø§Ù„Ù…Ø¤Ù‚ت (Cache). Ù‡Ù„ ØªØ±ÙŠد تجربة Ø°Ù„ك؟<br><br>';
-            } else if (sub === 'Ù…Ø´ÙƒÙ„ة ÙÙŠ Ø§Ù„Ø¯Ùع' || sub === 'ØªØ¬Ø¯ÙŠد Ø§Ù„اشتراك') {
-                tip = 'ðŸ’¡ Ù…Ù„احظة: ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒات Ù‚د ÙŠأخذ Ù…ا Ø¨ÙŠÙ† 5 Ø¥Ù„Ù‰ 15 Ø¯Ù‚ÙŠÙ‚ة Ù„Ù„Ø¸Ù‡Ùˆر ÙÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ بعد Ø§Ù„Ø¯Ùع.<br><br>';
-            } else if (sub === 'ÙÙ‡Ù… Ø§Ù„درس') {
-                tip = 'ðŸ’¡ Ù‡Ù„ ØªØ¹Ù„Ù…ØŸ ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ø³ØªØ®Ø¯Ø§Ù… "Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة" Ø£Ùˆ "Ù…Ù„خص Ø§Ù„درس" Ø§Ù„Ù…ØªÙˆÙرة ÙÙŠ Ù‚Ø§Ø¦Ù…ة Ø§Ù„درس Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ ÙÙƒرة Ø£Ùˆضح Ù‚Ø¨Ù„ طرح Ø§Ù„Ø³Ø¤Ø§Ù„.<br><br>';
+            if (sub === 'Ã˜Â§Ã™â€žÃ™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë† Ã™â€žØ§ Ã™Å Ã˜Â¹Ã™â€¦Ã™â€ž' || sub === 'Ã™â€žØ§ Ã™Å Ã™Ë†Ø¬Ø¯ Ã˜ÂµÃ™Ë†Øª') {
+                tip = 'Ã°Å¸â€™Â¡ Ã™â€ Ã˜ÂµÃ™Å Ø­Ø© Ã˜Â³Ã˜Â±Ã™Å Ø¹Ø©: 90% Ã™â€¦Ã™â€  Ã™â€¦Ã˜Â´Ã˜Â§Ã™Æ’Ã™â€ž Ã˜Â§Ã™â€žÃ™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë† Ã˜ÂªÃ™ÂÃ˜Â­Ã™â€ž Ã˜Â¨Ã™â€¦Ø¬Ø±Ø¯ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ø« Ã˜Â§Ã™â€žÃ˜ÂµÃ™ÂØ­Ø© Ã˜Â£Ã™Ë† Ã™â€¦Ø³Ø­ Ã˜Â°Ã˜Â§Ã™Æ’Ø±Ø© Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â®Ã˜Â²Ã™Å Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€šØª (Cache). Ã™â€¡Ã™â€ž Ã˜ÂªÃ˜Â±Ã™Å Ø¯ ØªØ¬Ø±Ø¨Ø© Ã˜Â°Ã™â€žÙƒØŸ<br><br>';
+            } else if (sub === 'Ã™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂØ¹' || sub === 'Ã˜ÂªÃ˜Â¬Ã˜Â¯Ã™Å Ø¯ Ã˜Â§Ã™â€žØ§Ø´ØªØ±Ø§Ùƒ') {
+                tip = 'Ã°Å¸â€™Â¡ Ã™â€¦Ã™â€žØ§Ø­Ø¸Ø©: Ã˜ÂªÃ™ÂÃ˜Â¹Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â´Ã˜ÂªÃ˜Â±Ã˜Â§Ã™Æ’Ø§Øª Ã™â€šØ¯ Ã™Å Ø£Ø®Ø° Ã™â€¦Ø§ Ã˜Â¨Ã™Å Ã™â€  5 Ã˜Â¥Ã™â€žÃ™â€° 15 Ã˜Â¯Ã™â€šÃ™Å Ã™â€šØ© Ã™â€žÃ™â€žÃ˜Â¸Ã™â€¡Ã™Ë†Ø± Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š Ø¨Ø¹Ø¯ Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂØ¹.<br><br>';
+            } else if (sub === 'Ã™ÂÃ™â€¡Ã™â€¦ Ã˜Â§Ã™â€žØ¯Ø±Ø³') {
+                tip = 'Ã°Å¸â€™Â¡ Ã™â€¡Ã™â€ž Ã˜ÂªÃ˜Â¹Ã™â€žÃ™â€¦Ã˜Å¸ Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã˜Â§Ã™â€¦ "Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â±Ã™Å Ø·Ø© Ã˜Â§Ã™â€žÃ˜Â°Ã™â€¡Ã™â€ Ã™Å Ø©" Ã˜Â£Ã™Ë† "Ã™â€¦Ã™â€žØ®Øµ Ã˜Â§Ã™â€žØ¯Ø±Ø³" Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ™Ë†Ã™ÂØ±Ø© Ã™ÂÃ™Å  Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ø© Ã˜Â§Ã™â€žØ¯Ø±Ø³ Ã™â€žÃ™â€žÃ˜Â­Ã˜ÂµÃ™Ë†Ã™â€ž Ã˜Â¹Ã™â€žÃ™â€° Ã™ÂÃ™Æ’Ø±Ø© Ã˜Â£Ã™Ë†Ø¶Ø­ Ã™â€šÃ˜Â¨Ã™â€ž Ø·Ø±Ø­ Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â¤Ã˜Â§Ã™â€ž.<br><br>';
             }
             
-            this.addMessage(tip + 'إذا ÙƒØ§Ù†ت Ø§Ù„Ù…Ø´ÙƒÙ„ة Ù…Ø³ØªÙ…Ø±Ø©ØŒ ÙŠØ±Ø¬Ù‰ Ùƒتابة Ø§Ù„ØªÙØ§ØµÙŠÙ„ Ø£Ø¯Ù†Ø§Ù‡:', 'bot');
+            this.addMessage(tip + 'Ø¥Ø°Ø§ Ã™Æ’Ã˜Â§Ã™â€ Øª Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã™â€¦Ã˜Â³Ã˜ÂªÃ™â€¦Ã˜Â±Ã˜Â©Ã˜Å’ Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã™Æ’ØªØ§Ø¨Ø© Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â£Ã˜Â¯Ã™â€ Ã˜Â§Ã™â€¡:', 'bot');
             document.getElementById('support-chat-input-area').style.display = 'flex';
             document.getElementById('support-chat-input').focus();
             this.scrollToBottom();
@@ -2349,7 +2349,7 @@ const supportFlow = {
                     <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></span>
                     <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></span>
                     <span style="width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></span>
-                    <span style="font-size: 12px; color: #6b7280; margin-right: 8px;">Ø¬Ø§Ø±ÙŠ Ø§Ù„بحث ÙÙŠ Ù‚اعدة Ø§Ù„Ø¨ÙŠØ§Ù†ات...</span>
+                    <span style="font-size: 12px; color: #6b7280; margin-right: 8px;">Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜Â§Ã™â€žØ¨Ø­Ø« Ã™ÂÃ™Å  Ã™â€šØ§Ø¹Ø¯Ø© Ã˜Â§Ã™â€žÃ˜Â¨Ã™Å Ã˜Â§Ã™â€ Ø§Øª...</span>
                 </div>
                 <style>@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }</style>
             `;
@@ -2365,28 +2365,28 @@ const supportFlow = {
     },
 
     showFaqAndEscalate: function() {
-        const msg = `Ù„Ù„Ø£Ø³Ù Ù„Ù… أجد إجابة Ù…باشرة Ù„Ù…Ø´ÙƒÙ„ØªÙƒ. ÙŠÙ…ÙƒÙ†Ùƒ ØªØµÙح Ø§Ù„Ø£Ø³Ø¦Ù„ة Ø§Ù„شائعة Ø£Ø¯Ù†Ø§Ù‡. إذا Ù„Ù… تجد Ø­Ù„Ø§Ù‹ØŒ ÙŠÙ…ÙƒÙ†Ùƒ ØªØ­ÙˆÙŠÙ„ Ø·Ù„Ø¨Ùƒ Ù„Ù„إدارة.`;
+        const msg = `Ã™â€žÃ™â€žÃ˜Â£Ã˜Â³Ã™Â Ã™â€žÃ™â€¦ Ø£Ø¬Ø¯ Ø¥Ø¬Ø§Ø¨Ø© Ã™â€¦Ø¨Ø§Ø´Ø±Ø© Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žÃ˜ÂªÃ™Æ’. Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜ÂªÃ˜ÂµÃ™ÂØ­ Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â³Ã˜Â¦Ã™â€žØ© Ã˜Â§Ã™â€žØ´Ø§Ø¦Ø¹Ø© Ã˜Â£Ã˜Â¯Ã™â€ Ã˜Â§Ã™â€¡. Ø¥Ø°Ø§ Ã™â€žÃ™â€¦ ØªØ¬Ø¯ Ã˜Â­Ã™â€žÃ˜Â§Ã™â€¹Ã˜Å’ Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜ÂªÃ˜Â­Ã™Ë†Ã™Å Ã™â€ž Ã˜Â·Ã™â€žÃ˜Â¨Ã™Æ’ Ã™â€žÃ™â€žØ¥Ø¯Ø§Ø±Ø©.`;
         this.addMessage(msg, 'bot');
         
         const faqs = `
             <div style="background: white; border-radius: 12px; padding: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); align-self: flex-start; width: 100%; max-width: 90%; margin-top: 5px;">
                 <details style="padding: 8px; border-bottom: 1px solid #f3f4f6;">
-                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">ÙƒÙŠÙ Ø£Ù‚ÙˆÙ… Ø¨ØªØ´ØºÙŠÙ„ Ø§Ù„ÙÙŠØ¯ÙŠÙˆØŸ</summary>
-                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">ØªØ£Ùƒد Ù…Ù† Ø§ØªØµØ§Ù„Ùƒ Ø¨Ø§Ù„Ø¥Ù†ØªØ±Ù†ت Ùˆاضغط Ø¹Ù„Ù‰ زر Ø§Ù„ØªØ´ØºÙŠÙ„ ÙÙŠ Ù…Ù†ØªØµÙ Ø§Ù„شاشة.</p>
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">Ã™Æ’Ã™Å Ã™Â Ã˜Â£Ã™â€šÃ™Ë†Ã™â€¦ Ã˜Â¨Ã˜ÂªÃ˜Â´Ã˜ÂºÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™ÂÃ™Å Ã˜Â¯Ã™Å Ã™Ë†Ã˜Å¸</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">Ã˜ÂªÃ˜Â£Ã™Æ’Ø¯ Ã™â€¦Ã™â€  Ã˜Â§Ã˜ÂªÃ˜ÂµÃ˜Â§Ã™â€žÃ™Æ’ Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€ Ã˜ÂªÃ˜Â±Ã™â€ Øª Ã™Ë†Ø§Ø¶ØºØ· Ã˜Â¹Ã™â€žÃ™â€° Ø²Ø± Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â´Ã˜ÂºÃ™Å Ã™â€ž Ã™ÂÃ™Å  Ã™â€¦Ã™â€ Ã˜ÂªÃ˜ÂµÃ™Â Ã˜Â§Ã™â€žØ´Ø§Ø´Ø©.</p>
                 </details>
                 <details style="padding: 8px; border-bottom: 1px solid #f3f4f6;">
-                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">ÙƒÙŠÙ Ø£Ø¹Ùˆد Ù„Ù„ØµÙحة Ø§Ù„رئيسية؟</summary>
-                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ù„ضغط Ø¹Ù„Ù‰ زر "ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ùˆارد" ÙÙŠ Ø§Ù„Ù‚Ø§Ø¦Ù…ة Ø§Ù„Ø³ÙÙ„ÙŠة Ù„Ù„Ø¹Ùˆدة.</p>
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">Ã™Æ’Ã™Å Ã™Â Ã˜Â£Ã˜Â¹Ã™Ë†Ø¯ Ã™â€žÃ™â€žÃ˜ÂµÃ™ÂØ­Ø© Ã˜Â§Ã™â€žØ±Ø¦ÙŠØ³ÙŠØ©ØŸ</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜Â§Ã™â€žØ¶ØºØ· Ã˜Â¹Ã™â€žÃ™â€° Ø²Ø± "Ã˜ÂµÃ™â€ Ã˜Â¯Ã™Ë†Ã™â€š Ã˜Â§Ã™â€žÃ™Ë†Ø§Ø±Ø¯" Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ø© Ã˜Â§Ã™â€žÃ˜Â³Ã™ÂÃ™â€žÃ™Å Ø© Ã™â€žÃ™â€žÃ˜Â¹Ã™Ë†Ø¯Ø©.</p>
                 </details>
                 <details style="padding: 8px;">
-                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">ÙƒÙŠÙ أجد Ù…Ù„خص Ø§Ù„درس؟</summary>
-                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">Ø§Ù„Ù…Ù„خص Ù…ØªÙˆÙر ÙÙŠ Ù‚Ø§Ø¦Ù…ة Ø§Ù„درس عبر زر (Ø§Ù„Ø®Ø±ÙŠطة Ø§Ù„Ø°Ù‡Ù†ÙŠة).</p>
+                    <summary style="font-weight: bold; cursor: pointer; color: var(--text-1);">Ã™Æ’Ã™Å Ã™Â Ø£Ø¬Ø¯ Ã™â€¦Ã™â€žØ®Øµ Ã˜Â§Ã™â€žØ¯Ø±Ø³ØŸ</summary>
+                    <p style="margin-top: 8px; font-size: 13px; color: var(--text-2);">Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žØ®Øµ Ã™â€¦Ã˜ÂªÃ™Ë†Ã™ÂØ± Ã™ÂÃ™Å  Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ø© Ã˜Â§Ã™â€žØ¯Ø±Ø³ Ø¹Ø¨Ø± Ø²Ø± (Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â±Ã™Å Ø·Ø© Ã˜Â§Ã™â€žÃ˜Â°Ã™â€¡Ã™â€ Ã™Å Ø©).</p>
                 </details>
             </div>
             
             <div style="align-self: center; margin-top: 15px; width: 100%; text-align: center;">
                 <button onclick="supportFlow.escalateToAdmin()" style="background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 24px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
-                    Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ù…Ø´ÙƒÙ„ة Ø¥Ù„Ù‰ Ø§Ù„إدارة ðŸ“©
+                    Ã˜Â¥Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žØ¥Ø¯Ø§Ø±Ø© Ã°Å¸â€œÂ©
                 </button>
             </div>
         `;
@@ -2398,10 +2398,10 @@ const supportFlow = {
         // Hide the button
         event.target.style.display = 'none';
         
-        this.addMessage("Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ù…Ø´ÙƒÙ„ة Ø¥Ù„Ù‰ Ø§Ù„إدارة", "user");
+        this.addMessage("Ã˜Â¥Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žØ© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žØ¥Ø¯Ø§Ø±Ø©", "user");
         
         setTimeout(() => {
-            this.addMessage("âœ… ØªÙ…ت Ø¥Ø­Ø§Ù„ة Ø·Ù„Ø¨Ùƒ Ø¥Ù„Ù‰ Ø§Ù„إدارة Ø¨Ù†جاح. Ø³ØªØªÙ„Ù‚Ù‰ Ø±Ø¯Ø§Ù‹ ÙÙŠ Ø£Ù‚رب ÙˆÙ‚ت Ù…Ù…ÙƒÙ† عبر <b>ØµÙ†Ø¯ÙˆÙ‚ Ø§Ù„Ùˆارد</b> Ø§Ù„خاص بك.", "bot");
+            this.addMessage("Ã¢Å“â€¦ Ã˜ÂªÃ™â€¦Øª Ã˜Â¥Ã˜Â­Ã˜Â§Ã™â€žØ© Ã˜Â·Ã™â€žÃ˜Â¨Ã™Æ’ Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žØ¥Ø¯Ø§Ø±Ø© Ã˜Â¨Ã™â€ Ø¬Ø§Ø­. Ã˜Â³Ã˜ÂªÃ˜ÂªÃ™â€žÃ™â€šÃ™â€° Ã˜Â±Ã˜Â¯Ã˜Â§Ã™â€¹ Ã™ÂÃ™Å  Ã˜Â£Ã™â€šØ±Ø¨ Ã™Ë†Ã™â€šØª Ã™â€¦Ã™â€¦Ã™Æ’Ã™â€  Ø¹Ø¨Ø± <b>Ã˜ÂµÃ™â€ Ã˜Â¯Ã™Ë†Ã™â€š Ã˜Â§Ã™â€žÃ™Ë†Ø§Ø±Ø¯</b> Ã˜Â§Ã™â€žØ®Ø§Øµ Ø¨Ùƒ.", "bot");
         }, 800);
     },
 
@@ -2441,7 +2441,7 @@ function renderJourneyTimeline() {
     if (!container) return;
     
     // Default subject or current subject
-    const subject = state.subject || 'Sira';
+    const subject = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'Sira') || 'Sira';
     
     // Extract unique lessons for the current subject from the question bank
     let lessonStats = {};
@@ -2469,9 +2469,9 @@ function renderJourneyTimeline() {
     if (lessons.length === 0) {
         // Fallback fake nodes for demo if DB is empty
         [1,2,3,4,5].forEach(l => {
-            container.innerHTML += `<div class="node-wrapper locked" onclick="alert('لا توجد أسئلة لهذه المادة حالياً.')">
+            container.innerHTML += `<div class="node-wrapper locked" onclick="alert('Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø³Ø¦Ù„Ø© Ù„Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø§Ø¯Ø© Ø­Ø§Ù„ÙŠØ§Ù‹.')">
                 <div class="node-icon"><i class="fa-solid fa-lock"></i></div>
-                <div class="node-label">الدرس ${l}</div>
+                <div class="node-label">Ø§Ù„Ø¯Ø±Ø³ ${l}</div>
             </div>`;
         });
         return;
@@ -2523,7 +2523,7 @@ function renderJourneyTimeline() {
             <div class="node-icon">
                 <i class="fa-solid ${icon}"></i>
             </div>
-            <div class="node-label">الدرس ${l}</div>
+            <div class="node-label">Ø§Ù„Ø¯Ø±Ø³ ${l}</div>
         `;
         
         container.appendChild(node);
@@ -2532,12 +2532,12 @@ function renderJourneyTimeline() {
 
 function openJourneyLesson(lessonNum, stats, status) {
     if (status === 'locked') {
-        alert('هذا الدرس مغلق. أكمل الدروس السابقة أولاً!');
+        alert('Ù‡Ø°Ø§ Ø§Ù„Ø¯Ø±Ø³ Ù…ØºÙ„Ù‚. Ø£ÙƒÙ…Ù„ Ø§Ù„Ø¯Ø±ÙˆØ³ Ø§Ù„Ø³Ø§Ø¨Ù‚Ø© Ø£ÙˆÙ„Ø§Ù‹!');
         return;
     }
     
     currentJourneyLesson = lessonNum;
-    document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
+    document.getElementById('sheet-title').innerText = `Ø§Ù„Ø¯Ø±Ø³ ${lessonNum}`;
     
     const grid = document.getElementById('journey-q-grid');
     grid.innerHTML = '';
@@ -2595,7 +2595,7 @@ function playWholeLesson() {
     closeJourneySheet();
     setTimeout(() => {
         if(window.quizEngine) {
-            document.getElementById('subject-select').value = state.subject || 'Sira';
+            document.getElementById('subject-select').value = (typeof state !== 'undefined' && state ? state.subject : document.getElementById('subject-select') ? document.getElementById('subject-select').value : 'Sira') || 'Sira';
             document.getElementById('lesson-select').value = currentJourneyLesson;
             quizEngine.start();
         }
