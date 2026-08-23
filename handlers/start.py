@@ -142,7 +142,7 @@ async def cmd_start(message: Message, state: FSMContext):
 
     # ── Group membership guard ──────────────────────────────────────────────
     user_id = message.from_user.id
-    restrict_val = await db.get_setting("restrict_to_academy_group", "True") == "True"
+    restrict_val = await db.get_setting("restrict_to_academy_group", "False") == "True"
     if restrict_val and not is_admin(user_id) and not await is_academy_member(message.bot, user_id):
         await message.answer(
             "⛔ عذراً، هذا البوت مخصص لطلاب أكاديمية الباجي فقط."
@@ -208,11 +208,13 @@ async def cmd_start(message: Message, state: FSMContext):
         if not admin_webapp.startswith("https"):
             welcome_text += f"\n\n🖥️ <b>رابط لوحة التحكم للمشرف:</b>\n🔗 <a href='{admin_webapp}'>{admin_webapp}</a>"
     
-    await message.answer(
-        welcome_text,
-        reply_markup=kb.get_main_inline_keyboard(is_admin=is_admin(user_id), remaining_count=remaining, unread_count=unread_count),
-        parse_mode="HTML"
-    )
+    reply_kb = kb.get_main_inline_keyboard(is_admin=is_admin(user_id), remaining_count=remaining, unread_count=unread_count)
+    try:
+        await message.answer(welcome_text, reply_markup=reply_kb, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"Failed to send start message with HTML: {e}")
+        clean_text = welcome_text.replace("<b>", "").replace("</b>", "").replace("<blockquote>", "").replace("</blockquote>", "")
+        await message.answer(clean_text, reply_markup=reply_kb)
 
     if deep_link_param:
         await process_deep_link(message, deep_link_param, state)
@@ -250,11 +252,13 @@ async def cmd_menu(message: Message, state: FSMContext):
         if not admin_webapp.startswith("https"):
             welcome_text += f"\n\n🖥️ <b>رابط لوحة التحكم للمشرف:</b>\n🔗 <a href='{admin_webapp}'>{admin_webapp}</a>"
     
-    await message.answer(
-        welcome_text,
-        reply_markup=kb.get_main_inline_keyboard(is_admin=is_admin(user_id), remaining_count=remaining, unread_count=unread_count),
-        parse_mode="HTML"
-    )
+    reply_kb = kb.get_main_inline_keyboard(is_admin=is_admin(user_id), remaining_count=remaining, unread_count=unread_count)
+    try:
+        await message.answer(welcome_text, reply_markup=reply_kb, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"Failed to send start message with HTML: {e}")
+        clean_text = welcome_text.replace("<b>", "").replace("</b>", "").replace("<blockquote>", "").replace("</blockquote>", "")
+        await message.answer(clean_text, reply_markup=reply_kb)
 
 @router.message(Command("reset"))
 async def cmd_reset(message: Message, state: FSMContext):
@@ -847,7 +851,7 @@ async def cmd_new_quiz_text(message_or_callback, state: FSMContext, user_id: int
 
     # ── Group membership guard ──────────────────────────────────────────────
     bot = message_or_callback.bot if isinstance(message_or_callback, Message) else message_or_callback.message.bot
-    restrict_val = await db.get_setting("restrict_to_academy_group", "True") == "True"
+    restrict_val = await db.get_setting("restrict_to_academy_group", "False") == "True"
     if restrict_val and not is_admin(user_id) and not await is_academy_member(bot, user_id):
         text = "⛔ عذراً، هذا البوت مخصص لطلاب أكاديمية الباجي فقط."
         if isinstance(message_or_callback, CallbackQuery):

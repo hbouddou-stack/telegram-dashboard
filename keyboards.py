@@ -48,6 +48,9 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     base_url = get_webapp_base_url()
     if True: # Always show Mini App button
         rows.append([
+            InlineKeyboardButton(text="🔗 فتح التطبيق والمنصة (رابط مباشر)", url=f"{base_url}/reader.html?v=dash2")
+        ])
+        rows.append([
             InlineKeyboardButton(text="💻 منصة الطالب والتطبيقات 📱", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))
         ])
         rows.append([
