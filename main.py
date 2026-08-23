@@ -3903,6 +3903,9 @@ async def start_web_server(bot: Bot):
 
     app.router.add_get('/quiz_journey', handle_quiz_journey)
     app.router.add_get('/quiz_journey.html', handle_quiz_journey)
+    app.router.add_get('/quiz_mindmap.html', lambda r: web.FileResponse(os.path.join(DASHBOARD_DIR, 'quiz_mindmap.html')))
+    app.router.add_get('/quiz_tree.html', lambda r: web.FileResponse(os.path.join(DASHBOARD_DIR, 'quiz_tree.html')))
+    app.router.add_get('/quiz_mosaic.html', lambda r: web.FileResponse(os.path.join(DASHBOARD_DIR, 'quiz_mosaic.html')))
     app.router.add_get('/test', handle_test)
     app.router.add_get('/test.html', handle_test)
     app.router.add_get('/reader', handle_reader)

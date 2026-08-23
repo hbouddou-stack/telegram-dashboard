@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>خريطة السيرة - Mindmap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0f172a; --surface: #1e293b; --primary: #3b82f6; --text: #f8fafc; --text-2: #94a3b8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        .header { padding: 20px; text-align: center; background: var(--surface); box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 10; }
+        .map-container { flex: 1; position: relative; overflow: auto; display: flex; justify-content: center; align-items: center; }
+        .constellation { position: relative; width: 600px; height: 600px; }
+        /* Nodes */
+        .node { position: absolute; width: 80px; height: 80px; border-radius: 50%; background: var(--surface); border: 3px solid var(--text-2); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--text-2); cursor: pointer; transition: 0.3s; z-index: 2; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .node.active { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 20px rgba(59,130,246,0.5); }
+        .node.done { border-color: #10b981; color: #10b981; }
+        .node-label { position: absolute; bottom: -30px; font-size: 0.9rem; font-weight: bold; width: 120px; text-align: center; color: var(--text); background: rgba(0,0,0,0.5); padding: 4px; border-radius: 8px; }
+        /* Lines */
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        line { stroke: var(--text-2); stroke-width: 2; stroke-dasharray: 5,5; }
+        line.active { stroke: var(--primary); stroke-width: 3; stroke-dasharray: none; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>شبكة السيرة النبوية (Mindmap)</h2><p style="color:var(--text-2)">استكشف العلاقات بين الأحداث</p></div>
+    <div class="map-container">
+        <div class="constellation">
+            <svg>
+                <!-- Central Node to others -->
+                <line x1="300" y1="300" x2="300" y2="100" class="active" />
+                <line x1="300" y1="300" x2="150" y2="200" class="active" />
+                <line x1="300" y1="300" x2="450" y2="200" />
+                <line x1="300" y1="300" x2="150" y2="400" />
+                <line x1="300" y1="300" x2="450" y2="400" />
+            </svg>
+            <div class="node done" style="top: 260px; left: 260px; width:100px; height:100px; font-size:2.5rem;"><i class="fa-solid fa-kaaba"></i><div class="node-label">البعثة النبوية</div></div>
+            <div class="node done" style="top: 60px; left: 260px;"><i class="fa-solid fa-child"></i><div class="node-label">الطفولة</div></div>
+            <div class="node active" style="top: 160px; left: 110px;"><i class="fa-solid fa-people-group"></i><div class="node-label">الدعوة السرية</div></div>
+            <div class="node" style="top: 160px; left: 410px;"><i class="fa-solid fa-bullhorn"></i><div class="node-label">الجهر بالدعوة</div></div>
+            <div class="node" style="top: 360px; left: 110px;"><i class="fa-solid fa-person-walking-luggage"></i><div class="node-label">الهجرة للحبشة</div></div>
+            <div class="node" style="top: 360px; left: 410px;"><i class="fa-solid fa-route"></i><div class="node-label">الهجرة للمدينة</div></div>
+        </div>
+    </div>
+</body>
+</html>

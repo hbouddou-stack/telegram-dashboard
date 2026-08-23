@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لوحة الفسيفساء - Mosaic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0f172a; --surface: #1e293b; --primary: #0ea5e9; --text: #f8fafc; --text-2: #94a3b8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        
+        .mosaic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-width: 600px; margin: 0 auto; }
+        .tile { aspect-ratio: 1; background: var(--surface); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; border: 1px solid #334155; }
+        .tile:hover { transform: scale(1.05); }
+        .tile.done { background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none; box-shadow: 0 4px 10px rgba(14,165,233,0.3); }
+        .tile.done i { color: white; }
+        .tile i { font-size: 1.5rem; color: var(--text-2); margin-bottom: 5px; }
+        .tile span { font-size: 0.7rem; font-weight: bold; color: var(--text-2); }
+        .tile.done span { color: white; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>لوحة الفسيفساء (Mosaic Grid)</h2><p style="color:var(--text-2)">أكمل كل المربعات لكشف الصورة الكبرى</p></div>
+    
+    <div class="mosaic-grid">
+        <!-- Generates 30 tiles -->
+        <script>
+            for(let i=1; i<=30; i++) {
+                let isDone = i <= 7;
+                let icon = isDone ? 'fa-check' : 'fa-lock';
+                let cls = isDone ? 'tile done' : 'tile';
+                document.write(`<div class="${cls}"><i class="fa-solid ${icon}"></i><span>سؤال ${i}</span></div>`);
+            }
+        </script>
+    </div>
+</body>
+</html>

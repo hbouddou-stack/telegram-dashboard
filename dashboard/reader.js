@@ -2472,7 +2472,7 @@ function renderJourneyTimeline() {
         [1,2,3,4,5].forEach(l => {
             container.innerHTML += `<div class="node-wrapper locked" onclick="alert('Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø³Ø¦Ù„Ø© Ù„Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø§Ø¯Ø© Ø­Ø§Ù„ÙŠØ§Ù‹.')">
                 <div class="node-icon"><i class="fa-solid fa-lock"></i></div>
-                <div class="node-label">Ø§Ù„Ø¯Ø±Ø³ ${l}</div>
+                <div class="node-label">الدرس ${l}</div>
             </div>`;
         });
         return;
@@ -2524,7 +2524,7 @@ function renderJourneyTimeline() {
             <div class="node-icon">
                 <i class="fa-solid ${icon}"></i>
             </div>
-            <div class="node-label">Ø§Ù„Ø¯Ø±Ø³ ${l}</div>
+            <div class="node-label">الدرس ${l}</div>
         `;
         
         container.appendChild(node);
@@ -2538,7 +2538,7 @@ function openJourneyLesson(lessonNum, stats, status) {
     }
     
     currentJourneyLesson = lessonNum;
-    document.getElementById('sheet-title').innerText = `Ø§Ù„Ø¯Ø±Ø³ ${lessonNum}`;
+    document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
     
     const grid = document.getElementById('journey-q-grid');
     grid.innerHTML = '';
