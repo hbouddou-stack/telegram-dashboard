@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مسار الإنجاز التفاعلي</title>
+    <title>مسار الإنجاز التفاعلي (Prototype)</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -52,33 +52,40 @@
         </div>
     </div>
     
-    <!-- MOCK DATA SCRIPT -->
-    
     <script>
         let currentJourneyLesson = null;
         
+        // 1. GENERATE FAKE DATA FOR STANDALONE DEMO
+        window.quranData = [];
+        let fakeId = 1;
+        for (let lesson = 1; lesson <= 12; lesson++) {
+            for (let q = 1; q <= 5; q++) {
+                window.quranData.push({ id: fakeId++, subject: 'sira', lessonNum: lesson });
+            }
+        }
+        
+        // 2. MOCK LOCALSTORAGE PROGRESS
+        let mockCorrect = [1, 2, 3, 4, 5,  6, 7, 8,  11, 12, 16];
+        let mockWrong = [9, 10, 13];
+        localStorage.setItem('quiz_correct_ids', JSON.stringify(mockCorrect));
+        localStorage.setItem('quiz_wrong_ids', JSON.stringify(mockWrong));
+
         function renderJourneyTimeline() {
             const container = document.getElementById('smart-tracker-container');
             if (!container) return;
             
             const subject = 'sira';
             
-            // Group lessons by a mock theme if not provided in data
             let lessonStats = {};
-            if (window.quranData) {
-                window.quranData.forEach(q => {
-                    if (q.subject && q.subject.toLowerCase() !== subject) return;
-                    const ln = q.lessonNum || 1;
-                    if (!lessonStats[ln]) {
-                        lessonStats[ln] = { total: 0, qs: [] };
-                    }
-                    lessonStats[ln].total++;
-                    lessonStats[ln].qs.push(q);
-                });
-            } else {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3);">جاري التحميل... (تأكد من وجود quran_db.js)</div>';
-                return;
-            }
+            window.quranData.forEach(q => {
+                if (q.subject && q.subject.toLowerCase() !== subject) return;
+                const ln = q.lessonNum || 1;
+                if (!lessonStats[ln]) {
+                    lessonStats[ln] = { total: 0, qs: [] };
+                }
+                lessonStats[ln].total++;
+                lessonStats[ln].qs.push(q);
+            });
             
             const lessons = Object.keys(lessonStats).map(k => parseInt(k)).sort((a,b)=>a-b);
             container.innerHTML = '';
@@ -88,10 +95,8 @@
                 return;
             }
             
-            // Read user progress from localStorage
             let correctIds = JSON.parse(localStorage.getItem('quiz_correct_ids') || '[]');
             
-            // Group by mock themes (e.g., every 3 lessons is a new theme for demo purposes)
             let themes = {};
             lessons.forEach(l => {
                 let themeName = "الوحدة " + Math.ceil(l / 3);
@@ -99,7 +104,6 @@
                 themes[themeName].push(l);
             });
             
-            // Render Themes
             Object.keys(themes).forEach(tName => {
                 let themeHtml = `
                     <div style="background:var(--surface); border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
@@ -150,8 +154,7 @@
             currentJourneyLesson = lessonNum;
             document.getElementById('sheet-title').innerText = `الدرس ${lessonNum}`;
             
-            const subject = 'sira';
-            let lessonQs = window.quranData.filter(q => q.subject && q.subject.toLowerCase() === subject && q.lessonNum == lessonNum);
+            let lessonQs = window.quranData.filter(q => q.subject && q.subject.toLowerCase() === 'sira' && q.lessonNum == lessonNum);
             
             const grid = document.getElementById('journey-q-grid');
             grid.innerHTML = '';
@@ -210,8 +213,8 @@
             alert('في التطبيق المستقل، هذا الزر سيربط بمحرك الاختبار مباشرة!');
         }
 
-        fetch('/quran_db.json').then(r=>r.json()).then(data => { window.quranData = data; renderJourneyTimeline(); }).catch(e => { document.getElementById('smart-tracker-container').innerHTML = 'Error loading quran_db.json: ' + e.message + ''; }); // Initialize
-         // Give time for quran_db.js to load
+        // INIT
+        renderJourneyTimeline();
     </script>
 </body>
 </html>
