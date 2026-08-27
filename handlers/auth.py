@@ -147,7 +147,7 @@ async def handle_feedback(callback: CallbackQuery):
 @router.message(Command("test_message"))
 async def cmd_test_message(message: Message):
     welcome_msg = (
-        f"أهلاً بك Houssam في أكاديمية البرجي.\n\n"
+        f"أهلاً بك Houssam في أكاديمية الباجي.\n\n"
         f"تم التحقق من هويتك بنجاح (رقم الطالب: 123456).\n"
         f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\n\n"
         f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
@@ -165,7 +165,7 @@ from aiogram.types import WebAppInfo
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     welcome_text = (
-        "مرحباً بك في بوابة أكاديمية البرجي 👋\n\n"
+        "مرحباً بك في بوابة أكاديمية الباجي 👋\n\n"
         "للوصول إلى القنوات والمجموعات الخاصة بك، يجب عليك التحقق من هويتك أولاً.\n"
         "يرجى الضغط على الزر أدناه للبدء."
     )

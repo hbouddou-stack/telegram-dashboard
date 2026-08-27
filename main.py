@@ -3770,23 +3770,28 @@ async def api_link_account(request: web.Request):
             return web.json_response({'success': False, 'error': 'خطأ في المصادقة مع تيليجرام (Erreur Telegram)'})
             
         async with aiosqlite.connect(DATABASE_PATH) as db:
+            errors = {}
+            
             # Check Email
             async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE email = ?", (email,)) as cur1:
                 row1 = await cur1.fetchone()
                 if not row1:
-                    return web.json_response({'success': False, 'error': 'البريد الإلكتروني غير مسجل.', 'error_field': 'email'})
-                
-                db_student_id = row1[0]
-                db_dob = row1[1]
-                real_first_name = row1[2]
+                    errors['email'] = 'البريد الإلكتروني غير مسجل.'
+                else:
+                    db_student_id = row1[0]
+                    db_dob = row1[1]
+                    real_first_name = row1[2]
 
-            # Check DOB
-            if db_dob != dob:
-                return web.json_response({'success': False, 'error': 'تاريخ الميلاد غير صحيح.', 'error_field': 'dob'})
-                
-            # Check Student ID
-            if str(db_student_id) != str(student_id_input):
-                return web.json_response({'success': False, 'error': 'رقم الطالب غير صحيح.', 'error_field': 'student_id'})
+                    # Check DOB
+                    if db_dob != dob:
+                        errors['dob'] = 'تاريخ الميلاد غير صحيح.'
+                        
+                    # Check Student ID
+                    if str(db_student_id) != str(student_id_input):
+                        errors['student_id'] = 'رقم الطالب غير صحيح.'
+            
+            if errors:
+                return web.json_response({'success': False, 'errors': errors})
                 
             # All Good: fetch full data
             async with db.execute("SELECT telegram_id, gender, year FROM academy_students WHERE student_id = ?", (db_student_id,)) as cur2:
@@ -3820,7 +3825,7 @@ async def api_link_account(request: web.Request):
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM
                     welcome_msg = (
-                        f"أهلاً بك {real_first_name} في أكاديمية البرجي.\\n\\n"
+                        f"أهلاً بك {real_first_name} في أكاديمية الباجي.\\n\\n"
                         f"تم التحقق من هويتك بنجاح (رقم الطالب: {db_student_id}).\\n"
                         f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\\n\\n"
                         f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
