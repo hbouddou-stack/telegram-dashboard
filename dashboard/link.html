@@ -332,10 +332,8 @@
         
         <div class="input-group">
             <label>تاريخ الميلاد</label>
-            <div class="dob-group" id="dob-group-container">
-                <select id="dob_day"><option value="">اليوم</option></select>
-                <select id="dob_month"><option value="">الشهر</option></select>
-                <select id="dob_year"><option value="">السنة</option></select>
+            <div class="dob-group" id="dob-group-container" style="display:block;">
+                <input type="date" id="dob_date" style="width: 100%; box-sizing: border-box; text-align: right;" lang="ar">
             </div>
             <div class="inline-error-text" id="err-dob"></div>
         </div>
@@ -406,22 +404,6 @@
         window.Telegram.WebApp.expand();
         
         // Populate DOB dropdowns
-        const dSelect = document.getElementById('dob_day');
-        for(let i=1; i<=31; i++) {
-            let val = i < 10 ? '0'+i : ''+i;
-            dSelect.innerHTML += `<option value="${val}">${val}</option>`;
-        }
-        
-        const mSelect = document.getElementById('dob_month');
-        for(let i=1; i<=12; i++) {
-            let val = i < 10 ? '0'+i : ''+i;
-            mSelect.innerHTML += `<option value="${val}">${val}</option>`;
-        }
-        
-        const ySelect = document.getElementById('dob_year');
-        const currYear = new Date().getFullYear();
-        for(let i=currYear-10; i>=currYear-80; i--) {
-            ySelect.innerHTML += `<option value="${i}">${i}</option>`;
         }
         
         let failCount = 0;
@@ -459,11 +441,9 @@
             clearErrors();
             const email = document.getElementById('email').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const d = document.getElementById('dob_day').value;
-            const m = document.getElementById('dob_month').value;
-            const y = document.getElementById('dob_year').value;
+            const dob_raw = document.getElementById('dob_date').value;
             
-            if(!email || !student_id || !d || !m || !y) {
+            if(!email || !student_id || !dob_raw) {
                 document.getElementById('global-error').textContent = "يرجى ملء جميع الحقول";
                 document.getElementById('global-error').style.display = 'block';
                 return;
@@ -475,7 +455,8 @@
                 return;
             }
             
-            const dob = `${d}/${m}/${y}`; // Formatting for backend (DD/MM/YYYY)
+            const parts = dob_raw.split('-');
+            const dob = `${parts[2]}/${parts[1]}/${parts[0]}`; // Formatting for backend (DD/MM/YYYY)
 
             const btn = document.getElementById('btn-submit');
             btn.textContent = "جاري التحقق...";
@@ -549,10 +530,8 @@
             const email = document.getElementById('email').value.trim();
             const msg = document.getElementById('sos_msg').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const d = document.getElementById('dob_day').value;
-            const m = document.getElementById('dob_month').value;
-            const y = document.getElementById('dob_year').value;
-            const dob = (d && m && y) ? `${d}/${m}/${y}` : '';
+            const dob_raw = document.getElementById('dob_date').value;
+            const dob = dob_raw ? `${dob_raw.split('-')[2]}/${dob_raw.split('-')[1]}/${dob_raw.split('-')[0]}` : '';
             
             if(!msg) return;
             document.getElementById('btn-send-sos').textContent = "جاري الإرسال...";
