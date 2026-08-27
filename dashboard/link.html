@@ -68,7 +68,7 @@
             border-top: 1px solid rgba(255,255,255,0.1);
             flex: 1;
             border-radius: 20px 20px 0 0;
-            margin-top: -15px;
+            margin-top: 20px;
             z-index: 10;
         }
         h1 {
@@ -300,12 +300,7 @@
 </head>
 <body>
 
-    <div class="video-container">
-        <!-- Remplacer le lien par ta vraie vidéo MP4 -->
-        <video autoplay loop muted playsinline>
-            <source src="https://cdn.pixabay.com/video/2020/05/11/38600-418658055_large.mp4" type="video/mp4">
-        </video>
-    </div>
+    
 
     <div class="container" id="main-form">
         <div style="text-align: center; margin-bottom: 25px;">
@@ -445,7 +440,7 @@
             const errDiv = document.getElementById('err-' + fieldId);
             
             if (fieldId === 'dob') {
-                document.getElementById('dob-group-container').classList.add('input-error');
+                document.getElementById('dob_date').classList.add('input-error');
             } else if (field) {
                 field.classList.add('input-error');
             }
