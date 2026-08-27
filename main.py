@@ -54,6 +54,7 @@ from typing import Callable, Dict, Any, Awaitable
 import database as db
 from config import TELEGRAM_BOT_TOKEN
 from handlers.start import router as start_router
+from handlers.auth import router as auth_router
 from handlers.quiz import router as quiz_router
 from handlers.favorites_errors import router as fav_err_router
 from handlers.support import router as support_router
@@ -4156,6 +4157,7 @@ async def main():
     dp.callback_query.outer_middleware(AccessCheckMiddleware())
 
     # Include handlers
+    dp.include_router(auth_router)
     dp.include_router(start_router)
     dp.include_router(quiz_router)
     dp.include_router(fav_err_router)

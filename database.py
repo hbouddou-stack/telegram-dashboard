@@ -42,6 +42,21 @@ async def init_db():
         # Enable foreign keys
         await db.execute("PRAGMA foreign_keys = ON;")
         
+        # 0. academy_students
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS academy_students (
+                student_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                dob TEXT NOT NULL,
+                telegram_id INTEGER,
+                first_name TEXT,
+                last_name TEXT,
+                year TEXT,
+                gender TEXT,
+                is_active BOOLEAN DEFAULT 1
+            )
+        """)
+
         # 1. users
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (

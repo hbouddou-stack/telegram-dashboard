@@ -43,6 +43,8 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     ]
     rows.append(row1)
     
+    rows.append([InlineKeyboardButton(text="🔗 Lier mon compte", callback_data="cmd_lier_compte")])
+    
 
     # Row 1.2: Liseuse (Dashboard & Reader)
     base_url = get_webapp_base_url()
