@@ -165,9 +165,8 @@ from aiogram.types import WebAppInfo
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     welcome_text = (
-        "مرحباً بك في بوابة أكاديمية الباجي 👋\n\n"
-        "للوصول إلى القنوات والمجموعات الخاصة بك، يجب عليك التحقق من هويتك أولاً.\n"
-        "يرجى الضغط على الزر أدناه للبدء."
+        "<blockquote><b>أهلاً بك في أكاديمية الباجي! 🎓</b>\n\n"
+        "نحن سعداء بانضمامك إلينا. للبدء والاستفادة من جميع الموارد المتاحة، يرجى ربط حسابك بالضغط على الزر أدناه.</blockquote>"
     )
     
     # Resolve WebApp URL
@@ -199,6 +198,6 @@ async def cmd_federer(message: Message):
         
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🛠️ Dashboard Admin (Verification)", callback_data="admin_dash_wip")],
-        [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/support.html"))]
+        [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))]
     ])
     await message.answer("🤫 <b>Menu Secret Admin</b> :", reply_markup=kb, parse_mode="HTML")
