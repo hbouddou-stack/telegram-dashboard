@@ -315,6 +315,68 @@ async def api_admin_gateway_settings(request: web.Request):
         return web.json_response({'success': False, 'error': str(e)})
 
 
+
+async def api_gateway_sos(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        email = data.get('email', '')
+        message = data.get('message', '')
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("INSERT INTO gateway_sos (email_tentative, message) VALUES (?, ?)", (email, message))
+            await db.commit()
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_links_get(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT key, value FROM settings WHERE key LIKE 'link_%'") as cur:
+                links = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'links': links})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_sos_list(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM gateway_sos ORDER BY id DESC LIMIT 50") as cur:
+                sos_list = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'sos_list': sos_list})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_sos_reply(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        sos_id = data.get('sos_id')
+        reply_message = data.get('reply_message')
+        telegram_id = data.get('telegram_id') # To send back if available, otherwise just mark closed
+        
+        if telegram_id:
+            try:
+                await bot.send_message(telegram_id, f"🛠️ **Réponse du Support Académie**\n\n{reply_message}", parse_mode="Markdown")
+            except Exception as e:
+                pass
+                
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("UPDATE gateway_sos SET status = 'closed' WHERE id = ?", (sos_id,))
+            await db.commit()
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_chat(request: web.Request):
     telegram_id = request.query.get('id')
     import aiosqlite
@@ -4135,6 +4197,10 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
+    app.router.add_post('/api/gateway/sos', api_gateway_sos)
+    app.router.add_get('/api/admin/links', api_admin_links_get)
+    app.router.add_get('/api/admin/sos', api_admin_sos_list)
+    app.router.add_post('/api/admin/sos/reply', api_admin_sos_reply)
     app.router.add_post('/api/student/stats', get_student_stats)
     app.router.add_post('/api/student/quiz/taxonomy', get_student_quiz_taxonomy)
     app.router.add_get('/api/student/quiz/options', get_student_quiz_options)

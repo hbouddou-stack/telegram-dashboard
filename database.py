@@ -106,6 +106,18 @@ async def init_db():
             )
         """)
 
+                # 0d. gateway_sos
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS gateway_sos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER,
+                email_tentative TEXT,
+                message TEXT,
+                status TEXT DEFAULT 'open',
+                timestamp TEXT DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
+
         # 1. users
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (
