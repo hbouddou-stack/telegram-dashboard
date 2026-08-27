@@ -3827,8 +3827,9 @@ async def api_link_account(request: web.Request):
                     await log_student_action(db_student_id, 'ACCOUNT_LINKED', f"Compte Telegram ({telegram_id}) lié avec succès")
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM
+                    display_name = telegram_first_name if telegram_first_name else real_first_name
                     welcome_msg = (
-                        f"أهلاً بك {real_first_name} في أكاديمية الباجي.\\n\\n"
+                        f"أهلاً بك {display_name} في أكاديمية الباجي.\\n\\n"
                         f"تم التحقق من هويتك بنجاح (رقم الطالب: {db_student_id}).\\n"
                         f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\\n\\n"
                         f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
