@@ -128,3 +128,17 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
                     await bot.send_message(user_id, "❌ Ta demande d'adhésion a été refusée car ton compte n'est pas lié.\nVa sur le bot et clique sur Lier mon compte d'abord.")
                 except Exception as e:
                     print(f"Failed to decline join request: {e}")
+
+@router.callback_query(F.data.startswith("feedback_"))
+async def handle_feedback(callback: CallbackQuery):
+    feedback_type = callback.data.split("_")[1]
+    
+    if feedback_type == "easy":
+        await callback.message.edit_text(
+            callback.message.text + "\n\n✅ شكراً لك! يسعدنا أن العملية كانت سهلة."
+        )
+    else:
+        await callback.message.edit_text(
+            callback.message.text + "\n\n❌ نأسف لأنك واجهت صعوبة. سنعمل على تحسين النظام باستمرار."
+        )
+    await callback.answer("شكراً على تقييمك!")

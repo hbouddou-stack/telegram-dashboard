@@ -326,10 +326,22 @@
 
     <!-- LIENS GROUPES TAB -->
     <div id="tab-links" class="tab-content">
+        
+        <div style="background:var(--surface); padding:20px; border-radius:12px; margin-bottom:25px; border:1px solid var(--border);">
+            <h3 style="margin-top:0;">Paramètres de Sécurité</h3>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;">
+                <span style="font-weight:600;">Forcer la correspondance du prénom Telegram</span>
+            </label>
+            <p style="font-size:0.85rem; color:var(--text-2); margin-top:5px; margin-bottom:0;">
+                Si activé, l'élève ne pourra pas lier son compte si son prénom sur Telegram ne correspond pas à celui de la base de données.
+            </p>
+        </div>
+
         <p style="color: var(--text-2); margin-bottom:20px;">Collez les liens d'invitation Telegram pour chaque groupe. Les élèves recevront automatiquement le bon lien.</p>
         
         <div id="links-container"></div>
-        <button class="btn-save" onclick="saveLinks()">Enregistrer les liens</button>
+        <button class="btn-save" onclick="saveLinks()">Enregistrer les liens et paramètres</button>
     </div>
 
     <!-- SOS LIAISON TAB -->

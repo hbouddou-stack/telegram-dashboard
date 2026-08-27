@@ -3747,13 +3747,13 @@ async def api_link_account(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
     from database import log_student_action
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
     try:
         data = await request.json()
         email = data.get('email', '').strip().lower()
         dob = data.get('dob', '').strip()
         student_id_input = data.get('student_id', '').strip()
         
-        # In V3, we either use initData (Web App) or telegram_id directly
         telegram_id = data.get('telegram_id')
         telegram_first_name = data.get('telegram_first_name', '')
         
@@ -3770,7 +3770,7 @@ async def api_link_account(request: web.Request):
             return web.json_response({'success': False, 'error': 'خطأ في المصادقة مع تيليجرام (Erreur Telegram)'})
             
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            # Step 1: Check Email
+            # Check Email
             async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE email = ?", (email,)) as cur1:
                 row1 = await cur1.fetchone()
                 if not row1:
@@ -3780,11 +3780,11 @@ async def api_link_account(request: web.Request):
                 db_dob = row1[1]
                 real_first_name = row1[2]
 
-            # Step 2: Check DOB
+            # Check DOB
             if db_dob != dob:
                 return web.json_response({'success': False, 'error': 'تاريخ الميلاد غير صحيح.', 'error_field': 'dob'})
                 
-            # Step 3: Check Student ID (Matricule)
+            # Check Student ID
             if str(db_student_id) != str(student_id_input):
                 return web.json_response({'success': False, 'error': 'رقم الطالب غير صحيح.', 'error_field': 'student_id'})
                 
@@ -3799,6 +3799,18 @@ async def api_link_account(request: web.Request):
                     if existing_tg != telegram_id:
                         await log_student_action(db_student_id, 'LINK_FAILED', f"Tentative avec un autre compte Telegram ({telegram_id})")
                         return web.json_response({'success': False, 'error': 'هذا الحساب مرتبط بالفعل بحساب تيليجرام آخر (Compte déjà lié à un autre Telegram).'})
+                
+                # Check setting for forced telegram name
+                async with db.execute("SELECT value FROM settings WHERE key = 'force_telegram_name'") as cur_set:
+                    force_row = await cur_set.fetchone()
+                    force_name = True if force_row and force_row[0] == 'true' else False
+                
+                if force_name and telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
+                    await log_student_action(db_student_id, 'LINK_FAILED', f'Prénom Telegram non conforme: "{telegram_first_name}" (attendu: "{real_first_name}")')
+                    return web.json_response({
+                        'success': False, 
+                        'error': f'عذراً، اسمك في تيليجرام "{telegram_first_name}" لا يطابق اسمك المسجل "{real_first_name}". يرجى تعديله في إعدادات تيليجرام.'
+                    }, status=403)
                         
                 # Link account
                 if not existing_tg:
@@ -3808,27 +3820,28 @@ async def api_link_account(request: web.Request):
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM
                     welcome_msg = (
-                        f"🎉 **Félicitations {real_first_name} et bienvenue dans l'Académie !**\\n\\n"
-                        f"Ton compte étudiant (Matricule: {db_student_id}) a été lié avec succès.\\n\\n"
-                        f"Tu as désormais un accès exclusif à :\\n"
-                        f"🔹 **Groupe d'entraide** pour échanger avec les autres élèves.\\n"
-                        f"🔹 **Canal des annonces officielles** pour ne rien rater.\\n"
-                        f"🔹 **Bot Assistant (FAQ)** pour poser tes questions.\\n\\n"
-                        f"👉 Clique sur le bouton *Ajouter le dossier de l'Académie* dans l'application pour tout débloquer d'un coup !"
+                        f"أهلاً بك {real_first_name} في أكاديمية البرجي.
+
+"
+                        f"تم التحقق من هويتك بنجاح (رقم الطالب: {db_student_id}).
+"
+                        f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.
+
+"
+                        f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
                     )
+                    kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [
+                            InlineKeyboardButton(text="👍 نعم، كانت سهلة", callback_data="feedback_easy"),
+                            InlineKeyboardButton(text="👎 واجهت صعوبة", callback_data="feedback_hard")
+                        ]
+                    ])
                     try:
-                        await bot.send_message(telegram_id, welcome_msg, parse_mode="Markdown")
+                        await bot.send_message(telegram_id, welcome_msg, reply_markup=kb)
                     except Exception as e:
-                        pass # Ignore if bot can't send message (e.g. user blocked)
+                        pass
                     
-                # Determine Group Link
-                gender_key = 'homme' if (gender.startswith('h') or gender == 'm' or gender == 'male' or gender == 'garcon') else 'femme'
-                setting_key = f"link_{gender_key}_{year}"
-                async with db.execute("SELECT value FROM settings WHERE key = ?", (setting_key,)) as cur_set:
-                    link_row = await cur_set.fetchone()
-                    group_link = link_row[0] if link_row else None
-                    
-                return web.json_response({'success': True, 'group_link': group_link, 'first_name': real_first_name})
+                return web.json_response({'success': True, 'first_name': real_first_name})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 

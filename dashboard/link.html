@@ -231,7 +231,7 @@
             padding: 20px;
         }
         .modal-content {
-            background: var(--surface-solid);
+            background: #120924; /* Opaque dark background */
             width: 100%;
             max-width: 350px;
             padding: 25px;
@@ -306,7 +306,10 @@
         <div id="global-error"></div>
 
         <div class="input-group">
-            <label>رقم الطالب</label>
+            <label style="display:flex; justify-content:space-between;">
+                <span>رقم الطالب</span>
+                <span style="color:var(--accent); cursor:pointer; font-size:0.8rem;" onclick="showTuto()">أين أجد رقم الطالب؟ ℹ️</span>
+            </label>
             <input type="number" id="student_id" placeholder="مثال: 000123" required>
             <div class="inline-error-text" id="err-student_id"></div>
         </div>
@@ -349,15 +352,26 @@
     <div class="container" id="success-msg">
         <div class="icon-success">✅</div>
         <div style="font-size: 1.5rem;">تم التحقق بنجاح</div>
-        <p style="color:var(--text-1);">تم ربط حسابك بنجاح، يمكنك الآن الانضمام إلى مجموعتك.</p>
         
-        <button class="btn-primary" id="btn-join-group" onclick="joinGroup()">الانضمام إلى مجموعتي</button>
+        <div style="background:rgba(10, 132, 255, 0.1); border:1px solid rgba(10, 132, 255, 0.3); padding:15px; border-radius:12px; margin-top:10px;">
+            <p style="color:var(--text-1); font-size:0.95rem; line-height:1.6; text-align:right;">
+                تم ربط حسابك بنجاح. لقد قمنا بتجهيز <b>مجلد خاص</b> يحتوي على جميع القنوات والمجموعات التي تحتاجها في الأكاديمية.<br><br>
+                اضغط على الزر أدناه لإضافة المجلد كاملاً إلى حسابك.
+            </p>
+        </div>
         
-        <button class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:5px; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4);" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/jcgwXUtzsfBhMGI8')">📁 إضافة مجلد الأكاديمية</button>
+        <button class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:10px; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4);" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/jcgwXUtzsfBhMGI8')">📁 إضافة المجلد الرسمي</button>
     </div>
 
     <script>
         window.Telegram.WebApp.ready();
+        function showTuto() {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
+                window.Telegram.WebApp.showAlert("تجد رقم الطالب الخاص بك في رسالة القبول أو في استمارة التسجيل الخاصة بك. (Tu le trouves dans ton formulaire d'inscription)");
+            } else {
+                alert("تجد رقم الطالب الخاص بك في رسالة القبول أو في استمارة التسجيل الخاصة بك.");
+            }
+        }
         window.Telegram.WebApp.expand();
         
         // Populate DOB dropdowns
@@ -452,11 +466,7 @@
                     }
                     document.getElementById('main-form').style.display = 'none';
                     document.getElementById('success-msg').style.display = 'flex';
-                    finalGroupLink = data.group_link;
-                    if(!finalGroupLink) {
-                        document.getElementById('btn-join-group').textContent = "الرابط غير متوفر";
-                        document.getElementById('btn-join-group').disabled = true;
-                    }
+
                 } else {
                     failCount++;
                     
