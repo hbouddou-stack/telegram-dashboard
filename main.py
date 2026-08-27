@@ -3808,7 +3808,8 @@ async def api_link_account(request: web.Request):
                 
                 if existing_tg:
                     if existing_tg != telegram_id:
-                        await log_student_action(db_student_id, 'LINK_FAILED', f"Tentative avec un autre compte Telegram ({telegram_id})")
+                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"Tentative avec un autre compte Telegram ({telegram_id})"))
+                        await db.commit()
                         return web.json_response({'success': False, 'error': 'هذا الحساب مرتبط بالفعل بحساب تيليجرام آخر (Compte déjà lié à un autre Telegram).'})
                 
                 # Check setting for forced telegram name
@@ -3817,7 +3818,8 @@ async def api_link_account(request: web.Request):
                     force_name = True if force_row and force_row[0] == 'true' else False
                 
                 if force_name and telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
-                    await log_student_action(db_student_id, 'LINK_FAILED', f'Prénom Telegram non conforme: "{telegram_first_name}" (attendu: "{real_first_name}")')
+                    await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f'Prénom Telegram non conforme: "{telegram_first_name}" (attendu: "{real_first_name}")'))
+                    await db.commit()
                     return web.json_response({
                         'success': False, 
                         'error': f'عذراً، اسمك في تيليجرام "{telegram_first_name}" لا يطابق اسمك المسجل "{real_first_name}". يرجى تعديله في إعدادات تيليجرام.'
@@ -3826,8 +3828,8 @@ async def api_link_account(request: web.Request):
                 # Link account
                 if not existing_tg:
                     await db.execute("UPDATE academy_students SET telegram_id = ? WHERE student_id = ?", (telegram_id, db_student_id))
+                    await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'ACCOUNT_LINKED', f"Compte Telegram ({telegram_id}) lié avec succès"))
                     await db.commit()
-                    await log_student_action(db_student_id, 'ACCOUNT_LINKED', f"Compte Telegram ({telegram_id}) lié avec succès")
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM
                     display_name = telegram_first_name if telegram_first_name else real_first_name
