@@ -4243,6 +4243,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/quiz.js', handle_quiz_js)
     app.router.add_get('/reader.css', handle_reader_css)
     app.router.add_get('/support', handle_support)
+    app.router.add_post('/api/support', api_support)
     app.router.add_get('/support.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)
     app.router.add_post('/api/tickets/student', get_student_tickets)

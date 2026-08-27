@@ -182,4 +182,23 @@ async def cmd_start(message: Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔗 بوابة التحقق (Mini App)", web_app=WebAppInfo(url=webapp_url))]
     ])
-    await message.answer(welcome_text, reply_markup=kb)
+    await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
+
+@router.message(Command("federer"))
+async def cmd_federer(message: Message):
+    from config import TELEGRAM_ADMIN_IDS
+    if message.from_user.id not in TELEGRAM_ADMIN_IDS:
+        return
+    
+    import os
+    domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+    if domain:
+        webapp_url = f"https://{domain}"
+    else:
+        webapp_url = os.getenv('WEBAPP_URL', 'https://telegram-dashboard-production.up.railway.app').rstrip('/')
+        
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🛠️ Dashboard Admin (Verification)", callback_data="admin_dash_wip")],
+        [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/support.html"))]
+    ])
+    await message.answer("🤫 <b>Menu Secret Admin</b> :", reply_markup=kb, parse_mode="HTML")
