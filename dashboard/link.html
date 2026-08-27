@@ -208,7 +208,7 @@
         <button class="btn-primary" onclick="linkAccount()" id="btn-submit">Vérifier mon profil</button>
         
         <!-- SOS BUTTON -->
-        <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 Je suis bloqué</button>
+        <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 J'ai un problème</button>
         
         <div class="sos-area" id="sos-box">
             <p style="color:var(--danger); font-size:0.85rem; text-align:left;">Expliquez votre problème, un administrateur vous répondra sur Telegram.</p>
@@ -221,6 +221,7 @@
         <div>✅ Accès Autorisé</div>
         <p style="color:var(--text-1);">Votre compte a été lié avec succès.</p>
         <button class="btn-primary" id="btn-join-group" onclick="joinGroup()">Rejoindre mon groupe</button>
+        <button class="btn-primary" style="background:var(--accent); margin-top:5px;" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/jcgwXUtzsfBhMGI8')">📁 Ajouter le dossier de l'Académie</button>
     </div>
 
     <script>
@@ -268,7 +269,7 @@
                 } else {
                     failCount++;
                     showError(data.error || "Erreur inconnue");
-                    if(failCount >= 2) {
+                    if(failCount >= 1) {
                         document.getElementById('btn-sos-trigger').style.display = 'block';
                     }
                     if (window.Telegram.WebApp.HapticFeedback) {
