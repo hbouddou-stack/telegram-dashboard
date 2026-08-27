@@ -296,7 +296,82 @@
             font-family: 'Tajawal', sans-serif;
             cursor: pointer;
         }
-</style>
+
+        .fake-select {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-1);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .fake-select:hover {
+            border-color: var(--accent);
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .grid-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .grid-modal-content {
+            background: var(--bg);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .grid-modal-title {
+            text-align: center;
+            margin-top: 0;
+            color: var(--accent);
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            padding: 10px 0;
+            max-height: 50vh;
+        }
+        .grid-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .grid-btn:hover {
+            background: var(--accent);
+        }
+        .close-grid-btn {
+            background: rgba(255,69,58,0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -332,9 +407,15 @@
         
         <div class="input-group">
             <label>تاريخ الميلاد</label>
-            <div class="dob-group" id="dob-group-container" style="display:block;">
-                <input type="date" id="dob_date" style="width: 100%; box-sizing: border-box; text-align: right;" lang="ar">
+            <div class="dob-group" id="dob-group-container">
+                <div class="fake-select" id="btn-day" onclick="openGrid('day')">اليوم</div>
+                <div class="fake-select" id="btn-month" onclick="openGrid('month')">الشهر</div>
+                <div class="fake-select" id="btn-year" onclick="openGrid('year')">السنة</div>
             </div>
+            
+            <input type="hidden" id="dob_day" value="">
+            <input type="hidden" id="dob_month" value="">
+            <input type="hidden" id="dob_year" value="">
             <div class="inline-error-text" id="err-dob"></div>
         </div>
 
@@ -359,7 +440,17 @@
                 <button onclick="closeTuto()" style="background:var(--accent);">حسناً، فهمت</button>
             </div>
         </div>
-        <!-- SOS MODAL -->
+        
+    <!-- Grid Modal -->
+    <div id="grid-modal" class="grid-modal">
+        <div class="grid-modal-content">
+            <h3 id="grid-title" class="grid-modal-title">اختيار</h3>
+            <div id="grid-layout" class="grid-container"></div>
+            <button class="close-grid-btn" onclick="closeGrid()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- SOS MODAL -->
         <div class="modal-overlay" id="sos-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -391,6 +482,48 @@
 
     <script>
         window.Telegram.WebApp.ready();
+        function openGrid(type) {
+            const modal = document.getElementById('grid-modal');
+            const title = document.getElementById('grid-title');
+            const layout = document.getElementById('grid-layout');
+            layout.innerHTML = ''; // clear
+            
+            let items = [];
+            if (type === 'day') {
+                title.innerText = 'اختيار اليوم';
+                for(let i=1; i<=31; i++) items.push({val: i<10?'0'+i:i, label: i});
+            } else if (type === 'month') {
+                title.innerText = 'اختيار الشهر';
+                for(let i=1; i<=12; i++) items.push({val: i<10?'0'+i:i, label: i});
+            } else if (type === 'year') {
+                title.innerText = 'اختيار السنة';
+                const curr = new Date().getFullYear();
+                for(let i=curr-10; i>=1950; i--) items.push({val: i, label: i});
+            }
+            
+            items.forEach(item => {
+                const btn = document.createElement('div');
+                btn.className = 'grid-btn';
+                btn.innerText = item.label;
+                btn.onclick = () => selectGridItem(type, item.val, item.label);
+                layout.appendChild(btn);
+            });
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeGrid() {
+            document.getElementById('grid-modal').style.display = 'none';
+        }
+        
+        function selectGridItem(type, val, label) {
+            document.getElementById('dob_' + type).value = val;
+            document.getElementById('btn-' + type).innerText = label;
+            document.getElementById('btn-' + type).style.borderColor = 'var(--accent)';
+            document.getElementById('btn-' + type).style.background = 'rgba(135, 54, 255, 0.2)';
+            closeGrid();
+        }
+
         function showTuto() {
             const modal = document.getElementById('tuto-modal');
             modal.style.display = 'flex';
@@ -422,7 +555,7 @@
             const errDiv = document.getElementById('err-' + fieldId);
             
             if (fieldId === 'dob') {
-                document.getElementById('dob_date').classList.add('input-error');
+                document.getElementById('dob-group-container').classList.add('input-error');
             } else if (field) {
                 field.classList.add('input-error');
             }
@@ -441,9 +574,11 @@
             clearErrors();
             const email = document.getElementById('email').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const dob_raw = document.getElementById('dob_date').value;
+            const d = document.getElementById('dob_day').value;
+            const m = document.getElementById('dob_month').value;
+            const y = document.getElementById('dob_year').value;
             
-            if(!email || !student_id || !dob_raw) {
+            if(!email || !student_id || !d || !m || !y) {
                 document.getElementById('global-error').textContent = "يرجى ملء جميع الحقول";
                 document.getElementById('global-error').style.display = 'block';
                 return;
@@ -455,8 +590,7 @@
                 return;
             }
             
-            const parts = dob_raw.split('-');
-            const dob = `${parts[2]}/${parts[1]}/${parts[0]}`; // Formatting for backend (DD/MM/YYYY)
+            const dob = `${d}/${m}/${y}`; // Formatting for backend (DD/MM/YYYY)
 
             const btn = document.getElementById('btn-submit');
             btn.textContent = "جاري التحقق...";
@@ -530,7 +664,9 @@
             const email = document.getElementById('email').value.trim();
             const msg = document.getElementById('sos_msg').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const dob_raw = document.getElementById('dob_date').value;
+            const d = document.getElementById('dob_day').value;
+            const m = document.getElementById('dob_month').value;
+            const y = document.getElementById('dob_year').value;
             const dob = dob_raw ? `${dob_raw.split('-')[2]}/${dob_raw.split('-')[1]}/${dob_raw.split('-')[0]}` : '';
             
             if(!msg) return;
