@@ -217,7 +217,78 @@
             font-size: 4rem;
             margin-bottom: -10px;
         }
-    </style>
+    
+        /* SOS Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: var(--surface-solid);
+            width: 100%;
+            max-width: 350px;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--danger);
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-2);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-content textarea {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--danger);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            font-family: 'Tajawal', sans-serif;
+            min-height: 100px;
+            resize: none;
+            font-size: 1rem;
+        }
+        .modal-content button {
+            background: var(--danger);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            font-family: 'Tajawal', sans-serif;
+            cursor: pointer;
+        }
+</style>
 </head>
 <body>
 
@@ -261,10 +332,17 @@
         <!-- SOS BUTTON -->
         <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 أواجه مشكلة</button>
         
-        <div class="sos-area" id="sos-box">
-            <p style="color:#ff6b6b; font-size:0.9rem; text-align:right;">اشرح مشكلتك هنا وسيقوم أحد المشرفين بالرد عليك عبر تيليجرام.</p>
-            <textarea id="sos_msg" placeholder="مثال: لا أستطيع الدخول، نسيت البريد الإلكتروني..."></textarea>
-            <button onclick="sendSOS()">إرسال طلب المساعدة</button>
+        <!-- SOS MODAL -->
+        <div class="modal-overlay" id="sos-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🆘 طلب مساعدة</h2>
+                    <button class="close-btn" onclick="closeSOS()">&times;</button>
+                </div>
+                <p style="color:var(--text-2); font-size:0.95rem; margin:0;">اشرح مشكلتك هنا وسيقوم أحد المشرفين بالرد عليك عبر تيليجرام في أقرب وقت.</p>
+                <textarea id="sos_msg" placeholder="مثال: لا أستطيع الدخول، نسيت البريد الإلكتروني..."></textarea>
+                <button onclick="sendSOS()" id="btn-send-sos">إرسال طلب المساعدة</button>
+            </div>
         </div>
     </div>
     
@@ -411,13 +489,14 @@
         }
         
         function showSOS() {
-            document.getElementById('btn-sos-trigger').style.display = 'none';
-            const sosBox = document.getElementById('sos-box');
-            sosBox.style.display = 'flex';
-            // Scroll to SOS box
-            setTimeout(() => {
-                sosBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }, 100);
+            const modal = document.getElementById('sos-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+        function closeSOS() {
+            const modal = document.getElementById('sos-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
         }
         
         async function sendSOS() {
@@ -430,6 +509,8 @@
             const dob = (d && m && y) ? `${d}/${m}/${y}` : '';
             
             if(!msg) return;
+            document.getElementById('btn-send-sos').textContent = "جاري الإرسال...";
+            document.getElementById('btn-send-sos').disabled = true;
             
             try {
                 let tid = null;
@@ -441,10 +522,22 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
                 });
-                document.getElementById('sos-box').innerHTML = "<p style='color:#34c759; font-weight:bold;'>تم إرسال طلبك بنجاح. سيتم الرد عليك قريباً.</p>";
+                closeSOS();
+                document.getElementById('sos_msg').value = ''; // clear
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
+                    window.Telegram.WebApp.showAlert("✅ تم إرسال طلبك بنجاح. سيتم الرد عليك قريباً في رسالة خاصة.");
+                } else {
+                    alert("✅ تم إرسال طلبك بنجاح. سيتم الرد عليك قريباً.");
+                }
             } catch(e) {
-                alert("Erreur lors de l'envoi.");
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
+                    window.Telegram.WebApp.showAlert("❌ حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.");
+                } else {
+                    alert("Erreur lors de l'envoi.");
+                }
             }
+            document.getElementById('btn-send-sos').textContent = "إرسال طلب المساعدة";
+            document.getElementById('btn-send-sos').disabled = false;
         }
     </script>
 </body>
