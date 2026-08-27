@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import codecs
+
+html_content = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -462,4 +464,9 @@
         }
     </script>
 </body>
-</html>
+</html>"""
+
+with codecs.open(r'C:\Users\Houssam\Desktop\Telegram-Bot-Assets\dashboard\ask.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Generated ask.html properly!")

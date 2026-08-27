@@ -4198,6 +4198,38 @@ async def toggle_student_favorite(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
+async def api_support_rag_check(request):
+    try:
+        data = await request.json()
+        theme = data.get('theme', '')
+        subtheme = data.get('subtheme', '')
+        msg = data.get('message', '').lower()
+        
+        # Load FAQ DB
+        import json
+        import os
+        faq_path = os.path.join(os.path.dirname(__file__), 'faq_db.json')
+        if os.path.exists(faq_path):
+            with open(faq_path, 'r', encoding='utf-8') as f:
+                faq_data = json.load(f)
+                
+            if theme in faq_data:
+                # Basic exact/keyword match for MVP
+                for question, answer in faq_data[theme].items():
+                    # Simple heuristic: if subtheme is in question or any word overlaps heavily
+                    if question in subtheme or subtheme in question:
+                        return web.json_response({'found': True, 'answer': answer})
+                    
+                    # Or if words from message overlap with question
+                    words = msg.split()
+                    if len(words) > 0 and sum(1 for w in words if w in question.lower()) >= 2:
+                        return web.json_response({'found': True, 'answer': answer})
+        
+        return web.json_response({'found': False})
+    except Exception as e:
+        logger.error(f"Error in rag_check: {e}")
+        return web.json_response({'found': False})
+
 async def api_support(request):
     try:
         data = await request.json()
@@ -4282,6 +4314,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/quiz.js', handle_quiz_js)
     app.router.add_get('/reader.css', handle_reader_css)
     app.router.add_get('/ask', handle_support)
+    app.router.add_post('/api/support/rag_check', api_support_rag_check)
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)
