@@ -281,7 +281,7 @@ async def api_admin_gateway_students(request: web.Request):
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT student_id, first_name, email, telegram_id FROM academy_students ORDER BY first_name ASC") as cur:
+            async with db.execute("SELECT student_id, first_name, email, telegram_id, year, gender FROM academy_students ORDER BY first_name ASC") as cur:
                 students = [dict(row) for row in await cur.fetchall()]
         return web.json_response({'success': True, 'students': students})
     except Exception as e:

@@ -154,7 +154,50 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
         
-        /* Student List */
+        
+        /* Filters */
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .filter-chip.active {
+            background: rgba(129, 140, 248, 0.2);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .student-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: var(--text-2);
+        }
+        .meta-badge {
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+/* Student List */
         .search-box {
             width: 100%;
             padding: 12px;
@@ -398,6 +441,10 @@
                     <div class="student-info">
                         <h4>${s.first_name}</h4>
                         <p>${s.email}</p>
+                        <div class="student-meta">
+                            ${s.gender ? `<span class="meta-badge">${String(s.gender).toLowerCase().startsWith('h') || String(s.gender).toLowerCase() === 'm' ? '👨' : '👩'}</span>` : ''}
+                            ${s.year ? `<span class="meta-badge">🎓 Niv ${s.year}</span>` : ''}
+                        </div>
                     </div>
                     ${badge}
                 `;
@@ -405,12 +452,32 @@
             });
         }
 
+        
+        let activeFilters = { gender: 'all', level: 'all' };
+
+        function setFilter(type, value) {
+            activeFilters[type] = value;
+            // Update UI chips
+            document.querySelectorAll(`#filter-${type} .filter-chip`).forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            filterStudents();
+        }
+
         function filterStudents() {
             const query = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allStudents.filter(s => 
-                s.first_name.toLowerCase().includes(query) || 
-                s.email.toLowerCase().includes(query)
-            );
+            const filtered = allStudents.filter(s => {
+                const matchesSearch = s.first_name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query);
+                
+                let sGender = s.gender ? String(s.gender).toLowerCase() : '';
+                const matchesGender = (activeFilters.gender === 'all') || 
+                                     (activeFilters.gender === 'homme' && (sGender.startsWith('h') || sGender === 'm' || sGender === 'male' || sGender === 'garcon')) ||
+                                     (activeFilters.gender === 'femme' && (sGender.startsWith('f') || sGender === 'female' || sGender === 'fille'));
+                                     
+                let sYear = s.year ? String(s.year).toLowerCase() : '';
+                const matchesLevel = (activeFilters.level === 'all') || sYear.includes(String(activeFilters.level));
+                
+                return matchesSearch && matchesGender && matchesLevel;
+            });
             renderStudents(filtered);
         }
 
