@@ -16,21 +16,24 @@
             --danger: #ff453a;
             --accent: #8736ff;
         }
-        body {
+        html, body {
             background: var(--bg);
             color: var(--text-1);
             font-family: 'Tajawal', sans-serif;
             margin: 0;
             padding: 0;
-            display: block; /* Removed flex to fix telegram webapp scroll space issue */
-            min-height: 100vh;
-            background-attachment: fixed;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
         }
         
         .video-container {
             width: 100%;
             height: 180px; /* Reduced height to save space */
-            background: #000;
+            background: transparent;
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -62,6 +65,10 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-top: 1px solid rgba(255,255,255,0.1);
+            flex: 1;
+            border-radius: 20px 20px 0 0;
+            margin-top: -15px;
+            z-index: 10;
         }
         h1 {
             margin: 0;
@@ -300,7 +307,7 @@
     </div>
 
     <div class="container" id="main-form">
-        <h1>أهلاً بك في الأكاديمية! 🎉</h1>
+        <h1>أهلاً بك في الأكاديمية!</h1>
         <p>أنت على بُعد خطوة واحدة فقط للانضمام إلى مجموعات الدراسة الرسمية. يرجى إدخال بياناتك.</p>
         
         <div id="global-error"></div>
@@ -335,7 +342,24 @@
         <!-- SOS BUTTON -->
         <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 أواجه مشكلة</button>
         
-        <!-- SOS MODAL -->
+                <!-- TUTO MODAL -->
+        <div class="modal-overlay" id="tuto-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 style="color:var(--accent);">ℹ️ رقم الطالب</h2>
+                    <button class="close-btn" onclick="closeTuto()">&times;</button>
+                </div>
+                <p style="color:var(--text-1); font-size:1rem; margin:0; line-height:1.5;">
+                    تجد رقم الطالب الخاص بك في مساحة التعلم الخاصة بك.<br>
+                    <span style="font-size:0.85rem; color:var(--text-2);">(Tu le trouves dans ton espace d'apprentissage)</span>
+                </p>
+                <!-- Image placeholder, can be replaced by real URL -->
+                <div style="width:100%; height:150px; background:rgba(255,255,255,0.1); border-radius:12px; display:flex; justify-content:center; align-items:center; color:var(--text-2); font-size:0.9rem;">
+                    [ صورة توضيحية هنا ]
+                </div>
+                <button onclick="closeTuto()" style="background:var(--accent);">حسناً، فهمت</button>
+            </div>
+        </div>\n        <!-- SOS MODAL -->
         <div class="modal-overlay" id="sos-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -366,11 +390,14 @@
     <script>
         window.Telegram.WebApp.ready();
         function showTuto() {
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
-                window.Telegram.WebApp.showAlert("تجد رقم الطالب الخاص بك في رسالة القبول أو في استمارة التسجيل الخاصة بك. (Tu le trouves dans ton formulaire d'inscription)");
-            } else {
-                alert("تجد رقم الطالب الخاص بك في رسالة القبول أو في استمارة التسجيل الخاصة بك.");
-            }
+            const modal = document.getElementById('tuto-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+        function closeTuto() {
+            const modal = document.getElementById('tuto-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
         }
         window.Telegram.WebApp.expand();
         
