@@ -3588,6 +3588,7 @@ async def api_link_account(request: web.Request):
     try:
         data = await request.json()
         telegram_id = data.get('telegram_id')
+        telegram_first_name = data.get('telegram_first_name', '')
         email = data.get('email', '').strip().lower()
         dob = data.get('dob', '').strip()
         
@@ -3596,20 +3597,33 @@ async def api_link_account(request: web.Request):
             
         from config import DATABASE_PATH
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute('SELECT student_id, first_name, dob FROM academy_students WHERE email = ?', (email,)) as cursor:
+            async with db.execute('SELECT student_id, first_name, dob, telegram_id FROM academy_students WHERE email = ?', (email,)) as cursor:
                 row = await cursor.fetchone()
                 
                 if not row:
                     return web.json_response({'success': False, 'error': 'Email introuvable'}, status=404)
                 
+                real_first_name = row[1]
                 actual_dob = row[2]
+                existing_telegram_id = row[3]
+                
                 if actual_dob != dob:
                     return web.json_response({'success': False, 'error': 'Date de naissance incorrecte'}, status=403)
+                    
+                if existing_telegram_id and existing_telegram_id != telegram_id:
+                    return web.json_response({'success': False, 'error': 'Cet email est déjà lié à un autre compte Telegram.'}, status=403)
+                    
+                # Name verification
+                if telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
+                    return web.json_response({
+                        'success': False, 
+                        'error': f'⚠️ Refusé : Ton prénom Telegram actuel est "{telegram_first_name}". Tu dois utiliser ton vrai prénom "{real_first_name}". Va dans les paramètres Telegram pour le modifier, puis réessaie.'
+                    }, status=403)
                 
                 await db.execute('UPDATE academy_students SET telegram_id = ? WHERE email = ?', (telegram_id, email))
                 await db.commit()
                 
-                return web.json_response({'success': True, 'first_name': row[1]})
+                return web.json_response({'success': True, 'first_name': real_first_name})
                 
     except Exception as e:
         logger.error(f'Error linking account: {e}')

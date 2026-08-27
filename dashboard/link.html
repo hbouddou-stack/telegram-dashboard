@@ -151,8 +151,10 @@
             }
             
             let telegram_id = null;
+            let telegram_first_name = null;
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                 telegram_id = window.Telegram.WebApp.initDataUnsafe.user.id;
+                telegram_first_name = window.Telegram.WebApp.initDataUnsafe.user.first_name;
             }
             
             if (!telegram_id) {
@@ -165,7 +167,7 @@
                 const response = await fetch('/api/link_account', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, dob: dob, telegram_id: telegram_id })
+                    body: JSON.stringify({ email: email, dob: dob, telegram_id: telegram_id, telegram_first_name: telegram_first_name })
                 });
                 
                 const data = await response.json();
