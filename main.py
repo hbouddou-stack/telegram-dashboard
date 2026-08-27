@@ -204,6 +204,9 @@ async def handle_admin_late_js(request):
 async def handle_logo_png(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'logo.png'))
 
+async def handle_tuto_jpg(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'tuto.jpg'))
+
 async def handle_support(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'support.html'))
 
@@ -4214,6 +4217,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin.js', handle_admin_js)
     app.router.add_get('/admin-late.js', handle_admin_late_js)
     app.router.add_get('/logo.png', handle_logo_png)
+    app.router.add_get('/tuto.jpg', handle_tuto_jpg)
     app.router.add_get('/search', handle_search)
     app.router.add_get('/search.html', handle_search)
     app.router.add_get('/transcripts.json', handle_transcripts)
