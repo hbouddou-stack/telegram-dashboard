@@ -204,3 +204,8 @@ async def cmd_federer(message: Message):
 @router.message(Command('myid'))
 async def cmd_myid(message: Message):
     await message.answer(f'Ton ID Telegram est : <code>{message.from_user.id}</code>', parse_mode='HTML')
+
+@router.callback_query(F.data == 'admin_dash_wip')
+async def cb_admin_dash_wip(callback: CallbackQuery):
+    await callback.answer('🚧 Le Dashboard Admin est en cours de construction !', show_alert=True)
+
