@@ -76,6 +76,8 @@ async def init_db():
                 email TEXT UNIQUE NOT NULL,
                 dob TEXT NOT NULL,
                 telegram_id INTEGER,
+                dob_tentative TEXT,
+                student_id_tentative TEXT,
                 first_name TEXT,
                 last_name TEXT,
                 year TEXT,
@@ -100,6 +102,8 @@ async def init_db():
             CREATE TABLE IF NOT EXISTS bot_conversations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 telegram_id INTEGER,
+                dob_tentative TEXT,
+                student_id_tentative TEXT,
                 sender TEXT,
                 message_text TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))

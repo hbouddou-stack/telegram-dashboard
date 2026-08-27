@@ -531,8 +531,14 @@
         function openSosModal(sos) {
             currentSosId = sos.id;
             currentSosTelegramId = sos.telegram_id;
-            document.getElementById('sos-modal-email').textContent = sos.email_tentative + (sos.telegram_id ? ` (ID: ${sos.telegram_id})` : ' (Pas de TG ID)');
-            document.getElementById('sos-modal-msg').textContent = sos.message;
+            
+            let metaHtml = `<strong>Email saisi:</strong> ${sos.email_tentative}<br>`;
+            metaHtml += `<strong>Matricule saisi:</strong> ${sos.student_id_tentative || 'N/A'}<br>`;
+            metaHtml += `<strong>Date saisie:</strong> ${sos.dob_tentative || 'N/A'}<br>`;
+            metaHtml += `<small style="color:var(--text-2);">TG ID: ${sos.telegram_id || 'Introuvable'}</small>`;
+            
+            document.getElementById('sos-modal-email').innerHTML = metaHtml;
+            document.getElementById('sos-modal-msg').innerHTML = `<strong>Message:</strong><br>${sos.message}`;
             document.getElementById('sos-reply-text').value = "";
             document.getElementById('sos-modal-overlay').style.display = 'flex';
             setTimeout(() => document.getElementById('sos-modal').classList.add('open'), 10);

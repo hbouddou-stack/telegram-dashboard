@@ -324,9 +324,11 @@ async def api_gateway_sos(request: web.Request):
         email = data.get('email', '')
         message = data.get('message', '')
         telegram_id = data.get('telegram_id')
+        dob = data.get('dob', '')
+        student_id = data.get('student_id', '')
         
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id) VALUES (?, ?, ?)", (email, message, telegram_id))
+            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative) VALUES (?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id))
             await db.commit()
         return web.json_response({'success': True})
     except Exception as e:

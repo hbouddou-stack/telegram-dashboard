@@ -1,25 +1,27 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lier mon Compte</title>
+    <title>ربط الحساب</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000000;
-            --surface: #111111;
+            --bg: linear-gradient(135deg, #1e0033 0%, #000b29 100%);
+            --surface: rgba(255, 255, 255, 0.05);
+            --surface-solid: #15092a;
             --primary: #ffffff;
             --text-1: #ffffff;
-            --text-2: #888888;
+            --text-2: #b3a5c7;
             --danger: #ff453a;
-            --accent: #0a84ff;
+            --accent: #8736ff;
+            --accent-hover: #9c5cff;
         }
         body {
-            background-color: var(--bg);
+            background: var(--bg);
             color: var(--text-1);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Tajawal', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -27,23 +29,33 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
+            background-attachment: fixed;
         }
+        
         /* Video Container */
         .video-container {
             width: 100%;
             max-width: 400px;
-            height: 250px;
-            background: var(--surface);
+            height: 220px;
+            background: #000;
             overflow: hidden;
-            border-bottom: 1px solid #333;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
         .video-container video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            opacity: 0.85;
+        }
+        .video-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 50px;
+            background: linear-gradient(to top, rgba(16,3,32,1) 0%, transparent 100%);
         }
         
         .container {
@@ -54,20 +66,24 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            flex: 1;
         }
         h1 {
             margin: 0;
             font-size: 1.8rem;
             font-weight: 800;
             text-align: center;
-            letter-spacing: -0.5px;
         }
         p {
             margin: 0;
             color: var(--text-2);
             text-align: center;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            font-size: 1rem;
+            line-height: 1.5;
         }
         .input-group {
             display: flex;
@@ -75,75 +91,87 @@
             gap: 8px;
         }
         label {
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
             color: var(--text-2);
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-        input {
-            background: var(--surface);
-            border: 1px solid #333;
+        input, select {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
             color: var(--text-1);
             padding: 16px;
             border-radius: 12px;
             font-size: 1rem;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Tajawal', sans-serif;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
         }
-        input:focus {
+        input:focus, select:focus {
             border-color: var(--accent);
+            background: rgba(0,0,0,0.5);
         }
+        
+        .dob-group {
+            display: flex;
+            gap: 10px;
+        }
+        .dob-group select {
+            flex: 1;
+            padding: 14px 10px;
+        }
+
         button.btn-primary {
-            background: var(--primary);
-            color: var(--bg);
+            background: linear-gradient(90deg, var(--accent) 0%, #5721d9 100%);
+            color: var(--text-1);
             border: none;
             padding: 16px;
             border-radius: 12px;
             font-size: 1.1rem;
             font-weight: 800;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Tajawal', sans-serif;
             cursor: pointer;
             margin-top: 10px;
-            transition: transform 0.1s;
+            box-shadow: 0 4px 15px rgba(135, 54, 255, 0.4);
+            transition: transform 0.1s, box-shadow 0.2s;
         }
         button.btn-primary:active {
             transform: scale(0.97);
+            box-shadow: 0 2px 10px rgba(135, 54, 255, 0.2);
         }
         
         /* SOS Area */
         .sos-btn {
             display: none;
-            background: none;
+            background: rgba(255, 69, 58, 0.1);
             border: 1px solid var(--danger);
             color: var(--danger);
             padding: 12px;
             border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Tajawal', sans-serif;
             text-align: center;
             margin-top: 10px;
             cursor: pointer;
+            transition: background 0.3s;
         }
         .sos-area {
             display: none;
             flex-direction: column;
             gap: 10px;
-            background: #1a0505;
+            background: rgba(255, 69, 58, 0.05);
             padding: 15px;
             border-radius: 12px;
-            border: 1px solid #330000;
+            border: 1px solid rgba(255, 69, 58, 0.3);
             margin-top: 10px;
         }
         .sos-area textarea {
-            background: #000;
+            background: rgba(0,0,0,0.4);
             border: 1px solid var(--danger);
             color: #fff;
             padding: 12px;
             border-radius: 8px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Tajawal', sans-serif;
             min-height: 80px;
             resize: none;
         }
@@ -154,16 +182,22 @@
             padding: 12px;
             border-radius: 8px;
             font-weight: bold;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Tajawal', sans-serif;
         }
         
         #error-msg {
-            color: var(--danger);
+            background: rgba(255, 69, 58, 0.1);
+            border: 1px solid rgba(255, 69, 58, 0.4);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 8px;
             text-align: center;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 700;
             display: none;
+            margin-bottom: 5px;
         }
+        
         #success-msg {
             color: #34c759;
             text-align: center;
@@ -172,6 +206,14 @@
             display: none;
             flex-direction: column;
             gap: 15px;
+            background: rgba(52, 199, 89, 0.05);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            border-radius: 15px;
+            padding: 30px 20px;
+        }
+        .icon-success {
+            font-size: 4rem;
+            margin-bottom: -10px;
         }
     </style>
 </head>
@@ -185,64 +227,109 @@
     </div>
 
     <div class="container" id="main-form">
-        <h1>Vérification</h1>
-        <p>Entrez vos informations pour obtenir votre lien de groupe Telegram.</p>
+        <h1>التحقق من الهوية</h1>
+        <p>أدخل بياناتك للحصول على رابط مجموعة تيليجرام الخاصة بك.</p>
         
         <div id="error-msg"></div>
 
         <div class="input-group">
-            <label>Matricule (Student ID)</label>
-            <input type="text" id="student_id" placeholder="Ex: 1024" required>
+            <label>رقم الطالب (Matricule)</label>
+            <input type="number" id="student_id" placeholder="يجب أن يتكون من 6 أرقام (مثال: 000123)" required>
         </div>
         
         <div class="input-group">
-            <label>Adresse Email</label>
-            <input type="email" id="email" placeholder="email@exemple.com" required>
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="email" placeholder="البريد الإلكتروني المستخدم في التسجيل" required>
         </div>
         
         <div class="input-group">
-            <label>Date de Naissance</label>
-            <input type="date" id="dob" required>
+            <label>تاريخ الميلاد</label>
+            <div class="dob-group">
+                <select id="dob_day">
+                    <option value="">اليوم</option>
+                    <!-- Days injected by JS -->
+                </select>
+                <select id="dob_month">
+                    <option value="">الشهر</option>
+                    <!-- Months injected by JS -->
+                </select>
+                <select id="dob_year">
+                    <option value="">السنة</option>
+                    <!-- Years injected by JS -->
+                </select>
+            </div>
         </div>
 
-        <button class="btn-primary" onclick="linkAccount()" id="btn-submit">Vérifier mon profil</button>
+        <button class="btn-primary" onclick="linkAccount()" id="btn-submit">تحقق من حسابي</button>
         
         <!-- SOS BUTTON -->
-        <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 J'ai un problème</button>
+        <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 أواجه مشكلة</button>
         
         <div class="sos-area" id="sos-box">
-            <p style="color:var(--danger); font-size:0.85rem; text-align:left;">Expliquez votre problème, un administrateur vous répondra sur Telegram.</p>
-            <textarea id="sos_msg" placeholder="Ex: Je n'arrive pas à me connecter, j'ai oublié l'email utilisé..."></textarea>
-            <button onclick="sendSOS()">Envoyer ma demande</button>
+            <p style="color:#ff6b6b; font-size:0.9rem; text-align:right;">اشرح مشكلتك هنا وسيقوم أحد المشرفين بالرد عليك عبر تيليجرام.</p>
+            <textarea id="sos_msg" placeholder="مثال: لا أستطيع الدخول، نسيت البريد الإلكتروني..."></textarea>
+            <button onclick="sendSOS()">إرسال طلب المساعدة</button>
         </div>
     </div>
     
     <div class="container" id="success-msg">
-        <div>✅ Accès Autorisé</div>
-        <p style="color:var(--text-1);">Votre compte a été lié avec succès.</p>
-        <button class="btn-primary" id="btn-join-group" onclick="joinGroup()">Rejoindre mon groupe</button>
-        <button class="btn-primary" style="background:var(--accent); margin-top:5px;" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/jcgwXUtzsfBhMGI8')">📁 Ajouter le dossier de l'Académie</button>
+        <div class="icon-success">✅</div>
+        <div style="font-size: 1.5rem;">تم التحقق بنجاح</div>
+        <p style="color:var(--text-1);">تم ربط حسابك بنجاح، يمكنك الآن الانضمام إلى مجموعتك.</p>
+        
+        <button class="btn-primary" id="btn-join-group" onclick="joinGroup()">الانضمام إلى مجموعتي</button>
+        
+        <button class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:5px; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4);" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/jcgwXUtzsfBhMGI8')">📁 إضافة مجلد الأكاديمية</button>
     </div>
 
     <script>
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         
+        // Populate DOB dropdowns
+        const dSelect = document.getElementById('dob_day');
+        for(let i=1; i<=31; i++) {
+            let val = i < 10 ? '0'+i : ''+i;
+            dSelect.innerHTML += `<option value="${val}">${val}</option>`;
+        }
+        
+        const mSelect = document.getElementById('dob_month');
+        for(let i=1; i<=12; i++) {
+            let val = i < 10 ? '0'+i : ''+i;
+            mSelect.innerHTML += `<option value="${val}">${val}</option>`;
+        }
+        
+        const ySelect = document.getElementById('dob_year');
+        const currYear = new Date().getFullYear();
+        for(let i=currYear-10; i>=currYear-80; i--) {
+            ySelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+        
         let failCount = 0;
         let finalGroupLink = "";
 
         async function linkAccount() {
-            const email = document.getElementById('email').value;
-            const dob = document.getElementById('dob').value;
-            const student_id = document.getElementById('student_id').value;
+            const email = document.getElementById('email').value.trim();
+            const student_id = document.getElementById('student_id').value.trim();
+            const d = document.getElementById('dob_day').value;
+            const m = document.getElementById('dob_month').value;
+            const y = document.getElementById('dob_year').value;
             
-            if(!email || !dob || !student_id) {
-                showError("Veuillez remplir tous les champs.");
+            if(!email || !student_id || !d || !m || !y) {
+                showError("يرجى ملء جميع الحقول (Veuillez remplir tous les champs).");
                 return;
             }
+            
+            // Force 6 digits
+            if(student_id.length !== 6) {
+                showError("يجب أن يتكون رقم الطالب من 6 أرقام (Le matricule doit faire 6 chiffres).");
+                return;
+            }
+            
+            const dob = `${d}/${m}/${y}`; // Formatting for backend (DD/MM/YYYY)
 
             const btn = document.getElementById('btn-submit');
-            btn.textContent = "Vérification...";
+            btn.textContent = "جاري التحقق...";
             btn.disabled = true;
             
             const initData = window.Telegram.WebApp.initData;
@@ -263,12 +350,12 @@
                     document.getElementById('success-msg').style.display = 'flex';
                     finalGroupLink = data.group_link;
                     if(!finalGroupLink) {
-                        document.getElementById('btn-join-group').textContent = "Lien non configuré";
+                        document.getElementById('btn-join-group').textContent = "الرابط غير متوفر";
                         document.getElementById('btn-join-group').disabled = true;
                     }
                 } else {
                     failCount++;
-                    showError(data.error || "Erreur inconnue");
+                    showError(data.error || "حدث خطأ غير معروف");
                     if(failCount >= 1) {
                         document.getElementById('btn-sos-trigger').style.display = 'block';
                     }
@@ -277,9 +364,9 @@
                     }
                 }
             } catch(e) {
-                showError("Erreur de connexion.");
+                showError("خطأ في الاتصال (Erreur de connexion).");
             }
-            btn.textContent = "Vérifier mon profil";
+            btn.textContent = "تحقق من حسابي";
             btn.disabled = false;
         }
         
@@ -301,8 +388,13 @@
         }
         
         async function sendSOS() {
-            const email = document.getElementById('email').value;
-            const msg = document.getElementById('sos_msg').value;
+            const email = document.getElementById('email').value.trim();
+            const msg = document.getElementById('sos_msg').value.trim();
+            const student_id = document.getElementById('student_id').value.trim();
+            const d = document.getElementById('dob_day').value;
+            const m = document.getElementById('dob_month').value;
+            const y = document.getElementById('dob_year').value;
+            const dob = (d && m && y) ? `${d}/${m}/${y}` : '';
             
             if(!msg) return;
             
@@ -314,9 +406,9 @@
                 const response = await fetch('/api/gateway/sos', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, message: msg, telegram_id: tid })
+                    body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
                 });
-                document.getElementById('sos-box').innerHTML = "<p style='color:#34c759;'>Demande envoyée. Un administrateur vous répondra sous peu.</p>";
+                document.getElementById('sos-box').innerHTML = "<p style='color:#34c759; font-weight:bold;'>تم إرسال طلبك بنجاح. سيتم الرد عليك قريباً.</p>";
             } catch(e) {
                 alert("Erreur lors de l'envoi.");
             }
