@@ -4196,6 +4196,43 @@ async def toggle_student_favorite(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
+async def api_support(request):
+    try:
+        data = await request.json()
+        theme = data.get('theme')
+        subtheme = data.get('subtheme')
+        msg = data.get('message')
+        telegram_id = data.get('telegram_id')
+        username = data.get('username', 'غير معروف')
+        first_name = data.get('first_name', 'غير معروف')
+
+        import requests
+        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
+        
+        text = f'🆘 <b>طلب مساعدة / استفسار جديد</b>\n\n'
+        text += f'👤 <b>الطالب:</b> {first_name} (@{username})\n'
+        text += f'🆔 <b>Telegram ID:</b> {telegram_id}\n'
+        text += f'📂 <b>القسم:</b> {theme}\n'
+        text += f'🔖 <b>التفاصيل:</b> {subtheme}\n\n'
+        text += f'📝 <b>الرسالة:</b>\n{msg}'
+        
+        url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+        payload = {
+            'chat_id': TELEGRAM_SUPPORT_GROUP_ID,
+            'text': text,
+            'parse_mode': 'HTML'
+        }
+        requests.post(url, json=payload)
+        
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
 async def start_web_server(bot: Bot):
     app = web.Application(middlewares=[cors_middleware])
     app['bot'] = bot
@@ -4573,3 +4610,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.info("Bot stopped.")
+
