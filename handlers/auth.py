@@ -159,14 +159,26 @@ async def cmd_test_message(message: Message):
     ])
     await message.answer(welcome_msg, reply_markup=kb)
 
+from aiogram.types import WebAppInfo
+
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     welcome_text = (
         "مرحباً بك في بوابة أكاديمية البرجي 👋\n\n"
-        "للوصول إلى القنوات والمجموعات الخاصة بك، يجب عليك ربط حسابك أولاً.\n"
+        "للوصول إلى القنوات والمجموعات الخاصة بك، يجب عليك التحقق من هويتك أولاً.\n"
         "يرجى الضغط على الزر أدناه للبدء."
     )
+    
+    # Resolve WebApp URL
+    domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+    if domain:
+        webapp_url = f"https://{domain}/link.html"
+    else:
+        # Fallback to WEBAPP_URL if defined, else use a default template
+        base_url = os.getenv('WEBAPP_URL', 'https://telegram-dashboard-production.up.railway.app').rstrip('/')
+        webapp_url = f"{base_url}/link.html"
+        
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔗 ربط الحساب (Lier le compte)", callback_data="cmd_lier_compte")]
+        [InlineKeyboardButton(text="🔗 بوابة التحقق (Mini App)", web_app=WebAppInfo(url=webapp_url))]
     ])
     await message.answer(welcome_text, reply_markup=kb)
