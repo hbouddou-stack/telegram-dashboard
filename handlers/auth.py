@@ -188,7 +188,11 @@ async def cmd_start(message: Message):
     video_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'dashboard', 'tutovideo.mp4')
     
     if os.path.exists(video_path):
-        video = FSInputFile(video_path)
-        await message.answer_video(video, caption=welcome_text, reply_markup=kb)
+        try:
+            video = FSInputFile(video_path)
+            await message.answer_video(video, caption=welcome_text, reply_markup=kb, request_timeout=300)
+        except Exception as e:
+            # Fallback if video is too large or times out
+            await message.answer(welcome_text, reply_markup=kb)
     else:
         await message.answer(welcome_text, reply_markup=kb)
