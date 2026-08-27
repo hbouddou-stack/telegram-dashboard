@@ -158,3 +158,15 @@ async def cmd_test_message(message: Message):
         ]
     ])
     await message.answer(welcome_msg, reply_markup=kb)
+
+@router.message(Command("start"))
+async def cmd_start(message: Message):
+    welcome_text = (
+        "مرحباً بك في بوابة أكاديمية البرجي 👋\n\n"
+        "للوصول إلى القنوات والمجموعات الخاصة بك، يجب عليك ربط حسابك أولاً.\n"
+        "يرجى الضغط على الزر أدناه للبدء."
+    )
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔗 ربط الحساب (Lier le compte)", callback_data="cmd_lier_compte")]
+    ])
+    await message.answer(welcome_text, reply_markup=kb)
