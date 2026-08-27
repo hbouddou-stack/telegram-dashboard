@@ -3774,7 +3774,7 @@ async def api_link_account(request: web.Request):
             async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE email = ?", (email,)) as cur1:
                 row1 = await cur1.fetchone()
                 if not row1:
-                    return web.json_response({'success': False, 'error': 'البريد الإلكتروني غير مسجل (Email introuvable).'})
+                    return web.json_response({'success': False, 'error': 'البريد الإلكتروني غير مسجل.', 'error_field': 'email'})
                 
                 db_student_id = row1[0]
                 db_dob = row1[1]
@@ -3782,11 +3782,11 @@ async def api_link_account(request: web.Request):
 
             # Step 2: Check DOB
             if db_dob != dob:
-                return web.json_response({'success': False, 'error': 'تاريخ الميلاد غير صحيح (Date de naissance incorrecte).'})
+                return web.json_response({'success': False, 'error': 'تاريخ الميلاد غير صحيح.', 'error_field': 'dob'})
                 
             # Step 3: Check Student ID (Matricule)
             if str(db_student_id) != str(student_id_input):
-                return web.json_response({'success': False, 'error': 'رقم الطالب غير صحيح (Numéro étudiant incorrect).'})
+                return web.json_response({'success': False, 'error': 'رقم الطالب غير صحيح.', 'error_field': 'student_id'})
                 
             # All Good: fetch full data
             async with db.execute("SELECT telegram_id, gender, year FROM academy_students WHERE student_id = ?", (db_student_id,)) as cur2:
