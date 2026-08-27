@@ -197,7 +197,7 @@ async def cmd_federer(message: Message):
         webapp_url = os.getenv('WEBAPP_URL', 'https://telegram-dashboard-production.up.railway.app').rstrip('/')
         
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🛠️ Dashboard Admin (Verification)", web_app=WebAppInfo(url=f"{webapp_url}/admin.html"))],
+        [InlineKeyboardButton(text="🛠️ Dashboard Admin (Verification)", web_app=WebAppInfo(url=f"{webapp_url}/admin-gateway.html"))],
         [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))]
     ])
     await message.answer("🤫 <b>Menu Secret Admin</b> :", reply_markup=kb, parse_mode="HTML")
