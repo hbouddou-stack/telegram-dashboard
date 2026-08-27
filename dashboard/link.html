@@ -151,18 +151,18 @@
         
         /* SOS Area */
         .sos-btn {
-            display: none;
+            display: block; /* Make it always visible */
             background: rgba(255, 69, 58, 0.1);
-            border: 1px solid var(--danger);
             color: var(--danger);
+            border: 1px solid rgba(255, 69, 58, 0.3);
             padding: 12px;
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 700;
             font-family: 'Tajawal', sans-serif;
-            text-align: center;
-            margin-top: 5px;
             cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
             transition: background 0.3s;
         }
         .sos-area {
@@ -629,7 +629,8 @@
                     }
 
                     if(failCount >= 1) {
-                        document.getElementById('btn-sos-trigger').style.display = 'block';
+                        // Optional: Highlight it or add an animation to draw attention
+                        document.getElementById('btn-sos-trigger').style.animation = 'shake 0.5s';
                     }
                     if (window.Telegram.WebApp.HapticFeedback) {
                         window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
@@ -664,10 +665,10 @@
             const email = document.getElementById('email').value.trim();
             const msg = document.getElementById('sos_msg').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const d = document.getElementById('dob_day').value;
-            const m = document.getElementById('dob_month').value;
-            const y = document.getElementById('dob_year').value;
-            const dob = dob_raw ? `${dob_raw.split('-')[2]}/${dob_raw.split('-')[1]}/${dob_raw.split('-')[0]}` : '';
+            const d = document.getElementById('day-value').value;
+            const m = document.getElementById('month-value').value;
+            const y = document.getElementById('year-value').value;
+            const dob = (d && m && y) ? `${y}-${m}-${d}` : '';
             
             if(!msg) return;
             document.getElementById('btn-send-sos').textContent = "جاري الإرسال...";
