@@ -211,7 +211,7 @@ async def handle_dossiertelegram_jpg(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'dossiertelegram.jpg'))
 
 async def handle_support(request):
-    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'support.html'))
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
 
 async def handle_search(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'search.html'))
@@ -4242,9 +4242,9 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/exam.js', handle_exam_js)
     app.router.add_get('/quiz.js', handle_quiz_js)
     app.router.add_get('/reader.css', handle_reader_css)
-    app.router.add_get('/support', handle_support)
+    app.router.add_get('/ask', handle_support)
     app.router.add_post('/api/support', api_support)
-    app.router.add_get('/support.html', handle_support)
+    app.router.add_get('/ask.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)
     app.router.add_post('/api/tickets/student', get_student_tickets)
     app.router.add_get('/api/tickets/{ticket_id}/messages', get_ticket_messages_api)
