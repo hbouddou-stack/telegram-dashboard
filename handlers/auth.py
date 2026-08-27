@@ -142,3 +142,19 @@ async def handle_feedback(callback: CallbackQuery):
             callback.message.text + "\n\n❌ نأسف لأنك واجهت صعوبة. سنعمل على تحسين النظام باستمرار."
         )
     await callback.answer("شكراً على تقييمك!")
+
+@router.message(Command("test_message"))
+async def cmd_test_message(message: Message):
+    welcome_msg = (
+        f"أهلاً بك Houssam في أكاديمية البرجي.\n\n"
+        f"تم التحقق من هويتك بنجاح (رقم الطالب: 123456).\n"
+        f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\n\n"
+        f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
+    )
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="👍 نعم، كانت سهلة", callback_data="feedback_easy"),
+            InlineKeyboardButton(text="👎 واجهت صعوبة", callback_data="feedback_hard")
+        ]
+    ])
+    await message.answer(welcome_msg, reply_markup=kb)

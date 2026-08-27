@@ -53,14 +53,14 @@ from typing import Callable, Dict, Any, Awaitable
 
 import database as db
 from config import TELEGRAM_BOT_TOKEN
-from handlers.start import router as start_router
+
 from handlers.auth import router as auth_router
-from handlers.quiz import router as quiz_router
-from handlers.favorites_errors import router as fav_err_router
-from handlers.support import router as support_router
-from handlers.admin import router as admin_router
-from handlers.revision import router as revision_router
-from handlers.chat import router as chat_router
+
+
+
+
+
+
 
 # Configuration du logging double (console et fichier bot.log)
 INSTANCE_ID = str(uuid.uuid4())
@@ -4474,13 +4474,13 @@ async def main():
 
     # Include handlers
     dp.include_router(auth_router)
-    dp.include_router(start_router)
-    dp.include_router(quiz_router)
-    dp.include_router(fav_err_router)
-    dp.include_router(support_router)
-    dp.include_router(admin_router)
-    dp.include_router(revision_router)
-    dp.include_router(chat_router)
+    
+    
+    
+    
+    
+    
+    
 
     # Register startup hook
     dp.startup.register(on_startup)

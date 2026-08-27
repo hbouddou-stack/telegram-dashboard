@@ -17,12 +17,13 @@
             --accent: #8736ff;
         }
         html, body {
-            background: var(--bg);
+            background-color: #000b29; /* Fallback solid color */
+            background-image: var(--bg);
             color: var(--text-1);
             font-family: 'Tajawal', sans-serif;
             margin: 0;
             padding: 0;
-            height: 100%;
+            min-height: 100vh;
             overflow-x: hidden;
         }
         body {
@@ -353,10 +354,8 @@
                     تجد رقم الطالب الخاص بك في مساحة التعلم الخاصة بك.<br>
                     <span style="font-size:0.85rem; color:var(--text-2);">(Tu le trouves dans ton espace d'apprentissage)</span>
                 </p>
-                <!-- Image placeholder, can be replaced by real URL -->
-                <div style="width:100%; height:150px; background:rgba(255,255,255,0.1); border-radius:12px; display:flex; justify-content:center; align-items:center; color:var(--text-2); font-size:0.9rem;">
-                    [ صورة توضيحية هنا ]
-                </div>
+                <!-- Tuto Image -->
+                <img src="/tuto.jpg" alt="طريقة إيجاد رقم الطالب" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
                 <button onclick="closeTuto()" style="background:var(--accent);">حسناً، فهمت</button>
             </div>
         </div>\n        <!-- SOS MODAL -->
