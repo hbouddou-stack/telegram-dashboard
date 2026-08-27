@@ -2888,3 +2888,11 @@ async function linkAccount() {
         errorDiv.style.display = 'block';
     }
 }
+\n
+// Auto-open link tab if action=link
+window.addEventListener('DOMContentLoaded', (event) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'link') {
+        setTimeout(() => switchTab('profil'), 100);
+    }
+});
