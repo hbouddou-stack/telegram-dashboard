@@ -3744,55 +3744,102 @@ async def get_media_stats_api(request):
 
 
 async def api_link_account(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    from database import log_student_action
     try:
         data = await request.json()
-        telegram_id = data.get('telegram_id')
-        telegram_first_name = data.get('telegram_first_name', '')
         email = data.get('email', '').strip().lower()
         dob = data.get('dob', '').strip()
+        student_id_input = data.get('student_id', '').strip()
         
-        if not telegram_id or not email or not dob:
-            return web.json_response({'success': False, 'error': 'Champs manquants'}, status=400)
+        # In V3, we either use initData (Web App) or telegram_id directly
+        telegram_id = data.get('telegram_id')
+        telegram_first_name = data.get('telegram_first_name', '')
+        
+        init_data = data.get('initData')
+        if init_data:
+            import urllib.parse
+            import json
+            parsed = urllib.parse.parse_qs(init_data)
+            user_data = json.loads(parsed['user'][0])
+            telegram_id = user_data['id']
+            telegram_first_name = user_data.get('first_name', '')
             
-        from config import DATABASE_PATH
+        if not telegram_id:
+            return web.json_response({'success': False, 'error': 'خطأ في المصادقة مع تيليجرام (Erreur Telegram)'})
+            
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute('SELECT student_id, first_name, dob, telegram_id FROM academy_students WHERE email = ?', (email,)) as cursor:
-                row = await cursor.fetchone()
+            # Step 1: Check Email
+            async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE email = ?", (email,)) as cur1:
+                row1 = await cur1.fetchone()
+                if not row1:
+                    return web.json_response({'success': False, 'error': 'البريد الإلكتروني غير مسجل (Email introuvable).'})
                 
-                if not row:
-                    return web.json_response({'success': False, 'error': 'Email introuvable'}, status=404)
-                
-                real_first_name = row[1]
-                actual_dob = row[2]
-                existing_telegram_id = row[3]
-                
-                if actual_dob != dob:
-                    return web.json_response({'success': False, 'error': 'Date de naissance incorrecte'}, status=403)
-                    
-                if existing_telegram_id and existing_telegram_id != telegram_id:
-                    return web.json_response({'success': False, 'error': 'Cet email est déjà lié à un autre compte Telegram.'}, status=403)
-                    
-                # Name verification
-                if telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
-                    from database import log_student_action
-                    await log_student_action(row[0], 'LINK_FAILED', f'Prénom Telegram non conforme: "{telegram_first_name}" (attendu: "{real_first_name}")')
-                    return web.json_response({
-                        'success': False, 
-                        'error': f'⚠️ Refusé : Ton prénom Telegram actuel est "{telegram_first_name}". Tu dois utiliser ton vrai prénom "{real_first_name}". Va dans les paramètres Telegram pour le modifier, puis réessaie.'
-                    }, status=403)
-                
-                await db.execute('UPDATE academy_students SET telegram_id = ? WHERE email = ?', (telegram_id, email))
-                await db.commit()
-                
-                from database import log_student_action
-                await log_student_action(row[0], 'ACCOUNT_LINKED', f'Compte lié avec succès au Telegram ID {telegram_id} ({telegram_first_name})')
+                db_student_id = row1[0]
+                db_dob = row1[1]
+                real_first_name = row1[2]
 
+            # Step 2: Check DOB
+            if db_dob != dob:
+                return web.json_response({'success': False, 'error': 'تاريخ الميلاد غير صحيح (Date de naissance incorrecte).'})
                 
-                return web.json_response({'success': True, 'first_name': real_first_name})
+            # Step 3: Check Student ID (Matricule)
+            if str(db_student_id) != str(student_id_input):
+                return web.json_response({'success': False, 'error': 'رقم الطالب غير صحيح (Numéro étudiant incorrect).'})
                 
+            # All Good: fetch full data
+            async with db.execute("SELECT telegram_id, gender, year FROM academy_students WHERE student_id = ?", (db_student_id,)) as cur2:
+                row2 = await cur2.fetchone()
+                existing_tg = row2[0]
+                gender = str(row2[1]).lower() if row2[1] else 'homme'
+                year = str(row2[2]) if row2[2] else '1'
+                
+                if existing_tg:
+                    if existing_tg != telegram_id:
+                        await log_student_action(db_student_id, 'LINK_FAILED', f"Tentative avec un autre compte Telegram ({telegram_id})")
+                        return web.json_response({'success': False, 'error': 'هذا الحساب مرتبط بالفعل بحساب تيليجرام آخر (Compte déjà lié à un autre Telegram).'})
+                        
+                # Link account
+                if not existing_tg:
+                    await db.execute("UPDATE academy_students SET telegram_id = ? WHERE student_id = ?", (telegram_id, db_student_id))
+                    await db.commit()
+                    await log_student_action(db_student_id, 'ACCOUNT_LINKED', f"Compte Telegram ({telegram_id}) lié avec succès")
+                    
+                    # SEND WELCOME MESSAGE VIA TELEGRAM
+                    welcome_msg = (
+                        f"🎉 **Félicitations {real_first_name} et bienvenue dans l'Académie !**
+
+"
+                        f"Ton compte étudiant (Matricule: {db_student_id}) a été lié avec succès.
+
+"
+                        f"Tu as désormais un accès exclusif à :
+"
+                        f"🔹 **Groupe d'entraide** pour échanger avec les autres élèves.
+"
+                        f"🔹 **Canal des annonces officielles** pour ne rien rater.
+"
+                        f"🔹 **Bot Assistant (FAQ)** pour poser tes questions.
+
+"
+                        f"👉 Clique sur le bouton *Ajouter le dossier de l'Académie* dans l'application pour tout débloquer d'un coup !"
+                    )
+                    try:
+                        await bot.send_message(telegram_id, welcome_msg, parse_mode="Markdown")
+                    except Exception as e:
+                        pass # Ignore if bot can't send message (e.g. user blocked)
+                    
+                # Determine Group Link
+                gender_key = 'homme' if (gender.startswith('h') or gender == 'm' or gender == 'male' or gender == 'garcon') else 'femme'
+                setting_key = f"link_{gender_key}_{year}"
+                async with db.execute("SELECT value FROM settings WHERE key = ?", (setting_key,)) as cur_set:
+                    link_row = await cur_set.fetchone()
+                    group_link = link_row[0] if link_row else None
+                    
+                return web.json_response({'success': True, 'group_link': group_link, 'first_name': real_first_name})
     except Exception as e:
-        logger.error(f'Error linking account: {e}')
-        return web.json_response({'success': False, 'error': str(e)}, status=500)
+        return web.json_response({'success': False, 'error': str(e)})
 
 async def get_student_stats(request):
     try:
