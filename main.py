@@ -3808,21 +3808,12 @@ async def api_link_account(request: web.Request):
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM
                     welcome_msg = (
-                        f"🎉 **Félicitations {real_first_name} et bienvenue dans l'Académie !**
-
-"
-                        f"Ton compte étudiant (Matricule: {db_student_id}) a été lié avec succès.
-
-"
-                        f"Tu as désormais un accès exclusif à :
-"
-                        f"🔹 **Groupe d'entraide** pour échanger avec les autres élèves.
-"
-                        f"🔹 **Canal des annonces officielles** pour ne rien rater.
-"
-                        f"🔹 **Bot Assistant (FAQ)** pour poser tes questions.
-
-"
+                        f"🎉 **Félicitations {real_first_name} et bienvenue dans l'Académie !**\\n\\n"
+                        f"Ton compte étudiant (Matricule: {db_student_id}) a été lié avec succès.\\n\\n"
+                        f"Tu as désormais un accès exclusif à :\\n"
+                        f"🔹 **Groupe d'entraide** pour échanger avec les autres élèves.\\n"
+                        f"🔹 **Canal des annonces officielles** pour ne rien rater.\\n"
+                        f"🔹 **Bot Assistant (FAQ)** pour poser tes questions.\\n\\n"
                         f"👉 Clique sur le bouton *Ajouter le dossier de l'Académie* dans l'application pour tout débloquer d'un coup !"
                     )
                     try:
