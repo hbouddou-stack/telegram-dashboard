@@ -3594,6 +3594,7 @@ async def api_link_account(request: web.Request):
         if not telegram_id or not email or not dob:
             return web.json_response({'success': False, 'error': 'Champs manquants'}, status=400)
             
+        from config import DATABASE_PATH
         async with aiosqlite.connect(DATABASE_PATH) as db:
             async with db.execute('SELECT student_id, first_name, dob FROM academy_students WHERE email = ?', (email,)) as cursor:
                 row = await cursor.fetchone()
