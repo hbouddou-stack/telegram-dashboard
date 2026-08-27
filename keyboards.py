@@ -857,6 +857,7 @@ def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 
     # WebApp buttons
     web_app_buttons = []
     if admin_webapp.startswith("https"):
+        web_app_buttons.append(InlineKeyboardButton(text="🛡️ Gateway Admin 🚀", web_app=WebAppInfo(url=f"{base_url}/admin-gateway.html")))
         web_app_buttons.append(InlineKeyboardButton(text="ðŸ–¥ï¸ لوحة التحƒم Admin 📱 ", web_app=WebAppInfo(url=admin_webapp)))
     if editor_webapp.startswith("https"):
         web_app_buttons.append(InlineKeyboardButton(text="ðŸ“ لوحة المحرر Editor 📱 ", web_app=WebAppInfo(url=editor_webapp)))

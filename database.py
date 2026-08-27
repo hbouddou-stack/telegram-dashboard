@@ -8,6 +8,19 @@ logger = logging.getLogger(__name__)
 import shutil
 import os
 
+async def log_student_action(student_id, action_type, description):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute(
+                'INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)',
+                (student_id, action_type, description)
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error logging student action: {e}")
+
 async def init_db():
     """Initialize SQLite database and create all tables if they do not exist."""
     db_dir = os.path.dirname(DATABASE_PATH)
@@ -54,6 +67,17 @@ async def init_db():
                 year TEXT,
                 gender TEXT,
                 is_active BOOLEAN DEFAULT 1
+            )
+        """)
+
+        # 0b. student_logs
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS student_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER,
+                action_type TEXT,
+                description TEXT,
+                timestamp TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)
 

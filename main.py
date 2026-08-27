@@ -252,6 +252,85 @@ async def handle_reader(request):
     resp.headers['Pragma'] = 'no-cache'
     return resp
 
+
+async def handle_admin_gateway(request):
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin_gateway.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
+
+async def api_admin_gateway_stats(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("SELECT COUNT(*) FROM academy_students") as cur:
+                total = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE telegram_id IS NOT NULL") as cur:
+                linked = (await cur.fetchone())[0]
+            async with db.execute("SELECT value FROM settings WHERE key = 'night_patrol_enabled'") as cur:
+                row = await cur.fetchone()
+                patrol_enabled = row[0] == 'true' if row else False
+        return web.json_response({'success': True, 'stats': {'total': total, 'linked': linked, 'patrol_enabled': patrol_enabled}})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_gateway_students(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT student_id, first_name, email, telegram_id FROM academy_students ORDER BY first_name ASC") as cur:
+                students = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'students': students})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_gateway_logs(request: web.Request):
+    student_id = request.query.get('id')
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT action_type, description, timestamp FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 50", (student_id,)) as cur:
+                logs = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'logs': logs})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_gateway_settings(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        key = data.get('key')
+        value = data.get('value')
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, value))
+            await db.commit()
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_gateway_action(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    from database import log_student_action
+    try:
+        data = await request.json()
+        action = data.get('action')
+        student_id = data.get('student_id')
+        if action == 'unlink':
+            async with aiosqlite.connect(DATABASE_PATH) as db:
+                await db.execute("UPDATE academy_students SET telegram_id = NULL WHERE student_id = ?", (student_id,))
+                await db.commit()
+            await log_student_action(student_id, 'MANUAL_UNLINK', 'L\'administrateur a dissocié le compte manuellement.')
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def handle_link(request):
     resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'link.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -3584,6 +3663,7 @@ async def get_media_stats_api(request):
 
 # â”€â”€â”€ Student Practice & Quiz API Endpoints â”€â”€â”€
 
+
 async def api_link_account(request: web.Request):
     try:
         data = await request.json()
@@ -3615,6 +3695,8 @@ async def api_link_account(request: web.Request):
                     
                 # Name verification
                 if telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
+                    from database import log_student_action
+                    await log_student_action(row[0], 'LINK_FAILED', f'Prénom Telegram non conforme: "{telegram_first_name}" (attendu: "{real_first_name}")')
                     return web.json_response({
                         'success': False, 
                         'error': f'⚠️ Refusé : Ton prénom Telegram actuel est "{telegram_first_name}". Tu dois utiliser ton vrai prénom "{real_first_name}". Va dans les paramètres Telegram pour le modifier, puis réessaie.'
@@ -3622,6 +3704,10 @@ async def api_link_account(request: web.Request):
                 
                 await db.execute('UPDATE academy_students SET telegram_id = ? WHERE email = ?', (telegram_id, email))
                 await db.commit()
+                
+                from database import log_student_action
+                await log_student_action(row[0], 'ACCOUNT_LINKED', f'Compte lié avec succès au Telegram ID {telegram_id} ({telegram_first_name})')
+
                 
                 return web.json_response({'success': True, 'first_name': real_first_name})
                 
@@ -4028,6 +4114,12 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/report-chapter', report_chapter)
     # Student Practice & Quiz API routes
     app.router.add_post('/api/link_account', api_link_account)
+    app.router.add_get('/admin-gateway.html', handle_admin_gateway)
+    app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
+    app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
+    app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
+    app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
+    app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
     app.router.add_post('/api/student/stats', get_student_stats)
     app.router.add_post('/api/student/quiz/taxonomy', get_student_quiz_taxonomy)
     app.router.add_get('/api/student/quiz/options', get_student_quiz_options)
@@ -4104,8 +4196,48 @@ async def start_web_server(bot: Bot):
     while True:
         await asyncio.sleep(3600)
 
+
+async def night_patrol_task(bot):
+    import asyncio
+    import aiosqlite
+    from config import DATABASE_PATH
+    from database import log_student_action
+    while True:
+        try:
+            async with aiosqlite.connect(DATABASE_PATH) as db:
+                async with db.execute("SELECT value FROM settings WHERE key = 'night_patrol_enabled'") as cur:
+                    row = await cur.fetchone()
+                    enabled = row[0] == 'true' if row else False
+            
+            if enabled:
+                logger.info("[PATROL] Démarrage de la patrouille des noms...")
+                async with aiosqlite.connect(DATABASE_PATH) as db:
+                    async with db.execute("SELECT student_id, first_name, telegram_id FROM academy_students WHERE telegram_id IS NOT NULL") as cur:
+                        rows = await cur.fetchall()
+                
+                for row in rows:
+                    student_id, real_first_name, telegram_id = row
+                    try:
+                        user = await bot.get_chat(telegram_id)
+                        current_first_name = user.first_name
+                        if current_first_name and real_first_name.lower() not in current_first_name.lower():
+                            await log_student_action(student_id, 'NAME_VIOLATION_DETECTED', f'Prénom actuel: {current_first_name}')
+                            try:
+                                await bot.send_message(telegram_id, f'⚠️ Attention ! Ton prénom Telegram actuel est "{current_first_name}". Tu dois impérativement utiliser ton vrai prénom "{real_first_name}". Merci de le modifier dans tes paramètres Telegram.')
+                            except Exception:
+                                pass
+                    except Exception as e:
+                        pass
+                    await asyncio.sleep(1)
+                logger.info("[PATROL] Patrouille terminée.")
+        except Exception as e:
+            logger.error(f"[PATROL] Erreur: {e}")
+        
+        await asyncio.sleep(3600) # Run every hour
+
 async def on_startup(bot: Bot):
     logger.info("Initializing database on startup...")
+    asyncio.create_task(night_patrol_task(bot))
     await db.init_db()
     logger.info("Database initialized.")
     try:

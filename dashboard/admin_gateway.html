@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gateway Admin</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --primary: #818cf8;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --text-1: #f8fafc;
+            --text-2: #cbd5e1;
+            --border: #334155;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text-1);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 1), transparent);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-2);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: rgba(129, 140, 248, 0.2);
+            color: var(--primary);
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Dashboard Stats */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stat-card:active { transform: scale(0.98); }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-1);
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat-card.accent .stat-value { color: var(--accent); }
+        .stat-card.danger .stat-value { color: var(--danger); }
+        .stat-card.primary .stat-value { color: var(--primary); }
+
+        /* Settings */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+        .setting-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
+        .setting-info p { margin: 0; font-size: 0.85rem; color: var(--text-2); }
+        
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        
+        /* Student List */
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-1);
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        .student-item {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .student-item:active { background: rgba(30, 41, 59, 0.5); }
+        .student-info h4 { margin: 0 0 4px 0; font-size: 1rem; }
+        .student-info p { margin: 0; font-size: 0.8rem; color: var(--text-2); }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-linked { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+        .status-unlinked { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal {
+            background: var(--bg);
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-sizing: border-box;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal.open { transform: translateY(0); }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .close-btn {
+            background: var(--surface);
+            border: none;
+            color: var(--text-2);
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+        .log-list {
+            margin-top: 20px;
+            border-left: 2px solid var(--border);
+            padding-left: 15px;
+        }
+        .log-item {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .log-item::before {
+            content: '';
+            position: absolute;
+            left: -21px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+        .log-time { font-size: 0.75rem; color: var(--text-2); margin-bottom: 2px; }
+        .log-desc { font-size: 0.9rem; }
+        
+        .action-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-danger {
+            flex: 1;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🛡️ Gateway Admin</h1>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('dashboard')">Stats</button>
+        <button class="tab-btn" onclick="switchTab('students')">Élèves</button>
+        <button class="tab-btn" onclick="switchTab('settings')">Réglages</button>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div id="tab-dashboard" class="tab-content active">
+        <div class="stat-grid">
+            <div class="stat-card primary">
+                <div class="stat-value" id="stat-total">-</div>
+                <div class="stat-label">Total Élèves</div>
+            </div>
+            <div class="stat-card accent">
+                <div class="stat-value" id="stat-linked">-</div>
+                <div class="stat-label">Comptes Liés</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-value" id="stat-unlinked">-</div>
+                <div class="stat-label">Non Liés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-logs">-</div>
+                <div class="stat-label">Logs (24h)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUDENTS TAB -->
+    <div id="tab-students" class="tab-content">
+        <input type="text" class="search-box" id="search-input" placeholder="Rechercher (Nom, Email)..." oninput="filterStudents()">
+        <div id="students-list">
+            <div style="text-align: center; color: var(--text-2); margin-top: 30px;">Chargement...</div>
+        </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" class="tab-content">
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Patrouille des Noms</h3>
+                <p>Vérifie automatiquement les noms Telegram toutes les heures.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="patrol-toggle" onchange="togglePatrol(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="student-modal-overlay" onclick="closeModal(event)">
+        <div class="modal" id="student-modal">
+            <div class="modal-header">
+                <h2 id="modal-name" style="margin: 0; color: var(--primary);">Nom Élève</h2>
+                <button class="close-btn" onclick="closeModal(null, true)">✕</button>
+            </div>
+            <p id="modal-email" style="color: var(--text-2); margin-top: -10px;">email@test.com</p>
+            
+            <div class="action-btns">
+                <button class="btn-danger" id="btn-unlink" onclick="unlinkStudent()">🔗 Dissocier</button>
+            </div>
+            
+            <h3 style="margin-top: 25px;">Historique (Logs)</h3>
+            <div class="log-list" id="modal-logs">
+                <div style="color: var(--text-2);">Chargement...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allStudents = [];
+        let currentStudentId = null;
+
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabId === 'students' && allStudents.length === 0) {
+                fetchStudents();
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/admin/gateway/stats');
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('stat-total').textContent = data.stats.total;
+                    document.getElementById('stat-linked').textContent = data.stats.linked;
+                    document.getElementById('stat-unlinked').textContent = data.stats.total - data.stats.linked;
+                    document.getElementById('patrol-toggle').checked = data.stats.patrol_enabled;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function fetchStudents() {
+            try {
+                const res = await fetch('/api/admin/gateway/students');
+                const data = await res.json();
+                if(data.success) {
+                    allStudents = data.students;
+                    renderStudents(allStudents);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderStudents(students) {
+            const list = document.getElementById('students-list');
+            list.innerHTML = '';
+            
+            if (students.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: var(--text-2);">Aucun élève trouvé.</div>';
+                return;
+            }
+            
+            students.forEach(s => {
+                const isLinked = s.telegram_id != null;
+                const badge = isLinked ? '<span class="status-badge status-linked">LIÉ</span>' : '<span class="status-badge status-unlinked">NON LIÉ</span>';
+                const el = document.createElement('div');
+                el.className = 'student-item';
+                el.onclick = () => openStudentModal(s);
+                el.innerHTML = `
+                    <div class="student-info">
+                        <h4>${s.first_name}</h4>
+                        <p>${s.email}</p>
+                    </div>
+                    ${badge}
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        function filterStudents() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allStudents.filter(s => 
+                s.first_name.toLowerCase().includes(query) || 
+                s.email.toLowerCase().includes(query)
+            );
+            renderStudents(filtered);
+        }
+
+        async function openStudentModal(student) {
+            currentStudentId = student.student_id;
+            document.getElementById('modal-name').textContent = student.first_name;
+            document.getElementById('modal-email').textContent = student.email;
+            
+            const btnUnlink = document.getElementById('btn-unlink');
+            if (student.telegram_id) {
+                btnUnlink.style.display = 'block';
+            } else {
+                btnUnlink.style.display = 'none';
+            }
+            
+            document.getElementById('student-modal-overlay').style.display = 'flex';
+            setTimeout(() => document.getElementById('student-modal').classList.add('open'), 10);
+            
+            // Fetch logs
+            document.getElementById('modal-logs').innerHTML = '<div style="color: var(--text-2);">Chargement...</div>';
+            try {
+                const res = await fetch(`/api/admin/gateway/logs?id=${student.student_id}`);
+                const data = await res.json();
+                if(data.success) {
+                    const logContainer = document.getElementById('modal-logs');
+                    logContainer.innerHTML = '';
+                    if (data.logs.length === 0) {
+                        logContainer.innerHTML = '<div style="color: var(--text-2);">Aucun historique.</div>';
+                    } else {
+                        data.logs.forEach(log => {
+                            logContainer.innerHTML += `
+                                <div class="log-item">
+                                    <div class="log-time">${log.timestamp} - ${log.action_type}</div>
+                                    <div class="log-desc">${log.description}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function closeModal(e, force=false) {
+            if (force || e.target === document.getElementById('student-modal-overlay')) {
+                document.getElementById('student-modal').classList.remove('open');
+                setTimeout(() => document.getElementById('student-modal-overlay').style.display = 'none', 300);
+            }
+        }
+
+        async function togglePatrol(checkbox) {
+            const enabled = checkbox.checked;
+            try {
+                await fetch('/api/admin/gateway/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ key: 'night_patrol_enabled', value: enabled ? 'true' : 'false' })
+                });
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }
+            } catch(e) {
+                checkbox.checked = !enabled;
+                alert("Erreur de sauvegarde");
+            }
+        }
+        
+        async function unlinkStudent() {
+            if(!confirm("Voulez-vous vraiment dissocier cet élève ? Il perdra accès aux groupes.")) return;
+            
+            try {
+                const res = await fetch('/api/admin/gateway/action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'unlink', student_id: currentStudentId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert("Élève dissocié.");
+                    closeModal(null, true);
+                    fetchStats();
+                    fetchStudents();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // Init
+        fetchStats();
+    </script>
+</body>
+</html>

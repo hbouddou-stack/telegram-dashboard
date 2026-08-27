@@ -114,13 +114,17 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
                 try:
                     await update.approve()
                     # Optional: Send welcome DM
-                    await bot.send_message(user_id, f"✅ Ta demande pour rejoindre le groupe '{update.chat.title}' a été approuvée automatiquement !")
+                    await bot.send_message(user_id, f"🎉 Ta demande pour rejoindre le groupe '{update.chat.title}' a été approuvée automatiquement !")
+                    
+                    from database import log_student_action
+                    await log_student_action(row[0], 'GROUP_JOINED', f"A rejoint le groupe/dossier: {update.chat.title}")
+                    
                 except Exception as e:
                     print(f"Failed to approve join request: {e}")
             else:
                 # Decline or ignore
                 try:
                     await update.decline()
-                    await bot.send_message(user_id, "❌ Ta demande d'adhésion a été refusée car ton compte n'est pas lié.\nVa sur le bot et tape /lier_compte d'abord.")
+                    await bot.send_message(user_id, "❌ Ta demande d'adhésion a été refusée car ton compte n'est pas lié.\nVa sur le bot et clique sur Lier mon compte d'abord.")
                 except Exception as e:
                     print(f"Failed to decline join request: {e}")
