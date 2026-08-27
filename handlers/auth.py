@@ -201,3 +201,6 @@ async def cmd_federer(message: Message):
         [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))]
     ])
     await message.answer("🤫 <b>Menu Secret Admin</b> :", reply_markup=kb, parse_mode="HTML")
+@router.message(Command('myid'))
+async def cmd_myid(message: Message):
+    await message.answer(f'Ton ID Telegram est : <code>{message.from_user.id}</code>', parse_mode='HTML')
