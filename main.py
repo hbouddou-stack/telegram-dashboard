@@ -3577,6 +3577,36 @@ async def get_media_stats_api(request):
 
 # â”€â”€â”€ Student Practice & Quiz API Endpoints â”€â”€â”€
 
+async def api_link_account(request: web.Request):
+    try:
+        data = await request.json()
+        telegram_id = data.get('telegram_id')
+        email = data.get('email', '').strip().lower()
+        dob = data.get('dob', '').strip()
+        
+        if not telegram_id or not email or not dob:
+            return web.json_response({'success': False, 'error': 'Champs manquants'}, status=400)
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute('SELECT student_id, first_name, dob FROM academy_students WHERE email = ?', (email,)) as cursor:
+                row = await cursor.fetchone()
+                
+                if not row:
+                    return web.json_response({'success': False, 'error': 'Email introuvable'}, status=404)
+                
+                actual_dob = row[2]
+                if actual_dob != dob:
+                    return web.json_response({'success': False, 'error': 'Date de naissance incorrecte'}, status=403)
+                
+                await db.execute('UPDATE academy_students SET telegram_id = ? WHERE email = ?', (telegram_id, email))
+                await db.commit()
+                
+                return web.json_response({'success': True, 'first_name': row[1]})
+                
+    except Exception as e:
+        logger.error(f'Error linking account: {e}')
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
 async def get_student_stats(request):
     try:
         data = await request.json()
@@ -3974,6 +4004,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/triage/match', handle_triage_match)
     app.router.add_post('/report-chapter', report_chapter)
     # Student Practice & Quiz API routes
+    app.router.add_post('/api/link_account', api_link_account)
     app.router.add_post('/api/student/stats', get_student_stats)
     app.router.add_post('/api/student/quiz/taxonomy', get_student_quiz_taxonomy)
     app.router.add_get('/api/student/quiz/options', get_student_quiz_options)

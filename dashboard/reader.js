@@ -2832,3 +2832,59 @@ function playWholeLesson() {
     }, 300);
 }
 
+\n
+// ==================== ACCOUNT LINKING ====================
+async function linkAccount() {
+    const email = document.getElementById('profil-email').value.trim();
+    const dob = document.getElementById('profil-dob').value.trim();
+    const errorDiv = document.getElementById('profil-error');
+    
+    errorDiv.style.display = 'none';
+    
+    if (!email || !dob) {
+        errorDiv.textContent = 'Veuillez remplir tous les champs.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    let telegram_id = null;
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        telegram_id = window.Telegram.WebApp.initDataUnsafe.user.id;
+    }
+    
+    if (!telegram_id) {
+        errorDiv.textContent = 'Erreur : Impossible de récupérer votre ID Telegram. Veuillez ouvrir cette page depuis Telegram.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/link_account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, dob: dob, telegram_id: telegram_id })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('profil-link-form').style.display = 'none';
+            document.getElementById('profil-success').style.display = 'flex';
+            document.getElementById('profil-firstname').textContent = data.first_name || '';
+            
+            // Trigger haptic feedback
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+        } else {
+            errorDiv.textContent = data.error || 'Erreur lors de la liaison du compte.';
+            errorDiv.style.display = 'block';
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+            }
+        }
+    } catch (e) {
+        errorDiv.textContent = 'Erreur de connexion au serveur.';
+        errorDiv.style.display = 'block';
+    }
+}
