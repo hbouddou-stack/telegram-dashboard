@@ -8,6 +8,20 @@ logger = logging.getLogger(__name__)
 import shutil
 import os
 
+
+async def log_chat_message(telegram_id, sender, message_text):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute(
+                'INSERT INTO bot_conversations (telegram_id, sender, message_text) VALUES (?, ?, ?)',
+                (telegram_id, sender, message_text)
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error logging chat message: {e}")
+
 async def log_student_action(student_id, action_type, description):
     from config import DATABASE_PATH
     import aiosqlite
@@ -77,6 +91,17 @@ async def init_db():
                 student_id INTEGER,
                 action_type TEXT,
                 description TEXT,
+                timestamp TEXT DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
+
+                # 0c. bot_conversations
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS bot_conversations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                telegram_id INTEGER,
+                sender TEXT,
+                message_text TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)

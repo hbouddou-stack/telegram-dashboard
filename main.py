@@ -314,6 +314,20 @@ async def api_admin_gateway_settings(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+
+async def api_admin_gateway_chat(request: web.Request):
+    telegram_id = request.query.get('id')
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT sender, message_text, timestamp FROM bot_conversations WHERE telegram_id = ? ORDER BY id ASC LIMIT 100", (telegram_id,)) as cur:
+                chats = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'chats': chats})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_action(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -4119,6 +4133,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
+    app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
     app.router.add_post('/api/student/stats', get_student_stats)
     app.router.add_post('/api/student/quiz/taxonomy', get_student_quiz_taxonomy)
