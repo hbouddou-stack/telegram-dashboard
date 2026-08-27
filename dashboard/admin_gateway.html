@@ -527,9 +527,11 @@
             } catch(e) {}
         }
         
+        let currentSosTelegramId = null;
         function openSosModal(sos) {
             currentSosId = sos.id;
-            document.getElementById('sos-modal-email').textContent = sos.email_tentative;
+            currentSosTelegramId = sos.telegram_id;
+            document.getElementById('sos-modal-email').textContent = sos.email_tentative + (sos.telegram_id ? ` (ID: ${sos.telegram_id})` : ' (Pas de TG ID)');
             document.getElementById('sos-modal-msg').textContent = sos.message;
             document.getElementById('sos-reply-text').value = "";
             document.getElementById('sos-modal-overlay').style.display = 'flex';
@@ -545,11 +547,15 @@
         
         async function sendSosReply() {
             const text = document.getElementById('sos-reply-text').value;
+            if(!currentSosTelegramId) {
+                alert("Impossible de répondre : le Telegram ID de cet élève n'a pas été capturé.");
+                // Still close it if we want
+            }
             try {
                 await fetch('/api/admin/sos/reply', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ sos_id: currentSosId, reply_message: text })
+                    body: JSON.stringify({ sos_id: currentSosId, reply_message: text, telegram_id: currentSosTelegramId })
                 });
                 closeSosModal(null, true);
                 fetchSos();

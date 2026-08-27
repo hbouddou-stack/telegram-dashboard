@@ -307,10 +307,14 @@
             if(!msg) return;
             
             try {
+                let tid = null;
+                if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                    tid = window.Telegram.WebApp.initDataUnsafe.user.id;
+                }
                 const response = await fetch('/api/gateway/sos', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, message: msg })
+                    body: JSON.stringify({ email, message: msg, telegram_id: tid })
                 });
                 document.getElementById('sos-box').innerHTML = "<p style='color:#34c759;'>Demande envoyée. Un administrateur vous répondra sous peu.</p>";
             } catch(e) {
