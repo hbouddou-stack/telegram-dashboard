@@ -252,6 +252,13 @@ async def handle_reader(request):
     resp.headers['Pragma'] = 'no-cache'
     return resp
 
+async def handle_link(request):
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'link.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
+
+
 async def handle_reader_js(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'reader.js'))
 
@@ -3957,6 +3964,7 @@ async def start_web_server(bot: Bot):
     
     app.router.add_get('/', handle_reader)
     app.router.add_get('/index.html', handle_reader)
+    app.router.add_get('/link.html', handle_link)
     app.router.add_get('/interactive.html', handle_interactive)
     app.router.add_get('/admin_mindmap.html', handle_admin_mindmap)
     app.router.add_get('/course_slides.html', handle_course_slides)

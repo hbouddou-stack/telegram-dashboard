@@ -44,7 +44,7 @@ def get_main_inline_keyboard(is_admin: bool = False, remaining_count: int = None
     rows.append(row1)
     
     base_url = get_webapp_base_url()
-    rows.append([InlineKeyboardButton(text="🔗 Lier mon compte", web_app=WebAppInfo(url=f"{base_url}/reader.html?action=link"))])
+    rows.append([InlineKeyboardButton(text="🔗 Lier mon compte", web_app=WebAppInfo(url=f"{base_url}/link.html"))])
     
 
     # Row 1.2: Liseuse (Dashboard & Reader)
