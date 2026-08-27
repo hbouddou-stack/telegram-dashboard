@@ -180,19 +180,6 @@ async def cmd_start(message: Message):
         webapp_url = f"{base_url}/link.html"
         
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ لقد شاهدت الفيديو (J'ai vu la vidéo)", web_app=WebAppInfo(url=webapp_url))]
+        [InlineKeyboardButton(text="🔗 بوابة التحقق (Mini App)", web_app=WebAppInfo(url=webapp_url))]
     ])
-    
-    from aiogram.types import FSInputFile
-    import os
-    video_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'dashboard', 'tutovideo.mp4')
-    
-    if os.path.exists(video_path):
-        try:
-            video = FSInputFile(video_path)
-            await message.answer_video(video, caption=welcome_text, reply_markup=kb, request_timeout=300)
-        except Exception as e:
-            # Fallback if video is too large or times out
-            await message.answer(welcome_text, reply_markup=kb)
-    else:
-        await message.answer(welcome_text, reply_markup=kb)
+    await message.answer(welcome_text, reply_markup=kb)
