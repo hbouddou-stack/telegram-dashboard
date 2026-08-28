@@ -451,13 +451,14 @@ async def api_gateway_sos(request: web.Request):
                 f"💬 <b>Message :</b>\n{message}\n\n"
                 f"👉 Répondez depuis le Dashboard Admin (/federer)"
             )
+            bot = request.app['bot']
             for admin_id in TELEGRAM_ADMIN_IDS:
                 try:
                     await bot.send_message(admin_id, admin_notif, parse_mode="HTML")
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                except Exception as ex:
+                    print(f"Error sending SOS to admin {admin_id}: {ex}")
+        except Exception as ex:
+            print(f"Error in api_gateway_sos notify: {ex}")
             
         return web.json_response({'success': True})
     except Exception as e:
@@ -498,9 +499,10 @@ async def api_admin_sos_reply(request: web.Request):
         
         if telegram_id:
             try:
+                bot = request.app['bot']
                 await bot.send_message(int(telegram_id), f"<b>🛠️ Réponse du Support Académie</b>\n\n{reply_message}", parse_mode="HTML")
             except Exception as e:
-                pass  # Don't fail the ticket close if notification fails
+                print(f"Error sending SOS reply to student {telegram_id}: {e}")
                 
         async with aiosqlite.connect(DATABASE_PATH) as db:
             await db.execute("UPDATE gateway_sos SET status = 'closed' WHERE id = ?", (sos_id,))
@@ -3906,6 +3908,7 @@ async def api_link_account(request: web.Request):
                 row1 = await cur1.fetchone()
                 if not row1:
                     errors['email'] = 'البريد الإلكتروني غير مسجل.'
+                    await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (0, 'LINK_FAILED', f"Tentative avec email non repertorie: {email} (TG: {telegram_id})"))
                 else:
                     db_student_id = row1[0]
                     db_dob = row1[1]
@@ -3914,10 +3917,12 @@ async def api_link_account(request: web.Request):
                     # Check DOB
                     if db_dob != dob:
                         errors['dob'] = 'تاريخ الميلاد غير صحيح.'
+                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"Tentative echouee: Date de naissance incorrecte ({dob}) (TG: {telegram_id})"))
                         
                     # Check Student ID
                     if str(db_student_id) != str(student_id_input):
                         errors['student_id'] = 'رقم الطالب غير صحيح.'
+                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"Tentative echouee: Matricule incorrect ({student_id_input}) (TG: {telegram_id})"))
             
             if errors:
                 return web.json_response({'success': False, 'errors': errors})
