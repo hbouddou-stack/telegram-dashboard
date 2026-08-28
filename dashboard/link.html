@@ -695,7 +695,7 @@
         if (tg.SecondaryButton) {
             tg.SecondaryButton.setParams({
                 text: "لدي مشكلة 🆘",
-                color: "#1c1c1e",
+                color: "#8736ff",
                 text_color: "#ff453a",
                 is_visible: true,
                 position: "bottom"
@@ -756,9 +756,13 @@
             const emailIcon = document.getElementById('email_status');
             const errDiv = document.getElementById('err-student_id');
             const field = document.getElementById('student_id');
+            const emailField = document.getElementById('email');
+            const emailErrDiv = document.getElementById('err-email');
             
             field.classList.remove('input-error', 'input-success');
             errDiv.style.display = 'none';
+            if (emailField) emailField.classList.remove('input-error', 'input-success');
+            if (emailErrDiv) emailErrDiv.style.display = 'none';
             
             if (studentId.length !== 6) {
                 statusIcon.style.display = 'none';
@@ -794,12 +798,18 @@
                     
                     if (data.valid) {
                         statusIcon.innerHTML = '✅';
-                        if (emailIcon && payload.email) emailIcon.innerHTML = '✅';
                         showFieldError('student_id', data.message, true);
+                        if (emailIcon && payload.email) {
+                            emailIcon.innerHTML = '✅';
+                            showFieldError('email', '', true);
+                        }
                     } else if (data.message) {
                         statusIcon.innerHTML = '❌';
-                        if (emailIcon && payload.email) emailIcon.innerHTML = '❌';
                         showFieldError('student_id', data.message, false);
+                        if (emailIcon && payload.email) {
+                            emailIcon.innerHTML = '❌';
+                            showFieldError('email', '', false);
+                        }
                     } else {
                         statusIcon.style.display = 'none';
                         if (emailIcon) emailIcon.style.display = 'none';
