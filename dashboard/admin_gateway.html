@@ -130,6 +130,15 @@
             color: #ffffff !important;
             border-color: #ec4899 !important;
         }
+        .chip-gender.chip-all {
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+        }
+        .chip-gender.chip-all.active {
+            background: #a855f7 !important;
+            color: #ffffff !important;
+            border-color: #a855f7 !important;
+        }
 
         /* Search */
         .search-box { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'Tajawal', sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; text-align: right; }
@@ -247,8 +256,9 @@
         <div class="filter-section">
             <!-- Gender filter row with colors: Blue (Male) and Pink (Female) taking full width 50/50 -->
             <div style="display: flex; gap: 10px; justify-content: center; width: 100%; margin-bottom: 8px;">
-                <div class="chip-gender chip-male active" id="g-homme" onclick="setGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👨 طلاب (ذكور)</div>
-                <div class="chip-gender chip-female" id="g-femme" onclick="setGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👩 طالبات (إناث)</div>
+                <div class="chip-gender chip-all active" id="g-all" onclick="setGenderFilter('all', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👥 الكل (Tous)</div>
+                <div class="chip-gender chip-male" id="g-homme" onclick="setGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👨 ذكور</div>
+                <div class="chip-gender chip-female" id="g-femme" onclick="setGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👩 إناث</div>
             </div>
             
             <!-- Compact selection for Level and Status side-by-side -->
@@ -509,7 +519,7 @@
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'homme', level: 'all' };
+        let filters = { status: 'all', gender: 'all', level: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -723,8 +733,17 @@
             const q = document.getElementById('search-input').value.toLowerCase();
             const filtered = allStudents.filter(s => {
                 const name = (s.first_name || '').toLowerCase();
+                const lname = (s.last_name || '').toLowerCase();
                 const email = (s.email || '').toLowerCase();
-                const matchSearch = name.includes(q) || email.includes(q);
+                const source = (s.source || '').toLowerCase();
+                const dob = (s.dob || '').toLowerCase();
+                const year = String(s.year || '');
+                const telegramId = String(s.telegram_id || '');
+                const tgFirstName = (s.tg_first_name || '').toLowerCase();
+                
+                const matchSearch = name.includes(q) || lname.includes(q) || email.includes(q) || 
+                                  source.includes(q) || dob.includes(q) || year.includes(q) ||
+                                  telegramId.includes(q) || tgFirstName.includes(q);
 
                 const g = (s.gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
