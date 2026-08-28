@@ -307,7 +307,7 @@ async def api_admin_gateway_logs(request: web.Request):
         return web.json_response({'success': False, 'error': str(e)})
 
 async def api_admin_gateway_logs_all(request: web.Request):
-    """Return all recent student logs joined with student name"""
+    """Return all recent student logs joined with student name and Telegram name"""
     import aiosqlite
     from config import DATABASE_PATH
     try:
@@ -316,9 +316,11 @@ async def api_admin_gateway_logs_all(request: web.Request):
             async with db.execute("""
                 SELECT sl.action_type, sl.description, sl.timestamp,
                        COALESCE(s.first_name, 'ID:'||sl.student_id) as first_name,
+                       u.first_name as tg_first_name,
                        sl.student_id
                 FROM student_logs sl
                 LEFT JOIN academy_students s ON s.student_id = sl.student_id
+                LEFT JOIN users u ON u.telegram_id = s.telegram_id
                 ORDER BY sl.id DESC LIMIT 100
             """) as cur:
                 logs = [dict(row) for row in await cur.fetchall()]
@@ -332,6 +334,7 @@ async def api_admin_gateway_check_member(request: web.Request):
     if not telegram_id:
         return web.json_response({'success': False, 'error': 'Missing telegram_id'})
     try:
+        bot = request.app['bot']
         from config import ACADEMY_GROUP_ID
         member = await bot.get_chat_member(chat_id=ACADEMY_GROUP_ID, user_id=int(telegram_id))
         has_joined = member.status in ['creator', 'administrator', 'member', 'restricted']

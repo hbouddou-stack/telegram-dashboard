@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gateway Admin</title>
+    <title>بوابة التحكم - Gateway Admin</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0d1117;
@@ -20,13 +20,13 @@
             --text2: #8b949e;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text1); font-family: 'Inter', sans-serif; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text1); font-family: 'Tajawal', sans-serif; min-height: 100vh; }
         
         .header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
         .header h1 { font-size: 1.2rem; font-weight: 800; background: linear-gradient(90deg, var(--accent2), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .tabs { display: flex; gap: 4px; padding: 12px 16px; border-bottom: 1px solid var(--border); overflow-x: auto; }
-        .tab-btn { padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text2); font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .tab-btn { padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text2); font-family: 'Tajawal', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
         .tab-btn.active { background: var(--accent); color: white; }
         .tab-content { display: none; padding: 16px; }
         .tab-content.active { display: block; }
@@ -38,7 +38,7 @@
         .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
         
         /* Search */
-        .search-box { width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'Inter', sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; }
+        .search-box { width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'Tajawal', sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; text-align: right; }
         .search-box:focus { border-color: var(--accent); }
         
         /* Stats */
@@ -48,7 +48,7 @@
         .stat-lbl { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
         
         /* List */
-        .list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; }
+        .list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; text-align: right; }
         .list-item:hover { border-color: var(--accent); }
         .list-name { font-weight: 700; font-size: 0.95rem; }
         .list-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
@@ -61,7 +61,7 @@
         .badge-open { background: rgba(245,158,11,0.15); color: var(--warning); }
         
         /* Buttons */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
@@ -69,28 +69,28 @@
         
         /* Input group */
         .input-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
-        .input-row textarea { flex: 1; resize: none; height: 44px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none; }
+        .input-row textarea { flex: 1; resize: none; height: 44px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-family: 'Tajawal', sans-serif; font-size: 0.88rem; outline: none; text-align: right; }
         .input-row textarea:focus { border-color: var(--accent); }
         .input-row button { flex-shrink: 0; padding: 10px 16px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; height: 44px; font-size: 0.85rem; }
         
         /* Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: flex-end; justify-content: center; }
-        .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; border-top: 1px solid var(--border); }
-        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; border-top: 1px solid var(--border); text-align: right; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-direction: row-reverse; }
         .modal-header h2 { font-size: 1.1rem; }
         .close-btn { background: none; border: none; color: var(--text2); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
         
         /* Debug */
-        #debug-panel { margin-top: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 8px; min-height: 40px; font-family: monospace; max-height: 200px; overflow-y: auto; font-size: 11px; }
+        #debug-panel { margin-top: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 8px; min-height: 40px; font-family: monospace; max-height: 200px; overflow-y: auto; font-size: 11px; text-align: left; direction: ltr; }
         
         /* SOS item */
-        .sos-item { background: var(--surface); border: 1px solid var(--warning); border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+        .sos-item { background: var(--surface); border: 1px solid var(--warning); border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; text-align: right; }
         .sos-item:hover { background: rgba(245,158,11,0.08); }
 
         /* Link group */
-        .link-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .link-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; text-align: right; }
         .link-group h3 { font-size: 0.9rem; color: var(--text2); margin-bottom: 10px; }
-        .link-input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text1); font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; margin-top: 4px; }
+        .link-input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text1); font-family: 'Tajawal', sans-serif; font-size: 0.85rem; outline: none; margin-top: 4px; direction: ltr; text-align: left; }
         .link-input:focus { border-color: var(--accent); }
         .link-label { font-size: 0.8rem; color: var(--text2); margin-top: 10px; }
 
@@ -105,98 +105,98 @@
 </head>
 <body>
     <div class="header">
-        <h1>🛠️ Gateway Admin</h1>
+        <h1>🛠️ إدارة بوابة الدخول</h1>
         <span id="sos-badge" style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;display:none;">0 SOS</span>
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('students')">👥 Élèves</button>
-        <button class="tab-btn" onclick="switchTab('sos')">🆘 SOS Liaison</button>
-        <button class="tab-btn" onclick="switchTab('links')">🔗 Liens Groupes</button>
-        <button class="tab-btn" onclick="switchTab('logs')">📋 Historique Global</button>
+        <button class="tab-btn active" onclick="switchTab('students')">👥 الطلاب</button>
+        <button class="tab-btn" onclick="switchTab('sos')">🆘 طلبات المساعدة</button>
+        <button class="tab-btn" onclick="switchTab('links')">🔗 روابط المجموعات</button>
+        <button class="tab-btn" onclick="switchTab('logs')">📋 السجل العام</button>
     </div>
     
-    <!-- TAB: Élèves -->
+    <!-- TAB: الطلاب -->
     <div id="tab-students" class="tab-content active">
         <!-- Import Excel section -->
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-            <div style="font-size: 0.85rem; color: var(--text2);">Importer des élèves depuis un fichier Excel (.xlsx)</div>
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-direction: row-reverse;">
+            <div style="font-size: 0.85rem; color: var(--text2);">استيراد الطلاب من ملف إكسل (.xlsx)</div>
             <label class="chip" style="background: var(--accent); color: white; border: none; padding: 8px 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                📥 Excel
+                📥 إكسل
                 <input type="file" id="excel-file-input" accept=".xlsx" style="display:none;" onchange="importExcel(this)">
             </label>
         </div>
 
         <div class="filter-section">
             <div class="filter-row" id="fr-status">
-                <div class="chip active" onclick="setFilter('status','all',this)">Tous</div>
-                <div class="chip" onclick="setFilter('status','linked',this)">✅ Liés</div>
-                <div class="chip" onclick="setFilter('status','unlinked',this)">❌ Non Liés</div>
+                <div class="chip active" onclick="setFilter('status','all',this)">الكل</div>
+                <div class="chip" onclick="setFilter('status','linked',this)">✅ مرتبط</div>
+                <div class="chip" onclick="setFilter('status','unlinked',this)">❌ غير مرتبط</div>
             </div>
             <div class="filter-row" id="fr-gender">
-                <div class="chip active" onclick="setFilter('gender','all',this)">👥 Tous</div>
-                <div class="chip" onclick="setFilter('gender','homme',this)">👨 Hommes</div>
-                <div class="chip" onclick="setFilter('gender','femme',this)">👩 Femmes</div>
-                <div class="chip" onclick="setFilter('gender','inconnu',this)">❓ Non Spécifié</div>
+                <div class="chip active" onclick="setFilter('gender','all',this)">👥 الكل</div>
+                <div class="chip" onclick="setFilter('gender','homme',this)">👨 الطلاب (ذكور)</div>
+                <div class="chip" onclick="setFilter('gender','femme',this)">👩 الطالبات (إناث)</div>
+                <div class="chip" onclick="setFilter('gender','inconnu',this)">❓ غير محدد</div>
             </div>
             <div class="filter-row" id="fr-level">
-                <div class="chip active" onclick="setFilter('level','all',this)">Toutes années</div>
-                <div class="chip" onclick="setFilter('level','1',this)">Année 1</div>
-                <div class="chip" onclick="setFilter('level','2',this)">Année 2</div>
-                <div class="chip" onclick="setFilter('level','3',this)">Année 3</div>
-                <div class="chip" onclick="setFilter('level','4',this)">Année 4</div>
+                <div class="chip active" onclick="setFilter('level','all',this)">جميع السنوات</div>
+                <div class="chip" onclick="setFilter('level','1',this)">السنة 1</div>
+                <div class="chip" onclick="setFilter('level','2',this)">السنة 2</div>
+                <div class="chip" onclick="setFilter('level','3',this)">السنة 3</div>
+                <div class="chip" onclick="setFilter('level','4',this)">السنة 4</div>
             </div>
         </div>
-        <input class="search-box" type="text" id="search-input" placeholder="🔍 Rechercher par nom ou email..." oninput="filterStudents()">
+        <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
         <div class="stat-grid">
-            <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">Affichés</div></div>
-            <div class="stat-card"><div class="stat-num" id="stat-linked">—</div><div class="stat-lbl">Liés</div></div>
-            <div class="stat-card"><div class="stat-num" id="stat-pct">—</div><div class="stat-lbl">% Liés</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">المعروضون</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-linked">—</div><div class="stat-lbl">المرتبطون</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-pct">—</div><div class="stat-lbl">% نسبة الربط</div></div>
         </div>
         <div id="students-list"></div>
     </div>
     
     <!-- TAB: SOS -->
     <div id="tab-sos" class="tab-content">
-        <div id="sos-list"><div class="no-items">Chargement...</div></div>
+        <div id="sos-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
     
     <!-- TAB: Liens Groupes -->
     <div id="tab-links" class="tab-content">
-        <div id="links-container"><div class="no-items">Chargement...</div></div>
+        <div id="links-container"><div class="no-items">جاري التحميل...</div></div>
         <br>
-        <button class="btn btn-primary" onclick="saveLinks()">💾 Enregistrer les liens</button>
+        <button class="btn btn-primary" onclick="saveLinks()">💾 حفظ الروابط</button>
     </div>
 
     <!-- TAB: Historique Global -->
     <div id="tab-logs" class="tab-content">
-        <div id="global-logs-list"><div class="no-items">Chargement...</div></div>
+        <div id="global-logs-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
 
     <!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
         <div class="modal">
             <div class="modal-header">
-                <h2>📋 Fiche Étudiant</h2>
+                <h2>📋 بطاقة الطالب التفصيلية</h2>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
             </div>
             
             <div class="profile-grid">
-                <div class="profile-item"><div class="profile-label">Nom Complet</div><div class="profile-value" id="profile-name">-</div></div>
-                <div class="profile-item"><div class="profile-label">Année / Niveau</div><div class="profile-value" id="profile-year">-</div></div>
-                <div class="profile-item" style="grid-column: span 2;"><div class="profile-label">Email</div><div class="profile-value" id="profile-email">-</div></div>
-                <div class="profile-item"><div class="profile-label">Date de Naissance</div><div class="profile-value" id="profile-dob">-</div></div>
-                <div class="profile-item"><div class="profile-label">Genre</div><div class="profile-value" id="profile-gender">-</div></div>
-                <div class="profile-item"><div class="profile-label">Telegram ID</div><div class="profile-value" id="profile-tgid">-</div></div>
-                <div class="profile-item"><div class="profile-label">Canal / Groupe</div><div class="profile-value" id="profile-membership">Recherche...</div></div>
+                <div class="profile-item"><div class="profile-label">الاسم الكامل</div><div class="profile-value" id="profile-name">-</div></div>
+                <div class="profile-item"><div class="profile-label">السنة / المستوى</div><div class="profile-value" id="profile-year">-</div></div>
+                <div class="profile-item" style="grid-column: span 2;"><div class="profile-label">البريد الإلكتروني</div><div class="profile-value" id="profile-email">-</div></div>
+                <div class="profile-item"><div class="profile-label">تاريخ الميلاد</div><div class="profile-value" id="profile-dob">-</div></div>
+                <div class="profile-item"><div class="profile-label">الجنس</div><div class="profile-value" id="profile-gender">-</div></div>
+                <div class="profile-item"><div class="profile-label">معرف تيليجرام</div><div class="profile-value" id="profile-tgid">-</div></div>
+                <div class="profile-item"><div class="profile-label">حالة الانضمام للمجموعة</div><div class="profile-value" id="profile-membership">جاري التحقق...</div></div>
             </div>
 
             <div style="display:flex; gap:10px; margin-bottom:18px;">
-                <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">Dissocier le compte Telegram</button>
+                <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">إلغاء ربط حساب تيليجرام</button>
             </div>
 
-            <h3 style="font-size:0.9rem; margin-bottom:8px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;">Historique de l'élève</h3>
-            <div id="logs-body" style="max-height:220px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;"><div class="no-items">Chargement...</div></div>
+            <h3 style="font-size:0.9rem; margin-bottom:8px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;">سجل نشاط الطالب</h3>
+            <div id="logs-body" style="max-height:220px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;"><div class="no-items">لا يوجد سجلات.</div></div>
         </div>
     </div>
 
@@ -204,17 +204,17 @@
     <div class="modal-overlay" id="sos-overlay" onclick="if(event.target===this)this.style.display='none';">
         <div class="modal">
             <div class="modal-header">
-                <h2>🆘 Répondre au SOS</h2>
+                <h2>🆘 الرد على طلب المساعدة</h2>
                 <button class="close-btn" onclick="document.getElementById('sos-overlay').style.display='none'">✕</button>
             </div>
-            <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px;"></div>
+            <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px; direction: ltr; text-align: left;"></div>
             <div id="sos-modal-message" style="background:var(--bg);padding:12px;border-radius:10px;font-size:0.9rem;line-height:1.5;margin-bottom:12px;"></div>
             
             <div class="input-row">
-                <textarea id="sos-reply-text" placeholder="Tapez votre réponse ici..."></textarea>
-                <button onclick="sendSosReply()">Envoyer ✈️</button>
+                <textarea id="sos-reply-text" placeholder="اكتب ردك هنا... سيصل إلى الطالب في رسالة خاصة"></textarea>
+                <button onclick="sendSosReply()">إرسال ✈️</button>
             </div>
-            <div id="debug-panel"><span style="color:#555;">— Logs de débogage —</span></div>
+            <div id="debug-panel"><span style="color:#555;">— سجلات تصحيح الأخطاء —</span></div>
         </div>
     </div>
 
@@ -227,6 +227,24 @@
         let activeSosId = null;
         let activeSosTid = null;
         let activeStudentId = null;
+
+        // ============ DATE FORMATTER IN ARABIC ============
+        function formatDateArabic(dateStr) {
+            if (!dateStr) return '—';
+            // standard sqlite format YYYY-MM-DD HH:MM:SS
+            const date = new Date(dateStr.replace(' ', 'T'));
+            if (isNaN(date.getTime())) return dateStr;
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+            };
+            return new Intl.DateTimeFormat('ar-EG', options).format(date);
+        }
 
         // ============ TABS ============
         function switchTab(id) {
@@ -262,15 +280,15 @@
                 });
                 const data = await res.json();
                 if(data.success) {
-                    alert('Succès ! ' + data.count + ' élèves importés ou mis à jour.');
+                    alert('تم استيراد أو تحديث ' + data.count + ' طالب بنجاح.');
                     fetchStudents();
                 } else {
-                    alert('Erreur : ' + data.error);
+                    alert('خطأ: ' + data.error);
                 }
             } catch(e) {
-                alert('Erreur de connexion : ' + e.message);
+                alert('خطأ في الاتصال: ' + e.message);
             }
-            input.value = ''; // Reset input
+            input.value = '';
         }
 
         // ============ STUDENTS ============
@@ -293,8 +311,8 @@
                 const matchSearch = name.includes(q) || email.includes(q);
 
                 const g = (s.gender || '').toLowerCase();
-                const isM = g.startsWith('h') || g === 'm' || g === 'male';
-                const isF = g.startsWith('f') || g === 'female' || g === 'fille';
+                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
+                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
                 const matchGender = filters.gender === 'all'
                     || (filters.gender === 'homme' && isM)
                     || (filters.gender === 'femme' && isF)
@@ -319,7 +337,7 @@
             const list = document.getElementById('students-list');
             list.innerHTML = '';
             if(filtered.length === 0) {
-                list.innerHTML = '<div class="no-items">Aucun élève trouvé.</div>';
+                list.innerHTML = '<div class="no-items">لم يتم العثور على أي طالب.</div>';
                 return;
             }
             filtered.forEach(s => {
@@ -330,9 +348,9 @@
                 div.innerHTML = `
                     <div>
                         <div class="list-name">${s.first_name || '—'}</div>
-                        <div class="list-meta">${s.email || ''} ${s.year ? '• Année ' + s.year : ''}</div>
+                        <div class="list-meta">${s.email || ''} ${s.year ? '• السنة ' + s.year : ''}</div>
                     </div>
-                    <span class="badge ${linked ? 'badge-linked' : 'badge-unlinked'}">${linked ? 'LIÉ' : 'NON LIÉ'}</span>
+                    <span class="badge ${linked ? 'badge-linked' : 'badge-unlinked'}">${linked ? 'مرتبط' : 'غير مرتبط'}</span>
                 `;
                 list.appendChild(div);
             });
@@ -341,12 +359,18 @@
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             
-            document.getElementById('profile-name').textContent = student.first_name || 'Non spécifié';
-            document.getElementById('profile-year').textContent = student.year ? 'Année ' + student.year : 'Non spécifié';
+            document.getElementById('profile-name').textContent = student.first_name || 'غير محدد';
+            document.getElementById('profile-year').textContent = student.year ? 'السنة ' + student.year : 'غير محدد';
             document.getElementById('profile-email').textContent = student.email || '-';
             document.getElementById('profile-dob').textContent = student.dob || '-';
-            document.getElementById('profile-gender').textContent = student.gender || 'Non spécifié';
-            document.getElementById('profile-tgid').textContent = student.telegram_id || 'Non lié';
+            
+            let displayGender = 'غير محدد';
+            const g = (student.gender || '').toLowerCase();
+            if (g.startsWith('h') || g === 'm' || g.includes('ذك')) displayGender = 'ذكر 👨';
+            else if (g.startsWith('f') || g === 'fille' || g.includes('أنث')) displayGender = 'أنثى 👩';
+            document.getElementById('profile-gender').textContent = displayGender;
+            
+            document.getElementById('profile-tgid').textContent = student.telegram_id || 'غير مرتبط';
             
             const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (student.telegram_id) {
@@ -358,26 +382,26 @@
             // Membership check
             const mEl = document.getElementById('profile-membership');
             if (student.telegram_id) {
-                mEl.innerHTML = '<span style="color:#888;">Vérification...</span>';
+                mEl.innerHTML = '<span style="color:#888;">جاري التحقق...</span>';
                 try {
                     const checkRes = await fetch('/api/admin/gateway/check_member?telegram_id=' + student.telegram_id);
                     const checkData = await checkRes.json();
                     if (checkData.success) {
                         mEl.innerHTML = checkData.has_joined 
-                            ? `<span class="badge badge-joined">A REJOINT (${checkData.status})</span>`
-                            : `<span class="badge badge-unlinked">N'A PAS REJOINT (En dehors)</span>`;
+                            ? `<span class="badge badge-joined">انضم (${checkData.status})</span>`
+                            : `<span class="badge badge-unlinked">لم ينضم (خارج المجموعة)</span>` + (checkData.debug_error ? `<br><small style="color:var(--danger);font-size:10px;">${checkData.debug_error}</small>` : '');
                     } else {
-                        mEl.innerHTML = '<span style="color:var(--danger);">Erreur check</span>';
+                        mEl.innerHTML = '<span style="color:var(--danger);">خطأ في التحقق</span>' + (checkData.error ? `<br><small style="color:var(--danger);font-size:10px;">${checkData.error}</small>` : '');
                     }
                 } catch(e) {
-                    mEl.innerHTML = '<span style="color:var(--danger);">Erreur check</span>';
+                    mEl.innerHTML = '<span style="color:var(--danger);">خطأ في التحقق</span>';
                 }
             } else {
-                mEl.innerHTML = '<span style="color:var(--text2);">Non applicable</span>';
+                mEl.innerHTML = '<span style="color:var(--text2);">غير مطبق</span>';
             }
 
             // Student Logs
-            document.getElementById('logs-body').innerHTML = '<div class="no-items">Chargement...</div>';
+            document.getElementById('logs-body').innerHTML = '<div class="no-items">جاري التحميل...</div>';
             document.getElementById('logs-overlay').style.display = 'flex';
             try {
                 const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id);
@@ -385,22 +409,22 @@
                 if(data.success && data.logs.length > 0) {
                     document.getElementById('logs-body').innerHTML = data.logs.map(l => `
                         <div style="border-bottom:1px solid var(--border);padding:8px 0; font-size: 0.85rem;">
-                            <div style="font-size:0.75rem;color:var(--accent2);">${l.timestamp}</div>
+                            <div style="font-size:0.75rem;color:var(--accent2);">${formatDateArabic(l.timestamp)}</div>
                             <div style="font-weight:700; color:var(--warning);">[${l.action_type}]</div>
                             <div style="color:var(--text2);">${l.description}</div>
                         </div>
                     `).join('');
                 } else {
-                    document.getElementById('logs-body').innerHTML = '<div class="no-items">Aucun historique trouvé.</div>';
+                    document.getElementById('logs-body').innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل.</div>';
                 }
             } catch(e) {
-                document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur de chargement.</div>';
+                document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل.</div>';
             }
         }
 
         async function manualUnlink() {
             if(!activeStudentId) return;
-            if(!confirm('Voulez-vous vraiment dissocier le compte Telegram de cet élève ?')) return;
+            if(!confirm('هل أنت متأكد من رغبتك في إلغاء ربط حساب تيليجرام لهذا الطالب؟')) return;
 
             try {
                 const res = await fetch('/api/admin/gateway/action', {
@@ -410,14 +434,14 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert('Compte dissocié !');
+                    alert('تم إلغاء الربط بنجاح.');
                     document.getElementById('logs-overlay').style.display = 'none';
                     fetchStudents();
                 } else {
-                    alert('Erreur: ' + data.error);
+                    alert('خطأ: ' + data.error);
                 }
             } catch(e) {
-                alert('Erreur réseau: ' + e.message);
+                alert('خطأ في الاتصال: ' + e.message);
             }
         }
 
@@ -427,19 +451,19 @@
                 const res = await fetch('/api/admin/sos');
                 const data = await res.json();
                 const list = document.getElementById('sos-list');
-                if(!data.success) { list.innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur API.</div>'; return; }
+                if(!data.success) { list.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل القائمة.</div>'; return; }
                 
                 const open = data.sos_list.filter(s => s.status === 'open');
                 const badge = document.getElementById('sos-badge');
                 if(open.length > 0) {
                     badge.style.display = 'block';
-                    badge.textContent = open.length + ' SOS';
+                    badge.textContent = open.length + ' طلب مساعدة';
                 } else {
                     badge.style.display = 'none';
                 }
 
                 if(open.length === 0) {
-                    list.innerHTML = '<div class="no-items">✅ Aucun ticket ouvert.</div>';
+                    list.innerHTML = '<div class="no-items">✅ لا توجد أي طلبات مساعدة مفتوحة.</div>';
                     return;
                 }
                 list.innerHTML = '';
@@ -449,16 +473,16 @@
                     div.onclick = () => openSosModal(sos);
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div style="font-weight:700;">🆘 ${sos.email_tentative || 'Email inconnu'}</div>
-                            <span class="badge badge-open">OUVERT</span>
+                            <div style="font-weight:700;">🆘 البريد: ${sos.email_tentative || 'غير معروف'}</div>
+                            <span class="badge badge-open">مفتوح</span>
                         </div>
-                        <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">${sos.timestamp}</div>
+                        <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">${formatDateArabic(sos.timestamp)}</div>
                         <div style="font-size:0.88rem;margin-top:8px;color:var(--text1);">${(sos.message || '').substring(0, 80)}${(sos.message || '').length > 80 ? '...' : ''}</div>
                     `;
                     list.appendChild(div);
                 });
             } catch(e) {
-                document.getElementById('sos-list').innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur réseau: ' + e.message + '</div>';
+                document.getElementById('sos-list').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في الشبكة: ' + e.message + '</div>';
             }
         }
 
@@ -466,13 +490,13 @@
             activeSosId = sos.id;
             activeSosTid = sos.telegram_id;
             document.getElementById('sos-modal-meta').innerHTML =
-                '<strong>Email:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
-                '<strong>Matricule:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
-                '<strong>TG ID:</strong> ' + (sos.telegram_id || 'Introuvable') + '<br>' +
-                '<strong>Date:</strong> ' + (sos.timestamp || '');
+                '<strong>البريد:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
+                '<strong>المطابقة:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
+                '<strong>TG ID:</strong> ' + (sos.telegram_id || 'غير معروف') + '<br>' +
+                '<strong>الوقت:</strong> ' + formatDateArabic(sos.timestamp);
             document.getElementById('sos-modal-message').textContent = sos.message || '';
             document.getElementById('sos-reply-text').value = '';
-            document.getElementById('debug-panel').innerHTML = '<span style="color:#555;">— Logs de débogage —</span>';
+            document.getElementById('debug-panel').innerHTML = '<span style="color:#555;">— سجل تصحيح الأخطاء —</span>';
             document.getElementById('sos-overlay').style.display = 'flex';
         }
 
@@ -485,23 +509,22 @@
 
         async function sendSosReply() {
             const text = document.getElementById('sos-reply-text').value.trim();
-            dbg('▶ sendSosReply() appelée');
+            dbg('▶ sendSosReply() calling...');
             dbg('SOS ID = ' + activeSosId);
             dbg('TG ID = ' + activeSosTid);
-            dbg('Message = "' + text + '"');
 
             if(!text) {
-                dbg('❌ Message vide !', '#ef4444');
-                alert('Veuillez écrire un message.');
+                dbg('❌ الرسالة فارغة !', '#ef4444');
+                alert('يرجى كتابة رد.');
                 return;
             }
             if(!activeSosId) {
-                dbg('❌ Pas de SOS sélectionné !', '#ef4444');
-                alert('Erreur : aucun ticket sélectionné.');
+                dbg('❌ لم يتم اختيار طلب مساعدة !', '#ef4444');
+                alert('خطأ: طلب غير محدد.');
                 return;
             }
 
-            dbg('📡 Envoi à /api/admin/sos/reply ...');
+            dbg('📡 إرسال إلى الخادم ...');
             const btn = document.querySelector('#sos-overlay button[onclick="sendSosReply()"]');
             if(btn) { btn.textContent = '...'; btn.disabled = true; }
 
@@ -513,29 +536,29 @@
                 });
                 dbg('HTTP ' + res.status + ' ' + res.statusText, '#22c55e');
                 const data = await res.json();
-                dbg('Réponse: ' + JSON.stringify(data), data.success ? '#22c55e' : '#ef4444');
+                dbg('الرد: ' + JSON.stringify(data), data.success ? '#22c55e' : '#ef4444');
                 if(data.success) {
-                    dbg('🎉 Succès ! Fermeture...', '#22c55e');
+                    dbg('🎉 تم الإرسال والإغلاق بنجاح !', '#22c55e');
                     setTimeout(() => {
                         document.getElementById('sos-overlay').style.display = 'none';
                         fetchSos();
                     }, 800);
                 } else {
-                    dbg('❌ Erreur serveur: ' + (data.error || '?'), '#ef4444');
-                    alert('Erreur: ' + (data.error || 'inconnue'));
+                    dbg('❌ خطأ خادم: ' + (data.error || '?'), '#ef4444');
+                    alert('خطأ: ' + (data.error || 'غير معروف'));
                 }
             } catch(e) {
-                dbg('🔴 Erreur réseau: ' + e.message, '#ef4444');
-                alert('Erreur réseau: ' + e.message);
+                dbg('🔴 خطأ شبكة: ' + e.message, '#ef4444');
+                alert('خطأ شبكة: ' + e.message);
             } finally {
-                if(btn) { btn.textContent = 'Envoyer ✈️'; btn.disabled = false; }
+                if(btn) { btn.textContent = 'إرسال ✈️'; btn.disabled = false; }
             }
         }
 
         // ============ LINKS ============
         async function fetchLinks() {
             const c = document.getElementById('links-container');
-            c.innerHTML = '<div class="no-items">Chargement...</div>';
+            c.innerHTML = '<div class="no-items">جاري التحميل...</div>';
             try {
                 const res = await fetch('/api/admin/links');
                 const data = await res.json();
@@ -545,15 +568,15 @@
                 genders.forEach(g => {
                     const grp = document.createElement('div');
                     grp.className = 'link-group';
-                    grp.innerHTML = '<h3>' + (g === 'homme' ? '👨 Hommes' : '👩 Femmes') + '</h3>';
+                    grp.innerHTML = '<h3>' + (g === 'homme' ? '👨 الطلاب (ذكور)' : '👩 الطالبات (إناث)') + '</h3>';
                     years.forEach(y => {
                         const key = 'link_' + g + '_' + y;
                         const found = data.links ? data.links.find(l => l.key === key) : null;
-                        grp.innerHTML += '<div class="link-label">Année ' + y + '</div><input class="link-input" id="' + key + '" placeholder="https://t.me/..." value="' + (found ? found.value : '') + '">';
+                        grp.innerHTML += '<div class="link-label">السنة ' + y + '</div><input class="link-input" id="' + key + '" placeholder="https://t.me/..." value="' + (found ? found.value : '') + '">';
                     });
                     c.appendChild(grp);
                 });
-            } catch(e) { c.innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur: ' + e.message + '</div>'; }
+            } catch(e) { c.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ: ' + e.message + '</div>'; }
         }
 
         async function saveLinks() {
@@ -571,32 +594,37 @@
                     });
                 }
             }
-            alert('Liens enregistrés !');
+            alert('تم حفظ جميع الروابط بنجاح.');
         }
 
         // ============ GLOBAL LOGS ============
         async function fetchGlobalLogs() {
             const list = document.getElementById('global-logs-list');
-            list.innerHTML = '<div class="no-items">Chargement...</div>';
+            list.innerHTML = '<div class="no-items">جاري التحميل...</div>';
             try {
                 const res = await fetch('/api/admin/gateway/logs/all');
                 const data = await res.json();
                 if(data.success && data.logs.length > 0) {
-                    list.innerHTML = data.logs.map(l => `
-                        <div style="border-bottom:1px solid var(--border);padding:12px; background: var(--surface); margin-bottom:8px; border-radius:12px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                                <span style="font-weight:700; color:var(--text1);">${l.first_name}</span>
-                                <span style="font-size:0.75rem; color:var(--accent2);">${l.timestamp}</span>
+                    list.innerHTML = data.logs.map(l => {
+                        const displayName = l.tg_first_name 
+                            ? `${l.first_name} (حساب تيليجرام: ${l.tg_first_name})`
+                            : l.first_name;
+                        return `
+                            <div style="border-bottom:1px solid var(--border);padding:12px; background: var(--surface); margin-bottom:8px; border-radius:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-direction: row-reverse;">
+                                    <span style="font-weight:700; color:var(--text1);">${displayName}</span>
+                                    <span style="font-size:0.75rem; color:var(--accent2);">${formatDateArabic(l.timestamp)}</span>
+                                </div>
+                                <div style="font-weight:700; font-size:0.8rem; color:var(--warning); margin-bottom:4px; text-align:right;">[${l.action_type}]</div>
+                                <div style="font-size:0.88rem; color:var(--text2); text-align:right;">${l.description}</div>
                             </div>
-                            <div style="font-weight:700; font-size:0.8rem; color:var(--warning); margin-bottom:4px;">[${l.action_type}]</div>
-                            <div style="font-size:0.88rem; color:var(--text2);">${l.description}</div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
-                    list.innerHTML = '<div class="no-items">Aucun historique trouvé.</div>';
+                    list.innerHTML = '<div class="no-items">لا يوجد أي سجل نشاط عام.</div>';
                 }
             } catch(e) {
-                list.innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur de chargement: ' + e.message + '</div>';
+                list.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل: ' + e.message + '</div>';
             }
         }
 
