@@ -112,6 +112,24 @@
             background: var(--active-bg, rgba(168,85,247,0.15));
             border-color: var(--active-color, var(--accent2));
         }
+        .chip-gender.chip-male {
+            border-color: rgba(0, 132, 255, 0.3);
+            color: #0084ff;
+        }
+        .chip-gender.chip-male.active {
+            background: #0084ff !important;
+            color: #ffffff !important;
+            border-color: #0084ff !important;
+        }
+        .chip-gender.chip-female {
+            border-color: rgba(236, 72, 153, 0.3);
+            color: #ec4899;
+        }
+        .chip-gender.chip-female.active {
+            background: #ec4899 !important;
+            color: #ffffff !important;
+            border-color: #ec4899 !important;
+        }
 
         /* Search */
         .search-box { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'Tajawal', sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; text-align: right; }
@@ -410,6 +428,12 @@
                 <h2>🆘 الرد على طلب المساعدة</h2>
                 <button class="close-btn" onclick="document.getElementById('sos-overlay').style.display='none'">✕</button>
             </div>
+            
+            <!-- Quick Link button to student history -->
+            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-bottom:14px; background:var(--accent); font-size:0.88rem; padding:10px; display:flex; align-items:center; justify-content:center; gap:6px;">
+                🔍 عرض السجل الكامل والملف الشخصي لهذا الطالب
+            </button>
+            
             <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px; direction: ltr; text-align: left;"></div>
             <div id="sos-modal-message" style="background:var(--bg);padding:12px;border-radius:10px;font-size:0.9rem;line-height:1.5;margin-bottom:12px;"></div>
             
@@ -429,6 +453,8 @@
         let filters = { status: 'all', gender: 'all', level: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
+        let activeSosEmail = null;
+        let activeSosStudentId = null;
         let activeStudentId = null;
         let activeSosSubtabState = 'open';
 
@@ -596,8 +622,10 @@
                 div.onclick = () => openStudentCard(s);
                 
                 const display = linked 
-                    ? `<span style="font-weight:800;">${s.first_name || '—'}</span> <span style="color:var(--text2); font-size:0.8rem;">(مرتبط بـ Telegram ID: ${s.telegram_id})</span>`
-                    : `<span>${s.first_name || '—'}</span>`;
+                    ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
+                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">الاسم على تيليجرام: ${s.tg_first_name || 'غير معروف'} (ID: ${s.telegram_id})</div>`
+                    : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
+                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">غير مرتبط بحساب تيليجرام</div>`;
                 
                 div.innerHTML = `
                     <div>
@@ -785,6 +813,8 @@
         function openSosModal(sos) {
             activeSosId = sos.id;
             activeSosTid = sos.telegram_id;
+            activeSosEmail = sos.email_tentative;
+            activeSosStudentId = sos.student_id_tentative;
             document.getElementById('sos-modal-meta').innerHTML =
                 '<strong>البريد:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
                 '<strong>المطابقة:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
@@ -794,6 +824,23 @@
             document.getElementById('sos-reply-text').value = '';
             document.getElementById('debug-panel').innerHTML = '<span style="color:#555;">— سجل تصحيح الأخطاء —</span>';
             document.getElementById('sos-overlay').style.display = 'flex';
+        }
+
+        function viewUserHistoryFromSos() {
+            document.getElementById('sos-overlay').style.display = 'none';
+            
+            const matchedStudent = allStudents.find(s => 
+                (s.email && s.email.toLowerCase() === (activeSosEmail || '').toLowerCase()) ||
+                (s.student_id && String(s.student_id) === String(activeSosStudentId)) ||
+                (s.telegram_id && String(s.telegram_id) === String(activeSosTid))
+            );
+            
+            if (matchedStudent) {
+                openStudentCard(matchedStudent);
+            } else {
+                switchTab('logs');
+                alert("لم يتم العثور على طالب مطابق بقاعدة البيانات. تم توجيهك إلى السجل العام.");
+            }
         }
 
         function dbg(msg, color) {
