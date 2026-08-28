@@ -161,6 +161,15 @@
             border-color: var(--danger) !important;
             background: rgba(255, 69, 58, 0.1) !important;
         }
+        .input-success {
+            border-color: #34c759 !important;
+            background: rgba(52, 199, 89, 0.05) !important;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.4; transform: scale(0.9); }
+        }
         .inline-error-text {
             color: var(--danger);
             font-size: 0.85rem;
@@ -473,13 +482,16 @@
         
         <div id="global-error"></div>
 
-        <div class="input-group">
+        <div class="input-group" style="position: relative;">
             <label style="display:flex; justify-content:space-between;">
                 <span>رقم الطالب</span>
                 <span style="color:var(--accent); cursor:pointer; font-size:0.8rem;" onclick="showTuto()">أين أجد رقم الطالب؟ ℹ️</span>
             </label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="student_id" placeholder="مثال: 000123" required>
-            <div class="inline-error-text" id="err-student_id"></div>
+            <div style="position: relative;">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); debouncedValidateStudentId(this.value);" id="student_id" placeholder="مثال: 000123" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
+                <div id="student_id_status" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
+            </div>
+            <div class="inline-error-text" id="err-student_id" style="margin-top: 4px;"></div>
         </div>
         
         <div class="input-group">
@@ -672,27 +684,74 @@
             const errorTexts = document.querySelectorAll('.inline-error-text');
             errorTexts.forEach(el => el.style.display = 'none');
             const inputs = document.querySelectorAll('input, .dob-group');
-            inputs.forEach(el => el.classList.remove('input-error'));
+            inputs.forEach(el => {
+                el.classList.remove('input-error');
+                el.classList.remove('input-success');
+            });
         }
 
-        function showFieldError(fieldId, msg) {
+        function showFieldError(fieldId, msg, isSuccess=false) {
             const field = document.getElementById(fieldId);
             const errDiv = document.getElementById('err-' + fieldId);
             
             if (fieldId === 'dob') {
-                document.getElementById('dob-group-container').classList.add('input-error');
+                document.getElementById('dob-group-container').classList.add(isSuccess ? 'input-success' : 'input-error');
             } else if (field) {
-                field.classList.add('input-error');
+                field.classList.add(isSuccess ? 'input-success' : 'input-error');
             }
             
             if (errDiv) {
                 errDiv.textContent = msg;
+                errDiv.style.color = isSuccess ? '#34c759' : 'var(--danger)';
                 errDiv.style.display = 'block';
             } else {
                 // Fallback
                 document.getElementById('global-error').textContent = msg;
                 document.getElementById('global-error').style.display = 'block';
             }
+        }
+        
+        let validateTimeout = null;
+        async function debouncedValidateStudentId(val) {
+            const statusIcon = document.getElementById('student_id_status');
+            const errDiv = document.getElementById('err-student_id');
+            const field = document.getElementById('student_id');
+            
+            field.classList.remove('input-error', 'input-success');
+            errDiv.style.display = 'none';
+            
+            if (val.length !== 6) {
+                statusIcon.style.display = 'none';
+                return;
+            }
+            
+            // Show Skeleton Loader (pulsing circle)
+            statusIcon.style.display = 'block';
+            statusIcon.innerHTML = '<div style="width:16px; height:16px; border-radius:50%; background:var(--text-2); animation: pulse 1s infinite;"></div>';
+            
+            clearTimeout(validateTimeout);
+            validateTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch('/api/validate_student', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({student_id: val})
+                    });
+                    const data = await res.json();
+                    
+                    if (data.valid) {
+                        statusIcon.innerHTML = '✅';
+                        showFieldError('student_id', data.message, true);
+                    } else if (data.message) {
+                        statusIcon.innerHTML = '❌';
+                        showFieldError('student_id', data.message, false);
+                    } else {
+                        statusIcon.style.display = 'none';
+                    }
+                } catch(e) {
+                    statusIcon.style.display = 'none';
+                }
+            }, 600);
         }
 
         async function linkAccount() {

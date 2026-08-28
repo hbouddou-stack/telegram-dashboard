@@ -4035,6 +4035,34 @@ async def get_media_stats_api(request):
 # â”€â”€â”€ Student Practice & Quiz API Endpoints â”€â”€â”€
 
 
+async def api_validate_student(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        student_id = data.get('student_id', '').strip()
+        
+        if not student_id or len(student_id) != 6:
+            return web.json_response({'valid': False, 'message': ''})
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("SELECT telegram_id, first_name FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
+                row = await cur.fetchone()
+                if not row:
+                    return web.json_response({'valid': False, 'message': 'الرقم غير مسجل'})
+                
+                # Exists!
+                telegram_id = row[0]
+                first_name = row[1]
+                
+                if telegram_id:
+                    return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name}! (مربوط مسبقاً)'})
+                else:
+                    return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name}!'})
+                
+    except Exception as e:
+        return web.json_response({'valid': False, 'message': ''})
+
 async def api_link_account(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -4616,6 +4644,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/report-chapter', report_chapter)
     # Student Practice & Quiz API routes
     app.router.add_post('/api/link_account', api_link_account)
+    app.router.add_post('/api/validate_student', api_validate_student)
     app.router.add_get('/admin-gateway.html', handle_admin_gateway)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
