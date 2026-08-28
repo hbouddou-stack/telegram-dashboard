@@ -680,10 +680,33 @@ async def api_admin_gateway_action(request: web.Request):
         return web.json_response({'success': False, 'error': str(e)})
 
 async def handle_link(request):
-    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'link.html'))
-    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    resp.headers['Pragma'] = 'no-cache'
-    return resp
+    import aiosqlite
+    from config import DATABASE_PATH
+    html_path = os.path.join(DASHBOARD_DIR, 'link.html')
+    try:
+        with open(html_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        student_theme = 'default'
+        student_font = 'font-tajawal'
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("SELECT value FROM settings WHERE key='student_theme'") as cur:
+                r = await cur.fetchone()
+                if r: student_theme = r[0]
+            async with db.execute("SELECT value FROM settings WHERE key='student_font'") as cur:
+                r = await cur.fetchone()
+                if r: student_font = r[0]
+                
+        # Inject script
+        script = f"<script>window.SERVER_STUDENT_THEME = '{student_theme}'; window.SERVER_STUDENT_FONT = '{student_font}';</script>"
+        content = content.replace('<head>', '<head>' + script)
+        
+        resp = web.Response(body=content, content_type='text/html')
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        resp.headers['Pragma'] = 'no-cache'
+        return resp
+    except Exception as e:
+        return web.Response(text=str(e), status=500)
 
 
 async def handle_reader_js(request):

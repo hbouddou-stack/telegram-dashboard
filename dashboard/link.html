@@ -564,74 +564,16 @@
         <img src="/dossiertelegram.jpg" style="width:100%; border-radius:12px; margin-top:15px; border:1px solid rgba(255,255,255,0.2);">
     </div>
 
-    <!-- Floating Theme Switcher -->
-    <button class="theme-switcher-btn" onclick="openThemeSettings()">🎨</button>
-
-    <!-- Theme Settings Modal -->
-    <div class="modal-overlay" id="theme-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 style="color:var(--text-1);">🎨 تخصيص الواجهة</h2>
-                <button class="close-btn" onclick="closeThemeSettings()">&times;</button>
-            </div>
-            
-            <div class="settings-group">
-                <label style="color:var(--text-1);">المظهر (السمة):</label>
-                <select id="theme-select" onchange="applyTheme()">
-                    <option value="default">المظهر الافتراضي (داكن)</option>
-                    <option value="theme-light">فاتح (Light)</option>
-                    <option value="theme-neon">نيون (Cyberpunk)</option>
-                    <option value="theme-desert">صحراوي (Warm)</option>
-                </select>
-            </div>
-
-            <div class="settings-group">
-                <label style="color:var(--text-1);">نوع الخط:</label>
-                <select id="font-select" onchange="applyTheme()">
-                    <option value="font-tajawal">تجوال (Tajawal)</option>
-                    <option value="font-cairo">كايرو (Cairo)</option>
-                    <option value="font-amiri">أميري (Amiri)</option>
-                    <option value="font-readex">ريدكس (Readex Pro)</option>
-                </select>
-            </div>
-
-            <button onclick="closeThemeSettings()" style="background:var(--accent); color:#fff; border:none; border-radius:10px; padding:12px; font-size:1.1rem; font-family:inherit; cursor:pointer;">حفظ الإعدادات</button>
-        </div>
-    </div>
-
     <script>
-        // Load saved theme and font
+        // Load saved theme and font from server (injected by main.py)
         function loadPreferences() {
-            const savedTheme = localStorage.getItem('app-theme') || 'default';
-            const savedFont = localStorage.getItem('app-font') || 'font-tajawal';
+            const savedTheme = window.SERVER_STUDENT_THEME || 'default';
+            const savedFont = window.SERVER_STUDENT_FONT || 'font-tajawal';
             
             document.body.className = `${savedTheme !== 'default' ? savedTheme : ''} ${savedFont}`;
-            
-            document.getElementById('theme-select').value = savedTheme;
-            document.getElementById('font-select').value = savedFont;
         }
 
-        function applyTheme() {
-            const theme = document.getElementById('theme-select').value;
-            const font = document.getElementById('font-select').value;
-            
-            document.body.className = `${theme !== 'default' ? theme : ''} ${font}`;
-            
-            localStorage.setItem('app-theme', theme);
-            localStorage.setItem('app-font', font);
-        }
 
-        function openThemeSettings() {
-            const modal = document.getElementById('theme-modal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
-        }
-
-        function closeThemeSettings() {
-            const modal = document.getElementById('theme-modal');
-            modal.classList.remove('show');
-            setTimeout(() => modal.style.display = 'none', 300);
-        }
 
         // Initialize preferences on load
         loadPreferences();

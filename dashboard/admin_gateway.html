@@ -302,6 +302,13 @@
 
     <!-- TAB: Historique Global -->
     <div id="tab-logs" class="tab-content">
+        <div class="filter-row" style="margin-bottom: 12px; overflow-x: auto; padding-bottom: 8px;">
+            <div class="chip active" id="filter-log-all" onclick="setLogFilter('ALL')">الكل</div>
+            <div class="chip" id="filter-log-success" onclick="setLogFilter('SUCCESS')">🟢 نجاح الربط</div>
+            <div class="chip" id="filter-log-fail" onclick="setLogFilter('FAIL')">🔴 فشل الربط</div>
+            <div class="chip" id="filter-log-app" onclick="setLogFilter('APP')">📱 فتح التطبيق</div>
+            <div class="chip" id="filter-log-tuto" onclick="setLogFilter('TUTO')">ℹ️ دليل المساعدة</div>
+        </div>
         <div id="global-logs-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
 
@@ -337,6 +344,27 @@
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                 <span style="font-size: 0.88rem;">فرض مطابقة اسم تيليجرام</span>
                 <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;" onchange="toggleForceName(this)">
+            </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 مظهر واجهة الطالب</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 0.88rem;">السمة (Theme):</label>
+                <select id="setting-student-theme" onchange="saveStudentTheme()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <option value="default">الافتراضي الأكاديمي (داكن)</option>
+                    <option value="theme-light">فاتح (Light)</option>
+                    <option value="theme-neon">نيون (Cyberpunk)</option>
+                    <option value="theme-desert">صحراوي (Warm)</option>
+                </select>
+
+                <label style="font-size: 0.88rem; margin-top: 8px;">الخط (Font):</label>
+                <select id="setting-student-font" onchange="saveStudentTheme()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <option value="font-tajawal">تجوال (Tajawal)</option>
+                    <option value="font-cairo">كايرو (Cairo)</option>
+                    <option value="font-amiri">أميري (Amiri)</option>
+                    <option value="font-readex">ريدكس (Readex Pro)</option>
+                </select>
             </div>
         </div>
 
@@ -543,6 +571,9 @@
                 if (data.success && data.settings) {
                     const force = data.settings.force_telegram_name === 'true';
                     document.getElementById('setting-force-name').checked = force;
+                    
+                    if(data.settings.student_theme) document.getElementById('setting-student-theme').value = data.settings.student_theme;
+                    if(data.settings.student_font) document.getElementById('setting-student-font').value = data.settings.student_font;
                 }
             } catch(e) { console.error('Error loading settings', e); }
         }
@@ -553,6 +584,23 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ key: 'force_telegram_name', value: checkbox.checked ? 'true' : 'false' })
+                });
+            } catch(e) { console.error(e); }
+        }
+        
+        async function saveStudentTheme() {
+            try {
+                const theme = document.getElementById('setting-student-theme').value;
+                const font = document.getElementById('setting-student-font').value;
+                await fetch('/api/admin/gateway/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ key: 'student_theme', value: theme })
+                });
+                await fetch('/api/admin/gateway/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ key: 'student_font', value: font })
                 });
             } catch(e) { console.error(e); }
         }
@@ -1035,6 +1083,17 @@
 
         // ============ GLOBAL LOGS (Clickable Cards) ============
         let rawLogs = [];
+        let currentLogFilter = 'ALL';
+        
+        function setLogFilter(type) {
+            currentLogFilter = type;
+            ['all', 'success', 'fail', 'app', 'tuto'].forEach(id => {
+                document.getElementById('filter-log-' + id).classList.remove('active');
+            });
+            document.getElementById('filter-log-' + type.toLowerCase()).classList.add('active');
+            renderGlobalLogs();
+        }
+
         async function fetchGlobalLogs(filterTid = null) {
             const list = document.getElementById('global-logs-list');
             list.innerHTML = '<div class="no-items">جاري التحميل...</div>';
@@ -1043,54 +1102,75 @@
                 const data = await res.json();
                 if(data.success && data.logs.length > 0) {
                     rawLogs = data.logs;
-                    
-                    let filteredLogs = rawLogs;
-                    if (filterTid) {
-                        filteredLogs = rawLogs.filter(l => String(l.telegram_id) === String(filterTid));
-                        if(filteredLogs.length === 0) {
-                            list.innerHTML = '<div class="no-items">لا توجد سجلات سابقة لهذا المتصل.</div>';
-                            return;
-                        }
-                    }
-
-                    const actionTranslations = {
-                        'LINK_FAILED': 'فشل الربط',
-                        'LINK_SUCCESS': 'نجاح الربط',
-                        'ACCOUNT_LINKED': 'نجاح الربط',
-                        'TUTO_OPENED': 'فتح دليل المساعدة',
-                        'APP_OPENED': 'فتح التطبيق',
-                        'start_bot': 'بدء البوت',
-                        'finish_quiz': 'إنهاء اختبار'
-                    };
-
-                    list.innerHTML = filteredLogs.map((l, index) => {
-                        const displayName = l.tg_first_name 
-                            ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(اسم تيليجرام: <span dir="ltr">${l.tg_first_name}</span>)</span>`
-                            : `<span dir="ltr">${l.first_name}</span>`;
-                        
-                        const actionLabel = actionTranslations[l.action_type] || l.action_type;
-                        
-                        let labelColor = 'var(--warning)';
-                        if (l.action_type === 'LINK_FAILED') labelColor = 'var(--danger)';
-                        else if (l.action_type === 'LINK_SUCCESS' || l.action_type === 'ACCOUNT_LINKED') labelColor = 'var(--success)';
-
-                        return `
-                            <div class="log-card" onclick="openLogDetail(${index})">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-direction: row-reverse;">
-                                    <span style="font-size:0.9rem; color:var(--text1);">${displayName}</span>
-                                    <span style="font-size:0.75rem; color:var(--accent2);"><span dir="ltr">${formatDateArabic(l.timestamp)}</span></span>
-                                </div>
-                                <div style="font-weight:700; font-size:0.8rem; color:${labelColor}; margin-bottom:4px; text-align:right;">[${actionLabel}]</div>
-                                <div style="font-size:0.88rem; color:var(--text2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><span dir="ltr">${l.description}</span></div>
-                            </div>
-                        `;
-                    }).join('');
+                    renderGlobalLogs(filterTid);
                 } else {
                     list.innerHTML = '<div class="no-items">لا يوجد أي سجل نشاط عام.</div>';
                 }
             } catch(e) {
                 list.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل: ' + e.message + '</div>';
             }
+        }
+        
+        function renderGlobalLogs(filterTid = null) {
+            const list = document.getElementById('global-logs-list');
+            let filteredLogs = rawLogs;
+            
+            if (filterTid) {
+                filteredLogs = filteredLogs.filter(l => String(l.telegram_id) === String(filterTid));
+                if(filteredLogs.length === 0) {
+                    list.innerHTML = '<div class="no-items">لا توجد سجلات سابقة لهذا المتصل.</div>';
+                    return;
+                }
+            }
+            
+            if (currentLogFilter === 'SUCCESS') {
+                filteredLogs = filteredLogs.filter(l => l.action_type === 'LINK_SUCCESS' || l.action_type === 'ACCOUNT_LINKED');
+            } else if (currentLogFilter === 'FAIL') {
+                filteredLogs = filteredLogs.filter(l => l.action_type === 'LINK_FAILED');
+            } else if (currentLogFilter === 'APP') {
+                filteredLogs = filteredLogs.filter(l => l.action_type === 'APP_OPENED');
+            } else if (currentLogFilter === 'TUTO') {
+                filteredLogs = filteredLogs.filter(l => l.action_type === 'TUTO_OPENED');
+            }
+
+            const actionTranslations = {
+                'LINK_FAILED': 'فشل الربط',
+                'LINK_SUCCESS': 'نجاح الربط',
+                'ACCOUNT_LINKED': 'نجاح الربط',
+                'TUTO_OPENED': 'فتح دليل المساعدة',
+                'APP_OPENED': 'فتح التطبيق',
+                'start_bot': 'بدء البوت',
+                'finish_quiz': 'إنهاء اختبار'
+            };
+
+            if(filteredLogs.length === 0) {
+                list.innerHTML = '<div class="no-items">لا توجد نتائج مطابقة للفلتر.</div>';
+                return;
+            }
+
+            list.innerHTML = filteredLogs.map((l) => {
+                const originalIndex = rawLogs.indexOf(l);
+                const displayName = l.tg_first_name 
+                    ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(اسم تيليجرام: <span dir="ltr">${l.tg_first_name}</span>)</span>`
+                    : `<span dir="ltr">${l.first_name}</span>`;
+                
+                const actionLabel = actionTranslations[l.action_type] || l.action_type;
+                
+                let labelColor = 'var(--warning)';
+                if (l.action_type === 'LINK_FAILED') labelColor = 'var(--danger)';
+                else if (l.action_type === 'LINK_SUCCESS' || l.action_type === 'ACCOUNT_LINKED') labelColor = 'var(--success)';
+
+                return `
+                    <div class="log-card" onclick="openLogDetail(${originalIndex})">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-direction: row-reverse;">
+                            <span style="font-size:0.9rem; color:var(--text1);">${displayName}</span>
+                            <span style="font-size:0.75rem; color:var(--accent2);"><span dir="ltr">${formatDateArabic(l.timestamp)}</span></span>
+                        </div>
+                        <div style="font-weight:700; font-size:0.8rem; color:${labelColor}; margin-bottom:4px; text-align:right;">[${actionLabel}]</div>
+                        <div style="font-size:0.88rem; color:var(--text2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><span dir="ltr">${l.description}</span></div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function openLogDetail(index) {
