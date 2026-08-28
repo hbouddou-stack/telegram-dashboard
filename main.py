@@ -288,7 +288,7 @@ async def api_admin_gateway_students(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT s.student_id, s.first_name, s.email, s.telegram_id, s.year, s.gender, s.dob,
+                SELECT s.student_id, s.first_name, s.email, s.telegram_id, s.year, s.gender, s.dob, s.source,
                        u.first_name as tg_first_name, u.last_name as tg_last_name
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
@@ -373,20 +373,20 @@ async def api_admin_gateway_add_student(request: web.Request):
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
-                        SET dob = ?, first_name = ?, last_name = ?
+                        SET dob = ?, first_name = ?, last_name = ?, source = ?
                         WHERE email = ?
-                    """, (dob, first_name, last_name, email))
+                    """, (dob, first_name, last_name, 'manual', email))
                 else:
                     if student_id:
                         await db.execute("""
-                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """, (student_id, email, dob, first_name, last_name, '1', 'homme'))
+                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (student_id, email, dob, first_name, last_name, '1', 'homme', 'manual'))
                     else:
                         await db.execute("""
-                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, (email, dob, first_name, last_name, '1', 'homme'))
+                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (email, dob, first_name, last_name, '1', 'homme', 'manual'))
             await db.commit()
         return web.json_response({'success': True})
     except Exception as e:
@@ -421,13 +421,9 @@ async def api_admin_gateway_import_students(request: web.Request):
         ln_idx = get_idx('last', 'nom', 'لقب', 'عائلة')
         year_idx = get_idx('year', 'annee', 'année', 'level', 'niveau', 'سنة', 'مستوى')
         gender_idx = get_idx('gender', 'genre', 'sexe', 'جنس')
+        sid_idx = get_idx('student_id', 'matricule', 'id')
 
         if email_idx is None: email_idx = 0
-        if dob_idx is None: dob_idx = 1
-        if fn_idx is None: fn_idx = 2
-        if ln_idx is None: ln_idx = 3
-        if year_idx is None: year_idx = 4
-        if gender_idx is None: gender_idx = 5
         
         imported = 0
         async with aiosqlite.connect(DATABASE_PATH) as db:
@@ -449,14 +445,14 @@ async def api_admin_gateway_import_students(request: web.Request):
                     if exists:
                         await db.execute("""
                             UPDATE academy_students 
-                            SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ? 
+                            SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?
                             WHERE email = ?
-                        """, (dob, first_name, last_name, year, gender, email))
+                        """, (dob, first_name, last_name, year, gender, 'excel', email))
                     else:
                         await db.execute("""
-                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, (email, dob, first_name, last_name, year, gender))
+                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (email, dob, first_name, last_name, year, gender, 'excel'))
                 imported += 1
             await db.commit()
             

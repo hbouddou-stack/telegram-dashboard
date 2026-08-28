@@ -408,6 +408,10 @@
                     <div class="profile-value" id="profile-dob">-</div>
                 </div>
                 <div class="profile-item">
+                    <div class="profile-label">مصدر التسجيل (Provenance)</div>
+                    <div class="profile-value" id="profile-source">-</div>
+                </div>
+                <div class="profile-item">
                     <div class="profile-label">الجنس</div>
                     <div class="profile-value" id="profile-gender">-</div>
                 </div>
@@ -729,10 +733,15 @@
                     : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
                        <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">غير مرتبط بحساب تيليجرام</div>`;
                 
+                let sourceBadge = '';
+                if (s.source === 'excel') sourceBadge = '<span style="font-size:0.75rem; background:rgba(52,199,89,0.15); color:var(--success); padding:2px 6px; border-radius:4px; margin-right:6px;">📊 Excel</span>';
+                else if (s.source === 'manual') sourceBadge = '<span style="font-size:0.75rem; background:rgba(10,132,255,0.15); color:#0a84ff; padding:2px 6px; border-radius:4px; margin-right:6px;">📝 Ajout manuel</span>';
+                else if (s.source === 'google_sheets') sourceBadge = '<span style="font-size:0.75rem; background:rgba(255,159,10,0.15); color:var(--warning); padding:2px 6px; border-radius:4px; margin-right:6px;">🌐 Sheets</span>';
+                
                 div.innerHTML = `
                     <div>
                         <div class="list-name">${display}</div>
-                        <div class="list-meta">${s.email || ''} ${s.year ? '• السنة ' + s.year : ''}</div>
+                        <div class="list-meta">${s.email || ''} ${s.year ? '• السنة ' + s.year : ''} ${sourceBadge}</div>
                     </div>
                     <span class="badge ${linked ? 'badge-linked' : 'badge-unlinked'}">${linked ? 'مرتبط' : 'غير مرتبط'}</span>
                 `;
@@ -747,6 +756,13 @@
             document.getElementById('profile-year').textContent = student.year ? 'السنة ' + student.year : 'غير محدد';
             document.getElementById('profile-email').textContent = student.email || '-';
             document.getElementById('profile-dob').textContent = student.dob || '-';
+            
+            let displaySource = 'غير محدد';
+            if (student.source === 'excel') displaySource = '📊 Fichier Excel';
+            else if (student.source === 'manual') displaySource = '📝 Ajout manuel';
+            else if (student.source === 'google_sheets') displaySource = '🌐 Google Sheets';
+            const sourceEl = document.getElementById('profile-source');
+            if (sourceEl) sourceEl.textContent = displaySource;
             
             let displayGender = 'غير محدد';
             const g = (student.gender || '').toLowerCase();
