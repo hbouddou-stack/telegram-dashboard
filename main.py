@@ -375,9 +375,9 @@ async def api_admin_sos_reply(request: web.Request):
         
         if telegram_id:
             try:
-                await bot.send_message(telegram_id, f"🛠️ **Réponse du Support Académie**\n\n{reply_message}", parse_mode="HTML")
+                await bot.send_message(int(telegram_id), f"<b>🛠️ Réponse du Support Académie</b>\n\n{reply_message}", parse_mode="HTML")
             except Exception as e:
-                pass
+                pass  # Don't fail the ticket close if notification fails
                 
         async with aiosqlite.connect(DATABASE_PATH) as db:
             await db.execute("UPDATE gateway_sos SET status = 'closed' WHERE id = ?", (sos_id,))

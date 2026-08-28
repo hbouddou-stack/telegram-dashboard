@@ -363,7 +363,7 @@
             <div style="background:var(--surface); padding:15px; border-radius:12px; margin-bottom:15px;" id="sos-modal-msg"></div>
             
             <textarea id="sos-reply-text" class="search-box" style="height:100px; resize:none;" placeholder="Tapez votre réponse ici... Elle sera envoyée via Telegram si possible."></textarea>
-            <button class="btn-save" onclick="sendSosReply()">Envoyer et Fermer</button>
+            <button class="btn-save" id="btn-send-sos-reply" onclick="sendSosReply()">Envoyer et Fermer</button>
         </div>
     </div>
 
@@ -607,20 +607,36 @@
         }
         
         async function sendSosReply() {
-            const text = document.getElementById('sos-reply-text').value;
-            if(!currentSosTelegramId) {
-                alert("Impossible de répondre : le Telegram ID de cet élève n'a pas été capturé.");
-                // Still close it if we want
+            const text = document.getElementById('sos-reply-text').value.trim();
+            
+            if(!text) {
+                alert('Veuillez écrire un message avant d\'envoyer.');
+                return;
             }
+            
+            const btn = document.getElementById('btn-send-sos-reply');
+            btn.textContent = 'Envoi en cours...';
+            btn.disabled = true;
+
             try {
-                await fetch('/api/admin/sos/reply', {
+                const res = await fetch('/api/admin/sos/reply', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ sos_id: currentSosId, reply_message: text, telegram_id: currentSosTelegramId })
                 });
-                closeSosModal(null, true);
-                fetchSos();
-            } catch(e) {}
+                const data = await res.json();
+                if(data.success) {
+                    closeSosModal(null, true);
+                    fetchSos();
+                } else {
+                    alert('Erreur serveur: ' + (data.error || 'inconnue'));
+                }
+            } catch(e) {
+                alert('Erreur réseau : ' + e.message);
+            } finally {
+                btn.textContent = 'Envoyer et Fermer';
+                btn.disabled = false;
+            }
         }
 
         // Init
