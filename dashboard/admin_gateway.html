@@ -324,6 +324,17 @@
                 <input type="file" id="excel-file-input" accept=".xlsx" style="display:none;" onchange="importExcel(this)">
             </label>
         </div>
+        
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🔄 مزامنة من Google Sheets</h3>
+            <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
+                جلب أحدث التغييرات من ملف Google Sheets تلقائياً بدون الحاجة إلى رفع ملف إكسل.
+            </div>
+            <button id="btn-sync-sheets" class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #0f9d58;" onclick="syncGoogleSheets()">
+                <span>🔄 بدء المزامنة الآن</span>
+            </button>
+        </div>
+
         <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
             <h3 style="font-size: 1rem; margin-bottom: 10px;">➕ إضافة طالب يدوياً</h3>
             <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -590,6 +601,34 @@
                     body: JSON.stringify({ key: 'force_telegram_name', value: checkbox.checked ? 'true' : 'false' })
                 });
             } catch(e) { console.error(e); }
+        }
+        
+        // ============ GOOGLE SHEETS SYNC ============
+        async function syncGoogleSheets() {
+            const btn = document.getElementById('btn-sync-sheets');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ جاري المزامنة...</span>';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/admin/gateway/sync_sheets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('✅ تمت المزامنة بنجاح! تم استيراد/تحديث ' + data.count + ' طالب.');
+                    fetchStudents();
+                } else {
+                    alert('❌ خطأ في المزامنة: ' + data.error);
+                }
+            } catch(e) { 
+                console.error(e); 
+                alert('حدث خطأ غير متوقع أثناء المزامنة.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
         
         async function saveStudentTheme() {

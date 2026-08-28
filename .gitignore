@@ -18,3 +18,5 @@ __pycache__/
 _backups/
 telegram-bot/
 telegram-bot-backup_Safety_Backup/
+
+credentials.json

@@ -460,6 +460,24 @@ async def api_admin_gateway_import_students(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+async def api_admin_gateway_sync_sheets(request: web.Request):
+    try:
+        from sync_sheets import run_google_sheets_sync
+        from config import GOOGLE_SHEET_ID
+        
+        data = await request.json()
+        sheet_id = data.get('sheet_id') or GOOGLE_SHEET_ID
+        
+        if not sheet_id:
+            return web.json_response({'success': False, 'error': "L'ID de la Google Sheet n'a pas été fourni ou configuré."})
+            
+        imported = await run_google_sheets_sync(sheet_id)
+        return web.json_response({'success': True, 'count': imported})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_settings(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -4669,6 +4687,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
     app.router.add_post('/api/admin/gateway/add_student', api_admin_gateway_add_student)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
+    app.router.add_post('/api/admin/gateway/sync_sheets', api_admin_gateway_sync_sheets)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/settings', api_admin_gateway_settings_get)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
