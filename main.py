@@ -427,6 +427,19 @@ async def api_admin_gateway_settings(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+async def api_admin_gateway_settings_get(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT key, value FROM settings") as cur:
+                rows = await cur.fetchall()
+                settings_dict = {row['key']: row['value'] for row in rows}
+        return web.json_response({'success': True, 'settings': settings_dict})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 
 
 
@@ -4510,6 +4523,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
+    app.router.add_get('/api/admin/gateway/settings', api_admin_gateway_settings_get)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
     app.router.add_post('/api/gateway/sos', api_gateway_sos)
