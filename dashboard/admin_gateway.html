@@ -719,9 +719,13 @@
                 div.className = 'list-item';
                 div.onclick = () => openStudentCard(s);
                 
+                let tgFullName = s.tg_first_name || '';
+                if (s.tg_last_name) tgFullName += ' ' + s.tg_last_name;
+                tgFullName = tgFullName.trim() || 'غير معروف';
+                
                 const display = linked 
                     ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
-                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">الاسم على تيليجرام: ${s.tg_first_name || 'غير معروف'} (ID: ${s.telegram_id})</div>`
+                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">الاسم على تيليجرام: ${tgFullName} (ID: ${s.telegram_id})</div>`
                     : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
                        <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">غير مرتبط بحساب تيليجرام</div>`;
                 
@@ -789,18 +793,11 @@
                 const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id + '&tid=' + (student.telegram_id || 'null'));
                 const data = await res.json();
                 
-                try {
-                    const allLogsRes = await fetch('/api/admin/gateway/logs/all');
-                    const allLogsData = await allLogsRes.json();
-                    if (allLogsData.success) {
-                        const matchedLog = allLogsData.logs.find(l => l.student_id === student.student_id && l.tg_first_name);
-                        if (matchedLog) {
-                            document.getElementById('profile-tg-display').textContent = matchedLog.tg_first_name;
-                        } else {
-                            document.getElementById('profile-tg-display').textContent = 'غير معروف (لم يسجل دخول مؤخراً)';
-                        }
-                    }
-                } catch(err) { console.error(err); }
+                if (student.telegram_id) {
+                    let tgFullName = student.tg_first_name || '';
+                    if (student.tg_last_name) tgFullName += ' ' + student.tg_last_name;
+                    document.getElementById('profile-tg-display').textContent = tgFullName.trim() || 'غير معروف (لم يسجل دخول مؤخراً)';
+                }
 
                 if(data.success && data.logs.length > 0) {
                     document.getElementById('logs-body').innerHTML = data.logs.map(l => `
@@ -1159,8 +1156,13 @@
 
             list.innerHTML = filteredLogs.map((l) => {
                 const originalIndex = rawLogs.indexOf(l);
-                const displayName = l.tg_first_name 
-                    ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(اسم تيليجرام: <span dir="ltr">${l.tg_first_name}</span>)</span>`
+                let tgDisplay = l.telegram_name || '';
+                if (!tgDisplay && l.tg_first_name) {
+                    tgDisplay = l.tg_first_name + (l.tg_last_name ? ' ' + l.tg_last_name : '');
+                }
+                
+                const displayName = tgDisplay 
+                    ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(بواسطة: <span dir="ltr">${tgDisplay}</span>)</span>`
                     : `<span dir="ltr">${l.first_name}</span>`;
                 
                 const actionLabel = actionTranslations[l.action_type] || l.action_type;
@@ -1190,7 +1192,11 @@
             document.getElementById('log-detail-type').textContent = log.action_type || 'غير محدد';
             document.getElementById('log-detail-time').textContent = formatDateArabic(log.timestamp);
             document.getElementById('log-detail-name').textContent = log.first_name || 'غير معروف';
-            document.getElementById('log-detail-tg').textContent = log.tg_first_name || 'غير معروف (أو غير مرتبط)';
+            let tgDisplay = log.telegram_name || '';
+            if (!tgDisplay && log.tg_first_name) {
+                tgDisplay = log.tg_first_name + (log.tg_last_name ? ' ' + log.tg_last_name : '');
+            }
+            document.getElementById('log-detail-tg').textContent = tgDisplay || 'غير معروف (أو غير مرتبط)';
             
             function colorizeDescDetail(desc) {
                 if (!desc) return '';
