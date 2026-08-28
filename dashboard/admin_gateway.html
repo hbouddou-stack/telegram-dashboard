@@ -1,424 +1,214 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gateway Admin</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root[data-theme="dark"] {
-            --bg: #000000;
-            --surface: #111111;
-            --primary: #ffffff;
-            --accent: #0a84ff;
-            --danger: #ff453a;
-            --text-1: #ffffff;
-            --text-2: #888888;
-            --border: #333333;
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --accent: #7c3aed;
+            --accent2: #a855f7;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text1: #f0f6fc;
+            --text2: #8b949e;
         }
-        :root[data-theme="light"] {
-            --bg: #f2f2f7;
-            --surface: #ffffff;
-            --primary: #000000;
-            --accent: #007aff;
-            --danger: #ff3b30;
-            --text-1: #000000;
-            --text-2: #8e8e93;
-            --border: #e5e5ea;
-        }
-        body {
-            background-color: var(--bg);
-            color: var(--text-1);
-            font-family: 'Outfit', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .header {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--surface);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 1px solid var(--border);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: var(--primary);
-            font-weight: 800;
-        }
-        .theme-toggle {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-1);
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text1); font-family: 'Inter', sans-serif; min-height: 100vh; }
         
-        .tabs {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-2);
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .tab-btn.active {
-            background: var(--text-1);
-            color: var(--bg);
-        }
-        .tab-content {
-            display: none;
-            padding: 20px;
-            flex: 1;
-            overflow-y: auto;
-        }
+        .header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .header h1 { font-size: 1.2rem; font-weight: 800; background: linear-gradient(90deg, var(--accent2), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .tabs { display: flex; gap: 4px; padding: 12px 16px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .tab-btn { padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text2); font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .tab-btn.active { background: var(--accent); color: white; }
+        .tab-content { display: none; padding: 16px; }
         .tab-content.active { display: block; }
         
-        /* Stats */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-value { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
-        .stat-label { font-size: 0.8rem; color: var(--text-2); font-weight: 600; text-transform: uppercase; }
-        
         /* Filters */
-        .filter-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .filter-row {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
-        .filter-row::-webkit-scrollbar { display: none; }
-        .filter-chip {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text-2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-        .filter-chip.active {
-            background: var(--text-1);
-            color: var(--bg);
-            border-color: var(--text-1);
-        }
-
-        /* Lists */
-        .search-box {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text-1);
-            font-family: 'Outfit', sans-serif;
-            outline: none;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
-        .list-item {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        .list-info h4 { margin: 0 0 4px 0; font-size: 1rem; }
-        .list-info p { margin: 0; font-size: 0.8rem; color: var(--text-2); }
+        .filter-section { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
         
-        .student-meta {
-            display: flex;
-            gap: 8px;
-            margin-top: 5px;
-            font-size: 0.75rem;
-            color: var(--text-2);
-        }
-        .meta-badge {
-            background: rgba(128,128,128,0.2);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-        .status-linked { background: rgba(52, 199, 89, 0.2); color: #34c759; }
-        .status-unlinked { background: rgba(255, 69, 58, 0.2); color: var(--danger); }
-        .status-fraud { background: rgba(255, 159, 10, 0.2); color: #ff9f0a; }
-
-        /* Links Form */
-        .link-group {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .link-group h3 { margin: 0 0 10px 0; font-size: 1rem; }
-        .link-input {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text-1);
-            border-radius: 8px;
-            font-family: 'Outfit', sans-serif;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-        .btn-save {
-            width: 100%;
-            background: var(--text-1);
-            color: var(--bg);
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 1rem;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-        }
-
+        /* Search */
+        .search-box { width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'Inter', sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; }
+        .search-box:focus { border-color: var(--accent); }
+        
+        /* Stats */
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+        .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); }
+        .stat-lbl { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
+        
+        /* List */
+        .list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; }
+        .list-item:hover { border-color: var(--accent); }
+        .list-name { font-weight: 700; font-size: 0.95rem; }
+        .list-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+        
+        /* Badges */
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; }
+        .badge-linked { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-unlinked { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-open { background: rgba(245,158,11,0.15); color: var(--warning); }
+        
+        /* Buttons */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Input group */
+        .input-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
+        .input-row textarea { flex: 1; resize: none; height: 44px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none; }
+        .input-row textarea:focus { border-color: var(--accent); }
+        .input-row button { flex-shrink: 0; padding: 10px 16px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; height: 44px; font-size: 0.85rem; }
+        
         /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 100;
-            align-items: flex-end;
-            justify-content: center;
-        }
-        .modal {
-            background: var(--bg);
-            width: 100%;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            box-sizing: border-box;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: translateY(100%);
-            transition: transform 0.3s;
-        }
-        .modal.open { transform: translateY(0); }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .close-btn {
-            background: var(--surface);
-            border: none;
-            color: var(--text-2);
-            width: 32px;
-            height: 32px;
-            border-radius: 16px;
-            cursor: pointer;
-        }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: flex-end; justify-content: center; }
+        .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; border-top: 1px solid var(--border); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .modal-header h2 { font-size: 1.1rem; }
+        .close-btn { background: none; border: none; color: var(--text2); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+        
+        /* Debug */
+        #debug-panel { margin-top: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 8px; min-height: 40px; font-family: monospace; max-height: 200px; overflow-y: auto; font-size: 11px; }
+        
+        /* SOS item */
+        .sos-item { background: var(--surface); border: 1px solid var(--warning); border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+        .sos-item:hover { background: rgba(245,158,11,0.08); }
+
+        /* Link group */
+        .link-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .link-group h3 { font-size: 0.9rem; color: var(--text2); margin-bottom: 10px; }
+        .link-input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text1); font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; margin-top: 4px; }
+        .link-input:focus { border-color: var(--accent); }
+        .link-label { font-size: 0.8rem; color: var(--text2); margin-top: 10px; }
+
+        .no-items { text-align: center; color: var(--text2); padding: 40px 0; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-
     <div class="header">
-        <h1>Gateway Admin</h1>
-        <button class="theme-toggle" onclick="toggleTheme()">☀️ Mode Clair</button>
+        <h1>🛠️ Gateway Admin</h1>
+        <span id="sos-badge" style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;display:none;">0 SOS</span>
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('dashboard')">Élèves</button>
-        <button class="tab-btn" onclick="switchTab('links')">Liens Groupes</button>
-        <button class="tab-btn" onclick="switchTab('sos')">SOS Liaison <span id="sos-badge" style="color:var(--danger); display:none;">(1)</span></button>
+        <button class="tab-btn active" onclick="switchTab('students')">👥 Élèves</button>
+        <button class="tab-btn" onclick="switchTab('sos')">🆘 SOS Liaison</button>
+        <button class="tab-btn" onclick="switchTab('links')">🔗 Liens Groupes</button>
     </div>
-
-    <!-- ÉLÈVES & STATS TAB -->
-    <div id="tab-dashboard" class="tab-content active">
-        
+    
+    <!-- TAB: Élèves -->
+    <div id="tab-students" class="tab-content active">
         <div class="filter-section">
-            <div class="filter-row" id="filter-status">
-                <div class="filter-chip active" onclick="setFilter('status', 'all')">Tous</div>
-                <div class="filter-chip" onclick="setFilter('status', 'linked')">🟢 Liés</div>
-                <div class="filter-chip" onclick="setFilter('status', 'unlinked')">🔴 Non Liés</div>
-                <div class="filter-chip" onclick="setFilter('status', 'fraud')">🟠 Nom Changé</div>
+            <div class="filter-row" id="fr-status">
+                <div class="chip active" onclick="setFilter('status','all',this)">Tous</div>
+                <div class="chip" onclick="setFilter('status','linked',this)">✅ Liés</div>
+                <div class="chip" onclick="setFilter('status','unlinked',this)">❌ Non Liés</div>
             </div>
-            <div class="filter-row" id="filter-gender">
-                <div class="filter-chip active" onclick="setFilter('gender', 'all')">👥 Tous</div>
-                <div class="filter-chip" onclick="setFilter('gender', 'homme')">👨 Hommes</div>
-                <div class="filter-chip" onclick="setFilter('gender', 'femme')">👩 Femmes</div>
-                <div class="filter-chip" onclick="setFilter('gender', 'inconnu')">❓ Non Spécifié</div>
+            <div class="filter-row" id="fr-gender">
+                <div class="chip active" onclick="setFilter('gender','all',this)">👥 Tous</div>
+                <div class="chip" onclick="setFilter('gender','homme',this)">👨 Hommes</div>
+                <div class="chip" onclick="setFilter('gender','femme',this)">👩 Femmes</div>
+                <div class="chip" onclick="setFilter('gender','inconnu',this)">❓ Non Spécifié</div>
             </div>
-            <div class="filter-row" id="filter-level">
-                <div class="filter-chip active" onclick="setFilter('level', 'all')">Toutes Années</div>
-                <div class="filter-chip" onclick="setFilter('level', '1')">Année 1</div>
-                <div class="filter-chip" onclick="setFilter('level', '2')">Année 2</div>
-                <div class="filter-chip" onclick="setFilter('level', '3')">Année 3</div>
-                <div class="filter-chip" onclick="setFilter('level', '4')">Année 4</div>
+            <div class="filter-row" id="fr-level">
+                <div class="chip active" onclick="setFilter('level','all',this)">Toutes années</div>
+                <div class="chip" onclick="setFilter('level','1',this)">Année 1</div>
+                <div class="chip" onclick="setFilter('level','2',this)">Année 2</div>
+                <div class="chip" onclick="setFilter('level','3',this)">Année 3</div>
+                <div class="chip" onclick="setFilter('level','4',this)">Année 4</div>
             </div>
         </div>
-
+        <input class="search-box" type="text" id="search-input" placeholder="🔍 Rechercher par nom ou email..." oninput="filterStudents()">
         <div class="stat-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="stat-total" style="color: var(--text-1)">-</div>
-                <div class="stat-label">Total Filtré</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-linked" style="color: #34c759">-</div>
-                <div class="stat-label">Liés (Filtrés)</div>
-            </div>
+            <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">Affichés</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-linked">—</div><div class="stat-lbl">Liés</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-pct">—</div><div class="stat-lbl">% Liés</div></div>
         </div>
-
-        <input type="text" class="search-box" id="search-input" placeholder="Rechercher par nom..." oninput="filterStudents()">
-        <div id="students-list">
-            <div style="text-align: center; color: var(--text-2); margin-top: 30px;">Chargement...</div>
-        </div>
+        <div id="students-list"></div>
     </div>
-
-    <!-- LIENS GROUPES TAB -->
-    <div id="tab-links" class="tab-content">
-        
-        <div style="background:var(--surface); padding:20px; border-radius:12px; margin-bottom:25px; border:1px solid var(--border);">
-            <h3 style="margin-top:0;">Paramètres de Sécurité</h3>
-            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;">
-                <span style="font-weight:600;">Forcer la correspondance du prénom Telegram</span>
-            </label>
-            <p style="font-size:0.85rem; color:var(--text-2); margin-top:5px; margin-bottom:0;">
-                Si activé, l'élève ne pourra pas lier son compte si son prénom sur Telegram ne correspond pas à celui de la base de données.
-            </p>
-        </div>
-
-        <p style="color: var(--text-2); margin-bottom:20px;">Collez les liens d'invitation Telegram pour chaque groupe. Les élèves recevront automatiquement le bon lien.</p>
-        
-        <div id="links-container"></div>
-        <button class="btn-save" onclick="saveLinks()">Enregistrer les liens et paramètres</button>
-    </div>
-
-    <!-- SOS LIAISON TAB -->
+    
+    <!-- TAB: SOS -->
     <div id="tab-sos" class="tab-content">
-        <div id="sos-list">
-            <div style="text-align: center; color: var(--text-2); margin-top: 30px;">Aucun message SOS.</div>
+        <div id="sos-list"><div class="no-items">Chargement...</div></div>
+    </div>
+    
+    <!-- TAB: Liens Groupes -->
+    <div id="tab-links" class="tab-content">
+        <div id="links-container"><div class="no-items">Chargement...</div></div>
+        <br>
+        <button class="btn btn-primary" onclick="saveLinks()">💾 Enregistrer les liens</button>
+    </div>
+
+    <!-- Modal: Logs Élève -->
+    <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📋 Historique — <span id="logs-name"></span></h2>
+                <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
+            </div>
+            <div id="logs-body"><div class="no-items">Chargement...</div></div>
         </div>
     </div>
 
-    <!-- SOS MODAL -->
-    <div class="modal-overlay" id="sos-modal-overlay" onclick="closeSosModal(event)">
-        <div class="modal" id="sos-modal">
+    <!-- Modal: Répondre SOS -->
+    <div class="modal-overlay" id="sos-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
             <div class="modal-header">
-                <h2 style="margin: 0;">Répondre au SOS</h2>
-                <button class="close-btn" onclick="closeSosModal(null, true)">✕</button>
+                <h2>🆘 Répondre au SOS</h2>
+                <button class="close-btn" onclick="document.getElementById('sos-overlay').style.display='none'">✕</button>
             </div>
-            <p id="sos-modal-email" style="color: var(--text-2);"></p>
-            <div style="background:var(--surface); padding:15px; border-radius:12px; margin-bottom:15px;" id="sos-modal-msg"></div>
+            <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px;"></div>
+            <div id="sos-modal-message" style="background:var(--bg);padding:12px;border-radius:10px;font-size:0.9rem;line-height:1.5;margin-bottom:12px;"></div>
             
-            <textarea id="sos-reply-text" class="search-box" style="height:100px; resize:none;" placeholder="Tapez votre réponse ici... Elle sera envoyée via Telegram si possible."></textarea>
-            <button class="btn-save" id="btn-send-sos-reply" onclick="sendSosReply()">Envoyer et Fermer</button>
-            <div id="debug-panel" style="margin-top:10px; background:#111; border:1px solid #444; border-radius:8px; padding:8px; min-height:40px; font-family:monospace; max-height:150px; overflow-y:auto;"><span style="color:#666;font-size:11px;">Log de débogage — appuyez sur Envoyer pour voir les étapes</span></div>
-        </div>
-    </div>
-
-    <!-- STUDENT LOGS MODAL -->
-    <div class="modal-overlay" id="logs-modal-overlay" onclick="if(event.target===this) this.style.display='none';">
-        <div class="modal" id="logs-modal">
-            <div class="modal-header">
-                <h2 style="margin: 0;">Historique de l'élève</h2>
-                <button class="close-btn" onclick="document.getElementById('logs-modal-overlay').style.display='none';">&times;</button>
+            <div class="input-row">
+                <textarea id="sos-reply-text" placeholder="Tapez votre réponse ici..."></textarea>
+                <button onclick="sendSosReply()">Envoyer ✈️</button>
             </div>
-            <p id="logs-modal-name" style="color: var(--text-2); font-weight: bold;"></p>
-            <div style="max-height: 300px; overflow-y: auto; background:var(--surface); padding:10px; border-radius:12px; margin-bottom:15px;" id="logs-container">
-                <!-- Logs will be injected here -->
-            </div>
+            <div id="debug-panel"><span style="color:#555;">— Logs de débogage —</span></div>
         </div>
     </div>
 
     <script>
-        let allStudents = [];
-        let activeFilters = { status: 'all', gender: 'all', level: 'all' };
-        let currentSosId = null;
-
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
-        function toggleTheme() {
-            const root = document.documentElement;
-            const btn = document.querySelector('.theme-toggle');
-            if (root.getAttribute('data-theme') === 'dark') {
-                root.setAttribute('data-theme', 'light');
-                btn.textContent = '🌙 Mode Sombre';
-            } else {
-                root.setAttribute('data-theme', 'dark');
-                btn.textContent = '☀️ Mode Clair';
-            }
+        let allStudents = [];
+        let filters = { status: 'all', gender: 'all', level: 'all' };
+        let activeSosId = null;
+        let activeSosTid = null;
+
+        // ============ TABS ============
+        function switchTab(id) {
+            document.querySelectorAll('.tab-btn').forEach((b,i) => {
+                b.classList.toggle('active', ['students','sos','links'][i] === id);
+            });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            if(id === 'sos') fetchSos();
+            if(id === 'links') fetchLinks();
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            event.target.classList.add('active');
-            
-            if(tabId === 'links') fetchLinks();
-            if(tabId === 'sos') fetchSos();
-        }
-
-        function setFilter(type, value) {
-            activeFilters[type] = value;
-            document.querySelectorAll(`#filter-${type} .filter-chip`).forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
+        // ============ FILTERS ============
+        function setFilter(type, value, el) {
+            filters[type] = value;
+            el.closest('.filter-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
             filterStudents();
         }
 
+        // ============ STUDENTS ============
         async function fetchStudents() {
             try {
                 const res = await fetch('/api/admin/gateway/students');
@@ -431,105 +221,214 @@
         }
 
         function filterStudents() {
-            const query = document.getElementById('search-input').value.toLowerCase();
+            const q = document.getElementById('search-input').value.toLowerCase();
             const filtered = allStudents.filter(s => {
-                const matchesSearch = s.first_name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query);
-                
-                let sGender = s.gender ? String(s.gender).toLowerCase() : '';
-                const isHomme = sGender.startsWith('h') || sGender === 'm' || sGender === 'male' || sGender === 'garcon';
-                const isFemme = sGender.startsWith('f') || sGender === 'female' || sGender === 'fille';
-                const isInconnu = !isHomme && !isFemme;
-                const matchesGender = (activeFilters.gender === 'all') || 
-                                     (activeFilters.gender === 'homme' && isHomme) ||
-                                     (activeFilters.gender === 'femme' && isFemme) ||
-                                     (activeFilters.gender === 'inconnu' && isInconnu);
-                                     
-                let sYear = s.year ? String(s.year).toLowerCase() : '';
-                const matchesLevel = (activeFilters.level === 'all') || sYear.includes(String(activeFilters.level));
-                
-                let sStatus = s.telegram_id ? 'linked' : 'unlinked';
-                const matchesStatus = (activeFilters.status === 'all') || (activeFilters.status === sStatus);
-                
-                return matchesSearch && matchesGender && matchesLevel && matchesStatus;
+                const name = (s.first_name || '').toLowerCase();
+                const email = (s.email || '').toLowerCase();
+                const matchSearch = name.includes(q) || email.includes(q);
+
+                const g = (s.gender || '').toLowerCase();
+                const isM = g.startsWith('h') || g === 'm' || g === 'male';
+                const isF = g.startsWith('f') || g === 'female' || g === 'fille';
+                const matchGender = filters.gender === 'all'
+                    || (filters.gender === 'homme' && isM)
+                    || (filters.gender === 'femme' && isF)
+                    || (filters.gender === 'inconnu' && !isM && !isF);
+
+                const yr = String(s.year || '');
+                const matchLevel = filters.level === 'all' || yr.includes(filters.level);
+
+                const linked = !!s.telegram_id;
+                const matchStatus = filters.status === 'all'
+                    || (filters.status === 'linked' && linked)
+                    || (filters.status === 'unlinked' && !linked);
+
+                return matchSearch && matchGender && matchLevel && matchStatus;
             });
-            
+
+            const linkedCount = filtered.filter(s => s.telegram_id).length;
             document.getElementById('stat-total').textContent = filtered.length;
-            document.getElementById('stat-linked').textContent = filtered.filter(s => s.telegram_id).length;
-            
+            document.getElementById('stat-linked').textContent = linkedCount;
+            document.getElementById('stat-pct').textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
+
             const list = document.getElementById('students-list');
             list.innerHTML = '';
+            if(filtered.length === 0) {
+                list.innerHTML = '<div class="no-items">Aucun élève trouvé.</div>';
+                return;
+            }
             filtered.forEach(s => {
-                const isLinked = s.telegram_id != null;
-                const badge = isLinked ? '<span class="status-badge status-linked">LIÉ</span>' : '<span class="status-badge status-unlinked">NON LIÉ</span>';
-                const el = document.createElement('div');
-                el.className = 'list-item';
-                el.onclick = () => openStudentLogs(s.student_id, s.first_name);
-                el.innerHTML = `
-                    <div class="list-info">
-                        <h4>${s.first_name}</h4>
-                        <div class="student-meta">
-                            ${s.gender ? `<span class="meta-badge">${String(s.gender).toLowerCase().startsWith('h') || String(s.gender).toLowerCase() === 'm' ? '👦' : '👧'}</span>` : ''}
-                            ${s.year ? `<span class="meta-badge">Année ${s.year}</span>` : ''}
-                        </div>
+                const linked = !!s.telegram_id;
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.onclick = () => openStudentLogs(s.student_id, s.first_name);
+                div.innerHTML = `
+                    <div>
+                        <div class="list-name">${s.first_name || '—'}</div>
+                        <div class="list-meta">${s.email || ''} ${s.year ? '• Année ' + s.year : ''}</div>
                     </div>
-                    ${badge}
+                    <span class="badge ${linked ? 'badge-linked' : 'badge-unlinked'}">${linked ? 'LIÉ' : 'NON LIÉ'}</span>
                 `;
-                list.appendChild(el);
+                list.appendChild(div);
             });
         }
 
-        async function openStudentLogs(studentId, studentName) {
-            document.getElementById('logs-modal-name').innerText = studentName;
-            document.getElementById('logs-container').innerHTML = '<div style="text-align:center;">Chargement...</div>';
-            document.getElementById('logs-modal-overlay').style.display = 'flex';
-            
+        async function openStudentLogs(studentId, name) {
+            document.getElementById('logs-name').textContent = name;
+            document.getElementById('logs-body').innerHTML = '<div class="no-items">Chargement...</div>';
+            document.getElementById('logs-overlay').style.display = 'flex';
             try {
                 const res = await fetch('/api/admin/gateway/logs?id=' + studentId);
                 const data = await res.json();
-                const container = document.getElementById('logs-container');
-                container.innerHTML = '';
-                
                 if(data.success && data.logs.length > 0) {
-                    data.logs.forEach(log => {
-                        container.innerHTML += `
-                            <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0;">
-                                <div style="font-size: 0.8rem; color: var(--accent);">${log.timestamp}</div>
-                                <div style="font-weight: bold;">[${log.action_type}]</div>
-                                <div style="font-size: 0.9rem; color: var(--text-2);">${log.description}</div>
-                            </div>
-                        `;
-                    });
+                    document.getElementById('logs-body').innerHTML = data.logs.map(l => `
+                        <div style="border-bottom:1px solid var(--border);padding:10px 0;">
+                            <div style="font-size:0.75rem;color:var(--accent2);">${l.timestamp}</div>
+                            <div style="font-weight:700;font-size:0.85rem;">[${l.action_type}]</div>
+                            <div style="font-size:0.88rem;color:var(--text2);">${l.description}</div>
+                        </div>
+                    `).join('');
                 } else {
-                    container.innerHTML = '<div style="text-align:center;">Aucun historique trouvé.</div>';
+                    document.getElementById('logs-body').innerHTML = '<div class="no-items">Aucun historique trouvé.</div>';
                 }
             } catch(e) {
-                document.getElementById('logs-container').innerHTML = '<div style="text-align:center; color: red;">Erreur de chargement.</div>';
+                document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur de chargement.</div>';
             }
         }
 
+        // ============ SOS ============
+        async function fetchSos() {
+            try {
+                const res = await fetch('/api/admin/sos');
+                const data = await res.json();
+                const list = document.getElementById('sos-list');
+                if(!data.success) { list.innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur API.</div>'; return; }
+                
+                const open = data.sos_list.filter(s => s.status === 'open');
+                const badge = document.getElementById('sos-badge');
+                if(open.length > 0) {
+                    badge.style.display = 'block';
+                    badge.textContent = open.length + ' SOS';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                if(open.length === 0) {
+                    list.innerHTML = '<div class="no-items">✅ Aucun ticket ouvert.</div>';
+                    return;
+                }
+                list.innerHTML = '';
+                open.forEach(sos => {
+                    const div = document.createElement('div');
+                    div.className = 'sos-item';
+                    div.onclick = () => openSosModal(sos);
+                    div.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-weight:700;">🆘 ${sos.email_tentative || 'Email inconnu'}</div>
+                            <span class="badge badge-open">OUVERT</span>
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">${sos.timestamp}</div>
+                        <div style="font-size:0.88rem;margin-top:8px;color:var(--text1);">${(sos.message || '').substring(0, 80)}${(sos.message || '').length > 80 ? '...' : ''}</div>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch(e) {
+                document.getElementById('sos-list').innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur réseau: ' + e.message + '</div>';
+            }
+        }
+
+        function openSosModal(sos) {
+            activeSosId = sos.id;
+            activeSosTid = sos.telegram_id;
+            document.getElementById('sos-modal-meta').innerHTML =
+                '<strong>Email:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
+                '<strong>Matricule:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
+                '<strong>TG ID:</strong> ' + (sos.telegram_id || 'Introuvable') + '<br>' +
+                '<strong>Date:</strong> ' + (sos.timestamp || '');
+            document.getElementById('sos-modal-message').textContent = sos.message || '';
+            document.getElementById('sos-reply-text').value = '';
+            document.getElementById('debug-panel').innerHTML = '<span style="color:#555;">— Logs de débogage —</span>';
+            document.getElementById('sos-overlay').style.display = 'flex';
+        }
+
+        function dbg(msg, color) {
+            const d = document.getElementById('debug-panel');
+            const t = new Date().toTimeString().slice(0,8);
+            d.innerHTML += '<div style="color:' + (color||'#aaa') + ';padding:2px 0;">' + t + ' — ' + msg + '</div>';
+            d.scrollTop = d.scrollHeight;
+        }
+
+        async function sendSosReply() {
+            const text = document.getElementById('sos-reply-text').value.trim();
+            dbg('▶ sendSosReply() appelée');
+            dbg('SOS ID = ' + activeSosId);
+            dbg('TG ID = ' + activeSosTid);
+            dbg('Message = "' + text + '"');
+
+            if(!text) {
+                dbg('❌ Message vide !', '#ef4444');
+                alert('Veuillez écrire un message.');
+                return;
+            }
+            if(!activeSosId) {
+                dbg('❌ Pas de SOS sélectionné !', '#ef4444');
+                alert('Erreur : aucun ticket sélectionné.');
+                return;
+            }
+
+            dbg('📡 Envoi à /api/admin/sos/reply ...');
+            const btn = document.querySelector('#sos-overlay button[onclick="sendSosReply()"]');
+            if(btn) { btn.textContent = '...'; btn.disabled = true; }
+
+            try {
+                const res = await fetch('/api/admin/sos/reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sos_id: activeSosId, reply_message: text, telegram_id: activeSosTid })
+                });
+                dbg('HTTP ' + res.status + ' ' + res.statusText, '#22c55e');
+                const data = await res.json();
+                dbg('Réponse: ' + JSON.stringify(data), data.success ? '#22c55e' : '#ef4444');
+                if(data.success) {
+                    dbg('🎉 Succès ! Fermeture...', '#22c55e');
+                    setTimeout(() => {
+                        document.getElementById('sos-overlay').style.display = 'none';
+                        fetchSos();
+                    }, 800);
+                } else {
+                    dbg('❌ Erreur serveur: ' + (data.error || '?'), '#ef4444');
+                    alert('Erreur: ' + (data.error || 'inconnue'));
+                }
+            } catch(e) {
+                dbg('🔴 Erreur réseau: ' + e.message, '#ef4444');
+                alert('Erreur réseau: ' + e.message);
+            } finally {
+                if(btn) { btn.textContent = 'Envoyer ✈️'; btn.disabled = false; }
+            }
+        }
+
+        // ============ LINKS ============
         async function fetchLinks() {
-            const container = document.getElementById('links-container');
-            container.innerHTML = 'Chargement...';
+            const c = document.getElementById('links-container');
+            c.innerHTML = '<div class="no-items">Chargement...</div>';
             try {
                 const res = await fetch('/api/admin/links');
                 const data = await res.json();
-                
-                let html = '';
+                c.innerHTML = '';
                 const genders = ['homme', 'femme'];
                 const years = [1, 2, 3, 4];
-                
                 genders.forEach(g => {
-                    html += `<div class="link-group"><h3>${g === 'homme' ? '👦 Hommes' : '👧 Femmes'}</h3>`;
+                    const grp = document.createElement('div');
+                    grp.className = 'link-group';
+                    grp.innerHTML = '<h3>' + (g === 'homme' ? '👨 Hommes' : '👩 Femmes') + '</h3>';
                     years.forEach(y => {
-                        const key = `link_${g}_${y}`;
+                        const key = 'link_' + g + '_' + y;
                         const found = data.links ? data.links.find(l => l.key === key) : null;
-                        const val = found ? found.value : '';
-                        html += `<input type="text" class="link-input" id="${key}" placeholder="Lien Année ${y}" value="${val}">`;
+                        grp.innerHTML += '<div class="link-label">Année ' + y + '</div><input class="link-input" id="' + key + '" placeholder="https://t.me/..." value="' + (found ? found.value : '') + '">';
                     });
-                    html += `</div>`;
+                    c.appendChild(grp);
                 });
-                container.innerHTML = html;
-            } catch(e) {}
+            } catch(e) { c.innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur: ' + e.message + '</div>'; }
         }
 
         async function saveLinks() {
@@ -537,130 +436,20 @@
             const years = [1, 2, 3, 4];
             for(let g of genders) {
                 for(let y of years) {
-                    const key = `link_${g}_${y}`;
-                    const val = document.getElementById(key).value;
+                    const key = 'link_' + g + '_' + y;
+                    const el = document.getElementById(key);
+                    if(!el) continue;
                     await fetch('/api/admin/gateway/settings', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ key: key, value: val })
+                        body: JSON.stringify({ key, value: el.value })
                     });
                 }
             }
-            alert("Liens enregistrés !");
+            alert('Liens enregistrés !');
         }
 
-        async function fetchSos() {
-            try {
-                const res = await fetch('/api/admin/sos');
-                const data = await res.json();
-                if(data.success) {
-                    const list = document.getElementById('sos-list');
-                    list.innerHTML = '';
-                    const openSos = data.sos_list.filter(s => s.status === 'open');
-                    
-                    if(openSos.length > 0) {
-                        document.getElementById('sos-badge').style.display = 'inline';
-                        document.getElementById('sos-badge').textContent = `(${openSos.length})`;
-                    } else {
-                        document.getElementById('sos-badge').style.display = 'none';
-                        list.innerHTML = '<div style="text-align: center; color: var(--text-2); margin-top: 30px;">Aucun ticket ouvert.</div>';
-                    }
-                    
-                    openSos.forEach(sos => {
-                        const el = document.createElement('div');
-                        el.className = 'list-item';
-                        el.onclick = () => openSosModal(sos);
-                        el.innerHTML = `
-                            <div class="list-info">
-                                <h4>SOS: ${sos.email_tentative}</h4>
-                                <p>${sos.timestamp}</p>
-                            </div>
-                            <span class="status-badge status-unlinked">OUVERT</span>
-                        `;
-                        list.appendChild(el);
-                    });
-                }
-            } catch(e) {}
-        }
-        
-        let currentSosTelegramId = null;
-        function openSosModal(sos) {
-            currentSosId = sos.id;
-            currentSosTelegramId = sos.telegram_id;
-            
-            let metaHtml = `<strong>Email saisi:</strong> ${sos.email_tentative}<br>`;
-            metaHtml += `<strong>Matricule saisi:</strong> ${sos.student_id_tentative || 'N/A'}<br>`;
-            metaHtml += `<strong>Date saisie:</strong> ${sos.dob_tentative || 'N/A'}<br>`;
-            metaHtml += `<small style="color:var(--text-2);">TG ID: ${sos.telegram_id || 'Introuvable'}</small>`;
-            
-            document.getElementById('sos-modal-email').innerHTML = metaHtml;
-            document.getElementById('sos-modal-msg').innerHTML = `<strong>Message:</strong><br>${sos.message}`;
-            document.getElementById('sos-reply-text').value = "";
-            document.getElementById('sos-modal-overlay').style.display = 'flex';
-            setTimeout(() => document.getElementById('sos-modal').classList.add('open'), 10);
-        }
-        
-        function closeSosModal(e, force=false) {
-            if (force || e.target === document.getElementById('sos-modal-overlay')) {
-                document.getElementById('sos-modal').classList.remove('open');
-                setTimeout(() => document.getElementById('sos-modal-overlay').style.display = 'none', 300);
-            }
-        }
-        
-        async function sendSosReply() {
-            const text = document.getElementById('sos-reply-text').value.trim();
-            
-            // ---- DEBUG LOG ----
-            function dbg(msg, color='#fff') {
-                const d = document.getElementById('debug-panel');
-                if(d) d.innerHTML += `<div style="color:${color};border-bottom:1px solid #333;padding:3px 0;font-size:12px;">${new Date().toISOString().slice(11,19)} — ${msg}</div>`;
-                console.log('[SOS DEBUG]', msg);
-            }
-            document.getElementById('debug-panel').innerHTML = '';
-            dbg('▶ sendSosReply() déclenchée');
-            dbg(`currentSosId = ${currentSosId}`);
-            dbg(`currentSosTelegramId = ${currentSosTelegramId}`);
-            dbg(`text = "${text}"`);
-            // -------------------
-            
-            if(!text) {
-                dbg('❌ Message vide, arrêt.', '#ff4444');
-                alert('Veuillez écrire un message avant d\'envoyer.');
-                return;
-            }
-            
-            const btn = document.getElementById('btn-send-sos-reply');
-            btn.textContent = 'Envoi en cours...';
-            btn.disabled = true;
-            dbg('📡 Appel API /api/admin/sos/reply...');
-
-            try {
-                const res = await fetch('/api/admin/sos/reply', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ sos_id: currentSosId, reply_message: text, telegram_id: currentSosTelegramId })
-                });
-                dbg(`✅ Réponse HTTP: ${res.status} ${res.statusText}`, '#00ff88');
-                const data = await res.json();
-                dbg(`📦 JSON reçu: ${JSON.stringify(data)}`, data.success ? '#00ff88' : '#ff4444');
-                if(data.success) {
-                    dbg('🎉 Succès ! Fermeture modal...', '#00ff88');
-                    closeSosModal(null, true);
-                    fetchSos();
-                } else {
-                    dbg('❌ Erreur serveur: ' + (data.error || 'inconnue'), '#ff4444');
-                    alert('Erreur serveur: ' + (data.error || 'inconnue'));
-                }
-            } catch(e) {
-                dbg('🔴 Erreur réseau: ' + e.message, '#ff4444');
-                alert('Erreur réseau : ' + e.message);
-            } finally {
-                btn.textContent = 'Envoyer et Fermer';
-                btn.disabled = false;
-            }
-        }
-
-        // Init
+        // ============ INIT ============
         fetchStudents();
     </script>
 </body>
