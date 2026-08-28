@@ -96,6 +96,24 @@
         .filter-section { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
         .filter-title { font-size: 0.75rem; color: var(--text2); font-weight: 700; margin-bottom: 4px; }
         
+        .chip {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text2);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .chip.active {
+            color: var(--active-color, var(--accent));
+            background: var(--active-bg, rgba(52, 199, 89, 0.15));
+            border-color: var(--active-color, var(--accent));
+        }
+        
         .chip-gender {
             padding: 8px 12px;
             border-radius: 10px;
@@ -312,7 +330,10 @@
 
     <!-- TAB: Historique Global -->
     <div id="tab-logs" class="tab-content">
-        <div class="filter-row" style="margin-bottom: 12px; overflow-x: auto; padding-bottom: 8px;">
+        <div style="margin-bottom: 12px;">
+            <input type="text" id="log-search-input" placeholder="🔍 Rechercher par ID Telegram, Nom ou Action..." oninput="renderGlobalLogs()" style="width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.9rem;">
+        </div>
+        <div class="filter-row" style="margin-bottom: 12px; overflow-x: auto; padding-bottom: 8px; display: flex; gap: 8px; flex-wrap: nowrap;">
             <div class="chip active" id="filter-log-all" onclick="setLogFilter('ALL')">الكل</div>
             <div class="chip" id="filter-log-success" onclick="setLogFilter('SUCCESS')">🟢 نجاح الربط</div>
             <div class="chip" id="filter-log-fail" onclick="setLogFilter('FAIL')">🔴 فشل الربط</div>
@@ -407,47 +428,20 @@
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
             </div>
             
-            <div class="profile-grid">
-                <div class="profile-item">
-                    <div class="profile-label">الاسم الكامل (المسجل في قاعدة البيانات)</div>
-                    <div class="profile-value" id="profile-name">-</div>
-                </div>
-                <div class="profile-item" id="profile-tg-container" style="display: none;">
-                    <div class="profile-label">الاسم على تيليجرام</div>
-                    <div class="profile-value" id="profile-tg-display">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">البريد الإلكتروني للتعلم</div>
-                    <div class="profile-value" id="profile-email">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">تاريخ التسجيل (Inscription Date)</div>
-                    <div class="profile-value" id="profile-inscription">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">رقم الهاتف</div>
-                    <div class="profile-value" id="profile-phone">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">تاريخ الميلاد</div>
-                    <div class="profile-value" id="profile-dob">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">السنة / المستوى الدراسي</div>
-                    <div class="profile-value" id="profile-year">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">الجنس</div>
-                    <div class="profile-value" id="profile-gender">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">معرف حساب تيليجرام (Telegram ID)</div>
-                    <div class="profile-value" id="profile-tgid">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">حالة الانضمام لمجموعات وقنوات الأكاديمية</div>
-                    <div class="profile-value" id="profile-membership">جاري التحقق...</div>
-                </div>
+            <div class="profile-chips-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.1); border-color:#0a84ff; color:#0a84ff;">🗄️ -</div>
+                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.1); border-color:#34c759; color:#34c759;">✈️ <span id="profile-tg-display"></span></div>
+                <div class="chip" id="profile-email" style="background:var(--surface);">✉️ -</div>
+                <div class="chip" id="profile-inscription" style="background:var(--surface);">📅 -</div>
+                <div class="chip" id="profile-phone" style="background:var(--surface);">📞 -</div>
+                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.1); border-color:#ff9f0a; color:#ff9f0a;">🎓 -</div>
+                <div class="chip" id="profile-dob" style="background:var(--surface);">🎂 -</div>
+                <div class="chip" id="profile-gender" style="background:var(--surface);">⚧️ -</div>
+                <div class="chip" id="profile-tgid" style="background:var(--surface);">🆔 -</div>
+            </div>
+            
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:15px; font-size:0.85rem; color:var(--text1);">
+                <strong>حالة الانضمام:</strong> <span id="profile-membership">جاري التحقق...</span>
             </div>
 
             <div style="display:flex; gap:10px; margin-bottom:18px;">
@@ -758,7 +752,9 @@
                     || (filters.gender === 'inconnu' && !isM && !isF);
 
                 const yr = String(s.year || '');
-                const matchLevel = filters.level === 'all' || yr.includes(filters.level);
+                const matchYr = yr.match(/\d+/);
+                const yrNum = matchYr ? matchYr[0] : yr;
+                const matchLevel = filters.level === 'all' || yrNum === filters.level || yr.includes(filters.level);
 
                 const linked = !!s.telegram_id;
                 const matchStatus = filters.status === 'all'
@@ -783,27 +779,36 @@
                 const linked = !!s.telegram_id;
                 const div = document.createElement('div');
                 div.className = 'list-item';
+                
+                const g = (s.gender || '').toLowerCase();
+                if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
+                    div.style.borderLeft = '4px solid #0084ff';
+                    div.style.backgroundColor = 'rgba(0,132,255,0.02)';
+                } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
+                    div.style.borderLeft = '4px solid #ec4899';
+                    div.style.backgroundColor = 'rgba(236,72,153,0.02)';
+                }
+
                 div.onclick = () => openStudentCard(s);
                 
                 let tgFullName = s.tg_first_name || '';
                 if (s.tg_last_name) tgFullName += ' ' + s.tg_last_name;
-                tgFullName = tgFullName.trim() || 'غير معروف';
+                tgFullName = tgFullName.trim();
                 
                 const display = linked 
-                    ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
-                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">الاسم على تيليجرام: ${tgFullName} (ID: ${s.telegram_id})</div>`
-                    : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'}</div>
-                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">غير مرتبط بحساب تيليجرام</div>`;
+                    ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'} ${s.last_name || ''}</div>
+                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">✈️ ${tgFullName || 'مجهول'}</div>`
+                    : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'} ${s.last_name || ''}</div>`;
                 
-                let sourceBadge = '';
-                if (s.source === 'excel') sourceBadge = '<span style="font-size:0.75rem; background:rgba(52,199,89,0.15); color:var(--success); padding:2px 6px; border-radius:4px; margin-right:6px;">📊 Excel</span>';
-                else if (s.source === 'manual') sourceBadge = '<span style="font-size:0.75rem; background:rgba(10,132,255,0.15); color:#0a84ff; padding:2px 6px; border-radius:4px; margin-right:6px;">📝 Ajout manuel</span>';
-                else if (s.source === 'google_sheets') sourceBadge = '<span style="font-size:0.75rem; background:rgba(255,159,10,0.15); color:var(--warning); padding:2px 6px; border-radius:4px; margin-right:6px;">🌐 Sheets</span>';
+                const yrStr = String(s.year || '');
+                const matchYr = yrStr.match(/\d+/);
+                const yrNum = matchYr ? matchYr[0] : '';
+                const yearBadge = yrNum ? `<span style="font-size:0.75rem; background:var(--accent2); color:white; padding:2px 6px; border-radius:4px; margin-right:6px;">Année ${yrNum}</span>` : '';
                 
                 div.innerHTML = `
                     <div>
                         <div class="list-name">${display}</div>
-                        <div class="list-meta">${s.email || ''} ${s.year ? '• السنة ' + s.year : ''} ${sourceBadge}</div>
+                        <div class="list-meta" style="margin-top:6px;">${s.email || ''} ${yearBadge}</div>
                     </div>
                     <span class="badge ${linked ? 'badge-linked' : 'badge-unlinked'}">${linked ? 'مرتبط' : 'غير مرتبط'}</span>
                 `;
@@ -815,35 +820,39 @@
             activeStudentId = student.student_id;
             
             const fullName = (student.first_name || '') + (student.last_name ? ' ' + student.last_name : '');
-            document.getElementById('profile-name').textContent = fullName.trim() || 'غير محدد';
+            document.getElementById('profile-name').textContent = '🗄️ ' + (fullName.trim() || 'غير محدد');
             
             const tgContainer = document.getElementById('profile-tg-container');
             if (student.telegram_id && student.tg_first_name) {
-                tgContainer.style.display = '';
+                tgContainer.style.display = 'inline-block';
                 const tgName = student.tg_first_name + (student.tg_last_name ? ' ' + student.tg_last_name : '');
-                document.getElementById('profile-tg-display').textContent = '✈️ ' + tgName;
+                document.getElementById('profile-tg-display').textContent = tgName;
             } else {
                 tgContainer.style.display = 'none';
             }
             
-            document.getElementById('profile-email').textContent = student.email || '-';
+            document.getElementById('profile-email').textContent = '✉️ ' + (student.email || 'غير متوفر');
             
             const inscriptionEl = document.getElementById('profile-inscription');
-            if(inscriptionEl) inscriptionEl.textContent = student.created_at || 'غير متوفر';
+            if(inscriptionEl) inscriptionEl.textContent = '📅 ' + (student.created_at || 'غير متوفر');
             
             const phoneEl = document.getElementById('profile-phone');
-            if(phoneEl) phoneEl.textContent = student.phone || 'غير متوفر';
+            if(phoneEl) phoneEl.textContent = '📞 ' + (student.phone || 'غير متوفر');
             
-            document.getElementById('profile-year').textContent = student.year ? 'السنة ' + student.year : 'غير محدد';
-            document.getElementById('profile-dob').textContent = student.dob || '-';
+            const yrStr = String(student.year || '');
+            const matchYr = yrStr.match(/\d+/);
+            const yrNum = matchYr ? matchYr[0] : '';
+            document.getElementById('profile-year').textContent = '🎓 ' + (yrNum ? 'Année ' + yrNum : 'غير محدد');
+            
+            document.getElementById('profile-dob').textContent = '🎂 ' + (student.dob || 'غير متوفر');
             
             let displayGender = 'غير محدد';
             const g = (student.gender || '').toLowerCase();
-            if (g.startsWith('h') || g === 'm' || g.includes('ذك')) displayGender = 'ذكر 👨';
-            else if (g.startsWith('f') || g === 'fille' || g.includes('أنث')) displayGender = 'أنثى 👩';
-            document.getElementById('profile-gender').textContent = displayGender;
+            if (g.startsWith('h') || g === 'm' || g.includes('ذك')) displayGender = 'ذكر';
+            else if (g.startsWith('f') || g === 'fille' || g.includes('أنث')) displayGender = 'أنثى';
+            document.getElementById('profile-gender').textContent = '⚧️ ' + displayGender;
             
-            document.getElementById('profile-tgid').textContent = student.telegram_id || 'غير مرتبط';
+            document.getElementById('profile-tgid').textContent = '🆔 ' + (student.telegram_id || 'غير مرتبط');
 
             const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (student.telegram_id) {
@@ -1213,9 +1222,31 @@
             } else if (currentLogFilter === 'FAIL') {
                 filteredLogs = filteredLogs.filter(l => l.action_type === 'LINK_FAILED');
             } else if (currentLogFilter === 'APP') {
-                filteredLogs = filteredLogs.filter(l => l.action_type === 'APP_OPENED');
+                filteredLogs = filteredLogs.filter(l => l.action_type === 'APP_OPENED' || l.action_type === 'APP_OPENED_UNLINKED');
             } else if (currentLogFilter === 'TUTO') {
                 filteredLogs = filteredLogs.filter(l => l.action_type === 'TUTO_OPENED');
+            }
+
+            const searchInput = document.getElementById('log-search-input');
+            if (searchInput) {
+                const q = searchInput.value.toLowerCase().trim();
+                if (q) {
+                    filteredLogs = filteredLogs.filter(l => {
+                        const tName = l.telegram_name || '';
+                        const tFirst = l.tg_first_name || '';
+                        const tLast = l.tg_last_name || '';
+                        const sName = l.student_name || '';
+                        const desc = l.description || '';
+                        const tId = String(l.telegram_id || '');
+                        
+                        return tId.includes(q) || 
+                               tName.toLowerCase().includes(q) || 
+                               tFirst.toLowerCase().includes(q) || 
+                               tLast.toLowerCase().includes(q) || 
+                               sName.toLowerCase().includes(q) || 
+                               desc.toLowerCase().includes(q);
+                    });
+                }
             }
 
             const actionTranslations = {

@@ -526,13 +526,13 @@ async def api_gateway_log_open(request: web.Request):
                     student_id = row[0]
                     student_name = row[1]
                     await db.execute(
-                        "INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)",
-                        (student_id, 'APP_OPENED', f"فتح الطالب {student_name} التطبيق بنجاح")
+                        "INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)",
+                        (student_id, telegram_id, 'APP_OPENED', f"فتح الطالب {student_name} التطبيق بنجاح")
                     )
                 else:
                     await db.execute(
-                        "INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)",
-                        (0, 'APP_OPENED_UNLINKED', f"تم فتح التطبيق من قبل مستخدم غير مرتبط (الاسم في تيليجرام: {first_name})")
+                        "INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)",
+                        (0, telegram_id, 'APP_OPENED_UNLINKED', f"تم فتح التطبيق من قبل مستخدم غير مرتبط (الاسم في تيليجرام: {first_name})")
                     )
             await db.commit()
         return web.json_response({'success': True})
@@ -553,11 +553,11 @@ async def api_gateway_log_action(request: web.Request):
                 async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
                     row = await cur.fetchone()
                     if row:
-                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
-                                         (row[0], action_type, f"فتح الطالب {row[1]} دليل معرف الطالب"))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", 
+                                         (row[0], telegram_id, action_type, f"فتح الطالب {row[1]} دليل معرف الطالب"))
                     else:
-                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
-                                         (0, action_type, f"فتح مستخدم غير مرتبط دليل معرف الطالب (الاسم في تيليجرام: {first_name})"))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", 
+                                         (0, telegram_id, action_type, f"فتح مستخدم غير مرتبط دليل معرف الطالب (الاسم في تيليجرام: {first_name})"))
             else:
                 await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
                                  (0, action_type, "فتح مستخدم مجهول دليل معرف الطالب"))
