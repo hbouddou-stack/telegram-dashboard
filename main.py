@@ -408,18 +408,19 @@ async def api_admin_gateway_import_students(request: web.Request):
         sheet = wb.active
         
         headers = [cell.value for cell in sheet[1]]
-        def get_col_idx(name):
-            for i, h in enumerate(headers):
-                if h and name.lower() in str(h).lower():
-                    return i
+        def get_idx(*names):
+            for name in names:
+                for i, h in enumerate(headers):
+                    if h and name.lower() in str(h).lower():
+                        return i
             return None
             
-        email_idx = get_col_idx('email') or get_col_idx('mail') or get_col_idx('courriel')
-        dob_idx = get_col_idx('dob') or get_col_idx('naissance') or get_col_idx('birth') or get_col_idx('date') or get_col_idx('تاريخ')
-        fn_idx = get_col_idx('first') or get_col_idx('prenom') or get_col_idx('prénom') or get_col_idx('اسم')
-        ln_idx = get_col_idx('last') or get_col_idx('nom') or get_col_idx('لقب')
-        year_idx = get_col_idx('year') or get_col_idx('annee') or get_col_idx('année') or get_col_idx('level') or get_col_idx('niveau')
-        gender_idx = get_col_idx('gender') or get_col_idx('genre') or get_col_idx('sexe')
+        email_idx = get_idx('email', 'mail', 'courriel', 'بريد')
+        dob_idx = get_idx('dob', 'naissance', 'birth', 'date', 'تاريخ', 'مواليد')
+        fn_idx = get_idx('first', 'prenom', 'prénom', 'اسم')
+        ln_idx = get_idx('last', 'nom', 'لقب', 'عائلة')
+        year_idx = get_idx('year', 'annee', 'année', 'level', 'niveau', 'سنة', 'مستوى')
+        gender_idx = get_idx('gender', 'genre', 'sexe', 'جنس')
 
         if email_idx is None: email_idx = 0
         if dob_idx is None: dob_idx = 1
