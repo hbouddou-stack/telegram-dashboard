@@ -514,9 +514,8 @@
             <div class="inline-error-text" id="err-dob"></div>
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:15px; align-items: stretch;">
-            <button class="btn-primary" onclick="linkAccount()" id="btn-submit" style="flex:1; margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">دخول</button>
-            <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="flex:1; margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">🆘 مساعدة</button>
+        <div style="margin-top:15px;">
+            <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">🆘 مساعدة</button>
         </div>
         
                 <!-- TUTO MODAL -->
@@ -674,6 +673,18 @@
         }
         window.Telegram.WebApp.expand();
         
+        // Initialize Native MainButton
+        const tg = window.Telegram.WebApp;
+        tg.MainButton.text = "دخول";
+        tg.MainButton.color = "#8736ff";
+        tg.MainButton.textColor = "#ffffff";
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            if (document.getElementById('main-form').style.display !== 'none') {
+                linkAccount();
+            }
+        });
+        
         // Populate DOB dropdowns
         
         let failCount = 0;
@@ -776,11 +787,9 @@
             
             const dob = `${d}/${m}/${y}`; // Formatting for backend (DD/MM/YYYY)
 
-            const btn = document.getElementById('btn-submit');
-            btn.textContent = "جاري التحقق...";
-            btn.disabled = true;
-            
             const initData = window.Telegram.WebApp.initData;
+            tg.MainButton.showProgress();
+            tg.MainButton.disable();
 
             try {
                 const response = await fetch('/api/link_account', {
@@ -796,7 +805,8 @@
                     }
                     document.getElementById('main-form').style.display = 'none';
                     document.getElementById('success-msg').style.display = 'flex';
-
+                    tg.MainButton.hideProgress();
+                    tg.MainButton.hide(); // Hide it on success screen
                 } else {
                     failCount++;
                     
@@ -824,8 +834,8 @@
                 document.getElementById('global-error').textContent = "خطأ في الاتصال";
                 document.getElementById('global-error').style.display = 'block';
             }
-            btn.textContent = "دخول";
-            btn.disabled = false;
+            tg.MainButton.hideProgress();
+            tg.MainButton.enable();
         }
         
         function joinGroup() {
