@@ -491,7 +491,7 @@
                 <span style="color:var(--accent); cursor:pointer; font-size:0.8rem;" onclick="showTuto()">أين أجد رقم الطالب؟ ℹ️</span>
             </label>
             <div style="position: relative;">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); debouncedValidateStudentId(this.value);" id="student_id" placeholder="مثال: 000123" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); debouncedValidateField();" id="student_id" placeholder="مثال: 000123" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
                 <div id="student_id_status" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
             </div>
             <div class="inline-error-text" id="err-student_id" style="margin-top: 4px;"></div>
@@ -499,7 +499,10 @@
         
         <div class="input-group">
             <label>البريد الإلكتروني</label>
-            <input type="email" id="email" placeholder="البريد الإلكتروني المستخدم في التسجيل" required>
+            <div style="position: relative;">
+                <input type="email" id="email" oninput="debouncedValidateField()" placeholder="البريد الإلكتروني المستخدم في التسجيل" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
+                <div id="email_status" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
+            </div>
             <div class="inline-error-text" id="err-email"></div>
         </div>
         
@@ -688,6 +691,26 @@
             }
         });
         
+        // Initialize SecondaryButton if supported (Telegram v7.10+)
+        if (tg.SecondaryButton) {
+            tg.SecondaryButton.setParams({
+                text: "لدي مشكلة 🆘",
+                color: "#1c1c1e",
+                text_color: "#ff453a",
+                is_visible: true,
+                position: "bottom"
+            });
+            tg.SecondaryButton.onClick(() => {
+                showSOS();
+            });
+            // Hide the HTML SOS button since we have the native one
+            const htmlSosBtn = document.getElementById('btn-sos-trigger');
+            if (htmlSosBtn) {
+                htmlSosBtn.style.display = 'none';
+                htmlSosBtn.parentElement.style.marginTop = '0';
+            }
+        }
+        
         // Populate DOB dropdowns
         
         let failCount = 0;
@@ -726,16 +749,20 @@
         }
         
         let validateTimeout = null;
-        async function debouncedValidateStudentId(val) {
+        async function debouncedValidateField() {
+            const studentId = document.getElementById('student_id').value.trim();
+            const email = document.getElementById('email').value.trim();
             const statusIcon = document.getElementById('student_id_status');
+            const emailIcon = document.getElementById('email_status');
             const errDiv = document.getElementById('err-student_id');
             const field = document.getElementById('student_id');
             
             field.classList.remove('input-error', 'input-success');
             errDiv.style.display = 'none';
             
-            if (val.length !== 6) {
+            if (studentId.length !== 6) {
                 statusIcon.style.display = 'none';
+                if(emailIcon) emailIcon.style.display = 'none';
                 return;
             }
             
@@ -743,27 +770,43 @@
             statusIcon.style.display = 'block';
             statusIcon.innerHTML = '<div style="width:16px; height:16px; border-radius:50%; background:var(--text-2); animation: pulse 1s infinite;"></div>';
             
+            if (emailIcon && email.length > 5) {
+                emailIcon.style.display = 'block';
+                emailIcon.innerHTML = '<div style="width:16px; height:16px; border-radius:50%; background:var(--text-2); animation: pulse 1s infinite;"></div>';
+            } else if (emailIcon) {
+                emailIcon.style.display = 'none';
+            }
+            
             clearTimeout(validateTimeout);
             validateTimeout = setTimeout(async () => {
                 try {
+                    const payload = {student_id: studentId};
+                    if (email.length > 5) {
+                        payload.email = email;
+                    }
+                    
                     const res = await fetch('/api/validate_student', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({student_id: val})
+                        body: JSON.stringify(payload)
                     });
                     const data = await res.json();
                     
                     if (data.valid) {
                         statusIcon.innerHTML = '✅';
+                        if (emailIcon && payload.email) emailIcon.innerHTML = '✅';
                         showFieldError('student_id', data.message, true);
                     } else if (data.message) {
                         statusIcon.innerHTML = '❌';
+                        if (emailIcon && payload.email) emailIcon.innerHTML = '❌';
                         showFieldError('student_id', data.message, false);
                     } else {
                         statusIcon.style.display = 'none';
+                        if (emailIcon) emailIcon.style.display = 'none';
                     }
                 } catch(e) {
                     statusIcon.style.display = 'none';
+                    if (emailIcon) emailIcon.style.display = 'none';
                 }
             }, 600);
         }

@@ -4041,24 +4041,32 @@ async def api_validate_student(request: web.Request):
     try:
         data = await request.json()
         student_id = data.get('student_id', '').strip()
+        email = data.get('email', '').strip().lower()
         
         if not student_id or len(student_id) != 6:
             return web.json_response({'valid': False, 'message': ''})
             
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute("SELECT telegram_id, first_name FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
-                row = await cur.fetchone()
-                if not row:
-                    return web.json_response({'valid': False, 'message': 'الرقم غير مسجل'})
-                
-                # Exists!
-                telegram_id = row[0]
-                first_name = row[1]
-                
-                if telegram_id:
-                    return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name}! (مربوط مسبقاً)'})
-                else:
-                    return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name}!'})
+            if email:
+                async with db.execute("SELECT telegram_id, first_name FROM academy_students WHERE student_id = ? AND LOWER(email) = ?", (student_id, email)) as cur:
+                    row = await cur.fetchone()
+                    if not row:
+                        return web.json_response({'valid': False, 'message': 'البيانات غير متطابقة'})
+                    
+                    telegram_id, first_name = row
+                    if telegram_id:
+                        return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name}! (مربوط مسبقاً)'})
+                    return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name} ✅'})
+            else:
+                async with db.execute("SELECT telegram_id FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
+                    row = await cur.fetchone()
+                    if not row:
+                        return web.json_response({'valid': False, 'message': 'الرقم غير مسجل'})
+                    
+                    telegram_id = row[0]
+                    if telegram_id:
+                        return web.json_response({'valid': True, 'message': 'رقم صحيح ✅ (مربوط مسبقاً)'})
+                    return web.json_response({'valid': True, 'message': 'رقم صحيح ✅'})
                 
     except Exception as e:
         return web.json_response({'valid': False, 'message': ''})
