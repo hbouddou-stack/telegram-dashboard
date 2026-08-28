@@ -426,6 +426,38 @@ async def api_admin_gateway_settings(request: web.Request):
 
 
 
+
+async def api_gateway_log_open(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        telegram_id = data.get('telegram_id')
+        first_name = data.get('first_name', '')
+        
+        if not telegram_id:
+            return web.json_response({'success': True, 'skipped': 'No telegram_id'})
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
+                row = await cur.fetchone()
+                if row:
+                    student_id = row[0]
+                    student_name = row[1]
+                    await db.execute(
+                        "INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)",
+                        (student_id, 'APP_OPENED', f"L'eleve {student_name} a ouvert la Mini App de liaison")
+                    )
+                else:
+                    await db.execute(
+                        "INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)",
+                        (0, 'APP_OPENED_UNLINKED', f"App ouverte par un utilisateur non lie (TG: {telegram_id}, Prenom: {first_name})")
+                    )
+            await db.commit()
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_gateway_sos(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -4465,6 +4497,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
     app.router.add_post('/api/gateway/sos', api_gateway_sos)
+    app.router.add_post('/api/gateway/log_open', api_gateway_log_open)
     app.router.add_get('/api/admin/links', api_admin_links_get)
     app.router.add_get('/api/admin/sos', api_admin_sos_list)
     app.router.add_post('/api/admin/sos/reply', api_admin_sos_reply)
