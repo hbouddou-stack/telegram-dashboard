@@ -301,13 +301,18 @@ async def api_admin_gateway_students(request: web.Request):
 
 async def api_admin_gateway_logs(request: web.Request):
     student_id = request.query.get('id')
+    tid = request.query.get('tid')
     import aiosqlite
     from config import DATABASE_PATH
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT action_type, description, timestamp FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 50", (student_id,)) as cur:
-                logs = [dict(row) for row in await cur.fetchall()]
+            if tid and tid != 'null' and tid != 'undefined':
+                async with db.execute("SELECT action_type, description, timestamp FROM student_logs WHERE telegram_id = ? OR student_id = ? ORDER BY id DESC LIMIT 50", (tid, student_id)) as cur:
+                    logs = [dict(row) for row in await cur.fetchall()]
+            else:
+                async with db.execute("SELECT action_type, description, timestamp FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 50", (student_id,)) as cur:
+                    logs = [dict(row) for row in await cur.fetchall()]
         return web.json_response({'success': True, 'logs': logs})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})

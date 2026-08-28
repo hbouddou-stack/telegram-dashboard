@@ -738,7 +738,7 @@
             document.getElementById('logs-body').innerHTML = '<div class="no-items">جاري التحميل...</div>';
             document.getElementById('logs-overlay').style.display = 'flex';
             try {
-                const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id);
+                const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id + '&tid=' + (student.telegram_id || 'null'));
                 const data = await res.json();
                 
                 try {
@@ -850,6 +850,7 @@
             const actionTranslations = {
                 'LINK_FAILED': 'فشل الربط',
                 'LINK_SUCCESS': 'نجاح الربط',
+                'ACCOUNT_LINKED': 'نجاح الربط',
                 'TUTO_OPENED': 'فتح دليل المساعدة',
                 'APP_OPENED': 'فتح التطبيق',
                 'start_bot': 'بدء البوت',
@@ -872,9 +873,13 @@
                 
                 const actionLabel = actionTranslations[log.action_type] || log.action_type;
                 
+                let labelColor = 'var(--accent)';
+                if (log.action_type === 'LINK_FAILED') labelColor = 'var(--danger)';
+                else if (log.action_type === 'LINK_SUCCESS' || log.action_type === 'ACCOUNT_LINKED') labelColor = 'var(--success)';
+                
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                        <span style="color:var(--accent); font-weight:700; font-size:0.95rem;">[${actionLabel}]</span>
+                        <span style="color:${labelColor}; font-weight:700; font-size:0.95rem;">[${actionLabel}]</span>
                         <span style="font-size:0.75rem; color:var(--text2);"><span dir="ltr">${formatDateArabic(log.timestamp)}</span></span>
                     </div>
                     <div style="font-size:0.85rem; color:var(--text1); margin-bottom:4px;">
@@ -1051,6 +1056,7 @@
                     const actionTranslations = {
                         'LINK_FAILED': 'فشل الربط',
                         'LINK_SUCCESS': 'نجاح الربط',
+                        'ACCOUNT_LINKED': 'نجاح الربط',
                         'TUTO_OPENED': 'فتح دليل المساعدة',
                         'APP_OPENED': 'فتح التطبيق',
                         'start_bot': 'بدء البوت',
@@ -1063,6 +1069,10 @@
                             : `<span dir="ltr">${l.first_name}</span>`;
                         
                         const actionLabel = actionTranslations[l.action_type] || l.action_type;
+                        
+                        let labelColor = 'var(--warning)';
+                        if (l.action_type === 'LINK_FAILED') labelColor = 'var(--danger)';
+                        else if (l.action_type === 'LINK_SUCCESS' || l.action_type === 'ACCOUNT_LINKED') labelColor = 'var(--success)';
 
                         return `
                             <div class="log-card" onclick="openLogDetail(${index})">
@@ -1070,7 +1080,7 @@
                                     <span style="font-size:0.9rem; color:var(--text1);">${displayName}</span>
                                     <span style="font-size:0.75rem; color:var(--accent2);"><span dir="ltr">${formatDateArabic(l.timestamp)}</span></span>
                                 </div>
-                                <div style="font-weight:700; font-size:0.8rem; color:var(--warning); margin-bottom:4px; text-align:right;">[${actionLabel}]</div>
+                                <div style="font-weight:700; font-size:0.8rem; color:${labelColor}; margin-bottom:4px; text-align:right;">[${actionLabel}]</div>
                                 <div style="font-size:0.88rem; color:var(--text2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><span dir="ltr">${l.description}</span></div>
                             </div>
                         `;
