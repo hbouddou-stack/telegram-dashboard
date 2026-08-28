@@ -54,13 +54,14 @@
         .list-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
         
         /* Badges */
-        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
         .badge-linked { background: rgba(34,197,94,0.15); color: var(--success); }
         .badge-unlinked { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-joined { background: rgba(124,58,237,0.15); color: #a78bfa; }
         .badge-open { background: rgba(245,158,11,0.15); color: var(--warning); }
         
         /* Buttons */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
@@ -94,6 +95,12 @@
         .link-label { font-size: 0.8rem; color: var(--text2); margin-top: 10px; }
 
         .no-items { text-align: center; color: var(--text2); padding: 40px 0; font-size: 0.9rem; }
+
+        /* Student card detailed grid */
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border); }
+        .profile-item { display: flex; flex-direction: column; }
+        .profile-label { font-size: 0.72rem; color: var(--text2); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+        .profile-value { font-size: 0.92rem; font-weight: 600; color: var(--text1); }
     </style>
 </head>
 <body>
@@ -111,6 +118,15 @@
     
     <!-- TAB: Élèves -->
     <div id="tab-students" class="tab-content active">
+        <!-- Import Excel section -->
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="font-size: 0.85rem; color: var(--text2);">Importer des élèves depuis un fichier Excel (.xlsx)</div>
+            <label class="chip" style="background: var(--accent); color: white; border: none; padding: 8px 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                📥 Excel
+                <input type="file" id="excel-file-input" accept=".xlsx" style="display:none;" onchange="importExcel(this)">
+            </label>
+        </div>
+
         <div class="filter-section">
             <div class="filter-row" id="fr-status">
                 <div class="chip active" onclick="setFilter('status','all',this)">Tous</div>
@@ -157,14 +173,30 @@
         <div id="global-logs-list"><div class="no-items">Chargement...</div></div>
     </div>
 
-    <!-- Modal: Logs Élève -->
+    <!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
         <div class="modal">
             <div class="modal-header">
-                <h2>📋 Historique — <span id="logs-name"></span></h2>
+                <h2>📋 Fiche Étudiant</h2>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
             </div>
-            <div id="logs-body"><div class="no-items">Chargement...</div></div>
+            
+            <div class="profile-grid">
+                <div class="profile-item"><div class="profile-label">Nom Complet</div><div class="profile-value" id="profile-name">-</div></div>
+                <div class="profile-item"><div class="profile-label">Année / Niveau</div><div class="profile-value" id="profile-year">-</div></div>
+                <div class="profile-item" style="grid-column: span 2;"><div class="profile-label">Email</div><div class="profile-value" id="profile-email">-</div></div>
+                <div class="profile-item"><div class="profile-label">Date de Naissance</div><div class="profile-value" id="profile-dob">-</div></div>
+                <div class="profile-item"><div class="profile-label">Genre</div><div class="profile-value" id="profile-gender">-</div></div>
+                <div class="profile-item"><div class="profile-label">Telegram ID</div><div class="profile-value" id="profile-tgid">-</div></div>
+                <div class="profile-item"><div class="profile-label">Canal / Groupe</div><div class="profile-value" id="profile-membership">Recherche...</div></div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:18px;">
+                <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">Dissocier le compte Telegram</button>
+            </div>
+
+            <h3 style="font-size:0.9rem; margin-bottom:8px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;">Historique de l'élève</h3>
+            <div id="logs-body" style="max-height:220px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;"><div class="no-items">Chargement...</div></div>
         </div>
     </div>
 
@@ -194,6 +226,7 @@
         let filters = { status: 'all', gender: 'all', level: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
+        let activeStudentId = null;
 
         // ============ TABS ============
         function switchTab(id) {
@@ -213,6 +246,31 @@
             el.closest('.filter-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
             filterStudents();
+        }
+
+        // ============ EXCEL IMPORT ============
+        async function importExcel(input) {
+            if(!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const res = await fetch('/api/admin/gateway/import_students', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('Succès ! ' + data.count + ' élèves importés ou mis à jour.');
+                    fetchStudents();
+                } else {
+                    alert('Erreur : ' + data.error);
+                }
+            } catch(e) {
+                alert('Erreur de connexion : ' + e.message);
+            }
+            input.value = ''; // Reset input
         }
 
         // ============ STUDENTS ============
@@ -268,7 +326,7 @@
                 const linked = !!s.telegram_id;
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                div.onclick = () => openStudentLogs(s.student_id, s.first_name);
+                div.onclick = () => openStudentCard(s);
                 div.innerHTML = `
                     <div>
                         <div class="list-name">${s.first_name || '—'}</div>
@@ -280,19 +338,56 @@
             });
         }
 
-        async function openStudentLogs(studentId, name) {
-            document.getElementById('logs-name').textContent = name;
+        async function openStudentCard(student) {
+            activeStudentId = student.student_id;
+            
+            document.getElementById('profile-name').textContent = student.first_name || 'Non spécifié';
+            document.getElementById('profile-year').textContent = student.year ? 'Année ' + student.year : 'Non spécifié';
+            document.getElementById('profile-email').textContent = student.email || '-';
+            document.getElementById('profile-dob').textContent = student.dob || '-';
+            document.getElementById('profile-gender').textContent = student.gender || 'Non spécifié';
+            document.getElementById('profile-tgid').textContent = student.telegram_id || 'Non lié';
+            
+            const unlinkBtn = document.getElementById('profile-unlink-btn');
+            if (student.telegram_id) {
+                unlinkBtn.style.display = 'block';
+            } else {
+                unlinkBtn.style.display = 'none';
+            }
+
+            // Membership check
+            const mEl = document.getElementById('profile-membership');
+            if (student.telegram_id) {
+                mEl.innerHTML = '<span style="color:#888;">Vérification...</span>';
+                try {
+                    const checkRes = await fetch('/api/admin/gateway/check_member?telegram_id=' + student.telegram_id);
+                    const checkData = await checkRes.json();
+                    if (checkData.success) {
+                        mEl.innerHTML = checkData.has_joined 
+                            ? `<span class="badge badge-joined">A REJOINT (${checkData.status})</span>`
+                            : `<span class="badge badge-unlinked">N'A PAS REJOINT (En dehors)</span>`;
+                    } else {
+                        mEl.innerHTML = '<span style="color:var(--danger);">Erreur check</span>';
+                    }
+                } catch(e) {
+                    mEl.innerHTML = '<span style="color:var(--danger);">Erreur check</span>';
+                }
+            } else {
+                mEl.innerHTML = '<span style="color:var(--text2);">Non applicable</span>';
+            }
+
+            // Student Logs
             document.getElementById('logs-body').innerHTML = '<div class="no-items">Chargement...</div>';
             document.getElementById('logs-overlay').style.display = 'flex';
             try {
-                const res = await fetch('/api/admin/gateway/logs?id=' + studentId);
+                const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id);
                 const data = await res.json();
                 if(data.success && data.logs.length > 0) {
                     document.getElementById('logs-body').innerHTML = data.logs.map(l => `
-                        <div style="border-bottom:1px solid var(--border);padding:10px 0;">
+                        <div style="border-bottom:1px solid var(--border);padding:8px 0; font-size: 0.85rem;">
                             <div style="font-size:0.75rem;color:var(--accent2);">${l.timestamp}</div>
-                            <div style="font-weight:700;font-size:0.85rem;">[${l.action_type}]</div>
-                            <div style="font-size:0.88rem;color:var(--text2);">${l.description}</div>
+                            <div style="font-weight:700; color:var(--warning);">[${l.action_type}]</div>
+                            <div style="color:var(--text2);">${l.description}</div>
                         </div>
                     `).join('');
                 } else {
@@ -300,6 +395,29 @@
                 }
             } catch(e) {
                 document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur de chargement.</div>';
+            }
+        }
+
+        async function manualUnlink() {
+            if(!activeStudentId) return;
+            if(!confirm('Voulez-vous vraiment dissocier le compte Telegram de cet élève ?')) return;
+
+            try {
+                const res = await fetch('/api/admin/gateway/action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'unlink', student_id: activeStudentId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Compte dissocié !');
+                    document.getElementById('logs-overlay').style.display = 'none';
+                    fetchStudents();
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            } catch(e) {
+                alert('Erreur réseau: ' + e.message);
             }
         }
 
@@ -456,6 +574,7 @@
             alert('Liens enregistrés !');
         }
 
+        // ============ GLOBAL LOGS ============
         async function fetchGlobalLogs() {
             const list = document.getElementById('global-logs-list');
             list.innerHTML = '<div class="no-items">Chargement...</div>';

@@ -326,6 +326,90 @@ async def api_admin_gateway_logs_all(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+
+async def api_admin_gateway_check_member(request: web.Request):
+    telegram_id = request.query.get('telegram_id')
+    if not telegram_id:
+        return web.json_response({'success': False, 'error': 'Missing telegram_id'})
+    try:
+        from config import ACADEMY_GROUP_ID
+        member = await bot.get_chat_member(chat_id=ACADEMY_GROUP_ID, user_id=int(telegram_id))
+        has_joined = member.status in ['creator', 'administrator', 'member', 'restricted']
+        return web.json_response({'success': True, 'status': member.status, 'has_joined': has_joined})
+    except Exception as e:
+        return web.json_response({'success': True, 'status': 'left', 'has_joined': False, 'debug_error': str(e)})
+
+async def api_admin_gateway_import_students(request: web.Request):
+    import aiosqlite
+    import openpyxl
+    import io
+    from config import DATABASE_PATH
+    try:
+        reader = await request.multipart()
+        field = await reader.next()
+        if not field or field.name != 'file':
+            return web.json_response({'success': False, 'error': 'Aucun fichier trouve'})
+        
+        file_data = await field.read()
+        wb = openpyxl.load_workbook(io.BytesIO(file_data))
+        sheet = wb.active
+        
+        headers = [cell.value for cell in sheet[1]]
+        def get_col_idx(name):
+            for i, h in enumerate(headers):
+                if h and name.lower() in str(h).lower():
+                    return i
+            return None
+            
+        email_idx = get_col_idx('email') or get_col_idx('mail')
+        dob_idx = get_col_idx('dob') or get_col_idx('naissance') or get_col_idx('birth')
+        fn_idx = get_col_idx('first') or get_col_idx('prenom') or get_col_idx('prénom')
+        ln_idx = get_col_idx('last') or get_col_idx('nom')
+        year_idx = get_col_idx('year') or get_col_idx('annee') or get_col_idx('année') or get_col_idx('level') or get_col_idx('niveau')
+        gender_idx = get_col_idx('gender') or get_col_idx('genre') or get_col_idx('sexe')
+
+        if email_idx is None: email_idx = 0
+        if dob_idx is None: dob_idx = 1
+        if fn_idx is None: fn_idx = 2
+        if ln_idx is None: ln_idx = 3
+        if year_idx is None: year_idx = 4
+        if gender_idx is None: gender_idx = 5
+        
+        imported = 0
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            for row in list(sheet.iter_rows(min_row=2)):
+                if len(row) <= max(email_idx, dob_idx):
+                    continue
+                email = str(row[email_idx].value or '').strip().lower()
+                dob = str(row[dob_idx].value or '').strip()
+                if not email or not dob:
+                    continue
+                    
+                first_name = str(row[fn_idx].value or '').strip() if fn_idx < len(row) else ''
+                last_name = str(row[ln_idx].value or '').strip() if ln_idx < len(row) else ''
+                year = str(row[year_idx].value or '').strip() if year_idx < len(row) else '1'
+                gender = str(row[gender_idx].value or '').strip().lower() if gender_idx < len(row) else 'homme'
+                
+                async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
+                    exists = await cur.fetchone()
+                    if exists:
+                        await db.execute("""
+                            UPDATE academy_students 
+                            SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ? 
+                            WHERE email = ?
+                        """, (dob, first_name, last_name, year, gender, email))
+                    else:
+                        await db.execute("""
+                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, (email, dob, first_name, last_name, year, gender))
+                imported += 1
+            await db.commit()
+            
+        return web.json_response({'success': True, 'count': imported})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_settings(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -4370,6 +4454,8 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
     app.router.add_get('/api/admin/gateway/logs/all', api_admin_gateway_logs_all)
+    app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
+    app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
