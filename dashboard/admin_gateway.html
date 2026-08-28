@@ -313,10 +313,19 @@
     
     <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
     <div id="tab-sos" class="tab-content">
+        <!-- Search and Filters -->
+        <input type="text" id="sos-search-input" placeholder="🔍 Rechercher par email, TG ID, etc..." oninput="renderSosList()" class="search-box">
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; margin-top: 10px;">
+            <div class="chip-gender chip-all active" id="sos-g-all" onclick="setSosGenderFilter('all', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">الكل (Tous)</div>
+            <div class="chip-gender chip-male" id="sos-g-homme" onclick="setSosGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">ذكر (Homme)</div>
+            <div class="chip-gender chip-female" id="sos-g-femme" onclick="setSosGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">أنثى (Femme)</div>
+        </div>
+        
         <!-- Separate segmented buttons for SOS state -->
         <div style="display:flex; width:100%; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px;">
-            <button id="sos-filter-open" onclick="switchSosSubtab('open')" style="flex:1; padding:12px; border:none; background:var(--accent); color:white; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem;">📥 طلبات قيد المعالجة</button>
-            <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ طلبات تم حلها</button>
+            <button id="sos-filter-open" onclick="switchSosSubtab('open')" style="flex:1; padding:12px; border:none; background:var(--accent); color:white; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem;">⏳ قيد الانتظار (En attente)</button>
+            <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ مغلق (Fermé)</button>
         </div>
         <div id="sos-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
@@ -429,10 +438,12 @@
             </div>
             
             <div class="profile-chips-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📂 <span id="profile-name-text">-</span></div>
-                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">💬 <span id="profile-tg-display">-</span></div>
-                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">✉️ <span id="profile-email-text">-</span></div>
-                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🗓️ <span id="profile-inscription-text">-</span></div>
+                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 <span id="profile-name-text">-</span></div>
+                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✈️ <span id="profile-tg-display">-</span></div>
+                <div class="chip" id="profile-studentid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🔢 N° Étudiant: <span id="profile-studentid-text">-</span></div>
+                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 <span id="profile-email-text">-</span></div>
+                <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 Statut Paiement: <span id="profile-payment-text">-</span></div>
+                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🗓️ Inscription: <span id="profile-inscription-text">-</span></div>
                 <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 <span id="profile-phone-text">-</span></div>
                 <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 <span id="profile-year-text">-</span></div>
                 <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 <span id="profile-dob-text">-</span></div>
@@ -453,13 +464,28 @@
 
     <!-- Modal: Historique de l'élève -->
     <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
-        <div class="modal">
+        <div class="modal" style="max-width: 600px;">
             <div class="modal-header">
-                <h2>Historique de l'élève</h2>
-                <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✕</button>
+                <h2>Historique & Identité</h2>
+                <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✖</button>
             </div>
-            <div id="logs-body" style="max-height:400px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
-                <div class="no-items">لا توجد سجلات.</div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div style="flex:1; min-width: 250px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--accent);">📋 DB Identity</h3>
+                    <div id="modal-db-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
+                </div>
+                <div style="flex:1; min-width: 250px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:#0088cc;">✈️ Telegram Identity</h3>
+                    <div id="modal-tg-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
+                </div>
+            </div>
+
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; max-height:300px;">
+                <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--text1);">📜 Action History</h3>
+                <div id="logs-body" style="overflow-y:auto; flex:1;">
+                    <div class="no-items">جاري التحميل...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -584,8 +610,10 @@
         // ============ FILTER TRIGGERS ============
         function setGenderFilter(val, el) {
             filters.gender = val;
-            el.closest('div').querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
+            if (el && el.parentElement) {
+                el.parentElement.querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
+                el.classList.add('active');
+            }
             filterStudents();
         }
         function setLevelFilter(val) {
@@ -844,6 +872,12 @@
             
             document.getElementById('profile-email-text').textContent = student.email || 'غير متوفر';
             
+            const studentIdEl = document.getElementById('profile-studentid-text');
+            if(studentIdEl) studentIdEl.textContent = student.student_id || 'غير متوفر';
+            
+            const paymentEl = document.getElementById('profile-payment-text');
+            if(paymentEl) paymentEl.textContent = student.payment_status || 'غير متوفر';
+            
             const inscriptionEl = document.getElementById('profile-inscription-text');
             if(inscriptionEl) inscriptionEl.textContent = student.created_at || 'غير متوفر';
             
@@ -905,7 +939,22 @@
                     let tgFullName = student.tg_first_name || '';
                     if (student.tg_last_name) tgFullName += ' ' + student.tg_last_name;
                     document.getElementById('profile-tg-display').textContent = tgFullName.trim() || 'غير معروف (لم يسجل دخول مؤخراً)';
+                    
+                    document.getElementById('modal-tg-identity').innerHTML = `
+                        <strong>ID:</strong> ${student.telegram_id}<br>
+                        <strong>Prénom:</strong> ${student.tg_first_name || '-'}<br>
+                        <strong>Nom:</strong> ${student.tg_last_name || '-'}
+                    `;
+                } else {
+                    document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">Non lié</span>`;
                 }
+                
+                document.getElementById('modal-db-identity').innerHTML = `
+                    <strong>ID:</strong> ${student.student_id || '-'}<br>
+                    <strong>Nom DB:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
+                    <strong>Email:</strong> ${student.email || '-'}<br>
+                    <strong>Genre:</strong> ${student.gender || '-'}
+                `;
 
                 if(data.success && data.logs.length > 0) {
                     document.getElementById('logs-body').innerHTML = data.logs.map(l => `
@@ -1044,11 +1093,48 @@
             });
         }
 
+        let activeSosGenderFilter = 'all';
+        function setSosGenderFilter(val, el) {
+            activeSosGenderFilter = val;
+            if (el && el.parentElement) {
+                el.parentElement.querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
+                el.classList.add('active');
+            }
+            renderSosList();
+        }
+
         function renderSosList() {
             const list = document.getElementById('sos-list');
+            const q = (document.getElementById('sos-search-input') ? document.getElementById('sos-search-input').value.toLowerCase() : '');
+            
             const filtered = rawSosList.filter(s => {
-                if (activeSosSubtabState === 'open') return s.status === 'open' || !s.status;
-                return s.status === 'closed' || s.status === 'resolved';
+                // State filter
+                const matchState = (activeSosSubtabState === 'open') 
+                    ? (s.status === 'open' || !s.status) 
+                    : (s.status === 'closed' || s.status === 'resolved');
+                if (!matchState) return false;
+                
+                // Gender filter
+                const g = (s.gender || '').toLowerCase();
+                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
+                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
+                
+                const matchGender = (activeSosGenderFilter === 'all')
+                    || (activeSosGenderFilter === 'homme' && isM)
+                    || (activeSosGenderFilter === 'femme' && isF);
+                if (!matchGender) return false;
+                
+                // Search filter
+                if (q) {
+                    const matchSearch = (s.email_tentative || '').toLowerCase().includes(q)
+                        || (s.student_id_tentative || '').toLowerCase().includes(q)
+                        || String(s.telegram_id || '').toLowerCase().includes(q)
+                        || (s.first_name || '').toLowerCase().includes(q)
+                        || (s.last_name || '').toLowerCase().includes(q);
+                    if (!matchSearch) return false;
+                }
+                
+                return true;
             });
 
             if(filtered.length === 0) {
@@ -1068,7 +1154,17 @@
                     : '<span class="badge badge-open">قيد المعالجة</span>';
                 
                 const matchedStudent = allStudents.find(st => st.telegram_id && String(st.telegram_id) === String(sos.telegram_id));
-                const tgName = matchedStudent && matchedStudent.first_name ? matchedStudent.first_name : 'غير معروف';
+                const dbName = (sos.first_name || sos.last_name) ? ((sos.first_name || '') + ' ' + (sos.last_name || '')).trim() : 'غير معروف';
+                const tgName = matchedStudent && matchedStudent.first_name ? matchedStudent.first_name : dbName;
+                
+                const g = (sos.gender || '').toLowerCase();
+                if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
+                    div.style.borderLeft = '6px solid #0084ff';
+                    div.style.backgroundColor = 'rgba(0,132,255,0.15)';
+                } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
+                    div.style.borderLeft = '6px solid #ec4899';
+                    div.style.backgroundColor = 'rgba(236,72,153,0.15)';
+                }
                 
                 div.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">

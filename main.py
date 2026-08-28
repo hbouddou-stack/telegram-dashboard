@@ -288,7 +288,7 @@ async def api_admin_gateway_students(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT s.student_id, s.first_name, s.last_name, s.email, s.telegram_id, s.year, s.gender, s.dob, s.source, s.phone, s.created_at,
+                SELECT s.student_id, s.first_name, s.last_name, s.email, s.telegram_id, s.year, s.gender, s.dob, s.source, s.phone, s.created_at, s.payment_status,
                        u.first_name as tg_first_name, u.last_name as tg_last_name
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
@@ -635,7 +635,12 @@ async def api_admin_sos_list(request: web.Request):
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT * FROM gateway_sos ORDER BY id DESC LIMIT 50") as cur:
+            async with db.execute("""
+                SELECT g.*, s.gender, s.first_name, s.last_name 
+                FROM gateway_sos g
+                LEFT JOIN academy_students s ON g.email_tentative = s.email OR g.student_id_tentative = s.student_id
+                ORDER BY g.id DESC LIMIT 100
+            """) as cur:
                 sos_list = [dict(row) for row in await cur.fetchall()]
         return web.json_response({'success': True, 'sos_list': sos_list})
     except Exception as e:

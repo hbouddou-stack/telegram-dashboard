@@ -31,59 +31,54 @@ async def run_google_sheets_sync(sheet_id: str):
     if not records:
         return 0
         
-    headers = list(records[0].keys())
-    def get_idx(*names):
-        for name in names:
-            for h in headers:
-                if h and name.lower() in str(h).lower():
-                    return h
-        return None
-        
-    email_h = get_idx('email', 'mail', 'courriel', 'البريد')
-    dob_h = get_idx('dob', 'naissance', 'birth', 'date', 'تاريخ', 'الميلاد')
-    fn_h = get_idx('first', 'prenom', 'prénom', 'الاسم')
-    ln_h = get_idx('last', 'nom', 'النسب', 'العائلي')
-    year_h = get_idx('year', 'annee', 'année', 'level', 'niveau', 'سنة', 'مستوى')
-    gender_h = get_idx('gender', 'genre', 'sexe', 'جنس')
-    phone_h = get_idx('phone', 'tel', 'téléphone', 'هاتف', 'رقم')
-    created_h = get_idx('horodateur', 'timestamp', 'inscription')
-    
-    if not email_h or not dob_h:
-        if len(headers) >= 2:
-            email_h = headers[0]
-            dob_h = headers[1]
-        else:
-            raise Exception("Les colonnes Email et Date de Naissance sont introuvables.")
-        
     imported = 0
     async with aiosqlite.connect(DATABASE_PATH) as db:
-        for row in records:
-            email = str(row.get(email_h, '')).strip().lower()
-            dob = str(row.get(dob_h, '')).strip()
+        for row_list in sheet.get_all_values()[1:]: # Skip header row
+            if len(row_list) < 14:
+                continue
+                
+            student_id = str(row_list[0]).strip() # Col A: الرقم الأكاديمي
+            full_name = str(row_list[2]).strip()  # Col C: الإسم الكامل
+            email = str(row_list[3]).strip().lower() # Col D: البريد الإلكتروني
+            phone = str(row_list[4]).strip()      # Col E: رقم الهاتف
+            year = str(row_list[5]).strip()       # Col F: المستوى
+            gender = str(row_list[6]).strip().lower() # Col G: الجنس
+            payment_status = str(row_list[7]).strip() # Col H: وضعية الحساب
+            dob = str(row_list[9]).strip()        # Col J: تاريخ الميلاد
+            created_at = str(row_list[13]).strip() # Col N: ﺗﺎرﻳﺦ اﻟﺘﺴﺠﻴﻞ
             
             if not email or not dob:
                 continue
                 
-            first_name = str(row.get(fn_h, '')).strip() if fn_h else ''
-            last_name = str(row.get(ln_h, '')).strip() if ln_h else ''
-            year = str(row.get(year_h, '')).strip() if year_h else '1'
-            gender = str(row.get(gender_h, '')).strip().lower() if gender_h else 'homme'
-            phone = str(row.get(phone_h, '')).strip() if phone_h else ''
-            created_at = str(row.get(created_h, '')).strip() if created_h else ''
+            parts = full_name.split(' ', 1)
+            first_name = parts[0] if len(parts) > 0 else ''
+            last_name = parts[1] if len(parts) > 1 else ''
+            
+            if not year: year = '1'
+            if not gender: gender = 'homme'
             
             async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
                 exists = await cur.fetchone()
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
-                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?, phone = ?, created_at = ?
+                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?, phone = ?, created_at = ?, payment_status = ?
                         WHERE email = ?
-                    """, (dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, email))
+                    """, (dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status, email))
                 else:
-                    await db.execute("""
-                        INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source, phone, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at))
+                    try:
+                        # Attempt to insert with the specific student_id from Sheets if it's a number
+                        s_id_int = int(student_id)
+                        await db.execute("""
+                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source, phone, created_at, payment_status)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (s_id_int, email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status))
+                    except ValueError:
+                        # Fallback if student_id is not a valid integer
+                        await db.execute("""
+                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source, phone, created_at, payment_status)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status))
             imported += 1
         await db.commit()
     return imported
