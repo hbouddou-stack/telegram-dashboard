@@ -16,7 +16,16 @@ def get_gspread_client():
 
 async def run_google_sheets_sync(sheet_id: str):
     client = get_gspread_client()
-    sheet = client.open_by_key(sheet_id).sheet1
+    try:
+        sheet = client.open_by_key(sheet_id).sheet1
+    except gspread.exceptions.APIError as e:
+        if "permission" in str(e).lower() or e.response.status_code in [403, 404]:
+            raise Exception("Le bot n'a pas accès au fichier Google Sheets. Avez-vous bien partagé le fichier avec l'adresse e-mail du bot (en tant que Lecteur) ?")
+        raise Exception(f"Erreur API Google: {e}")
+    except Exception as e:
+        if "PermissionError" in type(e).__name__:
+            raise Exception("Le bot n'a pas accès au fichier Google Sheets. Vérifiez le partage.")
+        raise
     
     records = sheet.get_all_records()
     if not records:
