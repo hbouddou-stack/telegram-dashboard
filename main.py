@@ -3971,7 +3971,7 @@ async def api_link_account(request: web.Request):
             errors = {}
             
             # Check Email
-            async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE email = ?", (email,)) as cur1:
+            async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE LOWER(email) = LOWER(?)", (email,)) as cur1:
                 row1 = await cur1.fetchone()
                 if not row1:
                     errors['email'] = 'البريد الإلكتروني غير مسجل.'
