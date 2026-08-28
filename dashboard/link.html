@@ -457,9 +457,12 @@
                     <h2>🆘 طلب مساعدة</h2>
                     <button class="close-btn" onclick="closeSOS()">&times;</button>
                 </div>
-                <p style="color:var(--text-2); font-size:0.95rem; margin:0;">اشرح مشكلتك هنا وسيقوم أحد المشرفين بالرد عليك عبر تيليجرام في أقرب وقت.</p>
-                <textarea id="sos_msg" placeholder="مثال: لا أستطيع الدخول، نسيت البريد الإلكتروني..."></textarea>
-                <button onclick="sendSOS()" id="btn-send-sos">إرسال طلب المساعدة</button>
+                <p style="color:var(--text-2); font-size:0.95rem; margin:0 0 12px 0;">اشرح مشكلتك هنا وسيقوم احد المشرفين بالرد عليك عبر تيليجرام في اقرب وقت.</p>
+                <div style="display:flex; gap:10px; align-items:flex-end;">
+                    <textarea id="sos_msg" placeholder="مثال: لا استطيع الدخول..." style="flex:1; resize:none; height:50px; background:rgba(0,0,0,0.4); border:1px solid var(--danger); color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none;"></textarea>
+                    <button onclick="sendSOS()" id="btn-send-sos" style="flex-shrink:0; background:var(--danger); color:#fff; border:none; border-radius:10px; padding:12px 16px; font-size:0.9rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer; height:50px; white-space:nowrap;">ارسال</button>
+                </div>
+                <div id="sos-debug" style="margin-top:8px; font-size:11px; font-family:monospace; color:#888; min-height:16px;"></div>
             </div>
         </div>
     </div>
@@ -662,17 +665,25 @@
         }
         
         async function sendSOS() {
+            const dbgEl = document.getElementById('sos-debug');
+            function slog(msg, c) { if(dbgEl) { dbgEl.style.color = c||'#aaa'; dbgEl.textContent = msg; } console.log('[SOS]', msg); }
+            
             const email = document.getElementById('email').value.trim();
             const msg = document.getElementById('sos_msg').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const d = document.getElementById('day-value').value;
-            const m = document.getElementById('month-value').value;
-            const y = document.getElementById('year-value').value;
+            const dEl = document.getElementById('day-value');
+            const mEl = document.getElementById('month-value');
+            const yEl = document.getElementById('year-value');
+            const d = dEl ? dEl.value : '';
+            const m = mEl ? mEl.value : '';
+            const y = yEl ? yEl.value : '';
             const dob = (d && m && y) ? `${y}-${m}-${d}` : '';
             
-            if(!msg) return;
-            document.getElementById('btn-send-sos').textContent = "جاري الإرسال...";
+            slog('sendSOS...');
+            if(!msg) { slog('Message vide !', '#ef4444'); return; }
+            document.getElementById('btn-send-sos').textContent = "...";
             document.getElementById('btn-send-sos').disabled = true;
+            slog('Envoi en cours...');
             
             try {
                 let tid = null;
@@ -684,21 +695,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
                 });
-                closeSOS();
-                document.getElementById('sos_msg').value = ''; // clear
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
-                    window.Telegram.WebApp.showAlert("✅ تم إرسال طلبك بنجاح. سيتم الرد عليك قريباً في رسالة خاصة.");
+                slog('HTTP ' + response.status, response.ok ? '#22c55e' : '#ef4444');
+                if(response.ok) {
+                    closeSOS();
+                    document.getElementById('sos_msg').value = '';
+                    slog('Envoye avec succes !', '#22c55e');
+                    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
+                        window.Telegram.WebApp.showAlert("تم ارسال طلبك بنجاح. سيتم الرد عليك قريبا في رسالة خاصة.");
+                    } else {
+                        alert("Envoye avec succes !");
+                    }
                 } else {
-                    alert("✅ تم إرسال طلبك بنجاح. سيتم الرد عليك قريباً.");
+                    slog('Erreur HTTP ' + response.status, '#ef4444');
+                    alert('Erreur serveur: ' + response.status);
                 }
             } catch(e) {
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
-                    window.Telegram.WebApp.showAlert("❌ حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.");
-                } else {
-                    alert("Erreur lors de l'envoi.");
-                }
+                slog('Erreur reseau: ' + e.message, '#ef4444');
+                alert('Erreur: ' + e.message);
             }
-            document.getElementById('btn-send-sos').textContent = "إرسال طلب المساعدة";
+            document.getElementById('btn-send-sos').textContent = "ارسال";
             document.getElementById('btn-send-sos').disabled = false;
         }
     </script>
