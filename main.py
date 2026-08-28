@@ -306,6 +306,26 @@ async def api_admin_gateway_logs(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+async def api_admin_gateway_logs_all(request: web.Request):
+    """Return all recent student logs joined with student name"""
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("""
+                SELECT sl.action_type, sl.description, sl.timestamp,
+                       COALESCE(s.first_name, 'ID:'||sl.student_id) as first_name,
+                       sl.student_id
+                FROM student_logs sl
+                LEFT JOIN academy_students s ON s.student_id = sl.student_id
+                ORDER BY sl.id DESC LIMIT 100
+            """) as cur:
+                logs = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'logs': logs})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_settings(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -336,6 +356,25 @@ async def api_gateway_sos(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative) VALUES (?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id))
             await db.commit()
+        
+        # Notify admins via Telegram
+        try:
+            from config import TELEGRAM_ADMIN_IDS
+            admin_notif = (
+                f"🆘 <b>Nouveau SOS Liaison !</b>\n\n"
+                f"📧 <b>Email saisi :</b> {email or 'N/A'}\n"
+                f"🪪 <b>Matricule :</b> {student_id or 'N/A'}\n"
+                f"💬 <b>Message :</b>\n{message}\n\n"
+                f"👉 Répondez depuis le Dashboard Admin (/federer)"
+            )
+            for admin_id in TELEGRAM_ADMIN_IDS:
+                try:
+                    await bot.send_message(admin_id, admin_notif, parse_mode="HTML")
+                except Exception:
+                    pass
+        except Exception:
+            pass
+            
         return web.json_response({'success': True})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
@@ -4330,6 +4369,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
+    app.router.add_get('/api/admin/gateway/logs/all', api_admin_gateway_logs_all)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
