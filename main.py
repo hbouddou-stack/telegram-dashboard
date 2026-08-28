@@ -348,6 +348,45 @@ async def api_admin_gateway_check_member(request: web.Request):
     except Exception as e:
         return web.json_response({'success': True, 'status': 'left', 'has_joined': False, 'debug_error': str(e)})
 
+async def api_admin_gateway_add_student(request: web.Request):
+    try:
+        import aiosqlite
+        from config import DATABASE_PATH
+        data = await request.json()
+        email = data.get('email', '').strip().lower()
+        dob = data.get('dob', '').strip()
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        student_id = data.get('student_id', '').strip()
+        
+        if not email or not dob:
+            return web.json_response({'success': False, 'error': 'L\'email et la date de naissance sont requis.'})
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
+                exists = await cur.fetchone()
+                if exists:
+                    await db.execute("""
+                        UPDATE academy_students 
+                        SET dob = ?, first_name = ?, last_name = ?
+                        WHERE email = ?
+                    """, (dob, first_name, last_name, email))
+                else:
+                    if student_id:
+                        await db.execute("""
+                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (student_id, email, dob, first_name, last_name, '1', 'homme'))
+                    else:
+                        await db.execute("""
+                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, (email, dob, first_name, last_name, '1', 'homme'))
+            await db.commit()
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_import_students(request: web.Request):
     try:
         import aiosqlite
@@ -370,10 +409,10 @@ async def api_admin_gateway_import_students(request: web.Request):
                     return i
             return None
             
-        email_idx = get_col_idx('email') or get_col_idx('mail')
-        dob_idx = get_col_idx('dob') or get_col_idx('naissance') or get_col_idx('birth')
-        fn_idx = get_col_idx('first') or get_col_idx('prenom') or get_col_idx('prénom')
-        ln_idx = get_col_idx('last') or get_col_idx('nom')
+        email_idx = get_col_idx('email') or get_col_idx('mail') or get_col_idx('courriel')
+        dob_idx = get_col_idx('dob') or get_col_idx('naissance') or get_col_idx('birth') or get_col_idx('date') or get_col_idx('تاريخ')
+        fn_idx = get_col_idx('first') or get_col_idx('prenom') or get_col_idx('prénom') or get_col_idx('اسم')
+        ln_idx = get_col_idx('last') or get_col_idx('nom') or get_col_idx('لقب')
         year_idx = get_col_idx('year') or get_col_idx('annee') or get_col_idx('année') or get_col_idx('level') or get_col_idx('niveau')
         gender_idx = get_col_idx('gender') or get_col_idx('genre') or get_col_idx('sexe')
 
@@ -4555,6 +4594,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
     app.router.add_get('/api/admin/gateway/logs/all', api_admin_gateway_logs_all)
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
+    app.router.add_post('/api/admin/gateway/add_student', api_admin_gateway_add_student)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/settings', api_admin_gateway_settings_get)

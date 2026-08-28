@@ -317,6 +317,20 @@
                 <input type="file" id="excel-file-input" accept=".xlsx" style="display:none;" onchange="importExcel(this)">
             </label>
         </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">➕ إضافة طالب يدوياً</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (مثال: h.bouddou@gmail.com)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (مثال: 10/10/2000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                <input type="text" id="manual-student-id" placeholder="رقم الطالب (اختياري - مثلاً: 123456)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="manual-student-fn" placeholder="الاسم" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <input type="text" id="manual-student-ln" placeholder="النسب" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                </div>
+                <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px;">💾 حفظ الطالب</button>
+            </div>
+        </div>
+
 
         <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
             <h3 style="font-size: 1rem; margin-bottom: 10px;">⚙️ الإعدادات العامة</h3>
@@ -566,6 +580,40 @@
                 alert('خطأ في الاتصال: ' + e.message);
             }
             input.value = '';
+        }
+        async function addStudentManually() {
+            const email = document.getElementById('manual-student-email').value.trim();
+            const dob = document.getElementById('manual-student-dob').value.trim();
+            const first_name = document.getElementById('manual-student-fn').value.trim();
+            const last_name = document.getElementById('manual-student-ln').value.trim();
+            const student_id = document.getElementById('manual-student-id').value.trim();
+            
+            if(!email || !dob) {
+                alert("يرجى إدخال البريد الإلكتروني وتاريخ الميلاد على الأقل.");
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/admin/gateway/add_student', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, dob, first_name, last_name, student_id })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('تم إضافة الطالب بنجاح!');
+                    document.getElementById('manual-student-email').value = '';
+                    document.getElementById('manual-student-dob').value = '';
+                    document.getElementById('manual-student-fn').value = '';
+                    document.getElementById('manual-student-ln').value = '';
+                    document.getElementById('manual-student-id').value = '';
+                    fetchStudents();
+                } else {
+                    alert('خطأ: ' + data.error);
+                }
+            } catch(e) {
+                alert('حدث خطأ في الاتصال: ' + e.message);
+            }
         }
 
         // ============ STUDENTS ============
