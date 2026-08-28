@@ -179,7 +179,7 @@ async def cmd_start(message: Message):
         webapp_url = f"{base_url}/link.html"
         
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔗 بوابة التحقق (Mini App)", web_app=WebAppInfo(url=webapp_url))]
+        [InlineKeyboardButton(text="🔗 بوابة التحقق ", web_app=WebAppInfo(url=webapp_url))]
     ])
     await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
 

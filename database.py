@@ -91,11 +91,17 @@ async def init_db():
             CREATE TABLE IF NOT EXISTS student_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 student_id INTEGER,
+                telegram_id INTEGER,
                 action_type TEXT,
                 description TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)
+        try:
+            await db.execute("ALTER TABLE student_logs ADD COLUMN telegram_id INTEGER")
+        except Exception:
+            pass
+
 
                 # 0c. bot_conversations
         await db.execute("""

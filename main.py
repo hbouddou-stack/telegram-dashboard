@@ -2472,7 +2472,7 @@ async def reply_ticket_message_api(request):
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="ðŸ’¬ Ùتح Ø§Ù„Ù…حادثة (Mini App)", web_app=WebAppInfo(url=webapp_url))]
+                            [InlineKeyboardButton(text="ðŸ’¬ Ùتح Ø§Ù„Ù…حادثة ", web_app=WebAppInfo(url=webapp_url))]
                         ])
                         
                         await bot.send_message(
@@ -3319,7 +3319,7 @@ async def resolve_admin_ticket(request):
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="ðŸ’¬ Ùتح Ø§Ù„Ù…حادثة (Mini App)", web_app=WebAppInfo(url=webapp_url))]
+                            [InlineKeyboardButton(text="ðŸ’¬ Ùتح Ø§Ù„Ù…حادثة ", web_app=WebAppInfo(url=webapp_url))]
                         ])
                         
                         await bot.send_message(
