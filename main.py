@@ -288,7 +288,7 @@ async def api_admin_gateway_students(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT s.student_id, s.first_name, s.email, s.telegram_id, s.year, s.gender, s.dob, s.source,
+                SELECT s.student_id, s.first_name, s.last_name, s.email, s.telegram_id, s.year, s.gender, s.dob, s.source, s.phone, s.created_at,
                        u.first_name as tg_first_name, u.last_name as tg_last_name
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id

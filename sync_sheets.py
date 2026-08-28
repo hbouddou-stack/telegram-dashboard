@@ -39,12 +39,14 @@ async def run_google_sheets_sync(sheet_id: str):
                     return h
         return None
         
-    email_h = get_idx('email', 'mail', 'courriel', 'بريد')
-    dob_h = get_idx('dob', 'naissance', 'birth', 'date', 'تاريخ', 'مواليد')
-    fn_h = get_idx('first', 'prenom', 'prénom', 'اسم')
-    ln_h = get_idx('last', 'nom', 'لقب', 'عائلة')
+    email_h = get_idx('email', 'mail', 'courriel', 'البريد')
+    dob_h = get_idx('dob', 'naissance', 'birth', 'date', 'تاريخ', 'الميلاد')
+    fn_h = get_idx('first', 'prenom', 'prénom', 'الاسم')
+    ln_h = get_idx('last', 'nom', 'النسب', 'العائلي')
     year_h = get_idx('year', 'annee', 'année', 'level', 'niveau', 'سنة', 'مستوى')
     gender_h = get_idx('gender', 'genre', 'sexe', 'جنس')
+    phone_h = get_idx('phone', 'tel', 'téléphone', 'هاتف', 'رقم')
+    created_h = get_idx('horodateur', 'timestamp', 'inscription')
     
     if not email_h or not dob_h:
         if len(headers) >= 2:
@@ -66,20 +68,22 @@ async def run_google_sheets_sync(sheet_id: str):
             last_name = str(row.get(ln_h, '')).strip() if ln_h else ''
             year = str(row.get(year_h, '')).strip() if year_h else '1'
             gender = str(row.get(gender_h, '')).strip().lower() if gender_h else 'homme'
+            phone = str(row.get(phone_h, '')).strip() if phone_h else ''
+            created_at = str(row.get(created_h, '')).strip() if created_h else ''
             
             async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
                 exists = await cur.fetchone()
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
-                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?
+                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?, phone = ?, created_at = ?
                         WHERE email = ?
-                    """, (dob, first_name, last_name, year, gender, 'google_sheets', email))
+                    """, (dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, email))
                 else:
                     await db.execute("""
-                        INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (email, dob, first_name, last_name, year, gender, 'google_sheets'))
+                        INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source, phone, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at))
             imported += 1
         await db.commit()
     return imported

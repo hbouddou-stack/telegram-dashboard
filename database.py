@@ -90,6 +90,16 @@ async def init_db():
             await db.execute("ALTER TABLE academy_students ADD COLUMN source TEXT DEFAULT 'inconnu'")
         except Exception:
             pass
+            
+        try:
+            await db.execute("ALTER TABLE academy_students ADD COLUMN phone TEXT")
+        except Exception:
+            pass
+            
+        try:
+            await db.execute("ALTER TABLE academy_students ADD COLUMN created_at TEXT")
+        except Exception:
+            pass
 
         # 0b. student_logs
         await db.execute("""

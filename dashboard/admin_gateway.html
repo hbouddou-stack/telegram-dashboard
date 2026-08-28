@@ -428,16 +428,16 @@
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
             </div>
             
-            <div class="profile-chips-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
-                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.1); border-color:#0a84ff; color:#0a84ff;">🗄️ -</div>
-                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.1); border-color:#34c759; color:#34c759;">✈️ <span id="profile-tg-display"></span></div>
-                <div class="chip" id="profile-email" style="background:var(--surface);">✉️ -</div>
-                <div class="chip" id="profile-inscription" style="background:var(--surface);">📅 -</div>
-                <div class="chip" id="profile-phone" style="background:var(--surface);">📞 -</div>
-                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.1); border-color:#ff9f0a; color:#ff9f0a;">🎓 -</div>
-                <div class="chip" id="profile-dob" style="background:var(--surface);">🎂 -</div>
-                <div class="chip" id="profile-gender" style="background:var(--surface);">⚧️ -</div>
-                <div class="chip" id="profile-tgid" style="background:var(--surface);">🆔 -</div>
+            <div class="profile-chips-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📂 <span id="profile-name-text">-</span></div>
+                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">💬 <span id="profile-tg-display">-</span></div>
+                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">✉️ <span id="profile-email-text">-</span></div>
+                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🗓️ <span id="profile-inscription-text">-</span></div>
+                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 <span id="profile-phone-text">-</span></div>
+                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 <span id="profile-year-text">-</span></div>
+                <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 <span id="profile-dob-text">-</span></div>
+                <div class="chip" id="profile-gender" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">⚧️ <span id="profile-gender-text">-</span></div>
+                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 <span id="profile-tgid-text">-</span></div>
             </div>
             
             <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:15px; font-size:0.85rem; color:var(--text1);">
@@ -446,10 +446,21 @@
 
             <div style="display:flex; gap:10px; margin-bottom:18px;">
                 <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">إلغاء ربط حساب تيليجرام</button>
+                <button class="btn btn-primary" onclick="document.getElementById('student-logs-modal').style.display='flex'" style="padding:10px; font-size:0.85rem; flex:1;">Voir l'historique</button>
             </div>
+        </div>
+    </div>
 
-            <h3 style="font-size:0.9rem; margin-bottom:8px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;">سجل نشاط الطالب</h3>
-            <div id="logs-body" style="max-height:220px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;"><div class="no-items">لا توجد سجلات.</div></div>
+    <!-- Modal: Historique de l'élève -->
+    <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Historique de l'élève</h2>
+                <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✕</button>
+            </div>
+            <div id="logs-body" style="max-height:400px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                <div class="no-items">لا توجد سجلات.</div>
+            </div>
         </div>
     </div>
 
@@ -782,11 +793,11 @@
                 
                 const g = (s.gender || '').toLowerCase();
                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
-                    div.style.borderLeft = '4px solid #0084ff';
-                    div.style.backgroundColor = 'rgba(0,132,255,0.02)';
+                    div.style.borderLeft = '6px solid #0084ff';
+                    div.style.backgroundColor = 'rgba(0,132,255,0.15)';
                 } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
-                    div.style.borderLeft = '4px solid #ec4899';
-                    div.style.backgroundColor = 'rgba(236,72,153,0.02)';
+                    div.style.borderLeft = '6px solid #ec4899';
+                    div.style.backgroundColor = 'rgba(236,72,153,0.15)';
                 }
 
                 div.onclick = () => openStudentCard(s);
@@ -820,39 +831,39 @@
             activeStudentId = student.student_id;
             
             const fullName = (student.first_name || '') + (student.last_name ? ' ' + student.last_name : '');
-            document.getElementById('profile-name').textContent = '🗄️ ' + (fullName.trim() || 'غير محدد');
+            document.getElementById('profile-name-text').textContent = fullName.trim() || 'غير محدد';
             
             const tgContainer = document.getElementById('profile-tg-container');
             if (student.telegram_id && student.tg_first_name) {
-                tgContainer.style.display = 'inline-block';
+                tgContainer.style.display = 'flex';
                 const tgName = student.tg_first_name + (student.tg_last_name ? ' ' + student.tg_last_name : '');
                 document.getElementById('profile-tg-display').textContent = tgName;
             } else {
                 tgContainer.style.display = 'none';
             }
             
-            document.getElementById('profile-email').textContent = '✉️ ' + (student.email || 'غير متوفر');
+            document.getElementById('profile-email-text').textContent = student.email || 'غير متوفر';
             
-            const inscriptionEl = document.getElementById('profile-inscription');
-            if(inscriptionEl) inscriptionEl.textContent = '📅 ' + (student.created_at || 'غير متوفر');
+            const inscriptionEl = document.getElementById('profile-inscription-text');
+            if(inscriptionEl) inscriptionEl.textContent = student.created_at || 'غير متوفر';
             
-            const phoneEl = document.getElementById('profile-phone');
-            if(phoneEl) phoneEl.textContent = '📞 ' + (student.phone || 'غير متوفر');
+            const phoneEl = document.getElementById('profile-phone-text');
+            if(phoneEl) phoneEl.textContent = student.phone || 'غير متوفر';
             
             const yrStr = String(student.year || '');
             const matchYr = yrStr.match(/\d+/);
             const yrNum = matchYr ? matchYr[0] : '';
-            document.getElementById('profile-year').textContent = '🎓 ' + (yrNum ? 'Année ' + yrNum : 'غير محدد');
+            document.getElementById('profile-year-text').textContent = yrNum ? 'Année ' + yrNum : 'غير محدد';
             
-            document.getElementById('profile-dob').textContent = '🎂 ' + (student.dob || 'غير متوفر');
+            document.getElementById('profile-dob-text').textContent = student.dob || 'غير متوفر';
             
             let displayGender = 'غير محدد';
             const g = (student.gender || '').toLowerCase();
             if (g.startsWith('h') || g === 'm' || g.includes('ذك')) displayGender = 'ذكر';
             else if (g.startsWith('f') || g === 'fille' || g.includes('أنث')) displayGender = 'أنثى';
-            document.getElementById('profile-gender').textContent = '⚧️ ' + displayGender;
+            document.getElementById('profile-gender-text').textContent = displayGender;
             
-            document.getElementById('profile-tgid').textContent = '🆔 ' + (student.telegram_id || 'غير مرتبط');
+            document.getElementById('profile-tgid-text').textContent = student.telegram_id || 'غير مرتبط';
 
             const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (student.telegram_id) {
