@@ -364,6 +364,7 @@
             
             <textarea id="sos-reply-text" class="search-box" style="height:100px; resize:none;" placeholder="Tapez votre réponse ici... Elle sera envoyée via Telegram si possible."></textarea>
             <button class="btn-save" id="btn-send-sos-reply" onclick="sendSosReply()">Envoyer et Fermer</button>
+            <div id="debug-panel" style="margin-top:10px; background:#111; border:1px solid #444; border-radius:8px; padding:8px; min-height:40px; font-family:monospace; max-height:150px; overflow-y:auto;"><span style="color:#666;font-size:11px;">Log de débogage — appuyez sur Envoyer pour voir les étapes</span></div>
         </div>
     </div>
 
@@ -609,7 +610,21 @@
         async function sendSosReply() {
             const text = document.getElementById('sos-reply-text').value.trim();
             
+            // ---- DEBUG LOG ----
+            function dbg(msg, color='#fff') {
+                const d = document.getElementById('debug-panel');
+                if(d) d.innerHTML += `<div style="color:${color};border-bottom:1px solid #333;padding:3px 0;font-size:12px;">${new Date().toISOString().slice(11,19)} — ${msg}</div>`;
+                console.log('[SOS DEBUG]', msg);
+            }
+            document.getElementById('debug-panel').innerHTML = '';
+            dbg('▶ sendSosReply() déclenchée');
+            dbg(`currentSosId = ${currentSosId}`);
+            dbg(`currentSosTelegramId = ${currentSosTelegramId}`);
+            dbg(`text = "${text}"`);
+            // -------------------
+            
             if(!text) {
+                dbg('❌ Message vide, arrêt.', '#ff4444');
                 alert('Veuillez écrire un message avant d\'envoyer.');
                 return;
             }
@@ -617,6 +632,7 @@
             const btn = document.getElementById('btn-send-sos-reply');
             btn.textContent = 'Envoi en cours...';
             btn.disabled = true;
+            dbg('📡 Appel API /api/admin/sos/reply...');
 
             try {
                 const res = await fetch('/api/admin/sos/reply', {
@@ -624,14 +640,19 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ sos_id: currentSosId, reply_message: text, telegram_id: currentSosTelegramId })
                 });
+                dbg(`✅ Réponse HTTP: ${res.status} ${res.statusText}`, '#00ff88');
                 const data = await res.json();
+                dbg(`📦 JSON reçu: ${JSON.stringify(data)}`, data.success ? '#00ff88' : '#ff4444');
                 if(data.success) {
+                    dbg('🎉 Succès ! Fermeture modal...', '#00ff88');
                     closeSosModal(null, true);
                     fetchSos();
                 } else {
+                    dbg('❌ Erreur serveur: ' + (data.error || 'inconnue'), '#ff4444');
                     alert('Erreur serveur: ' + (data.error || 'inconnue'));
                 }
             } catch(e) {
+                dbg('🔴 Erreur réseau: ' + e.message, '#ff4444');
                 alert('Erreur réseau : ' + e.message);
             } finally {
                 btn.textContent = 'Envoyer et Fermer';
