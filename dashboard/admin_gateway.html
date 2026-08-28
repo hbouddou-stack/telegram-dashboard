@@ -412,25 +412,29 @@
                     <div class="profile-label">الاسم الكامل (المسجل في قاعدة البيانات)</div>
                     <div class="profile-value" id="profile-name">-</div>
                 </div>
-                <div class="profile-item">
-                    <div class="profile-label">الاسم الشخصي على تيليجرام (Telegram First Name)</div>
+                <div class="profile-item" id="profile-tg-container" style="display: none;">
+                    <div class="profile-label">الاسم على تيليجرام</div>
                     <div class="profile-value" id="profile-tg-display">-</div>
-                </div>
-                <div class="profile-item">
-                    <div class="profile-label">السنة / المستوى الدراسي</div>
-                    <div class="profile-value" id="profile-year">-</div>
                 </div>
                 <div class="profile-item">
                     <div class="profile-label">البريد الإلكتروني للتعلم</div>
                     <div class="profile-value" id="profile-email">-</div>
                 </div>
                 <div class="profile-item">
+                    <div class="profile-label">تاريخ التسجيل (Inscription Date)</div>
+                    <div class="profile-value" id="profile-inscription">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">رقم الهاتف</div>
+                    <div class="profile-value" id="profile-phone">-</div>
+                </div>
+                <div class="profile-item">
                     <div class="profile-label">تاريخ الميلاد</div>
                     <div class="profile-value" id="profile-dob">-</div>
                 </div>
                 <div class="profile-item">
-                    <div class="profile-label">مصدر التسجيل (Provenance)</div>
-                    <div class="profile-value" id="profile-source">-</div>
+                    <div class="profile-label">السنة / المستوى الدراسي</div>
+                    <div class="profile-value" id="profile-year">-</div>
                 </div>
                 <div class="profile-item">
                     <div class="profile-label">الجنس</div>
@@ -810,17 +814,28 @@
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             
-            document.getElementById('profile-name').textContent = student.first_name || 'غير محدد';
-            document.getElementById('profile-year').textContent = student.year ? 'السنة ' + student.year : 'غير محدد';
-            document.getElementById('profile-email').textContent = student.email || '-';
-            document.getElementById('profile-dob').textContent = student.dob || '-';
+            const fullName = (student.first_name || '') + (student.last_name ? ' ' + student.last_name : '');
+            document.getElementById('profile-name').textContent = fullName.trim() || 'غير محدد';
             
-            let displaySource = 'غير محدد';
-            if (student.source === 'excel') displaySource = '📊 Fichier Excel';
-            else if (student.source === 'manual') displaySource = '📝 Ajout manuel';
-            else if (student.source === 'google_sheets') displaySource = '🌐 Google Sheets';
-            const sourceEl = document.getElementById('profile-source');
-            if (sourceEl) sourceEl.textContent = displaySource;
+            const tgContainer = document.getElementById('profile-tg-container');
+            if (student.telegram_id && student.tg_first_name) {
+                tgContainer.style.display = '';
+                const tgName = student.tg_first_name + (student.tg_last_name ? ' ' + student.tg_last_name : '');
+                document.getElementById('profile-tg-display').textContent = '✈️ ' + tgName;
+            } else {
+                tgContainer.style.display = 'none';
+            }
+            
+            document.getElementById('profile-email').textContent = student.email || '-';
+            
+            const inscriptionEl = document.getElementById('profile-inscription');
+            if(inscriptionEl) inscriptionEl.textContent = student.created_at || 'غير متوفر';
+            
+            const phoneEl = document.getElementById('profile-phone');
+            if(phoneEl) phoneEl.textContent = student.phone || 'غير متوفر';
+            
+            document.getElementById('profile-year').textContent = student.year ? 'السنة ' + student.year : 'غير محدد';
+            document.getElementById('profile-dob').textContent = student.dob || '-';
             
             let displayGender = 'غير محدد';
             const g = (student.gender || '').toLowerCase();
@@ -829,7 +844,6 @@
             document.getElementById('profile-gender').textContent = displayGender;
             
             document.getElementById('profile-tgid').textContent = student.telegram_id || 'غير مرتبط';
-            document.getElementById('profile-tg-display').textContent = 'جاري البحث...';
 
             const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (student.telegram_id) {
