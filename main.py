@@ -320,7 +320,7 @@ async def api_admin_gateway_logs_all(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT sl.action_type, sl.description, sl.timestamp,
+                SELECT sl.action_type, sl.description, sl.timestamp, sl.telegram_id,
                        COALESCE(s.first_name, 'ID:'||sl.student_id) as first_name,
                        u.first_name as tg_first_name,
                        sl.student_id
@@ -3998,11 +3998,11 @@ async def api_link_account(request: web.Request):
             errors = {}
             
             # Check Email
-            async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE LOWER(email) = LOWER(?)", (email,)) as cur1:
+            async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))", (email,)) as cur1:
                 row1 = await cur1.fetchone()
                 if not row1:
                     errors['email'] = 'البريد الإلكتروني غير مسجل.'
-                    await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (0, 'LINK_FAILED', f"محاولة ربط ببريد إلكتروني غير مسجل: {email}"))
+                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", (0, telegram_id, 'LINK_FAILED', f"محاولة ربط ببريد إلكتروني غير مسجل: {email}"))
                 else:
                     db_student_id = row1[0]
                     db_dob = row1[1]
@@ -4011,12 +4011,12 @@ async def api_link_account(request: web.Request):
                     # Check DOB
                     if db_dob != dob:
                         errors['dob'] = 'تاريخ الميلاد غير صحيح.'
-                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"محاولة ربط فاشلة: تاريخ الميلاد غير صحيح ({dob})"))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", (db_student_id, telegram_id, 'LINK_FAILED', f"محاولة ربط فاشلة: تاريخ الميلاد غير صحيح ({dob})"))
                         
                     # Check Student ID
                     if str(db_student_id) != str(student_id_input):
                         errors['student_id'] = 'رقم الطالب غير صحيح.'
-                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"محاولة ربط فاشلة: الرقم الدراسي غير صحيح ({student_id_input})"))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", (db_student_id, telegram_id, 'LINK_FAILED', f"محاولة ربط فاشلة: الرقم الدراسي غير صحيح ({student_id_input})"))
             
             if errors:
                 await db.commit()
@@ -4031,7 +4031,7 @@ async def api_link_account(request: web.Request):
                 
                 if existing_tg:
                     if existing_tg != telegram_id:
-                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"محاولة ربط بحساب تيليجرام آخر"))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", (db_student_id, telegram_id, 'LINK_FAILED', f"محاولة ربط بحساب تيليجرام آخر"))
                         await db.commit()
                         return web.json_response({'success': False, 'error': 'هذا الحساب مرتبط بالفعل بحساب تيليجرام آخر (Compte déjà lié à un autre Telegram).'})
                 
@@ -4041,7 +4041,7 @@ async def api_link_account(request: web.Request):
                     force_name = True if force_row and force_row[0] == 'true' else False
                 
                 if force_name and telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
-                    await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f'محاولة ربط فاشلة: اسم تيليجرام غير مطابق: "{telegram_first_name}" (المتوقع: "{real_first_name}")'))
+                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", (db_student_id, telegram_id, 'LINK_FAILED', f'محاولة ربط فاشلة: اسم تيليجرام غير مطابق: "{telegram_first_name}" (المتوقع: "{real_first_name}")'))
                     await db.commit()
                     return web.json_response({
                         'success': False, 
@@ -4051,7 +4051,7 @@ async def api_link_account(request: web.Request):
                 # Link account
                 if not existing_tg:
                     await db.execute("UPDATE academy_students SET telegram_id = ? WHERE student_id = ?", (telegram_id, db_student_id))
-                    await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'ACCOUNT_LINKED', f"تم ربط حساب تيليجرام بنجاح"))
+                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", (db_student_id, telegram_id, 'ACCOUNT_LINKED', f"تم ربط حساب تيليجرام بنجاح"))
                     await db.commit()
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM

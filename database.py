@@ -3408,9 +3408,24 @@ async def get_student_global_radar(user_id: int):
             if r['status'] == 'correct':
                 stats[subj]['correct'] += r['cnt']
                 
-        radar = []
         for subj, data in stats.items():
             rate = round((data['correct'] / data['total'] * 100) if data['total'] > 0 else 0)
             radar.append({"subject": subj, "rate": rate})
             
         return radar
+
+async def log_student_action_by_tg(telegram_id, action_type, description):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("SELECT student_id FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
+                row = await cur.fetchone()
+                student_id = row[0] if row else 0
+            await db.execute(
+                'INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)',
+                (student_id, action_type, description)
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error logging student action by tg: {e}")

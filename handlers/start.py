@@ -142,6 +142,10 @@ async def cmd_start(message: Message, state: FSMContext):
 
     # ── Group membership guard ──────────────────────────────────────────────
     user_id = message.from_user.id
+    
+    # Log the action
+    await db.log_student_action_by_tg(user_id, "start_bot", {"message": message.text})
+
     restrict_val = await db.get_setting("restrict_to_academy_group", "False") == "True"
     if restrict_val and not is_admin(user_id) and not await is_academy_member(message.bot, user_id):
         await message.answer(

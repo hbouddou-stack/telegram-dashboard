@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ربط الحساب</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Cairo:wght@400;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: linear-gradient(135deg, #1e0033 0%, #000b29 100%);
@@ -15,12 +15,60 @@
             --text-2: #b3a5c7;
             --danger: #ff453a;
             --accent: #8736ff;
+            --input-bg: rgba(0,0,0,0.3);
+            --input-border: rgba(255,255,255,0.2);
+            --modal-bg: #120924;
         }
+        
+        body.theme-light {
+            --bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --surface: rgba(255, 255, 255, 0.85);
+            --primary: #333333;
+            --text-1: #1a1a1a;
+            --text-2: #555555;
+            --danger: #d9381e;
+            --accent: #4a90e2;
+            --input-bg: rgba(255,255,255,0.7);
+            --input-border: rgba(0,0,0,0.1);
+            --modal-bg: #f0f4f8;
+        }
+
+        body.theme-neon {
+            --bg: linear-gradient(135deg, #090a0f 0%, #020205 100%);
+            --surface: rgba(10, 25, 47, 0.75);
+            --primary: #00ffcc;
+            --text-1: #e6f1ff;
+            --text-2: #8892b0;
+            --danger: #ff0055;
+            --accent: #00ffcc;
+            --input-bg: rgba(2,12,27,0.7);
+            --input-border: rgba(0,255,204,0.3);
+            --modal-bg: #0a192f;
+        }
+
+        body.theme-desert {
+            --bg: linear-gradient(135deg, #dfc2a5 0%, #b8875e 100%);
+            --surface: rgba(255, 245, 235, 0.65);
+            --primary: #4a3424;
+            --text-1: #362204;
+            --text-2: #6b4d24;
+            --danger: #c13a3a;
+            --accent: #8b5a2b;
+            --input-bg: rgba(255,255,255,0.4);
+            --input-border: rgba(139,90,43,0.3);
+            --modal-bg: #e6d3c0;
+        }
+
+        body.font-tajawal { font-family: 'Tajawal', sans-serif; }
+        body.font-cairo { font-family: 'Cairo', sans-serif; }
+        body.font-amiri { font-family: 'Amiri', serif; }
+        body.font-readex { font-family: 'Readex Pro', sans-serif; }
+
         html, body {
             background-color: #000b29; /* Fallback solid color */
             background-image: var(--bg);
             color: var(--text-1);
-            font-family: 'Tajawal', sans-serif;
+            font-family: inherit;
             margin: 0;
             padding: 0;
             min-height: 100vh;
@@ -95,13 +143,13 @@
             color: var(--text-2);
         }
         input, select {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             color: var(--text-1);
             padding: 16px;
             border-radius: 12px;
             font-size: 1rem;
-            font-family: 'Tajawal', sans-serif;
+            font-family: inherit;
             outline: none;
             transition: all 0.3s ease;
         }
@@ -138,7 +186,7 @@
             border-radius: 12px;
             font-size: 1.1rem;
             font-weight: 800;
-            font-family: 'Tajawal', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             margin-top: 10px;
             box-shadow: 0 4px 15px rgba(135, 54, 255, 0.4);
@@ -159,7 +207,7 @@
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 700;
-            font-family: 'Tajawal', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             width: 100%;
             margin-top: 15px;
@@ -239,7 +287,7 @@
             padding: 20px;
         }
         .modal-content {
-            background: #120924; /* Opaque dark background */
+            background: var(--modal-bg);
             width: 100%;
             max-width: 350px;
             padding: 25px;
@@ -299,8 +347,8 @@
 
         .fake-select {
             flex: 1;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             color: var(--text-1);
             padding: 16px;
             border-radius: 12px;
@@ -370,6 +418,41 @@
             cursor: pointer;
             font-weight: bold;
         }
+
+        .theme-switcher-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--surface);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .theme-switcher-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .settings-group select {
+            width: 100%;
+        }
+
+
 
     </style>
 </head>
@@ -481,7 +564,78 @@
         <img src="/dossiertelegram.jpg" style="width:100%; border-radius:12px; margin-top:15px; border:1px solid rgba(255,255,255,0.2);">
     </div>
 
+    <!-- Floating Theme Switcher -->
+    <button class="theme-switcher-btn" onclick="openThemeSettings()">🎨</button>
+
+    <!-- Theme Settings Modal -->
+    <div class="modal-overlay" id="theme-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color:var(--text-1);">🎨 تخصيص الواجهة</h2>
+                <button class="close-btn" onclick="closeThemeSettings()">&times;</button>
+            </div>
+            
+            <div class="settings-group">
+                <label style="color:var(--text-1);">المظهر (السمة):</label>
+                <select id="theme-select" onchange="applyTheme()">
+                    <option value="default">المظهر الافتراضي (داكن)</option>
+                    <option value="theme-light">فاتح (Light)</option>
+                    <option value="theme-neon">نيون (Cyberpunk)</option>
+                    <option value="theme-desert">صحراوي (Warm)</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label style="color:var(--text-1);">نوع الخط:</label>
+                <select id="font-select" onchange="applyTheme()">
+                    <option value="font-tajawal">تجوال (Tajawal)</option>
+                    <option value="font-cairo">كايرو (Cairo)</option>
+                    <option value="font-amiri">أميري (Amiri)</option>
+                    <option value="font-readex">ريدكس (Readex Pro)</option>
+                </select>
+            </div>
+
+            <button onclick="closeThemeSettings()" style="background:var(--accent); color:#fff; border:none; border-radius:10px; padding:12px; font-size:1.1rem; font-family:inherit; cursor:pointer;">حفظ الإعدادات</button>
+        </div>
+    </div>
+
     <script>
+        // Load saved theme and font
+        function loadPreferences() {
+            const savedTheme = localStorage.getItem('app-theme') || 'default';
+            const savedFont = localStorage.getItem('app-font') || 'font-tajawal';
+            
+            document.body.className = `${savedTheme !== 'default' ? savedTheme : ''} ${savedFont}`;
+            
+            document.getElementById('theme-select').value = savedTheme;
+            document.getElementById('font-select').value = savedFont;
+        }
+
+        function applyTheme() {
+            const theme = document.getElementById('theme-select').value;
+            const font = document.getElementById('font-select').value;
+            
+            document.body.className = `${theme !== 'default' ? theme : ''} ${font}`;
+            
+            localStorage.setItem('app-theme', theme);
+            localStorage.setItem('app-font', font);
+        }
+
+        function openThemeSettings() {
+            const modal = document.getElementById('theme-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeThemeSettings() {
+            const modal = document.getElementById('theme-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // Initialize preferences on load
+        loadPreferences();
+
         window.Telegram.WebApp.ready();
         (async () => {
             try {

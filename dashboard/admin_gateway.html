@@ -439,8 +439,10 @@
             
             <div class="input-row">
                 <textarea id="sos-reply-text" placeholder="اكتب ردك هنا... سيصل إلى الطالب في رسالة خاصة"></textarea>
-                <button onclick="sendSosReply()">إرسال ✈️</button>
+                <button class="btn btn-success" onclick="sendSosReply()" style="flex:1;">إرسال الرد ✉️</button>
             </div>
+            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-top:10px; background:#4a90e2; width:100%; padding:10px;">📜 عرض سجل محاولات الطالب</button>
+            <button class="btn btn-primary" onclick="window.open('https://t.me/c/' + activeSosTid, '_blank')" style="margin-top:10px; background:#2481cc; width:100%; padding:10px;">📱 Voir l'historique Telegram</button>
             <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
         </div>
     </div>
@@ -772,11 +774,13 @@
                     
                     const openCount = rawSosList.filter(s => s.status === 'open').length;
                     const badge = document.getElementById('sos-badge');
-                    if(openCount > 0) {
-                        badge.style.display = 'block';
-                        badge.textContent = openCount;
-                    } else {
-                        badge.style.display = 'none';
+                    if(badge) {
+                        if(openCount > 0) {
+                            badge.style.display = 'block';
+                            badge.textContent = openCount;
+                        } else {
+                            badge.style.display = 'none';
+                        }
                     }
 
                     renderSosList();
@@ -784,6 +788,54 @@
             } catch(e) {
                 document.getElementById('sos-list').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في الشبكة.</div>';
             }
+        }
+
+        function renderLogs() {
+            const list = document.getElementById('logs-list');
+            if(rawLogs.length === 0) {
+                list.innerHTML = '<div class="no-items">لا توجد سجلات.</div>';
+                return;
+            }
+            list.innerHTML = '';
+            
+            // Translation dictionary for action types
+            const actionTranslations = {
+                'LINK_FAILED': 'فشل الربط',
+                'LINK_SUCCESS': 'نجاح الربط',
+                'TUTO_OPENED': 'فتح دليل المساعدة',
+                'APP_OPENED': 'فتح التطبيق',
+                'start_bot': 'بدء البوت',
+                'finish_quiz': 'إنهاء اختبار'
+            };
+
+            rawLogs.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'log-card';
+                
+                let studentStr = '';
+                if (log.student_id == 0) {
+                    studentStr = 'طالب غير معروف';
+                } else if (log.student_id) {
+                    const st = allStudents.find(s => s.student_id == log.student_id);
+                    studentStr = st ? (st.first_name || '') + ' (' + log.student_id + ')' : log.student_id;
+                } else {
+                    studentStr = 'غير معروف';
+                }
+                
+                const actionLabel = actionTranslations[log.action_type] || log.action_type;
+                
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span style="color:var(--accent); font-weight:700; font-size:0.95rem;">[${actionLabel}]</span>
+                        <span style="font-size:0.75rem; color:var(--text2);"><span dir="ltr">${formatDateArabic(log.timestamp)}</span></span>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text1); margin-bottom:4px;">
+                        <strong>الطالب:</strong> <span dir="ltr">${studentStr}</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text2); line-height:1.4;"><span dir="ltr">${log.description}</span></div>
+                `;
+                list.appendChild(div);
+            });
         }
 
         function renderSosList() {
@@ -809,14 +861,19 @@
                     ? '<span class="badge badge-linked">تم حلها</span>'
                     : '<span class="badge badge-open">قيد المعالجة</span>';
                 
+                const matchedStudent = allStudents.find(st => st.telegram_id && String(st.telegram_id) === String(sos.telegram_id));
+                const tgName = matchedStudent && matchedStudent.first_name ? matchedStudent.first_name : 'غير معروف';
+                
                 div.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="font-weight:700;">🆘 البريد: ${sos.email_tentative || 'غير معروف'}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <div style="font-weight:800; color:var(--accent);">👤 ${tgName}</div>
                         ${statusBadge}
                     </div>
-                    <div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">${formatDateArabic(sos.timestamp)}</div>
-                    <div style="font-size:0.88rem;margin-top:8px;color:var(--text1);">${sos.message || ''}</div>
+                    <div style="font-weight:700; font-size:0.9rem; color:var(--text1); margin-bottom:4px;">📧 ${sos.email_tentative || 'غير معروف'}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:8px;">🕒 <span dir="ltr">${formatDateArabic(sos.timestamp)}</span></div>
+                    <div style="font-size:0.9rem;color:var(--text1); background:rgba(0,0,0,0.2); padding:8px; border-radius:8px;">${sos.message || ''}</div>
                 `;
+
                 list.appendChild(div);
             });
         }
@@ -839,19 +896,8 @@
 
         function viewUserHistoryFromSos() {
             document.getElementById('sos-overlay').style.display = 'none';
-            
-            const matchedStudent = allStudents.find(s => 
-                (s.email && s.email.toLowerCase() === (activeSosEmail || '').toLowerCase()) ||
-                (s.student_id && String(s.student_id) === String(activeSosStudentId)) ||
-                (s.telegram_id && String(s.telegram_id) === String(activeSosTid))
-            );
-            
-            if (matchedStudent) {
-                openStudentCard(matchedStudent);
-            } else {
-                switchTab('logs');
-                alert("لم يتم العثور على طالب مطابق بقاعدة البيانات. تم توجيهك إلى السجل العام.");
-            }
+            switchTab('logs');
+            fetchGlobalLogs(activeSosTid);
         }
 
         function dbg(msg, color) {
@@ -936,7 +982,7 @@
 
         // ============ GLOBAL LOGS (Clickable Cards) ============
         let rawLogs = [];
-        async function fetchGlobalLogs() {
+        async function fetchGlobalLogs(filterTid = null) {
             const list = document.getElementById('global-logs-list');
             list.innerHTML = '<div class="no-items">جاري التحميل...</div>';
             try {
@@ -944,18 +990,40 @@
                 const data = await res.json();
                 if(data.success && data.logs.length > 0) {
                     rawLogs = data.logs;
-                    list.innerHTML = data.logs.map((l, index) => {
+                    
+                    let filteredLogs = rawLogs;
+                    if (filterTid) {
+                        filteredLogs = rawLogs.filter(l => String(l.telegram_id) === String(filterTid));
+                        if(filteredLogs.length === 0) {
+                            list.innerHTML = '<div class="no-items">لا توجد سجلات سابقة لهذا المتصل.</div>';
+                            return;
+                        }
+                    }
+
+                    const actionTranslations = {
+                        'LINK_FAILED': 'فشل الربط',
+                        'LINK_SUCCESS': 'نجاح الربط',
+                        'TUTO_OPENED': 'فتح دليل المساعدة',
+                        'APP_OPENED': 'فتح التطبيق',
+                        'start_bot': 'بدء البوت',
+                        'finish_quiz': 'إنهاء اختبار'
+                    };
+
+                    list.innerHTML = filteredLogs.map((l, index) => {
                         const displayName = l.tg_first_name 
-                            ? `<span style="font-weight:800;">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(اسم تيليجرام: ${l.tg_first_name})</span>`
-                            : `<span>${l.first_name}</span>`;
+                            ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(اسم تيليجرام: <span dir="ltr">${l.tg_first_name}</span>)</span>`
+                            : `<span dir="ltr">${l.first_name}</span>`;
+                        
+                        const actionLabel = actionTranslations[l.action_type] || l.action_type;
+
                         return `
                             <div class="log-card" onclick="openLogDetail(${index})">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-direction: row-reverse;">
                                     <span style="font-size:0.9rem; color:var(--text1);">${displayName}</span>
-                                    <span style="font-size:0.75rem; color:var(--accent2);">${formatDateArabic(l.timestamp)}</span>
+                                    <span style="font-size:0.75rem; color:var(--accent2);"><span dir="ltr">${formatDateArabic(l.timestamp)}</span></span>
                                 </div>
-                                <div style="font-weight:700; font-size:0.8rem; color:var(--warning); margin-bottom:4px; text-align:right;">[${l.action_type}]</div>
-                                <div style="font-size:0.88rem; color:var(--text2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.description}</div>
+                                <div style="font-weight:700; font-size:0.8rem; color:var(--warning); margin-bottom:4px; text-align:right;">[${actionLabel}]</div>
+                                <div style="font-size:0.88rem; color:var(--text2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><span dir="ltr">${l.description}</span></div>
                             </div>
                         `;
                     }).join('');

@@ -1403,6 +1403,19 @@ async def finish_quiz(callback: CallbackQuery, state: FSMContext):
     total = len(questions)
     correct_count = sum(1 for r in results.values() if r.get("is_correct"))
     percentage = int((correct_count / total) * 100) if total > 0 else 0
+    
+    # Log the action
+    await db.log_student_action_by_tg(
+        callback.from_user.id, 
+        "finish_quiz", 
+        {
+            "score": correct_count, 
+            "total": total, 
+            "percentage": percentage,
+            "guided": bool(data.get("guided_path_quiz"))
+        }
+    )
+
 
     # Contextual encouragement messages based on percentage score
     if percentage == 100:
