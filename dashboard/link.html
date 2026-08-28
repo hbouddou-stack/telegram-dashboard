@@ -419,10 +419,10 @@
             <div class="inline-error-text" id="err-dob"></div>
         </div>
 
-        <button class="btn-primary" onclick="linkAccount()" id="btn-submit">دخول</button>
-        
-        <!-- SOS BUTTON -->
-        <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()">🆘 أواجه مشكلة</button>
+        <div style="display:flex; gap:10px; margin-top:0;">
+            <button class="btn-primary" onclick="linkAccount()" id="btn-submit" style="flex:2;">دخول</button>
+            <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="flex:1; margin-top:0;">🆘 مساعدة</button>
+        </div>
         
                 <!-- TUTO MODAL -->
         <div class="modal-overlay" id="tuto-modal">
@@ -458,10 +458,8 @@
                     <button class="close-btn" onclick="closeSOS()">&times;</button>
                 </div>
                 <p style="color:var(--text-2); font-size:0.95rem; margin:0 0 12px 0;">اشرح مشكلتك هنا وسيقوم احد المشرفين بالرد عليك عبر تيليجرام في اقرب وقت.</p>
-                <div style="display:flex; gap:10px; align-items:flex-end;">
-                    <textarea id="sos_msg" placeholder="مثال: لا استطيع الدخول..." style="flex:1; resize:none; height:50px; background:rgba(0,0,0,0.4); border:1px solid var(--danger); color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none;"></textarea>
-                    <button onclick="sendSOS()" id="btn-send-sos" style="flex-shrink:0; background:var(--danger); color:#fff; border:none; border-radius:10px; padding:12px 16px; font-size:0.9rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer; height:50px; white-space:nowrap;">ارسال</button>
-                </div>
+                <textarea id="sos_msg" placeholder="مثال: لا استطيع الدخول، نسيت البريد الالكتروني..." style="width:100%; resize:none; height:100px; background:rgba(0,0,0,0.4); border:1px solid var(--danger); color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none; box-sizing:border-box;"></textarea>
+                <button onclick="sendSOS()" id="btn-send-sos" style="width:100%; margin-top:10px; background:var(--danger); color:#fff; border:none; border-radius:10px; padding:14px; font-size:1rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer;">إرسال طلب المساعدة</button>
                 <div id="sos-debug" style="margin-top:8px; font-size:11px; font-family:monospace; color:#888; min-height:16px;"></div>
             </div>
         </div>
