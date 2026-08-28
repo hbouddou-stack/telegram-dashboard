@@ -7,6 +7,11 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Cairo:wght@400;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px rgba(10,132,255,0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(10,132,255,0.8); transform: scale(1.02); }
+            100% { box-shadow: 0 0 5px rgba(10,132,255,0.2); transform: scale(1); }
+        }
         :root {
             --bg: linear-gradient(135deg, #1e0033 0%, #000b29 100%);
             --surface: rgba(255, 255, 255, 0.05);
@@ -576,7 +581,7 @@
             </p>
         </div>
         
-        <button class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:15px; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4);" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/Yw-eXYtl1BVkYTdk')">✈️ الانضمام إلى مجموعات تيليجرام</button>
+        <button class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:15px; animation: pulse-glow 1.5s infinite; transition: all 0.3s ease;" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/Yw-eXYtl1BVkYTdk')">✈️ الانضمام إلى مجموعات تيليجرام</button>
         
         <img src="/dossiertelegram.jpg" style="width:100%; border-radius:12px; margin-top:15px; border:1px solid rgba(255,255,255,0.2);">
     </div>
