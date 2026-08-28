@@ -92,13 +92,27 @@
         .tab-content { display: none; padding: 16px; }
         .tab-content.active { display: block; }
         
-        /* Filters always at the very top of Students Tab */
-        .filter-section { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
-        .filter-title { font-size: 0.75rem; color: var(--text2); font-weight: 700; margin-bottom: 2px; }
-        .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
-        .chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+        /* Filters design at the top */
+        .filter-section { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
+        .filter-title { font-size: 0.75rem; color: var(--text2); font-weight: 700; margin-bottom: 4px; }
         
+        .chip-gender {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text2);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chip-gender.active {
+            color: var(--active-color, var(--accent2));
+            background: var(--active-bg, rgba(168,85,247,0.15));
+            border-color: var(--active-color, var(--accent2));
+        }
+
         /* Search */
         .search-box { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'Tajawal', sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; text-align: right; }
         .search-box:focus { border-color: var(--accent); }
@@ -109,11 +123,24 @@
         .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); }
         .stat-lbl { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
         
-        /* List */
+        /* List & Cards */
         .list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; text-align: right; }
         .list-item:hover { border-color: var(--accent); }
         .list-name { font-weight: 700; font-size: 0.95rem; }
         .list-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+
+        .log-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .log-card:hover {
+            border-color: var(--accent);
+        }
         
         /* Badges */
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
@@ -198,28 +225,35 @@
     
     <!-- TAB: الطلاب -->
     <div id="tab-students" class="tab-content active">
-        <!-- Filters at the very top -->
+        <!-- Intelligent Compact Filters at the very top -->
         <div class="filter-section">
-            <div class="filter-title">حالة الحساب</div>
-            <div class="filter-row" id="fr-status" style="margin-bottom: 10px;">
-                <div class="chip active" onclick="setFilter('status','all',this)">الكل</div>
-                <div class="chip" onclick="setFilter('status','linked',this)">✅ مرتبط</div>
-                <div class="chip" onclick="setFilter('status','unlinked',this)">❌ غير مرتبط</div>
+            <!-- Gender filter row with colors: Blue (Male) and Pink (Female) -->
+            <div style="display: flex; gap: 8px; justify-content: center; width: 100%;">
+                <div class="chip-gender active" id="g-all" onclick="setGenderFilter('all', this)" style="flex:1; text-align:center;">👥 الكل</div>
+                <div class="chip-gender" id="g-homme" onclick="setGenderFilter('homme', this)" style="flex:1; text-align:center; --active-color: #0084ff; --active-bg: rgba(0, 132, 255, 0.15);">👨 طلاب (ذكور)</div>
+                <div class="chip-gender" id="g-femme" onclick="setGenderFilter('femme', this)" style="flex:1; text-align:center; --active-color: #ec4899; --active-bg: rgba(236, 72, 153, 0.15);">👩 طالبات (إناث)</div>
             </div>
-            <div class="filter-title">الجنس</div>
-            <div class="filter-row" id="fr-gender" style="margin-bottom: 10px;">
-                <div class="chip active" onclick="setFilter('gender','all',this)">👥 الكل</div>
-                <div class="chip" onclick="setFilter('gender','homme',this)">👨 الطلاب (ذكور)</div>
-                <div class="chip" onclick="setFilter('gender','femme',this)">👩 الطالبات (إناث)</div>
-                <div class="chip" onclick="setFilter('gender','inconnu',this)">❓ غير محدد</div>
-            </div>
-            <div class="filter-title">السنة الدراسية</div>
-            <div class="filter-row" id="fr-level">
-                <div class="chip active" onclick="setFilter('level','all',this)">جميع السنوات</div>
-                <div class="chip" onclick="setFilter('level','1',this)">السنة 1</div>
-                <div class="chip" onclick="setFilter('level','2',this)">السنة 2</div>
-                <div class="chip" onclick="setFilter('level','3',this)">السنة 3</div>
-                <div class="chip" onclick="setFilter('level','4',this)">السنة 4</div>
+            
+            <!-- Compact selection for Level and Status side-by-side -->
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; margin-top: 4px;">
+                <div>
+                    <div class="filter-title">السنة الدراسية</div>
+                    <select id="level-select" onchange="setLevelFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                        <option value="all">جميع السنوات</option>
+                        <option value="1">السنة الأولى (1)</option>
+                        <option value="2">السنة الثانية (2)</option>
+                        <option value="3">السنة الثالثة (3)</option>
+                        <option value="4">السنة الرابعة (4)</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="filter-title">حالة الربط</div>
+                    <select id="status-select" onchange="setStatusFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                        <option value="all">كل الحالات</option>
+                        <option value="linked">✅ مرتبط بتيليجرام</option>
+                        <option value="unlinked">❌ غير مرتبط</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -294,15 +328,15 @@
             
             <div class="profile-grid">
                 <div class="profile-item">
-                    <div class="profile-label">الاسم الكامل (المسجل في الملف)</div>
+                    <div class="profile-label">الاسم الكامل (المسجل في قاعدة البيانات)</div>
                     <div class="profile-value" id="profile-name">-</div>
                 </div>
                 <div class="profile-item">
-                    <div class="profile-label">الاسم على تيليجرام (الملف الشخصي)</div>
+                    <div class="profile-label">الاسم الشخصي على تيليجرام (Telegram First Name)</div>
                     <div class="profile-value" id="profile-tg-display">-</div>
                 </div>
                 <div class="profile-item">
-                    <div class="profile-label">السنة / المستوى الدراسية</div>
+                    <div class="profile-label">السنة / المستوى الدراسي</div>
                     <div class="profile-value" id="profile-year">-</div>
                 </div>
                 <div class="profile-item">
@@ -331,8 +365,41 @@
                 <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">إلغاء ربط حساب تيليجرام</button>
             </div>
 
-            <h3 style="font-size:0.9rem; margin-bottom:8px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;">سجل نشاط هذا الطالب</h3>
+            <h3 style="font-size:0.9rem; margin-bottom:8px; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px;">سجل نشاط الطالب</h3>
             <div id="logs-body" style="max-height:220px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;"><div class="no-items">لا توجد سجلات.</div></div>
+        </div>
+    </div>
+
+    <!-- Modal: تفاصيل السجل والنشاط الكامل -->
+    <div class="modal-overlay" id="log-detail-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📋 تفاصيل سجل النشاط</h2>
+                <button class="close-btn" onclick="document.getElementById('log-detail-overlay').style.display='none'">✕</button>
+            </div>
+            
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <div class="profile-label">نوع النشاط / العملية</div>
+                    <div class="profile-value" id="log-detail-type" style="color:var(--warning); font-weight:800;">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">التاريخ والوقت بالتفصيل</div>
+                    <div class="profile-value" id="log-detail-time">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">اسم الطالب المسجل (في الملف)</div>
+                    <div class="profile-value" id="log-detail-name">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">الاسم الشخصي على تيليجرام (Telegram Name)</div>
+                    <div class="profile-value" id="log-detail-tg">-</div>
+                </div>
+                <div class="profile-item" style="border-bottom:none; margin-top:5px;">
+                    <div class="profile-label">النشاط وتفاصيل البيانات المدخلة</div>
+                    <div class="profile-value" id="log-detail-desc" style="background:var(--bg); padding:12px; border-radius:10px; line-height:1.5; color:var(--text1); font-size:0.9rem; margin-top:4px;">-</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -388,14 +455,12 @@
             if (themeName !== 'dark') {
                 document.body.classList.add('theme-' + themeName);
             }
-            // Active chip styles
             document.querySelectorAll('#tab-settings .chip').forEach(c => c.classList.remove('active'));
             const activeChip = document.getElementById('theme-btn-' + themeName);
             if (activeChip) activeChip.classList.add('active');
             localStorage.setItem('admin-theme', themeName);
         }
 
-        // Load saved theme
         const savedTheme = localStorage.getItem('admin-theme') || 'cpi';
         changeTheme(savedTheme);
 
@@ -412,11 +477,19 @@
             if(id === 'settings') loadGeneralSettings();
         }
 
-        // ============ FILTERS ============
-        function setFilter(type, value, el) {
-            filters[type] = value;
-            el.closest('.filter-row').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        // ============ FILTER TRIGGERS ============
+        function setGenderFilter(val, el) {
+            filters.gender = val;
+            el.closest('div').querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
+            filterStudents();
+        }
+        function setLevelFilter(val) {
+            filters.level = val;
+            filterStudents();
+        }
+        function setStatusFilter(val) {
+            filters.status = val;
             filterStudents();
         }
 
@@ -522,7 +595,6 @@
                 div.className = 'list-item';
                 div.onclick = () => openStudentCard(s);
                 
-                // Clear distinction between database file name and telegram username
                 const display = linked 
                     ? `<span style="font-weight:800;">${s.first_name || '—'}</span> <span style="color:var(--text2); font-size:0.8rem;">(مرتبط بـ Telegram ID: ${s.telegram_id})</span>`
                     : `<span>${s.first_name || '—'}</span>`;
@@ -591,7 +663,6 @@
                 const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id);
                 const data = await res.json();
                 
-                // Fetch the student details to grab their Telegram Name if present in users
                 try {
                     const allLogsRes = await fetch('/api/admin/gateway/logs/all');
                     const allLogsData = await allLogsRes.json();
@@ -660,7 +731,6 @@
                 if(data.success) {
                     rawSosList = data.sos_list;
                     
-                    // Update main badge with number of open tickets
                     const openCount = rawSosList.filter(s => s.status === 'open').length;
                     const badge = document.getElementById('sos-badge');
                     if(openCount > 0) {
@@ -806,7 +876,8 @@
             alert('تم حفظ جميع الروابط بنجاح.');
         }
 
-        // ============ GLOBAL LOGS ============
+        // ============ GLOBAL LOGS (Clickable Cards) ============
+        let rawLogs = [];
         async function fetchGlobalLogs() {
             const list = document.getElementById('global-logs-list');
             list.innerHTML = '<div class="no-items">جاري التحميل...</div>';
@@ -814,18 +885,19 @@
                 const res = await fetch('/api/admin/gateway/logs/all');
                 const data = await res.json();
                 if(data.success && data.logs.length > 0) {
-                    list.innerHTML = data.logs.map(l => {
+                    rawLogs = data.logs;
+                    list.innerHTML = data.logs.map((l, index) => {
                         const displayName = l.tg_first_name 
                             ? `<span style="font-weight:800;">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(اسم تيليجرام: ${l.tg_first_name})</span>`
                             : `<span>${l.first_name}</span>`;
                         return `
-                            <div style="border-bottom:1px solid var(--border);padding:12px; background: var(--surface); margin-bottom:8px; border-radius:12px;">
+                            <div class="log-card" onclick="openLogDetail(${index})">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-direction: row-reverse;">
                                     <span style="font-size:0.9rem; color:var(--text1);">${displayName}</span>
                                     <span style="font-size:0.75rem; color:var(--accent2);">${formatDateArabic(l.timestamp)}</span>
                                 </div>
                                 <div style="font-weight:700; font-size:0.8rem; color:var(--warning); margin-bottom:4px; text-align:right;">[${l.action_type}]</div>
-                                <div style="font-size:0.88rem; color:var(--text2); text-align:right;">${l.description}</div>
+                                <div style="font-size:0.88rem; color:var(--text2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.description}</div>
                             </div>
                         `;
                     }).join('');
@@ -835,6 +907,17 @@
             } catch(e) {
                 list.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل: ' + e.message + '</div>';
             }
+        }
+
+        function openLogDetail(index) {
+            const log = rawLogs[index];
+            if (!log) return;
+            document.getElementById('log-detail-type').textContent = log.action_type || 'غير محدد';
+            document.getElementById('log-detail-time').textContent = formatDateArabic(log.timestamp);
+            document.getElementById('log-detail-name').textContent = log.first_name || 'غير معروف';
+            document.getElementById('log-detail-tg').textContent = log.tg_first_name || 'غير معروف (أو غير مرتبط)';
+            document.getElementById('log-detail-desc').textContent = log.description || 'لا توجد تفاصيل إضافية.';
+            document.getElementById('log-detail-overlay').style.display = 'flex';
         }
 
         // ============ INIT ============

@@ -118,9 +118,17 @@ async def init_db():
                 email_tentative TEXT,
                 message TEXT,
                 status TEXT DEFAULT 'open',
-                timestamp TEXT DEFAULT (datetime('now', 'localtime'))
+                timestamp TEXT DEFAULT (datetime('now', 'localtime')),
+                telegram_id INTEGER,
+                dob_tentative TEXT,
+                student_id_tentative TEXT
             )
         """)
+        for col_name, col_type in [("telegram_id", "INTEGER"), ("dob_tentative", "TEXT"), ("student_id_tentative", "TEXT")]:
+            try:
+                await db.execute(f"ALTER TABLE gateway_sos ADD COLUMN {col_name} {col_type}")
+            except Exception:
+                pass
 
         # 1. users
         await db.execute("""
