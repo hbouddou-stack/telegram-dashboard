@@ -375,7 +375,7 @@ async def api_admin_sos_reply(request: web.Request):
         
         if telegram_id:
             try:
-                await bot.send_message(telegram_id, f"🛠️ **Réponse du Support Académie**\n\n{reply_message}", parse_mode="Markdown")
+                await bot.send_message(telegram_id, f"🛠️ **Réponse du Support Académie**\n\n{reply_message}", parse_mode="HTML")
             except Exception as e:
                 pass
                 
