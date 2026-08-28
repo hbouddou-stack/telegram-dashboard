@@ -492,6 +492,19 @@ async def api_gateway_sos(request: web.Request):
         except Exception as ex:
             print(f"Error in api_gateway_sos notify: {ex}")
             
+        # Send confirmation to student in Arabic
+        if telegram_id:
+            try:
+                bot = request.app['bot']
+                confirm_msg = (
+                    f"⚠️ <b>تم استلام طلب المساعدة الخاص بك بنجاح</b>\n\n"
+                    f"<b>محتوى الرسالة:</b>\n<i>{message}</i>\n\n"
+                    f"سيقوم أحد المشرفين بمراجعة طلبك والرد عليك في أقرب وقت ممكن عبر هذه المحادثة."
+                )
+                await bot.send_message(int(telegram_id), confirm_msg, parse_mode="HTML")
+            except Exception as ex:
+                print(f"Error sending SOS confirmation to student: {ex}")
+            
         return web.json_response({'success': True})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
