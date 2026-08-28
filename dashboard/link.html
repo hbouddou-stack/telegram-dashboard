@@ -545,6 +545,19 @@
             const modal = document.getElementById('tuto-modal');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
+            try {
+                let tid = null;
+                let name = '';
+                if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                    tid = window.Telegram.WebApp.initDataUnsafe.user.id;
+                    name = window.Telegram.WebApp.initDataUnsafe.user.first_name || '';
+                }
+                fetch('/api/gateway/log_action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ telegram_id: tid, action_type: 'TUTO_OPENED', first_name: name })
+                });
+            } catch(e) { console.error('Error logging tuto click:', e); }
         }
         function closeTuto() {
             const modal = document.getElementById('tuto-modal');

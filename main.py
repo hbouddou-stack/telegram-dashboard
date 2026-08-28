@@ -480,6 +480,33 @@ async def api_gateway_log_open(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+async def api_gateway_log_action(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        telegram_id = data.get('telegram_id')
+        action_type = data.get('action_type', 'TUTO_OPENED')
+        first_name = data.get('first_name', '')
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            if telegram_id:
+                async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
+                    row = await cur.fetchone()
+                    if row:
+                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
+                                         (row[0], action_type, f"فتح الطالب {row[1]} دليل معرف الطالب"))
+                    else:
+                        await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
+                                         (0, action_type, f"فتح مستخدم غير مرتبط دليل معرف الطالب (الاسم في تيليجرام: {first_name})"))
+            else:
+                await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
+                                 (0, action_type, "فتح مستخدم مجهول دليل معرف الطالب"))
+            await db.commit()
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_gateway_sos(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -3992,6 +4019,7 @@ async def api_link_account(request: web.Request):
                         await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", (db_student_id, 'LINK_FAILED', f"محاولة ربط فاشلة: الرقم الدراسي غير صحيح ({student_id_input})"))
             
             if errors:
+                await db.commit()
                 return web.json_response({'success': False, 'errors': errors})
                 
             # All Good: fetch full data
@@ -4534,6 +4562,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
     app.router.add_post('/api/gateway/sos', api_gateway_sos)
     app.router.add_post('/api/gateway/log_open', api_gateway_log_open)
+    app.router.add_post('/api/gateway/log_action', api_gateway_log_action)
     app.router.add_get('/api/admin/links', api_admin_links_get)
     app.router.add_get('/api/admin/sos', api_admin_sos_list)
     app.router.add_post('/api/admin/sos/reply', api_admin_sos_reply)

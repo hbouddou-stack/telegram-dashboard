@@ -245,11 +245,10 @@
     <div id="tab-students" class="tab-content active">
         <!-- Intelligent Compact Filters at the very top -->
         <div class="filter-section">
-            <!-- Gender filter row with colors: Blue (Male) and Pink (Female) -->
-            <div style="display: flex; gap: 8px; justify-content: center; width: 100%;">
-                <div class="chip-gender active" id="g-all" onclick="setGenderFilter('all', this)" style="flex:1; text-align:center;">👥 الكل</div>
-                <div class="chip-gender" id="g-homme" onclick="setGenderFilter('homme', this)" style="flex:1; text-align:center; --active-color: #0084ff; --active-bg: rgba(0, 132, 255, 0.15);">👨 طلاب (ذكور)</div>
-                <div class="chip-gender" id="g-femme" onclick="setGenderFilter('femme', this)" style="flex:1; text-align:center; --active-color: #ec4899; --active-bg: rgba(236, 72, 153, 0.15);">👩 طالبات (إناث)</div>
+            <!-- Gender filter row with colors: Blue (Male) and Pink (Female) taking full width 50/50 -->
+            <div style="display: flex; gap: 10px; justify-content: center; width: 100%; margin-bottom: 8px;">
+                <div class="chip-gender chip-male active" id="g-homme" onclick="setGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👨 طلاب (ذكور)</div>
+                <div class="chip-gender chip-female" id="g-femme" onclick="setGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👩 طالبات (إناث)</div>
             </div>
             
             <!-- Compact selection for Level and Status side-by-side -->
@@ -286,9 +285,10 @@
     
     <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
     <div id="tab-sos" class="tab-content">
-        <div class="filter-row" style="margin-bottom: 15px; justify-content: center; gap: 8px;">
-            <div class="chip active" id="sos-filter-open" onclick="switchSosSubtab('open')">📥 طلبات قيد المعالجة</div>
-            <div class="chip" id="sos-filter-closed" onclick="switchSosSubtab('closed')">✅ طلبات تم حلها</div>
+        <!-- Separate segmented buttons for SOS state -->
+        <div style="display:flex; width:100%; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px;">
+            <button id="sos-filter-open" onclick="switchSosSubtab('open')" style="flex:1; padding:12px; border:none; background:var(--accent); color:white; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem;">📥 طلبات قيد المعالجة</button>
+            <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ طلبات تم حلها</button>
         </div>
         <div id="sos-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
@@ -450,7 +450,7 @@
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all' };
+        let filters = { status: 'all', gender: 'homme', level: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -746,8 +746,19 @@
         // ============ SOS TABS (Active vs Resolved) ============
         function switchSosSubtab(state) {
             activeSosSubtabState = state;
-            document.getElementById('sos-filter-open').classList.toggle('active', state === 'open');
-            document.getElementById('sos-filter-closed').classList.toggle('active', state === 'closed');
+            const btnOpen = document.getElementById('sos-filter-open');
+            const btnClosed = document.getElementById('sos-filter-closed');
+            if (state === 'open') {
+                btnOpen.style.background = 'var(--accent)';
+                btnOpen.style.color = 'white';
+                btnClosed.style.background = 'var(--surface)';
+                btnClosed.style.color = 'var(--text2)';
+            } else {
+                btnOpen.style.background = 'var(--surface)';
+                btnOpen.style.color = 'var(--text2)';
+                btnClosed.style.background = 'var(--accent)';
+                btnClosed.style.color = 'white';
+            }
             renderSosList();
         }
 
