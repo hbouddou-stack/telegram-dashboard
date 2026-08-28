@@ -208,10 +208,10 @@
         
         /* SOS Area */
         .sos-btn {
-            display: block; /* Make it always visible */
-            background: rgba(255, 69, 58, 0.1);
+            display: block;
+            background: var(--input-bg);
             color: var(--danger);
-            border: 1px solid rgba(255, 69, 58, 0.3);
+            border: 1px solid var(--input-border);
             padding: 12px;
             border-radius: 12px;
             font-size: 1rem;
@@ -219,8 +219,11 @@
             font-family: inherit;
             cursor: pointer;
             width: 100%;
-            margin-top: 15px;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+        }
+        .sos-btn:hover {
+            border-color: var(--danger);
+            background: rgba(255, 69, 58, 0.1);
         }
         .sos-area {
             display: none;
@@ -514,8 +517,8 @@
             <div class="inline-error-text" id="err-dob"></div>
         </div>
 
-        <div style="margin-top:15px;">
-            <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">🆘 مساعدة</button>
+        <div style="margin-top:25px;">
+            <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">لدي مشكلة في التسجيل 🆘</button>
         </div>
         
                 <!-- TUTO MODAL -->
