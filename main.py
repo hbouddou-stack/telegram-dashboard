@@ -349,11 +349,11 @@ async def api_admin_gateway_check_member(request: web.Request):
         return web.json_response({'success': True, 'status': 'left', 'has_joined': False, 'debug_error': str(e)})
 
 async def api_admin_gateway_import_students(request: web.Request):
-    import aiosqlite
-    import openpyxl
-    import io
-    from config import DATABASE_PATH
     try:
+        import aiosqlite
+        import openpyxl
+        import io
+        from config import DATABASE_PATH
         reader = await request.multipart()
         field = await reader.next()
         if not field or field.name != 'file':
