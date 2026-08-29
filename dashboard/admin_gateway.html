@@ -1375,11 +1375,13 @@
                         const sName = l.student_name || '';
                         const desc = l.description || '';
                         const tId = String(l.telegram_id || '');
+                        const tUname = l.telegram_username || l.tg_username || '';
                         
                         return tId.includes(q) || 
                                tName.toLowerCase().includes(q) || 
                                tFirst.toLowerCase().includes(q) || 
                                tLast.toLowerCase().includes(q) || 
+                               tUname.toLowerCase().includes(q) || 
                                sName.toLowerCase().includes(q) || 
                                desc.toLowerCase().includes(q);
                     });
@@ -1417,9 +1419,11 @@
                 if (!tgDisplay && l.tg_first_name) {
                     tgDisplay = l.tg_first_name + (l.tg_last_name ? ' ' + l.tg_last_name : '');
                 }
+                let tgUname = l.telegram_username || l.tg_username || '';
+                let unameSpan = tgUname ? ` <span style="color:#0a84ff; font-weight:normal;">(@${tgUname})</span>` : '';
                 
                 const displayName = tgDisplay 
-                    ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(بواسطة: <span dir="ltr">${tgDisplay}</span>)</span>`
+                    ? `<span style="font-weight:800;" dir="ltr">${l.first_name}</span> <span style="color:var(--text2); font-size:0.8rem;">(بواسطة: <span dir="ltr">${tgDisplay}${unameSpan}</span>)</span>`
                     : `<span dir="ltr">${l.first_name}</span>`;
                 
                 const actionLabel = actionTranslations[l.action_type] || l.action_type;

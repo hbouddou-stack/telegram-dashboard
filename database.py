@@ -22,14 +22,14 @@ async def log_chat_message(telegram_id, sender, message_text):
     except Exception as e:
         logger.error(f"Error logging chat message: {e}")
 
-async def log_student_action(student_id, action_type, description, telegram_id=None, telegram_name=None):
+async def log_student_action(student_id, action_type, description, telegram_id=None, telegram_name=None, telegram_username=None):
     from config import DATABASE_PATH
     import aiosqlite
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             await db.execute(
-                'INSERT INTO student_logs (student_id, action_type, description, telegram_id, telegram_name) VALUES (?, ?, ?, ?, ?)',
-                (student_id, action_type, description, telegram_id, telegram_name)
+                'INSERT INTO student_logs (student_id, action_type, description, telegram_id, telegram_name, telegram_username) VALUES (?, ?, ?, ?, ?, ?)',
+                (student_id, action_type, description, telegram_id, telegram_name, telegram_username)
             )
             await db.commit()
     except Exception as e:
@@ -82,6 +82,7 @@ async def init_db():
                 last_name TEXT,
                 year TEXT,
                 gender TEXT,
+                telegram_username TEXT,
                 is_active BOOLEAN DEFAULT 1
             )
         """)
@@ -111,12 +112,18 @@ async def init_db():
         except Exception:
             pass
 
+        try:
+            await db.execute("ALTER TABLE academy_students ADD COLUMN telegram_username TEXT")
+        except Exception:
+            pass
+
         # 0b. student_logs
         await db.execute("""
             CREATE TABLE IF NOT EXISTS student_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 student_id INTEGER,
                 telegram_id INTEGER,
+                telegram_username TEXT,
                 action_type TEXT,
                 description TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))
@@ -128,6 +135,10 @@ async def init_db():
             pass
         try:
             await db.execute("ALTER TABLE student_logs ADD COLUMN telegram_name TEXT")
+        except Exception:
+            pass
+        try:
+            await db.execute("ALTER TABLE student_logs ADD COLUMN telegram_username TEXT")
         except Exception:
             pass
 
@@ -3459,21 +3470,24 @@ async def log_student_action_by_tg(telegram_id, action_type, description):
     import aiosqlite
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute("SELECT student_id FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
+            async with db.execute("SELECT student_id, telegram_username FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
                 row = await cur.fetchone()
                 student_id = row[0] if row else 0
+                telegram_username = row[1] if row and len(row) > 1 else None
                 
             telegram_name = None
-            async with db.execute("SELECT first_name, last_name FROM users WHERE telegram_id = ?", (telegram_id,)) as cur:
+            async with db.execute("SELECT first_name, last_name, username FROM users WHERE telegram_id = ?", (telegram_id,)) as cur:
                 u_row = await cur.fetchone()
                 if u_row:
                     fname = u_row[0] or ""
                     lname = u_row[1] or ""
                     telegram_name = f"{fname} {lname}".strip()
+                    if not telegram_username:
+                        telegram_username = u_row[2] or None
                     
             await db.execute(
-                'INSERT INTO student_logs (student_id, action_type, description, telegram_id, telegram_name) VALUES (?, ?, ?, ?, ?)',
-                (student_id, action_type, description, telegram_id, telegram_name)
+                'INSERT INTO student_logs (student_id, action_type, description, telegram_id, telegram_name, telegram_username) VALUES (?, ?, ?, ?, ?, ?)',
+                (student_id, action_type, description, telegram_id, telegram_name, telegram_username)
             )
             await db.commit()
     except Exception as e:

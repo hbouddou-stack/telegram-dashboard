@@ -590,6 +590,7 @@
         function logAndJoinFolder() {
             const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
             const firstName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || '';
+            const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || '';
             
             fetch('/api/gateway/log_action', {
                 method: 'POST',
@@ -597,6 +598,7 @@
                 body: JSON.stringify({
                     telegram_id: tgId,
                     first_name: firstName,
+                    username: username,
                     action_type: 'JOIN_GROUP_CLICK',
                     description: 'الطالب ضغط على زر الانضمام لمجلد المجموعة'
                 })
@@ -684,14 +686,16 @@
             try {
                 let tid = null;
                 let name = '';
+                let uname = '';
                 if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                     tid = window.Telegram.WebApp.initDataUnsafe.user.id;
                     name = window.Telegram.WebApp.initDataUnsafe.user.first_name || '';
+                    uname = window.Telegram.WebApp.initDataUnsafe.user.username || '';
                 }
                 fetch('/api/gateway/log_action', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ telegram_id: tid, action_type: 'TUTO_OPENED', first_name: name })
+                    body: JSON.stringify({ telegram_id: tid, action_type: 'TUTO_OPENED', first_name: name, username: uname })
                 });
             } catch(e) { console.error('Error logging tuto click:', e); }
         }

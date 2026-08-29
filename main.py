@@ -308,10 +308,10 @@ async def api_admin_gateway_logs(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             if tid and tid != 'null' and tid != 'undefined':
-                async with db.execute("SELECT action_type, description, timestamp, telegram_id, telegram_name FROM student_logs WHERE telegram_id = ? OR student_id = ? ORDER BY id DESC LIMIT 50", (tid, student_id)) as cur:
+                async with db.execute("SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username FROM student_logs WHERE telegram_id = ? OR student_id = ? ORDER BY id DESC LIMIT 50", (tid, student_id)) as cur:
                     logs = [dict(row) for row in await cur.fetchall()]
             else:
-                async with db.execute("SELECT action_type, description, timestamp, telegram_id, telegram_name FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 50", (student_id,)) as cur:
+                async with db.execute("SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 50", (student_id,)) as cur:
                     logs = [dict(row) for row in await cur.fetchall()]
         return web.json_response({'success': True, 'logs': logs})
     except Exception as e:
@@ -325,9 +325,9 @@ async def api_admin_gateway_logs_all(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT sl.action_type, sl.description, sl.timestamp, sl.telegram_id, sl.telegram_name,
+                SELECT sl.action_type, sl.description, sl.timestamp, sl.telegram_id, sl.telegram_name, sl.telegram_username,
                        COALESCE(s.first_name, 'ID:'||sl.student_id) as first_name,
-                       u.first_name as tg_first_name, u.last_name as tg_last_name,
+                       u.first_name as tg_first_name, u.last_name as tg_last_name, u.username as tg_username,
                        sl.student_id
                 FROM student_logs sl
                 LEFT JOIN academy_students s ON s.student_id = sl.student_id
@@ -547,6 +547,7 @@ async def api_gateway_log_action(request: web.Request):
         telegram_id = data.get('telegram_id')
         action_type = data.get('action_type', 'TUTO_OPENED')
         first_name = data.get('first_name', '')
+        username = data.get('username', '')
         
         description = data.get('description')
         
@@ -556,12 +557,12 @@ async def api_gateway_log_action(request: web.Request):
                     row = await cur.fetchone()
                     if row:
                         desc = description or f"فتح الطالب {row[1]} دليل معرف الطالب"
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", 
-                                         (row[0], telegram_id, action_type, desc))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
+                                         (row[0], telegram_id, first_name, username, action_type, desc))
                     else:
                         desc = description or f"فتح مستخدم غير مرتبط دليل معرف الطالب (الاسم في تيليجرام: {first_name})"
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)", 
-                                         (0, telegram_id, action_type, desc))
+                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
+                                         (0, telegram_id, first_name, username, action_type, desc))
             else:
                 desc = description or "فتح مستخدم مجهول دليل معرف الطالب"
                 await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
@@ -4112,6 +4113,7 @@ async def api_link_account(request: web.Request):
         telegram_last_name = ''
         
         init_data = data.get('initData')
+        telegram_username = ''
         if init_data:
             import urllib.parse
             import json
@@ -4120,6 +4122,7 @@ async def api_link_account(request: web.Request):
             telegram_id = user_data['id']
             telegram_first_name = user_data.get('first_name', '')
             telegram_last_name = user_data.get('last_name', '')
+            telegram_username = user_data.get('username', '')
             
         if not telegram_id:
             return web.json_response({'success': False, 'error': 'خطأ في المصادقة مع تيليجرام (Erreur Telegram)'})
@@ -4130,11 +4133,11 @@ async def api_link_account(request: web.Request):
             
             # Upsert user info
             await db.execute("""
-                INSERT INTO users (telegram_id, first_name, last_name) 
-                VALUES (?, ?, ?) 
+                INSERT INTO users (telegram_id, first_name, last_name, username) 
+                VALUES (?, ?, ?, ?) 
                 ON CONFLICT(telegram_id) DO UPDATE SET 
-                first_name=excluded.first_name, last_name=excluded.last_name
-            """, (telegram_id, telegram_first_name, telegram_last_name))
+                first_name=excluded.first_name, last_name=excluded.last_name, username=excluded.username
+            """, (telegram_id, telegram_first_name, telegram_last_name, telegram_username))
             
             # Check Email
             async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))", (email,)) as cur1:
@@ -4189,8 +4192,8 @@ async def api_link_account(request: web.Request):
                         
                 # Link account
                 if not existing_tg:
-                    await db.execute("UPDATE academy_students SET telegram_id = ? WHERE student_id = ?", (telegram_id, db_student_id))
-                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, action_type, description) VALUES (?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, 'ACCOUNT_LINKED', f"تم ربط حساب تيليجرام بنجاح"))
+                    await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (telegram_id, telegram_username, db_student_id))
+                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, telegram_username, 'ACCOUNT_LINKED', f"تم ربط حساب تيليجرام بنجاح"))
                     await db.commit()
                     
                     # SEND WELCOME MESSAGE VIA TELEGRAM
