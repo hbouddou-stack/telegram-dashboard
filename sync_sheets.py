@@ -37,7 +37,7 @@ async def run_google_sheets_sync(sheet_id: str):
             if len(row_list) < 14:
                 continue
                 
-            student_id = str(row_list[0]).strip() # Col A: الرقم الأكاديمي
+            academic_id = str(row_list[0]).strip() # Col A: الرقم الأكاديمي
             full_name = str(row_list[2]).strip()  # Col C: الإسم الكامل
             email = str(row_list[3]).strip().lower() # Col D: البريد الإلكتروني
             phone = str(row_list[4]).strip()      # Col E: رقم الهاتف
@@ -62,23 +62,14 @@ async def run_google_sheets_sync(sheet_id: str):
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
-                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?, phone = ?, created_at = ?, payment_status = ?
+                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?, phone = ?, created_at = ?, payment_status = ?, academic_id = ?
                         WHERE email = ?
-                    """, (dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status, email))
+                    """, (dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status, academic_id, email))
                 else:
-                    try:
-                        # Attempt to insert with the specific student_id from Sheets if it's a number
-                        s_id_int = int(student_id)
-                        await db.execute("""
-                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source, phone, created_at, payment_status)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (s_id_int, email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status))
-                    except ValueError:
-                        # Fallback if student_id is not a valid integer
-                        await db.execute("""
-                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source, phone, created_at, payment_status)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status))
+                    await db.execute("""
+                        INSERT INTO academy_students (academic_id, email, dob, first_name, last_name, year, gender, source, phone, created_at, payment_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (academic_id, email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status))
             imported += 1
         await db.commit()
     return imported
