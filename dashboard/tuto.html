@@ -202,35 +202,36 @@
         };
         
         const handleEndLeft = (e) => {
+            e.preventDefault();
             clearTimeout(touchTimer);
             if(isLongPress) {
                 resumeStory();
             } else {
-                prevStory();
+                nextStory(); // Inverted for RTL / user request
             }
         };
         
         const handleEndRight = (e) => {
+            e.preventDefault();
             clearTimeout(touchTimer);
             if(isLongPress) {
                 resumeStory();
             } else {
-                nextStory();
+                prevStory(); // Inverted for RTL / user request
             }
         };
 
-        // Desktop and Mobile events
-        leftZone.addEventListener('mousedown', handleStart);
-        leftZone.addEventListener('touchstart', handleStart, {passive: true});
-        leftZone.addEventListener('mouseup', handleEndLeft);
-        leftZone.addEventListener('touchend', handleEndLeft);
-        leftZone.addEventListener('mouseleave', () => { clearTimeout(touchTimer); if(isPaused) resumeStory(); });
+        // Use pointer events to prevent double firing (mouse + touch)
+        leftZone.addEventListener('pointerdown', handleStart);
+        leftZone.addEventListener('pointerup', handleEndLeft);
+        leftZone.addEventListener('pointerleave', () => { clearTimeout(touchTimer); if(isPaused) resumeStory(); });
         
-        rightZone.addEventListener('mousedown', handleStart);
-        rightZone.addEventListener('touchstart', handleStart, {passive: true});
-        rightZone.addEventListener('mouseup', handleEndRight);
-        rightZone.addEventListener('touchend', handleEndRight);
-        rightZone.addEventListener('mouseleave', () => { clearTimeout(touchTimer); if(isPaused) resumeStory(); });
+        rightZone.addEventListener('pointerdown', handleStart);
+        rightZone.addEventListener('pointerup', handleEndRight);
+        rightZone.addEventListener('pointerleave', () => { clearTimeout(touchTimer); if(isPaused) resumeStory(); });
+        
+        // Prevent default touch behaviors like zoom/scroll
+        document.addEventListener('touchstart', function(e) { e.preventDefault(); }, {passive: false});
     }
 
     function haptic() {
@@ -262,7 +263,6 @@
         
         if (currentStory === 2) {
             hapticSuccess();
-            triggerConfetti();
         } else {
             haptic();
         }
@@ -270,17 +270,6 @@
         timeRemaining = STORY_DURATION;
         isPaused = false;
         startStoryTimer();
-    }
-
-    function triggerConfetti() {
-        if(window.confetti) {
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#fff', '#32d74b', '#FF2A5F']
-            });
-        }
     }
 
     function startStoryTimer() {

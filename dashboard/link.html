@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ربط الحساب</title>
+    <title>توجيهات الربط</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Cairo:wght@400;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -516,17 +517,21 @@
             margin-top: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
     
 
     <div class="container" id="main-form">
-        <div style="text-align: center; margin-bottom: 25px;">
+        <div style="text-align: center; margin-bottom: 25px; position:relative;">
             <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 2px solid var(--accent); margin-bottom: 10px;">
                 <span style="font-size: 2rem;">🎓</span>
             </div>
-            <h2 style="color: var(--accent); margin: 0; font-size: 1.8rem; font-weight: 800;">أكاديمية الباجي</h2>
+            <h2 style="color: var(--accent); margin: 0; font-size: 1.8rem; font-weight: 800; display:flex; align-items:center; justify-content:center; gap:10px;">
+                أكاديمية الباجي
+                <button onclick="localStorage.removeItem('onboarding_done'); location.reload();" style="background:transparent; border:none; cursor:pointer; font-size:1rem; opacity:0.5;" title="إعادة جولة الشرح">🔄</button>
+            </h2>
             <p style="color: var(--text-2); margin-top:5px; font-size: 0.9rem;">بوابة التحقق الرسمية</p>
         </div>
         <h1 style="margin-top:0;">أهلاً بك في أكاديمية الباجي!</h1>
@@ -1011,6 +1016,14 @@
                 if(data.success) {
                     if (window.Telegram.WebApp.HapticFeedback) {
                         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    }
+                    if(window.confetti) {
+                        confetti({
+                            particleCount: 150,
+                            spread: 80,
+                            origin: { y: 0.6 },
+                            colors: ['#fff', '#32d74b', '#FF2A5F', '#0a84ff']
+                        });
                     }
                     document.getElementById('main-form').style.display = 'none';
                     document.getElementById('success-msg').style.display = 'flex';
