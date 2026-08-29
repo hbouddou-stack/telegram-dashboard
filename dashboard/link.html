@@ -96,11 +96,54 @@
             position: relative;
         }
         document.addEventListener('DOMContentLoaded', () => {
+            initOTP();
             initDateInputs();
             checkAndRestoreInputs();
             debouncedValidateField(); // Initial validation check
             setTimeout(startTour, 500); // Start tour after a small delay
         });
+
+        function initOTP() {
+            const inputs = document.querySelectorAll('.otp-input');
+            const hiddenInput = document.getElementById('student_id');
+            
+            const updateHidden = () => {
+                let val = '';
+                inputs.forEach(i => val += i.value);
+                hiddenInput.value = val;
+                debouncedValidateField();
+            };
+
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    input.value = input.value.replace(/[^0-9]/g, '');
+                    if (input.value && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                    updateHidden();
+                });
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !input.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    let paste = (e.clipboardData || window.clipboardData).getData('text');
+                    paste = paste.replace(/[^0-9]/g, '');
+                    for (let i = 0; i < inputs.length && i < paste.length; i++) {
+                        inputs[i].value = paste[i];
+                    }
+                    if (paste.length > 0) {
+                        const nextFocus = Math.min(paste.length, inputs.length - 1);
+                        inputs[nextFocus].focus();
+                    }
+                    updateHidden();
+                });
+            });
+        }
         .video-container video {
             width: 100%;
             height: 100%;
@@ -516,6 +559,40 @@
             background: transparent; color: #888; border: none;
             margin-top: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;
         }
+
+        /* OTP FIELDS */
+        .otp-container {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            direction: ltr; /* Ensure LTR typing for numbers */
+        }
+        .otp-input {
+            width: calc(100% / 6 - 6px);
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .otp-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(135, 54, 255, 0.4);
+            outline: none;
+            background: rgba(135, 54, 255, 0.1);
+        }
+        .otp-input.input-error {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .otp-input.input-success {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -539,15 +616,20 @@
         
         <div id="global-error"></div>
 
-        <div class="input-group" style="position: relative;">
-            <label style="display:flex; justify-content:space-between;">
-                <span>رقم الطالب</span>
+        <div class="input-group" id="student_id_group">
+            <label style="display:flex; justify-content:space-between; align-items:center;">
+                <span>رقم الطالب <span id="student_id_status" style="font-size:1rem; margin-right:5px; display:none;"></span></span>
                 <span style="color:var(--accent); cursor:pointer; font-size:0.8rem;" onclick="showTuto()">أين أجد رقم الطالب؟ ℹ️</span>
             </label>
-            <div style="position: relative;">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); debouncedValidateField();" id="student_id" placeholder="مثال: 000123" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
-                <div id="student_id_status" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
+            <div id="student_id_container" class="otp-container">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="0">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="1">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="2">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="3">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="4">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="5">
             </div>
+            <input type="hidden" id="student_id" value="">
             <div class="inline-error-text" id="err-student_id" style="margin-top: 4px;"></div>
         </div>
         
@@ -787,7 +869,7 @@
         // Onboarding Tour Logic
         const tourSteps = [
             {
-                target: 'student_id',
+                target: 'student_id_container',
                 title: "👋 الخطوة 1: رقم الطالب",
                 text: "أدخل رقم الطالب الخاص بك هنا. يتكون عادة من 6 أرقام."
             },
@@ -888,32 +970,32 @@
                 el.classList.remove('input-error');
                 el.classList.remove('input-success');
             });
+            document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('input-error', 'input-success'));
         }
 
-        function showFieldError(fieldId, msg, isSuccess=false) {
-            const field = document.getElementById(fieldId);
-            const errDiv = document.getElementById('err-' + fieldId);
-            
-            if (fieldId === 'dob') {
-                document.getElementById('dob-group-container').classList.add(isSuccess ? 'input-success' : 'input-error');
+        function showFieldError(id, msg, isSuccess = false) {
+            const errDiv = document.getElementById('err-' + id);
+            const field = document.getElementById(id);
+            if (msg) {
+                errDiv.textContent = msg;
+                errDiv.style.display = 'block';
+                errDiv.style.color = isSuccess ? 'var(--success)' : 'var(--danger)';
+            }
+            if (id === 'student_id') {
+                document.querySelectorAll('.otp-input').forEach(i => {
+                    i.classList.add(isSuccess ? 'input-success' : 'input-error');
+                    i.classList.remove(isSuccess ? 'input-error' : 'input-success');
+                });
             } else if (field) {
                 field.classList.add(isSuccess ? 'input-success' : 'input-error');
-            }
-            
-            if (errDiv) {
-                errDiv.textContent = msg;
-                errDiv.style.color = isSuccess ? '#34c759' : 'var(--danger)';
-                errDiv.style.display = 'block';
-            } else {
-                // Fallback
-                document.getElementById('global-error').textContent = msg;
-                document.getElementById('global-error').style.display = 'block';
+                field.classList.remove(isSuccess ? 'input-error' : 'input-success');
             }
         }
         
         let validateTimeout = null;
         async function debouncedValidateField() {
-            const studentId = document.getElementById('student_id').value.trim();
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const studentId = Array.from(otpInputs).map(i => i.value).join('');
             const email = document.getElementById('email').value.trim();
             const statusIcon = document.getElementById('student_id_status');
             const emailIcon = document.getElementById('email_status');
@@ -922,7 +1004,7 @@
             const emailField = document.getElementById('email');
             const emailErrDiv = document.getElementById('err-email');
             
-            field.classList.remove('input-error', 'input-success');
+            document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('input-error', 'input-success'));
             errDiv.style.display = 'none';
             if (emailField) emailField.classList.remove('input-error', 'input-success');
             if (emailErrDiv) emailErrDiv.style.display = 'none';
