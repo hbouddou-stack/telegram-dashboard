@@ -481,7 +481,7 @@
         /* ONBOARDING TOUR */
         .tour-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 10000;
+            background: transparent; z-index: 10000;
             display: none; opacity: 0; transition: opacity 0.3s;
         }
         .tour-spotlight {
@@ -841,8 +841,13 @@
                     tooltip.style.left = '50%';
                     tooltip.style.transform = 'translate(-50%, 10px)';
                 } else {
-                    // Final step: highlight nothing, center tooltip
-                    spotlight.style.opacity = '0';
+                    // Final step: highlight nothing, center tooltip, keep screen dark
+                    spotlight.style.opacity = '1';
+                    spotlight.style.top = '-50px';
+                    spotlight.style.left = '-50px';
+                    spotlight.style.width = '0px';
+                    spotlight.style.height = '0px';
+                    
                     tooltip.style.top = '40%';
                     tooltip.style.left = '50%';
                     tooltip.style.transform = 'translate(-50%, -50%) scale(0.95)';
