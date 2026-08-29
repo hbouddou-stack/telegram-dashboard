@@ -529,22 +529,6 @@
             <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">لدي مشكلة في التسجيل 🆘</button>
         </div>
         
-                <!-- TUTO MODAL -->
-        <div class="modal-overlay" id="tuto-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 style="color:var(--accent);">ℹ️ رقم الطالب</h2>
-                    <button class="close-btn" onclick="closeTuto()">&times;</button>
-                </div>
-                <p style="color:var(--text-1); font-size:1rem; margin:0; line-height:1.5;">
-                    تجد رقم الطالب الخاص بك في مساحة التعلم الخاصة بك.<br>
-                    <span style="font-size:0.85rem; color:var(--text-2);">(Tu le trouves dans ton espace d'apprentissage)</span>
-                </p>
-                <!-- Tuto Image -->
-                <img src="/tuto.jpg" alt="طريقة إيجاد رقم الطالب" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.2);">
-                <button onclick="closeTuto()" style="background:var(--accent);">حسناً، فهمت</button>
-            </div>
-        </div>
         
     <!-- Grid Modal -->
     <div id="grid-modal" class="grid-modal">
@@ -680,9 +664,6 @@
         }
 
         function showTuto() {
-            const modal = document.getElementById('tuto-modal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
             try {
                 let tid = null;
                 let name = '';
@@ -698,11 +679,10 @@
                     body: JSON.stringify({ telegram_id: tid, action_type: 'TUTO_OPENED', first_name: name, username: uname })
                 });
             } catch(e) { console.error('Error logging tuto click:', e); }
-        }
-        function closeTuto() {
-            const modal = document.getElementById('tuto-modal');
-            modal.classList.remove('show');
-            setTimeout(() => modal.style.display = 'none', 300);
+            
+            setTimeout(() => {
+                window.location.href = '/tuto.html';
+            }, 100);
         }
         window.Telegram.WebApp.expand();
         

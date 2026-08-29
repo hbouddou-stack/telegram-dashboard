@@ -4643,6 +4643,17 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/', handle_reader)
     app.router.add_get('/index.html', handle_reader)
     app.router.add_get('/link.html', handle_link)
+    
+    async def handle_tuto(request):
+        html_path = os.path.join(DASHBOARD_DIR, 'tuto.html')
+        try:
+            with open(html_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return web.Response(text=content, content_type='text/html')
+        except FileNotFoundError:
+            return web.Response(text="Tutorial not found", status=404)
+            
+    app.router.add_get('/tuto.html', handle_tuto)
     app.router.add_get('/interactive.html', handle_interactive)
     app.router.add_get('/admin_mindmap.html', handle_admin_mindmap)
     app.router.add_get('/course_slides.html', handle_course_slides)
