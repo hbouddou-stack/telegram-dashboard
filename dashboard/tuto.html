@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>توجيهات الربط</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body, html {
@@ -12,6 +13,7 @@
             background: #000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
+            touch-action: none; /* Prevent scroll on swipe */
         }
         
         #insta-tuto-container {
@@ -62,6 +64,12 @@
             align-items: center;
         }
         
+        @keyframes gradientAnim {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
         .story-slide {
             position: absolute;
             top: 0; left: 0;
@@ -72,22 +80,17 @@
             align-items: center;
             text-align: center;
             padding: 20px;
-            transition: opacity 0.3s ease;
+            background-size: 400% 400%;
+            animation: gradientAnim 10s ease infinite;
         }
         
+        #story-slide-0 { background-image: linear-gradient(-45deg, #FF2A5F, #FF7B00, #ee7752, #e73c7e); }
+        #story-slide-1 { background-image: linear-gradient(-45deg, #0a84ff, #0054a8, #00c6ff, #0072ff); }
+        #story-slide-2 { background-image: linear-gradient(-45deg, #32d74b, #219630, #11998e, #38ef7d); }
+        
         /* Tap Zones */
-        .tap-left {
-            position: absolute;
-            top: 0; left: 0;
-            width: 30%; height: 100%;
-            z-index: 5;
-        }
-        .tap-right {
-            position: absolute;
-            top: 0; right: 0;
-            width: 70%; height: 100%;
-            z-index: 5;
-        }
+        .tap-left { position: absolute; top: 0; left: 0; width: 30%; height: 100%; z-index: 5; }
+        .tap-right { position: absolute; top: 0; right: 0; width: 70%; height: 100%; z-index: 5; }
         
         .story-btn {
             margin-top: 30px;
@@ -100,70 +103,147 @@
             font-weight: 800;
             cursor: pointer;
             z-index: 11;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
+        .story-btn:active { transform: scale(0.95); }
+        
+        /* Emojis floating animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating-emoji { animation: float 3s ease-in-out infinite; font-size:5rem; margin-bottom:20px; }
     </style>
 </head>
 <body>
 
 <div id="insta-tuto-container">
-    <!-- Progress Bars -->
     <div class="progress-container">
         <div class="story-progress"><div class="story-progress-bar" id="story-bar-0"></div></div>
         <div class="story-progress"><div class="story-progress-bar" id="story-bar-1"></div></div>
         <div class="story-progress"><div class="story-progress-bar" id="story-bar-2"></div></div>
     </div>
     
-    <!-- Close -->
     <button class="close-btn" onclick="finishTuto()">&times;</button>
     
-    <!-- Stories -->
     <div id="story-content-container">
         
         <!-- Story 0 -->
-        <div class="story-slide" id="story-slide-0" style="background: linear-gradient(135deg, #FF2A5F, #FF7B00);">
-            <div style="font-size:5rem; margin-bottom:20px;">👋</div>
-            <h2 style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900;">مرحباً بك!</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem;">لربط حسابك في الأكاديمية، ستحتاج إلى رقم الطالب الخاص بك.</p>
+        <div class="story-slide" id="story-slide-0">
+            <div class="floating-emoji">👋</div>
+            <h2 id="welcome-text" style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">مرحباً بك!</h2>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">لربط حسابك في الأكاديمية، ستحتاج إلى رقم الطالب الخاص بك.</p>
         </div>
         
         <!-- Story 1 -->
-        <div class="story-slide" id="story-slide-1" style="background: linear-gradient(135deg, #0a84ff, #0054a8);">
-            <div style="font-size:4rem; margin-bottom:20px;">🔍</div>
-            <h2 style="color:#fff; font-size:2.2rem; margin-bottom:10px; font-weight:800;">أين أجده؟</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.1rem; margin-bottom:20px;">تجد رقم الطالب في مساحة التعلم الخاصة بك.</p>
+        <div class="story-slide" id="story-slide-1">
+            <div class="floating-emoji">🔍</div>
+            <h2 style="color:#fff; font-size:2.2rem; margin-bottom:10px; font-weight:800; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">أين أجده؟</h2>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.1rem; margin-bottom:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">تجد رقم الطالب في مساحة التعلم الخاصة بك.</p>
             <img src="/tuto.jpg" alt="طريقة إيجاد رقم الطالب" onerror="this.style.display='none'" style="max-width:90%; max-height:40vh; border-radius:12px; box-shadow:0 10px 20px rgba(0,0,0,0.5); object-fit:contain;">
         </div>
         
         <!-- Story 2 -->
-        <div class="story-slide" id="story-slide-2" style="background: linear-gradient(135deg, #32d74b, #219630);">
-            <div style="font-size:5rem; margin-bottom:20px;">✅</div>
-            <h2 style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900;">جاهز للربط؟</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem;">أدخل رقمك الدراسي وتاريخ ميلادك في الصفحة السابقة لإكمال العملية.</p>
+        <div class="story-slide" id="story-slide-2">
+            <div class="floating-emoji">✅</div>
+            <h2 style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">جاهز للربط؟</h2>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">أدخل رقمك الدراسي وتاريخ ميلادك في الصفحة السابقة لإكمال العملية.</p>
             <button class="story-btn" onclick="finishTuto()">العودة للربط الآن</button>
         </div>
         
     </div>
     
-    <!-- Tap Zones -->
-    <div class="tap-left" onclick="prevStory()"></div>
-    <div class="tap-right" onclick="nextStory()"></div>
+    <div class="tap-left" id="tap-left"></div>
+    <div class="tap-right" id="tap-right"></div>
 </div>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
     let currentStory = 0;
     const totalStories = 3;
-    let storyTimer;
-    let storyStartTime;
-    let storyProgressInterval;
     const STORY_DURATION = 5000;
+    
+    let storyTimer;
+    let storyProgressInterval;
+    let startTime;
+    let timeRemaining = STORY_DURATION;
+    let isPaused = false;
     
     window.onload = () => {
         if(window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.expand();
+            
+            // Personalization
+            let firstName = window.Telegram.WebApp.initDataUnsafe?.user?.first_name;
+            if(firstName) {
+                document.getElementById('welcome-text').innerText = "مرحباً يا " + firstName + "!";
+            }
         }
+        
+        setupTouchEvents();
         updateStories();
     };
+
+    function setupTouchEvents() {
+        const leftZone = document.getElementById('tap-left');
+        const rightZone = document.getElementById('tap-right');
+        
+        let touchTimer = null;
+        let isLongPress = false;
+        
+        const handleStart = (e) => {
+            isLongPress = false;
+            touchTimer = setTimeout(() => {
+                isLongPress = true;
+                pauseStory();
+            }, 200); // 200ms threshold for long press
+        };
+        
+        const handleEndLeft = (e) => {
+            clearTimeout(touchTimer);
+            if(isLongPress) {
+                resumeStory();
+            } else {
+                prevStory();
+            }
+        };
+        
+        const handleEndRight = (e) => {
+            clearTimeout(touchTimer);
+            if(isLongPress) {
+                resumeStory();
+            } else {
+                nextStory();
+            }
+        };
+
+        // Desktop and Mobile events
+        leftZone.addEventListener('mousedown', handleStart);
+        leftZone.addEventListener('touchstart', handleStart, {passive: true});
+        leftZone.addEventListener('mouseup', handleEndLeft);
+        leftZone.addEventListener('touchend', handleEndLeft);
+        leftZone.addEventListener('mouseleave', () => { clearTimeout(touchTimer); if(isPaused) resumeStory(); });
+        
+        rightZone.addEventListener('mousedown', handleStart);
+        rightZone.addEventListener('touchstart', handleStart, {passive: true});
+        rightZone.addEventListener('mouseup', handleEndRight);
+        rightZone.addEventListener('touchend', handleEndRight);
+        rightZone.addEventListener('mouseleave', () => { clearTimeout(touchTimer); if(isPaused) resumeStory(); });
+    }
+
+    function haptic() {
+        if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    function hapticSuccess() {
+        if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+    }
 
     function updateStories() {
         for(let i=0; i<totalStories; i++) {
@@ -179,26 +259,61 @@
                 bar.style.width = '0%';
             }
         }
+        
+        if (currentStory === 2) {
+            hapticSuccess();
+            triggerConfetti();
+        } else {
+            haptic();
+        }
+        
+        timeRemaining = STORY_DURATION;
+        isPaused = false;
         startStoryTimer();
+    }
+
+    function triggerConfetti() {
+        if(window.confetti) {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#fff', '#32d74b', '#FF2A5F']
+            });
+        }
     }
 
     function startStoryTimer() {
         clearInterval(storyProgressInterval);
         clearTimeout(storyTimer);
         
+        startTime = Date.now();
         const bar = document.getElementById('story-bar-' + currentStory);
-        let startTime = Date.now();
         
         storyProgressInterval = setInterval(() => {
-            let elapsed = Date.now() - startTime;
+            if(isPaused) return;
+            
+            let elapsed = Date.now() - startTime + (STORY_DURATION - timeRemaining);
             let pct = (elapsed / STORY_DURATION) * 100;
             if (pct > 100) pct = 100;
             bar.style.width = pct + '%';
+            
+            if(elapsed >= STORY_DURATION) {
+                clearInterval(storyProgressInterval);
+                nextStory();
+            }
         }, 16);
-        
-        storyTimer = setTimeout(() => {
-            nextStory();
-        }, STORY_DURATION);
+    }
+    
+    function pauseStory() {
+        isPaused = true;
+        let elapsed = Date.now() - startTime;
+        timeRemaining = timeRemaining - elapsed;
+    }
+    
+    function resumeStory() {
+        isPaused = false;
+        startTime = Date.now();
     }
 
     function nextStory() {
@@ -215,6 +330,7 @@
             currentStory--;
             updateStories();
         } else {
+            // Reset current story
             updateStories();
         }
     }

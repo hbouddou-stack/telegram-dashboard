@@ -94,6 +94,12 @@
             align-items: center;
             position: relative;
         }
+        document.addEventListener('DOMContentLoaded', () => {
+            initDateInputs();
+            checkAndRestoreInputs();
+            debouncedValidateField(); // Initial validation check
+            setTimeout(startTour, 500); // Start tour after a small delay
+        });
         .video-container video {
             width: 100%;
             height: 100%;
@@ -471,6 +477,44 @@
 
 
 
+        /* ONBOARDING TOUR */
+        .tour-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 10000;
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .tour-spotlight {
+            position: absolute;
+            background: transparent;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.7);
+            border-radius: 12px;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 10001;
+        }
+        .tour-tooltip {
+            position: absolute;
+            background: #fff; color: #000;
+            padding: 20px; border-radius: 16px;
+            width: 90%; max-width: 320px;
+            z-index: 10002;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            opacity: 0; transform: translateY(10px);
+            pointer-events: auto;
+        }
+        .tour-tooltip.show { opacity: 1; transform: translateY(0); }
+        .tour-title { font-weight: 800; font-size: 1.2rem; margin-bottom: 8px; color: var(--accent); }
+        .tour-text { font-size: 1rem; color: #333; line-height: 1.5; margin-bottom: 15px; }
+        .tour-btn {
+            background: var(--accent); color: #fff;
+            border: none; padding: 10px 20px; border-radius: 20px;
+            font-weight: bold; width: 100%; cursor: pointer;
+        }
+        .tour-skip {
+            background: transparent; color: #888; border: none;
+            margin-top: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -540,10 +584,26 @@
     </div>
 
     <!-- SOS MODAL -->
-        <div class="modal-overlay" id="sos-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>🆘 طلب مساعدة</h2>
+        <!-- Onboarding Overlay Elements -->
+    <div id="tour-overlay" class="tour-overlay">
+        <div id="tour-spotlight" class="tour-spotlight"></div>
+        <div id="tour-tooltip" class="tour-tooltip">
+            <div id="tour-title" class="tour-title"></div>
+            <div id="tour-text" class="tour-text"></div>
+            <button id="tour-next-btn" class="tour-btn" onclick="nextTourStep()">التالي</button>
+            <button class="tour-skip" onclick="endTour()">تخطي (Skip)</button>
+        </div>
+    </div>
+    
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- SOS MODAL -->
+    <div class="modal-overlay" id="sos-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🆘 طلب مساعدة</h2>
                     <button class="close-btn" onclick="closeSOS()">&times;</button>
                 </div>
                 <p style="color:var(--text-2); font-size:0.95rem; margin:0 0 12px 0;">اشرح مشكلتك هنا وسيقوم احد المشرفين بالرد عليك عبر تيليجرام في اقرب وقت.</p>
@@ -652,7 +712,8 @@
         }
         
         function closeGrid() {
-            document.getElementById('grid-modal').style.display = 'none';
+            document.getElementById('grid-modal').classList.remove('show');
+            setTimeout(() => { document.getElementById('grid-modal').style.display = 'none'; }, 300);
         }
         
         function selectGridItem(type, val, label) {
@@ -718,7 +779,92 @@
             }
         }
         
-        // Populate DOB dropdowns
+        // Onboarding Tour Logic
+        const tourSteps = [
+            {
+                target: 'student_id',
+                title: "👋 الخطوة 1: رقم الطالب",
+                text: "أدخل رقم الطالب الخاص بك هنا. يتكون عادة من 6 أرقام."
+            },
+            {
+                target: 'email',
+                title: "📧 الخطوة 2: البريد الإلكتروني",
+                text: "أدخل البريد الإلكتروني الذي سجلت به في الأكاديمية."
+            },
+            {
+                target: null,
+                title: "✅ الخطوة 3: الربط",
+                text: "عند الانتهاء، اضغط على زر 'ربط' السفلي لإكمال العملية!"
+            }
+        ];
+        
+        let currentTourStep = 0;
+        
+        function startTour() {
+            if(localStorage.getItem('onboarding_done')) return;
+            
+            document.getElementById('tour-overlay').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('tour-overlay').style.opacity = '1';
+                showTourStep(0);
+            }, 50);
+        }
+        
+        function showTourStep(index) {
+            currentTourStep = index;
+            const step = tourSteps[index];
+            const spotlight = document.getElementById('tour-spotlight');
+            const tooltip = document.getElementById('tour-tooltip');
+            
+            tooltip.classList.remove('show');
+            
+            setTimeout(() => {
+                document.getElementById('tour-title').innerText = step.title;
+                document.getElementById('tour-text').innerText = step.text;
+                document.getElementById('tour-next-btn').innerText = (index === tourSteps.length - 1) ? "ابدأ الآن!" : "التالي";
+                
+                if (step.target) {
+                    const el = document.getElementById(step.target);
+                    const rect = el.getBoundingClientRect();
+                    spotlight.style.opacity = '1';
+                    spotlight.style.top = (rect.top - 5) + 'px';
+                    spotlight.style.left = (rect.left - 5) + 'px';
+                    spotlight.style.width = (rect.width + 10) + 'px';
+                    spotlight.style.height = (rect.height + 10) + 'px';
+                    
+                    tooltip.style.top = (rect.bottom + 15) + 'px';
+                    tooltip.style.left = '50%';
+                    tooltip.style.transform = 'translate(-50%, 10px)';
+                } else {
+                    // Final step: highlight nothing, center tooltip
+                    spotlight.style.opacity = '0';
+                    tooltip.style.top = '40%';
+                    tooltip.style.left = '50%';
+                    tooltip.style.transform = 'translate(-50%, -50%) scale(0.95)';
+                }
+                
+                setTimeout(() => {
+                    tooltip.classList.add('show');
+                    if(!step.target) tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                    else tooltip.style.transform = 'translate(-50%, 0)';
+                }, 50);
+            }, 300);
+        }
+        
+        function nextTourStep() {
+            if(currentTourStep < tourSteps.length - 1) {
+                showTourStep(currentTourStep + 1);
+            } else {
+                endTour();
+            }
+        }
+        
+        function endTour() {
+            localStorage.setItem('onboarding_done', 'true');
+            const overlay = document.getElementById('tour-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 300);
+        }
         
         let failCount = 0;
         let finalGroupLink = "";
