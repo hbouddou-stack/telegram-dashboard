@@ -274,10 +274,14 @@ async def api_admin_gateway_stats(request: web.Request):
                 total = (await cur.fetchone())[0]
             async with db.execute("SELECT COUNT(*) FROM academy_students WHERE telegram_id IS NOT NULL") as cur:
                 linked = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE student_id != 0 AND action_type IN ('APP_OPENED', 'TUTO_OPENED', 'LINK_SUCCESS', 'ACCOUNT_LINKED', 'JOIN_GROUP_CLICK')") as cur:
+                bot_opened = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE student_id != 0 AND action_type = 'JOIN_GROUP_CLICK'") as cur:
+                joined_group = (await cur.fetchone())[0]
             async with db.execute("SELECT value FROM settings WHERE key = 'night_patrol_enabled'") as cur:
                 row = await cur.fetchone()
                 patrol_enabled = row[0] == 'true' if row else False
-        return web.json_response({'success': True, 'stats': {'total': total, 'linked': linked, 'patrol_enabled': patrol_enabled}})
+        return web.json_response({'success': True, 'stats': {'total': total, 'bot_opened': bot_opened, 'linked': linked, 'joined_group': joined_group, 'patrol_enabled': patrol_enabled}})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 

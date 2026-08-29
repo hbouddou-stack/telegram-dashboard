@@ -303,6 +303,46 @@
         </div>
 
         <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
+        
+        <!-- FUNNEL ANALYTICS -->
+        <div style="background:var(--card-bg); padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border);">
+            <h3 style="margin-top:0; margin-bottom:15px; font-size:1.1rem; color:var(--text1);">📊 مسار التحويل (Funnel)</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <!-- Step 1 -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:120px; font-size:0.85rem; color:var(--text2);">قاعدة البيانات</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-1" style="width:0%; background:var(--text2); height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-1" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:120px; font-size:0.85rem; color:var(--text2);">فتحوا البوت</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-2" style="width:0%; background:#0a84ff; height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-2" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:120px; font-size:0.85rem; color:var(--text2);">حساب مرتبط</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-3" style="width:0%; background:var(--success); height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-3" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:120px; font-size:0.85rem; color:var(--text2);">طلبوا الانضمام</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-4" style="width:0%; background:var(--accent); height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-4" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="stat-grid">
             <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">المعروضون</div></div>
             <div class="stat-card"><div class="stat-num" id="stat-linked">—</div><div class="stat-lbl">المرتبطون</div></div>
@@ -978,13 +1018,30 @@
                 `;
 
                 if(data.success && data.logs.length > 0) {
-                    document.getElementById('logs-body').innerHTML = data.logs.map(l => `
-                        <div style="border-bottom:1px solid var(--border);padding:8px 0; font-size: 0.85rem;">
-                            <div style="font-size:0.75rem;color:var(--accent2);">${formatDateArabic(l.timestamp)}</div>
-                            <div style="font-weight:700; color:var(--warning);">[${l.action_type}]</div>
-                            <div style="color:var(--text2);">${l.description}</div>
+                    let timelineHTML = '<div style="position:relative; border-right: 2px solid var(--border); padding-right:15px; margin-right:5px; margin-top:10px;">';
+                    timelineHTML += data.logs.map(l => {
+                        let color = 'var(--warning)';
+                        if (l.action_type === 'LINK_FAILED') color = 'var(--danger)';
+                        else if (l.action_type === 'LINK_SUCCESS' || l.action_type === 'ACCOUNT_LINKED' || l.action_type === 'JOIN_GROUP_CLICK') color = 'var(--success)';
+                        else if (l.action_type === 'APP_OPENED' || l.action_type === 'APP_OPENED_UNLINKED') color = '#0a84ff';
+                        
+                        let uNameStr = l.telegram_username ? `<span dir="ltr" style="color:#0a84ff; font-weight:normal; margin-right:5px;">(@${l.telegram_username})</span>` : '';
+                        let tgNameStr = l.telegram_name ? `<span style="font-size:0.75rem; color:var(--text2); display:block;">بواسطة: ${l.telegram_name} ${uNameStr}</span>` : '';
+
+                        return `
+                        <div style="position:relative; margin-bottom:15px;">
+                            <div style="position:absolute; right:-21px; top:4px; width:10px; height:10px; border-radius:50%; background:${color}; border:2px solid var(--card-bg);"></div>
+                            <div style="font-size:0.75rem; color:var(--text2); display:flex; justify-content:space-between;">
+                                <span>${formatDateArabic(l.timestamp)}</span>
+                                <span style="font-weight:700; color:${color}; margin-right:10px; font-size:0.7rem;">[${l.action_type}]</span>
+                            </div>
+                            <div style="color:var(--text1); font-size:0.85rem; margin-top:4px; line-height:1.4;">${l.description}</div>
+                            ${tgNameStr}
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
+                    timelineHTML += '</div>';
+                    document.getElementById('logs-body').innerHTML = timelineHTML;
                 } else {
                     document.getElementById('logs-body').innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
                 }
