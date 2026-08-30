@@ -188,7 +188,7 @@ function applyFilters() {
 function getAvatarBg(name) {
     let sum = 0;
     for(let i=0; i<name.length; i++) sum += name.charCodeAt(i);
-    return `avatar-bg-${(sum % 4) + 1}`;
+    return `avatar-bg-${(sum % 6) + 1}`;
 }
 
 function formatTime(isoString) {
@@ -217,6 +217,7 @@ function renderFeed() {
         
         const urgentTag = t.is_urgent ? '<span class="tag tag-urgent">🚨 عاجل</span>' : '';
         const themeTag = t.theme ? `<span class="tag tag-subject">${t.theme}</span>` : '';
+        const attachmentIcon = (t.has_attachment || t.photo || t.document || t.voice || t.video || t.file_id) ? '<span style="font-size: 0.8rem; margin-right: 5px;" title="يوجد مرفق">📎</span>' : '';
         
         return `
             <div class="ticket-card" onclick="openTicket('${t.id}')">
@@ -224,7 +225,7 @@ function renderFeed() {
                 <div class="ticket-content">
                     <div class="ticket-header">
                         <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#${displayId}</span></span>
-                        <span class="ticket-time">${formatTime(t.timestamp)}</span>
+                        <span class="ticket-time">${attachmentIcon}${formatTime(t.timestamp)}</span>
                     </div>
                     <div class="ticket-tags">
                         ${urgentTag}

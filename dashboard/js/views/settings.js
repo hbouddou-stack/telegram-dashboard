@@ -11,7 +11,7 @@ export function initSettingsView(container) {
                         <span class="header-subtitle">إدارة فريق العمل وتخصيص الواجهة</span>
                     </div>
                 </div>
-                <button class="btn-primary" onclick="alert('تم حفظ الإعدادات بنجاح')" style="padding: 8px 15px; border-radius: 20px; font-weight: bold; background: #2ecc71; color: white; border: none; cursor: pointer;">
+                <button class="btn-primary" id="btn-save-settings" style="padding: 8px 15px; border-radius: 20px; font-weight: bold; background: #2ecc71; color: white; border: none; cursor: pointer;">
                     💾 حفظ التغييرات
                 </button>
             </header>
@@ -25,14 +25,14 @@ export function initSettingsView(container) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">الوضع (Theme)</label>
-                            <select style="width: 100%; padding: 10px; border-radius: 8px; background: var(--surface-hover); color: var(--text-1); border: 1px solid var(--border);">
+                            <select id="theme-select" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--surface-hover); color: var(--text-1); border: 1px solid var(--border);">
                                 <option value="dark">🌙 الوضع الليلي (افتراضي)</option>
                                 <option value="light">☀️ الوضع النهاري</option>
                             </select>
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">حجم الخط</label>
-                            <select style="width: 100%; padding: 10px; border-radius: 8px; background: var(--surface-hover); color: var(--text-1); border: 1px solid var(--border);">
+                            <select id="font-size-select" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--surface-hover); color: var(--text-1); border: 1px solid var(--border);">
                                 <option value="small">صغير</option>
                                 <option value="medium" selected>متوسط</option>
                                 <option value="large">كبير</option>
@@ -126,4 +126,50 @@ export function initSettingsView(container) {
             </div>
         </section>
     `;
+
+    // Load saved settings
+    const savedTheme = localStorage.getItem('crm-theme') || 'dark';
+    const savedFont = localStorage.getItem('crm-font') || 'medium';
+    
+    document.getElementById('theme-select').value = savedTheme;
+    document.getElementById('font-size-select').value = savedFont;
+
+    // Save button logic
+    document.getElementById('btn-save-settings').addEventListener('click', () => {
+        const theme = document.getElementById('theme-select').value;
+        const font = document.getElementById('font-size-select').value;
+        
+        localStorage.setItem('crm-theme', theme);
+        localStorage.setItem('crm-font', font);
+        
+        applyTheme(theme, font);
+        alert('تم حفظ الإعدادات وتطبيقها بنجاح! 💾');
+    });
+}
+
+export function applyTheme(theme, font) {
+    // Theme application
+    if (theme === 'light') {
+        document.documentElement.style.setProperty('--bg', '#f8f9fa');
+        document.documentElement.style.setProperty('--surface', '#ffffff');
+        document.documentElement.style.setProperty('--surface-solid', '#ffffff');
+        document.documentElement.style.setProperty('--surface-hover', '#e9ecef');
+        document.documentElement.style.setProperty('--text-1', '#212529');
+        document.documentElement.style.setProperty('--text-muted', '#6c757d');
+        document.documentElement.style.setProperty('--border', '#dee2e6');
+    } else {
+        // Reset to dark (default)
+        document.documentElement.style.removeProperty('--bg');
+        document.documentElement.style.removeProperty('--surface');
+        document.documentElement.style.removeProperty('--surface-solid');
+        document.documentElement.style.removeProperty('--surface-hover');
+        document.documentElement.style.removeProperty('--text-1');
+        document.documentElement.style.removeProperty('--text-muted');
+        document.documentElement.style.removeProperty('--border');
+    }
+    
+    // Font application
+    if (font === 'small') document.documentElement.style.fontSize = '14px';
+    else if (font === 'large') document.documentElement.style.fontSize = '18px';
+    else document.documentElement.style.fontSize = '16px';
 }

@@ -2,7 +2,7 @@ import { initInboxView } from './views/inbox.js';
 import { initStudentsView } from './views/students.js';
 import { initStatsView } from './views/stats.js';
 import { initFaqView } from './views/faq.js';
-import { initSettingsView } from './views/settings.js';
+import { initSettingsView, applyTheme } from './views/settings.js';
 
 class AppRouter {
     constructor() {
@@ -19,6 +19,11 @@ class AppRouter {
     }
 
     init() {
+        // Apply saved theme
+        const savedTheme = localStorage.getItem('crm-theme') || 'dark';
+        const savedFont = localStorage.getItem('crm-font') || 'medium';
+        applyTheme(savedTheme, savedFont);
+
         // Handle Sidebar Clicks
         document.querySelectorAll('.sidebar-item').forEach(item => {
             item.addEventListener('click', (e) => {
