@@ -13002,7 +13002,6 @@ async function loadSupportTickets() {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--danger);">خطأ في تحميل التذاكر</td></tr>';
     }
 }
-}
 window.loadSupportTickets = loadSupportTickets;
 
 async function claimTicket(ticketId) {
