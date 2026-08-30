@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oswah - Connexion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Abstract Background Decoration */
+        .bg-decor {
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 15s infinite alternate ease-in-out;
+        }
+        .bg-decor.secondary {
+            top: 40%;
+            left: 50%;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(0,0,0,0) 70%);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(10%, 15%) scale(1.1); }
+        }
+
+        /* Login Card */
+        .login-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Form Elements */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        /* Custom date picker style */
+        .input-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(59, 130, 246, 0.4);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 16px;
+            display: none;
+        }
+        
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .demo-credentials {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            border: 1px dashed var(--border-glass);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decor"></div>
+    <div class="bg-decor secondary"></div>
+
+    <div class="login-card">
+        <div class="header">
+            <h1>Bienvenue</h1>
+            <p>Connecte-toi pour accéder à ton espace</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="email">Adresse Email</label>
+                <input type="email" id="email" placeholder="ton.email@exemple.com" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="dob">Date de Naissance</label>
+                <input type="date" id="dob" required>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span>Se connecter</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+
+            <div class="error-msg" id="errorMsg">Identifiants introuvables.</div>
+        </form>
+
+        <div class="demo-credentials">
+            <strong>Pour tester :</strong><br>
+            Email: test@test.com<br>
+            Date de naissance: 01/01/1999
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const dob = document.getElementById('dob').value;
+            const btn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('spinner');
+            const btnText = btn.querySelector('span');
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Loading state
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, dob })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Success, redirect to app.html
+                    // We save the user data in localStorage just for fast front-end access (session is handled by cookies)
+                    localStorage.setItem('oswah_user', JSON.stringify(data.user));
+                    window.location.href = '/app.html';
+                } else {
+                    errorMsg.textContent = data.message || "Identifiants incorrects.";
+                    errorMsg.style.display = 'block';
+                    btnText.style.display = 'block';
+                    spinner.style.display = 'none';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error("Login error", err);
+                errorMsg.textContent = "Erreur de connexion au serveur.";
+                errorMsg.style.display = 'block';
+                btnText.style.display = 'block';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -373,7 +373,7 @@
                     <h1 id="greeting">Bonjour !</h1>
                     <p style="color: var(--text-muted); font-size: 16px; margin-top: 4px;">Content de te revoir.</p>
                 </div>
-                <div class="profile-pic">A</div>
+                <div class="profile-pic" id="profile-pic">A</div>
             </div>
 
             <div class="welcome-card">
@@ -637,6 +637,10 @@
                 </label>
             </div>
 
+            <button onclick="logout()" style="width: 100%; padding: 16px; margin-top: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; color: #ef4444; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                Déconnexion
+            </button>
+
             <div style="text-align: center; margin-top: 40px; color: var(--text-muted); font-size: 14px;">
                 Oswah App v3.0<br>
                 Fait avec ❤️
@@ -670,6 +674,13 @@
     </nav>
 
     <script>
+        // Check Authentication
+        const userStr = localStorage.getItem('oswah_user');
+        if (!userStr) {
+            window.location.href = '/login.html';
+        }
+        const user = userStr ? JSON.parse(userStr) : { first_name: 'Élève' };
+
         // Tab Switching Logic
         function switchTab(tabId, element) {
             // Update active link
@@ -708,9 +719,18 @@
         // Dynamic Greeting based on time
         const hour = new Date().getHours();
         const greeting = document.getElementById('greeting');
-        if (hour >= 5 && hour < 12) greeting.innerText = 'Bonjour !';
-        else if (hour >= 12 && hour < 18) greeting.innerText = 'Bon après-midi !';
-        else greeting.innerText = 'Bonsoir !';
+        let timeGreet = 'Bonjour';
+        if (hour >= 12 && hour < 18) timeGreet = 'Bon après-midi';
+        else if (hour >= 18) timeGreet = 'Bonsoir';
+        greeting.innerText = `${timeGreet}, ${user.first_name} !`;
+        
+        // Update Profile Pic
+        document.getElementById('profile-pic').innerText = user.first_name.charAt(0).toUpperCase();
+
+        function logout() {
+            localStorage.removeItem('oswah_user');
+            window.location.href = '/login.html';
+        }
 
         // Fake ping for Radar (if user stays on this app)
         setInterval(() => {

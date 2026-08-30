@@ -4762,6 +4762,45 @@ async def api_support(request):
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 
+MOCK_STUDENTS = {
+    "jean.dupont@email.com": {
+        "dob": "2000-05-15",
+        "first_name": "Jean",
+        "last_name": "Dupont",
+        "telegram_id": "123456789",
+        "telegram_username": "@jeand"
+    },
+    "test@test.com": {
+        "dob": "1999-01-01",
+        "first_name": "Élève",
+        "last_name": "Test",
+        "telegram_id": "987654321",
+        "telegram_username": "@elevetest"
+    }
+}
+
+async def api_login(request: web.Request):
+    try:
+        data = await request.json()
+        email = data.get('email', '').lower()
+        dob = data.get('dob', '')
+        
+        student = MOCK_STUDENTS.get(email)
+        if student and student['dob'] == dob:
+            # Setting a secure cookie for session could be done here, 
+            # for now we return success and let front-end store state.
+            return web.json_response({
+                'success': True, 
+                'user': student
+            })
+        else:
+            return web.json_response({'success': False, 'message': 'Identifiants incorrects.'}, status=401)
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def handle_login(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'login.html'))
+
 async def start_web_server(bot: Bot):
     app = web.Application(middlewares=[cors_middleware])
     app['bot'] = bot
@@ -4769,6 +4808,8 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/', handle_reader)
     app.router.add_get('/index.html', handle_reader)
     app.router.add_get('/link.html', handle_link)
+    app.router.add_get('/login.html', handle_login)
+    app.router.add_post('/api/login', api_login)
     
     async def handle_tuto(request):
         html_path = os.path.join(DASHBOARD_DIR, 'tuto.html')
