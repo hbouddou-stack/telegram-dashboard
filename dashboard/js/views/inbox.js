@@ -628,35 +628,35 @@ window.toggleStudentProfile = async function() {
     
     if (panel.style.display === 'none') {
         panel.style.display = 'block';
-        content.innerHTML = '???? ???????...';
+        content.innerHTML = 'جاري التحميل...';
         
         const t = allTickets.find(x => x.id === activeTicketId);
         if (!t || !t.telegram_id) {
-             content.innerHTML = '??????? ?????? ??? ??????.';
+             content.innerHTML = 'معرف الطالب غير متوفر.';
              return;
         }
         
         try {
-            const res = await fetch(/api/admin/student_profile?telegram_id= + t.telegram_id);
+            const res = await fetch(`/api/admin/student_profile?telegram_id=${t.telegram_id}`);
             const data = await res.json();
             if (data.success) {
                 const p = data.profile;
-                const joinDate = p.join_date !== '??? ?????' ? new Date(p.join_date).toLocaleDateString('ar-MA') : p.join_date;
-                content.innerHTML = 
+                const joinDate = p.join_date !== 'غير متوفر' ? new Date(p.join_date).toLocaleDateString('ar-MA') : p.join_date;
+                content.innerHTML = `
                     <div style="display:flex; flex-direction:column; gap:8px;">
-                        <div>?? <b>?????:</b> </div>
-                        <div>?? <b>ID:</b> </div>
-                        <div>?? <b>????? ????????:</b> </div>
-                        <div>?? <b>???? ????????:</b> </div>
-                        <div>?? <b>?????????? ???????:</b> </div>
-                        <div>?? <b>?????? ?????????:</b> </div>
+                        <div>🎓 <b>الاسم:</b> ${p.first_name || 'غير معروف'} ${p.last_name || ''}</div>
+                        <div>🆔 <b>ID:</b> ${p.telegram_id}</div>
+                        <div>📅 <b>تاريخ الانضمام:</b> ${joinDate}</div>
+                        <div>📞 <b>رقم الهاتف:</b> ${p.phone_number || 'غير متوفر'}</div>
+                        <div>🔰 <b>المصادقة الثنائية:</b> ${p.two_step_verified ? 'مفعلة ✅' : 'غير مفعلة ❌'}</div>
+                        <div>🚫 <b>محاولات خاطئة:</b> ${p.failed_attempts || 0}</div>
                     </div>
-                ;
+                `;
             } else {
-                content.innerHTML = '???? ????? ????? ??????.';
+                content.innerHTML = 'تعذر جلب بيانات الطالب.';
             }
         } catch(e) {
-            content.innerHTML = '??? ?? ???????.';
+            content.innerHTML = 'خطأ في الاتصال.';
         }
     } else {
         panel.style.display = 'none';
