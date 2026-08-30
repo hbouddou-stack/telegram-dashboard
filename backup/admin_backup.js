@@ -12983,25 +12983,34 @@ async function loadSupportTickets() {
         const data = await response.json();
         
         if (!data.tickets || data.tickets.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">لا توجد تذاكر حاليا</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">لا توجد تذاكر حالياً</td></tr>';
             return;
         }
         
         // Sort newest first
-        window._allSupportTickets = data.tickets.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const tickets = data.tickets.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         
-        // Use the filter system
-        if (window.applySupportFilters) {
-            window.applySupportFilters();
-        } else {
-            // fallback if filters not loaded yet
-            window.setSupportStatusFilter('all');
-        }
+        tbody.innerHTML = tickets.map(t => {
+            const statusColor = t.status === 'Nouveau' ? 'var(--danger)' : (t.status === 'En cours' ? 'var(--gold)' : 'var(--success)');
+            const actionBtn = t.status === 'Nouveau' 
+                ? `<button class="btn btn-sm" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);" onclick="claimTicket('${t.id}')">🙋‍♂️ استلام</button>`
+                : `<button class="btn btn-sm btn-secondary" onclick="viewTicket('${t.id}')">👁️ عرض</button>`;
+                
+            return `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td data-label="رقم التذكرة" style="padding: 12px; font-weight: bold; color: var(--gold);">${t.id}</td>
+                    <td data-label="الطالب" style="padding: 12px;"><div style="text-align: left;">${t.first_name}<br><small style="color: var(--text-secondary);">@${t.username}</small></div></td>
+                    <td data-label="القسم" style="padding: 12px;">${t.theme}</td>
+                    <td data-label="التفاصيل" style="padding: 12px;">${t.subtheme}</td>
+                    <td data-label="الحالة" style="padding: 12px;"><span style="background: ${statusColor}; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${t.status}</span></td>
+                    <td data-label="الإجراء" style="padding: 12px;">${actionBtn}</td>
+                </tr>
+            `;
+        }).join('');
     } catch (e) {
-        console.error('Error loading tickets:', e);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--danger);">خطأ في تحميل التذاكر</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--danger);">خطأ في التحميل</td></tr>';
+        console.error(e);
     }
-}
 }
 window.loadSupportTickets = loadSupportTickets;
 
@@ -13033,100 +13042,3 @@ window.toggleMobileSidebar = function() {
         }
     }
 }
-
-// --- Support Filters Logic ---
-window.supportFilters = {
-    status: 'all',
-    urgent: false,
-    year: null
-};
-
-window.setSupportStatusFilter = function(status) {
-    window.supportFilters.status = status;
-    
-    // Update active UI state for bottom nav
-    document.querySelectorAll('.support-nav-item').forEach(el => el.classList.remove('active'));
-    if (status === 'all') document.getElementById('nav-status-all').classList.add('active');
-    else if (status === 'Nouveau') document.getElementById('nav-status-nouveau').classList.add('active');
-    else if (status === 'En cours') document.getElementById('nav-status-encours').classList.add('active');
-    else if (status === 'Résolu') document.getElementById('nav-status-resolu').classList.add('active');
-    
-    applySupportFilters();
-};
-
-window.toggleSupportFilter = function(type, value = null) {
-    if (type === 'urgent') {
-        window.supportFilters.urgent = !window.supportFilters.urgent;
-        const chip = document.getElementById('chip-urgent');
-        if (window.supportFilters.urgent) {
-            chip.style.background = 'var(--danger)';
-            chip.style.color = '#fff';
-        } else {
-            chip.style.background = 'transparent';
-            chip.style.color = 'var(--danger)';
-        }
-    } else if (type === 'year') {
-        if (window.supportFilters.year === value) {
-            window.supportFilters.year = null; // toggle off
-            document.getElementById(`chip-year-${value}`).style.background = 'transparent';
-            document.getElementById(`chip-year-${value}`).style.color = 'var(--text-primary)';
-        } else {
-            // clear other years
-            ['2025', '2026'].forEach(y => {
-                const el = document.getElementById(`chip-year-${y}`);
-                if(el) {
-                    el.style.background = 'transparent';
-                    el.style.color = 'var(--text-primary)';
-                }
-            });
-            window.supportFilters.year = value; // toggle on
-            document.getElementById(`chip-year-${value}`).style.background = 'var(--gold)';
-            document.getElementById(`chip-year-${value}`).style.color = '#fff';
-        }
-    }
-    applySupportFilters();
-};
-
-window.applySupportFilters = function() {
-    const tbody = document.getElementById('tickets-tbody');
-    if (!tbody || !window._allSupportTickets) return;
-    
-    let filtered = window._allSupportTickets;
-    
-    if (window.supportFilters.status !== 'all') {
-        filtered = filtered.filter(t => t.status === window.supportFilters.status);
-    }
-    
-    if (window.supportFilters.urgent) {
-        // Example: logic to filter urgent tickets (maybe based on theme or a specific flag)
-        filtered = filtered.filter(t => (t.theme && t.theme.includes('عاجل')) || (t.subtheme && t.subtheme.includes('عاجل')));
-    }
-    
-    if (window.supportFilters.year) {
-        // Example: logic to filter by year, maybe in timestamp
-        filtered = filtered.filter(t => t.timestamp && t.timestamp.startsWith(window.supportFilters.year));
-    }
-    
-    if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">لا توجد تذاكر تطابق التصفية</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = filtered.map(t => {
-        const statusColor = t.status === 'Nouveau' ? 'var(--danger)' : (t.status === 'En cours' ? 'var(--gold)' : 'var(--success)');
-        const actionBtn = t.status === 'Nouveau' 
-            ? `<button class="btn btn-sm" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);" onclick="claimTicket('${t.id}')">🙋‍♂️ استلام</button>`
-            : `<button class="btn btn-sm btn-secondary" onclick="viewTicket('${t.id}')">👁️ عرض</button>`;
-            
-        return `
-            <tr style="border-bottom: 1px solid var(--border);">
-                <td data-label="رقم التذكرة" style="padding: 12px; font-weight: bold; color: var(--gold);">${t.id}</td>
-                <td data-label="الطالب" style="padding: 12px;"><div style="text-align: left;">${t.first_name}<br><small style="color: var(--text-secondary);">@${t.username}</small></div></td>
-                <td data-label="القسم" style="padding: 12px;">${t.theme}</td>
-                <td data-label="التفاصيل" style="padding: 12px;">${t.subtheme}</td>
-                <td data-label="الحالة" style="padding: 12px;"><span style="background: ${statusColor}; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${t.status}</span></td>
-                <td data-label="الإجراء" style="padding: 12px;">${actionBtn}</td>
-            </tr>
-        `;
-    }).join('');
-};

@@ -1185,53 +1185,28 @@
 
         <!-- SUPPORT TAB -->
         <div id="panel-support" class="tab-panel">
-            <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h1 class="page-title">💬 الدعم الفني والتذاكر</h1>
                 <button class="btn btn-primary" onclick="loadSupportTickets()" style="padding: 8px 16px;">🔄 تحديث</button>
             </div>
-
-            <!-- Chips for secondary filters -->
-            <div class="support-chips-container" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; white-space: nowrap;">
-                <button id="chip-urgent" class="btn btn-sm btn-secondary chip" onclick="toggleSupportFilter('urgent')" style="border-radius: 20px; border: 1px solid var(--danger); color: var(--danger);">🔥 عاجل</button>
-                <button id="chip-year-2025" class="btn btn-sm btn-secondary chip" onclick="toggleSupportFilter('year', '2025')" style="border-radius: 20px;">🎓 2025</button>
-                <button id="chip-year-2026" class="btn btn-sm btn-secondary chip" onclick="toggleSupportFilter('year', '2026')" style="border-radius: 20px;">🎓 2026</button>
-            </div>
             
-            <div class="data-table-wrapper support-table-wrapper" style="overflow-x: auto; padding-bottom: 80px;">
-                <table class="data-table support-no-box-table" id="tickets-table" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">رقم التذكرة</th>
-                            <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">الطالب</th>
-                            <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">القسم</th>
-                            <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">التفاصيل</th>
-                            <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">الحالة</th>
-                            <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">الإجراء</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tickets-tbody">
-                        <tr><td colspan="6" style="text-align: center; padding: 20px;">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Sticky Bottom Navigation for Ticket Statuses -->
-            <div class="support-bottom-nav">
-                <div id="nav-status-all" class="support-nav-item active" onclick="setSupportStatusFilter('all')">
-                    <span class="nav-icon">📥</span>
-                    <span class="nav-text">الكل</span>
-                </div>
-                <div id="nav-status-nouveau" class="support-nav-item" onclick="setSupportStatusFilter('Nouveau')">
-                    <span class="nav-icon">🔴</span>
-                    <span class="nav-text">جديد</span>
-                </div>
-                <div id="nav-status-encours" class="support-nav-item" onclick="setSupportStatusFilter('En cours')">
-                    <span class="nav-icon">🟡</span>
-                    <span class="nav-text">قيد المعالجة</span>
-                </div>
-                <div id="nav-status-resolu" class="support-nav-item" onclick="setSupportStatusFilter('Résolu')">
-                    <span class="nav-icon">🟢</span>
-                    <span class="nav-text">مكتمل</span>
+            <div class="editor-container" style="padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px;">
+                <div class="data-table-wrapper" style="overflow-x: auto;">
+                    <table class="data-table" id="tickets-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">رقم التذكرة</th>
+                                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">الطالب</th>
+                                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">القسم</th>
+                                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">التفاصيل</th>
+                                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">الحالة</th>
+                                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border);">الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tickets-tbody">
+                            <tr><td colspan="6" style="text-align: center; padding: 20px;">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
