@@ -211,7 +211,7 @@ function applyFilters() {
     filteredTickets = allTickets.filter(t => {
         // Status filter
         let s = t.status || 'Nouveau';
-        if (s === 'pending') s = 'Nouveau';
+        if (s === 'pending' || s === 'new') s = 'Nouveau';
         if (s === 'En cours de traitement' || s === 'En cours') s = 'En cours';
         if (s === 'Déjà traité' || s === 'resolved' || s === 'Résolu') s = 'Résolu';
         if (s !== currentStatus) return false;
