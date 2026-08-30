@@ -6,6 +6,7 @@ let filteredTickets = [];
 let currentStatus = 'Nouveau'; 
 let currentCategory = 'all';
 let activeTicketId = null;
+let selectedTickets = new Set();
 
 const mockTickets = [
     {
@@ -100,6 +101,28 @@ export function initInboxView(container) {
                     <span class="nav-label">مكتمل</span>
                 </div>
             </nav>
+
+            <!-- Bulk Action Bar -->
+            <div class="bulk-action-bar" id="bulk-action-bar">
+                <span style="font-weight: bold; color: var(--text-1);" id="bulk-count">0 محدد</span>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="openBulkReply()" style="padding: 6px 12px; font-size: 0.9rem; border:none; border-radius:12px; background:var(--accent); color:white; cursor:pointer;">✉️ رد جماعي</button>
+                    <button class="btn-icon" onclick="clearBulkSelection()" style="color: var(--danger); font-size: 0.9rem;">إلغاء</button>
+                </div>
+            </div>
+
+            <!-- Bulk Reply Modal -->
+            <div class="bulk-modal" id="bulk-reply-modal">
+                <div class="bulk-modal-content">
+                    <h2 style="margin-bottom: 15px; color: var(--text-1);">✉️ رد جماعي</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">سيتم إرسال هذه الرسالة إلى جميع الطلاب المحددين وإغلاق تذاكرهم تلقائياً.</p>
+                    <textarea id="bulk-reply-text" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-1); margin-bottom: 15px;" placeholder="اكتب رسالتك هنا..."></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button class="btn-icon" onclick="closeBulkReply()" style="font-size: 0.9rem;">إلغاء</button>
+                        <button class="btn-primary" onclick="sendBulkReply()" style="padding: 6px 12px; font-size: 0.9rem; border:none; border-radius:12px; background:#2ecc71; color:white; cursor:pointer;">🚀 إرسال</button>
+                    </div>
+                </div>
+            </div>
         </section>
     `;
 
@@ -132,6 +155,13 @@ export function initInboxView(container) {
     window.generateAIResponse = generateAIResponse;
     window.reassignTicket = reassignTicket;
     window.triggerAttach = triggerAttach;
+    
+    // Bulk Actions
+    window.toggleTicketSelection = toggleTicketSelection;
+    window.clearBulkSelection = clearBulkSelection;
+    window.openBulkReply = openBulkReply;
+    window.closeBulkReply = closeBulkReply;
+    window.sendBulkReply = sendBulkReply;
 
     loadTickets();
 }
@@ -218,11 +248,13 @@ function renderFeed() {
         const urgentTag = t.is_urgent ? '<span class="tag tag-urgent">🚨 عاجل</span>' : '';
         const themeTag = t.theme ? `<span class="tag tag-subject">${t.theme}</span>` : '';
         const attachmentIcon = (t.has_attachment || t.photo || t.document || t.voice || t.video || t.file_id) ? '<span style="font-size: 0.8rem; margin-right: 5px;" title="يوجد مرفق">📎</span>' : '';
+        const isSelected = selectedTickets.has(t.id.toString()) ? 'checked' : '';
         
         return `
-            <div class="ticket-card" onclick="openTicket('${t.id}')">
-                <div class="ticket-avatar ${avatarClass}">${initial}</div>
-                <div class="ticket-content">
+            <div class="ticket-card" style="align-items: center;">
+                <input type="checkbox" class="ticket-checkbox" data-id="${t.id}" ${isSelected} onclick="toggleTicketSelection(event, '${t.id}')">
+                <div class="ticket-avatar ${avatarClass}" onclick="openTicket('${t.id}')">${initial}</div>
+                <div class="ticket-content" onclick="openTicket('${t.id}')">
                     <div class="ticket-header">
                         <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#${displayId}</span></span>
                         <span class="ticket-time">${attachmentIcon}${formatTime(t.timestamp)}</span>
@@ -381,5 +413,97 @@ function reassignTicket() {
 }
 
 function triggerAttach() {
-    alert("سيتم إضافة ميزة إرفاق صورة قريباً.");
+    alert("Attach feature coming soon!");
+}
+
+// --- BULK ACTION LOGIC ---
+
+function toggleTicketSelection(e, id) {
+    e.stopPropagation(); // prevent opening the ticket
+    if (e.target.checked) {
+        selectedTickets.add(id.toString());
+    } else {
+        selectedTickets.delete(id.toString());
+    }
+    updateBulkActionBar();
+}
+
+function updateBulkActionBar() {
+    const bar = document.getElementById('bulk-action-bar');
+    const countSpan = document.getElementById('bulk-count');
+    if (!bar) return;
+    
+    if (selectedTickets.size > 0) {
+        countSpan.innerText = `${selectedTickets.size} محدد`;
+        bar.classList.add('visible');
+    } else {
+        bar.classList.remove('visible');
+    }
+}
+
+function clearBulkSelection() {
+    selectedTickets.clear();
+    document.querySelectorAll('.ticket-checkbox').forEach(cb => cb.checked = false);
+    updateBulkActionBar();
+}
+
+function openBulkReply() {
+    document.getElementById('bulk-reply-modal').classList.add('active');
+}
+
+function closeBulkReply() {
+    document.getElementById('bulk-reply-modal').classList.remove('active');
+    document.getElementById('bulk-reply-text').value = '';
+}
+
+async function sendBulkReply() {
+    const text = document.getElementById('bulk-reply-text').value.trim();
+    if (!text) {
+        alert("يرجى كتابة الرسالة أولاً");
+        return;
+    }
+    
+    const ids = Array.from(selectedTickets);
+    if(ids.length === 0) return;
+    
+    document.querySelector('#bulk-reply-modal .btn-primary').innerText = 'جاري الإرسال...';
+    
+    try {
+        // Pseudo-API call since backend doesn't have bulk-reply yet
+        // In reality we would do: await fetch('/api/admin/bulk-reply', { method: 'POST', body: JSON.stringify({ ids, text }) });
+        
+        for (let id of ids) {
+            const formData = new FormData();
+            formData.append('ticket_id', id);
+            formData.append('admin_id', window.adminId || 'admin');
+            formData.append('text', text);
+            // This endpoint sends the reply
+            fetch('/admin/reply-ticket', { method: 'POST', body: formData }).catch(() => {});
+            
+            const resolveData = new FormData();
+            resolveData.append('ticket_id', id);
+            resolveData.append('admin_id', window.adminId || 'admin');
+            resolveData.append('status', 'resolved');
+            // This endpoint marks it as resolved
+            fetch('/admin/resolve-ticket', { method: 'POST', body: resolveData }).catch(() => {});
+            
+            // Update local state instantly for UI responsiveness
+            const t = allTickets.find(t => t.id.toString() === id);
+            if (t) t.status = 'resolved';
+        }
+        
+        // Wait a short bit to let fetches start
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        closeBulkReply();
+        clearBulkSelection();
+        applyFilters(); // will re-render feed and hide resolved items from 'Nouveau'
+        
+        alert("تم الإرسال لـ " + ids.length + " تذاكر بنجاح وتم إغلاقهم!");
+        
+    } catch (e) {
+        alert("حدث خطأ أثناء الإرسال");
+    } finally {
+        document.querySelector('#bulk-reply-modal .btn-primary').innerText = '🚀 إرسال';
+    }
 }

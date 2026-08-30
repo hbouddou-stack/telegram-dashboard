@@ -287,3 +287,11 @@ body { background: var(--bg); background-image: radial-gradient(circle at top ri
     align-items: center;
 }
 
+
+/* Bulk Action Bar */
+.bulk-action-bar { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 90%; max-width: 600px; }
+.bulk-action-bar.visible { bottom: 80px; }
+.ticket-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: var(--gold); margin-right: 12px; flex-shrink: 0; }
+.bulk-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+.bulk-modal.active { display: flex; }
+.bulk-modal-content { background: var(--surface-solid); padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
