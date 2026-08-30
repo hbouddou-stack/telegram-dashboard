@@ -132,25 +132,27 @@
         
         <!-- Story 0 -->
         <div class="story-slide" id="story-slide-0">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.6;">
             <div class="floating-emoji">👋</div>
-            <h2 id="welcome-text" style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">مرحباً بك!</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">لربط حسابك في الأكاديمية، ستحتاج إلى رقم الطالب الخاص بك.</p>
+            <h2 id="welcome-text" style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">أهلاً بك!</h2>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.8); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; text-align:center; width:80%;">دعنا نأخذك في جولة سريعة لمعرفة كيف تستخدم الأكاديمية.</p>
         </div>
         
         <!-- Story 1 -->
         <div class="story-slide" id="story-slide-1">
-            <div class="floating-emoji">🔍</div>
-            <h2 style="color:#fff; font-size:2.2rem; margin-bottom:10px; font-weight:800; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">أين أجده؟</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.1rem; margin-bottom:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">تجد رقم الطالب في مساحة التعلم الخاصة بك.</p>
-            <img src="/tuto.jpg" alt="طريقة إيجاد رقم الطالب" onerror="this.style.display='none'" style="max-width:90%; max-height:40vh; border-radius:12px; box-shadow:0 10px 20px rgba(0,0,0,0.5); object-fit:contain;">
+            <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.6;">
+            <div class="floating-emoji">❓</div>
+            <h2 style="color:#fff; font-size:2.2rem; margin-bottom:10px; font-weight:800; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">طرح الأسئلة</h2>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.1rem; margin-bottom:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; text-align:center; width:80%;">يمكنك طرح أي سؤال علمي وسيأتيك الرد فوراً من المساعد الذكي.</p>
         </div>
         
         <!-- Story 2 -->
         <div class="story-slide" id="story-slide-2">
-            <div class="floating-emoji">✅</div>
-            <h2 style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">جاهز للربط؟</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">أدخل رقمك الدراسي وتاريخ ميلادك في الصفحة السابقة لإكمال العملية.</p>
-            <button class="story-btn" onclick="finishTuto()">العودة للربط الآن</button>
+            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.6;">
+            <div class="floating-emoji">🚀</div>
+            <h2 style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">جاهز للبدء؟</h2>
+            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.8); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; text-align:center; width:80%;">استمتع برحلتك التعليمية معنا! بالتوفيق.</p>
+            <button class="story-btn" onclick="finishTuto()" style="margin-top:20px;">انطلق الآن</button>
         </div>
         
     </div>
@@ -327,7 +329,7 @@
     function finishTuto() {
         clearInterval(storyProgressInterval);
         clearTimeout(storyTimer);
-        window.location.href = '/link.html';
+        window.location.href = '/ask.html';
     }
 </script>
 </body>

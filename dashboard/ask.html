@@ -132,9 +132,19 @@
 <body>
     <div class="container" id="app-container">
         <div class="tabs-container">
-            <div class="tab-btn active" onclick="switchTab('new')" id="tabnew-btn">&#9993; طلب جديد</div>
+            <div class="tab-btn active" onclick="switchTab('new')" id="tabnew-btn">&#9993; الدعم الفني</div>
             <div class="tab-btn" onclick="switchTab('faq')" id="tabfaq-btn">&#128218; الأسئلة الشائعة</div>
-            <div class="tab-btn" onclick="switchTab('inbox')" id="tabinbox-btn">&#128229; تذاكري</div>
+            <div class="tab-btn" onclick="switchTab('inbox')" id="tabinbox-btn">&#128229; رسائلي</div>
+        </div>
+
+        <!-- ONBOARDING BANNER -->
+        <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <button onclick="window.location.href='/guide.html'" style="flex:1; background: linear-gradient(135deg, #1A2980, #26D0CE); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span style="font-size:1.2rem;">🗺️</span> دليل الطالب
+            </button>
+            <button onclick="window.location.href='/tuto.html'" style="flex:1; background: linear-gradient(135deg, #FF416C, #FF4B2B); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(255,75,43,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span style="font-size:1.2rem;">🎥</span> كيف أستخدم؟
+            </button>
         </div>
 
         <!-- NEW TICKET TAB -->

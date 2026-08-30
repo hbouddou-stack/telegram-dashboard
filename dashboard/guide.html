@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>دليل الطالب</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { 
+            background: #0d1117; 
+            color: white; 
+            overflow: hidden; 
+            padding-top: 20px;
+        }
+        
+        /* Header */
+        .header {
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 100;
+        }
+        .header h1 { font-size: 1.5rem; font-weight: 800; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* Cards Stack Container */
+        .stack-container {
+            position: relative;
+            height: calc(100vh - 80px);
+            padding: 20px;
+            overflow: visible;
+        }
+        
+        .card {
+            position: absolute;
+            width: calc(100% - 40px);
+            height: 180px; 
+            border-radius: 24px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1.1);
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* State when card is open */
+        .card.open {
+            height: calc(100vh - 120px); 
+            transform: translateY(-20px) !important;
+            z-index: 50 !important;
+            cursor: default;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            overflow-y: auto;
+            border-radius: 30px;
+        }
+        
+        /* Hidden siblings when one is open */
+        .card.hidden {
+            transform: translateY(120vh) !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        
+        .card-icon { font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .card-title { font-size: 1.6rem; font-weight: 800; margin-top: 10px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        
+        .card-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            transition-delay: 0.2s;
+            margin-top: 25px;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            padding-bottom: 30px;
+            display: none;
+        }
+        
+        .card.open .card-content { opacity: 1; transform: translateY(0); display: block; }
+        
+        .close-card {
+            background: rgba(0,0,0,0.3); border: none; border-radius: 50%; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(5px);
+        }
+        .card.open .close-card { opacity: 1; pointer-events: auto; }
+        
+        /* Colors */
+        .card-1 { background: linear-gradient(135deg, #FF416C, #FF4B2B); z-index: 1; }
+        .card-2 { background: linear-gradient(135deg, #1A2980, #26D0CE); z-index: 2; }
+        .card-3 { background: linear-gradient(135deg, #f6d365, #fda085); z-index: 3; color: #222; }
+        .card-3 .close-card { background: rgba(0,0,0,0.1); color: #222; }
+        
+        /* Content specific styling */
+        .bullet-point { display: flex; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; }
+        .card-3 .bullet-point { background: rgba(0,0,0,0.05); }
+        .bullet-icon { font-size: 1.5rem; }
+        .bullet-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+        
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>دليل الطالب</h1>
+        <button class="back-btn" onclick="goBack()">✕</button>
+    </div>
+    
+    <div class="stack-container" id="stack">
+        <!-- Card 1 -->
+        <div class="card card-1" onclick="openCard(this)" data-index="0">
+            <div class="card-header">
+                <div>
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">رحلتك معنا</div>
+                </div>
+                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom:20px; font-weight:500;">مرحباً بك في الأكاديمية! لقد صممنا هذا البرنامج ليكون رحلة ممتعة وتفاعلية.</p>
+                
+                <div class="bullet-point">
+                    <div class="bullet-icon">📱</div>
+                    <div class="bullet-text"><strong>دروس تفاعلية</strong>ستصلك الدروس مباشرة عبر تيليجرام. لن تحتاج إلى منصات معقدة.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🧩</div>
+                    <div class="bullet-text"><strong>كويزات وتطبيقات</strong>بعد كل قسم، ستجد اختبارات قصيرة (كويز) لتثبيت المعلومات.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🏆</div>
+                    <div class="bullet-text"><strong>النقاط والتصنيف</strong>كل إجابة صحيحة تمنحك نقاطاً ترفع ترتيبك في لوحة الأوائل!</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 2 -->
+        <div class="card card-2" onclick="openCard(this)" data-index="1">
+            <div class="card-header">
+                <div>
+                    <div class="card-icon">📜</div>
+                    <div class="card-title">قوانين الأكاديمية</div>
+                </div>
+                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom:20px; font-weight:500;">لضمان بيئة تعليمية راقية وإيجابية للجميع:</p>
+                
+                <div class="bullet-point">
+                    <div class="bullet-icon">🤝</div>
+                    <div class="bullet-text"><strong>الاحترام المتبادل</strong>النقاشات في المجموعة مخصصة للتعلم فقط. يمنع الجدال الخارجي.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🔒</div>
+                    <div class="bullet-text"><strong>الخصوصية</strong>المحتوى التعليمي حصري للمشتركين. يمنع مشاركته أو إعادة نشره.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">⏰</div>
+                    <div class="bullet-text"><strong>الالتزام</strong>حاول إتمام الكويزات في وقتها لتستفيد من التقييم المستمر.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 3 -->
+        <div class="card card-3" onclick="openCard(this)" data-index="2">
+            <div class="card-header">
+                <div>
+                    <div class="card-icon">💡</div>
+                    <div class="card-title">نصائح ذهبية</div>
+                </div>
+                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom:20px; font-weight:500;">كيف تحقق أقصى استفادة من الذكاء الاصطناعي والدعم؟</p>
+                
+                <div class="bullet-point">
+                    <div class="bullet-icon">🤖</div>
+                    <div class="bullet-text"><strong>اسأل المساعد الذكي</strong>لا تتردد في طرح أي سؤال علمي. البوت متاح 24/7 لمساعدتك.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🔍</div>
+                    <div class="bullet-text"><strong>ابحث في الـ FAQ</strong>قبل أن تفتح تذكرة دعم، تصفح الأسئلة الشائعة (FAQ)، فالإجابة غالباً هناك.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🎧</div>
+                    <div class="bullet-text"><strong>استخدم الصوتيات</strong>يمكنك إرسال رسائل صوتية (Voice) وسيقوم البوت بفهمها والإجابة عليها.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Init Telegram Web App
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        
+        const cards = document.querySelectorAll('.card');
+        const STACK_OFFSET = 70; // Pixels between cards when stacked
+        
+        function applyStackTransforms() {
+            cards.forEach((c, idx) => {
+                if (!c.classList.contains('open') && !c.classList.contains('hidden')) {
+                    c.style.transform = `translateY(${idx * STACK_OFFSET}px)`;
+                }
+            });
+        }
+        
+        // Initial setup
+        applyStackTransforms();
+        
+        function openCard(cardEl) {
+            if (cardEl.classList.contains('open')) return;
+            
+            // Haptic
+            if(window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            cards.forEach(c => {
+                if (c === cardEl) {
+                    c.classList.add('open');
+                } else {
+                    c.classList.add('hidden');
+                }
+            });
+        }
+        
+        function closeCard(cardEl) {
+            cardEl.classList.remove('open');
+            cardEl.scrollTo(0,0);
+            
+            cards.forEach(c => {
+                c.classList.remove('hidden');
+            });
+            
+            applyStackTransforms();
+        }
+        
+        function goBack() {
+            window.history.back(); // Try to go back in browser history
+            setTimeout(() => {
+                window.location.href = '/ask.html'; // Fallback
+            }, 100);
+        }
+    </script>
+</body>
+</html>
