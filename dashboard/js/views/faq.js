@@ -1,4 +1,4 @@
-﻿// faq.js - FAQ Manager v2 - Connecte a SQLite via API
+// faq.js - FAQ Manager v2 - Connecte a SQLite via API
 
 let faqAllEntries = [];
 let faqCategories = [];
@@ -205,14 +205,16 @@ function renderFaqList(entries) {
             </h2>`;
         catEntries.forEach(entry => {
             const isPinned = entry.is_pinned ? '&#128204; ' : '';
-            const notHelpfulBadge = (entry.not_helpful_votes > 0)
+            const needsRevision = entry.not_helpful_votes > 0;
+            const revisionBadge = needsRevision ? `<span style="background: rgba(231,76,60,0.1); color: #e74c3c; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; border: 1px solid #e74c3c; margin-right: 10px;">⚠️ À réviser</span>` : '';
+            const notHelpfulBadge = needsRevision
                 ? `<span style="color:#e74c3c; font-size:0.8rem;" title="يحتاج تحسين">&#9888; ${entry.not_helpful_votes} غير مفيد</span>` : '';
             html += `
-            <div style="background:var(--surface-solid); border:1px solid var(--border); border-radius:12px; margin-bottom:12px; overflow:hidden; transition:box-shadow 0.2s;"
+            <div style="background:var(--surface-solid); border:1px solid ${needsRevision ? '#e74c3c' : 'var(--border)'}; border-radius:12px; margin-bottom:12px; overflow:hidden; transition:box-shadow 0.2s;"
                 onmouseover="this.style.boxShadow='0 4px 20px rgba(135,54,255,0.2)'" onmouseout="this.style.boxShadow='none'">
                 <div style="padding:15px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-                        <div style="font-weight:bold; color:var(--text-1); font-size:0.95rem; flex:1;">${isPinned}${entry.question}</div>
+                        <div style="font-weight:bold; color:var(--text-1); font-size:0.95rem; flex:1;">${isPinned}${entry.question} ${revisionBadge}</div>
                         ${entry.subcategory ? `<span style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:10px; color:var(--text-2); white-space:nowrap;">${entry.subcategory}</span>` : ''}
                     </div>
                     <div style="color:var(--text-2); background:rgba(0,0,0,0.2); padding:10px 12px; border-radius:8px; margin-top:10px; font-size:0.9rem; line-height:1.6;">${entry.answer}</div>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -492,21 +492,49 @@
                 } else {
                     if (noBtn) { noBtn.classList.add('voted-no'); noBtn.disabled = true; }
                     if (yesBtn) yesBtn.disabled = true;
-                    // Suggest opening a ticket
+                    // Ask for feedback
                     setTimeout(() => {
                         const item = document.getElementById(`faqitem-${id}`);
                         if (item) {
                             const answerEl = item.querySelector('.faq-item-a');
                             if (answerEl) {
-                                const openTicket = document.createElement('div');
-                                openTicket.style.cssText = 'margin-top:12px; padding:10px; background:rgba(231,76,60,0.1); border-radius:8px; text-align:center; font-size:0.9rem;';
-                                openTicket.innerHTML = `&#128680; لم تجد إجابتك؟ <span onclick="switchTab('new')" style="color:var(--accent); cursor:pointer; font-weight:bold;">افتح تذكرة دعم</span>`;
-                                answerEl.appendChild(openTicket);
+                                const feedbackForm = document.createElement('div');
+                                feedbackForm.id = `feedback-form-${id}`;
+                                feedbackForm.style.cssText = 'margin-top:12px; padding:12px; background:rgba(255,255,255,0.05); border-radius:8px;';
+                                feedbackForm.innerHTML = `
+                                    <p style="font-size:0.85rem; margin-bottom:8px; color:var(--text-1);">ما الذي ينقص هذه الإجابة؟ لم لم تكن مفيدة؟ (اختياري)</p>
+                                    <textarea id="feedback-text-${id}" style="width:100%; height:60px; background:var(--bg-color); color:var(--text-1); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:8px; resize:none; font-family:Tajawal,sans-serif;" placeholder="اكتب تعليقك هنا..."></textarea>
+                                    <button onclick="submitFaqFeedback(${id})" style="margin-top:8px; padding:6px 15px; background:var(--accent); color:white; border:none; border-radius:6px; cursor:pointer; font-family:Tajawal,sans-serif; font-weight:bold;">إرسال الملاحظة</button>
+                                `;
+                                answerEl.appendChild(feedbackForm);
                             }
                         }
                     }, 300);
                 }
             } catch(e) { console.error(e); }
+        }
+
+        async function submitFaqFeedback(id) {
+            const text = document.getElementById(`feedback-text-${id}`).value.trim();
+            if (!text) return;
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+            const first_name = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "";
+            
+            try {
+                await fetch(`${BOT_BASE}/api/support`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        theme: "💡 تحسين FAQ",
+                        subtheme: `FAQ ID: ${id}`,
+                        message: `تقييم سلبي للـ FAQ #${id}:\n${text}`,
+                        telegram_id: tid,
+                        first_name: first_name
+                    })
+                });
+                
+                document.getElementById(`feedback-form-${id}`).innerHTML = '<p style="color:#2ecc71; font-size:0.9rem; text-align:center; font-weight:bold;">شكراً لملاحظاتك! سنقوم بتحسين الإجابة 🙏</p>';
+            } catch(e) {}
         }
 
         // ========================
