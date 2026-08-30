@@ -4634,6 +4634,44 @@ async def toggle_student_favorite(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
+
+async def api_chat(request):
+    try:
+        data = await request.json()
+        message = data.get('message', '').strip()
+        user_id = data.get('user_id')
+        
+        if not message:
+            return web.json_response({"success": False, "error": "Empty message"}, status=400)
+            
+        import importlib
+        import config as cfg_module
+        importlib.reload(cfg_module)
+        api_keys = getattr(cfg_module, "GEMINI_API_KEYS", [])
+        if not api_keys and getattr(cfg_module, "GEMINI_API_KEY", ""):
+            api_keys = [cfg_module.GEMINI_API_KEY]
+            
+        if not api_keys:
+            return web.json_response({"success": False, "reply": "عذراً، لم يتم إعداد مفتاح الذكاء الاصطناعي (API Key) في الخادم."})
+            
+        import google.generativeai as genai
+        import random
+        api_key = random.choice(api_keys)
+        genai.configure(api_key=api_key)
+        
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # System prompt to ensure it answers in Arabic
+        prompt = f"أنت مساعد افتراضي في منصة أكاديمية. أجب دائمًا باللغة العربية بأسلوب ودود ومختصر.\n\nسؤال الطالب: {message}"
+        
+        response = model.generate_content(prompt)
+        
+        return web.json_response({"success": True, "reply": response.text})
+    except Exception as e:
+        import logging
+        logging.error(f"Error in api_chat: {e}")
+        return web.json_response({"success": False, "reply": "عذراً، حدث خطأ أثناء معالجة طلبك."})
+
 async def api_support_rag_check(request):
     try:
         data = await request.json()
@@ -4920,6 +4958,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/quiz.js', handle_quiz_js)
     app.router.add_get('/reader.css', handle_reader_css)
     app.router.add_get('/ask', handle_support)
+    app.router.add_post('/api/chat', api_chat)
     app.router.add_post('/api/support/rag_check', api_support_rag_check)
     app.router.add_get('/api/admin/tickets', api_admin_get_tickets)
     register_crm_routes(app)

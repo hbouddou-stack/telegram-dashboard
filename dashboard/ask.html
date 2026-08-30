@@ -7,14 +7,14 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: linear-gradient(135deg, #1e0033 0%, #000b29 100%);
+                :root {
+            --bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
             --surface: rgba(255, 255, 255, 0.05);
             --primary: #ffffff;
             --text-1: #ffffff;
-            --text-2: #b3a5c7;
-            --accent: #8736ff;
-            --card-hover: rgba(135, 54, 255, 0.2);
+            --text-2: #cbd5e1;
+            --accent: #f1c40f;
+            --card-hover: rgba(241, 196, 15, 0.15);
             --rag-bg: rgba(46, 204, 113, 0.1);
             --rag-border: #2ecc71;
         }
@@ -64,7 +64,7 @@
             font-size: 1.1rem; font-weight: 800; font-family: 'Tajawal', sans-serif;
             cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; width: 100%; margin-top: 15px;
         }
-        button.btn-primary { background: linear-gradient(90deg, var(--accent) 0%, #5721d9 100%); box-shadow: 0 4px 15px rgba(135, 54, 255, 0.4); }
+        button.btn-primary { background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%); box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4); color: #1e3a8a; }
         button.btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); margin-top: 10px; }
         button.btn-success { background: #2ecc71; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
         button.btn-danger { background: #e74c3c; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
@@ -251,9 +251,13 @@
         <!-- INBOX TAB -->
         <div class="tab-content" id="tab-inbox">
             <div class="header">
-                <h1 style="font-size:1.5rem;">&#128229; تذاكري السابقة</h1>
-                <p class="subtitle">تتبع حالة استفساراتك وردود الإدارة</p>
+                <h1 style="font-size:1.5rem;">&#128229; صندوق الرسائل</h1>
+                <p class="subtitle">تتبع حالة استفساراتك السابقة</p>
             </div>
+            
+            <button class="btn-primary" onclick="openTicketModal()" style="margin-top:0; margin-bottom:20px;">
+                &#10133; إرسال تذكرة جديدة
+            </button>
             <div id="student-tickets-list" style="margin-top: 20px;">
                 <div style="text-align:center; color:var(--text-2); padding: 30px;">جارِ التحميل...</div>
             </div>
@@ -743,36 +747,48 @@
             }
         }
 
-        function renderStudentTickets(tickets) {
+                function renderStudentTickets(tickets) {
             const list = document.getElementById('student-tickets-list');
             if (!tickets || tickets.length === 0) {
                 list.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-2);">
                     <div style="font-size:2.5rem; margin-bottom:10px;">&#128229;</div>
-                    <div>لا توجد تذاكر سابقة</div>
+                    <div>لا توجد رسائل سابقة</div>
                 </div>`;
                 return;
             }
-            const statusMap = {
-                'open': {color:'#f39c12', label:'مفتوحة'},
-                'in_progress': {color:'#3498db', label:'قيد المعالجة'},
-                'resolved': {color:'#2ecc71', label:'محلولة'},
-                'reopen': {color:'#e74c3c', label:'أُعيد فتحها'}
+            
+            const resolved = tickets.filter(t => t.status === 'resolved');
+            const inProgress = tickets.filter(t => t.status === 'in_progress');
+            const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'reopen');
+            
+            let htmlStr = '';
+            
+            const renderGroup = (title, groupTickets, icon, color) => {
+                if (groupTickets.length === 0) return '';
+                let gHtml = `<h3 style="font-size:1rem; margin-top:20px; margin-bottom:10px; color:${color};">${icon} ${title}</h3>`;
+                gHtml += groupTickets.map(t => {
+                    const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
+                    const preview = (t.message || t.text || '').substring(0, 60);
+                    return `
+                    <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+                            <span style="color:var(--text-1); font-weight:bold; font-size:0.9rem;">#${t.id} - ${t.theme || 'عام'}</span>
+                            <span style="color:${color}; font-size:0.75rem; border:1px solid ${color}; padding:2px 8px; border-radius:12px;">${title}</span>
+                        </div>
+                        <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:8px; line-height:1.4;">${preview}${preview.length >= 60 ? '...' : ''}</div>
+                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.35);">${date}</div>
+                    </div>`;
+                }).join('');
+                return gHtml;
             };
-            list.innerHTML = tickets.map(t => {
-                const st = statusMap[t.status] || {color:'#888', label: t.status || 'قيد المعالجة'};
-                const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
-                const preview = (t.message || t.text || '').substring(0, 60);
-                return `
-                <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:15px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                        <span style="color:var(--accent); font-weight:bold; font-size:0.9rem;">#${t.id} - ${t.theme || 'عام'}</span>
-                        <span style="color:${st.color}; font-size:0.8rem; border:1px solid ${st.color}; padding:2px 10px; border-radius:12px;">${st.label}</span>
-                    </div>
-                    <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:8px; line-height:1.4;">${preview}${preview.length >= 60 ? '...' : ''}</div>
-                    <div style="font-size:0.75rem; color:rgba(255,255,255,0.35);">${date}</div>
-                </div>`;
-            }).join('');
+            
+            htmlStr += renderGroup('في انتظار الرد', openTickets, '🟠', '#f39c12');
+            htmlStr += renderGroup('قيد المعالجة', inProgress, '🔵', '#3498db');
+            htmlStr += renderGroup('تم الرد (محلولة)', resolved, '🟢', '#2ecc71');
+            
+            list.innerHTML = htmlStr;
         }
+
 
         window.onload = () => { /* Auto-init themes done above */ };
         
