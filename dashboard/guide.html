@@ -41,11 +41,11 @@
             padding: 25px;
             cursor: pointer;
             transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1.1);
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 -8px 20px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
         }
         
         /* State when card is open */
@@ -71,7 +71,7 @@
         }
         
         .card-icon { font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        .card-title { font-size: 1.6rem; font-weight: 800; margin-top: 10px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .card-title { font-size: 1.4rem; font-weight: 800; margin-top: 10px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
         
         .card-content {
             opacity: 0;
@@ -95,14 +95,18 @@
         .card.open .close-card { opacity: 1; pointer-events: auto; }
         
         /* Colors */
-        .card-1 { background: linear-gradient(135deg, #FF416C, #FF4B2B); z-index: 1; }
-        .card-2 { background: linear-gradient(135deg, #1A2980, #26D0CE); z-index: 2; }
-        .card-3 { background: linear-gradient(135deg, #f6d365, #fda085); z-index: 3; color: #222; }
-        .card-3 .close-card { background: rgba(0,0,0,0.1); color: #222; }
+        .card-1 { background: linear-gradient(135deg, #1A2980, #26D0CE); z-index: 1; }
+        .card-2 { background: linear-gradient(135deg, #FF416C, #FF4B2B); z-index: 2; }
+        .card-3 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); z-index: 3; color: #222; }
+        .card-4 { background: linear-gradient(135deg, #f6d365, #fda085); z-index: 4; color: #222; }
+        .card-5 { background: linear-gradient(135deg, #43e97b, #38f9d7); z-index: 5; color: #222; }
+        
+        .card-3 .close-card, .card-4 .close-card, .card-5 .close-card { background: rgba(0,0,0,0.1); color: #222; }
+        .card-3 .card-title, .card-4 .card-title, .card-5 .card-title { text-shadow: none; }
         
         /* Content specific styling */
-        .bullet-point { display: flex; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; }
-        .card-3 .bullet-point { background: rgba(0,0,0,0.05); }
+        .bullet-point { display: flex; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.15); padding: 15px; border-radius: 12px; }
+        .card-3 .bullet-point, .card-4 .bullet-point, .card-5 .bullet-point { background: rgba(0,0,0,0.08); }
         .bullet-icon { font-size: 1.5rem; }
         .bullet-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
         
@@ -146,6 +150,60 @@
         <div class="card card-2" onclick="openCard(this)" data-index="1">
             <div class="card-header">
                 <div>
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">الامتحانات والتقييم</div>
+                </div>
+                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom:20px; font-weight:500;">التقييم المستمر هو مفتاح النجاح. إليك كيف تتم الامتحانات:</p>
+                
+                <div class="bullet-point">
+                    <div class="bullet-icon">🏫</div>
+                    <div class="bullet-text"><strong>المنصة الرسمية</strong>تجرى جميع الامتحانات الرسمية على المنصة المعتمدة لدينا لضمان الشفافية.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">⏳</div>
+                    <div class="bullet-text"><strong>الدورة العادية</strong>يعقد امتحان في نهاية كل فصل دراسي. أمامك أسبوع كامل للإجابة وتسليم المطلوب.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🔄</div>
+                    <div class="bullet-text"><strong>الدورة الاستدراكية</strong>إذا واجهت ظروفاً أو أردت تحسين درجاتك، هناك دورة استدراكية متاحة بشروط.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 3 -->
+        <div class="card card-3" onclick="openCard(this)" data-index="2">
+            <div class="card-header">
+                <div>
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">التقويم الدراسي</div>
+                </div>
+                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom:20px; font-weight:500;">نظم وقتك مع التواريخ والمحطات الرئيسية:</p>
+                
+                <div class="bullet-point">
+                    <div class="bullet-icon">🍂</div>
+                    <div class="bullet-text"><strong>الفصل الأول</strong>يبدأ في شهر سبتمبر وينتهي بمنتصف يناير مع فترة الامتحانات.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🏖️</div>
+                    <div class="bullet-text"><strong>عطلة منتصف العام</strong>أسبوعان من الراحة وتجديد النشاط بين الفصلين.</div>
+                </div>
+                <div class="bullet-point">
+                    <div class="bullet-icon">🌸</div>
+                    <div class="bullet-text"><strong>الفصل الثاني</strong>يبدأ في فبراير ويمتد إلى غاية جوان ليختتم بامتحانات نهاية العام.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card card-4" onclick="openCard(this)" data-index="3">
+            <div class="card-header">
+                <div>
                     <div class="card-icon">📜</div>
                     <div class="card-title">قوانين الأكاديمية</div>
                 </div>
@@ -169,8 +227,8 @@
             </div>
         </div>
         
-        <!-- Card 3 -->
-        <div class="card card-3" onclick="openCard(this)" data-index="2">
+        <!-- Card 5 -->
+        <div class="card card-5" onclick="openCard(this)" data-index="4">
             <div class="card-header">
                 <div>
                     <div class="card-icon">💡</div>
@@ -203,7 +261,7 @@
         window.Telegram.WebApp.expand();
         
         const cards = document.querySelectorAll('.card');
-        const STACK_OFFSET = 70; // Pixels between cards when stacked
+        const STACK_OFFSET = 55; // Pixels between cards when stacked
         
         function applyStackTransforms() {
             cards.forEach((c, idx) => {
