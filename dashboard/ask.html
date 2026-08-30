@@ -344,11 +344,13 @@
         let selectedSubtheme = "";
 
         // Core data logic
-        const themes = [
-            { id: "tech", icon: "⚙️", text: "تقني" },
-            { id: "finance", icon: "💳", text: "مالي" },
-            { id: "course", icon: "📚", text: "دعم الدروس" },
-            { id: "exam", icon: "📝", text: "امتحان" }
+        const themesData = [
+            { text: "تقني", icon: "🛠️", desc: "مشاكل في الدخول، المنصة، أو التطبيق" },
+            { text: "مالي", icon: "💳", desc: "استفسارات حول الدفع والأقساط" },
+            { text: "دعم دراسي", icon: "📚", desc: "أسئلة حول الدروس والمناهج" },
+            { text: "امتحانات", icon: "📝", desc: "مشاكل في الامتحانات والنتائج" },
+            { text: "اقتراحات", icon: "💡", desc: "أفكار لتطوير المنصة" },
+            { text: "خطأ", icon: "🐛", desc: "الإبلاغ عن خطأ أو خلل في النظام" }
         ];
 
         const subthemesData = {

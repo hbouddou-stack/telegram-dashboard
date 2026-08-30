@@ -80,11 +80,13 @@ export function initInboxView(container) {
             <!-- Category / Funnel Chips -->
             <div class="filter-chips-container" id="inbox-chips">
                 <div class="filter-chip active" data-cat="all">الكل</div>
-                <div class="filter-chip urgent-chip" data-cat="urgent">🚨 عاجل</div>
-                <div class="filter-chip" data-cat="tech">⚙️ تقني</div>
+                <div class="filter-chip" data-cat="urgent">🚨 عاجل</div>
+                <div class="filter-chip" data-cat="tech">🛠️ تقني</div>
                 <div class="filter-chip" data-cat="finance">💳 مالي</div>
-                <div class="filter-chip" data-cat="course">📚 دعم الدروس</div>
+                <div class="filter-chip" data-cat="course">📚 دعم</div>
                 <div class="filter-chip" data-cat="exam">📝 امتحان</div>
+                <div class="filter-chip" data-cat="ideas">💡 اقتراحات</div>
+                <div class="filter-chip" data-cat="errors">🐛 أخطاء</div>
             </div>
             
             <div id="tickets-feed" class="feed-container">
@@ -222,6 +224,8 @@ function applyFilters() {
             if (currentCategory === 'finance' && !theme.includes('مالي')) return false;
             if (currentCategory === 'course' && !theme.includes('دعم')) return false;
             if (currentCategory === 'exam' && !theme.includes('امتحان')) return false;
+            if (currentCategory === 'ideas' && !theme.includes('اقتراح')) return false;
+            if (currentCategory === 'errors' && !theme.includes('خطأ')) return false;
         }
         
         // Search Filter
@@ -555,7 +559,8 @@ async function sendBulkReply() {
 window.assignTicket = async function(id) {
     const t = allTickets.find(t => t.id.toString() === id.toString());
     if(t) {
-        t.assigned_to = window.adminId || 'Moi'; // In reality we'd get the actual admin name
+        const adminName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'الأدمن';
+        t.assigned_to = adminName;
         // Simulate API call
         // fetch('/admin/assign-ticket', { method: 'POST', body: ... })
         openTicket(id); // Re-render chat context
