@@ -1,13 +1,13 @@
-// app.js - Main Router and App Controller
 import { initInboxView } from './views/inbox.js';
 import { initStudentsView } from './views/students.js';
+import { initStatsView } from './views/stats.js';
 
 class AppRouter {
     constructor() {
         this.routes = {
             'inbox': this.loadInbox.bind(this),
             'students': this.loadStudents.bind(this),
-            'stats': this.loadPlaceholder.bind(this, '📊 الإحصائيات قريباً...'),
+            'stats': this.loadStats.bind(this),
             'faq': this.loadPlaceholder.bind(this, '🧠 مدير الذكاء الاصطناعي والأسئلة الشائعة قريباً...'),
             'settings': this.loadPlaceholder.bind(this, '⚙️ الإعدادات والصلاحيات قريباً...')
         };
@@ -70,6 +70,10 @@ class AppRouter {
     
     loadStudents(container) {
         initStudentsView(container);
+    }
+    
+    loadStats(container) {
+        initStatsView(container);
     }
 
     toggleSidebar() {
