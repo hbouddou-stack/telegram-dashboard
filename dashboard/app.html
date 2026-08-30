@@ -496,6 +496,153 @@
             </style>
         </div>
 
+        <!-- ==================== MESSAGES TAB (INBOX) ==================== -->
+        <div id="tab-messages" class="tab-view" style="padding: 24px 24px 100px 24px;">
+            <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="font-size: 28px;">Messages</h1>
+                    <p style="color: var(--text-muted); font-size: 15px; margin-top: 4px;">Tes conversations avec le support.</p>
+                </div>
+                <button onclick="document.getElementById('new-ticket-modal').style.display='flex'" style="background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.3); transition: 0.2s;">
+                    + Nouveau
+                </button>
+            </div>
+
+            <!-- List of Tickets -->
+            <div class="ticket-list" style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+                
+                <!-- Mock Ticket Item -->
+                <div class="ticket-card" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: transform 0.2s;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="background: rgba(16, 185, 129, 0.2); color: var(--accent); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;">Résolu</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">Il y a 2 jours</span>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 16px; margin-bottom: 4px;">Problème d'accès au module 2</h3>
+                        <p style="font-size: 14px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bonjour, je n'arrive pas à ouvrir la vidéo du chapitre 2, ça tourne en boucle...</p>
+                    </div>
+                </div>
+
+                <!-- Mock Ticket Item 2 (Waiting for admin) -->
+                <div class="ticket-card" style="background: var(--bg-glass); border: 1px solid var(--primary); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; position: relative;">
+                    <div style="position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; background: #ef4444; border-radius: 50%; border: 2px solid var(--bg-base); animation: pulse 2s infinite;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="background: rgba(59, 130, 246, 0.2); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;">Nouvelle réponse</span>
+                        <span style="font-size: 12px; color: var(--text-muted);">Aujourd'hui, 14:30</span>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 16px; margin-bottom: 4px;">Question sur la méthode Pomodoro</h3>
+                        <p style="font-size: 14px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">L'admin a répondu à votre question.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- NEW TICKET MODAL -->
+        <div id="new-ticket-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 20px;">
+            <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 24px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 24px 48px rgba(0,0,0,0.5); animation: slideUp 0.3s ease-out;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 style="font-size: 20px;">Poser une question</h2>
+                    <button onclick="document.getElementById('new-ticket-modal').style.display='none'" style="background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                
+                <form id="newTicketForm" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Catégorie</label>
+                        <select id="ticket-category" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); border-radius: 12px; color: var(--text-main); font-size: 15px; outline: none;">
+                            <option value="cours">Question sur le cours</option>
+                            <option value="technique">Problème technique</option>
+                            <option value="autre">Autre problème</option>
+                        </select>
+                    </div>
+
+                    <div id="ticket-title-container" style="display: none;">
+                        <label style="display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Sujet (Titre)</label>
+                        <input type="text" id="ticket-title" placeholder="Ex: Impossible d'accéder au PDF" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); border-radius: 12px; color: var(--text-main); font-size: 15px; outline: none;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Votre question</label>
+                        <textarea id="ticket-content" rows="5" placeholder="Décrivez votre problème en détail..." style="width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); border-radius: 12px; color: var(--text-main); font-size: 15px; outline: none; resize: none; font-family: inherit;"></textarea>
+                        
+                        <!-- RAG Deflection Zone (Placeholder for Step 3) -->
+                        <div id="rag-suggestions" style="display: none; margin-top: 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); padding: 12px; border-radius: 12px;">
+                            <span style="font-size: 12px; color: var(--primary); font-weight: 600;">💡 Ces articles pourraient vous aider :</span>
+                            <div id="rag-results" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px dashed var(--text-muted); border-radius: 12px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                            📎 <span id="file-name-display">Joindre un fichier (Optionnel)</span>
+                            <input type="file" id="ticket-file" style="display: none;" onchange="document.getElementById('file-name-display').innerText = this.files[0].name">
+                        </label>
+                    </div>
+
+                    <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 8px 16px rgba(59,130,246,0.3);">
+                        Envoyer le message
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // Conditional title field for "Autre"
+            document.getElementById('ticket-category').addEventListener('change', (e) => {
+                const titleContainer = document.getElementById('ticket-title-container');
+                if (e.target.value === 'autre') {
+                    titleContainer.style.display = 'block';
+                    document.getElementById('ticket-title').required = true;
+                } else {
+                    titleContainer.style.display = 'none';
+                    document.getElementById('ticket-title').required = false;
+                }
+            });
+
+            // Form submission
+            document.getElementById('newTicketForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                btn.innerText = 'Envoi...';
+                btn.disabled = true;
+
+                const formData = new FormData();
+                formData.append('category', document.getElementById('ticket-category').value);
+                formData.append('title', document.getElementById('ticket-title').value);
+                formData.append('content', document.getElementById('ticket-content').value);
+                
+                const fileInput = document.getElementById('ticket-file');
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+
+                try {
+                    const response = await fetch('/api/tickets/create', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert("Ticket créé ! L'équipe te répondra bientôt.");
+                        document.getElementById('new-ticket-modal').style.display = 'none';
+                        e.target.reset();
+                        document.getElementById('file-name-display').innerText = 'Joindre un fichier (Optionnel)';
+                        document.getElementById('ticket-title-container').style.display = 'none';
+                    } else {
+                        alert("Erreur: " + (data.message || data.error));
+                    }
+                } catch(err) {
+                    console.error(err);
+                    alert("Erreur de connexion au serveur.");
+                } finally {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            });
+        </script>
+
         <!-- ==================== FAQ TAB ==================== -->
         <div id="tab-faq" class="tab-view" style="padding: 24px 24px 100px 24px;">
             <div class="header">
@@ -656,9 +803,15 @@
             <span class="nav-label">Accueil</span>
             <div class="nav-indicator"></div>
         </a>
+        <a href="#" class="nav-item" onclick="switchTab('messages', this)" style="position: relative;">
+            <div style="position: absolute; top: 10px; right: 16px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid var(--bg-base);"></div>
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Inbox</span>
+            <div class="nav-indicator"></div>
+        </a>
         <a href="#" class="nav-item" onclick="switchTab('ai', this)">
             <span class="nav-icon">🤖</span>
-            <span class="nav-label">Oswah AI</span>
+            <span class="nav-label">Oswah</span>
             <div class="nav-indicator"></div>
         </a>
         <a href="#" class="nav-item" onclick="switchTab('faq', this)">

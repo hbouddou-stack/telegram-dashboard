@@ -4801,6 +4801,51 @@ async def api_login(request: web.Request):
 async def handle_login(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'login.html'))
 
+async def api_tickets_create(request: web.Request):
+    try:
+        reader = await request.multipart()
+        category = ''
+        title = ''
+        content = ''
+        filename = None
+        
+        upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        while True:
+            field = await reader.next()
+            if field is None:
+                break
+            
+            if field.name == 'category':
+                category = (await field.read()).decode('utf-8')
+            elif field.name == 'title':
+                title = (await field.read()).decode('utf-8')
+            elif field.name == 'content':
+                content = (await field.read()).decode('utf-8')
+            elif field.name == 'file':
+                filename = field.filename
+                if filename:
+                    # Secure filename
+                    import uuid
+                    filename = str(uuid.uuid4())[:8] + "_" + filename.replace("/", "").replace("\\", "")
+                    file_path = os.path.join(upload_dir, filename)
+                    with open(file_path, 'wb') as f:
+                        while True:
+                            chunk = await field.read_chunk()
+                            if not chunk:
+                                break
+                            f.write(chunk)
+        
+        return web.json_response({
+            'success': True, 
+            'message': 'Ticket créé avec succès.',
+            'attachment': filename
+        })
+    except Exception as e:
+        import traceback
+        return web.json_response({'success': False, 'error': str(e), 'trace': traceback.format_exc()}, status=500)
+
 async def start_web_server(bot: Bot):
     app = web.Application(middlewares=[cors_middleware])
     app['bot'] = bot
@@ -4810,6 +4855,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/link.html', handle_link)
     app.router.add_get('/login.html', handle_login)
     app.router.add_post('/api/login', api_login)
+    app.router.add_post('/api/tickets/create', api_tickets_create)
     
     async def handle_tuto(request):
         html_path = os.path.join(DASHBOARD_DIR, 'tuto.html')
