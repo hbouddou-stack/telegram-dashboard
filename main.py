@@ -4784,9 +4784,7 @@ async def api_support(request):
         
         db_msg = msg
         if file_name:
-            db_msg = msg + f"
-
-[مرفق: {file_name}]"
+            db_msg = msg + f"\n\n[مرفق: {file_name}]"
             
         ticket_id = await db.create_crm_ticket(
             telegram_id=telegram_id,
@@ -4803,22 +4801,12 @@ async def api_support(request):
         if not auto_resolved:
             import requests
             from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
-            text = f'🆘 <b>طلب مساعدة / استفسار جديد #{ticket_id}</b>
-
-'
-            text += f'👤 <b>الطالب:</b> {first_name} (@{username})
-'
-            text += f'🆔 <b>Telegram ID:</b> {telegram_id}
-'
-            text += f'📂 <b>القسم:</b> {theme}
-'
-            text += f'🔖 <b>التفاصيل:</b> {subtheme}
-
-'
-            text += f'📝 <b>الرسالة:</b>
-{msg}
-
-'
+            text = f'🆘 <b>طلب مساعدة / استفسار جديد #{ticket_id}</b>\n\n'
+            text += f'👤 <b>الطالب:</b> {first_name} (@{username})\n'
+            text += f'🆔 <b>Telegram ID:</b> {telegram_id}\n'
+            text += f'📂 <b>القسم:</b> {theme}\n'
+            text += f'🔖 <b>التفاصيل:</b> {subtheme}\n\n'
+            text += f'📝 <b>الرسالة:</b>\n{msg}\n\n'
             text += f'🔗 للرد، يرجى الدخول إلى لوحة التحكم (Admin Dashboard /federer).'
             
             url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
