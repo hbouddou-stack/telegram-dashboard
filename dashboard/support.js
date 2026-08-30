@@ -2,53 +2,53 @@
 let allTickets = [];
 let filteredTickets = [];
 let currentStatus = 'Nouveau'; 
-let currentCategory = 'all'; // all, urgent, tech, aqida, fiqh, sira
+let currentCategory = 'all'; // all, urgent, tech, finance, course, exam
 let adminId = null;
 let activeTicketId = null;
 
 // Fake Data for demonstration
 const mockTickets = [
     {
-        id: 'mock_1',
+        id: '1051',
         first_name: 'أحمد',
         theme: 'تقني',
         subtheme: 'مشكلة في الدخول',
-        text: 'السلام عليكم، لم أستطع الدخول إلى حسابي منذ الأمس، تظهر لي رسالة خطأ، الرجاء المساعدة بسرعة!',
+        text: 'السلام عليكم، لم أستطع الدخول إلى حسابي منذ الأمس، تظهر لي رسالة خطأ.',
         status: 'Nouveau',
-        timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 mins ago
+        timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
         is_urgent: true,
         rag_history: 'حاولت مساعدة الطالب بإرسال رابط استعادة كلمة المرور لكنه أصر على التحدث مع مشرف.'
     },
     {
-        id: 'mock_2',
-        first_name: 'سارة',
-        theme: 'الفقه',
-        subtheme: 'سؤال في باب الطهارة',
-        text: 'هل يجوز المسح على الجوارب الرقيقة؟ وجدت اختلافاً في التفريغ ولم أفهم جيداً.',
+        id: '1052',
+        first_name: 'ياسر',
+        theme: 'مالي',
+        subtheme: 'تأكيد الدفع',
+        text: 'لقد قمت بتحويل الرسوم عبر البنك، أين أرسل الإيصال؟',
         status: 'Nouveau',
-        timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 mins ago
-        is_urgent: false,
-        rag_history: 'تم تقديم إجابة من ملخص الطهارة: يجوز المسح بشروط (مذكورة في التفريغ ص14).'
-    },
-    {
-        id: 'mock_3',
-        first_name: 'محمد',
-        theme: 'العقيدة',
-        subtheme: 'الأسماء والصفات',
-        text: 'الشيخ ذكر مسألة في الدرس الثاني حول توحيد الأسماء والصفات، هل ممكن توضيح إضافي؟',
-        status: 'En cours',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+        timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
         is_urgent: false,
         rag_history: null
     },
     {
-        id: 'mock_4',
+        id: '1053',
+        first_name: 'محمد',
+        theme: 'دعم الدروس',
+        subtheme: 'نقص في ملف PDF',
+        text: 'ملف التفريغ للدرس الثالث لا يفتح معي، هل يمكنكم إعادة رفعه؟',
+        status: 'En cours',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+        is_urgent: false,
+        rag_history: null
+    },
+    {
+        id: '1054',
         first_name: 'فاطمة',
-        theme: 'السيرة',
-        subtheme: 'غزوة بدر',
-        text: 'شكراً لكم، تم حل المشكلة وفهمت الدرس جيداً بفضل الله ثم بفضلكم.',
+        theme: 'امتحان',
+        subtheme: 'موعد الاختبار النهائي',
+        text: 'شكراً لكم، تم حل المشكلة وفهمت المطلوب.',
         status: 'Résolu',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
         is_urgent: false,
         rag_history: null
     }
@@ -127,9 +127,9 @@ function applyFilters() {
             const theme = t.theme ? t.theme.toLowerCase() : '';
             if (currentCategory === 'urgent' && !t.is_urgent) return false;
             if (currentCategory === 'tech' && !theme.includes('تقني')) return false;
-            if (currentCategory === 'aqida' && !theme.includes('عقيد')) return false;
-            if (currentCategory === 'fiqh' && !theme.includes('فقه')) return false;
-            if (currentCategory === 'sira' && !theme.includes('سير')) return false;
+            if (currentCategory === 'finance' && !theme.includes('مالي')) return false;
+            if (currentCategory === 'course' && !theme.includes('دعم')) return false;
+            if (currentCategory === 'exam' && !theme.includes('امتحان')) return false;
         }
         
         return true;
@@ -164,6 +164,11 @@ function renderFeed() {
         const initial = name.charAt(0);
         const avatarClass = getAvatarBg(name);
         
+        // Generate a display ID (pad short IDs)
+        let displayId = t.id ? t.id.toString() : Math.floor(Math.random() * 1000).toString();
+        if (displayId.length < 4 && !displayId.startsWith('mock_')) displayId = displayId.padStart(4, '0');
+        displayId = displayId.replace('mock_', '');
+        
         const urgentTag = t.is_urgent ? '<span class="tag tag-urgent">🚨 عاجل</span>' : '';
         const themeTag = t.theme ? `<span class="tag tag-subject">${t.theme}</span>` : '';
         
@@ -172,7 +177,7 @@ function renderFeed() {
                 <div class="ticket-avatar ${avatarClass}">${initial}</div>
                 <div class="ticket-content">
                     <div class="ticket-header">
-                        <span class="ticket-author">${name}</span>
+                        <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#${displayId}</span></span>
                         <span class="ticket-time">${formatTime(t.timestamp)}</span>
                     </div>
                     <div class="ticket-tags">
@@ -191,8 +196,11 @@ function openTicket(id) {
     if (!ticket) return;
     activeTicketId = id;
     
+    let displayId = id.toString().replace('mock_', '');
+    if (displayId.length < 4) displayId = displayId.padStart(4, '0');
+    
     const name = ticket.first_name || 'طالب';
-    document.getElementById('chat-title').innerText = name;
+    document.getElementById('chat-title').innerHTML = `${name} <span style="color:var(--gold); font-size:0.8rem;">#${displayId}</span>`;
     document.getElementById('chat-header-avatar').innerText = name.charAt(0);
     document.getElementById('chat-header-avatar').className = `chat-avatar ${getAvatarBg(name)}`;
     
