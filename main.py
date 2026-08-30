@@ -4621,6 +4621,34 @@ async def api_admin_get_tickets(request):
             pass
     return web.json_response({'tickets': tickets})
 
+async def api_admin_get_students(request):
+    import os, json
+    from aiohttp import web
+    tickets_file = os.path.join(os.path.dirname(__file__), 'tickets_db.json')
+    students = {}
+    if os.path.exists(tickets_file):
+        try:
+            with open(tickets_file, 'r', encoding='utf-8') as f:
+                tickets = json.load(f)
+                for t in tickets:
+                    tid = str(t.get('telegram_id', 'unknown'))
+                    if tid not in students:
+                        students[tid] = {
+                            'telegram_id': tid,
+                            'name': t.get('first_name') or t.get('username') or 'طالب',
+                            'last_active': t.get('timestamp'),
+                            'tickets_count': 1,
+                            'total_paid': 'غير متوفر'
+                        }
+                    else:
+                        students[tid]['tickets_count'] += 1
+                        if t.get('timestamp') and t.get('timestamp') > students[tid]['last_active']:
+                            students[tid]['last_active'] = t.get('timestamp')
+        except Exception as e:
+            print("Error loading students:", e)
+    
+    return web.json_response({'students': list(students.values())})
+
 async def api_support(request):
     try:
         data = await request.json()
@@ -4755,6 +4783,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/ask', handle_support)
     app.router.add_post('/api/support/rag_check', api_support_rag_check)
     app.router.add_get('/api/admin/tickets', api_admin_get_tickets)
+    app.router.add_get('/api/admin/students', api_admin_get_students)
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)

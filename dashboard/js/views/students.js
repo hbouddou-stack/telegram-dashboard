@@ -33,7 +33,23 @@ export function initStudentsView(container) {
         renderStudents(e.target.value);
     });
 
-    renderStudents();
+    loadStudentsData();
+}
+
+async function loadStudentsData() {
+    const list = document.getElementById('students-list');
+    list.innerHTML = '<div class="loading-state" style="text-align:center; padding: 40px; color: var(--text-muted);"><div class="spinner"></div><p>جاري تحميل سجل الطلاب...</p></div>';
+    
+    try {
+        const res = await fetch('/api/admin/students');
+        const data = await res.json();
+        studentsData = data.students || [];
+        studentsData = studentsData.sort((a, b) => new Date(b.last_active) - new Date(a.last_active));
+        renderStudents();
+    } catch (e) {
+        console.warn("API Error, using mock data for students", e);
+        renderStudents();
+    }
 }
 
 function renderStudents(query = '') {
