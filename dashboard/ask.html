@@ -127,12 +127,34 @@
         .faq-vote-btn:hover { background: rgba(255,255,255,0.1); }
         .faq-vote-btn.voted-yes { background: rgba(46,204,113,0.2); border-color: #2ecc71; color: #2ecc71; }
         .faq-vote-btn.voted-no { background: rgba(231,76,60,0.2); border-color: #e74c3c; color: #e74c3c; }
+    
+        /* NEW STYLES */
+        body { padding-bottom: 90px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(20px); border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-btn { background: transparent; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 20%; height: 100%; cursor: pointer; transition: all 0.3s; font-family: 'Tajawal', sans-serif; }
+        .nav-btn.active { color: #3b82f6; }
+        .nav-btn .icon { font-size: 24px; margin-bottom: 4px; transition: transform 0.3s; }
+        .nav-btn.active .icon { transform: translateY(-3px) scale(1.1); }
+        .nav-btn span:last-child { font-size: 11px; font-weight: 700; }
+        .fab { position: fixed; bottom: 100px; left: 20px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 28px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 999; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.95); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); }
+        .modal-content { background: #000b29; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+        .modal-close { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 100px); padding-bottom: 20px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+        .message-bubble { padding: 12px 16px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 15px; }
+        .msg-user { align-self: flex-start; background: #ffffff; color: #1e0033; border-bottom-left-radius: 4px; }
+        .msg-ai { align-self: flex-end; background: rgba(255,255,255,0.05); color: #ffffff; border-bottom-right-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        .chat-input-bar { display: flex; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 24px; margin-top: 10px; }
+        .chat-input-bar input { flex: 1; background: transparent; border: none; color: #ffffff; font-family: 'Tajawal'; font-size: 15px; outline: none; }
+        .chat-input-bar button { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; }
+
     </style>
 </head>
 <body>
     <div class="container" id="app-container">
-        <div class="tabs-container">
-            <div class="tab-btn active" onclick="switchTab('new')" id="tabnew-btn">&#9993; الدعم الفني</div>
+        
             <div class="tab-btn" onclick="switchTab('faq')" id="tabfaq-btn">&#128218; الأسئلة الشائعة</div>
             <div class="tab-btn" onclick="switchTab('inbox')" id="tabinbox-btn">&#128229; رسائلي</div>
         </div>
@@ -148,54 +170,6 @@
         </div>
 
         <!-- NEW TICKET TAB -->
-        <div class="tab-content active" id="tab-new">
-            <div id="support-form">
-                <div class="header">
-                    <div class="header-icon">&#129302;</div>
-                    <h1>مركز الدعم الذكي</h1>
-                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
-                    <div class="step-indicator">
-                        <div class="dot active" id="dot-1"></div>
-                        <div class="dot" id="dot-2"></div>
-                        <div class="dot" id="dot-3"></div>
-                    </div>
-                </div>
-                <div class="step-container active" id="step-1">
-                    <div class="grid-cards" id="theme-grid"></div>
-                </div>
-                <div class="step-container" id="step-2">
-                    <div class="grid-cards" id="subtheme-grid"></div>
-                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
-                </div>
-                <div class="step-container" id="step-3">
-                    <div class="input-group">
-                        <label>اشرح مشكلتك بالتفصيل:</label>
-                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
-                    </div>
-                    <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
-                    <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
-                </div>
-                <div class="step-container" id="step-4">
-                    <div class="rag-box">
-                        <div class="rag-title">&#128161; المساعد الذكي يقترح:</div>
-                        <div class="rag-answer" id="rag-answer-text"></div>
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-success" onclick="resolveTicket()">&#9989; نعم، شكراً</button>
-                            <button class="btn-danger" onclick="escalateTicket()">&#10060; لا، أريد التحدث لمدير</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="success-screen" id="success-screen">
-                <div class="icon">&#9989;</div>
-                <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
-                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
-                <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
-            </div>
-        </div>
-
         <!-- FAQ TAB -->
         <div class="tab-content" id="tab-faq">
             <div class="header" style="margin-bottom:15px;">
@@ -210,7 +184,7 @@
         </div>
 
         <!-- INBOX TAB -->
-        <div class="tab-content" id="tab-inbox">
+        <div class="tab-content active" id="tab-inbox">
             <div class="header">
                 <h1 style="font-size:1.5rem;">&#128229; تذاكري السابقة</h1>
                 <p class="subtitle">تتبع حالة استفساراتك وردود الإدارة</p>
@@ -219,7 +193,77 @@
                 <div style="text-align:center; color:var(--text-2); padding: 30px;">جارِ التحميل...</div>
             </div>
         </div>
+    
+        <!-- AI TAB -->
+        <div class="tab-content" id="tab-ai">
+            <div class="header">
+                <h1 style="font-size:1.5rem;">&#129302; المساعد الذكي</h1>
+                <p class="subtitle">تحدث معي، أنا هنا لمساعدتك</p>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="ai-messages">
+                    <div class="message-bubble msg-ai">أهلاً بك! أنا المساعد الذكي، كيف يمكنني مساعدتك اليوم؟</div>
+                </div>
+                <div class="chat-input-bar">
+                    <input type="text" id="ai-input" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key === 'Enter') sendAiMessage()" />
+                    <button onclick="sendAiMessage()">&#10148;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div class="tab-content" id="tab-settings">
+            <div class="header" style="margin-bottom:20px;">
+                <h1 style="font-size:1.5rem;">&#9881; الإعدادات</h1>
+                <p class="subtitle">تخصيص تجربتك</p>
+            </div>
+            
+            <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:15px;">
+                    <div>
+                        <div style="font-weight:bold;">الوضع الليلي</div>
+                        <div style="font-size:0.85rem; color:#b3a5c7;">لإراحة عينيك في الليل</div>
+                    </div>
+                    <label class="switch" style="position:relative; display:inline-block; width:40px; height:24px;">
+                        <input type="checkbox" id="dark-mode-toggle" style="opacity:0; width:0; height:0;" onchange="toggleDarkMode(this)">
+                        <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:rgba(255,255,255,0.2); transition:.4s; border-radius:24px;"></span>
+                        <span id="dark-mode-knob" style="position:absolute; content:''; height:16px; width:16px; left:4px; bottom:4px; background-color:white; transition:.4s; border-radius:50%;"></span>
+                    </label>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:bold;">تنبيهات المراجعة</div>
+                        <div style="font-size:0.85rem; color:#b3a5c7;">استقبال تذكيرات ذكية</div>
+                    </div>
+                    <label class="switch" style="position:relative; display:inline-block; width:40px; height:24px;">
+                        <input type="checkbox" checked style="opacity:0; width:0; height:0;">
+                        <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#8736ff; transition:.4s; border-radius:24px;"></span>
+                        <span style="position:absolute; content:''; height:16px; width:16px; left:20px; bottom:4px; background-color:white; transition:.4s; border-radius:50%;"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn" onclick="window.location.href='/reader.html'">
+            <span class="icon">🏠</span><span>الرئيسية</span>
+        </button>
+        <button class="nav-btn active" id="btn-nav-inbox" onclick="switchTab('inbox', this)">
+            <span class="icon">✉️</span><span>الرسائل</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-ai" onclick="switchTab('ai', this)">
+            <span class="icon">🤖</span><span>المساعد الذكي</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-faq" onclick="switchTab('faq', this)">
+            <span class="icon">❓</span><span>الأسئلة الشائعة</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-settings" onclick="switchTab('settings', this)">
+            <span class="icon">⚙️</span><span>الإعدادات</span>
+        </button>
+    </nav>
 
     <script src="bot-config.js"></script>
     <script>
@@ -387,21 +431,65 @@
         }
 
         // Tabs Logic
-        function switchTab(tabName) {
+        
+        function switchTab(tabName, btnEl) {
             trackAnalytics('tab_click', '', false, tabName);
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            if (tabName === 'new') {
-                document.getElementById('tabnew-btn').classList.add('active');
-                document.getElementById('tab-new').classList.add('active');
-            } else if (tabName === 'faq') {
-                document.getElementById('tabfaq-btn').classList.add('active');
-                document.getElementById('tab-faq').classList.add('active');
-                loadStudentFaq();
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const targetTab = document.getElementById('tab-' + tabName);
+            if (targetTab) targetTab.classList.add('active');
+            
+            if (btnEl) btnEl.classList.add('active');
+            else {
+                const targetBtn = document.getElementById('btn-nav-' + tabName);
+                if (targetBtn) targetBtn.classList.add('active');
+            }
+            
+            if (tabName === 'faq') loadStudentFaq();
+            if (tabName === 'inbox') loadStudentTickets();
+        }
+
+        function openTicketModal() { document.getElementById('new-ticket-modal').style.display = 'flex'; goToStep(1); }
+        function closeTicketModal() { document.getElementById('new-ticket-modal').style.display = 'none'; }
+        
+        async function sendAiMessage() {
+            const input = document.getElementById('ai-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            const container = document.getElementById('ai-messages');
+            container.innerHTML += <div class="message-bubble msg-user"></div>;
+            input.value = '';
+            container.innerHTML += <div class="message-bubble msg-ai" id="ai-loading">...</div>;
+            container.scrollTop = container.scrollHeight;
+            try {
+                const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+                const res = await fetch(${BOT_BASE}/api/chat, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: msg, user_id: tid, context: "ask_html_bot" })
+                });
+                document.getElementById('ai-loading').remove();
+                if (res.ok) {
+                    const data = await res.json();
+                    container.innerHTML += <div class="message-bubble msg-ai"></div>;
+                } else {
+                    container.innerHTML += <div class="message-bubble msg-ai" style="color:#e74c3c">حدث خطأ في الاتصال.</div>;
+                }
+            } catch (e) {
+                document.getElementById('ai-loading')?.remove();
+                container.innerHTML += <div class="message-bubble msg-ai" style="color:#e74c3c">حدث خطأ. حاول مرة أخرى.</div>;
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleDarkMode(cb) {
+            const knob = document.getElementById('dark-mode-knob');
+            if (cb.checked) {
+                document.documentElement.style.setProperty('--bg', 'linear-gradient(135deg, #111 0%, #000 100%)');
+                knob.style.left = '20px'; knob.parentElement.style.backgroundColor = '#8736ff';
             } else {
-                document.getElementById('tabinbox-btn').classList.add('active');
-                document.getElementById('tab-inbox').classList.add('active');
-                loadStudentTickets();
+                document.documentElement.style.setProperty('--bg', 'linear-gradient(135deg, #1e0033 0%, #000b29 100%)');
+                knob.style.left = '4px'; knob.parentElement.style.backgroundColor = 'rgba(255,255,255,0.2)';
             }
         }
 
@@ -650,5 +738,57 @@
         }
         setTimeout(initLiveRadarPing, 1000);
     </script>
+
+    <div class="modal-overlay" id="new-ticket-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeTicketModal()">✕</button>
+            <div id="support-form">
+                <div class="header">
+                    <div class="header-icon">&#129302;</div>
+                    <h1>مركز الدعم الذكي</h1>
+                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
+                    <div class="step-indicator">
+                        <div class="dot active" id="dot-1"></div>
+                        <div class="dot" id="dot-2"></div>
+                        <div class="dot" id="dot-3"></div>
+                    </div>
+                </div>
+                <div class="step-container active" id="step-1">
+                    <div class="grid-cards" id="theme-grid"></div>
+                </div>
+                <div class="step-container" id="step-2">
+                    <div class="grid-cards" id="subtheme-grid"></div>
+                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-3">
+                    <div class="input-group">
+                        <label>اشرح مشكلتك بالتفصيل:</label>
+                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
+                    </div>
+                    <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
+                    <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-4">
+                    <div class="rag-box">
+                        <div class="rag-title">&#128161; المساعد الذكي يقترح:</div>
+                        <div class="rag-answer" id="rag-answer-text"></div>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-success" onclick="resolveTicket()">&#9989; نعم، شكراً</button>
+                            <button class="btn-danger" onclick="escalateTicket()">&#10060; لا، أريد التحدث لمدير</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="success-screen" id="success-screen">
+                <div class="icon">&#9989;</div>
+                <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
+                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
+                <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
