@@ -5,6 +5,7 @@ let allTickets = [];
 let filteredTickets = [];
 let currentStatus = 'Nouveau'; 
 let currentCategory = 'all';
+let searchQuery = '';
 let activeTicketId = null;
 let selectedTickets = new Set();
 
@@ -15,9 +16,11 @@ const mockTickets = [
         theme: 'تقني',
         subtheme: 'مشكلة في الدخول',
         text: 'السلام عليكم، لم أستطع الدخول إلى حسابي منذ الأمس، تظهر لي رسالة خطأ.',
+        text: 'السلام عليكم، لم أستطع الدخول إلى حسابي منذ الأمس، تظهر لي رسالة خطأ.',
         status: 'Nouveau',
         timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
         is_urgent: true,
+        ai_topic: 'تسجيل الدخول',
         rag_history: 'حاولت مساعدة الطالب بإرسال رابط استعادة كلمة المرور لكنه أصر على التحدث مع مشرف.'
     },
     {
@@ -69,6 +72,11 @@ export function initInboxView(container) {
                 <button class="btn-icon" id="btn-refresh-inbox" aria-label="تحديث">🔄</button>
             </header>
             
+            <!-- Search Bar -->
+            <div class="search-bar-container">
+                <input type="search" class="search-input" id="ticket-search" placeholder="🔍 ابحث عن اسم، تذكرة، أو كلمة مفتاحية...">
+            </div>
+
             <!-- Category / Funnel Chips -->
             <div class="filter-chips-container" id="inbox-chips">
                 <div class="filter-chip active" data-cat="all">الكل</div>
@@ -156,13 +164,19 @@ export function initInboxView(container) {
     window.reassignTicket = reassignTicket;
     window.triggerAttach = triggerAttach;
     
-    // Bulk Actions
+    // Bulk Actions & Search
     window.toggleTicketSelection = toggleTicketSelection;
     window.clearBulkSelection = clearBulkSelection;
     window.openBulkReply = openBulkReply;
     window.closeBulkReply = closeBulkReply;
     window.sendBulkReply = sendBulkReply;
     window.assignTicket = assignTicket;
+    window.filterByAICluster = filterByAICluster;
+
+    document.getElementById('ticket-search').addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase();
+        applyFilters();
+    });
 
     loadTickets();
 }
@@ -193,21 +207,27 @@ async function loadTickets() {
 
 function applyFilters() {
     filteredTickets = allTickets.filter(t => {
-        // Status Check
+        // Status filter
         let s = t.status || 'Nouveau';
         if (s === 'pending') s = 'Nouveau';
         if (s === 'En cours de traitement' || s === 'En cours') s = 'En cours';
         if (s === 'Déjà traité' || s === 'resolved' || s === 'Résolu') s = 'Résolu';
         if (s !== currentStatus) return false;
         
-        // Category Check
+        // Category filter
         if (currentCategory !== 'all') {
-            const theme = t.theme ? t.theme.toLowerCase() : '';
+            const theme = (t.theme || '').toLowerCase();
             if (currentCategory === 'urgent' && !t.is_urgent) return false;
             if (currentCategory === 'tech' && !theme.includes('تقني')) return false;
             if (currentCategory === 'finance' && !theme.includes('مالي')) return false;
             if (currentCategory === 'course' && !theme.includes('دعم')) return false;
             if (currentCategory === 'exam' && !theme.includes('امتحان')) return false;
+        }
+        
+        // Search Filter
+        if (searchQuery) {
+            const searchStr = `${t.first_name || ''} ${t.text || ''} ${t.subtheme || ''} ${t.ai_topic || ''}`.toLowerCase();
+            if (!searchStr.includes(searchQuery)) return false;
         }
         
         return true;
@@ -252,6 +272,7 @@ function renderFeed() {
         
         const urgentTag = t.is_urgent ? '<span class="tag tag-urgent">🚨 عاجل</span>' : '';
         const themeTag = t.theme ? `<span class="tag tag-subject">${t.theme}</span>` : '';
+        const aiClusterTag = t.ai_topic ? `<span class="tag tag-ai" onclick="filterByAICluster(event, '${t.ai_topic}')">🤖 ${t.ai_topic}</span>` : '';
         const attachmentIcon = (t.has_attachment || t.photo || t.document || t.voice || t.video || t.file_id) ? '<span style="font-size: 0.8rem; margin-right: 5px;" title="يوجد مرفق">📎</span>' : '';
         const isSelected = selectedTickets.has(t.id.toString()) ? 'checked' : '';
         const cardBgClass = avatarClass.replace('avatar-', 'card-');
@@ -273,6 +294,7 @@ function renderFeed() {
                     <div class="ticket-tags">
                         ${urgentTag}
                         ${themeTag}
+                        ${aiClusterTag}
                     </div>
                     <div class="ticket-preview">${t.subtheme || t.text || '...'}</div>
                 </div>
@@ -538,5 +560,15 @@ window.assignTicket = async function(id) {
         // fetch('/admin/assign-ticket', { method: 'POST', body: ... })
         openTicket(id); // Re-render chat context
         applyFilters(); // Re-render feed
+    }
+}
+
+window.filterByAICluster = function(e, topic) {
+    e.stopPropagation();
+    const searchInput = document.getElementById('ticket-search');
+    if (searchInput) {
+        searchInput.value = topic;
+        searchQuery = topic.toLowerCase();
+        applyFilters();
     }
 }
