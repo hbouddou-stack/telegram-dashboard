@@ -162,6 +162,7 @@ export function initInboxView(container) {
     window.openBulkReply = openBulkReply;
     window.closeBulkReply = closeBulkReply;
     window.sendBulkReply = sendBulkReply;
+    window.assignTicket = assignTicket;
 
     loadTickets();
 }
@@ -224,7 +225,11 @@ function getAvatarBg(name) {
 function formatTime(isoString) {
     if (!isoString) return '';
     const date = new Date(isoString);
-    return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    const day = date.getDate();
+    const month = date.toLocaleString('fr-FR', { month: 'short' });
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${day} ${month}, ${hours}h${minutes}`;
 }
 
 function renderFeed() {
@@ -249,14 +254,20 @@ function renderFeed() {
         const themeTag = t.theme ? `<span class="tag tag-subject">${t.theme}</span>` : '';
         const attachmentIcon = (t.has_attachment || t.photo || t.document || t.voice || t.video || t.file_id) ? '<span style="font-size: 0.8rem; margin-right: 5px;" title="يوجد مرفق">📎</span>' : '';
         const isSelected = selectedTickets.has(t.id.toString()) ? 'checked' : '';
+        const cardBgClass = avatarClass.replace('avatar-', 'card-');
         
+        let assignedText = '';
+        if (t.assigned_to) {
+            assignedText = `<span style="font-size: 0.75rem; color: #3498db; margin-right: 10px;">👤 ${t.assigned_to}</span>`;
+        }
+
         return `
-            <div class="ticket-card" style="align-items: center;">
+            <div class="ticket-card ${cardBgClass}" style="align-items: center;">
                 <input type="checkbox" class="ticket-checkbox" data-id="${t.id}" ${isSelected} onclick="toggleTicketSelection(event, '${t.id}')">
                 <div class="ticket-avatar ${avatarClass}" onclick="openTicket('${t.id}')">${initial}</div>
                 <div class="ticket-content" onclick="openTicket('${t.id}')">
                     <div class="ticket-header">
-                        <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#${displayId}</span></span>
+                        <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#${displayId}</span> ${assignedText}</span>
                         <span class="ticket-time">${attachmentIcon}${formatTime(t.timestamp)}</span>
                     </div>
                     <div class="ticket-tags">
@@ -288,8 +299,19 @@ function openTicket(id) {
     const contextHtml = [];
     if (ticket.theme) contextHtml.push(`📁 ${ticket.theme}`);
     if (ticket.is_urgent) contextHtml.push(`🚨 عاجل`);
+    
+    let assignBtn = '';
+    if (!ticket.assigned_to) {
+        assignBtn = `<button onclick="assignTicket('${id}')" style="background:var(--accent); color:white; border:none; padding:4px 10px; border-radius:12px; font-size:0.75rem; cursor:pointer;">🖐️ Prendre</button>`;
+    } else {
+        assignBtn = `<span style="font-size:0.75rem; color:#3498db; background:rgba(52,152,219,0.1); padding:4px 10px; border-radius:12px;">Assigné à: ${ticket.assigned_to}</span>`;
+    }
+
     document.getElementById('chat-context').innerHTML = `
-        <span class="context-badge">${contextHtml.join(' • ') || 'عام'}</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span class="context-badge">${contextHtml.join(' • ') || 'عام'}</span>
+            ${assignBtn}
+        </div>
         <span class="context-date">${formatTime(ticket.timestamp)}</span>
     `;
     
@@ -505,5 +527,16 @@ async function sendBulkReply() {
         alert("حدث خطأ أثناء الإرسال");
     } finally {
         document.querySelector('#bulk-reply-modal .btn-primary').innerText = '🚀 إرسال';
+    }
+}
+
+window.assignTicket = async function(id) {
+    const t = allTickets.find(t => t.id.toString() === id.toString());
+    if(t) {
+        t.assigned_to = window.adminId || 'Moi'; // In reality we'd get the actual admin name
+        // Simulate API call
+        // fetch('/admin/assign-ticket', { method: 'POST', body: ... })
+        openTicket(id); // Re-render chat context
+        applyFilters(); // Re-render feed
     }
 }

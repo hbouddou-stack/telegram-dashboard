@@ -28,6 +28,7 @@ export function initSettingsView(container) {
                             <select id="theme-select" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--surface-hover); color: var(--text-1); border: 1px solid var(--border);">
                                 <option value="dark">🌙 الوضع الليلي (افتراضي)</option>
                                 <option value="light">☀️ الوضع النهاري</option>
+                                <option value="sepia">☕ الوضع الدافئ (Sépia)</option>
                             </select>
                         </div>
                         <div>
@@ -150,13 +151,26 @@ export function initSettingsView(container) {
 export function applyTheme(theme, font) {
     // Theme application
     if (theme === 'light') {
-        document.documentElement.style.setProperty('--bg', '#f8f9fa');
+        document.documentElement.style.setProperty('--bg', '#f0f2f5');
         document.documentElement.style.setProperty('--surface', '#ffffff');
         document.documentElement.style.setProperty('--surface-solid', '#ffffff');
-        document.documentElement.style.setProperty('--surface-hover', '#e9ecef');
-        document.documentElement.style.setProperty('--text-1', '#212529');
-        document.documentElement.style.setProperty('--text-muted', '#6c757d');
-        document.documentElement.style.setProperty('--border', '#dee2e6');
+        document.documentElement.style.setProperty('--surface-hover', '#e4e6eb');
+        document.documentElement.style.setProperty('--text-1', '#1c1e21');
+        document.documentElement.style.setProperty('--text-muted', '#606770');
+        document.documentElement.style.setProperty('--border', '#ced0d4');
+        // Ensure buttons and accents remain visible
+        document.documentElement.style.setProperty('--gold', '#d97706'); 
+        document.documentElement.style.setProperty('--gold-dim', 'rgba(217, 119, 6, 0.15)');
+    } else if (theme === 'sepia') {
+        document.documentElement.style.setProperty('--bg', '#f4ecd8');
+        document.documentElement.style.setProperty('--surface', '#fdf6e3');
+        document.documentElement.style.setProperty('--surface-solid', '#fdf6e3');
+        document.documentElement.style.setProperty('--surface-hover', '#eaddc5');
+        document.documentElement.style.setProperty('--text-1', '#5c4b37');
+        document.documentElement.style.setProperty('--text-muted', '#8a7a66');
+        document.documentElement.style.setProperty('--border', '#d3c6a6');
+        document.documentElement.style.setProperty('--gold', '#b58900');
+        document.documentElement.style.setProperty('--gold-dim', 'rgba(181, 137, 0, 0.15)');
     } else {
         // Reset to dark (default)
         document.documentElement.style.removeProperty('--bg');
@@ -166,6 +180,8 @@ export function applyTheme(theme, font) {
         document.documentElement.style.removeProperty('--text-1');
         document.documentElement.style.removeProperty('--text-muted');
         document.documentElement.style.removeProperty('--border');
+        document.documentElement.style.removeProperty('--gold');
+        document.documentElement.style.removeProperty('--gold-dim');
     }
     
     // Font application

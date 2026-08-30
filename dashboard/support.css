@@ -65,6 +65,13 @@ body { background: var(--bg); background-image: radial-gradient(circle at top ri
 .avatar-bg-5 { background: linear-gradient(135deg, #ec4899, #be185d); } /* Pink */
 .avatar-bg-6 { background: linear-gradient(135deg, #a855f7, #7e22ce); } /* Purple */
 
+.card-bg-1 { background: rgba(245, 158, 11, 0.05) !important; border-color: rgba(245, 158, 11, 0.2) !important; }
+.card-bg-2 { background: rgba(59, 130, 246, 0.05) !important; border-color: rgba(59, 130, 246, 0.2) !important; }
+.card-bg-3 { background: rgba(239, 68, 68, 0.05) !important; border-color: rgba(239, 68, 68, 0.2) !important; }
+.card-bg-4 { background: rgba(16, 185, 129, 0.05) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
+.card-bg-5 { background: rgba(236, 72, 153, 0.05) !important; border-color: rgba(236, 72, 153, 0.2) !important; }
+.card-bg-6 { background: rgba(168, 85, 247, 0.05) !important; border-color: rgba(168, 85, 247, 0.2) !important; }
+
 .ticket-content { flex: 1; overflow: hidden; }
 .ticket-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
 .ticket-author { font-weight: 700; color: var(--text); font-size: 1rem; }
@@ -179,10 +186,7 @@ body { background: var(--bg); background-image: radial-gradient(circle at top ri
     border-right-color: var(--gold);
 }
 .sidebar-icon { font-size: 1.4rem; }
-.sidebar-label { display: none; font-size: 1rem; font-weight: 500; }
-@media (min-width: 768px) {
-    .sidebar-label { display: inline-block; }
-}
+.sidebar-label { display: inline-block; font-size: 1rem; font-weight: 500; margin-right: 15px; }
 
 .sidebar-footer {
     padding-bottom: 15px;
