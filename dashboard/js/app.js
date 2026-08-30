@@ -28,10 +28,12 @@ class AppRouter {
         document.querySelectorAll('.sidebar-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 const route = e.currentTarget.getAttribute('data-route');
-                if (route) this.navigate(route);
+                if (route) window.location.hash = route;
                 this.closeSidebar(); // Close sidebar on mobile after clicking
             });
         });
+        
+        window.addEventListener('hashchange', () => this.handleHashChange());
 
         // Overlay click to close
         document.getElementById('sidebar-overlay').addEventListener('click', () => {
@@ -45,14 +47,20 @@ class AppRouter {
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
             window.adminId = window.Telegram.WebApp.initDataUnsafe.user.id;
             window.Telegram.WebApp.expand();
-            this.navigate('inbox');
+            this.handleHashChange();
         } else {
             // Listen for manual login event
             window.addEventListener('admin-logged-in', () => {
-                this.navigate('inbox');
+                this.handleHashChange();
             });
             document.getElementById('config-overlay').style.display = 'flex';
         }
+    }
+
+    handleHashChange() {
+        let route = window.location.hash.replace('#', '') || 'inbox';
+        if (!this.routes[route]) route = 'inbox';
+        this.navigate(route);
     }
 
     navigate(route) {

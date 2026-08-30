@@ -221,21 +221,56 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Tabs System */
+        .tabs-container {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            color: var(--text-2);
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(135, 54, 255, 0.3);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
     </style>
 </head>
 <body>
-    <div class="container" id="support-form">
-        <div class="header">
-            <div class="header-icon">🤖</div>
-            <h1>مركز الدعم الذكي</h1>
-            <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
-            
-            <div class="step-indicator">
-                <div class="dot active" id="dot-1"></div>
-                <div class="dot" id="dot-2"></div>
-                <div class="dot" id="dot-3"></div>
-            </div>
+    <div class="container" id="app-container">
+        <!-- Tabs Header -->
+        <div class="tabs-container">
+            <div class="tab-btn active" onclick="switchTab('new')">✉️ طلب جديد</div>
+            <div class="tab-btn" onclick="switchTab('inbox')">📥 تذاكري</div>
         </div>
+
+        <!-- NEW TICKET TAB -->
+        <div class="tab-content active" id="tab-new">
+            <div id="support-form">
+                <div class="header">
+                    <div class="header-icon">🤖</div>
+                    <h1>مركز الدعم الذكي</h1>
+                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
+                    
+                    <div class="step-indicator">
+                        <div class="dot active" id="dot-1"></div>
+                        <div class="dot" id="dot-2"></div>
+                        <div class="dot" id="dot-3"></div>
+                    </div>
+                </div>
         
         <!-- STEP 1: Main Category -->
         <div class="step-container active" id="step-1">
@@ -276,9 +311,24 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="container success-screen" id="success-screen">
+    </div> <!-- End of tab-new -->
+
+        <!-- INBOX TAB -->
+        <div class="tab-content" id="tab-inbox">
+            <div class="header">
+                <h1>تذاكري السابقة</h1>
+                <p class="subtitle">تتبع حالة استفساراتك وردود الإدارة</p>
+            </div>
+            <div id="student-tickets-list" style="margin-top: 20px;">
+                <!-- Tickets will be injected here via JS -->
+                <div style="text-align:center; color:var(--text-2); padding: 30px;">
+                    جارِ التحميل...
+                </div>
+            </div>
+        </div> <!-- End of tab-inbox -->
+
+        <!-- Success Screen -->
+        <div class="success-screen" id="success-screen">
         <div class="icon">✅</div>
         <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
         <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن عبر هذه المحادثة.</p>
@@ -412,9 +462,32 @@
             escalateTicket(false);
         }
 
-        function resolveTicket() {
+        async function resolveTicket() {
+            // Ghost Ticket Logic
+            const msg = document.getElementById('message').value.trim();
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 12345;
+            const uname = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "";
+            const fname = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "";
+
+            try {
+                await fetch('/api/support', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        theme: selectedTheme, 
+                        subtheme: selectedSubtheme, 
+                        message: msg, 
+                        telegram_id: tid,
+                        username: uname,
+                        first_name: fname,
+                        rag_failed: false,
+                        auto_resolved: true // Indicates a Ghost Ticket
+                    })
+                });
+            } catch(e) { console.error("Error creating ghost ticket", e); }
+
             document.getElementById('support-form').style.display = 'none';
-            document.getElementById('success-msg').innerText = "يسعدنا أن المشكلة حُلت! شكراً لاستخدامك مركز الدعم الذكي.";
+            document.getElementById('success-msg').innerText = "يسعدنا أن المشكلة حُلت! تم حفظ الاستفسار لغرض التحسين.";
             document.getElementById('success-screen').style.display = 'block';
         }
 
@@ -455,6 +528,79 @@
                 if(ragFailed) goToStep(4); else goToStep(3);
             }
         }
+        
+        window.onload = () => {
+            initData();
+        };
+
+        // Tabs Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'new') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-new').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-inbox').classList.add('active');
+                loadStudentTickets();
+            }
+        }
+
+        async function loadStudentTickets() {
+            const list = document.getElementById('student-tickets-list');
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 12345;
+            
+            try {
+                // Mock for now until Backend is wired
+                const res = await fetch(`/api/student/tickets?tg_id=${tid}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    renderStudentTickets(data);
+                } else {
+                    // Fallback Mock Data
+                    renderStudentTickets([
+                        { id: 1001, theme: 'تقني', status: 'pending', text: 'لا أستطيع الدخول', timestamp: new Date().toISOString() },
+                        { id: 1002, theme: 'مالي', status: 'resolved', text: 'سؤال عن القسط', timestamp: new Date().toISOString() }
+                    ]);
+                }
+            } catch(e) {
+                renderStudentTickets([
+                    { id: 1001, theme: 'تقني', status: 'pending', text: 'لا أستطيع الدخول', timestamp: new Date().toISOString() },
+                    { id: 1002, theme: 'مالي', status: 'resolved', text: 'سؤال عن القسط', timestamp: new Date().toISOString() }
+                ]);
+            }
+        }
+
+        function renderStudentTickets(tickets) {
+            const list = document.getElementById('student-tickets-list');
+            if (tickets.length === 0) {
+                list.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-2);">لا توجد تذاكر سابقة.</div>`;
+                return;
+            }
+            
+            list.innerHTML = tickets.map(t => {
+                const statusColor = t.status === 'resolved' ? '#2ecc71' : '#f39c12';
+                const statusText = t.status === 'resolved' ? 'محلول' : 'قيد المعالجة';
+                const date = new Date(t.timestamp).toLocaleDateString('ar-MA');
+                return `
+                    <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:15px; cursor:pointer;" onclick="openStudentTicket(${t.id})">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <span style="color:var(--accent); font-weight:bold;">#${t.id} - ${t.theme || 'عام'}</span>
+                            <span style="color:${statusColor}; font-size:0.8rem; border:1px solid ${statusColor}; padding:2px 8px; border-radius:12px;">${statusText}</span>
+                        </div>
+                        <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:10px;">${t.text.substring(0, 50)}...</div>
+                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">${date}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openStudentTicket(id) {
+            alert("ستفتح هنا واجهة المحادثة الخاصة بالتذكرة #" + id);
+        }
+
     </script>
 </body>
 </html>
