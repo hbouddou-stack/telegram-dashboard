@@ -300,9 +300,11 @@
             <div class="success-screen" id="success-screen">
                 <div class="icon">&#9989;</div>
                 <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
-                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
-                <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
-            
+                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال طلبك بنجاح! فريق الدعم سيرد عليك في أقرب وقت ممكن عبر صندوق الرسائل.</p>
+                <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('success-screen').style.display='none'; switchTab('faq');">
+                    📖 تصفح الأسئلة الشائعة
+                </button>
+            </div>
         </div>
         <!-- FAQ TAB -->
         <div class="tab-content" id="tab-faq">
@@ -391,8 +393,6 @@
                 </div>
             </div>
         </div>
-
-    </div>
 
         <nav class="bottom-nav">
         <button class="nav-btn active" id="btn-nav-home" onclick="switchTab('home', this)">
