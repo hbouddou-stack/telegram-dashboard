@@ -12998,12 +12998,12 @@ async function loadSupportTickets() {
                 
             return `
                 <tr style="border-bottom: 1px solid var(--border);">
-                    <td style="padding: 12px; font-weight: bold; color: var(--gold);">${t.id}</td>
-                    <td style="padding: 12px;">${t.first_name}<br><small style="color: var(--text-secondary);">@${t.username}</small></td>
-                    <td style="padding: 12px;">${t.theme}</td>
-                    <td style="padding: 12px;">${t.subtheme}</td>
-                    <td style="padding: 12px;"><span style="background: ${statusColor}; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${t.status}</span></td>
-                    <td style="padding: 12px;">${actionBtn}</td>
+                    <td data-label="رقم التذكرة" style="padding: 12px; font-weight: bold; color: var(--gold);">${t.id}</td>
+                    <td data-label="الطالب" style="padding: 12px;"><div style="text-align: left;">${t.first_name}<br><small style="color: var(--text-secondary);">@${t.username}</small></div></td>
+                    <td data-label="القسم" style="padding: 12px;">${t.theme}</td>
+                    <td data-label="التفاصيل" style="padding: 12px;">${t.subtheme}</td>
+                    <td data-label="الحالة" style="padding: 12px;"><span style="background: ${statusColor}; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${t.status}</span></td>
+                    <td data-label="الإجراء" style="padding: 12px;">${actionBtn}</td>
                 </tr>
             `;
         }).join('');
