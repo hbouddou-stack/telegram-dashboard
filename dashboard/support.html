@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Support - Zendesk Style</title>
+    <title>Support - Académie El Baji</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <script src="bot-config.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -19,41 +19,75 @@
     </div>
 
     <div id="app-wrapper">
+        
+        <!-- VIEW A: Inbox (Feed) -->
         <section id="view-inbox" class="view active">
             <header class="app-header">
-                <h1>💬 التذاكر</h1>
-                <button class="btn-icon" onclick="loadTickets()">🔄</button>
+                <div class="header-titles">
+                    <h1>💬 الدعم الفني</h1>
+                    <span class="header-subtitle">لوحة التحكم</span>
+                </div>
+                <button class="btn-icon" onclick="loadTickets()" aria-label="تحديث">🔄</button>
             </header>
             
+            <!-- Category / Funnel Chips -->
+            <div class="filter-chips-container">
+                <div class="filter-chip active" onclick="filterByCategory('all', this)">الكل</div>
+                <div class="filter-chip urgent-chip" onclick="filterByCategory('urgent', this)">🚨 عاجل</div>
+                <div class="filter-chip" onclick="filterByCategory('tech', this)">⚙️ تقني</div>
+                <div class="filter-chip" onclick="filterByCategory('aqida', this)">📘 العقيدة</div>
+                <div class="filter-chip" onclick="filterByCategory('fiqh', this)">📗 الفقه</div>
+                <div class="filter-chip" onclick="filterByCategory('sira', this)">📙 السيرة</div>
+            </div>
+            
             <div id="tickets-feed" class="feed-container">
-                <div style="text-align:center; padding:50px; color:#666;">جاري التحميل...</div>
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل التذاكر...</p>
+                </div>
             </div>
 
+            <!-- Sticky Bottom Navigation (Status) -->
             <nav class="bottom-nav">
-                <div class="nav-item active" onclick="filterTickets('Nouveau', this)">
-                    <span class="nav-icon">🔴</span><span class="nav-label">جديد</span>
+                <div class="nav-item active" onclick="filterByStatus('Nouveau', this)">
+                    <div class="nav-icon-wrap"><span class="nav-icon">📩</span></div>
+                    <span class="nav-label">جديد</span>
                 </div>
-                <div class="nav-item" onclick="filterTickets('En cours', this)">
-                    <span class="nav-icon">🟡</span><span class="nav-label">قيد المعالجة</span>
+                <div class="nav-item" onclick="filterByStatus('En cours', this)">
+                    <div class="nav-icon-wrap"><span class="nav-icon">⏳</span></div>
+                    <span class="nav-label">قيد المعالجة</span>
                 </div>
-                <div class="nav-item" onclick="filterTickets('Résolu', this)">
-                    <span class="nav-icon">🟢</span><span class="nav-label">مكتمل</span>
+                <div class="nav-item" onclick="filterByStatus('Résolu', this)">
+                    <div class="nav-icon-wrap"><span class="nav-icon">✅</span></div>
+                    <span class="nav-label">مكتمل</span>
                 </div>
             </nav>
         </section>
 
+        <!-- VIEW B: Chat Detail -->
         <section id="view-chat" class="view">
             <header class="app-header">
-                <button class="btn-icon" onclick="goBack()">🔙 عودة</button>
-                <h1 id="chat-title" style="font-size: 1rem;">طالب</h1>
+                <button class="btn-icon back-btn" onclick="goBack()">🔙</button>
+                <div class="chat-header-info">
+                    <div class="chat-avatar" id="chat-header-avatar">ط</div>
+                    <h1 id="chat-title" style="font-size: 1rem; margin-right: 10px;">طالب</h1>
+                </div>
                 <button id="btn-resolve" class="btn btn-sm btn-success" onclick="resolveCurrentTicket()">✔ حل</button>
             </header>
+            
+            <!-- Ticket Context Header -->
+            <div class="chat-context-bar" id="chat-context">
+                <span class="context-badge">📗 الفقه</span>
+                <span class="context-date">اليوم 10:30 ص</span>
+            </div>
 
-            <div id="chat-feed" class="chat-container"></div>
+            <div id="chat-feed" class="chat-container">
+                <!-- Chat bubbles go here -->
+            </div>
 
             <footer class="chat-input-area">
-                <button class="btn-ai" onclick="generateAIResponse()">✨</button>
-                <textarea id="chat-reply-input" placeholder="اكتب ردك هنا..."></textarea>
+                <button class="btn-ai" onclick="generateAIResponse()" title="اقتراح إجابة ذكية">✨</button>
+                <textarea id="chat-reply-input" placeholder="اكتب ردك هنا... (يتم الحفظ تلقائياً)"></textarea>
                 <button class="btn-send" onclick="sendReply()">✈️</button>
             </footer>
         </section>
