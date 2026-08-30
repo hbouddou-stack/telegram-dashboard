@@ -366,7 +366,7 @@ function openTicket(id) {
     document.getElementById('view-chat').classList.add('active');
 
     // --- AI COPILOT: Auto-Draft Generation ---
-    const draftInput = document.getElementById('admin-reply-text');
+    const draftInput = document.getElementById('chat-reply-input');
     if (draftInput) {
         draftInput.value = '';
         draftInput.placeholder = '🤖 يتم استشارة الطيار الآلي (Copilot)...';
@@ -397,6 +397,56 @@ function openTicket(id) {
         });
     }
 }
+
+window.saveTicketToFaq = function() {
+    if (!activeTicketId) return;
+    const t = allTickets.find(x => x.id === activeTicketId);
+    if (!t) return;
+    
+    // Extract question
+    const question = t.text || t.subtheme || '';
+    
+    // Extract answer (from last admin bubble or draft input)
+    let answer = document.getElementById('chat-reply-input').value.trim();
+    if (!answer) {
+        const adminBubbles = document.querySelectorAll('#chat-feed .bubble.admin');
+        if (adminBubbles.length > 0) {
+            // Get text, ignoring the timestamp span
+            const lastBubble = adminBubbles[adminBubbles.length - 1];
+            answer = lastBubble.childNodes[0].textContent.trim();
+        }
+    }
+    
+    // Switch to FAQ view to ensure modal renders correctly
+    if (typeof window.switchTab === 'function') {
+        window.switchTab('faq');
+    }
+    
+    // Open modal
+    if (typeof window.openFaqModal === 'function') {
+        window.openFaqModal();
+        // Override the values that openFaqModal just cleared
+        setTimeout(() => {
+            document.getElementById('faq-input-question').value = question;
+            if (answer) {
+                document.getElementById('faq-input-answer').value = answer;
+            }
+            if (t.theme) {
+                document.getElementById('faq-input-category').value = t.theme;
+            }
+            
+            // Show a temporary success indicator on the Save button
+            const btn = document.getElementById('btn-faq-save');
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ فتحت الاستمارة';
+                setTimeout(() => btn.innerHTML = originalText, 3000);
+            }
+        }, 50);
+    } else {
+        alert('وحدة FAQ غير محملة');
+    }
+};
 
 function goBack() {
     activeTicketId = null;

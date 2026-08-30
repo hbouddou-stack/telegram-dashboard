@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 
 # --- DB TRANSCRIPTS HELPERS ---
 async def load_lessons_from_db():
@@ -5225,6 +5225,7 @@ async def api_admin_resolve_ticket(request):
         
         # CSAT : Envoyer une demande de notation a l'eleve via Telegram
         try:
+            bot = request.app['bot']
             ticket = await db.get_crm_ticket(ticket_id)
             if ticket and ticket.get('telegram_id'):
                 telegram_id = ticket['telegram_id']
