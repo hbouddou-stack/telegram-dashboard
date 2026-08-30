@@ -18,6 +18,9 @@ export function initFaqView(container) {
                     </div>
                 </div>
                 <div style="display:flex; gap: 8px; align-items:center;">
+                    <button onclick="window.openFaqAnalyticsModal()" style="padding: 8px 14px; border-radius:20px; font-size:0.85rem; background:rgba(46,204,113,0.2); color:#2ecc71; border:1px solid #2ecc71; cursor:pointer; font-family:Tajawal,sans-serif;">
+                        &#128202; الإحصائيات
+                    </button>
                     <button onclick="window.openFaqSuggestions()" style="padding: 8px 14px; border-radius:20px; font-size:0.85rem; background:rgba(52,152,219,0.2); color:#3498db; border:1px solid #3498db; cursor:pointer; font-family:Tajawal,sans-serif;">
                         &#128161; اقتراحات AI
                     </button>
@@ -411,5 +414,88 @@ function setupFaqGlobals() {
             const card = document.getElementById(`sug-${id}`);
             if (card) card.remove();
         } catch (e) { alert('خطأ: ' + e.message); }
+    };
+
+    // --- Analytics Modal ---
+    window.openFaqAnalyticsModal = async () => {
+        let modal = document.getElementById('faq-analytics-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'faq-analytics-modal';
+            modal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);';
+            modal.innerHTML = `
+                <div style="background:var(--surface); width:90%; max-width:600px; border-radius:12px; padding:25px; box-shadow:0 10px 30px rgba(0,0,0,0.5); max-height:80vh; overflow-y:auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                        <h2 style="font-size:1.3rem; margin:0; color:var(--text-1);">&#128202; إحصائيات الدعم والـ FAQ</h2>
+                        <button onclick="window.closeFaqAnalyticsModal()" style="background:none; border:none; font-size:1.5rem; color:var(--text-2); cursor:pointer;">&times;</button>
+                    </div>
+                    <div id="faq-analytics-content" style="color:var(--text-1); font-size:0.95rem;">
+                        جاري التحميل...
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        modal.style.display = 'flex';
+        
+        try {
+            const BASE = window.BOT_API_BASE || '';
+            const res = await fetch(`${BASE}/api/faq/analytics/stats`);
+            const data = await res.json();
+            if(!data.success) throw new Error(data.error);
+            
+            const stats = data.stats;
+            
+            let html = `
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:bold; color:#3498db;">${stats.tab_clicks.faq}</div>
+                        <div style="font-size:0.8rem; color:var(--text-2);">نقرات الـ FAQ</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:bold; color:#e74c3c;">${stats.tab_clicks.new}</div>
+                        <div style="font-size:0.8rem; color:var(--text-2);">نقرات تذكرة جديدة</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:bold; color:#2ecc71;">${stats.tab_clicks.inbox}</div>
+                        <div style="font-size:0.8rem; color:var(--text-2);">نقرات البريد الوارد</div>
+                    </div>
+                </div>
+            `;
+            
+            html += `<h3 style="margin:20px 0 10px 0; color:var(--text-1); font-size:1.1rem;">🔥 أكثر الكلمات بحثاً</h3>`;
+            if (stats.top_searches.length === 0) html += `<p style="color:var(--text-2);">لا توجد بيانات بعد.</p>`;
+            else {
+                html += `<div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">`;
+                stats.top_searches.forEach(s => {
+                    html += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+                        <span>${s.keyword}</span> <span style="color:var(--text-2); font-weight:bold;">${s.count} مرات</span>
+                    </div>`;
+                });
+                html += `</div>`;
+            }
+            
+            html += `<h3 style="margin:20px 0 10px 0; color:#e74c3c; font-size:1.1rem;">⚠️ أبحاث بدون نتائج (0 نتيجة)</h3>`;
+            if (stats.zero_results.length === 0) html += `<p style="color:var(--text-2);">جيد جداً! كل الأبحاث وجدت نتائج.</p>`;
+            else {
+                html += `<p style="font-size:0.85rem; color:var(--text-2); margin-bottom:10px;">عليك إضافة إجابات في الـ FAQ لهذه الكلمات:</p>`;
+                html += `<div style="background:rgba(231,76,60,0.05); border:1px solid rgba(231,76,60,0.2); border-radius:8px; padding:10px;">`;
+                stats.zero_results.forEach(s => {
+                    html += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(231,76,60,0.1);">
+                        <span style="color:#e74c3c; font-weight:bold;">"${s.keyword}"</span> <span style="color:var(--text-2);">${s.count} مرات</span>
+                    </div>`;
+                });
+                html += `</div>`;
+            }
+            
+            document.getElementById('faq-analytics-content').innerHTML = html;
+        } catch(e) {
+            document.getElementById('faq-analytics-content').innerHTML = `<div style="color:#e74c3c;">خطأ في جلب الإحصائيات: ${e.message}</div>`;
+        }
+    };
+
+    window.closeFaqAnalyticsModal = () => {
+        const modal = document.getElementById('faq-analytics-modal');
+        if (modal) modal.style.display = 'none';
     };
 }

@@ -1,4 +1,4 @@
-﻿import aiosqlite
+import aiosqlite
 import logging
 import re
 from config import DATABASE_PATH, MAIN_DATABASE_PATH
@@ -802,6 +802,18 @@ async def init_db():
                 status TEXT DEFAULT 'pending',
                 created_at TEXT DEFAULT (datetime('now'))
             );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS faq_analytics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                keyword TEXT,
+                has_results BOOLEAN,
+                tab_name TEXT,
+                user_id INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
         """)
 
         # Migrate faq_db.json to SQLite if table is empty

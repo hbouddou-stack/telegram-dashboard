@@ -374,8 +374,21 @@
             }
         }
 
+        // Analytics Tracking
+        async function trackAnalytics(event_type, keyword = '', has_results = false, tab_name = '') {
+            const uid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
+            try {
+                await fetch('/api/analytics/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event_type, keyword, has_results, tab_name, user_id: uid })
+                });
+            } catch (e) { console.error('Analytics error:', e); }
+        }
+
         // Tabs Logic
         function switchTab(tabName) {
+            trackAnalytics('tab_click', '', false, tabName);
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             if (tabName === 'new') {
@@ -429,10 +442,17 @@
             renderStudentFaq(filtered);
         }
 
+        let searchDebounceTimer;
         function studentFaqSearch(q) {
             if (!q.trim()) { renderStudentFaq(studentFaqAll); return; }
             const lower = q.toLowerCase();
-            renderStudentFaq(studentFaqAll.filter(e => e.question.toLowerCase().includes(lower) || e.answer.toLowerCase().includes(lower)));
+            const results = studentFaqAll.filter(e => e.question.toLowerCase().includes(lower) || e.answer.toLowerCase().includes(lower));
+            renderStudentFaq(results);
+            
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                trackAnalytics('search', q.trim(), results.length > 0, '');
+            }, 1000);
         }
 
         function renderStudentFaq(entries) {

@@ -5378,6 +5378,73 @@ async def api_admin_student_profile(request):
 # ====================================================
 # FAQ API ROUTES
 # ====================================================
+async def api_analytics_track(request):
+    """POST /api/analytics/track - Log student interactions (tabs, searches)"""
+    try:
+        data = await request.json()
+        event_type = data.get('event_type')
+        keyword = data.get('keyword', '')
+        has_results = data.get('has_results', False)
+        tab_name = data.get('tab_name', '')
+        user_id = data.get('user_id', 0)
+        
+        async with db.execute(
+            """INSERT INTO faq_analytics 
+               (event_type, keyword, has_results, tab_name, user_id) 
+               VALUES (?, ?, ?, ?, ?)""",
+            (event_type, keyword, has_results, tab_name, user_id)
+        ) as cur:
+            await db.commit()
+            
+        return web.json_response({"success": True})
+    except Exception as e:
+        logger.error(f"[API] Error in api_analytics_track: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+async def api_faq_analytics_stats(request):
+    """GET /api/faq/analytics/stats - Admin fetches analytics data"""
+    try:
+        stats = {
+            "top_searches": [],
+            "zero_results": [],
+            "tab_clicks": {"faq": 0, "new": 0, "inbox": 0}
+        }
+        
+        # 1. Top searches (last 7 days)
+        async with db.execute("""
+            SELECT keyword, COUNT(*) as cnt 
+            FROM faq_analytics 
+            WHERE event_type = 'search' AND keyword != '' 
+            GROUP BY keyword ORDER BY cnt DESC LIMIT 10
+        """) as cur:
+            stats["top_searches"] = [{"keyword": row[0], "count": row[1]} for row in await cur.fetchall()]
+            
+        # 2. Zero-result searches
+        async with db.execute("""
+            SELECT keyword, COUNT(*) as cnt 
+            FROM faq_analytics 
+            WHERE event_type = 'search' AND keyword != '' AND has_results = 0 
+            GROUP BY keyword ORDER BY cnt DESC LIMIT 10
+        """) as cur:
+            stats["zero_results"] = [{"keyword": row[0], "count": row[1]} for row in await cur.fetchall()]
+            
+        # 3. Tab clicks
+        async with db.execute("""
+            SELECT tab_name, COUNT(*) as cnt 
+            FROM faq_analytics 
+            WHERE event_type = 'tab_click' AND tab_name != '' 
+            GROUP BY tab_name
+        """) as cur:
+            for row in await cur.fetchall():
+                tab_name = row[0]
+                if tab_name in stats["tab_clicks"]:
+                    stats["tab_clicks"][tab_name] = row[1]
+                    
+        return web.json_response({"success": True, "stats": stats})
+    except Exception as e:
+        logger.error(f"[API] Error in api_faq_analytics_stats: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
 
 async def api_faq_get(request):
     """GET /api/faq?category=&subcategory=&search= - List FAQ entries."""
