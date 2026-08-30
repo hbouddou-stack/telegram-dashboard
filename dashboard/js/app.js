@@ -22,8 +22,17 @@ class AppRouter {
             item.addEventListener('click', (e) => {
                 const route = e.currentTarget.getAttribute('data-route');
                 if (route) this.navigate(route);
+                this.closeSidebar(); // Close sidebar on mobile after clicking
             });
         });
+
+        // Overlay click to close
+        document.getElementById('sidebar-overlay').addEventListener('click', () => {
+            this.closeSidebar();
+        });
+        
+        // Expose global toggle
+        window.toggleSidebar = this.toggleSidebar.bind(this);
 
         // Check if admin is already logged in (from previous script logic or telegram)
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
@@ -63,8 +72,21 @@ class AppRouter {
         initStudentsView(container);
     }
 
+    toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+
+    closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('active');
+    }
+
     loadPlaceholder(text, container) {
         container.innerHTML = `
+            <header class="app-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+            </header>
             <div class="module-view active" style="display:flex; align-items: center; justify-content: center; height:100%;">
                 <h2 style="color: var(--text-muted);">${text}</h2>
             </div>

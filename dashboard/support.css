@@ -227,3 +227,62 @@ body { background: var(--bg); background-image: radial-gradient(circle at top ri
     transform: translateX(0);
 }
 
+
+/* Hamburger Menu & Off-Canvas Sidebar for Mobile */
+.sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0; /* RTL */
+    transform: translateX(100%);
+    width: 250px;
+    z-index: 500;
+    transition: transform 0.3s ease;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+}
+.sidebar.open {
+    transform: translateX(0);
+}
+.sidebar-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 400;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        position: relative;
+        transform: none;
+        width: 220px;
+        box-shadow: none;
+    }
+    .sidebar-overlay {
+        display: none !important;
+    }
+}
+
+.hamburger-btn {
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-1);
+    cursor: pointer;
+    margin-left: 15px; /* RTL spacing */
+}
+@media (min-width: 768px) {
+    .hamburger-btn { display: none; }
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+

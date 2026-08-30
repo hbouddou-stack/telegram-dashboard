@@ -58,9 +58,12 @@ export function initInboxView(container) {
     container.innerHTML = `
         <section id="view-inbox" class="view active module-view" style="position:relative;">
             <header class="app-header">
-                <div class="header-titles">
-                    <h1>💬 الدعم الفني</h1>
-                    <span class="header-subtitle">لوحة التحكم</span>
+                <div class="header-left">
+                    <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="header-titles">
+                        <h1>💬 الدعم الفني</h1>
+                        <span class="header-subtitle">لوحة التحكم</span>
+                    </div>
                 </div>
                 <button class="btn-icon" id="btn-refresh-inbox" aria-label="تحديث">🔄</button>
             </header>

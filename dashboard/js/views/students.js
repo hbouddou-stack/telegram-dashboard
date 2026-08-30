@@ -11,9 +11,12 @@ export function initStudentsView(container) {
     container.innerHTML = `
         <section class="view active module-view" style="position:relative; background: var(--bg);">
             <header class="app-header" style="border-bottom: 1px solid var(--border);">
-                <div class="header-titles">
-                    <h1>👥 سجل الطلاب</h1>
-                    <span class="header-subtitle">الطلاب الذين تواصلوا مع الدعم</span>
+                <div class="header-left">
+                    <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="header-titles">
+                        <h1>👥 سجل الطلاب</h1>
+                        <span class="header-subtitle">الطلاب الذين تواصلوا مع الدعم</span>
+                    </div>
                 </div>
                 <div class="search-bar" style="margin-right: 15px; flex:1;">
                     <input type="text" id="student-search" placeholder="بحث بالاسم أو المعرف..." style="width: 100%; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface-hover); color: var(--text-1); outline:none;">
