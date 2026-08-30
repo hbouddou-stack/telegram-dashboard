@@ -1,4 +1,4 @@
-import aiosqlite
+﻿import aiosqlite
 import logging
 import re
 from config import DATABASE_PATH, MAIN_DATABASE_PATH
@@ -126,6 +126,25 @@ async def init_db():
                 telegram_username TEXT,
                 action_type TEXT,
                 description TEXT,
+                timestamp TEXT DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
+
+        # 0c. crm_tickets (Support system)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS crm_tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                telegram_id INTEGER,
+                username TEXT,
+                first_name TEXT,
+                theme TEXT,
+                subtheme TEXT,
+                message TEXT,
+                status TEXT DEFAULT 'new',
+                assigned_to TEXT,
+                is_urgent BOOLEAN DEFAULT 0,
+                is_ghost BOOLEAN DEFAULT 0,
+                ai_topic TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)
@@ -740,6 +759,67 @@ async def init_db():
                     ("استفسار عام", "other", "السلام عليكم، تم مراجعة طلبك. نسعد دائماً بخدمتك.")
                 ]
                 await db.executemany("INSERT INTO canned_responses (title, category, content) VALUES (?, ?, ?)", default_templates)
+
+        
+        # Create faq_entries table (FAQ intelligente)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS faq_entries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT NOT NULL DEFAULT '',
+                subcategory TEXT DEFAULT '',
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                views INTEGER DEFAULT 0,
+                helpful_votes INTEGER DEFAULT 0,
+                not_helpful_votes INTEGER DEFAULT 0,
+                source_ticket_id INTEGER DEFAULT NULL,
+                is_pinned INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now')),
+                updated_at TEXT DEFAULT (datetime('now'))
+            );
+        """)
+
+        # Create faq_views_log table (tracabilite)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS faq_views_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                faq_id INTEGER NOT NULL,
+                telegram_id INTEGER DEFAULT NULL,
+                viewed_at TEXT DEFAULT (datetime('now')),
+                then_submitted_ticket INTEGER DEFAULT 0
+            );
+        """)
+
+        # Create faq_suggestions table (suggestions automatiques depuis tickets)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS faq_suggestions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                suggested_question TEXT NOT NULL,
+                suggested_answer TEXT NOT NULL,
+                category TEXT DEFAULT '',
+                source_ticket_ids TEXT DEFAULT '',
+                occurrence_count INTEGER DEFAULT 1,
+                status TEXT DEFAULT 'pending',
+                created_at TEXT DEFAULT (datetime('now'))
+            );
+        """)
+
+        # Migrate faq_db.json to SQLite if table is empty
+        async with db.execute("SELECT COUNT(*) FROM faq_entries") as cur:
+            faq_count = (await cur.fetchone())[0]
+        if faq_count == 0:
+            import json as _json, os as _os
+            _faq_path = _os.path.join(_os.path.dirname(__file__), 'faq_db.json')
+            if _os.path.exists(_faq_path):
+                with open(_faq_path, 'r', encoding='utf-8') as _f:
+                    _faq_data = _json.load(_f)
+                for _cat, _questions in _faq_data.items():
+                    for _q, _a in _questions.items():
+                        await db.execute(
+                            "INSERT INTO faq_entries (category, question, answer) VALUES (?, ?, ?)",
+                            (_cat, _q, _a)
+                        )
+                logger.info(f"[FAQ] Migration faq_db.json -> SQLite: {sum(len(v) for v in _faq_data.values())} entrees importees.")
 
         # Create telegram_groups table
         await db.execute("""
@@ -3492,3 +3572,336 @@ async def log_student_action_by_tg(telegram_id, action_type, description):
             await db.commit()
     except Exception as e:
         logger.error(f"Error logging student action by tg: {e}")
+
+# --- CRM TICKETS API ---
+async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, message, status='new', is_ghost=False, ai_topic=''):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            cursor = await db.execute(
+                'INSERT INTO crm_tickets (telegram_id, username, first_name, theme, subtheme, message, status, is_ghost, ai_topic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (telegram_id, username, first_name, theme, subtheme, message, status, is_ghost, ai_topic)
+            )
+            await db.commit()
+            return cursor.lastrowid
+    except Exception as e:
+        logger.error(f"Error creating ticket: {e}")
+        return None
+
+async def get_all_crm_tickets():
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute('SELECT * FROM crm_tickets ORDER BY timestamp DESC') as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    except Exception as e:
+        logger.error(f"Error fetching tickets: {e}")
+        return []
+
+async def get_student_tickets(telegram_id):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute('SELECT * FROM crm_tickets WHERE telegram_id = ? ORDER BY timestamp DESC', (telegram_id,)) as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    except Exception as e:
+        logger.error(f"Error fetching student tickets: {e}")
+        return []
+
+async def update_crm_ticket_status(ticket_id, status):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute('UPDATE crm_tickets SET status = ? WHERE id = ?', (status, ticket_id))
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error updating ticket status: {e}")
+
+async def assign_crm_ticket(ticket_id, admin_name):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute('UPDATE crm_tickets SET assigned_to = ? WHERE id = ?', (admin_name, ticket_id))
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error assigning ticket: {e}")
+
+async def get_crm_ticket(ticket_id: int):
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute("SELECT * FROM crm_tickets WHERE id = ?", (ticket_id,)) as cur:
+            row = await cur.fetchone()
+            return dict(row) if row else None
+
+# ====================================================
+# FAQ CRUD FUNCTIONS
+# ====================================================
+
+async def get_faq_entries(category: str = None, subcategory: str = None) -> list:
+    """Retrieve FAQ entries with optional category/subcategory filter."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            if category and subcategory:
+                sql = "SELECT * FROM faq_entries WHERE category = ? AND subcategory = ? ORDER BY is_pinned DESC, views DESC"
+                params = (category, subcategory)
+            elif category:
+                sql = "SELECT * FROM faq_entries WHERE category = ? ORDER BY is_pinned DESC, views DESC"
+                params = (category,)
+            else:
+                sql = "SELECT * FROM faq_entries ORDER BY is_pinned DESC, views DESC"
+                params = ()
+            async with db.execute(sql, params) as cur:
+                rows = await cur.fetchall()
+                return [dict(r) for r in rows]
+    except Exception as e:
+        logger.error(f"[FAQ] get_faq_entries error: {e}")
+        return []
+
+
+async def get_faq_categories() -> list:
+    """Get distinct categories and subcategories from faq_entries."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT DISTINCT category, subcategory, COUNT(*) as count FROM faq_entries GROUP BY category, subcategory ORDER BY category"
+            ) as cur:
+                rows = await cur.fetchall()
+                return [dict(r) for r in rows]
+    except Exception as e:
+        logger.error(f"[FAQ] get_faq_categories error: {e}")
+        return []
+
+
+async def add_faq_entry(category: str, question: str, answer: str, subcategory: str = '', source_ticket_id: int = None) -> int:
+    """Add a new FAQ entry. Returns the new entry id."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            cur = await db.execute(
+                "INSERT INTO faq_entries (category, subcategory, question, answer, source_ticket_id) VALUES (?, ?, ?, ?, ?)",
+                (category, subcategory, question, answer, source_ticket_id)
+            )
+            await db.commit()
+            return cur.lastrowid
+    except Exception as e:
+        logger.error(f"[FAQ] add_faq_entry error: {e}")
+        return -1
+
+
+async def update_faq_entry(faq_id: int, category: str = None, subcategory: str = None, question: str = None, answer: str = None, is_pinned: int = None):
+    """Update an existing FAQ entry."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            fields = []
+            params = []
+            if category is not None:
+                fields.append("category = ?"); params.append(category)
+            if subcategory is not None:
+                fields.append("subcategory = ?"); params.append(subcategory)
+            if question is not None:
+                fields.append("question = ?"); params.append(question)
+            if answer is not None:
+                fields.append("answer = ?"); params.append(answer)
+            if is_pinned is not None:
+                fields.append("is_pinned = ?"); params.append(is_pinned)
+            fields.append("updated_at = datetime('now')")
+            params.append(faq_id)
+            if fields:
+                await db.execute(f"UPDATE faq_entries SET {', '.join(fields)} WHERE id = ?", params)
+                await db.commit()
+    except Exception as e:
+        logger.error(f"[FAQ] update_faq_entry error: {e}")
+
+
+async def delete_faq_entry(faq_id: int):
+    """Delete a FAQ entry by id."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("DELETE FROM faq_entries WHERE id = ?", (faq_id,))
+            await db.commit()
+    except Exception as e:
+        logger.error(f"[FAQ] delete_faq_entry error: {e}")
+
+
+async def log_faq_view(faq_id: int, telegram_id: int = None):
+    """Log that a user viewed a FAQ entry and increment view counter."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute(
+                "INSERT INTO faq_views_log (faq_id, telegram_id) VALUES (?, ?)",
+                (faq_id, telegram_id)
+            )
+            await db.execute(
+                "UPDATE faq_entries SET views = views + 1 WHERE id = ?",
+                (faq_id,)
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"[FAQ] log_faq_view error: {e}")
+
+
+async def vote_faq_helpful(faq_id: int, helpful: bool, telegram_id: int = None):
+    """Record a helpful/not helpful vote for a FAQ entry."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            col = "helpful_votes" if helpful else "not_helpful_votes"
+            await db.execute(f"UPDATE faq_entries SET {col} = {col} + 1 WHERE id = ?", (faq_id,))
+            if not helpful and telegram_id:
+                # Mark last view log as "then_submitted_ticket"
+                await db.execute(
+                    "UPDATE faq_views_log SET then_submitted_ticket = 1 WHERE faq_id = ? AND telegram_id = ? ORDER BY viewed_at DESC LIMIT 1",
+                    (faq_id, telegram_id)
+                )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"[FAQ] vote_faq_helpful error: {e}")
+
+
+async def get_faq_analytics() -> dict:
+    """Get FAQ analytics: top viewed, top not helpful, etc."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM faq_entries ORDER BY views DESC LIMIT 10"
+            ) as cur:
+                top_viewed = [dict(r) for r in await cur.fetchall()]
+            async with db.execute(
+                "SELECT * FROM faq_entries WHERE not_helpful_votes > 0 ORDER BY not_helpful_votes DESC LIMIT 10"
+            ) as cur:
+                needs_improvement = [dict(r) for r in await cur.fetchall()]
+            async with db.execute(
+                "SELECT COUNT(*) as total FROM faq_entries"
+            ) as cur:
+                total = (await cur.fetchone())['total']
+            async with db.execute(
+                "SELECT COUNT(*) as total FROM faq_views_log"
+            ) as cur:
+                total_views = (await cur.fetchone())['total']
+            return {
+                'total_entries': total,
+                'total_views': total_views,
+                'top_viewed': top_viewed,
+                'needs_improvement': needs_improvement
+            }
+    except Exception as e:
+        logger.error(f"[FAQ] get_faq_analytics error: {e}")
+        return {}
+
+
+async def search_faq(query: str) -> list:
+    """Simple text search in FAQ questions and answers."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            like_q = f"%{query}%"
+            async with db.execute(
+                "SELECT * FROM faq_entries WHERE question LIKE ? OR answer LIKE ? ORDER BY views DESC LIMIT 20",
+                (like_q, like_q)
+            ) as cur:
+                return [dict(r) for r in await cur.fetchall()]
+    except Exception as e:
+        logger.error(f"[FAQ] search_faq error: {e}")
+        return []
+
+
+async def add_faq_suggestion(suggested_question: str, suggested_answer: str, category: str, ticket_ids: list):
+    """Add a suggestion for a new FAQ entry (from ticket analysis)."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    import json as _json
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute(
+                "INSERT INTO faq_suggestions (suggested_question, suggested_answer, category, source_ticket_ids, occurrence_count) VALUES (?, ?, ?, ?, ?)",
+                (suggested_question, suggested_answer, category, _json.dumps(ticket_ids), len(ticket_ids))
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"[FAQ] add_faq_suggestion error: {e}")
+
+
+async def get_faq_suggestions(status: str = 'pending') -> list:
+    """Get pending/approved FAQ suggestions."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM faq_suggestions WHERE status = ? ORDER BY occurrence_count DESC",
+                (status,)
+            ) as cur:
+                return [dict(r) for r in await cur.fetchall()]
+    except Exception as e:
+        logger.error(f"[FAQ] get_faq_suggestions error: {e}")
+        return []
+
+
+async def approve_faq_suggestion(suggestion_id: int) -> int:
+    """Approve a suggestion: move to faq_entries and mark as approved."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM faq_suggestions WHERE id = ?", (suggestion_id,)) as cur:
+                row = await cur.fetchone()
+            if not row:
+                return -1
+            s = dict(row)
+            cur2 = await db.execute(
+                "INSERT INTO faq_entries (category, question, answer) VALUES (?, ?, ?)",
+                (s['category'], s['suggested_question'], s['suggested_answer'])
+            )
+            new_id = cur2.lastrowid
+            await db.execute("UPDATE faq_suggestions SET status = 'approved' WHERE id = ?", (suggestion_id,))
+            await db.commit()
+            return new_id
+    except Exception as e:
+        logger.error(f"[FAQ] approve_faq_suggestion error: {e}")
+        return -1
+
+
+async def reject_faq_suggestion(suggestion_id: int):
+    """Reject a FAQ suggestion."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("UPDATE faq_suggestions SET status = 'rejected' WHERE id = ?", (suggestion_id,))
+            await db.commit()
+    except Exception as e:
+        logger.error(f"[FAQ] reject_faq_suggestion error: {e}")
+
+# ====================================================
+# END FAQ CRUD FUNCTIONS
+# ====================================================

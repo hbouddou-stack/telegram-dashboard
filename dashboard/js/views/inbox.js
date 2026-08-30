@@ -193,16 +193,16 @@ async function loadTickets() {
         let apiTickets = data.tickets || [];
         
         if (apiTickets.length === 0) {
-            allTickets = mockTickets;
+            allTickets = [];
         } else {
-            allTickets = [...apiTickets, ...mockTickets];
+            allTickets = [...apiTickets];
         }
         
         allTickets = allTickets.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         applyFilters();
     } catch (e) {
-        console.warn("API Error, loading mock data");
-        allTickets = mockTickets.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        console.warn("API Error", e);
+        allTickets = [];
         applyFilters();
     }
 }
@@ -407,19 +407,11 @@ function goBack() {
 async function resolveCurrentTicket() {
     if (!activeTicketId) return;
     try {
-        if (activeTicketId.toString().startsWith('105')) {
-             const idx = allTickets.findIndex(t => t.id === activeTicketId);
-             if (idx > -1) allTickets[idx].status = 'Résolu';
-             goBack();
-             return;
-        }
-        
-        const formData = new FormData();
-        formData.append('ticket_id', activeTicketId);
-        formData.append('admin_id', window.adminId);
-        formData.append('status', 'resolved');
-        
-        await fetch('/admin/resolve-ticket', { method: 'POST', body: formData });
+        await fetch('/api/admin/resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticket_id: activeTicketId })
+        });
         
         const idx = allTickets.findIndex(t => t.id === activeTicketId);
         if (idx > -1) allTickets[idx].status = 'resolved'; 
@@ -430,30 +422,66 @@ async function resolveCurrentTicket() {
     }
 }
 
-function sendReply() {
+async function sendReply() {
     const input = document.getElementById('chat-reply-input');
     const msg = input.value.trim();
-    if (!msg) return;
+    if (!msg || !activeTicketId) return;
     
-    const chatFeed = document.getElementById('chat-feed');
-    chatFeed.innerHTML += `
-        <div class="bubble admin">
-            ${msg}
-            <span class="time">الآن</span>
-        </div>
-    `;
+    const t = allTickets.find(x => x.id === activeTicketId);
+    if (!t) return;
     
-    input.value = '';
-    chatFeed.scrollTop = chatFeed.scrollHeight;
+    const adminName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'الأدمن';
+    
+    try {
+        await fetch('/api/support/reply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                ticket_id: activeTicketId, 
+                message: msg, 
+                telegram_id: t.telegram_id,
+                admin_name: adminName
+            })
+        });
+        
+        t.status = 'pending';
+        
+        const chatFeed = document.getElementById('chat-feed');
+        chatFeed.innerHTML += `
+            <div class="bubble admin">
+                ${msg}
+                <span class="time">الآن</span>
+            </div>
+        `;
+        
+        input.value = '';
+        chatFeed.scrollTop = chatFeed.scrollHeight;
+    } catch (e) {
+        alert("حدث خطأ في الإرسال");
+    }
 }
 
-function generateAIResponse() {
+async function generateAIResponse() {
     const input = document.getElementById('chat-reply-input');
+    if (!activeTicketId) return;
+    
     input.value = "جاري توليد الرد من قاعدة المعرفة (FAQ)... ✨";
     
-    setTimeout(() => {
-        input.value = "وعليكم السلام ورحمة الله وبركاته، بخصوص سؤالك، يمكننا حله باتباع الخطوات التالية...";
-    }, 1500);
+    try {
+        const res = await fetch('/api/admin/draft_reply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticket_id: activeTicketId })
+        });
+        const data = await res.json();
+        if (data.success && data.draft) {
+            input.value = data.draft;
+        } else {
+            input.value = "عذراً، لم أتمكن من توليد رد تلقائي.";
+        }
+    } catch(e) {
+        input.value = "خطأ في الاتصال بالخادم.";
+    }
 }
 
 function reassignTicket() {
@@ -520,24 +548,33 @@ async function sendBulkReply() {
         // Pseudo-API call since backend doesn't have bulk-reply yet
         // In reality we would do: await fetch('/api/admin/bulk-reply', { method: 'POST', body: JSON.stringify({ ids, text }) });
         
+        // Call the new endpoints
         for (let id of ids) {
-            const formData = new FormData();
-            formData.append('ticket_id', id);
-            formData.append('admin_id', window.adminId || 'admin');
-            formData.append('text', text);
-            // This endpoint sends the reply
-            fetch('/admin/reply-ticket', { method: 'POST', body: formData }).catch(() => {});
+            const t = allTickets.find(x => x.id.toString() === id);
+            if (!t) continue;
             
-            const resolveData = new FormData();
-            resolveData.append('ticket_id', id);
-            resolveData.append('admin_id', window.adminId || 'admin');
-            resolveData.append('status', 'resolved');
-            // This endpoint marks it as resolved
-            fetch('/admin/resolve-ticket', { method: 'POST', body: resolveData }).catch(() => {});
+            const adminName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'الأدمن';
             
-            // Update local state instantly for UI responsiveness
-            const t = allTickets.find(t => t.id.toString() === id);
-            if (t) t.status = 'resolved';
+            // Send Reply
+            fetch('/api/support/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    ticket_id: id, 
+                    message: text, 
+                    telegram_id: t.telegram_id,
+                    admin_name: adminName
+                })
+            }).catch(() => {});
+            
+            // Resolve Ticket
+            fetch('/api/admin/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticket_id: id })
+            }).catch(() => {});
+            
+            t.status = 'resolved';
         }
         
         // Wait a short bit to let fetches start
@@ -561,8 +598,15 @@ window.assignTicket = async function(id) {
     if(t) {
         const adminName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'الأدمن';
         t.assigned_to = adminName;
-        // Simulate API call
-        // fetch('/admin/assign-ticket', { method: 'POST', body: ... })
+        
+        try {
+            await fetch('/api/admin/assign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticket_id: id, admin_name: adminName })
+            });
+        } catch(e) {}
+        
         openTicket(id); // Re-render chat context
         applyFilters(); // Re-render feed
     }
@@ -575,5 +619,46 @@ window.filterByAICluster = function(e, topic) {
         searchInput.value = topic;
         searchQuery = topic.toLowerCase();
         applyFilters();
+    }
+}
+
+window.toggleStudentProfile = async function() {
+    const panel = document.getElementById('student-profile-panel');
+    const content = document.getElementById('profile-content');
+    
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        content.innerHTML = '???? ???????...';
+        
+        const t = allTickets.find(x => x.id === activeTicketId);
+        if (!t || !t.telegram_id) {
+             content.innerHTML = '??????? ?????? ??? ??????.';
+             return;
+        }
+        
+        try {
+            const res = await fetch(/api/admin/student_profile?telegram_id= + t.telegram_id);
+            const data = await res.json();
+            if (data.success) {
+                const p = data.profile;
+                const joinDate = p.join_date !== '??? ?????' ? new Date(p.join_date).toLocaleDateString('ar-MA') : p.join_date;
+                content.innerHTML = 
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <div>?? <b>?????:</b> </div>
+                        <div>?? <b>ID:</b> </div>
+                        <div>?? <b>????? ????????:</b> </div>
+                        <div>?? <b>???? ????????:</b> </div>
+                        <div>?? <b>?????????? ???????:</b> </div>
+                        <div>?? <b>?????? ?????????:</b> </div>
+                    </div>
+                ;
+            } else {
+                content.innerHTML = '???? ????? ????? ??????.';
+            }
+        } catch(e) {
+            content.innerHTML = '??? ?? ???????.';
+        }
+    } else {
+        panel.style.display = 'none';
     }
 }

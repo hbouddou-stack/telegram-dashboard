@@ -62,7 +62,10 @@
                 <button class="btn-icon back-btn" onclick="goBack()">🔙</button>
                 <div class="chat-header-info">
                     <div class="chat-avatar" id="chat-header-avatar">ط</div>
-                    <h1 id="chat-title" style="font-size: 1rem; margin-right: 10px;">طالب</h1>
+                    <div style="display:flex; flex-direction:column;">
+                        <h1 id="chat-title" style="font-size: 1rem; margin-right: 10px;">طالب</h1>
+                        <span onclick="toggleStudentProfile()" style="font-size: 0.75rem; color: var(--accent); cursor: pointer; margin-right: 10px;">ℹ️ Profil 360°</span>
+                    </div>
                 </div>
                 <button id="btn-reassign" class="btn btn-sm" onclick="reassignTicket()">🔄 تحويل</button>
                 <button id="btn-resolve" class="btn btn-sm btn-success" onclick="resolveCurrentTicket()">✔ حل</button>
@@ -71,6 +74,11 @@
             <div class="chat-context-bar" id="chat-context">
                 <span class="context-badge">عام</span>
                 <span class="context-date">--</span>
+            </div>
+            
+            <div id="student-profile-panel" style="display:none; padding:15px; background:var(--surface); border-bottom:1px solid rgba(255,255,255,0.1); font-size:0.9rem;">
+                <h3 style="margin-bottom:10px; color:var(--text-1);">🗂️ Profil 360°</h3>
+                <div id="profile-content" style="color:var(--text-2);">جاري التحميل...</div>
             </div>
 
             <div id="chat-feed" class="chat-container">

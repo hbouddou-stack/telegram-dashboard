@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -23,53 +23,18 @@
             background-image: var(--bg);
             color: var(--text-1);
             font-family: 'Tajawal', sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
         }
-        .container {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-            animation: fadeInDown 0.5s ease;
-        }
-        .header-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-        h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--accent);
-        }
-        p.subtitle {
-            margin: 5px 0 0 0;
-            color: var(--text-2);
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-        
-        .step-container {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-        .step-container.active {
-            display: block;
-        }
-        
-        .grid-cards {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
+        .container { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .header { text-align: center; margin-bottom: 10px; animation: fadeInDown 0.5s ease; }
+        .header-icon { font-size: 3rem; margin-bottom: 10px; }
+        h1 { margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+        p.subtitle { margin: 5px 0 0 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.4; }
+        .step-container { display: none; animation: fadeIn 0.4s ease; }
+        .step-container.active { display: block; }
+        .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
         .card {
             background: var(--surface);
             border: 1px solid rgba(255,255,255,0.1);
@@ -78,263 +43,175 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
             backdrop-filter: blur(10px);
         }
-        .card:hover, .card:active {
-            background: var(--card-hover);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-        .card-icon {
-            font-size: 2rem;
-        }
-        .card-title {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
+        .card:hover, .card:active { background: var(--card-hover); border-color: var(--accent); transform: translateY(-2px); }
+        .card-icon { font-size: 2rem; }
+        .card-title { font-weight: 700; font-size: 1rem; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        label { font-size: 1rem; font-weight: 700; color: var(--accent); }
         textarea {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--text-1);
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-family: 'Tajawal', sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
-            width: 100%;
-            box-sizing: border-box;
-            resize: none;
-            min-height: 150px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-1); padding: 16px; border-radius: 12px;
+            font-size: 1rem; font-family: 'Tajawal', sans-serif;
+            outline: none; transition: all 0.3s ease; width: 100%; box-sizing: border-box;
+            resize: none; min-height: 150px;
         }
-        textarea:focus {
-            border-color: var(--accent);
-            background: rgba(0,0,0,0.5);
-        }
-        
+        textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
         button.btn-primary, button.btn-secondary, button.btn-success, button.btn-danger {
-            color: var(--text-1);
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            font-family: 'Tajawal', sans-serif;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
-            width: 100%;
-            margin-top: 15px;
+            color: var(--text-1); border: none; padding: 16px; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 800; font-family: 'Tajawal', sans-serif;
+            cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; width: 100%; margin-top: 15px;
         }
-        button.btn-primary {
-            background: linear-gradient(90deg, var(--accent) 0%, #5721d9 100%);
-            box-shadow: 0 4px 15px rgba(135, 54, 255, 0.4);
-        }
-        button.btn-secondary {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            margin-top: 10px;
-        }
-        button.btn-success {
-            background: #2ecc71;
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-        }
-        button.btn-danger {
-            background: #e74c3c;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-        }
-        button:active {
-            transform: scale(0.97);
-        }
-        button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        
-        .success-screen {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .success-screen .icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-
-        .rag-box {
-            background: var(--rag-bg);
-            border: 2px solid var(--rag-border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: right;
-        }
-        .rag-title {
-            color: var(--rag-border);
-            font-weight: 800;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .rag-answer {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: var(--text-1);
-            margin-bottom: 20px;
-        }
-
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 15px;
-        }
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            transition: 0.3s;
-        }
-        .dot.active {
-            background: var(--accent);
-            transform: scale(1.2);
-        }
-
+        button.btn-primary { background: linear-gradient(90deg, var(--accent) 0%, #5721d9 100%); box-shadow: 0 4px 15px rgba(135, 54, 255, 0.4); }
+        button.btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); margin-top: 10px; }
+        button.btn-success { background: #2ecc71; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
+        button.btn-danger { background: #e74c3c; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+        .success-screen { display: none; text-align: center; padding: 40px 20px; }
+        .success-screen .icon { font-size: 4rem; margin-bottom: 20px; }
+        .rag-box { background: var(--rag-bg); border: 2px solid var(--rag-border); border-radius: 12px; padding: 20px; margin-top: 20px; text-align: right; }
+        .rag-title { color: var(--rag-border); font-weight: 800; font-size: 1.2rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .rag-answer { font-size: 1rem; line-height: 1.6; color: var(--text-1); margin-bottom: 20px; }
+        .step-indicator { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: 0.3s; }
+        .dot.active { background: var(--accent); transform: scale(1.2); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Tabs System */
-        .tabs-container {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            color: var(--text-2);
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .tab-btn.active {
-            background: var(--accent);
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(135, 54, 255, 0.3);
-        }
+        .tabs-container { display: flex; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; color: var(--text-2); border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
+        .tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(135, 54, 255, 0.3); }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+        /* FAQ Styles */
+        .faq-search-box {
+            width: 100%; box-sizing: border-box; padding: 12px 18px;
+            border-radius: 25px; border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.3); color: var(--text-1);
+            font-family: 'Tajawal', sans-serif; font-size: 1rem;
+            outline: none; margin-bottom: 15px;
+        }
+        .faq-cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 15px; scrollbar-width: none; }
+        .faq-cat-btn {
+            white-space: nowrap; padding: 6px 16px; border-radius: 20px;
+            border: 1px solid var(--accent); background: transparent; color: var(--accent);
+            cursor: pointer; font-family: 'Tajawal', sans-serif; font-size: 0.88rem;
+            transition: all 0.2s;
+        }
+        .faq-cat-btn.active { background: var(--accent); color: white; }
+        .faq-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; margin-bottom: 10px; overflow: hidden; cursor: pointer;
+        }
+        .faq-item-q {
+            padding: 15px; font-weight: 700; font-size: 0.95rem; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .faq-item-a {
+            display: none; padding: 0 15px 15px 15px; color: var(--text-2);
+            font-size: 0.92rem; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.07);
+            padding-top: 12px;
+        }
+        .faq-item.open .faq-item-a { display: block; animation: fadeIn 0.3s ease; }
+        .faq-item.open .faq-chevron { transform: rotate(180deg); }
+        .faq-chevron { transition: transform 0.2s; font-size: 0.8rem; color: var(--text-2); }
+        .faq-vote-btns { display: flex; gap: 10px; margin-top: 12px; }
+        .faq-vote-btn {
+            flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; color: var(--text-2); font-family: 'Tajawal', sans-serif;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+        }
+        .faq-vote-btn:hover { background: rgba(255,255,255,0.1); }
+        .faq-vote-btn.voted-yes { background: rgba(46,204,113,0.2); border-color: #2ecc71; color: #2ecc71; }
+        .faq-vote-btn.voted-no { background: rgba(231,76,60,0.2); border-color: #e74c3c; color: #e74c3c; }
     </style>
 </head>
 <body>
     <div class="container" id="app-container">
-        <!-- Tabs Header -->
         <div class="tabs-container">
-            <div class="tab-btn active" onclick="switchTab('new')">✉️ طلب جديد</div>
-            <div class="tab-btn" onclick="switchTab('inbox')">📥 تذاكري</div>
+            <div class="tab-btn active" onclick="switchTab('new')" id="tabnew-btn">&#9993; طلب جديد</div>
+            <div class="tab-btn" onclick="switchTab('faq')" id="tabfaq-btn">&#128218; الأسئلة الشائعة</div>
+            <div class="tab-btn" onclick="switchTab('inbox')" id="tabinbox-btn">&#128229; تذاكري</div>
         </div>
 
         <!-- NEW TICKET TAB -->
         <div class="tab-content active" id="tab-new">
             <div id="support-form">
                 <div class="header">
-                    <div class="header-icon">🤖</div>
+                    <div class="header-icon">&#129302;</div>
                     <h1>مركز الدعم الذكي</h1>
                     <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
-                    
                     <div class="step-indicator">
                         <div class="dot active" id="dot-1"></div>
                         <div class="dot" id="dot-2"></div>
                         <div class="dot" id="dot-3"></div>
                     </div>
                 </div>
-        
-        <!-- STEP 1: Main Category -->
-        <div class="step-container active" id="step-1">
-            <div class="grid-cards" id="theme-grid">
-                <!-- Generated by JS -->
-            </div>
-        </div>
-        
-        <!-- STEP 2: Sub Category -->
-        <div class="step-container" id="step-2">
-            <div class="grid-cards" id="subtheme-grid">
-                <!-- Generated by JS -->
-            </div>
-            <button class="btn-secondary" onclick="goToStep(1)">🔙 رجوع</button>
-        </div>
-        
-        <!-- STEP 3: Message -->
-        <div class="step-container" id="step-3">
-            <div class="input-group">
-                <label>اشرح مشكلتك بالتفصيل:</label>
-                <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
-            </div>
-            
-            <button class="btn-primary" id="btn-submit" onclick="submitTicket()">🚀 إرسال</button>
-            <button class="btn-secondary" onclick="goToStep(2)">🔙 رجوع</button>
-        </div>
-
-        <!-- STEP 4: RAG Interception -->
-        <div class="step-container" id="step-4">
-            <div class="rag-box">
-                <div class="rag-title">💡 المساعد الذكي يقترح:</div>
-                <div class="rag-answer" id="rag-answer-text"></div>
-                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-                <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-success" onclick="resolveTicket()">✅ نعم، شكراً</button>
-                    <button class="btn-danger" onclick="escalateTicket()">❌ لا، أريد التحدث لمدير</button>
+                <div class="step-container active" id="step-1">
+                    <div class="grid-cards" id="theme-grid"></div>
+                </div>
+                <div class="step-container" id="step-2">
+                    <div class="grid-cards" id="subtheme-grid"></div>
+                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-3">
+                    <div class="input-group">
+                        <label>اشرح مشكلتك بالتفصيل:</label>
+                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
+                    </div>
+                    <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
+                    <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-4">
+                    <div class="rag-box">
+                        <div class="rag-title">&#128161; المساعد الذكي يقترح:</div>
+                        <div class="rag-answer" id="rag-answer-text"></div>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-success" onclick="resolveTicket()">&#9989; نعم، شكراً</button>
+                            <button class="btn-danger" onclick="escalateTicket()">&#10060; لا، أريد التحدث لمدير</button>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="success-screen" id="success-screen">
+                <div class="icon">&#9989;</div>
+                <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
+                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
+                <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
+            </div>
         </div>
-    </div> <!-- End of tab-new -->
+
+        <!-- FAQ TAB -->
+        <div class="tab-content" id="tab-faq">
+            <div class="header" style="margin-bottom:15px;">
+                <h1 style="font-size:1.5rem;">&#128218; الأسئلة الشائعة</h1>
+                <p class="subtitle">ابحث عن إجابة قبل فتح تذكرة دعم</p>
+            </div>
+            <input type="text" class="faq-search-box" id="faq-student-search" placeholder="&#128269; ابحث في الأسئلة..." oninput="studentFaqSearch(this.value)" />
+            <div class="faq-cats" id="student-faq-cats"></div>
+            <div id="student-faq-list">
+                <div style="text-align:center; padding:40px; color:var(--text-2);">جاري التحميل...</div>
+            </div>
+        </div>
 
         <!-- INBOX TAB -->
         <div class="tab-content" id="tab-inbox">
             <div class="header">
-                <h1>تذاكري السابقة</h1>
+                <h1 style="font-size:1.5rem;">&#128229; تذاكري السابقة</h1>
                 <p class="subtitle">تتبع حالة استفساراتك وردود الإدارة</p>
             </div>
             <div id="student-tickets-list" style="margin-top: 20px;">
-                <!-- Tickets will be injected here via JS -->
-                <div style="text-align:center; color:var(--text-2); padding: 30px;">
-                    جارِ التحميل...
-                </div>
+                <div style="text-align:center; color:var(--text-2); padding: 30px;">جارِ التحميل...</div>
             </div>
-        </div> <!-- End of tab-inbox -->
-
-        <!-- Success Screen -->
-        <div class="success-screen" id="success-screen">
-        <div class="icon">✅</div>
-        <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
-        <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن عبر هذه المحادثة.</p>
-        <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
+        </div>
     </div>
 
+    <script src="bot-config.js"></script>
     <script>
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
@@ -342,50 +219,49 @@
 
         let selectedTheme = "";
         let selectedSubtheme = "";
+        const BOT_BASE = window.BOT_API_BASE || '';
 
-        // Core data logic
         const themesData = [
-            { text: "تقني", icon: "🛠️", desc: "مشاكل في الدخول، المنصة، أو التطبيق" },
-            { text: "مالي", icon: "💳", desc: "استفسارات حول الدفع والأقساط" },
-            { text: "دعم دراسي", icon: "📚", desc: "أسئلة حول الدروس والمناهج" },
-            { text: "امتحانات", icon: "📝", desc: "مشاكل في الامتحانات والنتائج" },
-            { text: "اقتراحات", icon: "💡", desc: "أفكار لتطوير المنصة" },
-            { text: "خطأ", icon: "🐛", desc: "الإبلاغ عن خطأ أو خلل في النظام" }
+            { text: "تقني", icon: "&#128736;", desc: "مشاكل في الدخول، المنصة، أو التطبيق" },
+            { text: "مالي", icon: "&#128179;", desc: "استفسارات حول الدفع والأقساط" },
+            { text: "دعم دراسي", icon: "&#128218;", desc: "أسئلة حول الدروس والمناهج" },
+            { text: "امتحانات", icon: "&#128221;", desc: "مشاكل في الامتحانات والنتائج" },
+            { text: "اقتراحات", icon: "&#128161;", desc: "أفكار لتطوير المنصة" },
+            { text: "خطأ", icon: "&#128027;", desc: "الإبلاغ عن خطأ أو خلل في النظام" }
         ];
 
         const subthemesData = {
             "تقني": [
-                {icon: "🔑", text: "لا أستطيع تسجيل الدخول"},
-                {icon: "🎬", text: "الفيديو لا يعمل"},
-                {icon: "🔈", text: "مشكلة في الصوت"},
-                {icon: "📝", text: "مشكلة أخرى"}
+                {icon: "&#128273;", text: "لا أستطيع تسجيل الدخول"},
+                {icon: "&#127916;", text: "الفيديو لا يعمل"},
+                {icon: "&#128264;", text: "مشكلة في الصوت"},
+                {icon: "&#128221;", text: "مشكلة أخرى"}
             ],
             "مالي": [
-                {icon: "💳", text: "طرق الدفع المتاحة"},
-                {icon: "⏳", text: "تم خصم المبلغ ولم يتفعل الحساب"},
-                {icon: "🧾", text: "تأكيد وصل الدفع"},
-                {icon: "📝", text: "مشكلة أخرى"}
+                {icon: "&#128179;", text: "طرق الدفع المتاحة"},
+                {icon: "&#9203;", text: "تم خصم المبلغ ولم يتفعل الحساب"},
+                {icon: "&#129534;", text: "تأكيد وصل الدفع"},
+                {icon: "&#128221;", text: "مشكلة أخرى"}
             ],
-            "دعم الدروس": [
-                {icon: "📂", text: "أين أجد ملفات الدورة؟"},
-                {icon: "❓", text: "سؤال علمي عن الدرس"},
-                {icon: "📝", text: "مشكلة في تحميل المرفقات"},
-                {icon: "📝", text: "مشكلة أخرى"}
+            "دعم دراسي": [
+                {icon: "&#128193;", text: "أين أجد ملفات الدورة؟"},
+                {icon: "&#10067;", text: "سؤال علمي عن الدرس"},
+                {icon: "&#128221;", text: "مشكلة في تحميل المرفقات"},
+                {icon: "&#128221;", text: "مشكلة أخرى"}
             ],
-            "امتحان": [
-                {icon: "📅", text: "متى موعد الاختبار؟"},
-                {icon: "🎓", text: "متى أستلم شهادتي؟"},
-                {icon: "❓", text: "كيف أقدم الاختبار؟"},
-                {icon: "📝", text: "مشكلة أخرى"}
+            "امتحانات": [
+                {icon: "&#128197;", text: "متى موعد الاختبار؟"},
+                {icon: "&#127891;", text: "متى أستلم شهادتي؟"},
+                {icon: "&#10067;", text: "كيف أقدم الاختبار؟"},
+                {icon: "&#128221;", text: "مشكلة أخرى"}
             ]
         };
 
         // Render Themes
         const themeGrid = document.getElementById('theme-grid');
-        themes.forEach(t => {
+        themesData.forEach(t => {
             const card = document.createElement('div');
             card.className = 'card';
-            if (t.span === 2) card.style.gridColumn = 'span 2';
             card.onclick = () => selectTheme(t.text);
             card.innerHTML = `<div class="card-icon">${t.icon}</div><div class="card-title">${t.text}</div>`;
             themeGrid.appendChild(card);
@@ -394,25 +270,23 @@
         function goToStep(step) {
             document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
             document.getElementById(`step-${step}`).classList.add('active');
-            
             document.querySelectorAll('.dot').forEach(el => el.classList.remove('active'));
-            for(let i=1; i<=Math.min(step, 3); i++) {
-                document.getElementById(`dot-${i}`).classList.add('active');
+            for (let i = 1; i <= Math.min(step, 3); i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (dot) dot.classList.add('active');
             }
-
             const subtitle = document.getElementById('step-subtitle');
-            if(step === 1) subtitle.innerText = "ما هو نوع المشكلة التي تواجهها؟";
-            if(step === 2) subtitle.innerText = "حدد التفاصيل الدقيقة للمشكلة:";
-            if(step === 3) subtitle.innerText = "الخطوة الأخيرة: اكتب رسالتك للإدارة.";
-            if(step === 4) subtitle.innerText = "اقتراح ذكي للمساعدة";
+            if (step === 1) subtitle.innerText = "ما هو نوع المشكلة التي تواجهها؟";
+            if (step === 2) subtitle.innerText = "حدد التفاصيل الدقيقة للمشكلة:";
+            if (step === 3) subtitle.innerText = "الخطوة الأخيرة: اكتب رسالتك للإدارة.";
+            if (step === 4) subtitle.innerText = "اقتراح ذكي للمساعدة";
         }
 
         function selectTheme(themeText) {
             selectedTheme = themeText;
             const grid = document.getElementById('subtheme-grid');
             grid.innerHTML = '';
-            
-            const subs = subthemesData[themeText] || [];
+            const subs = subthemesData[themeText] || [{icon:'&#128221;', text:'مشكلة أخرى'}];
             subs.forEach(sub => {
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -420,7 +294,6 @@
                 card.innerHTML = `<div class="card-icon">${sub.icon}</div><div class="card-title">${sub.text}</div>`;
                 grid.appendChild(card);
             });
-            
             goToStep(2);
         }
 
@@ -431,63 +304,40 @@
 
         async function submitTicket() {
             const msg = document.getElementById('message').value.trim();
-            
-            if (!msg) {
-                alert("يرجى كتابة رسالتك بوضوح.");
-                return;
-            }
-            
+            if (!msg) { alert("يرجى كتابة رسالتك بوضوح."); return; }
             const btn = document.getElementById('btn-submit');
             btn.textContent = "جاري البحث...";
             btn.disabled = true;
-            
-            // Check RAG first
             try {
-                const ragRes = await fetch('/api/support/rag_check', {
+                const ragRes = await fetch(`${BOT_BASE}/api/support/rag_check`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ theme: selectedTheme, subtheme: selectedSubtheme, message: msg })
                 });
-                
                 const ragData = await ragRes.json();
-                
                 if (ragData.found) {
                     document.getElementById('rag-answer-text').innerText = ragData.answer;
                     goToStep(4);
-                    return; // Stop here, wait for user decision
+                    btn.textContent = "&#128640; إرسال";
+                    btn.disabled = false;
+                    return;
                 }
-            } catch (e) {
-                console.error("RAG Error", e);
-            }
-            
-            // If RAG not found or failed, escalate directly
+            } catch (e) { console.error("RAG Error", e); }
             escalateTicket(false);
         }
 
         async function resolveTicket() {
-            // Ghost Ticket Logic
             const msg = document.getElementById('message').value.trim();
-            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 12345;
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
             const uname = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "";
             const fname = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "";
-
             try {
-                await fetch('/api/support', {
+                await fetch(`${BOT_BASE}/api/support`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        theme: selectedTheme, 
-                        subtheme: selectedSubtheme, 
-                        message: msg, 
-                        telegram_id: tid,
-                        username: uname,
-                        first_name: fname,
-                        rag_failed: false,
-                        auto_resolved: true // Indicates a Ghost Ticket
-                    })
+                    body: JSON.stringify({ theme: selectedTheme, subtheme: selectedSubtheme, message: msg, telegram_id: tid, username: uname, first_name: fname, rag_failed: false, auto_resolved: true })
                 });
-            } catch(e) { console.error("Error creating ghost ticket", e); }
-
+            } catch(e) { console.error(e); }
             document.getElementById('support-form').style.display = 'none';
             document.getElementById('success-msg').innerText = "يسعدنا أن المشكلة حُلت! تم حفظ الاستفسار لغرض التحسين.";
             document.getElementById('success-screen').style.display = 'block';
@@ -495,114 +345,225 @@
 
         async function escalateTicket(ragFailed = true) {
             const msg = document.getElementById('message').value.trim();
-            
-            let tid = null;
-            let username = "غير متوفر";
-            let first_name = "غير متوفر";
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                tid = window.Telegram.WebApp.initDataUnsafe.user.id;
-                username = window.Telegram.WebApp.initDataUnsafe.user.username || "";
-                first_name = window.Telegram.WebApp.initDataUnsafe.user.first_name || "";
-            }
-            
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+            const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "";
+            const first_name = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "";
             try {
-                const response = await fetch('/api/support', {
+                await fetch(`${BOT_BASE}/api/support`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        theme: selectedTheme, 
-                        subtheme: selectedSubtheme, 
-                        message: msg, 
-                        telegram_id: tid,
-                        username: username,
-                        first_name: first_name,
-                        rag_failed: ragFailed
-                    })
+                    body: JSON.stringify({ theme: selectedTheme, subtheme: selectedSubtheme, message: msg, telegram_id: tid, username, first_name, rag_failed: ragFailed })
                 });
-                
                 document.getElementById('support-form').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
             } catch (e) {
                 alert("حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.");
                 const btn = document.getElementById('btn-submit');
-                btn.textContent = "🚀 إرسال";
-                btn.disabled = false;
-                if(ragFailed) goToStep(4); else goToStep(3);
+                if (btn) { btn.textContent = "&#128640; إرسال"; btn.disabled = false; }
+                goToStep(3);
             }
         }
-        
-        window.onload = () => {
-            initData();
-        };
 
         // Tabs Logic
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
             if (tabName === 'new') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tabnew-btn').classList.add('active');
                 document.getElementById('tab-new').classList.add('active');
+            } else if (tabName === 'faq') {
+                document.getElementById('tabfaq-btn').classList.add('active');
+                document.getElementById('tab-faq').classList.add('active');
+                loadStudentFaq();
             } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tabinbox-btn').classList.add('active');
                 document.getElementById('tab-inbox').classList.add('active');
                 loadStudentTickets();
             }
         }
 
+        // ========================
+        // STUDENT FAQ LOGIC
+        // ========================
+        let studentFaqAll = [];
+        let studentFaqActiveCat = null;
+
+        async function loadStudentFaq() {
+            const listEl = document.getElementById('student-faq-list');
+            const catsEl = document.getElementById('student-faq-cats');
+            if (studentFaqAll.length > 0) return; // Already loaded
+            try {
+                const res = await fetch(`${BOT_BASE}/api/faq`);
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+                studentFaqAll = data.entries || [];
+                const cats = [...new Set((data.categories || []).map(c => c.category))];
+
+                // Build cat chips
+                let catsHtml = `<button class="faq-cat-btn active" onclick="studentFilterCat(null, this)">الكل</button>`;
+                cats.forEach(c => {
+                    catsHtml += `<button class="faq-cat-btn" onclick="studentFilterCat('${c.replace(/'/g,"\\'")}', this)">${c}</button>`;
+                });
+                catsEl.innerHTML = catsHtml;
+                renderStudentFaq(studentFaqAll);
+            } catch (e) {
+                listEl.innerHTML = `<div style="color:#e74c3c; text-align:center; padding:20px;">خطأ في تحميل الأسئلة</div>`;
+            }
+        }
+
+        function studentFilterCat(cat, btn) {
+            studentFaqActiveCat = cat;
+            document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = cat ? studentFaqAll.filter(e => e.category === cat) : studentFaqAll;
+            renderStudentFaq(filtered);
+        }
+
+        function studentFaqSearch(q) {
+            if (!q.trim()) { renderStudentFaq(studentFaqAll); return; }
+            const lower = q.toLowerCase();
+            renderStudentFaq(studentFaqAll.filter(e => e.question.toLowerCase().includes(lower) || e.answer.toLowerCase().includes(lower)));
+        }
+
+        function renderStudentFaq(entries) {
+            const listEl = document.getElementById('student-faq-list');
+            if (!entries || entries.length === 0) {
+                listEl.innerHTML = `
+                <div style="text-align:center; padding:40px 20px; color:var(--text-2);">
+                    <div style="font-size:2.5rem; margin-bottom:15px;">&#128269;</div>
+                    <div style="margin-bottom:15px;">لم نجد إجابة لسؤالك</div>
+                    <button class="btn-primary" style="width:auto; padding:12px 25px;" onclick="switchTab('new')">
+                        &#128640; ارسل تذكرة دعم
+                    </button>
+                </div>`;
+                return;
+            }
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+            listEl.innerHTML = entries.map(e => `
+                <div class="faq-item" id="faqitem-${e.id}" onclick="toggleFaqItem(${e.id}, this)">
+                    <div class="faq-item-q">
+                        <span>${e.is_pinned ? '&#128204; ' : ''}${e.question}</span>
+                        <span class="faq-chevron">&#709;</span>
+                    </div>
+                    <div class="faq-item-a">
+                        ${e.answer}
+                        <div class="faq-vote-btns">
+                            <button class="faq-vote-btn" id="vote-yes-${e.id}" onclick="event.stopPropagation(); voteFaq(${e.id}, true)">
+                                &#128077; مفيد
+                            </button>
+                            <button class="faq-vote-btn" id="vote-no-${e.id}" onclick="event.stopPropagation(); voteFaq(${e.id}, false)">
+                                &#128078; لم يفدني
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleFaqItem(id, el) {
+            const wasOpen = el.classList.contains('open');
+            // Close all
+            document.querySelectorAll('.faq-item.open').forEach(item => item.classList.remove('open'));
+            if (!wasOpen) {
+                el.classList.add('open');
+                // Track view
+                const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+                fetch(`${BOT_BASE}/api/faq/${id}/view`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({telegram_id: tid})
+                }).catch(()=>{});
+            }
+        }
+
+        async function voteFaq(id, helpful) {
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+            try {
+                await fetch(`${BOT_BASE}/api/faq/${id}/vote`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({helpful, telegram_id: tid})
+                });
+                const yesBtn = document.getElementById(`vote-yes-${id}`);
+                const noBtn = document.getElementById(`vote-no-${id}`);
+                if (helpful) {
+                    if (yesBtn) { yesBtn.classList.add('voted-yes'); yesBtn.disabled = true; }
+                    if (noBtn) noBtn.disabled = true;
+                } else {
+                    if (noBtn) { noBtn.classList.add('voted-no'); noBtn.disabled = true; }
+                    if (yesBtn) yesBtn.disabled = true;
+                    // Suggest opening a ticket
+                    setTimeout(() => {
+                        const item = document.getElementById(`faqitem-${id}`);
+                        if (item) {
+                            const answerEl = item.querySelector('.faq-item-a');
+                            if (answerEl) {
+                                const openTicket = document.createElement('div');
+                                openTicket.style.cssText = 'margin-top:12px; padding:10px; background:rgba(231,76,60,0.1); border-radius:8px; text-align:center; font-size:0.9rem;';
+                                openTicket.innerHTML = `&#128680; لم تجد إجابتك؟ <span onclick="switchTab('new')" style="color:var(--accent); cursor:pointer; font-weight:bold;">افتح تذكرة دعم</span>`;
+                                answerEl.appendChild(openTicket);
+                            }
+                        }
+                    }, 300);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // ========================
+        // STUDENT TICKETS
+        // ========================
         async function loadStudentTickets() {
             const list = document.getElementById('student-tickets-list');
-            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 12345;
-            
+            const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+            if (!tid) {
+                list.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-2);">لم يتم التعرف على حسابك. افتح التطبيق عبر تليجرام.</div>`;
+                return;
+            }
             try {
-                // Mock for now until Backend is wired
-                const res = await fetch(`/api/student/tickets?tg_id=${tid}`);
+                const res = await fetch(`${BOT_BASE}/api/tickets/student?telegram_id=${tid}`);
                 if (res.ok) {
                     const data = await res.json();
-                    renderStudentTickets(data);
+                    renderStudentTickets(data.tickets || []);
                 } else {
-                    // Fallback Mock Data
-                    renderStudentTickets([
-                        { id: 1001, theme: 'تقني', status: 'pending', text: 'لا أستطيع الدخول', timestamp: new Date().toISOString() },
-                        { id: 1002, theme: 'مالي', status: 'resolved', text: 'سؤال عن القسط', timestamp: new Date().toISOString() }
-                    ]);
+                    renderStudentTickets([]);
                 }
             } catch(e) {
-                renderStudentTickets([
-                    { id: 1001, theme: 'تقني', status: 'pending', text: 'لا أستطيع الدخول', timestamp: new Date().toISOString() },
-                    { id: 1002, theme: 'مالي', status: 'resolved', text: 'سؤال عن القسط', timestamp: new Date().toISOString() }
-                ]);
+                renderStudentTickets([]);
             }
         }
 
         function renderStudentTickets(tickets) {
             const list = document.getElementById('student-tickets-list');
-            if (tickets.length === 0) {
-                list.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-2);">لا توجد تذاكر سابقة.</div>`;
+            if (!tickets || tickets.length === 0) {
+                list.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-2);">
+                    <div style="font-size:2.5rem; margin-bottom:10px;">&#128229;</div>
+                    <div>لا توجد تذاكر سابقة</div>
+                </div>`;
                 return;
             }
-            
+            const statusMap = {
+                'open': {color:'#f39c12', label:'مفتوحة'},
+                'in_progress': {color:'#3498db', label:'قيد المعالجة'},
+                'resolved': {color:'#2ecc71', label:'محلولة'},
+                'reopen': {color:'#e74c3c', label:'أُعيد فتحها'}
+            };
             list.innerHTML = tickets.map(t => {
-                const statusColor = t.status === 'resolved' ? '#2ecc71' : '#f39c12';
-                const statusText = t.status === 'resolved' ? 'محلول' : 'قيد المعالجة';
-                const date = new Date(t.timestamp).toLocaleDateString('ar-MA');
+                const st = statusMap[t.status] || {color:'#888', label: t.status || 'قيد المعالجة'};
+                const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
+                const preview = (t.message || t.text || '').substring(0, 60);
                 return `
-                    <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:15px; cursor:pointer;" onclick="openStudentTicket(${t.id})">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                            <span style="color:var(--accent); font-weight:bold;">#${t.id} - ${t.theme || 'عام'}</span>
-                            <span style="color:${statusColor}; font-size:0.8rem; border:1px solid ${statusColor}; padding:2px 8px; border-radius:12px;">${statusText}</span>
-                        </div>
-                        <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:10px;">${t.text.substring(0, 50)}...</div>
-                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">${date}</div>
+                <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+                        <span style="color:var(--accent); font-weight:bold; font-size:0.9rem;">#${t.id} - ${t.theme || 'عام'}</span>
+                        <span style="color:${st.color}; font-size:0.8rem; border:1px solid ${st.color}; padding:2px 10px; border-radius:12px;">${st.label}</span>
                     </div>
-                `;
+                    <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:8px; line-height:1.4;">${preview}${preview.length >= 60 ? '...' : ''}</div>
+                    <div style="font-size:0.75rem; color:rgba(255,255,255,0.35);">${date}</div>
+                </div>`;
             }).join('');
         }
 
-        function openStudentTicket(id) {
-            alert("ستفتح هنا واجهة المحادثة الخاصة بالتذكرة #" + id);
-        }
-
+        window.onload = () => { /* Auto-init themes done above */ };
     </script>
 </body>
 </html>

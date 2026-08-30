@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 
 # --- DB TRANSCRIPTS HELPERS ---
 async def load_lessons_from_db():
@@ -55,6 +55,77 @@ import database as db
 from config import TELEGRAM_BOT_TOKEN
 
 from handlers.auth import router as auth_router
+# ====== CSAT CALLBACK HANDLER ======
+from aiogram import Router as _AiogramRouter
+from aiogram.filters import Filter as _AiogramFilter
+
+csat_router = _AiogramRouter()
+
+class _CsatFilter(_AiogramFilter):
+    async def __call__(self, callback: CallbackQuery) -> bool:
+        return callback.data is not None and callback.data.startswith("csat_")
+
+@csat_router.callback_query(_CsatFilter())
+async def handle_csat_callback(callback: CallbackQuery):
+    """Handles CSAT rating from students after ticket resolution."""
+    try:
+        # Expected format: csat_{ticket_id}_{score}
+        parts = callback.data.split("_")
+        if len(parts) < 3:
+            await callback.answer()
+            return
+        
+        ticket_id = parts[1]
+        score = int(parts[2])
+        
+        import database as db
+        
+        # Save CSAT score to database
+        try:
+            from config import DATABASE_PATH
+            import aiosqlite
+            async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                # Try to save score - add column if not exists
+                try:
+                    await db_conn.execute(
+                        "ALTER TABLE crm_tickets ADD COLUMN csat_score INTEGER DEFAULT NULL"
+                    )
+                    await db_conn.commit()
+                except Exception:
+                    pass  # Column already exists
+                await db_conn.execute(
+                    "UPDATE crm_tickets SET csat_score = ? WHERE id = ?",
+                    (score, ticket_id)
+                )
+                await db_conn.commit()
+        except Exception as db_err:
+            print(f"[CSAT] DB error: {db_err}")
+        
+        # Build acknowledgement message
+        stars = "\u2b50" * score
+        if score <= 2:
+            ack_text = f"{stars}\n\n\u0646\u0623\u0633\u0641 \u0644\u0639\u062f\u0645 \u0631\u0636\u0627\u0643\u0627\u0644\u062a\u0627\u0645! \u062a\u0645 \u0625\u0639\u0627\u062f\u0629 \u0641\u062a\u062d \u062a\u0630\u0643\u0631\u062a\u0643 \u0644\u0645\u062a\u0627\u0628\u0639\u0629 \u0623\u062d\u0633\u0646. \u0633\u064a\u062a\u0648\u0627\u0635\u0644 \u0645\u0639\u0643 \u0645\u0634\u0631\u0641 \u0622\u062e\u0631 \u0642\u0631\u064a\u0628\u0627\u064b."
+            # Reopen ticket
+            try:
+                await db.update_crm_ticket_status(ticket_id, 'reopen')
+            except Exception:
+                pass
+        elif score == 3:
+            ack_text = f"{stars}\n\n\u0634\u0643\u0631\u0627\u064b \u0639\u0644\u0649 \u062a\u0642\u064a\u064a\u0645\u0643! \u0633\u0646\u0639\u0645\u0644 \u0639\u0644\u0649 \u062a\u062d\u0633\u064a\u0646 \u062e\u062f\u0645\u062a\u0646\u0627."
+        else:
+            ack_text = f"{stars}\n\n\u0634\u0643\u0631\u0627\u064b \u062c\u0632\u064a\u0644\u0627\u064b \u0639\u0644\u0649 \u062a\u0642\u064a\u064a\u0645\u0643 \u0627\u0644\u0631\u0627\u0626\u0639! \u064a\u0633\u0639\u062f\u0646\u0627 \u062e\u062f\u0645\u062a\u0643."
+        
+        # Edit message to remove buttons
+        await callback.message.edit_text(
+            f"\u2b50 \u062a\u0642\u064a\u064a\u0645\u0643: {stars}\n\n{ack_text}",
+        )
+        await callback.answer()
+        
+    except Exception as e:
+        print(f"[CSAT] Handler error: {e}")
+        await callback.answer()
+
+# ===== END CSAT HANDLER =====
 
 
 
@@ -2342,19 +2413,19 @@ async def resolve_admin_proposal(request):
             # Notify student on Telegram
             bot = request.app['bot']
             try:
-                status_label = "âœ… ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø³Ø¤Ø§Ù„Ùƒ Ø§Ù„Ù…Ù‚ترح ÙˆØ¥Ø¶Ø§ÙØªÙ‡ Ù„Ù„Ø£Ø³Ø¦Ù„ة Ø§Ù„Ø±Ø³Ù…ÙŠة Ø¨Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠة!"
+                status_label = "✅ تم قبول سؤالك المقترح وإضافته للأسئلة الرسمية بالأكاديمية!"
                 if rejection_reason and action == 'approved':
-                    status_label += f"\nðŸ’¬ ØªØ¹Ù„ÙŠÙ‚ Ø§Ù„إدارة: {rejection_reason}"
+                    status_label += f"\n💬 تعليق الإدارة: {rejection_reason}"
                 elif action != 'approved':
-                    status_label = f"âŒ Ø¹Ø°Ø±Ø§Ù‹ØŒ ØªÙ… Ø±Ùض Ø³Ø¤Ø§Ù„Ùƒ Ø§Ù„Ù…Ù‚ترح.\nðŸ’¬ Ø§Ù„سبب: {rejection_reason}"
+                    status_label = f"❌ عذراً، تم رفض سؤالك المقترح.\n💬 السبب: {rejection_reason}"
                     
                 notif = (
-                    f"ðŸ“£ <b>ØªØ­Ø¯ÙŠث Ø¨Ø®ØµÙˆص Ù…Ù‚ØªØ±Ø­Ùƒ Ù„Ø£Ø³Ø¦Ù„ة Ø§Ù„Ù…راجعة (Ø§Ù„Ø¨Ùˆت Ø§Ù„Ø¨Ø¯ÙŠÙ„)</b>\n"
-                    f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
-                    f"Ø§Ù„Ø³Ø¤Ø§Ù„: <i>\"{proposal['question']}\"</i>\n\n"
+                    f"📢 <b>تحديث بخصوص مقترحك لأسئلة المراجعة (البوت البديل)</b>\n"
+                    f"—— —— —— —— —— —— —— —— —— —— \n"
+                    f"السؤال: <i>\"{proposal['question']}\"</i>\n\n"
                     f"{status_label}\n"
-                    f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
-                    f"Ø´ÙƒØ±Ø§Ù‹ Ù„Ù…Ø³Ø§Ù‡Ù…ØªÙƒ ÙÙŠ Ø¨Ù†اء Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠة!"
+                    f"—— —— —— —— —— —— —— —— —— —— \n"
+                    f"شكراً لمساهمتك في بناء الأكاديمية!"
                 )
                 await bot.send_message(proposal['user_id'], notif, parse_mode="HTML")
             except Exception as notify_err:
@@ -2477,23 +2548,8 @@ async def get_student_tickets(request):
         if not telegram_id:
             return web.json_response({"success": False, "error": "Missing telegram_id"}, status=400)
             
-        from config import DATABASE_PATH
-        tickets = []
-        async with aiosqlite.connect(DATABASE_PATH) as db_conn:
-            db_conn.row_factory = aiosqlite.Row
-            async with db_conn.execute("SELECT id, report_type, notes, urgency, status, admin_reply, created_at, media_file_id, media_type FROM question_reports WHERE user_id = ? ORDER BY created_at DESC", (int(telegram_id),)) as cur:
-                async for r in cur:
-                    tickets.append({
-                        "id": r["id"],
-                        "reportType": r["report_type"],
-                        "notes": r["notes"],
-                        "urgency": r["urgency"],
-                        "status": r["status"],
-                        "adminReply": r["admin_reply"] or "",
-                        "createdAt": r["created_at"],
-                        "mediaFileId": r["media_file_id"] or "",
-                        "mediaType": r["media_type"] or ""
-                    })
+        import database as db
+        tickets = await db.get_student_tickets(int(telegram_id))
         return web.json_response({"success": True, "tickets": tickets})
     except Exception as e:
         logger.error(f"Error loading student tickets: {e}")
@@ -2566,24 +2622,24 @@ async def reply_ticket_message_api(request):
                 if row:
                     try:
                         type_labels = {
-                            'suggestion': 'ðŸ’¡ Ø§Ù‚ØªØ±Ø§Ø­Ùƒ',
-                            'question_error': 'ðŸš© Ø¨Ù„اغ Ø§Ù„خطأ',
-                            'tech': 'ðŸ”§ Ù…Ø´ÙƒÙ„ØªÙƒ Ø§Ù„ØªÙ‚Ù†ÙŠة',
-                            'other': 'ðŸ“© Ø±Ø³Ø§Ù„تك'
+                            'suggestion': '💡 اقتراحك',
+                            'question_error': '🚩 بلاغ الخطأ',
+                            'tech': '🔧 مشكلتك التقنية',
+                            'other': '✉️ رسالتك'
                         }
-                        label = type_labels.get(row["report_type"], "ðŸ“© Ø±Ø³Ø§Ù„تك")
+                        label = type_labels.get(row["report_type"], "✉️ رسالتك")
                         
                         host = request.host
                         webapp_url = f"https://{host}/support.html?view=chat&ticket_id={ticket_id}"
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="ðŸ’¬ Ùتح Ø§Ù„Ù…حادثة ", web_app=WebAppInfo(url=webapp_url))]
+                            [InlineKeyboardButton(text="💬 فتح المحادثة ", web_app=WebAppInfo(url=webapp_url))]
                         ])
                         
                         await bot.send_message(
                             chat_id=row["user_id"],
-                            text=f"ðŸ“¬ <b>رد Ø¬Ø¯ÙŠد Ù…Ù† Ø§Ù„إدارة Ø¹Ù„Ù‰ {label} :</b>\n\n<i>\"{message}\"</i>",
+                            text=f"✉️ <b>رد جديد من الإدارة على {label} :</b>\n\n<i>\"{message}\"</i>",
                             reply_markup=reply_markup,
                             parse_mode="HTML"
                         )
@@ -2599,7 +2655,7 @@ async def reply_ticket_message_api(request):
                     try:
                         await bot.send_message(
                             chat_id=int(TELEGRAM_SUPPORT_GROUP_ID),
-                            text=f"ðŸ’¬ <b>رد Ø¬Ø¯ÙŠد Ù…Ù† Ø§Ù„Ø·Ø§Ù„ب Ø¹Ù„Ù‰ Ø§Ù„ØªØ°Ùƒرة #{ticket_id} :</b>\n\n<i>\"{message}\"</i>",
+                            text=f"💬 <b>رد جديد من الطالب على التذكرة #{ticket_id} :</b>\n\n<i>\"{message}\"</i>",
                             parse_mode="HTML"
                         )
                     except Exception as e:
@@ -2703,7 +2759,7 @@ async def admin_questions_list(request):
                 params = []
                 
                 base_query += " AND 1=1"
-                # Normalize aqida/aqeeda â€” DB may use either spelling
+                # Normalize aqida/aqeeda — DB may use either spelling
                 subj_variants = [subject]
                 if subject.lower() in ('aqida', 'aqeeda'):
                     subj_variants = ['aqida', 'aqeeda']
@@ -2747,7 +2803,7 @@ async def admin_questions_list(request):
                 def clean_words(text):
                     if not text:
                         return set()
-                    stop_words = {'le', 'la', 'de', 'en', 'et', 'ÙÙŠ', 'Ù…Ù†', 'Ø¹Ù„Ù‰', 'Ø§Ù†', 'Ø£Ù†', 'Ù‡Ùˆ', 'Ù‡ÙŠ', 'Ù‡Ù„'}
+                    stop_words = {'le', 'la', 'de', 'en', 'et', 'في', 'من', 'على', 'ان', 'أن', 'هو', 'هي', 'هل'}
                     words = "".join(c if c.isalnum() or c.isspace() else " " for c in text.lower()).split()
                     return {w for w in words if w not in stop_words and len(w) > 2}
                 
@@ -2816,7 +2872,7 @@ async def admin_questions_list(request):
             params = []
             
             if subject:
-                # Normalize aqida/aqeeda â€” DB may use either spelling
+                # Normalize aqida/aqeeda — DB may use either spelling
                 subj_variants = [subject]
                 if subject.lower() in ('aqida', 'aqeeda'):
                     subj_variants = ['aqida', 'aqeeda']
@@ -3072,7 +3128,7 @@ async def reorder_admin_thematics(request: web.Request):
                 
             parent_id, program_id = target_row
             
-            # 2. Obtenir tous les noeuds frÃ¨res (siblings) ordonnÃ©s
+            # 2. Obtenir tous les noeuds frères (siblings) ordonnés
             if parent_id is None:
                 query = "SELECT id FROM thematic_nodes WHERE program_id = ? AND level = ? AND parent_id IS NULL ORDER BY order_index, title"
                 params = (program_id, level)
@@ -3085,14 +3141,14 @@ async def reorder_admin_thematics(request: web.Request):
                 
             sibling_ids = [row[0] for row in rows]
             
-            # 3. RÃ©organiser la liste
+            # 3. Réorganiser la liste
             if source_node_id in sibling_ids and target_node_id in sibling_ids:
                 sibling_ids.remove(source_node_id)
                 target_index = sibling_ids.index(target_node_id)
                 # Inserer le source juste avant le target
                 sibling_ids.insert(target_index, source_node_id)
                 
-                # 4. Mettre Ã  jour la base de donnÃ©es
+                # 4. Mettre à jour la base de données
                 for idx, node_id in enumerate(sibling_ids):
                     await db.execute("UPDATE thematic_nodes SET order_index = ? WHERE id = ?", (idx, node_id))
                 await db.commit()
@@ -3236,7 +3292,7 @@ async def get_questions_stats_api(request):
         def clean_words(text):
             if not text:
                 return set()
-            stop_words = {'le', 'la', 'de', 'en', 'et', 'ÙÙŠ', 'Ù…Ù†', 'Ø¹Ù„Ù‰', 'Ø§Ù†', 'Ø£Ù†', 'Ù‡Ùˆ', 'Ù‡ÙŠ', 'Ù‡Ù„'}
+            stop_words = {'le', 'la', 'de', 'en', 'et', 'في', 'من', 'على', 'ان', 'أن', 'هو', 'هي', 'هل'}
             words = "".join(c if c.isalnum() or c.isspace() else " " for c in text.lower()).split()
             return {w for w in words if w not in stop_words and len(w) > 2}
 
@@ -3394,7 +3450,7 @@ async def resolve_admin_ticket(request):
 
             # Insert message into ticket_chat_messages
             if admin_reply:
-                admin_name = "Ø§Ù„إدارة"
+                admin_name = "المشرف"
                 async with db_conn.execute("SELECT first_name, username FROM admins WHERE telegram_id = ?", (int(user_id),)) as cur:
                     r = await cur.fetchone()
                     if r:
@@ -3412,12 +3468,12 @@ async def resolve_admin_ticket(request):
                 if bot:
                     try:
                         type_labels = {
-                            'suggestion': 'ðŸ’¡ Ø§Ù‚ØªØ±Ø§Ø­Ùƒ',
-                            'question_error': 'ðŸš© Ø¨Ù„اغ Ø§Ù„خطأ',
-                            'tech': 'ðŸ”§ Ù…Ø´ÙƒÙ„ØªÙƒ Ø§Ù„ØªÙ‚Ù†ÙŠة',
-                            'other': 'ðŸ“© Ø±Ø³Ø§Ù„تك'
+                            'suggestion': '💡 اقتراحك',
+                            'question_error': '🚩 بلاغ الخطأ',
+                            'tech': '🔧 مشكلتك التقنية',
+                            'other': '✉️ رسالتك'
                         }
-                        label = type_labels.get(row["report_type"] or "other", "ðŸ“© Ø±Ø³Ø§Ù„تك")
+                        label = type_labels.get(row["report_type"] or "other", "✉️ رسالتك")
                         
                         # Force https for WebApp compatibility on Telegram
                         host = request.host
@@ -3425,12 +3481,12 @@ async def resolve_admin_ticket(request):
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="ðŸ’¬ Ùتح Ø§Ù„Ù…حادثة ", web_app=WebAppInfo(url=webapp_url))]
+                            [InlineKeyboardButton(text="💬 فتح المحادثة ", web_app=WebAppInfo(url=webapp_url))]
                         ])
                         
                         await bot.send_message(
                             chat_id=row["user_id"],
-                            text=f"ðŸ“¬ رد Ø§Ù„إدارة Ø¹Ù„Ù‰ {label}:\n\n<i>\"{admin_reply}\"</i>",
+                            text=f"✉️ رد الإدارة على {label}:\n\n<i>\"{admin_reply}\"</i>",
                             reply_markup=reply_markup,
                             parse_mode="HTML"
                         )
@@ -3612,7 +3668,7 @@ async def claim_admin_ticket(request):
         
         from config import DATABASE_PATH
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
-            admin_name = "Ù…Ø´Ø±Ù"
+            admin_name = "مشرف"
             db_conn.row_factory = aiosqlite.Row
             # 1. Try checking admins table first
             async with db_conn.execute("SELECT first_name, username FROM admins WHERE telegram_id = ?", (int(user_id),)) as cur:
@@ -3621,7 +3677,7 @@ async def claim_admin_ticket(request):
                     admin_name = r["first_name"] or r["username"]
             
             # 2. Try checking users table if still generic
-            if admin_name == "Ù…Ø´Ø±Ù" or not admin_name:
+            if admin_name == "مشرف" or not admin_name:
                 async with db_conn.execute("SELECT first_name, username FROM users WHERE telegram_id = ?", (int(user_id),)) as cur:
                     r = await cur.fetchone()
                     if r and (r["first_name"] or r["username"]):
@@ -3632,7 +3688,7 @@ async def claim_admin_ticket(request):
                         )
             
             # 3. Try checking Telegram Bot API if still generic
-            if admin_name == "Ù…Ø´Ø±Ù" or not admin_name:
+            if admin_name == "مشرف" or not admin_name:
                 bot = request.app.get('bot')
                 if bot:
                     try:
@@ -3647,7 +3703,7 @@ async def claim_admin_ticket(request):
                         logger.warning(f"Could not retrieve admin chat info from Telegram in claim_admin_ticket: {tg_err}")
             
             from config import TELEGRAM_ADMIN_IDS
-            if admin_name == "Ù…Ø´Ø±Ù" and (int(user_id) in TELEGRAM_ADMIN_IDS or int(user_id) in [2045194295]):
+            if admin_name == "مشرف" and (int(user_id) in TELEGRAM_ADMIN_IDS or int(user_id) in [2045194295]):
                 admin_name = "Super Admin"
                 
             db_id = int(ticket_id) if item_type != 'report' else ticket_id
@@ -3785,7 +3841,7 @@ async def update_admin_permissions(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views â€” List accessible views for this admin
+# Admin API: Custom Views — List accessible views for this admin
 async def list_custom_views(request):
     try:
         data = await request.json()
@@ -3833,7 +3889,7 @@ async def list_custom_views(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views â€” Save (create or update)
+# Admin API: Custom Views — Save (create or update)
 async def save_custom_view(request):
     try:
         data = await request.json()
@@ -3844,7 +3900,7 @@ async def save_custom_view(request):
         role = await get_admin_role(user_id)
         view_id = data.get('id')  # None = create new
         name = data.get('name', 'Vue')
-        icon = data.get('icon', 'ðŸ“Œ')
+        icon = data.get('icon', '📌')
         filters_obj = data.get('filters', {})
         visibility = data.get('visibility', 'private')
         target_ids = data.get('targetIds', [])
@@ -3884,7 +3940,7 @@ async def save_custom_view(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views â€” Delete
+# Admin API: Custom Views — Delete
 async def delete_custom_view(request):
     try:
         data = await request.json()
@@ -3903,9 +3959,9 @@ async def delete_custom_view(request):
                 return web.json_response({"success": False, "error": "View not found"}, status=404)
             # Only owner or super_admin can delete; locked views need super_admin
             if view['is_locked'] and role != 'super_admin':
-                return web.json_response({"success": False, "error": "Vue verrouillÃ©e"}, status=403)
+                return web.json_response({"success": False, "error": "Vue verrouillée"}, status=403)
             if view['created_by'] != int(user_id) and role != 'super_admin':
-                return web.json_response({"success": False, "error": "Non autorisÃ©"}, status=403)
+                return web.json_response({"success": False, "error": "Non autorisé"}, status=403)
             await db_conn.execute("DELETE FROM admin_custom_views WHERE id = ?", (view_id,))
             await db_conn.commit()
         return web.json_response({"success": True})
@@ -3914,7 +3970,7 @@ async def delete_custom_view(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# Admin API: Custom Views â€” Reorder
+# Admin API: Custom Views — Reorder
 async def reorder_custom_views(request):
     try:
         data = await request.json()
@@ -4071,8 +4127,7 @@ async def get_media_stats_api(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-# â”€â”€â”€ Student Practice & Quiz API Endpoints â”€â”€â”€
-
+# ——— Student Practice & Quiz API Endpoints ———
 
 async def api_validate_student(request: web.Request):
     import aiosqlite
@@ -4212,9 +4267,9 @@ async def api_link_account(request: web.Request):
                     # SEND WELCOME MESSAGE VIA TELEGRAM
                     display_name = telegram_first_name if telegram_first_name else real_first_name
                     welcome_msg = (
-                        f"أهلاً بك {display_name} في أكاديمية الباجي.\\n\\n"
-                        f"تم التحقق من هويتك بنجاح (رقم الطالب: {db_student_id}).\\n"
-                        f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\\n\\n"
+                        f"أهلاً بك {display_name} في أكاديمية الباجي.\n\n"
+                        f"تم التحقق من هويتك بنجاح (رقم الطالب: {db_student_id}).\n"
+                        f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\n\n"
                         f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
                     )
                     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -4278,7 +4333,7 @@ async def get_student_stats(request):
             "remaining": rems,
             "emojis": emojis,
             "streak": streak,
-            "preferredName": user_info.get("preferred_name") or user_info.get("first_name") or "Ø·Ø§Ù„ب" if user_info else "Ø·Ø§Ù„ب",
+            "preferredName": user_info.get("preferred_name") or user_info.get("first_name") or "طالب" if user_info else "طالب",
             "courseProgress": course_progress,
             "detailedProgress": detailed_progress
         })
@@ -4609,17 +4664,16 @@ async def api_support_rag_check(request):
         return web.json_response({'found': False})
 
 async def api_admin_get_tickets(request):
-    import os, json
-    from aiohttp import web
-    tickets_file = os.path.join(os.path.dirname(__file__), 'tickets_db.json')
-    tickets = []
-    if os.path.exists(tickets_file):
-        try:
-            with open(tickets_file, 'r', encoding='utf-8') as f:
-                tickets = json.load(f)
-        except Exception:
-            pass
-    return web.json_response({'tickets': tickets})
+    try:
+        import database as db
+        from aiohttp import web
+        tickets = await db.get_all_crm_tickets()
+        return web.json_response({'tickets': tickets})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 async def api_admin_get_students(request):
     import os, json
@@ -4658,61 +4712,46 @@ async def api_support(request):
         telegram_id = data.get('telegram_id')
         username = data.get('username', 'غير معروف')
         first_name = data.get('first_name', 'غير معروف')
+        auto_resolved = data.get('auto_resolved', False)
 
-        import requests
-        import json
-        import os
-        from datetime import datetime
-        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
+        import database as db
         
-        # Save ticket to DB
-        tickets_file = os.path.join(os.path.dirname(__file__), 'tickets_db.json')
-        tickets = []
-        if os.path.exists(tickets_file):
-            try:
-                with open(tickets_file, 'r', encoding='utf-8') as f:
-                    tickets = json.load(f)
-            except Exception:
-                pass
-                
-        ticket_id = f"#{len(tickets) + 1001}"
+        status = 'resolved' if auto_resolved else 'new'
+        ai_topic = 'IA' if auto_resolved else ''
         
-        new_ticket = {
-            "id": ticket_id,
-            "telegram_id": telegram_id,
-            "username": username,
-            "first_name": first_name,
-            "theme": theme,
-            "subtheme": subtheme,
-            "message": msg,
-            "status": "Nouveau",
-            "claimed_by": None,
-            "timestamp": datetime.now().isoformat()
-        }
+        ticket_id = await db.create_crm_ticket(
+            telegram_id=telegram_id,
+            username=username,
+            first_name=first_name,
+            theme=theme,
+            subtheme=subtheme,
+            message=msg,
+            status=status,
+            is_ghost=auto_resolved,
+            ai_topic=ai_topic
+        )
         
-        tickets.append(new_ticket)
-        
-        with open(tickets_file, 'w', encoding='utf-8') as f:
-            json.dump(tickets, f, ensure_ascii=False, indent=4)
-        
-        text = f'🆘 <b>طلب مساعدة / استفسار جديد {ticket_id}</b>\n\n'
-        text += f'👤 <b>الطالب:</b> {first_name} (@{username})\n'
-        text += f'🆔 <b>Telegram ID:</b> {telegram_id}\n'
-        text += f'📂 <b>القسم:</b> {theme}\n'
-        text += f'🔖 <b>التفاصيل:</b> {subtheme}\n\n'
-        text += f'📝 <b>الرسالة:</b>\n{msg}\n\n'
-        text += f'🔗 للرد، يرجى الدخول إلى لوحة التحكم (Admin Dashboard /federer).'
-        
-        url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
-        payload = {
-            'chat_id': TELEGRAM_SUPPORT_GROUP_ID,
-            'text': text,
-            'parse_mode': 'HTML'
-        }
-        requests.post(url, json=payload)
+        if not auto_resolved:
+            import requests
+            from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
+            text = f'🆘 <b>طلب مساعدة / استفسار جديد #{ticket_id}</b>\n\n'
+            text += f'👤 <b>الطالب:</b> {first_name} (@{username})\n'
+            text += f'🆔 <b>Telegram ID:</b> {telegram_id}\n'
+            text += f'📂 <b>القسم:</b> {theme}\n'
+            text += f'🔖 <b>التفاصيل:</b> {subtheme}\n\n'
+            text += f'📝 <b>الرسالة:</b>\n{msg}\n\n'
+            text += f'🔗 للرد، يرجى الدخول إلى لوحة التحكم (Admin Dashboard /federer).'
+            
+            url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+            payload = {
+                'chat_id': TELEGRAM_SUPPORT_GROUP_ID,
+                'text': text,
+                'parse_mode': 'HTML'
+            }
+            requests.post(url, json=payload)
         
         from aiohttp import web
-        return web.json_response({'success': True})
+        return web.json_response({'success': True, 'ticket_id': ticket_id})
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -4783,6 +4822,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/ask', handle_support)
     app.router.add_post('/api/support/rag_check', api_support_rag_check)
     app.router.add_get('/api/admin/tickets', api_admin_get_tickets)
+    register_crm_routes(app)
     app.router.add_get('/api/admin/students', api_admin_get_students)
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
@@ -5039,6 +5079,7 @@ async def main():
 
     # Include handlers
     dp.include_router(auth_router)
+    dp.include_router(csat_router)  # CSAT ratings
     
     
     
@@ -5124,3 +5165,368 @@ if __name__ == "__main__":
     except (KeyboardInterrupt, SystemExit):
         logger.info("Bot stopped.")
 
+
+async def api_support_reply(request):
+    try:
+        data = await request.json()
+        ticket_id = data.get('ticket_id')
+        message = data.get('message')
+        telegram_id = data.get('telegram_id')
+        admin_name = data.get('admin_name', 'Admin')
+        
+        if not ticket_id or not message or not telegram_id:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+             
+        import database as db
+        # Update status to pending (or resolved if you prefer)
+        await db.update_crm_ticket_status(ticket_id, 'pending')
+        
+        # Send message to user via Telegram
+        bot = request.app['bot']
+        text = f"?? <b>?? ?? ??????? (??????? #{ticket_id})</b>\n\n?? {admin_name}: {message}"
+        await bot.send_message(chat_id=telegram_id, text=text, parse_mode='HTML')
+        
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_admin_assign_ticket(request):
+    try:
+        data = await request.json()
+        ticket_id = data.get('ticket_id')
+        admin_name = data.get('admin_name')
+        
+        if not ticket_id or not admin_name:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+             
+        import database as db
+        await db.assign_crm_ticket(ticket_id, admin_name)
+        
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_admin_resolve_ticket(request):
+    try:
+        data = await request.json()
+        ticket_id = data.get('ticket_id')
+        if not ticket_id:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+             
+        import database as db
+        await db.update_crm_ticket_status(ticket_id, 'resolved')
+        
+        # CSAT : Envoyer une demande de notation a l'eleve via Telegram
+        try:
+            ticket = await db.get_crm_ticket(ticket_id)
+            if ticket and ticket.get('telegram_id'):
+                telegram_id = ticket['telegram_id']
+                admin_name = ticket.get('assigned_to') or 'equipe support'
+                csat_text = (
+                    f"\u2705 \u062a\u0645 \u062d\u0644 \u0645\u0634\u0643\u0644\u062a\u0643 \u0628\u0646\u062c\u0627\u062d!\n\n"
+                    f"\u062a\u0648\u0644\u0651\u0649 \u0630\u0644\u0643: *{admin_name}*\n\n"
+                    f"\u0643\u064a\u0641 \u062a\u0642\u064a\u0651\u0645 \u062c\u0648\u062f\u0629 \u0627\u0644\u062f\u0639\u0645 \u0627\u0644\u0630\u064a \u062a\u0644\u0642\u064a\u062a\u0647\u061f"
+                )
+                from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+                csat_keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="\u2b50", callback_data=f"csat_{ticket_id}_1"),
+                    InlineKeyboardButton(text="\u2b50\u2b50", callback_data=f"csat_{ticket_id}_2"),
+                    InlineKeyboardButton(text="\u2b50\u2b50\u2b50", callback_data=f"csat_{ticket_id}_3"),
+                    InlineKeyboardButton(text="\u2b50\u2b50\u2b50\u2b50", callback_data=f"csat_{ticket_id}_4"),
+                    InlineKeyboardButton(text="\u2b50\u2b50\u2b50\u2b50\u2b50", callback_data=f"csat_{ticket_id}_5"),
+                ]])
+                await bot.send_message(
+                    chat_id=int(telegram_id),
+                    text=csat_text,
+                    parse_mode="Markdown",
+                    reply_markup=csat_keyboard
+                )
+        except Exception as csat_err:
+            print(f"[CSAT] Erreur envoi CSAT: {csat_err}")
+        
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+def register_crm_routes(app):
+    app.router.add_post('/api/support/reply', api_support_reply)
+    app.router.add_post('/api/admin/assign', api_admin_assign_ticket)
+    app.router.add_post('/api/admin/resolve', api_admin_resolve_ticket)
+    app.router.add_post('/api/admin/draft_reply', api_admin_draft_reply)
+    app.router.add_get('/api/admin/student_profile', api_admin_student_profile)
+    # FAQ routes
+    app.router.add_get('/api/faq', api_faq_get)
+    app.router.add_post('/api/faq/add', api_faq_add)
+    app.router.add_post('/api/faq/{id}/update', api_faq_update)
+    app.router.add_delete('/api/faq/{id}', api_faq_delete)
+    app.router.add_post('/api/faq/{id}/view', api_faq_view)
+    app.router.add_post('/api/faq/{id}/vote', api_faq_vote)
+    app.router.add_get('/api/faq/analytics', api_faq_analytics)
+    app.router.add_get('/api/faq/suggestions', api_faq_suggestions_get)
+    app.router.add_post('/api/faq/suggestions/{id}/approve', api_faq_suggestion_approve)
+    app.router.add_post('/api/faq/suggestions/{id}/reject', api_faq_suggestion_reject)
+
+async def api_admin_draft_reply(request):
+    try:
+        data = await request.json()
+        ticket_id = data.get('ticket_id')
+        if not ticket_id:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+             
+        import database as db
+        ticket = await db.get_crm_ticket(ticket_id)
+        if not ticket:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Ticket not found'}, status=404)
+             
+        msg = ticket.get('message', '')
+        
+        # Use existing RAG search logic if available
+        try:
+            matches = await db.search_similar_triage(msg, use_ai=True)
+            if matches and len(matches) > 0:
+                best_match = matches[0]
+                answer = best_match.get('ai_answer') or best_match.get('answer') or best_match.get('content')
+                if answer:
+                    draft = f"?????? {ticket.get('first_name', '????')},\n\n{answer}\n\n????? ?? ???? ??? ??????!"
+                    from aiohttp import web
+                    return web.json_response({'success': True, 'draft': draft})
+        except Exception as e:
+            print("Draft RAG error:", e)
+            
+        # Fallback basic draft
+        draft = f"?????? {ticket.get('first_name', '????')},\n\n????? ??????? ???? ????? '{ticket.get('theme', '????????')}'.\n\n[???? ??? ???]"
+        from aiohttp import web
+        return web.json_response({'success': True, 'draft': draft})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_admin_student_profile(request):
+    try:
+        telegram_id = request.query.get('telegram_id')
+        if not telegram_id:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+             
+        import database as db
+        from config import DATABASE_PATH
+        import aiosqlite
+        
+        profile = {
+            'telegram_id': telegram_id,
+            'name': '??? ?????',
+            'join_date': '??? ?????',
+            'total_score': 0,
+            'quizzes_taken': 0,
+            'status': '??? ????'
+        }
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            db_conn.row_factory = aiosqlite.Row
+            # Try to get user
+            async with db_conn.execute("SELECT first_name, username, created_at FROM users WHERE telegram_id = ?", (int(telegram_id),)) as cur:
+                row = await cur.fetchone()
+                if row:
+                    profile['name'] = row['first_name'] or row['username'] or '????'
+                    profile['join_date'] = row['created_at']
+                    profile['status'] = '? ???'
+                    
+            # Try to get quiz stats
+            try:
+                async with db_conn.execute("SELECT COUNT(*) as count, SUM(score) as total_score FROM quiz_results WHERE user_id = ?", (int(telegram_id),)) as cur:
+                    row = await cur.fetchone()
+                    if row:
+                        profile['quizzes_taken'] = row['count'] or 0
+                        profile['total_score'] = row['total_score'] or 0
+            except Exception:
+                pass
+                
+        from aiohttp import web
+        return web.json_response({'success': True, 'profile': profile})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+# ====================================================
+# FAQ API ROUTES
+# ====================================================
+
+async def api_faq_get(request):
+    """GET /api/faq?category=&subcategory=&search= - List FAQ entries."""
+    try:
+        import database as db
+        category = request.rel_url.query.get('category', None)
+        subcategory = request.rel_url.query.get('subcategory', None)
+        search = request.rel_url.query.get('search', None)
+        from aiohttp import web
+        if search:
+            entries = await db.search_faq(search)
+        else:
+            entries = await db.get_faq_entries(category=category, subcategory=subcategory)
+        categories = await db.get_faq_categories()
+        return web.json_response({'success': True, 'entries': entries, 'categories': categories})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_add(request):
+    """POST /api/faq/add - Admin adds a new FAQ entry."""
+    try:
+        data = await request.json()
+        import database as db
+        from aiohttp import web
+        q = data.get('question', '').strip()
+        a = data.get('answer', '').strip()
+        cat = data.get('category', '').strip()
+        subcat = data.get('subcategory', '').strip()
+        ticket_id = data.get('source_ticket_id', None)
+        if not q or not a or not cat:
+            return web.json_response({'success': False, 'error': 'question, answer et category sont requis'}, status=400)
+        new_id = await db.add_faq_entry(cat, q, a, subcategory=subcat, source_ticket_id=ticket_id)
+        return web.json_response({'success': True, 'id': new_id})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_update(request):
+    """POST /api/faq/{id}/update - Admin edits a FAQ entry."""
+    try:
+        faq_id = int(request.match_info.get('id'))
+        data = await request.json()
+        import database as db
+        from aiohttp import web
+        await db.update_faq_entry(
+            faq_id,
+            category=data.get('category'),
+            subcategory=data.get('subcategory'),
+            question=data.get('question'),
+            answer=data.get('answer'),
+            is_pinned=data.get('is_pinned')
+        )
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_delete(request):
+    """DELETE /api/faq/{id} - Admin deletes a FAQ entry."""
+    try:
+        faq_id = int(request.match_info.get('id'))
+        import database as db
+        await db.delete_faq_entry(faq_id)
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_view(request):
+    """POST /api/faq/{id}/view - Student viewed a FAQ entry."""
+    try:
+        faq_id = int(request.match_info.get('id'))
+        data = await request.json()
+        telegram_id = data.get('telegram_id', None)
+        import database as db
+        await db.log_faq_view(faq_id, telegram_id=telegram_id)
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_vote(request):
+    """POST /api/faq/{id}/vote - Student votes helpful or not."""
+    try:
+        faq_id = int(request.match_info.get('id'))
+        data = await request.json()
+        helpful = bool(data.get('helpful', True))
+        telegram_id = data.get('telegram_id', None)
+        import database as db
+        await db.vote_faq_helpful(faq_id, helpful, telegram_id=telegram_id)
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_analytics(request):
+    """GET /api/faq/analytics - Admin gets FAQ usage stats."""
+    try:
+        import database as db
+        analytics = await db.get_faq_analytics()
+        from aiohttp import web
+        return web.json_response({'success': True, 'data': analytics})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_suggestions_get(request):
+    """GET /api/faq/suggestions - Admin gets pending FAQ suggestions."""
+    try:
+        import database as db
+        suggestions = await db.get_faq_suggestions(status='pending')
+        from aiohttp import web
+        return web.json_response({'success': True, 'suggestions': suggestions})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_suggestion_approve(request):
+    """POST /api/faq/suggestions/{id}/approve - Admin approves a suggestion."""
+    try:
+        suggestion_id = int(request.match_info.get('id'))
+        import database as db
+        new_id = await db.approve_faq_suggestion(suggestion_id)
+        from aiohttp import web
+        return web.json_response({'success': True, 'new_faq_id': new_id})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+
+async def api_faq_suggestion_reject(request):
+    """POST /api/faq/suggestions/{id}/reject - Admin rejects a suggestion."""
+    try:
+        suggestion_id = int(request.match_info.get('id'))
+        import database as db
+        await db.reject_faq_suggestion(suggestion_id)
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+# ====================================================
+# END FAQ API ROUTES
+# ====================================================
