@@ -242,6 +242,10 @@
             
             <div id="support-form">
                 <div class="header">
+                    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.3); border-radius:20px; padding:6px 14px; font-size:0.82rem; color:#2ecc71; margin-bottom:12px;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:#2ecc71; box-shadow:0 0 8px #2ecc71; display:inline-block;"></span>
+                        فريق الدعم متصل حالياً — متوسط سرعة الرد: 15 دقيقة
+                    </div>
                     <div class="header-icon">&#129302;</div>
                     <h1>مركز الدعم الذكي</h1>
                     <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
@@ -261,7 +265,14 @@
                 <div class="step-container" id="step-3">
                     <div class="input-group">
                         <label>اشرح مشكلتك بالتفصيل:</label>
-                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
+                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..." oninput="livePredictiveFaqSearch(this.value)"></textarea>
+                    </div>
+                    <!-- Live Predictive FAQ Container -->
+                    <div id="predictive-faq-box" style="display:none; margin-top:12px; background:rgba(241,196,15,0.06); border:1px solid rgba(241,196,15,0.25); border-radius:14px; padding:14px;">
+                        <div style="font-size:0.88rem; font-weight:bold; color:var(--accent); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                            <span>💡</span> هل تجد إجابتك هنا مباشرة؟
+                        </div>
+                        <div id="predictive-faq-results"></div>
                     </div>
                     <div class="input-group" style="margin-top:10px;">
                         <label for="attachment" style="display:flex; align-items:center; gap:8px; cursor:pointer; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); justify-content:center; color:var(--accent); font-weight:bold;">
@@ -858,6 +869,8 @@
         }
 
                 function renderStudentTickets(tickets) {
+            studentLoadedTicketsMap = {};
+            (tickets || []).forEach(t => { studentLoadedTicketsMap[t.id] = t; });
             const list = document.getElementById('student-tickets-list');
             if (!tickets || tickets.length === 0) {
                 list.innerHTML = `
@@ -897,13 +910,16 @@
                     const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
                     const preview = (t.message || t.text || '').substring(0, 60);
                     return `
-                    <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:10px;">
+                    <div onclick="openTicketThread(${t.id})" style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
                             <span style="color:var(--text-1); font-weight:bold; font-size:0.9rem;">#${t.id} - ${t.theme || 'عام'}</span>
                             <span style="color:${color}; font-size:0.75rem; border:1px solid ${color}; padding:2px 8px; border-radius:12px;">${title}</span>
                         </div>
                         <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:8px; line-height:1.4;">${preview}${preview.length >= 60 ? '...' : ''}</div>
-                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.35);">${date}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.35);">${date}</span>
+                            <span style="font-size:0.78rem; color:var(--accent); font-weight:bold;">عرض المحادثة 💬 ➔</span>
+                        </div>
                     </div>`;
                 }).join('');
                 return gHtml;
@@ -922,6 +938,206 @@
             loadStudentTickets();
         };
         
+        
+        // ========================
+        // LIVE PREDICTIVE FAQ
+        // ========================
+        let liveSearchTimer;
+        function livePredictiveFaqSearch(text) {
+            const query = (text || '').trim().toLowerCase();
+            const box = document.getElementById('predictive-faq-box');
+            const resEl = document.getElementById('predictive-faq-results');
+            if (!box || !resEl) return;
+            
+            if (query.length < 3) {
+                box.style.display = 'none';
+                return;
+            }
+            
+            clearTimeout(liveSearchTimer);
+            liveSearchTimer = setTimeout(() => {
+                const matches = (studentFaqAll || []).filter(item => {
+                    return (item.question && item.question.toLowerCase().includes(query)) ||
+                           (item.answer && item.answer.toLowerCase().includes(query));
+                }).slice(0, 3);
+                
+                if (matches.length === 0) {
+                    box.style.display = 'none';
+                    return;
+                }
+                
+                resEl.innerHTML = matches.map(m => `
+                    <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; margin-top:8px;">
+                        <div style="font-weight:bold; font-size:0.88rem; color:var(--text-1); cursor:pointer;" onclick="togglePredictiveAnswer(${m.id})">
+                            ❓ ${m.question} <span style="font-size:0.75rem; color:var(--accent); float:left;">عرض الحل</span>
+                        </div>
+                        <div id="pred-ans-${m.id}" style="display:none; margin-top:8px; font-size:0.84rem; color:var(--text-2); border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; line-height:1.5;">
+                            ${m.answer}
+                            <div style="margin-top:8px; text-align:left;">
+                                <button onclick="acceptPredictiveSolution(${m.id})" style="background:#2ecc71; color:white; border:none; padding:5px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-family:'Tajawal'; font-weight:bold;">
+                                    ✅ هذه الإجابة حلت مشكلتي
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                box.style.display = 'block';
+            }, 300);
+        }
+
+        function togglePredictiveAnswer(id) {
+            const el = document.getElementById(`pred-ans-${id}`);
+            if (el) {
+                el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+            }
+        }
+
+        function acceptPredictiveSolution(id) {
+            resolveTicket();
+        }
+
+        // ========================
+        // TICKET CONVERSATION THREAD & CSAT
+        // ========================
+        let currentThreadTicketId = null;
+        let studentLoadedTicketsMap = {};
+
+        function openTicketThread(ticketId) {
+            const ticket = studentLoadedTicketsMap[ticketId];
+            if (!ticket) return;
+            currentThreadTicketId = ticketId;
+            
+            document.getElementById('modal-thread-title').innerText = `#${ticket.id} - ${ticket.theme || 'استفسار'}`;
+            const dateStr = ticket.timestamp ? new Date(ticket.timestamp).toLocaleString('ar-MA') : '';
+            document.getElementById('modal-thread-subtitle').innerText = `التاريخ: ${dateStr}`;
+            
+            const statusEl = document.getElementById('modal-thread-status');
+            const isResolved = (ticket.status === 'resolved' || ticket.status === 'محلولة');
+            const isInProgress = (ticket.status === 'in_progress' || ticket.status === 'قيد المعالجة');
+            
+            if (isResolved) {
+                statusEl.innerText = 'تم الرد (محلولة)';
+                statusEl.style.background = 'rgba(46,204,113,0.15)';
+                statusEl.style.color = '#2ecc71';
+                statusEl.style.border = '1px solid #2ecc71';
+            } else if (isInProgress) {
+                statusEl.innerText = 'قيد المعالجة';
+                statusEl.style.background = 'rgba(52,152,219,0.15)';
+                statusEl.style.color = '#3498db';
+                statusEl.style.border = '1px solid #3498db';
+            } else {
+                statusEl.innerText = 'في انتظار الرد';
+                statusEl.style.background = 'rgba(243,156,18,0.15)';
+                statusEl.style.color = '#f39c12';
+                statusEl.style.border = '1px solid #f39c12';
+            }
+            
+            // Build conversation thread
+            let messages = [];
+            if (ticket.conversation) {
+                try {
+                    messages = typeof ticket.conversation === 'string' ? JSON.parse(ticket.conversation) : ticket.conversation;
+                } catch(e) { messages = []; }
+            }
+            
+            if (!messages || messages.length === 0) {
+                messages = [{ sender: 'student', name: ticket.first_name || 'أنت', text: ticket.message || '', timestamp: dateStr }];
+                if (ticket.admin_reply) {
+                    messages.push({ sender: 'admin', name: ticket.assigned_to || 'فريق الدعم', text: ticket.admin_reply, timestamp: '' });
+                }
+            }
+            
+            const container = document.getElementById('modal-thread-messages');
+            container.innerHTML = messages.map(m => {
+                const isStudent = (m.sender === 'student');
+                return `
+                <div style="display:flex; flex-direction:column; align-items:${isStudent ? 'flex-start' : 'flex-end'};">
+                    <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:3px; padding:0 4px;">
+                        ${isStudent ? '👤 ' + (m.name || 'أنت') : '🛡️ ' + (m.name || 'إدارة الأكاديمية')}
+                    </div>
+                    <div style="background:${isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)'}; border:1px solid ${isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)'}; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">
+                        ${(m.text || '').replace(/\n/g, '<br>')}
+                    </div>
+                    ${m.timestamp ? `<div style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:3px;">${m.timestamp}</div>` : ''}
+                </div>`;
+            }).join('');
+            
+            // Handle CSAT rating box
+            const csatBox = document.getElementById('modal-csat-box');
+            if (isResolved) {
+                csatBox.style.display = 'block';
+                document.getElementById('csat-status-msg').style.display = ticket.rating ? 'block' : 'none';
+                if (ticket.rating) {
+                    highlightCsatStars(ticket.rating);
+                }
+            } else {
+                csatBox.style.display = 'none';
+            }
+            
+            document.getElementById('ticket-thread-modal').style.display = 'flex';
+            setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+        }
+
+        function closeTicketThread() {
+            document.getElementById('ticket-thread-modal').style.display = 'none';
+            currentThreadTicketId = null;
+        }
+
+        async function selectCsatStar(stars) {
+            if (!currentThreadTicketId) return;
+            highlightCsatStars(stars);
+            try {
+                await fetch(`${BOT_BASE}/api/tickets/${currentThreadTicketId}/rate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: stars })
+                });
+                document.getElementById('csat-status-msg').style.display = 'block';
+                if (studentLoadedTicketsMap[currentThreadTicketId]) {
+                    studentLoadedTicketsMap[currentThreadTicketId].rating = stars;
+                }
+            } catch(e) { console.error('Rating error:', e); }
+        }
+
+        function highlightCsatStars(rating) {
+            const starSpans = document.querySelectorAll('#csat-stars span');
+            starSpans.forEach((span, idx) => {
+                span.style.opacity = (idx < rating) ? '1' : '0.3';
+                span.style.transform = (idx < rating) ? 'scale(1.2)' : 'scale(1)';
+            });
+        }
+
+        async function sendStudentFollowupReply() {
+            const input = document.getElementById('modal-reply-input');
+            const msg = (input ? input.value : '').trim();
+            if (!msg || !currentThreadTicketId) return;
+            
+            input.value = '';
+            const container = document.getElementById('modal-thread-messages');
+            container.innerHTML += `
+                <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                    <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:3px;">👤 أنت</div>
+                    <div style="background:#1e3a8a; border:1px solid #3b82f6; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; color:#fff;">
+                        ${msg.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+            container.scrollTop = container.scrollHeight;
+            
+            const tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || null;
+            const fname = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "") || "الطالب";
+            const uname = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "") || "";
+            
+            try {
+                await fetch(`${BOT_BASE}/api/tickets/${currentThreadTicketId}/reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, telegram_id: tid, first_name: fname, username: uname })
+                });
+            } catch(e) { console.error('Reply error:', e); }
+        }
+
         // --- LIVE RADAR PING ---
         function initLiveRadarPing() {
             const sendPing = () => {
@@ -950,5 +1166,49 @@
         setTimeout(initLiveRadarPing, 1000);
     </script>
 
-    </body>
+    
+    <!-- TICKET THREAD MODAL -->
+    <div class="modal-overlay" id="ticket-thread-modal" style="display:none; z-index:3000;">
+        <div class="modal-content" style="max-height:90vh; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+            <!-- Modal Header -->
+            <div style="padding:15px 20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03);">
+                <div>
+                    <div style="font-weight:bold; font-size:1rem; color:var(--text-1);" id="modal-thread-title">تفاصيل التذكرة</div>
+                    <div style="font-size:0.75rem; color:var(--text-2);" id="modal-thread-subtitle">تاريخ الإنشاء: --</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="modal-thread-status" style="font-size:0.75rem; padding:3px 10px; border-radius:12px;">قيد الانتظار</span>
+                    <button class="modal-close" style="position:static;" onclick="closeTicketThread()">✕</button>
+                </div>
+            </div>
+
+            <!-- Messages Thread Area -->
+            <div id="modal-thread-messages" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px; background:rgba(0,0,0,0.2);">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- CSAT Rating Widget (Shown if ticket is resolved) -->
+            <div id="modal-csat-box" style="display:none; padding:15px; background:rgba(241,196,15,0.08); border-top:1px solid rgba(241,196,15,0.2); text-align:center;">
+                <div style="font-size:0.9rem; font-weight:bold; color:var(--accent); margin-bottom:8px;">⭐️ ما هو تقييمك لخدمة الدعم؟</div>
+                <div style="font-size:1.8rem; display:flex; justify-content:center; gap:8px; cursor:pointer; margin-bottom:8px;" id="csat-stars">
+                    <span onclick="selectCsatStar(1)">⭐</span>
+                    <span onclick="selectCsatStar(2)">⭐</span>
+                    <span onclick="selectCsatStar(3)">⭐</span>
+                    <span onclick="selectCsatStar(4)">⭐</span>
+                    <span onclick="selectCsatStar(5)">⭐</span>
+                </div>
+                <div id="csat-status-msg" style="font-size:0.8rem; color:#2ecc71; font-weight:bold; display:none;">تم حفظ تقييمك بنجاح، شكراً لك! 🙏</div>
+            </div>
+
+            <!-- Reply Input Bar -->
+            <div id="modal-reply-bar" style="padding:15px; border-top:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); display:flex; gap:10px;">
+                <input type="text" id="modal-reply-input" placeholder="اكتب رداً إضافياً للإدارة..." style="flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:12px; border-radius:10px; font-family:'Tajawal'; font-size:0.9rem; outline:none;" onkeypress="if(event.key === 'Enter') sendStudentFollowupReply()" />
+                <button onclick="sendStudentFollowupReply()" style="background:var(--accent); color:#1e3a8a; border:none; padding:0 18px; border-radius:10px; font-weight:bold; font-family:'Tajawal'; cursor:pointer;">
+                    إرسال
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
 </html>

@@ -145,9 +145,18 @@ async def init_db():
                 is_urgent BOOLEAN DEFAULT 0,
                 is_ghost BOOLEAN DEFAULT 0,
                 ai_topic TEXT,
+                admin_reply TEXT,
+                rating INTEGER,
+                rating_feedback TEXT,
+                conversation TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)
+        for col_def in ["admin_reply TEXT", "rating INTEGER", "rating_feedback TEXT", "conversation TEXT"]:
+            try:
+                await db.execute(f"ALTER TABLE crm_tickets ADD COLUMN {col_def}")
+            except Exception:
+                pass
         try:
             await db.execute("ALTER TABLE student_logs ADD COLUMN telegram_id INTEGER")
         except Exception:
@@ -3917,3 +3926,58 @@ async def reject_faq_suggestion(suggestion_id: int):
 # ====================================================
 # END FAQ CRUD FUNCTIONS
 # ====================================================
+
+async def add_crm_ticket_reply(ticket_id: int, sender: str, text: str, sender_name: str = ""):
+    import json
+    from datetime import datetime
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT conversation, message, admin_reply, status FROM crm_tickets WHERE id = ?", (ticket_id,)) as cur:
+                row = await cur.fetchone()
+                if not row:
+                    return False
+                raw_conv = row["conversation"]
+                conv = []
+                if raw_conv:
+                    try:
+                        conv = json.loads(raw_conv)
+                    except Exception:
+                        conv = []
+                else:
+                    if row["message"]:
+                        conv.append({"sender": "student", "name": "الطالب", "text": row["message"], "timestamp": ""})
+                    if row["admin_reply"]:
+                        conv.append({"sender": "admin", "name": "الإدارة", "text": row["admin_reply"], "timestamp": ""})
+                
+                conv.append({
+                    "sender": sender,
+                    "name": sender_name or ("الإدارة" if sender == "admin" else "الطالب"),
+                    "text": text,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
+                })
+                
+                new_conv_json = json.dumps(conv, ensure_ascii=False)
+                if sender == "admin":
+                    await db.execute("UPDATE crm_tickets SET conversation = ?, admin_reply = ?, status = 'resolved' WHERE id = ?", (new_conv_json, text, ticket_id))
+                else:
+                    await db.execute("UPDATE crm_tickets SET conversation = ?, status = 'open' WHERE id = ?", (new_conv_json, ticket_id))
+                await db.commit()
+                return True
+    except Exception as e:
+        logger.error(f"Error adding ticket reply: {e}")
+        return False
+
+async def rate_crm_ticket(ticket_id: int, rating: int, feedback: str = ""):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("UPDATE crm_tickets SET rating = ?, rating_feedback = ? WHERE id = ?", (rating, feedback, ticket_id))
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"Error rating ticket: {e}")
+        return False

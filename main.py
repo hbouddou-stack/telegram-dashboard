@@ -5404,13 +5404,16 @@ async def api_support_reply(request):
              return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
              
         import database as db
-        # Update status to pending (or resolved if you prefer)
-        await db.update_crm_ticket_status(ticket_id, 'pending')
+        await db.add_crm_ticket_reply(int(ticket_id), 'admin', message, admin_name)
         
         # Send message to user via Telegram
-        bot = request.app['bot']
-        text = f"?? <b>?? ?? ??????? (??????? #{ticket_id})</b>\n\n?? {admin_name}: {message}"
-        await bot.send_message(chat_id=telegram_id, text=text, parse_mode='HTML')
+        bot = request.app.get('bot')
+        if bot:
+            try:
+                text = f"📬 <b>رد جديد من إدارة الأكاديمية (تذكرة #{ticket_id})</b>\n\n👤 <b>من:</b> {admin_name}\n💬 <b>الرد:</b>\n{message}\n\nيمكنك مراجعة المحادثة وتقييم الخدمة عبر صندوق الرسائل في التطبيق."
+                await bot.send_message(chat_id=int(telegram_id), text=text, parse_mode='HTML')
+            except Exception as e:
+                logger.error(f"Error sending TG notification to student: {e}")
         
         from aiohttp import web
         return web.json_response({'success': True})
@@ -5420,21 +5423,60 @@ async def api_support_reply(request):
         from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
-async def api_admin_assign_ticket(request):
+async def api_ticket_student_reply(request):
     try:
+        ticket_id = request.match_info.get('id')
         data = await request.json()
-        ticket_id = data.get('ticket_id')
-        admin_name = data.get('admin_name')
+        message = data.get('message', '').strip()
+        telegram_id = data.get('telegram_id')
+        first_name = data.get('first_name', 'الطالب')
+        username = data.get('username', '')
         
-        if not ticket_id or not admin_name:
-             from aiohttp import web
-             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
-             
+        if not ticket_id or not message:
+            from aiohttp import web
+            return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+            
         import database as db
-        await db.assign_crm_ticket(ticket_id, admin_name)
+        await db.add_crm_ticket_reply(int(ticket_id), 'student', message, first_name)
+        
+        # Forward follow-up to support group
+        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
+        import requests
+        text = f"💬 <b>رد إضافي من الطالب على التذكرة #{ticket_id}</b>\n\n"
+        text += f"👤 <b>الطالب:</b> {first_name} (@{username})\n"
+        text += f"🆔 <b>Telegram ID:</b> {telegram_id}\n\n"
+        text += f"📝 <b>الرد:</b>\n{message}\n\n"
+        text += f"🔗 للرد، يرجى الدخول إلى لوحة التحكم (/federer)."
+        
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        requests.post(url, json={'chat_id': TELEGRAM_SUPPORT_GROUP_ID, 'text': text, 'parse_mode': 'HTML'})
         
         from aiohttp import web
         return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_ticket_rate(request):
+    try:
+        ticket_id = request.match_info.get('id')
+        data = await request.json()
+        rating = data.get('rating', 5)
+        feedback = data.get('feedback', '')
+        
+        if not ticket_id:
+            from aiohttp import web
+            return web.json_response({'success': False, 'error': 'Missing ticket id'}, status=400)
+            
+        import database as db
+        await db.rate_crm_ticket(int(ticket_id), int(rating), feedback)
+        
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -5491,6 +5533,8 @@ async def api_admin_resolve_ticket(request):
 
 def register_crm_routes(app):
     app.router.add_post('/api/support/reply', api_support_reply)
+    app.router.add_post('/api/tickets/{id}/reply', api_ticket_student_reply)
+    app.router.add_post('/api/tickets/{id}/rate', api_ticket_rate)
     app.router.add_post('/api/admin/assign', api_admin_assign_ticket)
     app.router.add_post('/api/admin/resolve', api_admin_resolve_ticket)
     app.router.add_post('/api/admin/draft_reply', api_admin_draft_reply)
