@@ -113,3 +113,117 @@ body { background: var(--bg); background-image: radial-gradient(circle at top ri
 .btn-ai { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #000; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
 .btn-send { background: var(--success); border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: 0.2s; }
 .btn-send:active { transform: scale(0.9); }
+
+/* --- CRM Layout (Sidebar + Main Content) --- */
+#crm-layout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 80px;
+    background: var(--surface-solid);
+    border-left: 1px solid var(--border); /* RTL layout */
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: width 0.3s;
+}
+@media (min-width: 768px) {
+    .sidebar { width: 220px; }
+}
+
+.sidebar-header {
+    padding: 20px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    height: 70px;
+}
+.sidebar-header h2 {
+    font-size: 1.2rem;
+    color: var(--gold);
+    display: none;
+}
+@media (min-width: 768px) {
+    .sidebar-header h2 { display: block; }
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px 0;
+    gap: 10px;
+}
+.sidebar-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: 0.2s;
+    border-right: 3px solid transparent;
+}
+@media (min-width: 768px) {
+    .sidebar-item { justify-content: flex-start; padding: 12px 20px; gap: 15px; }
+}
+
+.sidebar-item:hover, .sidebar-item.active {
+    background: var(--surface-hover);
+    color: var(--gold);
+    border-right-color: var(--gold);
+}
+.sidebar-icon { font-size: 1.4rem; }
+.sidebar-label { display: none; font-size: 1rem; font-weight: 500; }
+@media (min-width: 768px) {
+    .sidebar-label { display: inline-block; }
+}
+
+.sidebar-footer {
+    padding-bottom: 15px;
+    border-top: 1px solid var(--border);
+}
+
+/* Main Content Area */
+#main-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+/* Modular View Container */
+.module-view {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.module-view.active {
+    visibility: visible;
+    opacity: 1;
+    z-index: 10;
+}
+
+/* Fix Chat Overlay */
+.overlay-view {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: var(--bg);
+    transform: translateX(-100%);
+    z-index: 200; /* Over everything including sidebar on mobile */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s;
+}
+.overlay-view.active {
+    transform: translateX(0);
+}
+

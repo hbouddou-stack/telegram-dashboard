@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Support - Académie El Baji</title>
+    <title>Support CRM - Académie El Baji</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <script src="bot-config.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -18,80 +18,86 @@
         </div>
     </div>
 
-    <div id="app-wrapper">
+    <div id="crm-layout">
         
-        <!-- VIEW A: Inbox (Feed) -->
-        <section id="view-inbox" class="view active">
-            <header class="app-header">
-                <div class="header-titles">
-                    <h1>💬 الدعم الفني</h1>
-                    <span class="header-subtitle">لوحة التحكم</span>
-                </div>
-                <button class="btn-icon" onclick="loadTickets()" aria-label="تحديث">🔄</button>
-            </header>
-            
-            <!-- Category / Funnel Chips -->
-            <div class="filter-chips-container">
-                <div class="filter-chip active" onclick="filterByCategory('all', this)">الكل</div>
-                <div class="filter-chip urgent-chip" onclick="filterByCategory('urgent', this)">🚨 عاجل</div>
-                <div class="filter-chip" onclick="filterByCategory('tech', this)">⚙️ تقني</div>
-                <div class="filter-chip" onclick="filterByCategory('finance', this)">💳 مالي</div>
-                <div class="filter-chip" onclick="filterByCategory('course', this)">📚 دعم الدروس</div>
-                <div class="filter-chip" onclick="filterByCategory('exam', this)">📝 امتحان</div>
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h2>CRM الدعم</h2>
             </div>
-            
-            <div id="tickets-feed" class="feed-container">
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>جاري تحميل التذاكر...</p>
+            <nav class="sidebar-nav">
+                <div class="sidebar-item active" data-route="inbox">
+                    <span class="sidebar-icon">📩</span>
+                    <span class="sidebar-label">التذاكر</span>
                 </div>
-            </div>
-
-            <!-- Sticky Bottom Navigation (Status) -->
-            <nav class="bottom-nav">
-                <div class="nav-item active" onclick="filterByStatus('Nouveau', this)">
-                    <div class="nav-icon-wrap"><span class="nav-icon">📩</span></div>
-                    <span class="nav-label">جديد</span>
+                <div class="sidebar-item" data-route="students">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-label">الطلاب</span>
                 </div>
-                <div class="nav-item" onclick="filterByStatus('En cours', this)">
-                    <div class="nav-icon-wrap"><span class="nav-icon">⏳</span></div>
-                    <span class="nav-label">قيد المعالجة</span>
+                <div class="sidebar-item" data-route="stats">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-label">الإحصائيات</span>
                 </div>
-                <div class="nav-item" onclick="filterByStatus('Résolu', this)">
-                    <div class="nav-icon-wrap"><span class="nav-icon">✅</span></div>
-                    <span class="nav-label">مكتمل</span>
+                <div class="sidebar-item" data-route="faq">
+                    <span class="sidebar-icon">🧠</span>
+                    <span class="sidebar-label">مدير FAQ</span>
                 </div>
             </nav>
-        </section>
+            <div class="sidebar-footer">
+                <div class="sidebar-item" data-route="settings">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-label">الإعدادات</span>
+                </div>
+            </div>
+        </aside>
 
-        <!-- VIEW B: Chat Detail -->
-        <section id="view-chat" class="view">
+        <!-- Main Content Router Area -->
+        <main id="main-content">
+            <!-- Vues injectées ici par JS -->
+        </main>
+        
+        <!-- Chat Detail View (Overlay) -->
+        <section id="view-chat" class="view overlay-view">
             <header class="app-header">
                 <button class="btn-icon back-btn" onclick="goBack()">🔙</button>
                 <div class="chat-header-info">
                     <div class="chat-avatar" id="chat-header-avatar">ط</div>
                     <h1 id="chat-title" style="font-size: 1rem; margin-right: 10px;">طالب</h1>
                 </div>
+                <button id="btn-reassign" class="btn btn-sm" onclick="reassignTicket()">🔄 تحويل</button>
                 <button id="btn-resolve" class="btn btn-sm btn-success" onclick="resolveCurrentTicket()">✔ حل</button>
             </header>
             
-            <!-- Ticket Context Header -->
             <div class="chat-context-bar" id="chat-context">
-                <span class="context-badge">📗 الفقه</span>
-                <span class="context-date">اليوم 10:30 ص</span>
+                <span class="context-badge">عام</span>
+                <span class="context-date">--</span>
             </div>
 
             <div id="chat-feed" class="chat-container">
-                <!-- Chat bubbles go here -->
             </div>
 
             <footer class="chat-input-area">
                 <button class="btn-ai" onclick="generateAIResponse()" title="اقتراح إجابة ذكية">✨</button>
-                <textarea id="chat-reply-input" placeholder="اكتب ردك هنا... (يتم الحفظ تلقائياً)"></textarea>
+                <button class="btn-attach" onclick="triggerAttach()" title="إرفاق صورة">🖼️</button>
+                <textarea id="chat-reply-input" placeholder="اكتب ردك هنا..."></textarea>
                 <button class="btn-send" onclick="sendReply()">✈️</button>
             </footer>
         </section>
+
     </div>
-    <script src="support.js"></script>
+
+    <!-- Modular JS App Entry Point -->
+    <script type="module" src="js/app.js"></script>
+    <script>
+        // Global variables still needed for external scripts occasionally
+        window.adminId = null;
+        function submitManualUserId() {
+            window.adminId = document.getElementById('manual-user-id').value;
+            if (!window.adminId) return;
+            document.getElementById('config-overlay').style.display = 'none';
+            // trigger event for app.js
+            window.dispatchEvent(new Event('admin-logged-in'));
+        }
+    </script>
 </body>
 </html>
