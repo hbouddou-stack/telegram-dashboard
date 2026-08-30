@@ -159,20 +159,6 @@
 </head>
 <body>
     <div class="container" id="app-container">
-        
-            <div class="tab-btn" onclick="switchTab('faq')" id="tabfaq-btn">&#128218; الأسئلة الشائعة</div>
-            <div class="tab-btn" onclick="switchTab('inbox')" id="tabinbox-btn">&#128229; رسائلي</div>
-        </div>
-
-        <!-- ONBOARDING BANNER -->
-        <div style="display:flex; gap:10px; margin-bottom: 20px;">
-            <button onclick="window.location.href='/guide.html'" style="flex:1; background: linear-gradient(135deg, #1A2980, #26D0CE); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
-                <span style="font-size:1.2rem;">🗺️</span> دليل الطالب
-            </button>
-            <button onclick="window.location.href='/tuto.html'" style="flex:1; background: linear-gradient(135deg, #FF416C, #FF4B2B); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(255,75,43,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
-                <span style="font-size:1.2rem;">🎥</span> كيف أستخدم؟
-            </button>
-        </div>
 
         <!-- NEW TICKET TAB -->
         
@@ -181,6 +167,16 @@
             <div class="header" style="margin-bottom:20px;">
                 <h1 style="font-size:1.5rem;">&#127968; الرئيسية</h1>
                 <p class="subtitle">مرحباً بك في مركز الطالب</p>
+            </div>
+            
+            <!-- ONBOARDING BANNER -->
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <button onclick="window.location.href='/guide.html'" style="flex:1; background: linear-gradient(135deg, #1A2980, #26D0CE); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span style="font-size:1.2rem;">🗺️</span> دليل الطالب
+                </button>
+                <button onclick="window.location.href='/tuto.html'" style="flex:1; background: linear-gradient(135deg, #FF416C, #FF4B2B); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(255,75,43,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span style="font-size:1.2rem;">🎥</span> كيف أستخدم؟
+                </button>
             </div>
             
             <!-- Messages / Notifications -->
@@ -339,15 +335,24 @@
         <!-- AI TAB -->
         <div class="tab-content" id="tab-ai">
             <div class="header">
-                <h1 style="font-size:1.5rem;">&#129302; المساعد الذكي</h1>
-                <p class="subtitle">تحدث معي، أنا هنا لمساعدتك</p>
+                <h1 style="font-size:1.5rem;">🤖 المساعد الذكي</h1>
+                <p class="subtitle">إجابات فورية وذكية على مدار الساعة</p>
             </div>
-            <div class="chat-container">
+            
+            <!-- Quick Chips -->
+            <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:10px; scrollbar-width:none;">
+                <button onclick="sendAiQuickMessage('كيف أقوم بتسجيل الدخول؟')" style="white-space:nowrap; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text-1); padding:8px 14px; border-radius:20px; font-family:'Tajawal'; font-size:0.82rem; cursor:pointer;">🔑 تسجيل الدخول</button>
+                <button onclick="sendAiQuickMessage('الفيديو لا يعمل، ما الحل؟')" style="white-space:nowrap; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text-1); padding:8px 14px; border-radius:20px; font-family:'Tajawal'; font-size:0.82rem; cursor:pointer;">🎥 مشكلة الفيديو</button>
+                <button onclick="sendAiQuickMessage('ما هي طرق الدفع المتاحة؟')" style="white-space:nowrap; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text-1); padding:8px 14px; border-radius:20px; font-family:'Tajawal'; font-size:0.82rem; cursor:pointer;">💳 طرق الدفع</button>
+                <button onclick="sendAiQuickMessage('كيف أحصل على شهادة الدورة؟')" style="white-space:nowrap; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text-1); padding:8px 14px; border-radius:20px; font-family:'Tajawal'; font-size:0.82rem; cursor:pointer;">🎓 الشهادات</button>
+            </div>
+
+            <div class="chat-container" style="height: calc(100vh - 280px); min-height: 320px;">
                 <div class="chat-messages" id="ai-messages">
-                    <div class="message-bubble msg-ai">أهلاً بك! أنا المساعد الذكي، كيف يمكنني مساعدتك اليوم؟</div>
+                    <div class="message-bubble msg-ai">أهلاً بك يا بطل! 👋 أنا مساعدك الذكي في أكاديمية أُسوة. اختر أحد الأسئلة المقترحة أعلاه أو اكتب استفسارك مباشرة وسأجيبك في الحال! ⚡</div>
                 </div>
                 <div class="chat-input-bar">
-                    <input type="text" id="ai-input" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key === 'Enter') sendAiMessage()" />
+                    <input type="text" id="ai-input" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key === 'Enter') sendAiMessage()" />
                     <button onclick="sendAiMessage()">&#10148;</button>
                 </div>
             </div>
@@ -635,11 +640,27 @@
             }
         }
 
+                function sendAiQuickMessage(text) {
+            const input = document.getElementById('ai-input');
+            if (input) {
+                input.value = text;
+                sendAiMessage();
+            }
+        }
+
         // ========================
         // STUDENT FAQ LOGIC
         // ========================
         let studentFaqAll = [];
         let studentFaqActiveCat = null;
+
+        const defaultFallbackFaq = [
+            { id: 1, category: "عام", question: "كيف يمكنني التواصل مع الدعم الفني؟", answer: "يمكنك التواصل معنا مباشرة عبر تبويب (طرح سؤال) أو التحدث مع المساعد الذكي في أي وقت.", is_pinned: 1 },
+            { id: 2, category: "الدخول", question: "نسيت كلمة المرور، كيف أسترجعها؟", answer: "اضغط على 'نسيت كلمة المرور' في صفحة تسجيل الدخول وسيصلك رابط إعادة التعيين على بريدك الإلكتروني.", is_pinned: 1 },
+            { id: 3, category: "الدروس", question: "أين أجد المرفقات وملخصات الدروس؟", answer: "تجد جميع المرفقات والملخصات بصيغة PDF أسفل كل فيديو تدريبي في المنصة.", is_pinned: 0 },
+            { id: 4, category: "الدفع", question: "ما هي وسائل الدفع المعتمدة؟", answer: "نقبل الدفع عبر البطاقات البنكية (Visa / Mastercard)، التحويل البنكي، والمحافظ الإلكترونية.", is_pinned: 0 },
+            { id: 5, category: "الشهادات", question: "متى أحصل على شهادة إتمام الدورة؟", answer: "تصدر الشهادة تلقائياً بمجرد إكمال 80% على الأقل من محتوى الدورة واجتياز الاختبار النهائي.", is_pinned: 0 }
+        ];
 
         async function loadStudentFaq() {
             const listEl = document.getElementById('student-faq-list');
@@ -647,20 +668,36 @@
             if (studentFaqAll.length > 0) return; // Already loaded
             try {
                 const res = await fetch(`${BOT_BASE}/api/faq`);
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error);
-                studentFaqAll = data.entries || [];
-                const cats = [...new Set((data.categories || []).map(c => c.category))];
-
-                // Build cat chips
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.entries && data.entries.length > 0) {
+                        studentFaqAll = data.entries;
+                        const rawCats = (data.categories || []).map(c => c ? c.category : null).filter(Boolean);
+                        const cats = [...new Set(rawCats)];
+                        
+                        let catsHtml = `<button class="faq-cat-btn active" onclick="studentFilterCat(null, this)">الكل</button>`;
+                        cats.forEach(c => {
+                            if (c) {
+                                const escaped = String(c).replace(/'/g, "\\'");
+                                catsHtml += `<button class="faq-cat-btn" onclick="studentFilterCat('${escaped}', this)">${c}</button>`;
+                            }
+                        });
+                        catsEl.innerHTML = catsHtml;
+                        renderStudentFaq(studentFaqAll);
+                        return;
+                    }
+                }
+                throw new Error("Empty FAQ data");
+            } catch (e) {
+                // Fallback to default FAQs
+                studentFaqAll = defaultFallbackFaq;
                 let catsHtml = `<button class="faq-cat-btn active" onclick="studentFilterCat(null, this)">الكل</button>`;
+                const cats = [...new Set(defaultFallbackFaq.map(f => f.category))];
                 cats.forEach(c => {
-                    catsHtml += `<button class="faq-cat-btn" onclick="studentFilterCat('${c.replace(/'/g,"\\'")}', this)">${c}</button>`;
+                    catsHtml += `<button class="faq-cat-btn" onclick="studentFilterCat('${c}', this)">${c}</button>`;
                 });
                 catsEl.innerHTML = catsHtml;
                 renderStudentFaq(studentFaqAll);
-            } catch (e) {
-                listEl.innerHTML = `<div style="color:#e74c3c; text-align:center; padding:20px;">خطأ في تحميل الأسئلة</div>`;
             }
         }
 
@@ -823,9 +860,16 @@
                 function renderStudentTickets(tickets) {
             const list = document.getElementById('student-tickets-list');
             if (!tickets || tickets.length === 0) {
-                list.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-2);">
-                    <div style="font-size:2.5rem; margin-bottom:10px;">&#128229;</div>
-                    <div>لا توجد رسائل سابقة</div>
+                list.innerHTML = `
+                <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:30px 20px; text-align:center; margin-top:10px;">
+                    <div style="font-size:3rem; margin-bottom:15px;">📫</div>
+                    <h3 style="font-size:1.1rem; margin:0 0 10px 0; color:var(--text-1);">صندوق الرسائل فارغ</h3>
+                    <p style="font-size:0.88rem; color:var(--text-2); line-height:1.6; margin:0 0 20px 0;">
+                        ستظهر هنا جميع تذاكر الدعم والرسائل التي أرسلتها للإدارة ومتابعة الردود عليها أولاً بأول.
+                    </p>
+                    <button class="btn-primary" style="width:auto; padding:12px 28px; margin:0 auto; display:inline-flex; align-items:center; gap:8px;" onclick="switchTab('new')">
+                        <span>✍️</span> طرح سؤال جديد
+                    </button>
                 </div>`;
                 return;
             }
@@ -873,7 +917,10 @@
         }
 
 
-        window.onload = () => { /* Auto-init themes done above */ };
+        window.onload = () => {
+            loadStudentFaq();
+            loadStudentTickets();
+        };
         
         // --- LIVE RADAR PING ---
         function initLiveRadarPing() {
