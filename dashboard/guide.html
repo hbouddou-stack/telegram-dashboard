@@ -574,6 +574,28 @@
         
         // Initial setup
         initHub();
+        
+        // --- LIVE RADAR PING ---
+        function initLiveRadarPing() {
+            const sendPing = () => {
+                try {
+                    const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+                    if (!user) return;
+                    fetch('/api/presence/ping', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            user_id: user.id,
+                            name: user.first_name + (user.last_name ? ' ' + user.last_name : ''),
+                            page: 'Guide Étudiant'
+                        })
+                    }).catch(e => {});
+                } catch(e) {}
+            };
+            sendPing();
+            setInterval(sendPing, 15000);
+        }
+        setTimeout(initLiveRadarPing, 1000);
     </script>
 </body>
 </html>

@@ -622,6 +622,33 @@
         }
 
         window.onload = () => { /* Auto-init themes done above */ };
+        
+        // --- LIVE RADAR PING ---
+        function initLiveRadarPing() {
+            const sendPing = () => {
+                try {
+                    const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+                    if (!user) return;
+                    let activeTab = 'Inconnu';
+                    if (document.getElementById('tabnew-btn')?.classList.contains('active')) activeTab = 'Nouveau Ticket';
+                    if (document.getElementById('tabfaq-btn')?.classList.contains('active')) activeTab = 'FAQ';
+                    if (document.getElementById('tabinbox-btn')?.classList.contains('active')) activeTab = 'Boîte de réception';
+                    
+                    fetch('/api/presence/ping', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            user_id: user.id,
+                            name: user.first_name + (user.last_name ? ' ' + user.last_name : ''),
+                            page: 'Support / ' + activeTab
+                        })
+                    }).catch(e => {});
+                } catch(e) {}
+            };
+            sendPing();
+            setInterval(sendPing, 15000);
+        }
+        setTimeout(initLiveRadarPing, 1000);
     </script>
 </body>
 </html>

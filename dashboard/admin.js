@@ -985,9 +985,7 @@ window.addEventListener('unhandledrejection', function(e) {
             state.activeTab = tabId;
             closeAllDrawers(); // Prevent any open drawer from blocking the new tab
             
-            if (tabId === 'stats') {
-                window.loadDashboardStats();
-            }
+            if (tabId === 'stats') { window.loadDashboardStats(); } if (tabId === 'radar') { if (window.initRadarView) window.initRadarView(); } else { if (window.cleanupRadarView) window.cleanupRadarView(); }
 
             
 

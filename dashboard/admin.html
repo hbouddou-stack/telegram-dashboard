@@ -82,6 +82,14 @@
             </div>
 
             <nav class="sidebar-menu">
+                
+                <!-- SECTION: LIVE RADAR -->
+                <div class="sidebar-section" id="section-radar">
+                    <div class="sidebar-section-header" onclick="switchTab('radar')" style="border-left: 3px solid #2ecc71; background: rgba(46, 204, 113, 0.1);">
+                        <span class="section-icon" style="color: #2ecc71; animation: pulse 1.5s infinite;">&#128225;</span>
+                        <span class="section-title" style="color: #2ecc71; font-weight: bold;">Radar Live</span>
+                    </div>
+                </div>
 
                 <!-- SECTION 0: QUESTIONS DIRECTION -->
                 <div class="sidebar-section" id="section-questions">
@@ -1177,6 +1185,11 @@
 
         </section>
 
+        <!-- Tab Panel: RADAR LIVE -->
+        <section id="panel-radar" class="tab-panel">
+            <!-- Radar will be loaded here by radar.js -->
+        </section>
+
         <!-- Transcript Editor Drawer (Global) -->
 
         <div id="transcript-drawer-backdrop" class="drawer-backdrop" onclick="closeTranscriptDrawer()"></div>
@@ -1422,6 +1435,7 @@
 
     
 
+    <script src="js/views/radar.js"></script>
     <script src="admin.js?v=poetry-20260609171132"></script>
 
     <!-- Advanced Hybrid Telegram Formatting Editor Modal -->    <!-- Advanced Thematic Axes Editor Dashboard Overlay -->

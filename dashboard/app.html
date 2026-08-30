@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oswah - L'Écosystème</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0f172a; /* Slate 900 */
+            --bg-glass: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6; /* Blue 500 */
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --secondary: #8b5cf6; /* Violet 500 */
+            --accent: #10b981; /* Emerald 500 */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --nav-height: 80px;
+            --card-radius: 24px;
+        }
+
+        [data-theme="light"] {
+            --bg-base: #f8fafc;
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --border-glass: rgba(0, 0, 0, 0.05);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Abstract Background Decoration */
+        .bg-decor {
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 15s infinite alternate ease-in-out;
+        }
+        .bg-decor.secondary {
+            top: 40%;
+            left: 50%;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(0,0,0,0) 70%);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(10%, 15%) scale(1.1); }
+        }
+
+        /* Main App Container */
+        .app-container {
+            padding-bottom: calc(var(--nav-height) + 20px);
+            min-height: 100vh;
+        }
+
+        /* Tab Views */
+        .tab-view {
+            display: none;
+            padding: 24px;
+            animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .tab-view.active {
+            display: block;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        [data-theme="light"] .header h1 {
+            background: linear-gradient(135deg, #0f172a, #64748b);
+            -webkit-background-clip: text;
+        }
+        .profile-pic {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border: 2px solid var(--border-glass);
+        }
+
+        /* Home View Specifics */
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--card-radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.1);
+        }
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.05)"/></svg>');
+            opacity: 0.5;
+            z-index: 0;
+        }
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+        }
+        .welcome-badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .welcome-title {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .welcome-subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* Updates Section */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .update-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .update-item {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .update-item:active {
+            transform: scale(0.98);
+        }
+        .update-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .update-icon.new { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .update-icon.event { background: rgba(139, 92, 246, 0.1); color: var(--secondary); }
+        
+        .update-text h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .update-text p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .update-time {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        /* Sticky Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: var(--bg-glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 16px;
+            padding-bottom: env(safe-area-inset-bottom, 0); /* For iOS */
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            width: 64px;
+            height: 100%;
+            transition: color 0.3s, transform 0.2s;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: var(--primary);
+        }
+        .nav-item:active {
+            transform: scale(0.9);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .nav-item.active .nav-icon {
+            transform: translateY(-4px) scale(1.1);
+        }
+        
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.7;
+            transition: opacity 0.3s, font-weight 0.3s;
+        }
+        .nav-item.active .nav-label {
+            opacity: 1;
+            font-weight: 700;
+        }
+
+        /* Active indicator dot */
+        .nav-indicator {
+            position: absolute;
+            bottom: 12px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .nav-item.active .nav-indicator {
+            opacity: 1;
+        }
+
+        /* Placeholders for other tabs */
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.5;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Settings Switches */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        .setting-info h3 { font-size: 16px; margin-bottom: 4px; }
+        .setting-info p { font-size: 14px; color: var(--text-muted); }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 20px; width: 20px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+    </style>
+</head>
+<body>
+    <div class="bg-decor"></div>
+    <div class="bg-decor secondary"></div>
+
+    <div class="app-container">
+        
+        <!-- ==================== HOME TAB ==================== -->
+        <div id="tab-home" class="tab-view active">
+            <div class="header">
+                <div>
+                    <h1 id="greeting">Bonjour !</h1>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-top: 4px;">Content de te revoir.</p>
+                </div>
+                <div class="profile-pic">A</div>
+            </div>
+
+            <div class="welcome-card">
+                <div class="welcome-content">
+                    <span class="welcome-badge">🚀 Nouveauté</span>
+                    <h2 class="welcome-title">Découvre ton nouvel Assistant IA</h2>
+                    <p class="welcome-subtitle">Pose tes questions directement à notre assistant intelligent dans le nouvel onglet IA. Il t'aidera à réviser !</p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>🔥</span> Dernières Updates
+            </div>
+            
+            <div class="update-list">
+                <div class="update-item">
+                    <div class="update-icon new">✨</div>
+                    <div class="update-text">
+                        <h3>FAQ Intelligente (Bientôt)</h3>
+                        <p>Des réponses en audio, texte et story. Révise avec le format qui te convient le mieux.</p>
+                        <span class="update-time">Prévu pour cette semaine</span>
+                    </div>
+                </div>
+                <div class="update-item">
+                    <div class="update-icon event">🏆</div>
+                    <div class="update-text">
+                        <h3>Nouveau Quiz Disponible</h3>
+                        <p>Teste tes connaissances sur le chapitre 3 et gagne des points d'expérience.</p>
+                        <span class="update-time">Il y a 2 heures</span>
+                    </div>
+                </div>
+                <div class="update-item" style="opacity: 0.7;">
+                    <div class="update-icon" style="background: rgba(255,255,255,0.05);">📚</div>
+                    <div class="update-text">
+                        <h3>Guide Mis à Jour</h3>
+                        <p>Le guide sur la méthodologie a été enrichi avec de nouveaux exemples.</p>
+                        <span class="update-time">Hier</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== AI TAB ==================== -->
+        <div id="tab-ai" class="tab-view" style="padding: 0; display: none; flex-direction: column; height: calc(100vh - var(--nav-height));">
+            <div class="header" style="padding: 24px; margin-bottom: 0; background: var(--bg-glass); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-glass);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 20px;">🤖</div>
+                    <div>
+                        <h1 style="font-size: 20px; margin: 0;">Oswah AI</h1>
+                        <span style="font-size: 12px; color: var(--accent); display: flex; align-items: center; gap: 4px;">
+                            <div style="width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                            En ligne
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-container" id="chat-messages" style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                
+                <!-- Mock AI Message -->
+                <div class="message ai-message" style="display: flex; gap: 12px; align-items: flex-start; max-width: 90%;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-glass); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">🤖</div>
+                    <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); padding: 12px 16px; border-radius: 4px 16px 16px 16px; font-size: 15px; line-height: 1.5; color: var(--text-main);">
+                        Bonjour ! Je suis Oswah AI, ton tuteur personnel. Comment puis-je t'aider aujourd'hui dans tes révisions ?
+                    </div>
+                </div>
+
+                <!-- Mock User Message -->
+                <div class="message user-message" style="display: flex; gap: 12px; align-items: flex-start; max-width: 90%; align-self: flex-end; flex-direction: row-reverse;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; flex-shrink: 0;">A</div>
+                    <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 12px 16px; border-radius: 16px 4px 16px 16px; font-size: 15px; line-height: 1.5; box-shadow: 0 4px 12px rgba(59,130,246,0.3);">
+                        Peux-tu m'expliquer ce que tu peux faire exactement ?
+                    </div>
+                </div>
+
+                <!-- Mock AI Suggestion Cards -->
+                <div class="message ai-message" style="display: flex; gap: 12px; align-items: flex-start; max-width: 90%;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-glass); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">🤖</div>
+                    <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); padding: 12px 16px; border-radius: 4px 16px 16px 16px; font-size: 15px; line-height: 1.5; color: var(--text-main); width: 100%;">
+                        Je peux t'aider sur plusieurs aspects de ta formation. Voici quelques exemples de ce que tu peux me demander :
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                            <button class="ai-suggestion" style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); color: var(--text-main); padding: 10px; border-radius: 12px; text-align: left; cursor: pointer; transition: background 0.2s; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>📚 Résume-moi le dernier cours</span>
+                                <span>→</span>
+                            </button>
+                            <button class="ai-suggestion" style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--secondary); color: var(--text-main); padding: 10px; border-radius: 12px; text-align: left; cursor: pointer; transition: background 0.2s; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>🎯 Fais-moi un quiz rapide</span>
+                                <span>→</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area" style="padding: 16px; background: var(--bg-glass); border-top: 1px solid var(--border-glass); backdrop-filter: blur(10px);">
+                <div style="display: flex; gap: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); padding: 8px; border-radius: 24px; align-items: center;">
+                    <button style="width: 36px; height: 36px; border-radius: 50%; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: color 0.2s;">
+                        📎
+                    </button>
+                    <input type="text" id="ai-input" placeholder="Pose ta question ici..." style="flex: 1; background: none; border: none; color: var(--text-main); font-size: 15px; outline: none; font-family: inherit;">
+                    <button style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px var(--primary-glow); transition: transform 0.2s;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <style>
+                /* Animation for chat bubbles */
+                .message { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+                @keyframes popIn {
+                    from { opacity: 0; transform: translateY(10px) scale(0.95); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                .ai-suggestion:hover { background: rgba(255,255,255,0.1) !important; }
+                
+                /* Fix for tab view display when active */
+                #tab-ai.active { display: flex !important; }
+            </style>
+        </div>
+
+        <!-- ==================== FAQ TAB ==================== -->
+        <div id="tab-faq" class="tab-view" style="padding: 24px 24px 100px 24px;">
+            <div class="header">
+                <div>
+                    <h1 style="font-size: 28px;">FAQ Intelligente</h1>
+                    <p style="color: var(--text-muted); font-size: 15px; margin-top: 4px;">Apprends à ta façon : Lis, écoute, ou regarde.</p>
+                </div>
+            </div>
+
+            <div class="faq-search" style="margin-bottom: 24px; position: relative;">
+                <span style="position: absolute; left: 16px; top: 12px; font-size: 18px; color: var(--text-muted);">🔍</span>
+                <input type="text" placeholder="Rechercher une question..." style="width: 100%; padding: 14px 16px 14px 44px; border-radius: 16px; border: 1px solid var(--border-glass); background: var(--bg-glass); color: var(--text-main); font-size: 16px; outline: none; transition: border-color 0.2s;">
+            </div>
+
+            <div class="faq-list" style="display: flex; flex-direction: column; gap: 16px;">
+                
+                <!-- Smart FAQ Item 1 -->
+                <div class="faq-card" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 20px; overflow: hidden; transition: transform 0.2s;">
+                    <div class="faq-question" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.02);">
+                        <h3 style="font-size: 16px; font-weight: 600; padding-right: 16px;">Comment organiser ses révisions efficacement ?</h3>
+                        <span style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+                    </div>
+                    
+                    <div class="faq-answer" style="padding: 20px; border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.2);">
+                        <!-- Format Switcher -->
+                        <div style="display: flex; gap: 8px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 12px; width: fit-content;">
+                            <button class="format-btn active" onclick="switchFormat(this, 'text', 'faq1')" style="padding: 8px 16px; border-radius: 8px; border: none; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s;">📖 Texte</button>
+                            <button class="format-btn" onclick="switchFormat(this, 'audio', 'faq1')" style="padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s;">🎧 Audio</button>
+                            <button class="format-btn" onclick="switchFormat(this, 'story', 'faq1')" style="padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s;">📱 Story</button>
+                        </div>
+
+                        <!-- Content Views -->
+                        <!-- Text View -->
+                        <div id="faq1-text" class="format-view" style="font-size: 15px; line-height: 1.6; color: var(--text-muted);">
+                            La clé d'une révision efficace repose sur 3 piliers :
+                            <br><br>
+                            1. <b>La planification :</b> Utilisez la technique Pomodoro (25min de travail, 5min de pause).<br>
+                            2. <b>L'environnement :</b> Éloignez votre téléphone et privilégiez un endroit calme.<br>
+                            3. <b>La répétition espacée :</b> Révisez le même cours à J+1, J+3, J+7.
+                        </div>
+
+                        <!-- Audio View -->
+                        <div id="faq1-audio" class="format-view" style="display: none; align-items: center; gap: 16px; padding: 16px; background: rgba(139, 92, 246, 0.1); border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                            <button style="width: 48px; height: 48px; border-radius: 50%; background: var(--secondary); border: none; color: white; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+                                ▶
+                            </button>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 14px; font-weight: 600;">Explication vocale</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">0:00 / 1:24</span>
+                                </div>
+                                <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative;">
+                                    <div style="width: 30%; height: 100%; background: var(--secondary); border-radius: 2px;"></div>
+                                    <div style="width: 12px; height: 12px; background: white; border-radius: 50%; position: absolute; left: 30%; top: -4px; transform: translateX(-50%); box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Story View (Visual Summary) -->
+                        <div id="faq1-story" class="format-view" style="display: none;">
+                            <div style="width: 100%; max-width: 300px; margin: 0 auto; aspect-ratio: 9/16; background: linear-gradient(to bottom, #1e293b, #0f172a); border-radius: 16px; position: relative; overflow: hidden; border: 1px solid var(--border-glass);">
+                                <!-- Story Progress bars -->
+                                <div style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 2;">
+                                    <div style="height: 3px; flex: 1; background: white; border-radius: 2px;"></div>
+                                    <div style="height: 3px; flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></div>
+                                    <div style="height: 3px; flex: 1; background: rgba(255,255,255,0.3); border-radius: 2px;"></div>
+                                </div>
+                                <!-- Story Content -->
+                                <div style="position: absolute; inset: 0; padding: 32px 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                                    <div style="font-size: 64px; margin-bottom: 24px;">⏱️</div>
+                                    <h2 style="font-size: 24px; color: white; margin-bottom: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">La méthode Pomodoro</h2>
+                                    <p style="color: rgba(255,255,255,0.8); font-size: 16px;">25 minutes de focus pur. 5 minutes de pause.</p>
+                                </div>
+                                <!-- Navigation zones -->
+                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 30%; z-index: 3;"></div>
+                                <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 30%; z-index: 3;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <script>
+                function switchFormat(btn, format, faqId) {
+                    // Update buttons
+                    const container = btn.parentElement;
+                    container.querySelectorAll('.format-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.style.background = 'transparent';
+                        b.style.color = 'var(--text-muted)';
+                    });
+                    btn.classList.add('active');
+                    btn.style.background = 'var(--primary)';
+                    btn.style.color = 'white';
+
+                    // Update views
+                    document.getElementById(faqId + '-text').style.display = 'none';
+                    document.getElementById(faqId + '-audio').style.display = 'none';
+                    document.getElementById(faqId + '-story').style.display = 'none';
+                    
+                    const targetView = document.getElementById(faqId + '-' + format);
+                    targetView.style.display = format === 'audio' ? 'flex' : 'block';
+                    
+                    // Simple animation
+                    targetView.animate([
+                        { opacity: 0, transform: 'translateY(5px)' },
+                        { opacity: 1, transform: 'translateY(0)' }
+                    ], { duration: 300, fill: 'forwards' });
+                }
+            </script>
+        </div>
+
+        <!-- ==================== SETTINGS TAB ==================== -->
+        <div id="tab-settings" class="tab-view">
+            <div class="header">
+                <h1>Réglages</h1>
+            </div>
+            
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Mode Sombre</h3>
+                    <p>Pour reposer tes yeux la nuit</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="theme-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Notifications "Nudge"</h3>
+                    <p>Reçois des rappels intelligents</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; color: var(--text-muted); font-size: 14px;">
+                Oswah App v3.0<br>
+                Fait avec ❤️
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Sticky Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" onclick="switchTab('home', this)">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Accueil</span>
+            <div class="nav-indicator"></div>
+        </a>
+        <a href="#" class="nav-item" onclick="switchTab('ai', this)">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">Oswah AI</span>
+            <div class="nav-indicator"></div>
+        </a>
+        <a href="#" class="nav-item" onclick="switchTab('faq', this)">
+            <span class="nav-icon">📚</span>
+            <span class="nav-label">FAQ</span>
+            <div class="nav-indicator"></div>
+        </a>
+        <a href="#" class="nav-item" onclick="switchTab('settings', this)">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Réglages</span>
+            <div class="nav-indicator"></div>
+        </a>
+    </nav>
+
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabId, element) {
+            // Update active link
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Update active view
+            document.querySelectorAll('.tab-view').forEach(el => {
+                el.classList.remove('active');
+                // Trigger reflow for animation restart
+                void el.offsetWidth;
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            // Haptic feedback if supported
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(10);
+            }
+        }
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlDoc = document.documentElement;
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('oswah-theme') || 'dark';
+        htmlDoc.setAttribute('data-theme', savedTheme);
+        themeToggle.checked = savedTheme === 'dark';
+
+        themeToggle.addEventListener('change', (e) => {
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            htmlDoc.setAttribute('data-theme', newTheme);
+            localStorage.setItem('oswah-theme', newTheme);
+        });
+
+        // Dynamic Greeting based on time
+        const hour = new Date().getHours();
+        const greeting = document.getElementById('greeting');
+        if (hour >= 5 && hour < 12) greeting.innerText = 'Bonjour !';
+        else if (hour >= 12 && hour < 18) greeting.innerText = 'Bon après-midi !';
+        else greeting.innerText = 'Bonsoir !';
+
+        // Fake ping for Radar (if user stays on this app)
+        setInterval(() => {
+            fetch('/api/presence/ping', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: 'app_user_123', // Demo ID
+                    name: 'Élève App',
+                    page: 'app.html'
+                })
+            }).catch(e => console.log('Radar ping silence'));
+        }, 15000);
+    </script>
+</body>
+</html>

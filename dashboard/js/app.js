@@ -3,6 +3,7 @@ import { initStudentsView } from './views/students.js';
 import { initStatsView } from './views/stats.js';
 import { initFaqView } from './views/faq.js';
 import { initSettingsView, applyTheme } from './views/settings.js';
+import { initRadarView, cleanupRadarView } from './views/radar.js';
 
 class AppRouter {
     constructor() {
@@ -11,7 +12,8 @@ class AppRouter {
             'students': this.loadStudents.bind(this),
             'stats': this.loadStats.bind(this),
             'faq': this.loadFaq.bind(this),
-            'settings': this.loadSettings.bind(this)
+            'settings': this.loadSettings.bind(this),
+            'radar': this.loadRadar.bind(this)
         };
         
         this.currentRoute = null;
@@ -66,7 +68,10 @@ class AppRouter {
     navigate(route) {
         if (!this.routes[route]) return;
         
-        // Update Sidebar UI
+        // Cleanup previous route if needed
+        cleanupRadarView();
+
+        // Update active state in sidebar UI
         document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
         const activeItem = document.querySelector(`.sidebar-item[data-route="${route}"]`);
         if (activeItem) activeItem.classList.add('active');
@@ -97,6 +102,10 @@ class AppRouter {
     
     loadSettings(container) {
         initSettingsView(container);
+    }
+    
+    loadRadar(container) {
+        initRadarView(container);
     }
 
     toggleSidebar() {

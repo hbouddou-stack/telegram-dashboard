@@ -4837,6 +4837,10 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)
+    
+    # Live Radar
+    app.router.add_post('/api/presence/ping', api_presence_ping)
+    app.router.add_get('/api/admin/presence/live', api_admin_presence_live)
     app.router.add_post('/api/tickets/student', get_student_tickets)
     app.router.add_get('/api/tickets/{ticket_id}/messages', get_ticket_messages_api)
     app.router.add_post('/api/tickets/{ticket_id}/reply', reply_ticket_message_api)
@@ -5062,10 +5066,62 @@ class AccessCheckMiddleware(BaseMiddleware):
                 
         return await handler(event, data)
 
+# ====================================================
+# LIVE RADAR BACKEND
+# ====================================================
+import time
+
+ACTIVE_USERS = {}
+
+async def active_users_cleanup_task():
+    while True:
+        try:
+            now = time.time()
+            stale_keys = []
+            for uid, data in ACTIVE_USERS.items():
+                if now - data.get('last_seen', 0) > 30:
+                    stale_keys.append(uid)
+            for uid in stale_keys:
+                del ACTIVE_USERS[uid]
+        except Exception as e:
+            logger.error(f"[Radar] Cleanup error: {e}")
+        await asyncio.sleep(10)
+
+async def api_presence_ping(request):
+    try:
+        data = await request.json()
+        uid = data.get('user_id', 0)
+        if uid:
+            ACTIVE_USERS[uid] = {
+                'name': data.get('name', 'Anonyme'),
+                'page': data.get('page', 'Inconnu'),
+                'last_seen': time.time()
+            }
+        return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_admin_presence_live(request):
+    try:
+        now = time.time()
+        live = []
+        for uid, data in ACTIVE_USERS.items():
+            live.append({
+                'user_id': uid,
+                'name': data['name'],
+                'page': data['page'],
+                'duration': int(now - data.get('last_seen', 0))
+            })
+        return web.json_response({'success': True, 'active_users': live})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
 async def main():
     if not TELEGRAM_BOT_TOKEN:
         logger.critical("TELEGRAM_BOT_TOKEN is missing! Exiting...")
         return
+        
+    asyncio.create_task(active_users_cleanup_task())
 
     # Initialize bot and dispatcher
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
