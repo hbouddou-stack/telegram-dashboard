@@ -293,6 +293,9 @@ async def handle_dossiertelegram_jpg(request):
 async def handle_support(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
 
+async def handle_app(request):
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'app.html'))
+
 async def handle_search(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'search.html'))
 
@@ -4836,6 +4839,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/students', api_admin_get_students)
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
+    app.router.add_get('/app.html', handle_app)
     app.router.add_get('/api/tickets/student', get_student_tickets)
     
     # Live Radar
