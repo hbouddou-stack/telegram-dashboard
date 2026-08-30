@@ -6597,3 +6597,13 @@
 
 @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   {   . m a i n - w o r k s p a c e   {   p a d d i n g :   1 0 p x   ! i m p o r t a n t ;   m a r g i n - r i g h t :   0   ! i m p o r t a n t ;   w i d t h :   1 0 0 %   ! i m p o r t a n t ;   m a r g i n - l e f t :   0   ! i m p o r t a n t ;   }   . f o r m - r o w ,   . s t a t s - g r i d   {   g r i d - t e m p l a t e - c o l u m n s :   1 f r   ! i m p o r t a n t ;   }   . e d i t o r - c o n t a i n e r   {   p a d d i n g :   1 5 p x   ! i m p o r t a n t ;   m a r g i n - b o t t o m :   1 5 p x   ! i m p o r t a n t ;   }   . h e a d e r - a c t i o n s   {   f l e x - d i r e c t i o n :   c o l u m n ;   a l i g n - i t e m s :   f l e x - s t a r t   ! i m p o r t a n t ;   g a p :   1 0 p x   ! i m p o r t a n t ;   }   . h e a d e r - a c t i o n s   h 1   {   f o n t - s i z e :   1 . 5 r e m   ! i m p o r t a n t ;   }   . d a t a - t a b l e - w r a p p e r ,   . t a b l e - r e s p o n s i v e   {   o v e r f l o w - x :   a u t o ;   w i d t h :   1 0 0 % ;   - w e b k i t - o v e r f l o w - s c r o l l i n g :   t o u c h ;   }   . f i l t e r - s i d e b a r   {   p o s i t i o n :   f i x e d ;   r i g h t :   0 ;   b o t t o m :   0 ;   t o p :   a u t o ;   w i d t h :   1 0 0 % ;   h e i g h t :   6 0 v h ;   z - i n d e x :   1 0 0 1 ;   t r a n s f o r m :   t r a n s l a t e Y ( 1 0 0 % ) ;   t r a n s i t i o n :   t r a n s f o r m   0 . 3 s   e a s e ;   }   . f i l t e r - s i d e b a r : n o t ( . c o l l a p s e d )   {   t r a n s f o r m :   t r a n s l a t e Y ( 0 ) ;   }   }  
  
+@media (max-width: 768px) {
+    .main-workspace { padding: 10px !important; margin-right: 0 !important; width: 100% !important; margin-left: 0 !important; }
+    .form-row, .stats-grid { grid-template-columns: 1fr !important; }
+    .editor-container { padding: 15px !important; margin-bottom: 15px !important; }
+    .header-actions { flex-direction: column; align-items: flex-start !important; gap: 10px !important; }
+    .header-actions h1 { font-size: 1.5rem !important; }
+    .data-table-wrapper, .table-responsive { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
+    .filter-sidebar { position: fixed; right: 0; bottom: 0; top: auto; width: 100%; height: 60vh; z-index: 1001; transform: translateY(100%); transition: transform 0.3s ease; }
+    .filter-sidebar:not(.collapsed) { transform: translateY(0); }
+}
