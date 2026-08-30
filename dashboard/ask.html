@@ -150,6 +150,11 @@
         .chat-input-bar input { flex: 1; background: transparent; border: none; color: #ffffff; font-family: 'Tajawal'; font-size: 15px; outline: none; }
         .chat-input-bar button { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; }
 
+            .badge {
+            position: absolute; top: -5px; right: 15%; background: #e74c3c; color: white;
+            font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;
+            box-shadow: 0 0 5px rgba(231, 76, 60, 0.5); z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -235,6 +240,56 @@
             </div>
         </div>
 
+        
+        <!-- NEW TICKET TAB -->
+        <div class="tab-content" id="tab-new" style="padding-bottom:100px;">
+            
+            <div id="support-form">
+                <div class="header">
+                    <div class="header-icon">&#129302;</div>
+                    <h1>مركز الدعم الذكي</h1>
+                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
+                    <div class="step-indicator">
+                        <div class="dot active" id="dot-1"></div>
+                        <div class="dot" id="dot-2"></div>
+                        <div class="dot" id="dot-3"></div>
+                    </div>
+                </div>
+                <div class="step-container active" id="step-1">
+                    <div class="grid-cards" id="theme-grid"></div>
+                </div>
+                <div class="step-container" id="step-2">
+                    <div class="grid-cards" id="subtheme-grid"></div>
+                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-3">
+                    <div class="input-group">
+                        <label>اشرح مشكلتك بالتفصيل:</label>
+                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
+                    </div>
+                    <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
+                    <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-4">
+                    <div class="rag-box">
+                        <div class="rag-title">&#128161; المساعد الذكي يقترح:</div>
+                        <div class="rag-answer" id="rag-answer-text"></div>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                        <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-success" onclick="resolveTicket()">&#9989; نعم، شكراً</button>
+                            <button class="btn-danger" onclick="escalateTicket()">&#10060; لا، أريد التحدث لمدير</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="success-screen" id="success-screen">
+                <div class="icon">&#9989;</div>
+                <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
+                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
+                <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
+            
+        </div>
         <!-- FAQ TAB -->
         <div class="tab-content" id="tab-faq">
             <div class="header" style="margin-bottom:15px;">
@@ -255,7 +310,7 @@
                 <p class="subtitle">تتبع حالة استفساراتك السابقة</p>
             </div>
             
-            <button class="btn-primary" onclick="openTicketModal()" style="margin-top:0; margin-bottom:20px;">
+            <button class="btn-primary" onclick="switchTab('new')" style="margin-top:0; margin-bottom:20px;">
                 &#10133; إرسال تذكرة جديدة
             </button>
             <div id="student-tickets-list" style="margin-top: 20px;">
@@ -320,8 +375,12 @@
         <button class="nav-btn active" id="btn-nav-home" onclick="switchTab('home', this)">
             <span class="icon">🏠</span><span>الرئيسية</span>
         </button>
-        <button class="nav-btn" id="btn-nav-inbox" onclick="switchTab('inbox', this)">
+        <button class="nav-btn" id="btn-nav-inbox" onclick="switchTab('inbox', this)" style="position:relative;">
+            <span id="inbox-badge" class="badge" style="display:none;">0</span>
             <span class="icon">✉️</span><span>الرسائل</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-new" onclick="switchTab('new', this)">
+            <span class="icon" style="background: linear-gradient(135deg, #f1c40f, #f39c12); color:white; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; margin:auto; margin-bottom:4px; font-size:18px;">+</span><span>إرسال</span>
         </button>
         <button class="nav-btn" id="btn-nav-ai" onclick="switchTab('ai', this)">
             <span class="icon">🤖</span><span>المساعد الذكي</span>
@@ -519,8 +578,7 @@
             if (tabName === 'inbox') loadStudentTickets();
         }
 
-        function openTicketModal() { document.getElementById('new-ticket-modal').style.display = 'flex'; goToStep(1); }
-        function closeTicketModal() { document.getElementById('new-ticket-modal').style.display = 'none'; }
+        
         
         async function sendAiMessage() {
             const input = document.getElementById('ai-input');
@@ -757,9 +815,19 @@
                 return;
             }
             
-            const resolved = tickets.filter(t => t.status === 'resolved');
-            const inProgress = tickets.filter(t => t.status === 'in_progress');
-            const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'reopen');
+            const resolved = tickets.filter(t => t.status === 'resolved' || t.status === 'محلولة');
+            const inProgress = tickets.filter(t => t.status === 'in_progress' || t.status === 'قيد المعالجة');
+            const openTickets = tickets.filter(t => !resolved.includes(t) && !inProgress.includes(t));
+            
+            const badge = document.getElementById('inbox-badge');
+            if (badge) {
+                if (resolved.length > 0) {
+                    badge.innerText = resolved.length;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
             
             let htmlStr = '';
             
@@ -820,56 +888,5 @@
         setTimeout(initLiveRadarPing, 1000);
     </script>
 
-    <div class="modal-overlay" id="new-ticket-modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeTicketModal()">✕</button>
-            <div id="support-form">
-                <div class="header">
-                    <div class="header-icon">&#129302;</div>
-                    <h1>مركز الدعم الذكي</h1>
-                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
-                    <div class="step-indicator">
-                        <div class="dot active" id="dot-1"></div>
-                        <div class="dot" id="dot-2"></div>
-                        <div class="dot" id="dot-3"></div>
-                    </div>
-                </div>
-                <div class="step-container active" id="step-1">
-                    <div class="grid-cards" id="theme-grid"></div>
-                </div>
-                <div class="step-container" id="step-2">
-                    <div class="grid-cards" id="subtheme-grid"></div>
-                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
-                </div>
-                <div class="step-container" id="step-3">
-                    <div class="input-group">
-                        <label>اشرح مشكلتك بالتفصيل:</label>
-                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..."></textarea>
-                    </div>
-                    <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
-                    <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
-                </div>
-                <div class="step-container" id="step-4">
-                    <div class="rag-box">
-                        <div class="rag-title">&#128161; المساعد الذكي يقترح:</div>
-                        <div class="rag-answer" id="rag-answer-text"></div>
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-success" onclick="resolveTicket()">&#9989; نعم، شكراً</button>
-                            <button class="btn-danger" onclick="escalateTicket()">&#10060; لا، أريد التحدث لمدير</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="success-screen" id="success-screen">
-                <div class="icon">&#9989;</div>
-                <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
-                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال تذكرتك إلى فريق الدعم. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
-                <button class="btn-primary" style="margin-top:20px;" onclick="window.Telegram.WebApp.close()">إغلاق</button>
-            </div>
-        </div>
-    </div>
-
-</body>
+    </body>
 </html>
