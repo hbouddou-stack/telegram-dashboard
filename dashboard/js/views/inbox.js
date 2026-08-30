@@ -305,7 +305,7 @@ function openTicket(id) {
                 setTimeout(() => { draftInput.style.color = 'var(--text-1)'; }, 2000);
                 
                 const copilotIndicator = document.createElement('div');
-                copilotIndicator.innerHTML = \`<div style="text-align:center; font-size: 0.8rem; color: #2ecc71; margin: 10px 0;">✨ Copilote IA: تم إنشاء مسودة الرد تلقائياً بناءً على قاعدة المعرفة</div>\`;
+                copilotIndicator.innerHTML = `<div style="text-align:center; font-size: 0.8rem; color: #2ecc71; margin: 10px 0;">✨ Copilote IA: تم إنشاء مسودة الرد تلقائياً بناءً على قاعدة المعرفة</div>`;
                 chatFeed.appendChild(copilotIndicator);
                 chatFeed.scrollTop = chatFeed.scrollHeight;
             } else {
