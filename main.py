@@ -4720,7 +4720,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/editor.html', handle_editor)
     app.router.add_get('/support', handle_support_app)
     app.router.add_get('/support.css', handle_support_css)
-    app.router.add_get('/support.js', handle_support_js)
+    app.router.add_static('/js/', os.path.join(os.path.dirname(__file__), 'dashboard', 'js'))
     app.router.add_get('/admin', handle_admin)
     app.router.add_get('/admin.html', handle_admin)
     app.router.add_get('/admin-bot', handle_admin_bot)
