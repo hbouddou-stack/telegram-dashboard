@@ -1,6 +1,7 @@
 import { initInboxView } from './views/inbox.js';
 import { initStudentsView } from './views/students.js';
 import { initStatsView } from './views/stats.js';
+import { initFaqView } from './views/faq.js';
 
 class AppRouter {
     constructor() {
@@ -8,7 +9,7 @@ class AppRouter {
             'inbox': this.loadInbox.bind(this),
             'students': this.loadStudents.bind(this),
             'stats': this.loadStats.bind(this),
-            'faq': this.loadPlaceholder.bind(this, '🧠 مدير الذكاء الاصطناعي والأسئلة الشائعة قريباً...'),
+            'faq': this.loadFaq.bind(this),
             'settings': this.loadPlaceholder.bind(this, '⚙️ الإعدادات والصلاحيات قريباً...')
         };
         
@@ -74,6 +75,10 @@ class AppRouter {
     
     loadStats(container) {
         initStatsView(container);
+    }
+    
+    loadFaq(container) {
+        initFaqView(container);
     }
 
     toggleSidebar() {

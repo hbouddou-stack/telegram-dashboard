@@ -283,6 +283,38 @@ function openTicket(id) {
     
     // View transitions
     document.getElementById('view-chat').classList.add('active');
+
+    // --- AI COPILOT: Auto-Draft Generation ---
+    const draftInput = document.getElementById('admin-reply-text');
+    if (draftInput) {
+        draftInput.value = '';
+        draftInput.placeholder = '🤖 يتم استشارة الطيار الآلي (Copilot)...';
+        
+        fetch('/api/support/rag_check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                theme: ticket.theme,
+                subtheme: ticket.subtheme,
+                message: ticket.text
+            })
+        }).then(r => r.json()).then(data => {
+            if (data.found && data.answer) {
+                draftInput.value = data.answer;
+                draftInput.style.color = '#2ecc71';
+                setTimeout(() => { draftInput.style.color = 'var(--text-1)'; }, 2000);
+                
+                const copilotIndicator = document.createElement('div');
+                copilotIndicator.innerHTML = \`<div style="text-align:center; font-size: 0.8rem; color: #2ecc71; margin: 10px 0;">✨ Copilote IA: تم إنشاء مسودة الرد تلقائياً بناءً على قاعدة المعرفة</div>\`;
+                chatFeed.appendChild(copilotIndicator);
+                chatFeed.scrollTop = chatFeed.scrollHeight;
+            } else {
+                draftInput.placeholder = 'اكتب ردك هنا...';
+            }
+        }).catch(e => {
+            draftInput.placeholder = 'اكتب ردك هنا...';
+        });
+    }
 }
 
 function goBack() {
