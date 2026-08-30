@@ -10,304 +10,413 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
         body { 
-            background: #0d1117; 
+            background: #000b29; /* Deep blue background to match ask.html */
+            background-image: linear-gradient(135deg, #1e0033 0%, #000b29 100%);
             color: white; 
-            overflow: hidden; 
-            padding-top: 20px;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
         
         /* Header */
         .header {
             height: 60px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 100;
+            padding: 0 20px; 
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .header h1 { font-size: 1.5rem; font-weight: 800; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .back-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .header h1 { font-size: 1.4rem; font-weight: 800; color: #fff; }
+        .back-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        /* Cards Stack Container */
-        .stack-container {
-            position: relative;
-            height: calc(100vh - 80px);
+        /* Progress Bar */
+        .overall-progress {
             padding: 20px;
-            overflow: visible;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .progress-title { font-size: 0.9rem; color: #b3a5c7; margin-bottom: 8px; display: flex; justify-content: space-between; font-weight: 700; }
+        .progress-track { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #8736ff, #2ecc71); width: 0%; transition: width 0.5s ease; }
+        
+        /* Hub Grid */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px;
         }
         
-        .card {
-            position: absolute;
-            width: calc(100% - 40px);
-            height: 180px; 
-            border-radius: 24px;
-            padding: 25px;
+        .hub-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px 15px;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1.1);
-            box-shadow: 0 -8px 20px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
+            transition: transform 0.2s, background 0.2s;
+            position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.15);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .hub-card.wide { grid-column: span 2; flex-direction: row; text-align: right; justify-content: flex-start; gap: 15px; padding: 20px; }
+        .hub-card:active { transform: scale(0.96); }
+        .hub-card.read { border-color: #2ecc71; background: rgba(46, 204, 113, 0.05); }
+        
+        .card-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .hub-card.wide .card-icon { margin-bottom: 0; font-size: 2.5rem; }
+        .card-title { font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.3; }
+        .hub-card.wide .card-title { font-size: 1.2rem; }
+        
+        .check-badge {
+            position: absolute; top: 10px; left: 10px;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: transparent; transition: 0.3s;
+        }
+        .hub-card.read .check-badge { background: #2ecc71; border-color: #2ecc71; color: white; }
+        
+        /* Detail View Slider */
+        #detail-view {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #000b29; background-image: linear-gradient(135deg, #1e0033 0%, #000b29 100%);
+            z-index: 200;
+            transform: translateX(100%); /* Slides from right in RTL */
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column;
+        }
+        #detail-view.active { transform: translateX(0); }
+        
+        .detail-body { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; }
+        .detail-footer { padding: 15px 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); }
+        
+        .btn-mark-read {
+            width: 100%; padding: 16px; border-radius: 14px; border: none;
+            background: #2ecc71; color: white; font-size: 1.1rem; font-weight: 800; font-family: 'Tajawal', sans-serif;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); transition: 0.2s; display: flex; justify-content: center; gap: 8px;
+        }
+        .btn-mark-read:active { transform: scale(0.98); }
+        .btn-mark-read.already-read { background: rgba(255,255,255,0.1); color: #fff; box-shadow: none; border: 1px solid rgba(255,255,255,0.2); }
+        
+        /* Content Elements inside Detail */
+        .content-block { display: none; }
+        .content-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 15px; color: #8736ff; }
+        .content-text { font-size: 1rem; line-height: 1.8; color: rgba(255,255,255,0.9); margin-bottom: 20px; }
+        
+        .video-wrapper {
+            position: relative; padding-bottom: 56.25%; /* 16:9 */
+            height: 0; overflow: hidden; border-radius: 12px; margin-bottom: 20px;
+            background: #000; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .video-wrapper iframe, .video-wrapper video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         }
         
-        /* State when card is open */
-        .card.open {
-            height: calc(100vh - 120px); 
-            transform: translateY(-20px) !important;
-            z-index: 50 !important;
-            cursor: default;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
-            overflow-y: auto;
-            border-radius: 30px;
+        .image-card { width: 100%; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Tabs System inside a page */
+        .page-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .page-tab-btn {
+            white-space: nowrap; padding: 10px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3); color: #fff; font-family: 'Tajawal', sans-serif; font-size: 0.95rem; cursor: pointer; transition: 0.2s; font-weight: 700;
         }
+        .page-tab-btn.active { background: #8736ff; border-color: #8736ff; box-shadow: 0 4px 10px rgba(135, 54, 255, 0.4); }
         
-        /* Hidden siblings when one is open */
-        .card.hidden {
-            transform: translateY(120vh) !important;
-            opacity: 0;
-            pointer-events: none;
-        }
+        .page-tab-content { display: none; animation: fadeIn 0.3s; }
+        .page-tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-        }
-        
-        .card-icon { font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        .card-title { font-size: 1.4rem; font-weight: 800; margin-top: 10px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-        
-        .card-content {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.4s ease;
-            transition-delay: 0.2s;
-            margin-top: 25px;
-            font-size: 1.05rem;
-            line-height: 1.7;
-            padding-bottom: 30px;
-            display: none;
-        }
-        
-        .card.open .card-content { opacity: 1; transform: translateY(0); display: block; }
-        
-        .close-card {
-            background: rgba(0,0,0,0.3); border: none; border-radius: 50%; width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(5px);
-        }
-        .card.open .close-card { opacity: 1; pointer-events: auto; }
-        
-        /* Colors */
-        .card-1 { background: linear-gradient(135deg, #1A2980, #26D0CE); z-index: 1; }
-        .card-2 { background: linear-gradient(135deg, #FF416C, #FF4B2B); z-index: 2; }
-        .card-3 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); z-index: 3; color: #222; }
-        .card-4 { background: linear-gradient(135deg, #f6d365, #fda085); z-index: 4; color: #222; }
-        .card-5 { background: linear-gradient(135deg, #43e97b, #38f9d7); z-index: 5; color: #222; }
-        
-        .card-3 .close-card, .card-4 .close-card, .card-5 .close-card { background: rgba(0,0,0,0.1); color: #222; }
-        .card-3 .card-title, .card-4 .card-title, .card-5 .card-title { text-shadow: none; }
-        
-        /* Content specific styling */
-        .bullet-point { display: flex; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.15); padding: 15px; border-radius: 12px; }
-        .card-3 .bullet-point, .card-4 .bullet-point, .card-5 .bullet-point { background: rgba(0,0,0,0.08); }
-        .bullet-icon { font-size: 1.5rem; }
-        .bullet-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
-        
+        .alert-box { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .alert-box.info { background: rgba(52, 152, 219, 0.1); border-color: #3498db; }
+        .alert-title { font-weight: 800; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>دليل الطالب</h1>
-        <button class="back-btn" onclick="goBack()">✕</button>
+    
+    <!-- HUB VIEW -->
+    <div id="hub-view">
+        <div class="header">
+            <h1>📚 الأكاديمية</h1>
+            <button class="back-btn" onclick="goBack()">✕</button>
+        </div>
+        
+        <div class="overall-progress">
+            <div class="progress-title">
+                <span>تقدمك في قراءة الدليل</span>
+                <span id="progress-text">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+        
+        <div class="hub-grid">
+            <div class="hub-card wide" id="card-welcome" onclick="openDetail('welcome')">
+                <div class="check-badge">✓</div>
+                <div class="card-icon">🚀</div>
+                <div>
+                    <div class="card-title">مرحباً بك في الأكاديمية</div>
+                    <div style="font-size:0.85rem; color:#b3a5c7; margin-top:5px;">فيديو تعريفي + الأساسيات</div>
+                </div>
+            </div>
+            
+            <div class="hub-card" id="card-program" onclick="openDetail('program')">
+                <div class="check-badge">✓</div>
+                <div class="card-icon">📖</div>
+                <div class="card-title">البرنامج والمواد</div>
+            </div>
+            
+            <div class="hub-card" id="card-exams" onclick="openDetail('exams')">
+                <div class="check-badge">✓</div>
+                <div class="card-icon">📝</div>
+                <div class="card-title">الامتحانات والتقييم</div>
+            </div>
+            
+            <div class="hub-card" id="card-calendar" onclick="openDetail('calendar')">
+                <div class="check-badge">✓</div>
+                <div class="card-icon">📅</div>
+                <div class="card-title">التقويم الدراسي</div>
+            </div>
+            
+            <div class="hub-card" id="card-rules" onclick="openDetail('rules')">
+                <div class="check-badge">✓</div>
+                <div class="card-icon">⚖️</div>
+                <div class="card-title">قوانين المنصة</div>
+            </div>
+        </div>
     </div>
     
-    <div class="stack-container" id="stack">
-        <!-- Card 1 -->
-        <div class="card card-1" onclick="openCard(this)" data-index="0">
-            <div class="card-header">
-                <div>
-                    <div class="card-icon">🚀</div>
-                    <div class="card-title">رحلتك معنا</div>
-                </div>
-                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
-            </div>
-            <div class="card-content">
-                <p style="margin-bottom:20px; font-weight:500;">مرحباً بك في الأكاديمية! لقد صممنا هذا البرنامج ليكون رحلة ممتعة وتفاعلية.</p>
-                
-                <div class="bullet-point">
-                    <div class="bullet-icon">📱</div>
-                    <div class="bullet-text"><strong>دروس تفاعلية</strong>ستصلك الدروس مباشرة عبر تيليجرام. لن تحتاج إلى منصات معقدة.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🧩</div>
-                    <div class="bullet-text"><strong>كويزات وتطبيقات</strong>بعد كل قسم، ستجد اختبارات قصيرة (كويز) لتثبيت المعلومات.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🏆</div>
-                    <div class="bullet-text"><strong>النقاط والتصنيف</strong>كل إجابة صحيحة تمنحك نقاطاً ترفع ترتيبك في لوحة الأوائل!</div>
-                </div>
-            </div>
+    <!-- DETAIL VIEW SLIDER -->
+    <div id="detail-view">
+        <div class="header" style="background: rgba(0,0,0,0.8);">
+            <h1 id="detail-header-title">عنوان</h1>
+            <button class="back-btn" onclick="closeDetail()">🔙</button>
         </div>
         
-        <!-- Card 2 -->
-        <div class="card card-2" onclick="openCard(this)" data-index="1">
-            <div class="card-header">
-                <div>
-                    <div class="card-icon">📝</div>
-                    <div class="card-title">الامتحانات والتقييم</div>
-                </div>
-                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
-            </div>
-            <div class="card-content">
-                <p style="margin-bottom:20px; font-weight:500;">التقييم المستمر هو مفتاح النجاح. إليك كيف تتم الامتحانات:</p>
-                
-                <div class="bullet-point">
-                    <div class="bullet-icon">🏫</div>
-                    <div class="bullet-text"><strong>المنصة الرسمية</strong>تجرى جميع الامتحانات الرسمية على المنصة المعتمدة لدينا لضمان الشفافية.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">⏳</div>
-                    <div class="bullet-text"><strong>الدورة العادية</strong>يعقد امتحان في نهاية كل فصل دراسي. أمامك أسبوع كامل للإجابة وتسليم المطلوب.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🔄</div>
-                    <div class="bullet-text"><strong>الدورة الاستدراكية</strong>إذا واجهت ظروفاً أو أردت تحسين درجاتك، هناك دورة استدراكية متاحة بشروط.</div>
-                </div>
-            </div>
+        <div class="detail-body" id="detail-body-container">
+            <!-- Content injected here via JS -->
         </div>
         
-        <!-- Card 3 -->
-        <div class="card card-3" onclick="openCard(this)" data-index="2">
-            <div class="card-header">
-                <div>
-                    <div class="card-icon">📅</div>
-                    <div class="card-title">التقويم الدراسي</div>
-                </div>
-                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+        <div class="detail-footer">
+            <button id="btn-mark-read" class="btn-mark-read" onclick="markCurrentRead()">✅ فهمت ذلك، أكمل</button>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- HIDDEN CONTENT BLOCKS (Data Source for Detail) -->
+    <!-- ============================================== -->
+    <div id="source-data" style="display:none;">
+        
+        <!-- Welcome -->
+        <div id="content-welcome">
+            <h2 class="content-title">رحلتك تبدأ من هنا!</h2>
+            <div class="video-wrapper">
+                <!-- Placeholder Video. You can replace with YouTube Iframe or direct mp4 -->
+                <video controls poster="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80">
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                </video>
             </div>
-            <div class="card-content">
-                <p style="margin-bottom:20px; font-weight:500;">نظم وقتك مع التواريخ والمحطات الرئيسية:</p>
-                
-                <div class="bullet-point">
-                    <div class="bullet-icon">🍂</div>
-                    <div class="bullet-text"><strong>الفصل الأول</strong>يبدأ في شهر سبتمبر وينتهي بمنتصف يناير مع فترة الامتحانات.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🏖️</div>
-                    <div class="bullet-text"><strong>عطلة منتصف العام</strong>أسبوعان من الراحة وتجديد النشاط بين الفصلين.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🌸</div>
-                    <div class="bullet-text"><strong>الفصل الثاني</strong>يبدأ في فبراير ويمتد إلى غاية جوان ليختتم بامتحانات نهاية العام.</div>
-                </div>
+            <p class="content-text">مرحباً بك في الأكاديمية! لقد صممنا هذا البرنامج ليكون رحلة ممتعة وتفاعلية عبر تطبيق تيليجرام الذي تستخدمه يومياً.</p>
+            <div class="alert-box info">
+                <div class="alert-title">💡 نصيحة سريعة</div>
+                <div>لا تتردد في استكشاف القوائم الجانبية، والتحدث مع المساعد الذكي في أي وقت.</div>
+            </div>
+            <p class="content-text">اضغط على <b>"فهمت ذلك"</b> بالأسفل لتأكيد مشاهدتك للترحيب وفتح باقي الأقسام.</p>
+        </div>
+
+        <!-- Program (Sub-tabs example) -->
+        <div id="content-program">
+            <h2 class="content-title">البرنامج الدراسي</h2>
+            <p class="content-text">إليك تفاصيل المواد الدراسية التي سنغطيها خلال هذا العام. اختر المادة لعرض تفاصيلها:</p>
+            
+            <div class="page-tabs">
+                <button class="page-tab-btn active" onclick="switchPageTab(this, 'tab-math')">📐 الرياضيات</button>
+                <button class="page-tab-btn" onclick="switchPageTab(this, 'tab-physics')">⚛️ الفيزياء</button>
+                <button class="page-tab-btn" onclick="switchPageTab(this, 'tab-science')">🧬 العلوم</button>
+            </div>
+            
+            <div class="page-tab-content active" id="tab-math">
+                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="image-card">
+                <p class="content-text"><b>وحدة الرياضيات:</b><br>تشمل الجبر، الهندسة، والتفاضل والتكامل. سيتم إرسال ملخصات أسبوعية بصيغة PDF وتدريبات تفاعلية.</p>
+            </div>
+            <div class="page-tab-content" id="tab-physics">
+                <p class="content-text"><b>وحدة الفيزياء:</b><br>نركز على الميكانيكا والكهرباء. يحتوي كل درس على محاكاة فيديو تجريبية لتسهيل الفهم.</p>
+            </div>
+            <div class="page-tab-content" id="tab-science">
+                <p class="content-text"><b>وحدة العلوم:</b><br>تشريح وفهم البيولوجيا بشكل معمق. نعتمد على الخرائط الذهنية في هذه المادة.</p>
             </div>
         </div>
 
-        <!-- Card 4 -->
-        <div class="card card-4" onclick="openCard(this)" data-index="3">
-            <div class="card-header">
-                <div>
-                    <div class="card-icon">📜</div>
-                    <div class="card-title">قوانين الأكاديمية</div>
-                </div>
-                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
-            </div>
-            <div class="card-content">
-                <p style="margin-bottom:20px; font-weight:500;">لضمان بيئة تعليمية راقية وإيجابية للجميع:</p>
-                
-                <div class="bullet-point">
-                    <div class="bullet-icon">🤝</div>
-                    <div class="bullet-text"><strong>الاحترام المتبادل</strong>النقاشات في المجموعة مخصصة للتعلم فقط. يمنع الجدال الخارجي.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🔒</div>
-                    <div class="bullet-text"><strong>الخصوصية</strong>المحتوى التعليمي حصري للمشتركين. يمنع مشاركته أو إعادة نشره.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">⏰</div>
-                    <div class="bullet-text"><strong>الالتزام</strong>حاول إتمام الكويزات في وقتها لتستفيد من التقييم المستمر.</div>
-                </div>
+        <!-- Exams -->
+        <div id="content-exams">
+            <h2 class="content-title">الامتحانات والتقييم</h2>
+            <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="image-card">
+            <p class="content-text">التقييم المستمر هو مفتاح النجاح. إليك كيف تتم الامتحانات في منصتنا الرسمية:</p>
+            
+            <ul style="padding-right: 20px; color: rgba(255,255,255,0.9); line-height: 2; margin-bottom: 20px;">
+                <li><b>المنصة الرسمية:</b> تجرى الامتحانات النهائية على الموقع المعتمد لضمان الشفافية، بينما تتم الكويزات داخل البوت.</li>
+                <li><b>الدورة العادية:</b> يعقد امتحان في نهاية كل فصل. أمامك <b>أسبوع كامل (7 أيام)</b> للإجابة وتسليم المطلوب.</li>
+                <li><b>الدورة الاستدراكية:</b> إذا واجهت ظروفاً قاهرة أو رسبت في مادة، تتاح لك فرصة التعويض في دورة الاستدراك.</li>
+            </ul>
+            
+            <div class="alert-box">
+                <div class="alert-title">⚠️ تنبيه هام</div>
+                <div>الاعتماد على الذكاء الاصطناعي أثناء الامتحانات الرسمية يؤدي إلى إلغاء درجاتك. استخدمه للتعلم فقط وليس للغش.</div>
             </div>
         </div>
         
-        <!-- Card 5 -->
-        <div class="card card-5" onclick="openCard(this)" data-index="4">
-            <div class="card-header">
-                <div>
-                    <div class="card-icon">💡</div>
-                    <div class="card-title">نصائح ذهبية</div>
-                </div>
-                <button class="close-card" onclick="event.stopPropagation(); closeCard(this.parentElement.parentElement)">✕</button>
+        <!-- Calendar -->
+        <div id="content-calendar">
+            <h2 class="content-title">التقويم الدراسي</h2>
+            <p class="content-text">نظم وقتك بناءً على المحطات الرئيسية لهذا العام:</p>
+            
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:10px;">
+                <b style="color:#2ecc71;">سبتمبر - أكتوبر</b><br>
+                <span style="color:#b3a5c7; font-size:0.9rem;">بداية الفصل الأول والانطلاق في الدروس.</span>
             </div>
-            <div class="card-content">
-                <p style="margin-bottom:20px; font-weight:500;">كيف تحقق أقصى استفادة من الذكاء الاصطناعي والدعم؟</p>
-                
-                <div class="bullet-point">
-                    <div class="bullet-icon">🤖</div>
-                    <div class="bullet-text"><strong>اسأل المساعد الذكي</strong>لا تتردد في طرح أي سؤال علمي. البوت متاح 24/7 لمساعدتك.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🔍</div>
-                    <div class="bullet-text"><strong>ابحث في الـ FAQ</strong>قبل أن تفتح تذكرة دعم، تصفح الأسئلة الشائعة (FAQ)، فالإجابة غالباً هناك.</div>
-                </div>
-                <div class="bullet-point">
-                    <div class="bullet-icon">🎧</div>
-                    <div class="bullet-text"><strong>استخدم الصوتيات</strong>يمكنك إرسال رسائل صوتية (Voice) وسيقوم البوت بفهمها والإجابة عليها.</div>
-                </div>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:10px;">
+                <b style="color:#e74c3c;">ديسمبر - جانفي</b><br>
+                <span style="color:#b3a5c7; font-size:0.9rem;">فترة المراجعة الشاملة وامتحانات الفصل الأول.</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:10px;">
+                <b style="color:#3498db;">فيفري (عطلة منتصف العام)</b><br>
+                <span style="color:#b3a5c7; font-size:0.9rem;">أسبوعان من الراحة وتجديد النشاط.</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:10px;">
+                <b style="color:#f1c40f;">مارس - جوان</b><br>
+                <span style="color:#b3a5c7; font-size:0.9rem;">الفصل الثاني والتحضير للامتحانات النهائية.</span>
             </div>
         </div>
+
+        <!-- Rules -->
+        <div id="content-rules">
+            <h2 class="content-title">قوانين المنصة</h2>
+            <p class="content-text">الالتزام بالقوانين يضمن تجربة سلسة لك ولزملائك:</p>
+            <ul style="padding-right: 20px; color: rgba(255,255,255,0.9); line-height: 2; margin-bottom: 20px;">
+                <li><b>الاحترام المتبادل:</b> النقاشات مخصصة للتعلم فقط.</li>
+                <li><b>الملكية الفكرية:</b> المحتوى حصري للمشتركين. يمنع مشاركته.</li>
+                <li><b>الالتزام بالمواعيد:</b> تسليم المهام بعد وقتها يخصم من نقاطك.</li>
+            </ul>
+        </div>
+        
     </div>
-    
+
+    <!-- SCRIPT -->
     <script>
-        // Init Telegram Web App
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         
-        const cards = document.querySelectorAll('.card');
-        const STACK_OFFSET = 55; // Pixels between cards when stacked
+        let currentSectionId = null;
+        const totalSections = 5;
         
-        function applyStackTransforms() {
-            cards.forEach((c, idx) => {
-                if (!c.classList.contains('open') && !c.classList.contains('hidden')) {
-                    c.style.transform = `translateY(${idx * STACK_OFFSET}px)`;
+        // Read progress from localStorage
+        let readStatus = JSON.parse(localStorage.getItem('studentGuideProgress') || '{}');
+        
+        function initHub() {
+            let readCount = 0;
+            const ids = ['welcome', 'program', 'exams', 'calendar', 'rules'];
+            
+            ids.forEach(id => {
+                const card = document.getElementById('card-' + id);
+                if(readStatus[id]) {
+                    card.classList.add('read');
+                    readCount++;
+                } else {
+                    card.classList.remove('read');
                 }
             });
+            
+            // Update progress bar
+            const pct = Math.round((readCount / totalSections) * 100);
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('progress-text').innerText = pct + '%';
         }
         
-        // Initial setup
-        applyStackTransforms();
-        
-        function openCard(cardEl) {
-            if (cardEl.classList.contains('open')) return;
+        function openDetail(sectionId) {
+            currentSectionId = sectionId;
             
-            // Haptic
             if(window.Telegram.WebApp.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
             
-            cards.forEach(c => {
-                if (c === cardEl) {
-                    c.classList.add('open');
-                } else {
-                    c.classList.add('hidden');
-                }
-            });
+            // Set header title based on card
+            const cardTitle = document.querySelector('#card-' + sectionId + ' .card-title').innerText;
+            document.getElementById('detail-header-title').innerText = cardTitle;
+            
+            // Inject content
+            const sourceHtml = document.getElementById('content-' + sectionId).innerHTML;
+            document.getElementById('detail-body-container').innerHTML = sourceHtml;
+            document.getElementById('detail-body-container').scrollTo(0,0);
+            
+            // Update Read button state
+            const btn = document.getElementById('btn-mark-read');
+            if(readStatus[sectionId]) {
+                btn.classList.add('already-read');
+                btn.innerHTML = '✅ لقد أتممت قراءة هذا القسم';
+            } else {
+                btn.classList.remove('already-read');
+                btn.innerHTML = '✅ فهمت ذلك، أكمل';
+            }
+            
+            // Slide in
+            document.getElementById('detail-view').classList.add('active');
         }
         
-        function closeCard(cardEl) {
-            cardEl.classList.remove('open');
-            cardEl.scrollTo(0,0);
+        function closeDetail() {
+            document.getElementById('detail-view').classList.remove('active');
             
-            cards.forEach(c => {
-                c.classList.remove('hidden');
-            });
+            // Stop any playing videos
+            const videos = document.querySelectorAll('#detail-body-container video');
+            videos.forEach(v => v.pause());
             
-            applyStackTransforms();
+            // Clear content after animation
+            setTimeout(() => {
+                document.getElementById('detail-body-container').innerHTML = '';
+                currentSectionId = null;
+            }, 350);
+        }
+        
+        function markCurrentRead() {
+            if(!currentSectionId) return;
+            
+            readStatus[currentSectionId] = true;
+            localStorage.setItem('studentGuideProgress', JSON.stringify(readStatus));
+            
+            if(window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+            
+            initHub();
+            closeDetail();
+        }
+        
+        function switchPageTab(btnEl, tabId) {
+            // Find parent
+            const pageTabsContainer = btnEl.parentElement;
+            // Remove active from sibling buttons
+            const btns = pageTabsContainer.querySelectorAll('.page-tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            
+            // Hide all tab contents in this detail view
+            const contents = document.querySelectorAll('.page-tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            
+            // Show target
+            document.getElementById(tabId).classList.add('active');
+            
+            if(window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+            }
         }
         
         function goBack() {
-            window.history.back(); // Try to go back in browser history
-            setTimeout(() => {
-                window.location.href = '/ask.html'; // Fallback
-            }, 100);
+            window.location.href = '/ask.html';
         }
+        
+        // Initial setup
+        initHub();
     </script>
 </body>
 </html>
