@@ -4599,6 +4599,19 @@ async def api_support_rag_check(request):
         logger.error(f"Error in rag_check: {e}")
         return web.json_response({'found': False})
 
+async def api_admin_get_tickets(request):
+    import os, json
+    from aiohttp import web
+    tickets_file = os.path.join(os.path.dirname(__file__), 'tickets_db.json')
+    tickets = []
+    if os.path.exists(tickets_file):
+        try:
+            with open(tickets_file, 'r', encoding='utf-8') as f:
+                tickets = json.load(f)
+        except Exception:
+            pass
+    return web.json_response({'tickets': tickets})
+
 async def api_support(request):
     try:
         data = await request.json()
@@ -4610,14 +4623,48 @@ async def api_support(request):
         first_name = data.get('first_name', 'غير معروف')
 
         import requests
+        import json
+        import os
+        from datetime import datetime
         from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
         
-        text = f'🆘 <b>طلب مساعدة / استفسار جديد</b>\n\n'
+        # Save ticket to DB
+        tickets_file = os.path.join(os.path.dirname(__file__), 'tickets_db.json')
+        tickets = []
+        if os.path.exists(tickets_file):
+            try:
+                with open(tickets_file, 'r', encoding='utf-8') as f:
+                    tickets = json.load(f)
+            except Exception:
+                pass
+                
+        ticket_id = f"#{len(tickets) + 1001}"
+        
+        new_ticket = {
+            "id": ticket_id,
+            "telegram_id": telegram_id,
+            "username": username,
+            "first_name": first_name,
+            "theme": theme,
+            "subtheme": subtheme,
+            "message": msg,
+            "status": "Nouveau",
+            "claimed_by": None,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        tickets.append(new_ticket)
+        
+        with open(tickets_file, 'w', encoding='utf-8') as f:
+            json.dump(tickets, f, ensure_ascii=False, indent=4)
+        
+        text = f'🆘 <b>طلب مساعدة / استفسار جديد {ticket_id}</b>\n\n'
         text += f'👤 <b>الطالب:</b> {first_name} (@{username})\n'
         text += f'🆔 <b>Telegram ID:</b> {telegram_id}\n'
         text += f'📂 <b>القسم:</b> {theme}\n'
         text += f'🔖 <b>التفاصيل:</b> {subtheme}\n\n'
-        text += f'📝 <b>الرسالة:</b>\n{msg}'
+        text += f'📝 <b>الرسالة:</b>\n{msg}\n\n'
+        text += f'🔗 للرد، يرجى الدخول إلى لوحة التحكم (Admin Dashboard /federer).'
         
         url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
         payload = {
@@ -4695,6 +4742,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/reader.css', handle_reader_css)
     app.router.add_get('/ask', handle_support)
     app.router.add_post('/api/support/rag_check', api_support_rag_check)
+    app.router.add_get('/api/admin/tickets', api_admin_get_tickets)
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
     app.router.add_get('/api/tickets/student', get_student_tickets)
