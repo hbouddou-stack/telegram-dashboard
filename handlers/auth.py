@@ -200,7 +200,8 @@ async def cmd_federer(message: Message):
         [InlineKeyboardButton(text="🛠️ Dashboard Admin (Verification)", web_app=WebAppInfo(url=f"{webapp_url}/admin-gateway.html"))],
         [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))],
         [InlineKeyboardButton(text="🔧 Admin Général (admin.html)", web_app=WebAppInfo(url=f"{webapp_url}/admin.html"))],
-        [InlineKeyboardButton(text="🎧 Admin Support (admin-support.html)", web_app=WebAppInfo(url=f"{webapp_url}/admin-support.html"))]
+        [InlineKeyboardButton(text="🎧 Admin Support (admin-support.html)", web_app=WebAppInfo(url=f"{webapp_url}/admin-support.html"))],
+        [InlineKeyboardButton(text="📱 Mini-Zendesk (Nouveau Support)", web_app=WebAppInfo(url=f"{webapp_url}/support"))]
     ])
     await message.answer("🤫 <b>Menu Secret Admin</b> :", reply_markup=kb, parse_mode="HTML")
 @router.message(Command('myid'))
