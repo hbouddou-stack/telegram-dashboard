@@ -523,26 +523,26 @@
             const msg = input.value.trim();
             if (!msg) return;
             const container = document.getElementById('ai-messages');
-            container.innerHTML += <div class="message-bubble msg-user"></div>;
+            container.innerHTML += `<div class="message-bubble msg-user">${msg}</div>`;
             input.value = '';
-            container.innerHTML += <div class="message-bubble msg-ai" id="ai-loading">...</div>;
+            container.innerHTML += `<div class="message-bubble msg-ai" id="ai-loading">...</div>`;
             container.scrollTop = container.scrollHeight;
             try {
                 const tid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
-                const res = await fetch(${BOT_BASE}/api/chat, {
+                const res = await fetch(`${BOT_BASE}/api/chat`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ message: msg, user_id: tid, context: "ask_html_bot" })
                 });
                 document.getElementById('ai-loading').remove();
                 if (res.ok) {
                     const data = await res.json();
-                    container.innerHTML += <div class="message-bubble msg-ai"></div>;
+                    container.innerHTML += `<div class="message-bubble msg-ai">${data.reply || data.response || "عذراً، لم أتمكن من الرد."}</div>`;
                 } else {
-                    container.innerHTML += <div class="message-bubble msg-ai" style="color:#e74c3c">حدث خطأ في الاتصال.</div>;
+                    container.innerHTML += `<div class="message-bubble msg-ai" style="color:#e74c3c">حدث خطأ في الاتصال.</div>`;
                 }
             } catch (e) {
                 document.getElementById('ai-loading')?.remove();
-                container.innerHTML += <div class="message-bubble msg-ai" style="color:#e74c3c">حدث خطأ. حاول مرة أخرى.</div>;
+                container.innerHTML += `<div class="message-bubble msg-ai" style="color:#e74c3c">حدث خطأ. حاول مرة أخرى.</div>`;
             }
             container.scrollTop = container.scrollHeight;
         }
