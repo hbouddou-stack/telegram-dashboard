@@ -11,12 +11,9 @@ async def load_lessons_from_db():
 
 async def update_static_json_cache():
     import json, os
-    all_lessons = await load_lessons_from_db()
-    root_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'transcripts.json')
-    dash_path = os.path.join(os.path.dirname(__file__), '..', 'dashboard', 'transcripts.json')
     try:
-        with open(root_path, 'w', encoding='utf-8') as f:
-            json.dump(all_lessons, f, ensure_ascii=False)
+        all_lessons = await load_lessons_from_db()
+        dash_path = os.path.join(os.path.dirname(__file__), 'dashboard', 'transcripts.json')
         with open(dash_path, 'w', encoding='utf-8') as f:
             json.dump(all_lessons, f, ensure_ascii=False)
     except Exception as e:
@@ -157,7 +154,7 @@ def _kill_existing_instance():
     try:
         with open(PID_FILE, "r") as f:
             old_pid = int(f.read().strip())
-        if old_pid == os.getpid():
+        if old_pid <= 1 or old_pid == os.getpid() or os.getenv("RAILWAY_ENVIRONMENT"):
             return
             
         if sys.platform == "win32":
