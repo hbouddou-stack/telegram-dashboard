@@ -368,17 +368,28 @@
         </div>
 
         <!-- INBOX TAB -->
-        <div class="tab-content" id="tab-inbox">
-            <div class="header">
-                <h1 style="font-size:1.5rem;">&#128229; صندوق الرسائل</h1>
-                <p class="subtitle">تتبع حالة استفساراتك السابقة</p>
+        <div class="tab-content" id="tab-inbox" style="padding-bottom:100px;">
+            <div class="header" style="margin-bottom:15px;">
+                <h1 style="font-size:1.5rem;">📥 صندوق الرسائل</h1>
+                <p class="subtitle">متابعة استفساراتك وتذاكرك السابقة</p>
             </div>
             
-            <button class="btn-primary" onclick="switchTab('new')" style="margin-top:0; margin-bottom:20px;">
-                &#10133; إرسال تذكرة جديدة
-            </button>
-            <div id="student-tickets-list" style="margin-top: 20px;">
-                <div style="text-align:center; color:var(--text-2); padding: 30px;">جارِ التحميل...</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px;">
+                <button class="btn-primary" onclick="switchTab('new')" style="margin:0; padding:10px 18px; font-size:0.88rem; display:inline-flex; align-items:center; gap:6px; width:auto; border-radius:20px;">
+                    ➕ طرح تذكرة جديدة
+                </button>
+                <div id="student-tickets-total-count" style="font-size:0.82rem; color:var(--text-2);"></div>
+            </div>
+
+            <!-- Quick Filter Tabs (Pills) -->
+            <div id="inbox-filter-pills" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:12px; margin-bottom:15px; scrollbar-width:none;">
+                <button class="faq-cat-btn active" id="pill-all" onclick="filterStudentInbox('all', this)">📋 الكل (<span id="cnt-all">0</span>)</button>
+                <button class="faq-cat-btn" id="pill-pending" onclick="filterStudentInbox('pending', this)">⏳ قيد الانتظار (<span id="cnt-pending">0</span>)</button>
+                <button class="faq-cat-btn" id="pill-resolved" onclick="filterStudentInbox('resolved', this)">🟢 تم الحل (<span id="cnt-resolved">0</span>)</button>
+            </div>
+
+            <div id="student-tickets-list">
+                <div style="text-align:center; color:var(--text-2); padding: 30px;">جاري التحميل...</div>
             </div>
         </div>
     
