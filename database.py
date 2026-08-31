@@ -561,6 +561,46 @@ async def init_db():
             pass # Column already exists
         # ------------------
 
+        
+        # --- AUTH & GROUP ACCESS TABLES ---
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS pending_verifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                telegram_id INTEGER,
+                username TEXT,
+                first_name TEXT,
+                email TEXT,
+                phone TEXT,
+                created_at TEXT DEFAULT (datetime('now', 'localtime')),
+                status TEXT DEFAULT 'waiting',
+                notified_at TEXT
+            );
+        ''')
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_pv_email ON pending_verifications(email);')
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_pv_tg ON pending_verifications(telegram_id);')
+
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS issued_links (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                telegram_id INTEGER,
+                email TEXT,
+                group_type TEXT,
+                chat_id TEXT,
+                invite_link TEXT,
+                created_at TEXT DEFAULT (datetime('now', 'localtime')),
+                used_at TEXT
+            );
+        ''')
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_il_tg ON issued_links(telegram_id);')
+
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS group_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            );
+        ''')
+        # ----------------------------------
+
         await db.commit()
 
         # Migration: Load course_chapters from sync file if present
@@ -4087,3 +4127,172 @@ async def edit_crm_ticket_message(ticket_id: int, message_index: int, new_text: 
     except Exception as e:
         logger.error(f"[CRM] edit_crm_ticket_message error: {e}")
         return False
+
+
+# ==========================================
+# EXCEL AUTHENTICATION & SINGLE-USE LINKS
+# ==========================================
+
+async def add_pending_verification(telegram_id: int, email: str, username: str = None, first_name: str = None, phone: str = None) -> bool:
+    """Enregistre un élève en attente de validation lors de son inscription."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        norm_email = email.strip().lower() if email else ""
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            # Vérifier si déjà en attente
+            async with db.execute("SELECT id FROM pending_verifications WHERE telegram_id = ? AND email = ? AND status = 'waiting'", (telegram_id, norm_email)) as cur:
+                if await cur.fetchone():
+                    return True
+            await db.execute(
+                "INSERT INTO pending_verifications (telegram_id, username, first_name, email, phone, status) VALUES (?, ?, ?, ?, ?, 'waiting')",
+                (telegram_id, username, first_name, norm_email, phone)
+            )
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"[AUTH] Error adding pending verification: {e}")
+        return False
+
+async def get_pending_verifications(status: str = 'waiting') -> list:
+    """Récupère la liste des élèves en attente."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM pending_verifications WHERE status = ? ORDER BY created_at ASC", (status,)) as cur:
+                return [dict(r) for r in await cur.fetchall()]
+    except Exception as e:
+        logger.error(f"[AUTH] Error getting pending verifications: {e}")
+        return []
+
+async def mark_pending_verification_processed(telegram_id: int, email: str = None) -> bool:
+    """Marque une vérification comme traitée après envoi du lien."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            if email:
+                await db.execute("UPDATE pending_verifications SET status = 'processed', notified_at = datetime('now', 'localtime') WHERE telegram_id = ? AND email = ?", (telegram_id, email.strip().lower()))
+            else:
+                await db.execute("UPDATE pending_verifications SET status = 'processed', notified_at = datetime('now', 'localtime') WHERE telegram_id = ?", (telegram_id,))
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"[AUTH] Error marking pending verification processed: {e}")
+        return False
+
+async def record_issued_link(telegram_id: int, email: str, group_type: str, chat_id: str, invite_link: str) -> bool:
+    """Enregistre un lien unique généré pour un élève."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute(
+                "INSERT INTO issued_links (telegram_id, email, group_type, chat_id, invite_link) VALUES (?, ?, ?, ?, ?)",
+                (telegram_id, email.strip().lower() if email else "", group_type, str(chat_id), invite_link)
+            )
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"[AUTH] Error recording issued link: {e}")
+        return False
+
+async def save_group_settings(general_channel_id: str = None, men_group_id: str = None, women_group_id: str = None) -> bool:
+    """Sauvegarde les IDs des groupes et canaux d'étude."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            if general_channel_id is not None:
+                await db.execute("INSERT OR REPLACE INTO group_settings (key, value) VALUES ('general_channel_id', ?)", (str(general_channel_id),))
+            if men_group_id is not None:
+                await db.execute("INSERT OR REPLACE INTO group_settings (key, value) VALUES ('men_group_id', ?)", (str(men_group_id),))
+            if women_group_id is not None:
+                await db.execute("INSERT OR REPLACE INTO group_settings (key, value) VALUES ('women_group_id', ?)", (str(women_group_id),))
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"[AUTH] Error saving group settings: {e}")
+        return False
+
+async def get_group_settings() -> dict:
+    """Récupère la configuration des groupes."""
+    from config import DATABASE_PATH
+    import aiosqlite
+    settings = {"general_channel_id": "", "men_group_id": "", "women_group_id": ""}
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT key, value FROM group_settings") as cur:
+                async for row in cur:
+                    settings[row['key']] = row['value']
+    except Exception as e:
+        logger.error(f"[AUTH] Error getting group settings: {e}")
+    return settings
+
+async def import_students_excel(records: list) -> dict:
+    """
+    Importe ou met à jour une liste d'élèves issue d'un fichier Excel.
+    Retourne des statistiques d'import.
+    """
+    from config import DATABASE_PATH
+    import aiosqlite
+    stats = {"total": len(records), "inserted": 0, "updated": 0, "errors": 0}
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            for r in records:
+                email = (r.get('email') or '').strip().lower()
+                if not email:
+                    stats["errors"] += 1
+                    continue
+                
+                first_name = (r.get('first_name') or '').strip()
+                last_name = (r.get('last_name') or '').strip()
+                phone = (r.get('phone') or '').strip()
+                gender = (r.get('gender') or 'HOMME').strip().upper()
+                # Normalisation du genre
+                if any(k in gender for k in ['F', 'FEMME', 'FEMALE', 'WOMAN', 'أنثى', 'نساء', 'امرأة', 'MME', 'MLLE']):
+                    gender = 'FEMME'
+                else:
+                    gender = 'HOMME'
+                    
+                payment_status = (r.get('payment_status') or 'PAID').strip().upper()
+                # Normalisation du statut de paiement
+                if any(k in payment_status for k in ['PAYE', 'PAID', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED', 'تم الدفع', 'مدفوع', '1', 'TRUE']):
+                    payment_status = 'PAID'
+                else:
+                    payment_status = 'PENDING'
+                    
+                year = str(r.get('year') or '1').strip()
+                dob = (r.get('dob') or '2000-01-01').strip()
+                
+                # Check if exists
+                async with db.execute("SELECT student_id, telegram_id FROM academy_students WHERE LOWER(email) = ?", (email,)) as cur:
+                    existing = await cur.fetchone()
+                    
+                if existing:
+                    await db.execute("""
+                        UPDATE academy_students 
+                        SET first_name = COALESCE(NULLIF(?, ''), first_name),
+                            last_name = COALESCE(NULLIF(?, ''), last_name),
+                            phone = COALESCE(NULLIF(?, ''), phone),
+                            gender = ?,
+                            payment_status = ?,
+                            year = COALESCE(NULLIF(?, ''), year)
+                        WHERE LOWER(email) = ?
+                    """, (first_name, last_name, phone, gender, payment_status, year, email))
+                    stats["updated"] += 1
+                else:
+                    await db.execute("""
+                        INSERT INTO academy_students (email, first_name, last_name, phone, gender, payment_status, year, dob)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (email, first_name, last_name, phone, gender, payment_status, year, dob))
+                    stats["inserted"] += 1
+                    
+            await db.commit()
+    except Exception as e:
+        logger.error(f"[AUTH] Error in import_students_excel: {e}")
+        stats["errors"] += 1
+    return stats

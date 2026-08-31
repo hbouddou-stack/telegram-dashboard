@@ -12860,7 +12860,7 @@ async function deleteCurriculumNode(level, id) {
 }
 
 // Hook into tab switching to load data
-const originalSwitchTab = window.switchTab;
+var excelOrigSwitchTab = window.switchTab;
 window.switchTab = function(tabName) {
     if (originalSwitchTab) {
         originalSwitchTab(tabName);
@@ -13129,4 +13129,255 @@ window.applySupportFilters = function() {
             </tr>
         `;
     }).join('');
+};
+
+
+// ==========================================
+// EXCEL SYNC & GROUP SETTINGS MODULE
+// ==========================================
+
+let parsedExcelRecords = [];
+
+async function loadAdminGroupSettings() {
+    try {
+        const res = await fetch('/api/admin/group_settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+            const genInput = document.getElementById('cfg-general-channel-id');
+            const menInput = document.getElementById('cfg-men-group-id');
+            const womenInput = document.getElementById('cfg-women-group-id');
+            if (genInput) genInput.value = data.settings.general_channel_id || '';
+            if (menInput) menInput.value = data.settings.men_group_id || '';
+            if (womenInput) womenInput.value = data.settings.women_group_id || '';
+        }
+    } catch(e) {
+        console.error('Error loading group settings:', e);
+    }
+}
+
+async function saveAdminGroupSettings() {
+    const general = document.getElementById('cfg-general-channel-id')?.value.trim() || '';
+    const men = document.getElementById('cfg-men-group-id')?.value.trim() || '';
+    const women = document.getElementById('cfg-women-group-id')?.value.trim() || '';
+    
+    try {
+        const res = await fetch('/api/admin/group_settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                general_channel_id: general,
+                men_group_id: men,
+                women_group_id: women
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('✅ تم حفظ إعدادات المجموعات بنجاح!');
+        } else {
+            alert('❌ حدث خطأ: ' + (data.error || 'غير معروف'));
+        }
+    } catch(e) {
+        alert('❌ فشل الاتصال بالخادم');
+    }
+}
+
+async function loadAdminPendingVerifications() {
+    const container = document.getElementById('pending-students-table-container');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">جاري التحميل...</div>';
+    
+    try {
+        const res = await fetch('/api/admin/pending_verifications');
+        const data = await res.json();
+        if (data.success) {
+            const list = data.pending || [];
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:25px; color:#2ecc71; background:rgba(46,204,113,0.06); border-radius:10px;">✅ لا يوجد طلاب معلقين حالياً. جميع الطلاب تم تفعيلهم!</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table style="width:100%; border-collapse:collapse; font-size:0.88rem; text-align:right;">
+                    <thead>
+                        <tr style="background:rgba(255,255,255,0.06); border-bottom:1px solid var(--border-color);">
+                            <th style="padding:10px;">تاريخ الطلب</th>
+                            <th style="padding:10px;">البريد الإلكتروني</th>
+                            <th style="padding:10px;">الاسم على تليجرام</th>
+                            <th style="padding:10px;">Telegram ID</th>
+                            <th style="padding:10px;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${list.map(p => `
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                                <td style="padding:10px; color:var(--text-muted);">${p.created_at || ''}</td>
+                                <td style="padding:10px; font-weight:bold; color:var(--accent);">${p.email || 'غير محدد'}</td>
+                                <td style="padding:10px;">${p.first_name || ''} (@${p.username || '-'})</td>
+                                <td style="padding:10px; font-family:monospace;">${p.telegram_id || ''}</td>
+                                <td style="padding:10px;"><span style="background:rgba(243,156,18,0.15); color:#f39c12; padding:3px 8px; border-radius:10px; font-size:0.75rem; font-weight:bold;">⏳ في انتظار الإكسيل</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+    } catch(e) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#e74c3c;">فشل تحميل قائمة الانتظار</div>';
+    }
+}
+
+function handleExcelFileSelected(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        if (typeof XLSX === 'undefined') {
+            alert('مكتبة قراءة الإكسيل غير جاهزة. يرجى إعادة تحميل الصفحة.');
+            return;
+        }
+        
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const rawJson = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        
+        parsedExcelRecords = [];
+        
+        rawJson.forEach(row => {
+            let email = '', firstName = '', lastName = '', gender = 'HOMME', paymentStatus = 'PAID', phone = '', year = '1';
+            
+            // Smart Column Matching
+            for (let [k, v] of Object.entries(row)) {
+                const keyLower = k.toLowerCase().trim();
+                const valStr = String(v).trim();
+                
+                if (keyLower.includes('mail') || keyLower.includes('بريد') || keyLower.includes('courriel')) {
+                    email = valStr;
+                } else if (keyLower.includes('first') || keyLower.includes('prénom') || keyLower.includes('prenom') || keyLower.includes('الاسم الأول')) {
+                    firstName = valStr;
+                } else if (keyLower.includes('last') || keyLower.includes('nom') || keyLower.includes('النسب') || keyLower.includes('العائلة')) {
+                    lastName = valStr;
+                } else if (keyLower.includes('name') || keyLower.includes('nom complet') || keyLower.includes('الاسم')) {
+                    if (!firstName) firstName = valStr;
+                } else if (keyLower.includes('gender') || keyLower.includes('sexe') || keyLower.includes('civilité') || keyLower.includes('civilite') || keyLower.includes('جنس') || keyLower.includes('نوع')) {
+                    gender = valStr;
+                } else if (keyLower.includes('pay') || keyLower.includes('statut') || keyLower.includes('status') || keyLower.includes('دفع') || keyLower.includes('حالة')) {
+                    paymentStatus = valStr;
+                } else if (keyLower.includes('phone') || keyLower.includes('tel') || keyLower.includes('هاتف') || keyLower.includes('جوال')) {
+                    phone = valStr;
+                } else if (keyLower.includes('year') || keyLower.includes('annee') || keyLower.includes('سنة')) {
+                    year = valStr;
+                }
+            }
+            
+            if (email) {
+                parsedExcelRecords.push({
+                    email: email.toLowerCase(),
+                    first_name: firstName,
+                    last_name: lastName,
+                    gender: gender,
+                    payment_status: paymentStatus,
+                    phone: phone,
+                    year: year
+                });
+            }
+        });
+        
+        renderExcelPreview();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function renderExcelPreview() {
+    const previewArea = document.getElementById('excel-preview-area');
+    const summaryEl = document.getElementById('excel-preview-summary');
+    const tableBody = document.getElementById('excel-preview-table-body');
+    if (!previewArea || !tableBody) return;
+    
+    if (parsedExcelRecords.length === 0) {
+        alert('لم يتم العثور على أي سجلات تحتوي على بريد إلكتروني صالح في الملف.');
+        previewArea.style.display = 'none';
+        return;
+    }
+    
+    const menCount = parsedExcelRecords.filter(r => !['FEMME','F','WOMAN','أنثى','نساء','MME','MLLE'].some(k => (r.gender||'').toUpperCase().includes(k))).length;
+    const womenCount = parsedExcelRecords.length - menCount;
+    
+    if (summaryEl) {
+        summaryEl.innerHTML = `
+            تم استخراج <b>${parsedExcelRecords.length}</b> طالب بنجاح: 
+            <span style="color:#3b82f6; font-weight:bold; margin:0 8px;">🧔 ${menCount} رجال</span> | 
+            <span style="color:#ec4899; font-weight:bold; margin:0 8px;">🧕 ${womenCount} نساء</span>
+        `;
+    }
+    
+    tableBody.innerHTML = parsedExcelRecords.slice(0, 10).map(r => {
+        const isFemale = ['FEMME','F','WOMAN','أنثى','نساء','MME','MLLE'].some(k => (r.gender||'').toUpperCase().includes(k));
+        const genderBadge = isFemale ? '<span style="color:#ec4899; font-weight:bold;">🧕 نساء</span>' : '<span style="color:#3b82f6; font-weight:bold;">🧔 رجال</span>';
+        return `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:8px; font-weight:bold;">${r.email}</td>
+                <td style="padding:8px;">${r.first_name} ${r.last_name}</td>
+                <td style="padding:8px;">${genderBadge}</td>
+                <td style="padding:8px;"><span style="color:#2ecc71; font-weight:bold;">🟢 ${r.payment_status || 'PAID'}</span></td>
+            </tr>
+        `;
+    }).join('');
+    
+    if (parsedExcelRecords.length > 10) {
+        tableBody.innerHTML += `<tr><td colspan="4" style="padding:10px; text-align:center; color:var(--text-muted);">... و ${parsedExcelRecords.length - 10} طالب إضافي</td></tr>`;
+    }
+    
+    previewArea.style.display = 'block';
+}
+
+async function executeExcelSync() {
+    if (parsedExcelRecords.length === 0) {
+        alert('لا توجد بيانات مستخرجة للاستيراد.');
+        return;
+    }
+    
+    const btn = document.getElementById('btn-execute-sync');
+    if (btn) { btn.innerText = 'جاري الاستيراد والمزامنة...'; btn.disabled = true; }
+    
+    try {
+        const res = await fetch('/api/admin/students/import_excel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records: parsedExcelRecords })
+        });
+        const data = await res.json();
+        
+        if (data.success && data.stats) {
+            const s = data.stats;
+            alert(`🎉 تمت المزامنة بنجاح!\n\n• إجمالي الطلاب: ${s.total}\n• تمت إضافتهم: ${s.inserted}\n• تم تحديثهم: ${s.updated}\n• ⚡ طلاب معلقين تم إرسال روابطهم فوراً: ${s.dispatched_pending || 0}`);
+            loadAdminPendingVerifications();
+            const previewArea = document.getElementById('excel-preview-area');
+            if (previewArea) previewArea.style.display = 'none';
+        } else {
+            alert('❌ حدث خطأ: ' + (data.error || 'غير معروف'));
+        }
+    } catch(e) {
+        alert('❌ فشل الاتصال بالخادم أثناء الاستيراد');
+    } finally {
+        if (btn) { btn.innerText = '🚀 تأكيد المزامنة وإرسال الروابط للطلاب المعلقين'; btn.disabled = false; }
+    }
+}
+
+// Hook into switchTab
+var excelOrigSwitchTab = window.switchTab;
+window.switchTab = function(tabName) {
+    if (typeof excelOrigSwitchTab === 'function') excelOrigSwitchTab(tabName);
+    
+    // Hide all dashboard tabs including excel-sync
+    document.querySelectorAll('.dashboard-tab').forEach(t => t.style.display = 'none');
+    
+    if (tabName === 'excel-sync') {
+        const target = document.getElementById('tab-excel-sync');
+        if (target) target.style.display = 'block';
+        loadAdminGroupSettings();
+        loadAdminPendingVerifications();
+    }
 };

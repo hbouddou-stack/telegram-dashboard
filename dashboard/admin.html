@@ -22,6 +22,7 @@
 
     <link rel="stylesheet" href="admin.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -83,6 +84,15 @@
 
             <nav class="sidebar-menu">
                 
+                
+                <!-- SECTION: EXCEL SYNC & GROUP SETTINGS -->
+                <div class="sidebar-section" id="section-excel-sync">
+                    <div class="sidebar-section-header" onclick="switchTab('excel-sync')" style="border-left: 3px solid #f1c40f; background: rgba(241, 196, 15, 0.08);">
+                        <span class="section-icon" style="color: #f1c40f;">📁</span>
+                        <span class="section-title" style="color: #f1c40f; font-weight: bold;">مزامنة الإكسيل والمجموعات</span>
+                    </div>
+                </div>
+
                 <!-- SECTION: LIVE RADAR -->
                 <div class="sidebar-section" id="section-radar">
                     <div class="sidebar-section-header" onclick="switchTab('radar')" style="border-left: 3px solid #2ecc71; background: rgba(46, 204, 113, 0.1);">

@@ -1,3 +1,91 @@
+
+
+# ==========================================
+# SINGLE-USE INVITE LINKS & GENDER SEGREGATION ENGINE
+# ==========================================
+
+async def generate_and_send_student_links(bot, telegram_id: int, student_data: dict, app=None) -> dict:
+    """
+    Génère des liens uniques (member_limit=1) selon le genre et les envoie à l'élève.
+    """
+    import database as db
+    import logging
+    _log = logging.getLogger('bot')
+    
+    settings = await db.get_group_settings()
+    general_id = settings.get('general_channel_id')
+    men_id = settings.get('men_group_id')
+    women_id = settings.get('women_group_id')
+    
+    gender = (student_data.get('gender') or 'HOMME').upper()
+    email = (student_data.get('email') or '').lower()
+    first_name = student_data.get('first_name') or 'طالب العلم'
+    
+    links = {}
+    
+    # 1. Lien du Canal Général (si configuré)
+    if general_id and bot:
+        try:
+            link_obj = await bot.create_chat_invite_link(
+                chat_id=int(general_id) if str(general_id).lstrip('-').isdigit() else general_id,
+                member_limit=1,
+                name=f"General_{first_name}_{telegram_id}"[:32]
+            )
+            links['general'] = link_obj.invite_link
+            await db.record_issued_link(telegram_id, email, 'general', str(general_id), link_obj.invite_link)
+        except Exception as e:
+            _log.error(f"[LINKS] Error creating general invite link: {e}")
+            
+    # 2. Lien du Groupe selon le Genre
+    target_group_id = women_id if gender == 'FEMME' else men_id
+    target_group_type = 'women' if gender == 'FEMME' else 'men'
+    group_title_ar = "مجموعة الأخوات (نساء) 🧕" if gender == 'FEMME' else "مجموعة الإخوة (رجال) 🧔"
+    
+    if target_group_id and bot:
+        try:
+            link_obj = await bot.create_chat_invite_link(
+                chat_id=int(target_group_id) if str(target_group_id).lstrip('-').isdigit() else target_group_id,
+                member_limit=1,
+                name=f"{target_group_type.capitalize()}_{first_name}_{telegram_id}"[:32]
+            )
+            links['group'] = link_obj.invite_link
+            links['group_type'] = target_group_type
+            await db.record_issued_link(telegram_id, email, target_group_type, str(target_group_id), link_obj.invite_link)
+        except Exception as e:
+            _log.error(f"[LINKS] Error creating {target_group_type} invite link: {e}")
+
+    # 3. Envoi du message Telegram avec boutons
+    if bot and (links.get('general') or links.get('group')):
+        try:
+            from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+            kb_buttons = []
+            if links.get('general'):
+                kb_buttons.append([InlineKeyboardButton(text="📢 الانضمام للقناة العامة للدروس", url=links['general'])])
+            if links.get('group'):
+                kb_buttons.append([InlineKeyboardButton(text=f"💬 الانضمام إلى {group_title_ar}", url=links['group'])])
+                
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=kb_buttons)
+            
+            welcome_text = (
+                f"🎉 <b>أهلاً بك يا {first_name} في أكاديمية أُسوة!</b>\n\n"
+                f"✅ تم تأكيد اشتراكك وتفعيل حسابك بنجاح.\n\n"
+                f"🔒 <b>تنبيه أمني هام:</b> هذه الروابط مخصصة لك فقط (أحادية الاستخدام)، وتنتهي صلاحيتها فور استخدامك لها.\n\n"
+                f"👇 اضغط على الأزرار أدناه للانضمام إلى مجموعاتك المقررة:"
+            )
+            
+            await bot.send_message(
+                chat_id=telegram_id,
+                text=welcome_text,
+                reply_markup=reply_markup,
+                parse_mode="HTML"
+            )
+            _log.info(f"[LINKS] Sent unique invite links to {telegram_id} ({email})")
+            await db.mark_pending_verification_processed(telegram_id, email)
+        except Exception as e:
+            _log.error(f"[LINKS] Error sending telegram message with links: {e}")
+            
+    return links
+
 import asyncio
 
 # --- DB TRANSCRIPTS HELPERS ---
@@ -5034,6 +5122,11 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/gateway/log_open', api_gateway_log_open)
     app.router.add_post('/api/gateway/log_action', api_gateway_log_action)
     app.router.add_get('/api/admin/links', api_admin_links_get)
+    app.router.add_get('/api/admin/group_settings', api_admin_group_settings_get)
+    app.router.add_post('/api/admin/group_settings', api_admin_group_settings_save)
+    app.router.add_post('/api/admin/students/import_excel', api_admin_import_excel)
+    app.router.add_get('/api/admin/pending_verifications', api_admin_pending_verifications)
+
     app.router.add_get('/api/admin/sos', api_admin_sos_list)
     app.router.add_post('/api/admin/sos/reply', api_admin_sos_reply)
     app.router.add_post('/api/student/stats', get_student_stats)
@@ -5973,3 +6066,73 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.info("Bot stopped.")
+
+
+async def api_admin_group_settings_get(request: web.Request):
+    import database as db
+    settings = await db.get_group_settings()
+    return web.json_response({"success": True, "settings": settings})
+
+async def api_admin_group_settings_save(request: web.Request):
+    import database as db
+    try:
+        data = await request.json()
+        general = data.get('general_channel_id', '')
+        men = data.get('men_group_id', '')
+        women = data.get('women_group_id', '')
+        await db.save_group_settings(general, men, women)
+        return web.json_response({"success": True, "message": "تم حفظ إعدادات المجموعات بنجاح"})
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+async def api_admin_import_excel(request: web.Request):
+    import database as db
+    import logging
+    _log = logging.getLogger('bot')
+    try:
+        data = await request.json()
+        records = data.get('records', [])
+        if not records:
+            return web.json_response({"success": False, "error": "No records provided"}, status=400)
+            
+        stats = await db.import_students_excel(records)
+        
+        # Réveil automatique de la file d'attente (Pending Buffer)
+        bot = request.app.get('bot')
+        pending_list = await db.get_pending_verifications('waiting')
+        dispatched_count = 0
+        
+        if pending_list and bot:
+            from config import DATABASE_PATH
+            import aiosqlite
+            async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                db_conn.row_factory = aiosqlite.Row
+                for p in pending_list:
+                    p_email = (p.get('email') or '').strip().lower()
+                    p_tg = p.get('telegram_id')
+                    if not p_email or not p_tg:
+                        continue
+                    
+                    async with db_conn.execute("SELECT * FROM academy_students WHERE LOWER(email) = ? AND payment_status = 'PAID'", (p_email,)) as cur:
+                        student_row = await cur.fetchone()
+                        
+                    if student_row:
+                        student_dict = dict(student_row)
+                        # Associer le telegram_id s'il ne l'était pas
+                        await db_conn.execute("UPDATE academy_students SET telegram_id = ? WHERE LOWER(email) = ?", (p_tg, p_email))
+                        await db_conn.commit()
+                        
+                        # Générer et envoyer les liens uniques
+                        await generate_and_send_student_links(bot, p_tg, student_dict, request.app)
+                        dispatched_count += 1
+                        
+        stats["dispatched_pending"] = dispatched_count
+        return web.json_response({"success": True, "stats": stats})
+    except Exception as e:
+        _log.error(f"[EXCEL] Error in api_admin_import_excel: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+async def api_admin_pending_verifications(request: web.Request):
+    import database as db
+    pending = await db.get_pending_verifications('waiting')
+    return web.json_response({"success": True, "pending": pending})

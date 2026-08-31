@@ -701,20 +701,36 @@
         </div>
     </div>
     
-    <div class="container" id="success-msg">
-        <div class="icon-success">✅</div>
-        <div style="font-size: 1.5rem;">تم التحقق بنجاح</div>
+    
+    <!-- SUCCESS SCREEN (APPROVED) -->
+    <div class="container" id="success-msg" style="display:none; flex-direction:column; align-items:center; text-align:center;">
+        <div class="icon-success" style="font-size:3.5rem; margin-bottom:10px;">🎉</div>
+        <div style="font-size: 1.4rem; font-weight:800; color:#2ecc71;" id="success-student-title">تم التحقق وتفعيل الحساب بنجاح</div>
         
-        <div style="background:rgba(10, 132, 255, 0.1); border:1px solid rgba(10, 132, 255, 0.3); padding:15px; border-radius:12px; margin-top:10px;">
-            <p style="color:var(--text-1); font-size:0.95rem; line-height:1.6; text-align:right;">
-                تم ربط حسابك بنجاح. لقد قمنا بتجهيز <b>مجلد خاص</b> يحتوي على جميع القنوات والمجموعات التي تحتاجها في الأكاديمية.<br><br>
-                اضغط على الزر أدناه لإضافة المجلد كاملاً إلى حسابك.
+        <div style="background:rgba(46, 204, 113, 0.08); border:1px solid rgba(46, 204, 113, 0.3); padding:16px; border-radius:14px; margin-top:14px; width:100%; box-sizing:border-box;">
+            <p style="color:var(--text-1); font-size:0.92rem; line-height:1.6; text-align:right; margin:0 0 10px 0;">
+                أهلاً بك معنا! تم تجهيز روابط الانضمام الرسمية المخصصة لك.<br>
+                🔒 <small style="color:var(--accent);">تنبيه: هذه الروابط مخصصة لك فقط (أحادية الاستخدام) وتنتهي صلاحيتها بعد الدخول.</small>
+            </p>
+            <div id="issued-links-container" style="display:flex; flex-direction:column; gap:10px; margin-top:12px;"></div>
+        </div>
+    </div>
+
+    <!-- PENDING SCREEN (WAITING FOR ADMIN EXCEL / PAYMENT) -->
+    <div class="container" id="pending-msg" style="display:none; flex-direction:column; align-items:center; text-align:center;">
+        <div style="font-size:3.5rem; margin-bottom:10px;">⏳</div>
+        <div style="font-size: 1.35rem; font-weight:800; color:#f39c12;">طلبك قيد المراجعة والمصادقة</div>
+        
+        <div style="background:rgba(243, 156, 18, 0.08); border:1px solid rgba(243, 156, 18, 0.3); padding:16px; border-radius:14px; margin-top:14px; width:100%; box-sizing:border-box;">
+            <p style="color:var(--text-1); font-size:0.92rem; line-height:1.6; text-align:right; margin:0;">
+                تم تسجيل بياناتك وحسابك على تليجرام بنجاح ✅<br><br>
+                يقوم فريق الإدارة بمطابقة الدفع وتحديث السجلات دورياً. <b>ستصلك رسالة تلقائية هنا على تليجرام برابط مجموعتك الخاصة فور المصادقة</b> دون الحاجة لإعادة التسجيل.
             </p>
         </div>
-        
-        <button class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:15px; animation: pulse-glow 1.5s infinite; transition: all 0.3s ease;" onclick="logAndJoinFolder()">✈️ الانضمام إلى مجموعات تيليجرام</button>
-        
-        <img src="/dossiertelegram.jpg" style="width:100%; border-radius:12px; margin-top:15px; border:1px solid rgba(255,255,255,0.2);">
+
+        <button onclick="window.location.href='/ask.html'" style="margin-top:16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px 20px; border-radius:12px; font-family:'Tajawal', sans-serif; cursor:pointer; font-weight:bold;">
+            💬 الذهاب إلى مركز الدعم والأسئلة الشائعة
+        </button>
     </div>
 
     <script>
@@ -1104,18 +1120,39 @@
                     if (window.Telegram.WebApp.HapticFeedback) {
                         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                     }
-                    if(window.confetti) {
-                        confetti({
-                            particleCount: 150,
-                            spread: 80,
-                            origin: { y: 0.6 },
-                            colors: ['#fff', '#32d74b', '#FF2A5F', '#0a84ff']
-                        });
-                    }
                     document.getElementById('main-form').style.display = 'none';
-                    document.getElementById('success-msg').style.display = 'flex';
                     tg.MainButton.hideProgress();
-                    tg.MainButton.hide(); // Hide it on success screen
+                    tg.MainButton.hide();
+
+                    if (data.status === 'approved') {
+                        if(window.confetti) {
+                            confetti({
+                                particleCount: 150,
+                                spread: 80,
+                                origin: { y: 0.6 },
+                                colors: ['#fff', '#32d74b', '#FF2A5F', '#0a84ff']
+                            });
+                        }
+                        if (data.first_name) {
+                            document.getElementById('success-student-title').innerText = 'أهلاً بك يا ' + data.first_name + '! تم تفعيل حسابك بنجاح ✅';
+                        }
+                        const linksBox = document.getElementById('issued-links-container');
+                        if (linksBox && data.links) {
+                            let linksHtml = '';
+                            if (data.links.general) {
+                                linksHtml += '<a href="' + data.links.general + '" target="_blank" style="background:#0a84ff; color:white; padding:12px; border-radius:10px; text-decoration:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">📢 الانضمام للقناة العامة للدروس</a>';
+                            }
+                            if (data.links.group) {
+                                const groupLabel = (data.gender === 'FEMME') ? '🧕 الانضمام لمجموعة الأخوات (نساء)' : '🧔 الانضمام لمجموعة الإخوة (رجال)';
+                                linksHtml += '<a href="' + data.links.group + '" target="_blank" style="background:#2ecc71; color:white; padding:12px; border-radius:10px; text-decoration:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">' + groupLabel + '</a>';
+                            }
+                            linksBox.innerHTML = linksHtml;
+                        }
+                        document.getElementById('success-msg').style.display = 'flex';
+                    } else {
+                        // Pending
+                        document.getElementById('pending-msg').style.display = 'flex';
+                    }
                 } else {
                     failCount++;
                     
