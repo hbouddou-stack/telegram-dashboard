@@ -4,6 +4,462 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مركز الدعم الذكي</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+                :root {
+            --bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            --surface: rgba(255, 255, 255, 0.05);
+            --primary: #ffffff;
+            --text-1: #ffffff;
+            --text-2: #cbd5e1;
+            --accent: #f1c40f;
+            --card-hover: rgba(241, 196, 15, 0.15);
+            --rag-bg: rgba(46, 204, 113, 0.1);
+            --rag-border: #2ecc71;
+        }
+        html, body {
+            background-color: #000b29;
+            background-image: var(--bg);
+            color: var(--text-1);
+            font-family: 'Tajawal', sans-serif;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .header { text-align: center; margin-bottom: 10px; animation: fadeInDown 0.5s ease; }
+        .header-icon { font-size: 3rem; margin-bottom: 10px; }
+        h1 { margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+        p.subtitle { margin: 5px 0 0 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.4; }
+        .step-container { display: none; animation: fadeIn 0.4s ease; }
+        .step-container.active { display: block; }
+        .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .card {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .card:hover, .card:active { background: var(--card-hover); border-color: var(--accent); transform: translateY(-2px); }
+        .card-icon { font-size: 2rem; }
+        .card-title { font-weight: 700; font-size: 1rem; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        label { font-size: 1rem; font-weight: 700; color: var(--accent); }
+        textarea {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-1); padding: 16px; border-radius: 12px;
+            font-size: 1rem; font-family: 'Tajawal', sans-serif;
+            outline: none; transition: all 0.3s ease; width: 100%; box-sizing: border-box;
+            resize: none; min-height: 150px;
+        }
+        textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
+        button.btn-primary, button.btn-secondary, button.btn-success, button.btn-danger {
+            color: var(--text-1); border: none; padding: 16px; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 800; font-family: 'Tajawal', sans-serif;
+            cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; width: 100%; margin-top: 15px;
+        }
+        button.btn-primary { background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%); box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4); color: #1e3a8a; }
+        button.btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); margin-top: 10px; }
+        button.btn-success { background: #2ecc71; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
+        button.btn-danger { background: #e74c3c; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+        .success-screen { display: none; text-align: center; padding: 40px 20px; }
+        .success-screen .icon { font-size: 4rem; margin-bottom: 20px; }
+        .rag-box { background: var(--rag-bg); border: 2px solid var(--rag-border); border-radius: 12px; padding: 20px; margin-top: 20px; text-align: right; }
+        .rag-title { color: var(--rag-border); font-weight: 800; font-size: 1.2rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .rag-answer { font-size: 1rem; line-height: 1.6; color: var(--text-1); margin-bottom: 20px; }
+        .step-indicator { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: 0.3s; }
+        .dot.active { background: var(--accent); transform: scale(1.2); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .tabs-container { display: flex; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; color: var(--text-2); border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
+        .tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(135, 54, 255, 0.3); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+        /* FAQ Styles */
+        .faq-search-box {
+            width: 100%; box-sizing: border-box; padding: 12px 18px;
+            border-radius: 25px; border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.3); color: var(--text-1);
+            font-family: 'Tajawal', sans-serif; font-size: 1rem;
+            outline: none; margin-bottom: 15px;
+        }
+        .faq-cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 15px; scrollbar-width: none; }
+        .faq-cat-btn {
+            white-space: nowrap; padding: 6px 16px; border-radius: 20px;
+            border: 1px solid var(--accent); background: transparent; color: var(--accent);
+            cursor: pointer; font-family: 'Tajawal', sans-serif; font-size: 0.88rem;
+            transition: all 0.2s;
+        }
+        .faq-cat-btn.active { background: var(--accent); color: white; }
+        
+        /* ENRICHED FAQ MEDIA TABS */
+        .faq-media-badge {
+            font-size: 0.72rem; padding: 2px 7px; border-radius: 6px; font-weight: bold; margin-right: 6px;
+            display: inline-flex; align-items: center; gap: 3px;
+        }
+        .badge-video { background: rgba(231,76,60,0.15); color: #ff6b6b; border: 1px solid rgba(231,76,60,0.3); }
+        .badge-image { background: rgba(52,152,219,0.15); color: #4dabf7; border: 1px solid rgba(52,152,219,0.3); }
+        .badge-audio { background: rgba(155,89,182,0.15); color: #cc5de8; border: 1px solid rgba(155,89,182,0.3); }
+
+        .faq-media-tabs {
+            display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;
+            overflow-x: auto; scrollbar-width: none;
+        }
+        .faq-media-tab-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: var(--text-2);
+            padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-family: 'Tajawal', sans-serif;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .faq-media-tab-btn:hover { background: rgba(255,255,255,0.1); }
+        .faq-media-tab-btn.active {
+            background: var(--accent); color: #1e3a8a; font-weight: bold; border-color: var(--accent);
+        }
+        .faq-media-pane {
+            display: none; animation: fadeIn 0.25s ease;
+        }
+        .faq-media-pane.active {
+            display: block;
+        }
+        .faq-img-container {
+            border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15);
+            background: #000; text-align: center; margin: 8px 0; position: relative;
+        }
+        .faq-img-container img {
+            max-width: 100%; max-height: 240px; object-fit: contain; cursor: pointer; transition: transform 0.2s;
+        }
+        .faq-img-container img:hover { transform: scale(1.02); }
+        .faq-video-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15); background: #000; margin: 8px 0;
+        }
+        .faq-video-wrapper iframe, .faq-video-wrapper video {
+            position: absolute; top:0; left: 0; width: 100%; height: 100%; border: none; border-radius: 10px;
+        }
+        .faq-audio-box {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            padding: 12px; margin: 8px 0; display: flex; flex-direction: column; gap: 8px;
+        }
+        .faq-audio-box audio { width: 100%; height: 36px; outline: none; }
+
+        .faq-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; margin-bottom: 10px; overflow: hidden; cursor: pointer;
+        }
+        .faq-item-q {
+            padding: 15px; font-weight: 700; font-size: 0.95rem; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .faq-item-a {
+            display: none; padding: 0 15px 15px 15px; color: var(--text-2);
+            font-size: 0.92rem; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.07);
+            padding-top: 12px;
+        }
+        .faq-item.open .faq-item-a { display: block; animation: fadeIn 0.3s ease; }
+        .faq-item.open .faq-chevron { transform: rotate(180deg); }
+        .faq-chevron { transition: transform 0.2s; font-size: 0.8rem; color: var(--text-2); }
+        .faq-vote-btns { display: flex; gap: 10px; margin-top: 12px; }
+        .faq-vote-btn {
+            flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; color: var(--text-2); font-family: 'Tajawal', sans-serif;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+        }
+        .faq-vote-btn:hover { background: rgba(255,255,255,0.1); }
+        .faq-vote-btn.voted-yes { background: rgba(46,204,113,0.2); border-color: #2ecc71; color: #2ecc71; }
+        .faq-vote-btn.voted-no { background: rgba(231,76,60,0.2); border-color: #e74c3c; color: #e74c3c; }
+    
+        /* NEW STYLES */
+        /* BOTTOM STICKY NAV */
+        body { padding-bottom: 90px; }
+        .bottom-nav { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 72px; 
+            background: rgba(15, 23, 42, 0.96); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-top: 1px solid rgba(255, 255, 255, 0.12); 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            z-index: 99999; 
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .nav-btn { 
+            background: transparent; 
+            border: none; 
+            color: #94a3b8; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            flex: 1; 
+            height: 100%; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-family: 'Tajawal', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none;
+            touch-action: manipulation;
+            pointer-events: auto;
+        }
+        .nav-btn.active { color: #f1c40f; }
+        .nav-btn .icon { font-size: 22px; margin-bottom: 3px; pointer-events: none; transition: transform 0.2s ease; }
+        .nav-btn.active .icon { transform: translateY(-2px) scale(1.12); }
+        .nav-btn span:last-child { font-size: 11px; font-weight: 700; pointer-events: none; }
+        .fab { position: fixed; bottom: 100px; left: 20px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 28px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 999; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.95); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); }
+        .modal-content { background: #000b29; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+        .modal-close { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 100px); padding-bottom: 20px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+        .message-bubble { padding: 12px 16px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 15px; }
+        .msg-user { align-self: flex-start; background: #ffffff; color: #1e0033; border-bottom-left-radius: 4px; }
+        .msg-ai { align-self: flex-end; background: rgba(255,255,255,0.05); color: #ffffff; border-bottom-right-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        .chat-input-bar { display: flex; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 24px; margin-top: 10px; }
+        .chat-input-bar input { flex: 1; background: transparent; border: none; color: #ffffff; font-family: 'Tajawal'; font-size: 15px; outline: none; }
+        .chat-input-bar button { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; }
+
+            .badge {
+            position: absolute; top: -5px; right: 15%; background: #e74c3c; color: white;
+            font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;
+            box-shadow: 0 0 5px rgba(231, 76, 60, 0.5); z-index: 10;
+        }
+    
+        /* STORIES CAROUSEL & FULLSCREEN VIEWER */
+        .stories-bar {
+            display: flex; gap: 14px; overflow-x: auto; padding: 10px 4px 16px 4px;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        }
+        .stories-bar::-webkit-scrollbar { display: none; }
+        
+        .story-circle-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; flex-shrink: 0; width: 72px; text-align: center;
+        }
+        .story-ring {
+            width: 62px; height: 62px; border-radius: 50%;
+            padding: 2.5px; background: linear-gradient(45deg, #f1c40f, #e67e22, #e74c3c, #9b59b6);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 12px rgba(241,196,15,0.25);
+        }
+        .story-circle-item:active .story-ring { transform: scale(0.92); }
+        .story-avatar {
+            width: 100%; height: 100%; border-radius: 50%; background: #000b29;
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
+            border: 2px solid #0f172a;
+        }
+        .story-label {
+            font-size: 0.74rem; font-weight: 700; color: var(--text-1);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+
+        /* STORY FULLSCREEN MODAL */
+        .story-viewer-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 100000;
+            flex-direction: column; justify-content: space-between;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        }
+        .story-progress-bar {
+            display: flex; gap: 5px; padding: 12px 15px; width: 100%; box-sizing: border-box;
+            position: absolute; top: 0; left: 0; z-index: 10;
+        }
+        .story-progress-seg {
+            flex: 1; height: 3.5px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden;
+        }
+        .story-progress-fill {
+            height: 100%; width: 0%; background: #ffffff; border-radius: 4px;
+        }
+        .story-header {
+            position: absolute; top: 25px; left: 0; width: 100%; padding: 0 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-sizing: border-box; z-index: 10;
+        }
+        .story-author {
+            display: flex; align-items: center; gap: 8px; color: #fff; font-weight: bold; font-size: 0.88rem;
+        }
+        .story-close-btn {
+            background: rgba(255,255,255,0.2); border: none; color: #fff;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .story-body {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 70px 20px 30px 20px; box-sizing: border-box; text-align: center; position: relative;
+        }
+        .story-card-slide {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 24px 20px;
+            width: 100%; max-width: 380px; box-shadow: 0 10px 35px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; align-items: center; animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .story-slide-icon {
+            font-size: 3.5rem; margin-bottom: 12px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+        }
+        .story-slide-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 10px;
+        }
+        .story-slide-text {
+            font-size: 0.92rem; color: #ffffff; line-height: 1.6; opacity: 0.9; margin-bottom: 20px;
+        }
+        .story-slide-btn {
+            background: var(--accent); color: #1e3a8a; font-weight: 800; border: none;
+            padding: 12px 26px; border-radius: 25px; font-size: 0.9rem; cursor: pointer;
+            font-family: 'Tajawal', sans-serif; box-shadow: 0 4px 15px rgba(241,196,15,0.3);
+        }
+        .story-nav-zones {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 5;
+        }
+        .story-nav-left, .story-nav-right { flex: 1; height: 100%; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app-container">
+
+        <!-- NEW TICKET TAB -->
+        
+        <!-- HOME TAB -->
+        <div class="tab-content active" id="tab-home">
+            <div class="header" style="margin-bottom:20px;">
+                <h1 style="font-size:1.5rem;">&#127968; الرئيسية</h1>
+                <p class="subtitle">مرحباً بك في مركز الطالب</p>
+            </div>
+            
+            <!-- ONBOARDING BANNER -->
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <button onclick="window.location.href='/guide.html'" style="flex:1; background: linear-gradient(135deg, #1A2980, #26D0CE); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span style="font-size:1.2rem;">🗺️</span> دليل الطالب
+                </button>
+                <button onclick="window.location.href='/tuto.html'" style="flex:1; background: linear-gradient(135deg, #FF416C, #FF4B2B); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(255,75,43,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span style="font-size:1.2rem;">🎥</span> كيف أستخدم؟
+                </button>
+            </div>
+            
+            <!-- Messages / Notifications -->
+            <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; margin-bottom:15px;">
+                <h3 style="font-size:1.1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                    &#128276; أحدث الإشعارات
+                </h3>
+                <div style="background:rgba(59, 130, 246, 0.1); border-left:4px solid #3b82f6; padding:12px; border-radius:8px; margin-bottom:10px;">
+                    <div style="font-weight:bold; font-size:0.9rem; color:#3b82f6; margin-bottom:5px;">الإدارة</div>
+                    <div style="font-size:0.85rem; color:var(--text-1);">تم الرد على تذكرتك الأخيرة. يرجى التحقق من صندوق الرسائل.</div>
+                    <div style="font-size:0.75rem; color:var(--text-2); margin-top:5px; text-align:left;">منذ ساعتين</div>
+                </div>
+                <div style="background:rgba(255, 255, 255, 0.05); border-left:4px solid var(--accent); padding:12px; border-radius:8px;">
+                    <div style="font-weight:bold; font-size:0.9rem; color:var(--accent); margin-bottom:5px;">تحديث النظام</div>
+                    <div style="font-size:0.85rem; color:var(--text-1);">تمت إضافة ملخصات جديدة في قسم الكيمياء.</div>
+                    <div style="font-size:0.75rem; color:var(--text-2); margin-top:5px; text-align:left;">أمس</div>
+                </div>
+            </div>
+
+            <!-- Tutorials -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <div onclick="window.location.href='/guide.html'" style="background: linear-gradient(135deg, #1A2980, #26D0CE); border-radius:16px; padding:15px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.2);">
+                    <div style="font-size:2rem; margin-bottom:8px;">&#128214;</div>
+                    <div style="font-weight:bold; color:white; font-size:0.9rem;">دليل المنصة</div>
+                </div>
+                <div onclick="switchTab('ai')" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0); border-radius:16px; padding:15px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(142,45,226,0.2);">
+                    <div style="font-size:2rem; margin-bottom:8px;">&#129302;</div>
+                    <div style="font-weight:bold; color:white; font-size:0.9rem;">المساعد الذكي</div>
+                </div>
+            </div>
+
+            <!-- Motivation Corner -->
+            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; text-align:center; margin-bottom:15px; position:relative; overflow:hidden;">
+                <div style="font-size:2.5rem; opacity:0.2; position:absolute; top:-10px; right:-10px;">&#10024;</div>
+                <div style="font-size:1.1rem; font-weight:bold; margin-bottom:10px; color:var(--accent);">جرعة تحفيز</div>
+                <div style="font-size:0.95rem; color:var(--text-1); line-height:1.6; font-family:'Tajawal', sans-serif;">
+                    "النجاح ليس النهاية، والفشل ليس قاتلاً. الشجاعة لمواصلة الطريق هي ما يهم."
+                </div>
+            </div>
+
+            <!-- Recent FAQ -->
+            <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; margin-bottom:80px;">
+                <h3 style="font-size:1.1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                    &#10067; أضيفت مؤخراً للأسئلة الشائعة
+                </h3>
+                <div style="border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:10px; margin-bottom:10px;">
+                    <div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px;">كيف أقوم بتغيير كلمة المرور؟</div>
+                    <div style="font-size:0.8rem; color:var(--text-2);">يمكنك تغيير كلمة المرور من خلال إعدادات حسابك في التطبيق...</div>
+                </div>
+                <div style="padding-bottom:5px;">
+                    <div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px;">أين أجد ملخصات الدروس؟</div>
+                    <div style="font-size:0.8rem; color:var(--text-2);">يتم رفع الملخصات أسفل كل فيديو في قسم المرفقات...</div>
+                </div>
+                <button onclick="switchTab('faq')" style="width:100%; margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:var(--text-1); cursor:pointer;">
+                    عرض كل الأسئلة
+                </button>
+            </div>
+        </div>
+
+        
+        <!-- NEW TICKET TAB -->
+        <div class="tab-content" id="tab-new" style="padding-bottom:100px;">
+            
+            <div id="support-form">
+                <div class="header">
+                    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.3); border-radius:20px; padding:6px 14px; font-size:0.82rem; color:#2ecc71; margin-bottom:12px;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:#2ecc71; box-shadow:0 0 8px #2ecc71; display:inline-block;"></span>
+                        فريق الدعم متصل حالياً — متوسط سرعة الرد: 15 دقيقة
+                    </div>
+                    <div class="header-icon">&#129302;</div>
+                    <h1>مركز الدعم الذكي</h1>
+                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
+                    <div class="step-indicator">
+                        <div class="dot active" id="dot-1"></div>
+                        <div class="dot" id="dot-2"></div>
+                        <div class="dot" id="dot-3"></div>
+                    </div>
+                </div>
+                <div class="step-container active" id="step-1">
+                    <div class="grid-cards" id="theme-grid"></div>
+                </div>
+                <div class="step-container" id="step-2">
+                    <div class="grid-cards" id="subtheme-grid"></div>
+                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
+                </div>
+                <div class="step-container" id="step-3">
+                    <div class="input-group">
+                        <label>اشرح مشكلتك بالتفصيل:</label>
+                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..." oninput="livePredictiveFaqSearch(this.value)"></textarea>
+                    </div>
+                    <!-- Live Predictive FAQ Container -->
+                    <div id="predictive-faq-box" style="display:none; margin-top:12px; background:rgba(241,196,15,0.06); border:1px solid rgba(241,196,15,0.25); border-radius:14px; padding:14px;">
+                        <div style="font-size:0.88rem; font-weight:bold; color:var(--accent); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                            <span>💡</span> هل تجد إجابتك هنا مباشرة؟
+                        </div>
+                        <div id="predictive-faq-results"></div>
+                    </div>
+                    <div class="input-group" style="margin-top:10px;">
+                        <label for="attachment" style="display:flex; align-items:center; gap:8px; cursor:pointer; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); justify-content:center; color:var(--accent); font-weight:bold;">
+                            &#128206; إرفاق ملف أو صورة
+                        </label>
+                        <input type="file" id="attachment" style="display:none;" accept="image/*,.pdf">
+                        <div id="attachment-name" style="font-size:0.8rem; color:var(--text-2); text-align:center; margin-top:5px; display:none;"></div>
+                        
     <script>
 
 // ========================
@@ -485,8 +941,8 @@ async function loadStudentFaq() {
                 let catsHtml = '<button class="faq-cat-btn active" onclick="studentFilterCat(null, this)">الكل</button>';
                 cats.forEach(c => {
                     if (c) {
-                        const escaped = String(c).replace(/'/g, "\\'");
-                        catsHtml += '<button class="faq-cat-btn" onclick="studentFilterCat(\'' + escaped + '\', this)">' + c + '</button>';
+                        const escaped = String(c).replace(/'/g, "\\\\'");
+                        catsHtml += '<button class="faq-cat-btn" onclick="studentFilterCat(\\\'' + escaped + '\\\', this)">' + c + '</button>';
                     }
                 });
                 catsEl.innerHTML = catsHtml;
@@ -500,7 +956,7 @@ async function loadStudentFaq() {
         let catsHtml = '<button class="faq-cat-btn active" onclick="studentFilterCat(null, this)">الكل</button>';
         const cats = [...new Set(defaultFallbackFaq.map(f => f.category))];
         cats.forEach(c => {
-            catsHtml += '<button class="faq-cat-btn" onclick="studentFilterCat(\'' + c + '\', this)">' + c + '</button>';
+            catsHtml += '<button class="faq-cat-btn" onclick="studentFilterCat(\\\'' + c + '\\\', this)">' + c + '</button>';
         });
         catsEl.innerHTML = catsHtml;
         renderStudentFaq(studentFaqAll);
@@ -545,7 +1001,7 @@ function switchFaqMedia(event, id, mode) {
 function renderStudentFaq(entries) {
     const listEl = document.getElementById('student-faq-list');
     if (!entries || entries.length === 0) {
-        listEl.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--text-2);"><div style="font-size:2.5rem; margin-bottom:15px;">🔍</div><div style="margin-bottom:15px;">لم نجد إجابة لسؤالك</div><button class="btn-primary" style="width:auto; padding:12px 25px;" onclick="switchTab(\'new\')">🚀 ارسل تذكرة دعم</button></div>';
+        listEl.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--text-2);"><div style="font-size:2.5rem; margin-bottom:15px;">🔍</div><div style="margin-bottom:15px;">لم نجد إجابة لسؤالك</div><button class="btn-primary" style="width:auto; padding:12px 25px;" onclick="switchTab(\\\'new\\\')">🚀 ارسل تذكرة دعم</button></div>';
         return;
     }
     
@@ -567,10 +1023,10 @@ function renderStudentFaq(entries) {
         let mediaTabsHtml = '';
         if (hasMedia) {
             mediaTabsHtml = '<div class="faq-media-tabs" onclick="event.stopPropagation()">' +
-                '<button class="faq-media-tab-btn active" onclick="switchFaqMedia(event, ' + e.id + ', \'text\')">📝 الشرح</button>' +
-                (hasImg ? '<button class="faq-media-tab-btn" onclick="switchFaqMedia(event, ' + e.id + ', \'image\')">📸 صورة توضيحية</button>' : '') +
-                (hasVid ? '<button class="faq-media-tab-btn" onclick="switchFaqMedia(event, ' + e.id + ', \'video\')">🎥 فيديو سريع</button>' : '') +
-                (hasAud ? '<button class="faq-media-tab-btn" onclick="switchFaqMedia(event, ' + e.id + ', \'audio\')">🎙️ شرح صوتي</button>' : '') +
+                '<button class="faq-media-tab-btn active" onclick="switchFaqMedia(event, ' + e.id + ', \\\'text\\\')">📝 الشرح</button>' +
+                (hasImg ? '<button class="faq-media-tab-btn" onclick="switchFaqMedia(event, ' + e.id + ', \\\'image\\\')">📸 صورة توضيحية</button>' : '') +
+                (hasVid ? '<button class="faq-media-tab-btn" onclick="switchFaqMedia(event, ' + e.id + ', \\\'video\\\')">🎥 فيديو سريع</button>' : '') +
+                (hasAud ? '<button class="faq-media-tab-btn" onclick="switchFaqMedia(event, ' + e.id + ', \\\'audio\\\')">🎙️ شرح صوتي</button>' : '') +
             '</div>';
         }
 
@@ -586,7 +1042,7 @@ function renderStudentFaq(entries) {
                 mediaTabsHtml +
                 '<div class="faq-media-pane active" id="faq-pane-text-' + e.id + '">' +
                     '<div style="line-height:1.6; color:#ffffff; opacity:0.95;">' +
-                        (e.answer || '').split('\n').join('<br>') +
+                        (e.answer || '').split('\\n').join('<br>') +
                     '</div>' +
                 '</div>' +
                 (hasImg ? '<div class="faq-media-pane" id="faq-pane-image-' + e.id + '"><div class="faq-img-container"><img src="' + imgSource + '" alt="توضيح" onclick="window.open(this.src)" /></div></div>' : '') +
@@ -707,7 +1163,7 @@ function renderStudentTickets(tickets) {
     }
 
     if (!studentAllTicketsList || studentAllTicketsList.length === 0) {
-        list.innerHTML = '<div style="text-align:center; padding:40px 20px; background:var(--surface); border-radius:16px; border:1px dashed rgba(255,255,255,0.15); margin-top:10px; max-width:480px; margin-left:auto; margin-right:auto;"><div style="font-size:3rem; margin-bottom:15px;">📫</div><h3 style="font-size:1.1rem; margin:0 0 10px 0; color:var(--text-1);">صندوق الرسائل فارغ</h3><p style="font-size:0.88rem; color:var(--text-2); line-height:1.6; margin:0 0 20px 0;">ستظهر هنا جميع تذاكر الدعم ومتابعة الردود من إدارة الأكاديمية أولاً بأول.</p><button class="btn-primary" style="width:auto; padding:12px 28px; margin:0 auto; display:inline-flex; align-items:center; gap:8px;" onclick="switchTab(\'new\')"><span>✍️</span> فتح تذكرة جديدة</button></div>';
+        list.innerHTML = '<div style="text-align:center; padding:40px 20px; background:var(--surface); border-radius:16px; border:1px dashed rgba(255,255,255,0.15); margin-top:10px; max-width:480px; margin-left:auto; margin-right:auto;"><div style="font-size:3rem; margin-bottom:15px;">📫</div><h3 style="font-size:1.1rem; margin:0 0 10px 0; color:var(--text-1);">صندوق الرسائل فارغ</h3><p style="font-size:0.88rem; color:var(--text-2); line-height:1.6; margin:0 0 20px 0;">ستظهر هنا جميع تذاكر الدعم ومتابعة الردود من إدارة الأكاديمية أولاً بأول.</p><button class="btn-primary" style="width:auto; padding:12px 28px; margin:0 auto; display:inline-flex; align-items:center; gap:8px;" onclick="switchTab(\\\'new\\\')"><span>✍️</span> فتح تذكرة جديدة</button></div>';
         return;
     }
 
@@ -737,11 +1193,11 @@ function renderStudentTickets(tickets) {
         const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
         const themeName = t.theme || 'عام';
         const subthemeName = t.subtheme || '';
-        const messageSnippet = (t.message || t.text || '').split('\n').join(' ').trim().substring(0, 42);
+        const messageSnippet = (t.message || t.text || '').split('\\n').join(' ').trim().substring(0, 42);
         const hasAttachment = (t.has_attachment == 1 || t.file_path || t.file_data || (t.conversation && t.conversation.includes('file_data')) || (t.message && t.message.includes('[مرفق]')));
         const attachBadge = hasAttachment ? '<span style="background:rgba(241,196,15,0.15); color:var(--accent); border:1px solid rgba(241,196,15,0.35); padding:2px 8px; border-radius:6px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; font-weight:bold;">📎 يوجد مرفق</span>' : '';
 
-        return '<div onclick="openTicketThread(' + t.id + ')" style="max-width:480px; margin:0 auto 12px auto; background:linear-gradient(90deg, rgba(255,255,255,0.03) 0%, ' + cardTint + ' 100%); border:1px solid rgba(255,255,255,0.09); padding:14px 16px; border-radius:14px; cursor:pointer; transition:all 0.2s; border-right:4px solid ' + statusColor + '; box-sizing:border-box;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.09)\'">' +
+        return '<div onclick="openTicketThread(' + t.id + ')" style="max-width:480px; margin:0 auto 12px auto; background:linear-gradient(90deg, rgba(255,255,255,0.03) 0%, ' + cardTint + ' 100%); border:1px solid rgba(255,255,255,0.09); padding:14px 16px; border-radius:14px; cursor:pointer; transition:all 0.2s; border-right:4px solid ' + statusColor + '; box-sizing:border-box;" onmouseover="this.style.borderColor=\\\'var(--accent)\\\'" onmouseout="this.style.borderColor=\\\'rgba(255,255,255,0.09)\\\'">' +
             '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px; flex-wrap:wrap;">' +
                 '<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">' +
                     '<span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:2px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">🏷️ ' + themeName + '</span>' +
@@ -847,7 +1303,7 @@ function openTicketThread(ticketId) {
         const isStudent = (m.sender === 'student' || m.sender === 'user' || !m.sender || m.sender === '');
         const senderTitle = isStudent ? '👤 ' + (m.name || 'أنت') : '🛡️ المشرف (' + (m.name || 'فريق الدعم') + ')';
         const editedTag = m.edited ? '<span style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-right:4px;">(معدّل)</span>' : '';
-        const editBtn = isStudent ? '<button onclick="editStudentMessage(' + idx + ')" style="background:rgba(241,196,15,0.12); border:1px solid rgba(241,196,15,0.3); color:var(--accent); font-size:0.72rem; padding:2px 8px; border-radius:6px; cursor:pointer; font-family:\'Tajawal\'; display:inline-flex; align-items:center; gap:3px;" title="تعديل هذه الرسالة">✏️ تعديل</button>' : '';
+        const editBtn = isStudent ? '<button onclick="editStudentMessage(' + idx + ')" style="background:rgba(241,196,15,0.12); border:1px solid rgba(241,196,15,0.3); color:var(--accent); font-size:0.72rem; padding:2px 8px; border-radius:6px; cursor:pointer; font-family:\\\'Tajawal\\\'; display:inline-flex; align-items:center; gap:3px;" title="تعديل هذه الرسالة">✏️ تعديل</button>' : '';
         
         let attachmentHtml = '';
         if (m.file_data) {
@@ -864,7 +1320,7 @@ function openTicketThread(ticketId) {
                 editBtn +
             '</div>' +
             '<div id="msg-bubble-' + idx + '" style="background:' + (isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)') + '; border:1px solid ' + (isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)') + '; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">' +
-                (m.text || '').split('\n').join('<br>') +
+                (m.text || '').split('\\n').join('<br>') +
                 attachmentHtml +
             '</div>' +
             '<div style="display:flex; align-items:center; font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:3px; padding:0 4px;">' +
@@ -883,7 +1339,7 @@ function openTicketThread(ticketId) {
             container.parentNode.insertBefore(banner, replyBox);
         }
         banner.style.display = 'block';
-        banner.innerHTML = '<div style="background:rgba(46,204,113,0.08); border:1px solid rgba(46,204,113,0.25); border-radius:12px; padding:14px; margin:15px; text-align:center;"><div style="font-weight:bold; font-size:0.92rem; color:#2ecc71; margin-bottom:4px;">✅ تم حل هذه التذكرة وإغلاقها</div><div style="font-size:0.82rem; color:var(--text-2); margin-bottom:10px;">هل ما زلت بحاجة لمساعدة حول نفس الموضوع؟</div><div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;"><button onclick="reopenCurrentTicket()" style="background:#2ecc71; color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; font-size:0.82rem; cursor:pointer; font-family:\'Tajawal\';">🔄 لا زال لدي استفسار (إعادة فتح)</button><button onclick="openNewTopicFromThread()" style="background:rgba(255,255,255,0.06); color:var(--text-1); border:1px solid rgba(255,255,255,0.15); padding:8px 16px; border-radius:20px; font-size:0.82rem; cursor:pointer; font-family:\'Tajawal\';">➕ موضوع جديد منفصل</button></div></div>';
+        banner.innerHTML = '<div style="background:rgba(46,204,113,0.08); border:1px solid rgba(46,204,113,0.25); border-radius:12px; padding:14px; margin:15px; text-align:center;"><div style="font-weight:bold; font-size:0.92rem; color:#2ecc71; margin-bottom:4px;">✅ تم حل هذه التذكرة وإغلاقها</div><div style="font-size:0.82rem; color:var(--text-2); margin-bottom:10px;">هل ما زلت بحاجة لمساعدة حول نفس الموضوع؟</div><div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;"><button onclick="reopenCurrentTicket()" style="background:#2ecc71; color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; font-size:0.82rem; cursor:pointer; font-family:\\\'Tajawal\\\';">🔄 لا زال لدي استفسار (إعادة فتح)</button><button onclick="openNewTopicFromThread()" style="background:rgba(255,255,255,0.06); color:var(--text-1); border:1px solid rgba(255,255,255,0.15); padding:8px 16px; border-radius:20px; font-size:0.82rem; cursor:pointer; font-family:\\\'Tajawal\\\';">➕ موضوع جديد منفصل</button></div></div>';
         if (replyBox) replyBox.style.display = 'none';
     } else {
         if (banner) banner.style.display = 'none';
@@ -914,7 +1370,7 @@ async function editStudentMessage(msgIdx) {
     const newText = prompt("تعديل رسالتك:", oldText);
     if (!newText || newText.trim() === oldText) return;
     
-    bubble.innerHTML = newText.trim().split('\n').join('<br>') + ' <span style="font-size:0.7rem; color:rgba(255,255,255,0.4);">(معدّل)</span>';
+    bubble.innerHTML = newText.trim().split('\\n').join('<br>') + ' <span style="font-size:0.7rem; color:rgba(255,255,255,0.4);">(معدّل)</span>';
     
     try {
         await fetch(BOT_BASE + '/api/tickets/' + currentThreadTicketId + '/messages/edit', {
@@ -982,7 +1438,7 @@ async function sendStudentFollowupReply() {
     container.innerHTML += '<div style="display:flex; flex-direction:column; align-items:flex-start; margin-bottom:12px;">' +
         '<div style="font-size:0.75rem; color:var(--text-2); margin-bottom:3px; padding:0 4px;">👤 أنت</div>' +
         '<div style="background:#1e3a8a; border:1px solid #3b82f6; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; color:#fff;">' +
-            (msg ? msg.split('\n').join('<br>') : '') +
+            (msg ? msg.split('\\n').join('<br>') : '') +
             attachmentHtml +
         '</div>' +
     '</div>';
@@ -1093,6 +1549,6 @@ setInterval(() => {
     } catch(e) {}
 }, 15000);
 
-</script>
+    </script>
 </body>
 </html>
