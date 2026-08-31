@@ -185,25 +185,30 @@ async def cmd_start(message: Message):
 
 @router.message(Command("federer"))
 async def cmd_federer(message: Message):
-    from config import TELEGRAM_ADMIN_IDS
-    if message.from_user.id not in TELEGRAM_ADMIN_IDS:
-        return
+    from config import TELEGRAM_ADMIN_IDS, DATABASE_PATH
+    import aiosqlite
+    from keyboards import get_webapp_base_url
     
-    import os
-    domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-    if domain:
-        webapp_url = f"https://{domain}"
-    else:
-        webapp_url = os.getenv('WEBAPP_URL', 'https://telegram-dashboard-production.up.railway.app').rstrip('/')
+    user_id = message.from_user.id
+    is_admin = (user_id in TELEGRAM_ADMIN_IDS)
+    if not is_admin:
+        try:
+            async with aiosqlite.connect(DATABASE_PATH) as db:
+                async with db.execute("SELECT telegram_id FROM admins WHERE telegram_id = ?", (user_id,)) as cur:
+                    if await cur.fetchone():
+                        is_admin = True
+        except Exception:
+            pass
+            
+    webapp_url = get_webapp_base_url()
         
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🛠️ Dashboard Admin (Verification)", web_app=WebAppInfo(url=f"{webapp_url}/admin-gateway.html"))],
-        [InlineKeyboardButton(text="💬 Espace Questions Élèves", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))],
-        [InlineKeyboardButton(text="🔧 Admin Général (admin.html)", web_app=WebAppInfo(url=f"{webapp_url}/admin.html"))],
-        [InlineKeyboardButton(text="🎧 Admin Support (admin-support.html)", web_app=WebAppInfo(url=f"{webapp_url}/admin-support.html"))],
-        [InlineKeyboardButton(text="📱 Mini-Zendesk (Nouveau Support)", web_app=WebAppInfo(url=f"{webapp_url}/support"))]
+        [InlineKeyboardButton(text="📱 لوحة الدعم الفني وتذاكر الطلاب (CRM Support)", web_app=WebAppInfo(url=f"{webapp_url}/support"))],
+        [InlineKeyboardButton(text="🔧 لوحة التحكم العامة (Admin General)", web_app=WebAppInfo(url=f"{webapp_url}/admin.html"))],
+        [InlineKeyboardButton(text="🛠️ التحقق من الطلاب (Gateway)", web_app=WebAppInfo(url=f"{webapp_url}/admin-gateway.html"))],
+        [InlineKeyboardButton(text="💬 تجربة صفحة الطالب (Student View)", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))]
     ])
-    await message.answer("🤫 <b>Menu Secret Admin</b> :", reply_markup=kb, parse_mode="HTML")
+    await message.answer("🤫 <b>لوحة تحكم المشرفين (Admin Menu)</b> :", reply_markup=kb, parse_mode="HTML")
 @router.message(Command('myid'))
 async def cmd_myid(message: Message):
     await message.answer(f'Ton ID Telegram est : <code>{message.from_user.id}</code>', parse_mode='HTML')
