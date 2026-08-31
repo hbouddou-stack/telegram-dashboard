@@ -7,210 +7,98 @@ from aiogram.fsm.state import StatesGroup, State
 import aiosqlite
 from config import DATABASE_PATH
 import re
+import logging
 
+logger = logging.getLogger('bot')
 router = Router(name="auth")
 
 class AuthStates(StatesGroup):
     waiting_for_email = State()
     waiting_for_dob = State()
 
-@router.callback_query(F.data == "cmd_lier_compte")
-async def cb_lier_compte(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    class MockMessage:
-        def __init__(self, msg, user):
-            self.message = msg
-            self.from_user = user
-        async def answer(self, *args, **kwargs):
-            return await self.message.answer(*args, **kwargs)
-    
-    mock_msg = MockMessage(callback.message, callback.from_user)
-    await cmd_lier_compte(mock_msg, state)
-
-@router.message(Command("lier_compte"))
-async def cmd_lier_compte(message: Message, state: FSMContext):
-    # Check if already linked
-    async with aiosqlite.connect(DATABASE_PATH) as db:
-        async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (message.from_user.id,)) as cursor:
-            row = await cursor.fetchone()
-            if row:
-                await message.answer(f"✅ Ton compte est déjà lié, {row[1]} !")
-                return
-
-    await state.set_state(AuthStates.waiting_for_email)
-    await message.answer(
-        "🔒 **Connexion à l'Académie**\n\n"
-        "Pour accéder aux groupes privés et à la Mini App, nous devons vérifier ton identité.\n\n"
-        "👉 **Quel est l'email que tu as utilisé lors de ton inscription ?**",
-        parse_mode="Markdown"
-    )
-
-@router.message(AuthStates.waiting_for_email, F.text)
-async def process_email(message: Message, state: FSMContext):
-    email = message.text.strip().lower()
-    
-    # Basic email validation
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        await message.answer("❌ Cet email n'est pas valide. Veuillez réessayer.")
-        return
-
-    async with aiosqlite.connect(DATABASE_PATH) as db:
-        async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cursor:
-            row = await cursor.fetchone()
-            if not row:
-                await message.answer("❌ Aucun compte trouvé avec cet email dans notre base.\nVérifie les fautes de frappe et réessaie, ou contacte le support.")
-                return
-            
-    await state.update_data(email=email)
-    await state.set_state(AuthStates.waiting_for_dob)
-    await message.answer(
-        "✅ Email trouvé !\n\n"
-        "Par mesure de sécurité, merci de confirmer ton identité.\n"
-        "👉 **Tape ta date de naissance au format JJ/MM/AAAA** (ex: 15/04/1995) :"
-    )
-
-@router.message(AuthStates.waiting_for_dob, F.text)
-async def process_dob(message: Message, state: FSMContext):
-    dob = message.text.strip()
-    data = await state.get_data()
-    email = data.get("email")
-
-    async with aiosqlite.connect(DATABASE_PATH) as db:
-        async with db.execute("SELECT student_id, first_name, dob, telegram_id FROM academy_students WHERE email = ?", (email,)) as cursor:
-            row = await cursor.fetchone()
-            if not row:
-                await state.clear()
-                await message.answer("Une erreur est survenue. Recommencez avec /lier_compte.")
-                return
-            
-            actual_dob = row[2]
-            if dob != actual_dob:
-                await message.answer("❌ La date de naissance ne correspond pas à nos dossiers. Veuillez réessayer (JJ/MM/AAAA).")
-                return
-            
-            # Link successful
-            await db.execute("UPDATE academy_students SET telegram_id = ? WHERE email = ?", (message.from_user.id, email))
-            await db.commit()
-            
-            first_name = row[1]
-            
-            await state.clear()
-            await message.answer(
-                f"🎉 **Félicitations {first_name} !**\n\n"
-                f"Ton compte est désormais lié à l'Académie.\n"
-                f"Tu peux maintenant rejoindre nos espaces privés et accéder à la Mini App en un clic.",
-                parse_mode="Markdown"
-            )
-
 @router.chat_join_request()
 async def handle_join_request(update: ChatJoinRequest, bot: Bot):
+    """
+    Gestionnaire intelligent des demandes d'adhésion aux groupes et canaux.
+    Ne bloque JAMAIS brutalement l'élève.
+    """
     user_id = update.from_user.id
     chat_id = update.chat.id
-    
-    async with aiosqlite.connect(DATABASE_PATH) as db:
-        async with db.execute("SELECT student_id FROM academy_students WHERE telegram_id = ?", (user_id,)) as cursor:
-            row = await cursor.fetchone()
-            if row:
-                # User is validated in academy_students
+    chat_title = update.chat.title or "مجموعات الأكاديمية"
+    first_name = update.from_user.first_name or "طالب العلم"
+    username = update.from_user.username or ""
+
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cursor:
+                student = await cursor.fetchone()
+
+        if student:
+            student_dict = dict(student)
+            payment_status = (student_dict.get('payment_status') or 'PAID').upper()
+            gender = (student_dict.get('gender') or 'HOMME').upper()
+            
+            # Vérification du genre si le titre du groupe le spécifie
+            is_men_group = any(k in chat_title for k in ['رجال', 'إخوة', 'ذكور', 'Men', 'Hommes'])
+            is_women_group = any(k in chat_title for k in ['نساء', 'أخوات', 'إناث', 'Women', 'Femmes'])
+            
+            wrong_gender = (is_men_group and gender == 'FEMME') or (is_women_group and gender == 'HOMME')
+
+            if payment_status in ['PAID', 'PAYE', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED'] and not wrong_gender:
+                # 1. Étudiant payant & bon groupe -> APPROBATION IMMÉDIATE
                 try:
                     await update.approve()
-                    # Optional: Send welcome DM
-                    await bot.send_message(user_id, f"🎉 Ta demande pour rejoindre le groupe '{update.chat.title}' a été approuvée automatiquement !")
+                    welcome_text = (
+                        f"🎉 <b>أهلاً بك يا {first_name}!</b>\n\n"
+                        f"✅ تمت الموافقة التلقائية على انضمامك إلى: <b>{chat_title}</b>.\n"
+                        f"نتمنى لك رحلة تعليمية مباركة ونافعة! 📚"
+                    )
+                    await bot.send_message(user_id, welcome_text, parse_mode="HTML")
                     
                     from database import log_student_action
-                    await log_student_action(row[0], 'GROUP_JOINED', f"A rejoint le groupe/dossier: {update.chat.title}")
-                    
+                    await log_student_action(student_dict['student_id'], 'GROUP_JOINED', f"انضم إلى المجموعة: {chat_title}")
                 except Exception as e:
-                    print(f"Failed to approve join request: {e}")
-            else:
-                # Decline or ignore
+                    logger.error(f"[JOIN_REQUEST] Failed to approve: {e}")
+                return
+            elif wrong_gender:
+                # Genre non correspondant -> Message d'explication courtois (sans rejet définitif)
+                group_destination = "مجموعة الأخوات (نساء) 🧕" if gender == 'FEMME' else "مجموعة الإخوة (رجال) 🧔"
+                msg_text = (
+                    f"👋 مرحباً بك يا {first_name},\n\n"
+                    f"تنبيه: هذه المجموعة مخصصة لـ ({'الرجال' if is_men_group else 'النساء'}).\n"
+                    f"وفقاً لبيانات تسجيلك، مجموعتك المخصصة هي: <b>{group_destination}</b>.\n"
+                    f"يرجى استخدام رابط مجموعتك المناسبة."
+                )
                 try:
-                    await update.decline()
-                    await bot.send_message(user_id, "❌ Ta demande d'adhésion a été refusée car ton compte n'est pas lié.\nVa sur le bot et clique sur Lier mon compte d'abord.")
-                except Exception as e:
-                    print(f"Failed to decline join request: {e}")
+                    await bot.send_message(user_id, msg_text, parse_mode="HTML")
+                except Exception:
+                    pass
+                return
 
-@router.callback_query(F.data.startswith("feedback_"))
-async def handle_feedback(callback: CallbackQuery):
-    feedback_type = callback.data.split("_")[1]
-    
-    if feedback_type == "easy":
-        await callback.message.edit_text(
-            callback.message.text + "\n\n✅ شكراً لك! يسعدنا أن العملية كانت سهلة."
+        # 2. Étudiant non encore validé dans l'Excel (Virement en cours / En attente de synchronisation)
+        # ⚠️ RÈGLE FONDAMENTALE : ON NE DÉCLINE PAS LA DEMANDE ! On la laisse en attente.
+        import database as db_mod
+        await db_mod.add_pending_verification(user_id, "", username, first_name)
+
+        waiting_notification = (
+            f"⏳ <b>مرحباً بك يا {first_name}!</b>\n\n"
+            f"📥 لقد استلمنا طلب انضمامك إلى: <b>{chat_title}</b>.\n\n"
+            f"📋 طلبك حالياً <b>قيد المراجعة والمصادقة</b> مع إدارة الأكاديمية (لتأكيد التحويل البنكي أو مطابقة التسجيل الجديد).\n\n"
+            f"⚡ <b>لا تقلق:</b> سيتم قبول طلبك ودخولك تلقائياً فور تأكيد الإدارة دون الحاجة لإعادة إرسال الطلب!\n\n"
+            f"💬 إذا كان لديك أي استفسار، يمكنك فتح تذكرة عبر مركز الدعم في أي وقت."
         )
-    else:
-        await callback.message.edit_text(
-            callback.message.text + "\n\n❌ نأسف لأنك واجهت صعوبة. سنعمل على تحسين النظام باستمرار."
-        )
-    await callback.answer("شكراً على تقييمك!")
-
-@router.message(Command("test_message"))
-async def cmd_test_message(message: Message):
-    welcome_msg = (
-        f"أهلاً بك Houssam في أكاديمية الباجي.\n\n"
-        f"تم التحقق من هويتك بنجاح (رقم الطالب: 123456).\n"
-        f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\n\n"
-        f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
-    )
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="👍 نعم، كانت سهلة", callback_data="feedback_easy"),
-            InlineKeyboardButton(text="👎 واجهت صعوبة", callback_data="feedback_hard")
-        ]
-    ])
-    await message.answer(welcome_msg, reply_markup=kb)
-
-from aiogram.types import WebAppInfo
-
-@router.message(Command("start"))
-async def cmd_start(message: Message):
-    welcome_text = (
-        "<blockquote><b>أهلاً بك في أكاديمية الباجي! 🎓</b>\n\n"
-        "نحن سعداء بانضمامك إلينا. للبدء والاستفادة من جميع الموارد المتاحة، يرجى ربط حسابك بالضغط على الزر أدناه.</blockquote>"
-    )
-    
-    # Resolve WebApp URL
-    domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-    if domain:
-        webapp_url = f"https://{domain}/link.html"
-    else:
-        # Fallback to WEBAPP_URL if defined, else use a default template
-        base_url = os.getenv('WEBAPP_URL', 'https://telegram-dashboard-production.up.railway.app').rstrip('/')
-        webapp_url = f"{base_url}/link.html"
-        
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔗 بوابة التحقق ", web_app=WebAppInfo(url=webapp_url))]
-    ])
-    await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
-
-@router.message(Command("federer"))
-async def cmd_federer(message: Message):
-    from config import TELEGRAM_ADMIN_IDS, DATABASE_PATH
-    import aiosqlite
-    from keyboards import get_webapp_base_url
-    
-    user_id = message.from_user.id
-    is_admin = (user_id in TELEGRAM_ADMIN_IDS)
-    if not is_admin:
         try:
-            async with aiosqlite.connect(DATABASE_PATH) as db:
-                async with db.execute("SELECT telegram_id FROM admins WHERE telegram_id = ?", (user_id,)) as cur:
-                    if await cur.fetchone():
-                        is_admin = True
-        except Exception:
-            pass
+            from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+            base_url = os.environ.get("BASE_URL", "https://oswah-academy.up.railway.app")
+            support_url = f"{base_url}/ask.html"
             
-    webapp_url = get_webapp_base_url()
-        
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📱 لوحة الدعم الفني وتذاكر الطلاب (CRM Support)", web_app=WebAppInfo(url=f"{webapp_url}/support"))],
-        [InlineKeyboardButton(text="🔧 لوحة التحكم العامة (Admin General)", web_app=WebAppInfo(url=f"{webapp_url}/admin.html"))],
-        [InlineKeyboardButton(text="🛠️ التحقق من الطلاب (Gateway)", web_app=WebAppInfo(url=f"{webapp_url}/admin-gateway.html"))],
-        [InlineKeyboardButton(text="💬 تجربة صفحة الطالب (Student View)", web_app=WebAppInfo(url=f"{webapp_url}/ask.html"))]
-    ])
-    await message.answer("🤫 <b>لوحة تحكم المشرفين (Admin Menu)</b> :", reply_markup=kb, parse_mode="HTML")
-@router.message(Command('myid'))
-async def cmd_myid(message: Message):
-    await message.answer(f'Ton ID Telegram est : <code>{message.from_user.id}</code>', parse_mode='HTML')
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="💬 فتح مركز الدعم والاستفسار", web_app=WebAppInfo(url=support_url))]
+            ])
+            await bot.send_message(user_id, waiting_notification, reply_markup=kb, parse_mode="HTML")
+        except Exception as e:
+            logger.error(f"[JOIN_REQUEST] Failed to send waiting notification: {e}")
 
-
+    except Exception as e:
+        logger.error(f"[JOIN_REQUEST] Global error: {e}")
