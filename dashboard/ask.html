@@ -462,8 +462,12 @@
     </nav>
 
     <script>
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
+        if (window.Telegram && window.Telegram.WebApp) {
+            try {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            } catch(e) {}
+        }
         setTimeout(() => { window.scrollTo(0, 0); }, 100);
 
         let selectedTheme = "";
@@ -1073,7 +1077,7 @@
                             <span style="font-size:0.75rem; color:var(--accent); background:rgba(241,196,15,0.15); padding:2px 8px; border-radius:10px;">عرض الحل ➔</span>
                         </div>
                         <div id="pred-ans-${m.id}" style="display:none; margin-top:8px; font-size:0.84rem; color:var(--text-2); border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; line-height:1.5;">
-                            ${(m.answer || '').replace(/\n/g, '<br>')}
+                            ${(m.answer || '').replace(/\n/g, "<br>")}
                             <div style="margin-top:10px; text-align:left;">
                                 <button onclick="acceptPredictiveSolution(${m.id})" style="background:#2ecc71; color:white; border:none; padding:6px 14px; border-radius:8px; font-size:0.78rem; cursor:pointer; font-family:'Tajawal'; font-weight:bold;">
                                     ✅ هذه الإجابة حلت مشكلتي
@@ -1170,8 +1174,7 @@
                         ${editBtn}
                     </div>
                     <div id="msg-bubble-${idx}" style="background:${isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)'}; border:1px solid ${isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)'}; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">
-                        ${(m.text || '').replace(/
-/g, '<br>')}
+                        ${(m.text || '').replace(/\n/g, '<br>')}
                     </div>
                     <div style="display:flex; align-items:center; font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:3px; padding:0 4px;">
                         ${m.timestamp || ''} ${editedTag}
@@ -1228,8 +1231,7 @@
             const newText = prompt("تعديل رسالتك:", oldText);
             if (!newText || newText.trim() === oldText) return;
             
-            bubble.innerHTML = newText.trim().replace(/
-/g, '<br>') + ' <span style="font-size:0.7rem; color:rgba(255,255,255,0.4);">(معدّل)</span>';
+            bubble.innerHTML = newText.trim().replace(/\n/g, '<br>') + ' <span style="font-size:0.7rem; color:rgba(255,255,255,0.4);">(معدّل)</span>';
             
             try {
                 await fetch(`${BOT_BASE}/api/tickets/${currentThreadTicketId}/messages/edit`, {
@@ -1307,7 +1309,7 @@
                 <div style="display:flex; flex-direction:column; align-items:flex-start;">
                     <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:3px;">👤 أنت</div>
                     <div style="background:#1e3a8a; border:1px solid #3b82f6; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; color:#fff;">
-                        ${msg.replace(/\n/g, '<br>')}
+                        ${msg.replace(/\n/g, "<br>")}
                     </div>
                 </div>
             `;
