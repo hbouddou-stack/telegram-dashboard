@@ -627,11 +627,37 @@
             const tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || null;
             const username = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "") || "";
             const first_name = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "") || "";
+            
+            const fileInput = document.getElementById('attachment');
+            let initialFileData = null;
+            let initialFileName = null;
+            
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                initialFileName = file.name;
+                initialFileData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(file);
+                });
+            }
+            
             try {
                 await fetch(`${BOT_BASE}/api/support`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ theme: selectedTheme, subtheme: selectedSubtheme, message: msg, telegram_id: tid, username, first_name, rag_failed: ragFailed })
+                    body: JSON.stringify({ 
+                        theme: selectedTheme, 
+                        subtheme: selectedSubtheme, 
+                        message: msg, 
+                        telegram_id: tid, 
+                        username, 
+                        first_name, 
+                        rag_failed: ragFailed,
+                        file_data: initialFileData,
+                        file_name: initialFileName
+                    })
                 });
                 document.getElementById('support-form').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
@@ -1229,10 +1255,10 @@
             
             const container = document.getElementById('modal-thread-messages');
             container.innerHTML = messages.map((m, idx) => {
-                const isStudent = (m.sender === 'student');
+                const isStudent = (m.sender === 'student' || m.sender === 'user' || !m.sender || m.sender === '');
                 const senderTitle = isStudent ? '👤 ' + (m.name || 'أنت') : '🛡️ المشرف (' + (m.name || 'فريق الدعم') + ')';
                 const editedTag = m.edited ? '<span style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-right:4px;">(معدّل)</span>' : '';
-                const editBtn = isStudent ? `<button onclick="editStudentMessage(${idx})" style="background:none; border:none; color:var(--text-2); font-size:0.75rem; cursor:pointer; padding:0 4px;" title="تعديل الرسالة">✏️</button>` : '';
+                const editBtn = isStudent ? `<button onclick="editStudentMessage(${idx})" style="background:rgba(241,196,15,0.12); border:1px solid rgba(241,196,15,0.3); color:var(--accent); font-size:0.72rem; padding:2px 8px; border-radius:6px; cursor:pointer; font-family:'Tajawal'; display:inline-flex; align-items:center; gap:3px;" title="تعديل هذه الرسالة">✏️ تعديل</button>` : '';
                 
                 let attachmentHtml = '';
                 if (m.file_data) {
@@ -1291,6 +1317,18 @@
             }
             
             document.getElementById('ticket-thread-modal').style.display = 'flex';
+            
+            // Drag and drop support on thread container
+            container.ondragover = (e) => { e.preventDefault(); container.style.border = '2px dashed var(--accent)'; };
+            container.ondragleave = (e) => { e.preventDefault(); container.style.border = 'none'; };
+            container.ondrop = (e) => {
+                e.preventDefault();
+                container.style.border = 'none';
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleReplyFileSelect({ files: e.dataTransfer.files });
+                }
+            };
+            
             setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
         }
 

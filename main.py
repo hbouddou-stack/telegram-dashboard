@@ -4773,6 +4773,8 @@ async def api_support(request):
             username = data.get('username', 'غير معروف')
             first_name = data.get('first_name', 'غير معروف')
             auto_resolved = data.get('auto_resolved', False)
+            file_data = data.get('file_data')
+            file_name = data.get('file_name')
 
         import database as db
         
@@ -4792,7 +4794,9 @@ async def api_support(request):
             message=db_msg,
             status=status,
             is_ghost=auto_resolved,
-            ai_topic=ai_topic
+            ai_topic=ai_topic,
+            file_data=file_data,
+            file_name=file_name
         )
         
         if not auto_resolved:
