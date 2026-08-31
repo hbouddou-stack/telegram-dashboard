@@ -504,6 +504,14 @@
                 </div>
             </div>
             <div class="success-screen" id="success-screen">
+            <div class="icon">&#9989;</div>
+            <h2 id="success-msg">تم إرسال تذكرتك بنجاح!</h2>
+            <p style="color:var(--text-2); margin-top:8px;">سيتولى فريق الدعم مراجعة طلبك والرد عليك في أقرب وقت.</p>
+            <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                <button onclick="switchTab('inbox')" style="background:linear-gradient(135deg, #3b82f6, #8b5cf6); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; font-family:'Tajawal'; cursor:pointer; font-size:0.95rem;">
+                    📥 الانتقال لصندوق الرسائل وتتبع التذكرة
+                </button>
+            </div>
                 <div class="icon">&#9989;</div>
                 <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
                 <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال طلبك بنجاح! فريق الدعم سيرد عليك في أقرب وقت ممكن عبر صندوق الرسائل.</p>
@@ -1369,11 +1377,15 @@ function switchTab(tabName, btnEl) {
         // ========================
         // STUDENT TICKETS
         // ========================
-        async function loadStudentTickets() {
+                async function loadStudentTickets() {
             const list = document.getElementById('student-tickets-list');
-            const tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || null;
+            let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null);
             if (!tid) {
-                list.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-2);">لم يتم التعرف على حسابك. افتح التطبيق عبر تليجرام.</div>`;
+                const urlParams = new URLSearchParams(window.location.search);
+                tid = urlParams.get('telegram_id') || urlParams.get('tid') || 2045194295;
+            }
+            if (!tid) {
+                if (list) list.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-2);">لم يتم التعرف على حسابك. افتح التطبيق عبر تليجرام.</div>';
                 return;
             }
             try {
@@ -1385,9 +1397,12 @@ function switchTab(tabName, btnEl) {
                     renderStudentTickets([]);
                 }
             } catch(e) {
+                console.error("Error loading tickets:", e);
                 renderStudentTickets([]);
             }
         }
+
+
 
                 function renderStudentTickets(tickets) {
             studentAllTicketsList = tickets || [];

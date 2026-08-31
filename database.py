@@ -3647,14 +3647,27 @@ async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, 
     from config import DATABASE_PATH
     import aiosqlite
     import json
+    import base64
     from datetime import datetime
     try:
-        has_attachment = 1 if (file_data or file_name) else 0
+        file_data_str = None
+        if isinstance(file_data, bytes):
+            b64 = base64.b64encode(file_data).decode('utf-8')
+            mime = "image/jpeg"
+            if file_name and file_name.lower().endswith('.png'):
+                mime = "image/png"
+            elif file_name and file_name.lower().endswith('.pdf'):
+                mime = "application/pdf"
+            file_data_str = f"data:{mime};base64,{b64}"
+        elif isinstance(file_data, str):
+            file_data_str = file_data
+
+        has_attachment = 1 if (file_data_str or file_name) else 0
         init_conv = [{
             "sender": "student",
             "name": first_name or "أنت",
             "text": message,
-            "file_data": file_data,
+            "file_data": file_data_str,
             "file_name": file_name,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
         }]
@@ -3662,14 +3675,13 @@ async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, 
         async with aiosqlite.connect(DATABASE_PATH) as db:
             cursor = await db.execute(
                 'INSERT INTO crm_tickets (telegram_id, username, first_name, theme, subtheme, message, status, is_ghost, ai_topic, conversation, has_attachment, file_data, file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (telegram_id, username, first_name, theme, subtheme, message, status, is_ghost, ai_topic, conv_json, has_attachment, file_data, file_name)
+                (telegram_id, username, first_name, theme, subtheme, message, status, is_ghost, ai_topic, conv_json, has_attachment, file_data_str, file_name)
             )
             await db.commit()
             return cursor.lastrowid
     except Exception as e:
         logger.error(f"Error creating ticket: {e}")
         return None
-
 async def get_all_crm_tickets():
     from config import DATABASE_PATH
     import aiosqlite
@@ -3689,13 +3701,12 @@ async def get_student_tickets(telegram_id):
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute('SELECT * FROM crm_tickets WHERE telegram_id = ? ORDER BY timestamp DESC', (telegram_id,)) as cursor:
+            async with db.execute('SELECT * FROM crm_tickets WHERE telegram_id = ? OR telegram_id = ? ORDER BY id DESC', (telegram_id, str(telegram_id))) as cursor:
                 rows = await cursor.fetchall()
                 return [dict(row) for row in rows]
     except Exception as e:
         logger.error(f"Error fetching student tickets: {e}")
         return []
-
 async def update_crm_ticket_status(ticket_id, status):
     from config import DATABASE_PATH
     import aiosqlite
