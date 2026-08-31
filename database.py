@@ -4020,3 +4020,53 @@ async def add_admin_faq_from_ticket(ticket_id: int, question: str, answer: str, 
     except Exception as e:
         logger.error(f"[FAQ] add_admin_faq_from_ticket error: {e}")
         return -1
+
+async def reopen_crm_ticket(ticket_id: int) -> bool:
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("UPDATE crm_tickets SET status = 'pending', is_ghost = 0 WHERE id = ?", (ticket_id,))
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"[CRM] reopen_crm_ticket error: {e}")
+        return False
+
+async def edit_crm_ticket_message(ticket_id: int, message_index: int, new_text: str, editor_role: str = 'student') -> bool:
+    from config import DATABASE_PATH
+    import aiosqlite
+    import json as _json
+    from datetime import datetime
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT message, conversation FROM crm_tickets WHERE id = ?", (ticket_id,)) as cur:
+                row = await cur.fetchone()
+                if not row:
+                    return False
+                    
+                conv = []
+                if row['conversation']:
+                    try:
+                        conv = _json.loads(row['conversation'])
+                    except Exception:
+                        conv = []
+                        
+                if message_index == 0 and (not conv or message_index >= len(conv)):
+                    # Edit the main ticket message
+                    await db.execute("UPDATE crm_tickets SET message = ? WHERE id = ?", (new_text, ticket_id))
+                    await db.commit()
+                    return True
+                elif 0 <= message_index < len(conv):
+                    conv[message_index]['text'] = new_text
+                    conv[message_index]['edited'] = True
+                    conv[message_index]['edited_at'] = datetime.now().isoformat()
+                    await db.execute("UPDATE crm_tickets SET conversation = ? WHERE id = ?", (_json.dumps(conv, ensure_ascii=False), ticket_id))
+                    await db.commit()
+                    return True
+                else:
+                    return False
+    except Exception as e:
+        logger.error(f"[CRM] edit_crm_ticket_message error: {e}")
+        return False

@@ -1061,12 +1061,42 @@
         }
 
                 function renderStudentTickets(tickets) {
-            studentLoadedTicketsMap = {};
-            (tickets || []).forEach(t => { studentLoadedTicketsMap[t.id] = t; });
+            studentAllTicketsList = tickets || [];
             const list = document.getElementById('student-tickets-list');
-            if (!tickets || tickets.length === 0) {
+            if (!list) return;
+            
+            studentLoadedTicketsMap = {};
+            // Chronological indexing (oldest = #1, newest = #N)
+            const sortedByOldest = [...studentAllTicketsList].sort((a,b) => (new Date(a.timestamp || 0)) - (new Date(b.timestamp || 0)));
+            const indexMap = {};
+            sortedByOldest.forEach((t, idx) => {
+                indexMap[t.id] = idx + 1;
+            });
+
+            // Count for filter pills
+            const resolvedList = studentAllTicketsList.filter(t => t.status === 'resolved' || t.status === 'محلولة');
+            const pendingList = studentAllTicketsList.filter(t => !resolvedList.includes(t));
+            
+            const cntAll = document.getElementById('cnt-all');
+            const cntPending = document.getElementById('cnt-pending');
+            const cntResolved = document.getElementById('cnt-resolved');
+            if (cntAll) cntAll.innerText = studentAllTicketsList.length;
+            if (cntPending) cntPending.innerText = pendingList.length;
+            if (cntResolved) cntResolved.innerText = resolvedList.length;
+
+            const badge = document.getElementById('inbox-badge');
+            if (badge) {
+                if (pendingList.length > 0) {
+                    badge.innerText = pendingList.length;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
+            if (!studentAllTicketsList || studentAllTicketsList.length === 0) {
                 list.innerHTML = `
-                <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:30px 20px; text-align:center; margin-top:10px;">
+                <div style="text-align:center; padding:40px 20px; background:var(--surface); border-radius:16px; border:1px dashed rgba(255,255,255,0.15); margin-top:10px;">
                     <div style="font-size:3rem; margin-bottom:15px;">📫</div>
                     <h3 style="font-size:1.1rem; margin:0 0 10px 0; color:var(--text-1);">صندوق الرسائل فارغ</h3>
                     <p style="font-size:0.88rem; color:var(--text-2); line-height:1.6; margin:0 0 20px 0;">
@@ -1078,52 +1108,56 @@
                 </div>`;
                 return;
             }
-            
-            const resolved = tickets.filter(t => t.status === 'resolved' || t.status === 'محلولة');
-            const inProgress = tickets.filter(t => t.status === 'in_progress' || t.status === 'قيد المعالجة');
-            const openTickets = tickets.filter(t => !resolved.includes(t) && !inProgress.includes(t));
-            
-            const badge = document.getElementById('inbox-badge');
-            if (badge) {
-                if (resolved.length > 0) {
-                    badge.innerText = resolved.length;
-                    badge.style.display = 'block';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-            
-            let htmlStr = '';
-            
-            const renderGroup = (title, groupTickets, icon, color) => {
-                if (groupTickets.length === 0) return '';
-                let gHtml = `<h3 style="font-size:1rem; margin-top:20px; margin-bottom:10px; color:${color};">${icon} ${title}</h3>`;
-                gHtml += groupTickets.map(t => {
-                    const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
-                    const preview = (t.message || t.text || '').substring(0, 60);
-                    return `
-                    <div onclick="openTicketThread(${t.id})" style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); padding:15px; border-radius:12px; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                            <span style="color:var(--text-1); font-weight:bold; font-size:0.9rem;">#${t.id} - ${t.theme || 'عام'}</span>
-                            <span style="color:${color}; font-size:0.75rem; border:1px solid ${color}; padding:2px 8px; border-radius:12px;">${title}</span>
-                        </div>
-                        <div style="font-size:0.9rem; color:var(--text-2); margin-bottom:8px; line-height:1.4;">${preview}${preview.length >= 60 ? '...' : ''}</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.35);">${date}</span>
-                            <span style="font-size:0.78rem; color:var(--accent); font-weight:bold;">عرض المحادثة 💬 ➔</span>
-                        </div>
-                    </div>`;
-                }).join('');
-                return gHtml;
-            };
-            
-            htmlStr += renderGroup('في انتظار الرد', openTickets, '🟠', '#f39c12');
-            htmlStr += renderGroup('قيد المعالجة', inProgress, '🔵', '#3498db');
-            htmlStr += renderGroup('تم الرد (محلولة)', resolved, '🟢', '#2ecc71');
-            
-            list.innerHTML = htmlStr;
-        }
 
+            // Filter according to active pill
+            let displayTickets = [...studentAllTicketsList];
+            if (activeInboxFilter === 'pending') {
+                displayTickets = pendingList;
+            } else if (activeInboxFilter === 'resolved') {
+                displayTickets = resolvedList;
+            }
+
+            // Newest first for display
+            displayTickets.sort((a,b) => (new Date(b.timestamp || 0)) - (new Date(a.timestamp || 0)));
+
+            if (displayTickets.length === 0) {
+                list.innerHTML = `<div style="text-align:center; color:var(--text-2); padding:30px;">لا توجد تذاكر في هذا التصنيف.</div>`;
+                return;
+            }
+
+            list.innerHTML = displayTickets.map(t => {
+                studentLoadedTicketsMap[t.id] = t;
+                const isResolved = (t.status === 'resolved' || t.status === 'محلولة');
+                const isInProgress = (t.status === 'in_progress' || t.status === 'قيد المعالجة');
+                const statusColor = isResolved ? '#2ecc71' : (isInProgress ? '#3498db' : '#f39c12');
+                const statusLabel = isResolved ? '🟢 تم الحل' : (isInProgress ? '🔵 قيد المعالجة' : '🟠 في انتظار الرد');
+                const myIdx = indexMap[t.id] || 1;
+                const date = t.timestamp ? new Date(t.timestamp).toLocaleDateString('ar-MA') : '';
+                const preview = (t.message || t.text || '').substring(0, 70);
+                const hasAttachment = (t.has_attachment || t.file_path || t.file_data || (t.message && t.message.includes('[مرفق]')));
+                const attachBadge = hasAttachment ? `<span style="background:rgba(241,196,15,0.15); color:var(--accent); border:1px solid rgba(241,196,15,0.3); padding:2px 8px; border-radius:10px; font-size:0.72rem; margin-right:6px;">📎 مرفق ملف</span>` : '';
+
+                return `
+                <div onclick="openTicketThread(${t.id})" style="background:var(--surface); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:14px; margin-bottom:12px; cursor:pointer; transition:all 0.2s; border-right:4px solid ${statusColor};" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+                        <div style="font-weight:bold; font-size:0.92rem; color:var(--text-1);">
+                            <span style="color:var(--accent);">#TK-${t.id}</span> <span style="font-size:0.78rem; color:var(--text-2); font-weight:normal;">(طلبك #${myIdx})</span> &bull; ${t.theme || 'عام'}
+                        </div>
+                        <span style="color:${statusColor}; font-size:0.75rem; background:rgba(255,255,255,0.04); border:1px solid ${statusColor}; padding:2px 8px; border-radius:12px;">${statusLabel}</span>
+                    </div>
+                    <div style="font-size:0.88rem; color:var(--text-2); margin-bottom:10px; line-height:1.4;">
+                        ${preview}${preview.length >= 70 ? '...' : ''}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.04); padding-top:8px;">
+                        <div style="display:flex; align-items:center;">
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">${date}</span>
+                            ${attachBadge}
+                        </div>
+                        <span style="font-size:0.8rem; color:var(--accent); font-weight:bold;">عرض المحادثة 💬 ➔</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
 
         window.onload = () => {
             loadStudentFaq();
@@ -1222,13 +1256,22 @@
         // ========================
         let currentThreadTicketId = null;
         let studentLoadedTicketsMap = {};
+        let studentAllTicketsList = [];
+        let activeInboxFilter = 'all';
 
-        function openTicketThread(ticketId) {
+        function filterStudentInbox(filterType, btn) {
+            activeInboxFilter = filterType;
+            document.querySelectorAll('#inbox-filter-pills .faq-cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderStudentTickets(studentAllTicketsList);
+        }
+
+                function openTicketThread(ticketId) {
             const ticket = studentLoadedTicketsMap[ticketId];
             if (!ticket) return;
             currentThreadTicketId = ticketId;
             
-            document.getElementById('modal-thread-title').innerText = `#${ticket.id} - ${ticket.theme || 'استفسار'}`;
+            document.getElementById('modal-thread-title').innerText = `#TK-${ticket.id} - ${ticket.theme || 'استفسار'}`;
             const dateStr = ticket.timestamp ? new Date(ticket.timestamp).toLocaleString('ar-MA') : '';
             document.getElementById('modal-thread-subtitle').innerText = `التاريخ: ${dateStr}`;
             
@@ -1237,23 +1280,22 @@
             const isInProgress = (ticket.status === 'in_progress' || ticket.status === 'قيد المعالجة');
             
             if (isResolved) {
-                statusEl.innerText = 'تم الرد (محلولة)';
+                statusEl.innerText = '🟢 تم الرد (محلولة)';
                 statusEl.style.background = 'rgba(46,204,113,0.15)';
                 statusEl.style.color = '#2ecc71';
                 statusEl.style.border = '1px solid #2ecc71';
             } else if (isInProgress) {
-                statusEl.innerText = 'قيد المعالجة';
+                statusEl.innerText = '🔵 قيد المعالجة';
                 statusEl.style.background = 'rgba(52,152,219,0.15)';
                 statusEl.style.color = '#3498db';
                 statusEl.style.border = '1px solid #3498db';
             } else {
-                statusEl.innerText = 'في انتظار الرد';
+                statusEl.innerText = '🟠 في انتظار الرد';
                 statusEl.style.background = 'rgba(243,156,18,0.15)';
                 statusEl.style.color = '#f39c12';
                 statusEl.style.border = '1px solid #f39c12';
             }
             
-            // Build conversation thread
             let messages = [];
             if (ticket.conversation) {
                 try {
@@ -1269,34 +1311,113 @@
             }
             
             const container = document.getElementById('modal-thread-messages');
-            container.innerHTML = messages.map(m => {
+            container.innerHTML = messages.map((m, idx) => {
                 const isStudent = (m.sender === 'student');
+                const editedTag = m.edited ? '<span style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-right:4px;">(معدّل)</span>' : '';
+                const editBtn = isStudent ? `<button onclick="editStudentMessage(${idx})" style="background:none; border:none; color:var(--text-2); font-size:0.75rem; cursor:pointer; padding:0 4px;" title="تعديل الرسالة">✏️</button>` : '';
+                
                 return `
-                <div style="display:flex; flex-direction:column; align-items:${isStudent ? 'flex-start' : 'flex-end'};">
-                    <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:3px; padding:0 4px;">
-                        ${isStudent ? '👤 ' + (m.name || 'أنت') : '🛡️ ' + (m.name || 'إدارة الأكاديمية')}
+                <div style="display:flex; flex-direction:column; align-items:${isStudent ? 'flex-start' : 'flex-end'}; margin-bottom:12px;">
+                    <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:3px; padding:0 4px; display:flex; align-items:center; gap:4px;">
+                        <span>${isStudent ? '👤 ' + (m.name || 'أنت') : '🛡️ ' + (m.name || 'إدارة الأكاديمية')}</span>
+                        ${editBtn}
                     </div>
-                    <div style="background:${isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)'}; border:1px solid ${isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)'}; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">
-                        ${(m.text || '').replace(/\n/g, '<br>')}
+                    <div id="msg-bubble-${idx}" style="background:${isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)'}; border:1px solid ${isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)'}; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">
+                        ${(m.text || '').replace(/
+/g, '<br>')}
                     </div>
-                    ${m.timestamp ? `<div style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:3px;">${m.timestamp}</div>` : ''}
+                    <div style="display:flex; align-items:center; font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:3px; padding:0 4px;">
+                        ${m.timestamp || ''} ${editedTag}
+                    </div>
                 </div>`;
             }).join('');
             
-            // Handle CSAT rating box
+            // Handle CSAT rating box & Resolved Actions Banner
             const csatBox = document.getElementById('modal-csat-box');
+            let banner = document.getElementById('thread-resolved-banner');
+            const replyBox = document.getElementById('modal-reply-box');
+            
             if (isResolved) {
-                csatBox.style.display = 'block';
-                document.getElementById('csat-status-msg').style.display = ticket.rating ? 'block' : 'none';
-                if (ticket.rating) {
-                    highlightCsatStars(ticket.rating);
+                if (csatBox) {
+                    csatBox.style.display = 'block';
+                    document.getElementById('csat-status-msg').style.display = ticket.rating ? 'block' : 'none';
+                    if (ticket.rating) highlightCsatStars(ticket.rating);
                 }
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'thread-resolved-banner';
+                    container.parentNode.insertBefore(banner, csatBox);
+                }
+                banner.style.display = 'block';
+                banner.innerHTML = `
+                    <div style="background:rgba(46,204,113,0.08); border:1px solid rgba(46,204,113,0.25); border-radius:12px; padding:14px; margin:15px 0; text-align:center;">
+                        <div style="font-weight:bold; font-size:0.92rem; color:#2ecc71; margin-bottom:4px;">✅ تم حل هذه التذكرة وإغلاقها</div>
+                        <div style="font-size:0.82rem; color:var(--text-2); margin-bottom:10px;">هل ما زلت بحاجة لمساعدة حول نفس الموضوع؟</div>
+                        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                            <button onclick="reopenCurrentTicket()" style="background:#2ecc71; color:white; border:none; padding:7px 15px; border-radius:20px; font-weight:bold; font-size:0.8rem; cursor:pointer; font-family:'Tajawal';">
+                                🔄 لا زال لدي استفسار (إعادة فتح)
+                            </button>
+                            <button onclick="openNewTopicFromThread()" style="background:rgba(255,255,255,0.06); color:var(--text-1); border:1px solid rgba(255,255,255,0.15); padding:7px 15px; border-radius:20px; font-size:0.8rem; cursor:pointer; font-family:'Tajawal';">
+                                ➕ موضوع جديد منفصل
+                            </button>
+                        </div>
+                    </div>
+                `;
             } else {
-                csatBox.style.display = 'none';
+                if (csatBox) csatBox.style.display = 'none';
+                if (banner) banner.style.display = 'none';
+                if (replyBox) replyBox.style.display = 'flex';
             }
             
             document.getElementById('ticket-thread-modal').style.display = 'flex';
             setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+        }
+
+        async function editStudentMessage(msgIdx) {
+            if (!currentThreadTicketId) return;
+            const bubble = document.getElementById(`msg-bubble-${msgIdx}`);
+            if (!bubble) return;
+            const oldText = bubble.innerText.trim();
+            const newText = prompt("تعديل رسالتك:", oldText);
+            if (!newText || newText.trim() === oldText) return;
+            
+            bubble.innerHTML = newText.trim().replace(/
+/g, '<br>') + ' <span style="font-size:0.7rem; color:rgba(255,255,255,0.4);">(معدّل)</span>';
+            
+            try {
+                await fetch(`${BOT_BASE}/api/tickets/${currentThreadTicketId}/messages/edit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message_index: msgIdx, text: newText.trim(), role: 'student' })
+                });
+            } catch(e) { console.error('Edit message error:', e); }
+        }
+
+        async function reopenCurrentTicket() {
+            if (!currentThreadTicketId) return;
+            const statusEl = document.getElementById('modal-thread-status');
+            if (statusEl) {
+                statusEl.innerText = '🟠 في انتظار الرد';
+                statusEl.style.background = 'rgba(243,156,18,0.15)';
+                statusEl.style.color = '#f39c12';
+                statusEl.style.border = '1px solid #f39c12';
+            }
+            const banner = document.getElementById('thread-resolved-banner');
+            if (banner) banner.style.display = 'none';
+            const replyBox = document.getElementById('modal-reply-box');
+            if (replyBox) replyBox.style.display = 'flex';
+            
+            try {
+                await fetch(`${BOT_BASE}/api/tickets/${currentThreadTicketId}/reopen`, { method: 'POST' });
+                if (studentLoadedTicketsMap[currentThreadTicketId]) {
+                    studentLoadedTicketsMap[currentThreadTicketId].status = 'pending';
+                }
+            } catch(e) { console.error('Reopen error:', e); }
+        }
+
+        function openNewTopicFromThread() {
+            closeTicketThread();
+            switchTab('new');
         }
 
         function closeTicketThread() {

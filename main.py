@@ -5571,6 +5571,8 @@ def register_crm_routes(app):
     app.router.add_post('/api/faq/suggestions/{id}/reject', api_faq_suggestion_reject)
     app.router.add_post('/api/faq/suggest', api_faq_suggest_student)
     app.router.add_post('/api/faq/suggest_from_ticket', api_faq_suggest_from_ticket)
+    app.router.add_post('/api/tickets/{id}/reopen', api_ticket_reopen)
+    app.router.add_post('/api/tickets/{id}/messages/edit', api_ticket_message_edit)
 
 async def api_admin_draft_reply(request):
     try:
@@ -5929,6 +5931,56 @@ async def api_faq_suggest_from_ticket(request):
         sid = await db.add_admin_faq_from_ticket(ticket_id, question, answer, category, admin_name)
         from aiohttp import web
         return web.json_response({'success': True, 'suggestion_id': sid})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_ticket_reopen(request):
+    try:
+        ticket_id = int(request.match_info.get('id'))
+        import database as db
+        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID
+        import requests
+        
+        ok = await db.reopen_crm_ticket(ticket_id)
+        if not ok:
+            from aiohttp import web
+            return web.json_response({'success': False, 'error': 'Ticket not found'}, status=404)
+            
+        ticket = await db.get_crm_ticket(ticket_id)
+        if ticket and TELEGRAM_SUPPORT_GROUP_ID:
+            try:
+                msg = '🔄 <b>إعادة فتح التذكرة #TK-' + str(ticket_id) + '</b>\n\n👤 <b>الطالب:</b> ' + str(ticket.get('first_name', 'طالب')) + ' (@' + str(ticket.get('username', '')) + ')\n📌 <b>القسم:</b> ' + str(ticket.get('theme', '')) + '\n\nيرجى المتابعة من Dashboard المشرفين (/federer).'
+                requests.post('https://api.telegram.org/bot' + str(TELEGRAM_BOT_TOKEN) + '/sendMessage', json={
+                    'chat_id': TELEGRAM_SUPPORT_GROUP_ID,
+                    'text': msg,
+                    'parse_mode': 'HTML'
+                })
+            except Exception as notify_err:
+                print('Reopen notify error:', notify_err)
+                
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_ticket_message_edit(request):
+    try:
+        ticket_id = int(request.match_info.get('id'))
+        data = await request.json()
+        message_index = int(data.get('message_index', 0))
+        new_text = data.get('text', '').strip()
+        role = data.get('role', 'student')
+        
+        if not new_text:
+            from aiohttp import web
+            return web.json_response({'success': False, 'error': 'Missing text'}, status=400)
+            
+        import database as db
+        ok = await db.edit_crm_ticket_message(ticket_id, message_index, new_text, role)
+        from aiohttp import web
+        return web.json_response({'success': ok})
     except Exception as e:
         from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)

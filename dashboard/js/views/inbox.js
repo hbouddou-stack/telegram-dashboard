@@ -303,7 +303,7 @@ function renderFeed() {
                 <div class="ticket-avatar ${avatarClass}" onclick="openTicket('${t.id}')">${initial}</div>
                 <div class="ticket-content" onclick="openTicket('${t.id}')">
                     <div class="ticket-header">
-                        <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#${displayId}</span> ${assignedText}</span>
+                        <span class="ticket-author">${name} <span style="font-size:0.75rem; color:var(--gold); font-weight:normal;">#TK-${displayId}</span> ${assignedText}</span>
                         <span class="ticket-time">${attachmentIcon}${formatTime(t.timestamp)}</span>
                     </div>
                     <div class="ticket-tags">
