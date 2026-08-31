@@ -4918,6 +4918,7 @@ async def start_web_server(bot: Bot):
     app = web.Application(middlewares=[cors_middleware])
     app['bot'] = bot
     
+    app.router.add_get('/health', lambda r: web.Response(text='OK'))
     app.router.add_get('/', handle_reader)
     app.router.add_get('/index.html', handle_reader)
     app.router.add_get('/link.html', handle_link)
@@ -5279,80 +5280,63 @@ async def api_admin_presence_live(request):
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 async def main():
-    if not TELEGRAM_BOT_TOKEN:
-        logger.critical("TELEGRAM_BOT_TOKEN is missing! Exiting...")
-        return
-        
     asyncio.create_task(active_users_cleanup_task())
-
-    # Initialize bot and dispatcher
-    bot = Bot(token=TELEGRAM_BOT_TOKEN)
     
-    # Start Web Server FIRST and wait for it to bind to port
-    # This ensures Railway health checks pass before Telegram polling starts
-    async def _web_server_with_logging():
+    bot = None
+    if TELEGRAM_BOT_TOKEN:
         try:
-            await start_web_server(bot)
+            bot = Bot(token=TELEGRAM_BOT_TOKEN)
         except Exception as e:
-            logger.critical(f"[Web Server] FATAL ERROR: {e}", exc_info=True)
+            logger.error(f"Failed to create Bot instance: {e}")
+            
+    web_server_coro = start_web_server(bot)
     
-    web_task = asyncio.ensure_future(_web_server_with_logging())
-    await asyncio.sleep(3)  # Give web server 3 seconds to bind to port
-    
-    dp = Dispatcher(storage=MemoryStorage())
-
-    # Register middlewares
-    dp.message.outer_middleware(AccessCheckMiddleware())
-    dp.callback_query.outer_middleware(AccessCheckMiddleware())
-
-    # Include handlers
-    dp.include_router(auth_router)
-    dp.include_router(csat_router)  # CSAT ratings
-    
-    
-    
-    
-    
-    
-    
-
-    # Register startup hook
-    dp.startup.register(on_startup)
-
-    # â”€â”€â”€ RAILWAY ZERO-DOWNTIME CONFLICT RESOLUTION â”€â”€â”€
-    logger.info(f"DÃ©marrage de l'instance courante avec ID: {INSTANCE_ID}")
-    
-    async def watch_for_new_instance():
-        while True:
-            await asyncio.sleep(5)
+    if bot:
+        dp = Dispatcher(storage=MemoryStorage())
+        dp.message.outer_middleware(AccessCheckMiddleware())
+        dp.callback_query.outer_middleware(AccessCheckMiddleware())
+        dp.include_router(auth_router)
+        dp.include_router(csat_router)
+        dp.startup.register(on_startup)
+        
+        async def watch_for_new_instance():
+            while True:
+                await asyncio.sleep(5)
+                try:
+                    from config import DATABASE_PATH
+                    if not os.path.exists(DATABASE_PATH):
+                        continue
+                    async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                        async with db_conn.execute("SELECT value FROM settings WHERE key = 'current_instance_id'") as cur:
+                            row = await cur.fetchone()
+                            if row and row[0] and row[0] != INSTANCE_ID:
+                                logger.warning(f"🚨 NOUVELLE INSTANCE DÉTECTÉE ({row[0]}). Arrêt du polling pour éviter les conflits Telegram !")
+                                await dp.stop_polling()
+                                break
+                except Exception:
+                    pass
+                    
+        asyncio.create_task(watch_for_new_instance())
+        
+        async def run_bot_polling():
+            logger.info("Starting Telegram Backup Bot polling...")
             try:
-                from config import DATABASE_PATH
-                if not os.path.exists(DATABASE_PATH):
-                    continue
-                async with aiosqlite.connect(DATABASE_PATH) as db_conn:
-                    async with db_conn.execute("SELECT value FROM settings WHERE key = 'current_instance_id'") as cur:
-                        row = await cur.fetchone()
-                        if row and row[0] and row[0] != INSTANCE_ID:
-                            logger.warning(f"ðŸš¨ NOUVELLE INSTANCE DÃ‰TECTÃ‰E ({row[0]}). ArrÃªt du polling pour Ã©viter les conflits Telegram !")
-                            await dp.stop_polling()
-                            break
-            except Exception:
-                pass
-        
-    asyncio.create_task(watch_for_new_instance())
-    # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-    logger.info("Starting Telegram Backup Bot polling...")
-    try:
-        await bot.delete_webhook(drop_pending_updates=True)
-        await dp.start_polling(bot)
-    finally:
-        await bot.session.close()
-        
-    # Keep web server alive even if polling stops (Railway conflict)
-    while True:
-        await asyncio.sleep(3600)
-
+                await bot.delete_webhook(drop_pending_updates=True)
+                await dp.start_polling(bot)
+            except Exception as e:
+                logger.error(f"Telegram polling error: {e}")
+            finally:
+                try:
+                    await bot.session.close()
+                except Exception:
+                    pass
+                while True:
+                    await asyncio.sleep(3600)
+                    
+        await asyncio.gather(web_server_coro, run_bot_polling(), return_exceptions=True)
+    else:
+        logger.warning("No TELEGRAM_BOT_TOKEN provided. Running Web Server independently.")
+        await web_server_coro
 
 
 
