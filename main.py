@@ -5868,11 +5868,7 @@ async def api_faq_suggestion_reject(request):
 # END FAQ API ROUTES
 # ====================================================
 
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logger.info("Bot stopped.")
+
 
 async def api_faq_suggest_student(request):
     try:
@@ -5965,3 +5961,9 @@ async def api_ticket_message_edit(request):
     except Exception as e:
         from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Bot stopped.")
