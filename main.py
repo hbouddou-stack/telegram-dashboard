@@ -5414,13 +5414,15 @@ async def api_ticket_student_reply(request):
         telegram_id = data.get('telegram_id')
         first_name = data.get('first_name', 'الطالب')
         username = data.get('username', '')
+        file_data = data.get('file_data')
+        file_name = data.get('file_name')
         
-        if not ticket_id or not message:
+        if not ticket_id or (not message and not file_data):
             from aiohttp import web
             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
             
         import database as db
-        await db.add_crm_ticket_reply(int(ticket_id), 'student', message, first_name)
+        await db.add_crm_ticket_reply(int(ticket_id), 'student', message, first_name, file_data=file_data, file_name=file_name)
         
         # Forward follow-up to support group
         from config import TELEGRAM_BOT_TOKEN, TELEGRAM_SUPPORT_GROUP_ID

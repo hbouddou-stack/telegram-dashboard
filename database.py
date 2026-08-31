@@ -3935,7 +3935,7 @@ async def reject_faq_suggestion(suggestion_id: int):
 # END FAQ CRUD FUNCTIONS
 # ====================================================
 
-async def add_crm_ticket_reply(ticket_id: int, sender: str, text: str, sender_name: str = ""):
+async def add_crm_ticket_reply(ticket_id: int, sender: str, text: str, sender_name: str = "", file_data: str = None, file_name: str = None):
     import json
     from datetime import datetime
     from config import DATABASE_PATH
@@ -3960,18 +3960,23 @@ async def add_crm_ticket_reply(ticket_id: int, sender: str, text: str, sender_na
                     if row["admin_reply"]:
                         conv.append({"sender": "admin", "name": "الإدارة", "text": row["admin_reply"], "timestamp": ""})
                 
-                conv.append({
+                msg_obj = {
                     "sender": sender,
-                    "name": sender_name or ("الإدارة" if sender == "admin" else "الطالب"),
+                    "name": sender_name or ("فريق الدعم" if sender == "admin" else "الطالب"),
                     "text": text,
                     "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
-                })
+                }
+                if file_data:
+                    msg_obj["file_data"] = file_data
+                    msg_obj["file_name"] = file_name
+                conv.append(msg_obj)
                 
                 new_conv_json = json.dumps(conv, ensure_ascii=False)
                 if sender == "admin":
                     await db.execute("UPDATE crm_tickets SET conversation = ?, admin_reply = ?, status = 'resolved' WHERE id = ?", (new_conv_json, text, ticket_id))
                 else:
-                    await db.execute("UPDATE crm_tickets SET conversation = ?, status = 'open' WHERE id = ?", (new_conv_json, ticket_id))
+                    has_att = 1 if file_data else 0
+                    await db.execute("UPDATE crm_tickets SET conversation = ?, status = 'pending', has_attachment = MAX(COALESCE(has_attachment,0), ?) WHERE id = ?", (new_conv_json, has_att, ticket_id))
                 await db.commit()
                 return True
     except Exception as e:
