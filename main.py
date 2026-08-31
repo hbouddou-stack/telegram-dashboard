@@ -4256,122 +4256,111 @@ async def api_validate_student(request: web.Request):
 async def api_link_account(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
+    import database as db
     from database import log_student_action
-    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    import logging
+    _log = logging.getLogger('bot')
+    
     try:
         data = await request.json()
         email = data.get('email', '').strip().lower()
-        dob = data.get('dob', '').strip()
+        phone = data.get('phone', '').strip()
         student_id_input = data.get('student_id', '').strip()
         
         telegram_id = data.get('telegram_id')
         telegram_first_name = data.get('telegram_first_name', '')
-        telegram_last_name = ''
+        telegram_last_name = data.get('telegram_last_name', '')
+        telegram_username = data.get('telegram_username', '')
         
         init_data = data.get('initData')
-        telegram_username = ''
         if init_data:
             import urllib.parse
             import json
-            parsed = urllib.parse.parse_qs(init_data)
-            user_data = json.loads(parsed['user'][0])
-            telegram_id = user_data['id']
-            telegram_first_name = user_data.get('first_name', '')
-            telegram_last_name = user_data.get('last_name', '')
-            telegram_username = user_data.get('username', '')
-            
+            try:
+                parsed = urllib.parse.parse_qs(init_data)
+                user_data = json.loads(parsed['user'][0])
+                telegram_id = user_data['id']
+                telegram_first_name = user_data.get('first_name', '')
+                telegram_last_name = user_data.get('last_name', '')
+                telegram_username = user_data.get('username', '')
+            except Exception:
+                pass
+                
         if not telegram_id:
             return web.json_response({'success': False, 'error': 'خطأ في المصادقة مع تيليجرام (Erreur Telegram)'})
             
-        async with aiosqlite.connect(DATABASE_PATH) as db:
-            errors = {}
-            telegram_name = f"{telegram_first_name} {telegram_last_name}".strip()
-            
-            # Upsert user info
-            await db.execute("""
+        telegram_name = f"{telegram_first_name} {telegram_last_name}".strip()
+        
+        # 1. Upsert users table
+        async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            await db_conn.execute("""
                 INSERT INTO users (telegram_id, first_name, last_name, username) 
                 VALUES (?, ?, ?, ?) 
                 ON CONFLICT(telegram_id) DO UPDATE SET 
                 first_name=excluded.first_name, last_name=excluded.last_name, username=excluded.username
             """, (telegram_id, telegram_first_name, telegram_last_name, telegram_username))
             
-            # Check Email
-            async with db.execute("SELECT student_id, dob, first_name FROM academy_students WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))", (email,)) as cur1:
-                row1 = await cur1.fetchone()
-                if not row1:
-                    errors['email'] = 'البريد الإلكتروني غير مسجل.'
-                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, action_type, description) VALUES (?, ?, ?, ?, ?)", (0, telegram_id, telegram_name, 'LINK_FAILED', f"محاولة ربط ببريد إلكتروني غير مسجل: {email}"))
-                else:
-                    db_student_id = row1[0]
-                    db_dob = row1[1]
-                    real_first_name = row1[2]
-
-                    # Check DOB
-                    if db_dob != dob:
-                        errors['dob'] = 'تاريخ الميلاد غير صحيح.'
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, action_type, description) VALUES (?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, 'LINK_FAILED', f"محاولة ربط فاشلة: تاريخ الميلاد غير صحيح ({dob})"))
-                        
-                    # Check Student ID
-                    if str(db_student_id) != str(student_id_input):
-                        errors['student_id'] = 'رقم الطالب غير صحيح.'
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, action_type, description) VALUES (?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, 'LINK_FAILED', f"محاولة ربط فاشلة: الرقم الدراسي غير صحيح ({student_id_input})"))
-            
-            if errors:
-                await db.commit()
-                return web.json_response({'success': False, 'errors': errors})
+            # 2. Chercher dans academy_students par email
+            student_row = None
+            if email:
+                async with db_conn.execute("SELECT * FROM academy_students WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))", (email,)) as cur:
+                    db_conn.row_factory = aiosqlite.Row
+                    student_row = await cur.fetchone()
+            elif phone:
+                async with db_conn.execute("SELECT * FROM academy_students WHERE phone = ?", (phone,)) as cur:
+                    db_conn.row_factory = aiosqlite.Row
+                    student_row = await cur.fetchone()
+                    
+            if student_row:
+                student = dict(student_row)
+                p_status = (student.get('payment_status') or 'PAID').upper()
+                real_first_name = student.get('first_name') or telegram_first_name
                 
-            # All Good: fetch full data
-            async with db.execute("SELECT telegram_id, gender, year FROM academy_students WHERE student_id = ?", (db_student_id,)) as cur2:
-                row2 = await cur2.fetchone()
-                existing_tg = row2[0]
-                gender = str(row2[1]).lower() if row2[1] else 'homme'
-                year = str(row2[2]) if row2[2] else '1'
-                
-                if existing_tg:
-                    if existing_tg != telegram_id:
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, action_type, description) VALUES (?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, 'LINK_FAILED', f"محاولة ربط بحساب تيليجرام آخر"))
-                        await db.commit()
-                        return web.json_response({'success': False, 'error': 'هذا الحساب مرتبط بالفعل بحساب تيليجرام آخر (Compte déjà lié à un autre Telegram).'})
-                
-                # Check setting for forced telegram name
-                async with db.execute("SELECT value FROM settings WHERE key = 'force_telegram_name'") as cur_set:
-                    force_row = await cur_set.fetchone()
-                    force_name = True if force_row and force_row[0] == 'true' else False
-                
-                if force_name and telegram_first_name and real_first_name.lower() not in telegram_first_name.lower():
-                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, action_type, description) VALUES (?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, 'LINK_FAILED', f'محاولة ربط فاشلة: اسم تيليجرام غير مطابق: "{telegram_first_name}" (المتوقع: "{real_first_name}")'))
-                    await db.commit()
+                # Cas 1 : L'élève est trouvé et son paiement est validé (PAYÉ)
+                if p_status in ['PAID', 'PAYE', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED']:
+                    # Lier le telegram_id
+                    await db_conn.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (telegram_id, telegram_username, student['student_id']))
+                    await db_conn.commit()
+                    
+                    await log_student_action(student['student_id'], 'LINK_SUCCESS_APPROVED', f"تم تفعيل الحساب وتأكيد الدفع ({student.get('gender')})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    
+                    bot = request.app.get('bot')
+                    links = await generate_and_send_student_links(bot, telegram_id, student, request.app)
+                    
                     return web.json_response({
-                        'success': False, 
-                        'error': f'عذراً، اسمك في تيليجرام "{telegram_first_name}" لا يطابق اسمك المسجل "{real_first_name}". يرجى تعديله في إعدادات تيليجرام.'
-                    }, status=403)
-                        
-                # Link account
-                if not existing_tg:
-                    await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (telegram_id, telegram_username, db_student_id))
-                    await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", (db_student_id, telegram_id, telegram_name, telegram_username, 'ACCOUNT_LINKED', f"تم ربط حساب تيليجرام بنجاح"))
-                    await db.commit()
-                    
-                    # SEND WELCOME MESSAGE VIA TELEGRAM
-                    display_name = telegram_first_name if telegram_first_name else real_first_name
-                    welcome_msg = (
-                        f"أهلاً بك {display_name} في أكاديمية الباجي.\n\n"
-                        f"تم التحقق من هويتك بنجاح (رقم الطالب: {db_student_id}).\n"
-                        f"يمكنك الآن الوصول إلى جميع قنوات الأكاديمية والمجموعات الدراسية مباشرة عبر المجلد الرسمي الذي قمت بإضافته.\n\n"
-                        f"هل كانت عملية الدخول سهلة بالنسبة لك؟"
-                    )
-                    kb = InlineKeyboardMarkup(inline_keyboard=[
-                        [
-                            InlineKeyboardButton(text="👍 نعم، كانت سهلة", callback_data="feedback_easy"),
-                            InlineKeyboardButton(text="👎 واجهت صعوبة", callback_data="feedback_hard")
-                        ]
-                    ])
-                    try:
-                        await bot.send_message(telegram_id, welcome_msg, reply_markup=kb)
-                    except Exception as e:
-                        pass
-                    
-                return web.json_response({'success': True, 'first_name': real_first_name})
+                        'success': True,
+                        'status': 'approved',
+                        'student_id': student['student_id'],
+                        'first_name': real_first_name,
+                        'gender': student.get('gender') or 'HOMME',
+                        'links': links,
+                        'message': f"مرحباً بك يا {real_first_name}! تم تفعيل حسابك بنجاح ✅"
+                    })
+                else:
+                    # Trouvé mais statut non payé -> En attente
+                    await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
+                    await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في انتظار تأكيد التحويل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    return web.json_response({
+                        'success': True,
+                        'status': 'pending',
+                        'first_name': real_first_name,
+                        'message': 'طلبك قيد المراجعة لتأكيد التحويل البنكي أو الرسوم. سيصلك رابط الانضمام فور المصادقة ⏳'
+                    })
+            else:
+                # Cas 2 : L'élève n'est pas encore dans l'Excel -> Buffer d'attente
+                await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
+                await log_student_action(0, 'LINK_WAITING_EXCEL', f"تسجيل جديد قيد الانتظار لمطابقة الإكسيل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                return web.json_response({
+                    'success': True,
+                    'status': 'pending',
+                    'first_name': telegram_first_name,
+                    'message': 'تم تسجيل طلبك بنجاح! نحن بصدد تأكيد اشتراكك مع الإدارة، وسنرسل لك رابط مجموعتك هنا تلقائياً فور المصادقة ⏳'
+                })
+                
+    except Exception as e:
+        _log.error(f"[AUTH] Error in api_link_account: {e}")
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
