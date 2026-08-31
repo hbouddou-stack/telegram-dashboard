@@ -804,21 +804,15 @@ def get_report_error_options_keyboard(question_id: int, source: str = "quiz") ->
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 def get_webapp_base_url() -> str:
-    """Get the base URL for the web app. Supports all Railway URL env variables."""
-    url = os.getenv("WEBAPP_URL")
-    if url and url.strip():
-        return url.strip().rstrip('/')
-    
-    # Support all Railway URL env variable names (old and new)
-    for env_key in ["RAILWAY_PUBLIC_DOMAIN", "RAILWAY_SERVICE_URL", "RAILWAY_STATIC_URL"]:
-        railway_url = os.getenv(env_key)
-        if railway_url and railway_url.strip():
-            r_url = railway_url.strip().rstrip('/')
-            if not r_url.startswith("http"):
-                return f"https://{r_url}"
-            return r_url
-        
-    # Hardcoded Railway production URL as final fallback
+    """Retourne toujours l'URL publique HTTPS valide de Railway."""
+    import os
+    for k in ["WEBAPP_URL", "BASE_URL", "RAILWAY_PUBLIC_DOMAIN", "RAILWAY_STATIC_URL", "RAILWAY_SERVICE_URL"]:
+        val = os.getenv(k)
+        if val and val.strip():
+            v = val.strip().rstrip('/')
+            if not v.startswith("http://") and not v.startswith("https://"):
+                v = f"https://{v}"
+            return v
     return "https://web-production-64c9ab.up.railway.app"
 
 def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 0, show_settings: bool = False, role: str = None) -> InlineKeyboardMarkup:
