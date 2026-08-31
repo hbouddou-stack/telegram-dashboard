@@ -247,3 +247,49 @@ async def handle_png_case3(callback: CallbackQuery, bot: Bot):
     except Exception as e:
         logger.error(f"Error sending photo 2: {e}")
         await callback.message.answer(f"🔗 رابط الصورة: {base_url}/diagrams/case_3_detailed.png\n\n{caption}", parse_mode="HTML")
+
+
+@router.callback_query(F.data.startswith("admin_approve_"))
+async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
+    try:
+        data = callback.data
+        parts = data.split("_")
+        gender_type = parts[2]  # "man" or "woman"
+        target_tg_id = int(parts[3])
+        
+        admin_name = callback.from_user.first_name or "المشرف"
+        gender_str = "HOMME" if gender_type == "man" else "FEMME"
+        group_label = "مجموعة الإخوة (رجال) 🧔" if gender_type == "man" else "مجموعة الأخوات (نساء) 🧕"
+        
+        import database as db
+        await db.approve_pending_student(target_tg_id, gender_str, admin_name)
+        
+        # Build student profile
+        real_student = await db.get_student_by_telegram_id(target_tg_id)
+        if not real_student:
+            student_dict = {
+                'student_id': target_tg_id,
+                'first_name': 'طالب العلم',
+                'gender': gender_str,
+                'payment_status': 'PAID'
+            }
+        else:
+            student_dict = real_student
+            
+        # Send links to student
+        class AppMock:
+            pass
+        app_mock = AppMock()
+        setattr(app_mock, 'get', lambda k: bot)
+        
+        from main import generate_and_send_student_links
+        await generate_and_send_student_links(bot, target_tg_id, student_dict, app_mock)
+        
+        # Update admin message
+        orig_text = callback.message.html_text or callback.message.text or ""
+        new_text = orig_text + f"\n\n✅ <b>تم التفعيل الفوري بنجاح!</b>\n👤 <b>المشرف:</b> {admin_name}\n🎯 <b>المجموعة:</b> {group_label}"
+        await callback.message.edit_text(new_text, reply_markup=None, parse_mode='HTML')
+        await callback.answer("✅ تم تفعيل حساب الطالب وإرسال الروابط إليه فوراً!", show_alert=True)
+    except Exception as e:
+        logger.error(f"[ADMIN_APPROVE] Error: {e}")
+        await callback.answer(f"حدث خطأ: {e}", show_alert=True)

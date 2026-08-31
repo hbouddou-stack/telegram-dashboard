@@ -4342,6 +4342,37 @@ async def api_link_account(request: web.Request):
                     # Trouvé mais statut non payé -> En attente
                     await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
                     await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في انتظار تأكيد التحويل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                # 3. Webhook Admin Alert: Send Instant Notification with 1-Click Approval Buttons to Support Group
+                from config import TELEGRAM_SUPPORT_GROUP_ID
+                if bot and TELEGRAM_SUPPORT_GROUP_ID:
+                    try:
+                        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        admin_kb = InlineKeyboardMarkup(inline_keyboard=[
+                            [
+                                InlineKeyboardButton(text="✅ تفعيل فوري (رجال 🧔)", callback_data=f"admin_approve_man_{telegram_id}"),
+                                InlineKeyboardButton(text="✅ تفعيل فوري (نساء 🧕)", callback_data=f"admin_approve_woman_{telegram_id}")
+                            ],
+                            [
+                                InlineKeyboardButton(text="💬 فتح تواصل مع الطالب", url=f"tg://user?id={telegram_id}")
+                            ]
+                        ])
+                        admin_alert_text = (
+                            f"⚡ <b>تنبيه إداري: تسجيل جديد قيد الانتظار</b> ⏳\n\n"
+                            f"👤 <b>الاسم:</b> {telegram_name} (@{telegram_username or 'بدون معرف'})\n"
+                            f"📧 <b>البريد:</b> <code>{email or 'غير محدد'}</code>\n"
+                            f"🆔 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
+                            f"🔢 <b>رقم الطالب:</b> <code>{student_id_input or 'غير محدد'}</code>\n\n"
+                            f"🔍 <i>يمكنك التحقق والضغط مباشرة على زر التفعيل لإرسال روابط المجموعات للطالب فوراً:</i>"
+                        )
+                        await bot.send_message(
+                            chat_id=int(TELEGRAM_SUPPORT_GROUP_ID),
+                            text=admin_alert_text,
+                            reply_markup=admin_kb,
+                            parse_mode='HTML'
+                        )
+                    except Exception as e:
+                        _log.error(f"Error sending admin pending alert: {e}")
+
                     
                     bot = request.app.get('bot')
                     if bot and telegram_id:
@@ -4365,6 +4396,37 @@ async def api_link_account(request: web.Request):
                 # Cas 2 : L'élève n'est pas encore dans l'Excel -> Buffer d'attente
                 await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
                 await log_student_action(0, 'LINK_WAITING_EXCEL', f"تسجيل جديد قيد الانتظار لمطابقة الإكسيل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                # 3. Webhook Admin Alert: Send Instant Notification with 1-Click Approval Buttons to Support Group
+                from config import TELEGRAM_SUPPORT_GROUP_ID
+                if bot and TELEGRAM_SUPPORT_GROUP_ID:
+                    try:
+                        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        admin_kb = InlineKeyboardMarkup(inline_keyboard=[
+                            [
+                                InlineKeyboardButton(text="✅ تفعيل فوري (رجال 🧔)", callback_data=f"admin_approve_man_{telegram_id}"),
+                                InlineKeyboardButton(text="✅ تفعيل فوري (نساء 🧕)", callback_data=f"admin_approve_woman_{telegram_id}")
+                            ],
+                            [
+                                InlineKeyboardButton(text="💬 فتح تواصل مع الطالب", url=f"tg://user?id={telegram_id}")
+                            ]
+                        ])
+                        admin_alert_text = (
+                            f"⚡ <b>تنبيه إداري: تسجيل جديد قيد الانتظار</b> ⏳\n\n"
+                            f"👤 <b>الاسم:</b> {telegram_name} (@{telegram_username or 'بدون معرف'})\n"
+                            f"📧 <b>البريد:</b> <code>{email or 'غير محدد'}</code>\n"
+                            f"🆔 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
+                            f"🔢 <b>رقم الطالب:</b> <code>{student_id_input or 'غير محدد'}</code>\n\n"
+                            f"🔍 <i>يمكنك التحقق والضغط مباشرة على زر التفعيل لإرسال روابط المجموعات للطالب فوراً:</i>"
+                        )
+                        await bot.send_message(
+                            chat_id=int(TELEGRAM_SUPPORT_GROUP_ID),
+                            text=admin_alert_text,
+                            reply_markup=admin_kb,
+                            parse_mode='HTML'
+                        )
+                    except Exception as e:
+                        _log.error(f"Error sending admin pending alert: {e}")
+
                 
                 bot = request.app.get('bot')
                 if bot and telegram_id:

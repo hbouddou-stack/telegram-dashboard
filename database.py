@@ -4307,3 +4307,41 @@ async def import_students_excel(records: list) -> dict:
         logger.error(f"[AUTH] Error in import_students_excel: {e}")
         stats["errors"] += 1
     return stats
+
+
+async def approve_pending_student(telegram_id, gender='HOMME', approved_by='Admin'):
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            row = None
+            async with db.execute("SELECT * FROM pending_verifications WHERE telegram_id = ?", (telegram_id,)) as cur:
+                row = await cur.fetchone()
+                
+            email = row['email'] if (row and 'email' in row.keys() and row['email']) else f"user_{telegram_id}@academy.com"
+            first_name = row['first_name'] if (row and 'first_name' in row.keys() and row['first_name']) else "طالب العلم"
+            username = row['username'] if (row and 'username' in row.keys()) else ""
+            
+            # Check if student exists in academy_students by telegram_id or email
+            async with db.execute("SELECT student_id FROM academy_students WHERE telegram_id = ? OR LOWER(TRIM(email)) = LOWER(TRIM(?))", (telegram_id, email)) as cur:
+                existing = await cur.fetchone()
+                
+            if existing:
+                sid = existing['student_id']
+                await db.execute("UPDATE academy_students SET payment_status = 'PAID', gender = ?, telegram_id = ?, telegram_username = ? WHERE student_id = ?", (gender, telegram_id, username, sid))
+            else:
+                sid = telegram_id
+                await db.execute("""
+                    INSERT INTO academy_students (student_id, email, first_name, gender, payment_status, telegram_id, telegram_username)
+                    VALUES (?, ?, ?, ?, 'PAID', ?, ?)
+                    ON CONFLICT(student_id) DO UPDATE SET
+                    payment_status = 'PAID', gender = excluded.gender, telegram_id = excluded.telegram_id, telegram_username = excluded.telegram_username
+                """, (sid, email, first_name, gender, telegram_id, username))
+                
+            await db.execute("DELETE FROM pending_verifications WHERE telegram_id = ?", (telegram_id,))
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"Error approving pending student: {e}")
+        return False
