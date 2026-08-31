@@ -6,7 +6,7 @@
     <title>مركز الدعم الذكي</title>
     <script src="https://telegram.org/js/telegram-web-app.js">
         // ========================
-        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // STORIES & MEDIATHEQUE ENGINE
         // ========================
         const ACADEMY_STORIES = [
             {
@@ -58,7 +58,7 @@
         let currentStoryIdx = 0;
         let currentSlideIdx = 0;
         let storySlideTimer = null;
-        const SLIDE_DURATION = 5000; // 5 seconds per slide
+        const SLIDE_DURATION = 5000;
 
         function openStoryViewer(storyIdx) {
             currentStoryIdx = storyIdx;
@@ -81,18 +81,13 @@
             if (!story || !story.slides[currentSlideIdx]) return;
             
             const slide = story.slides[currentSlideIdx];
-            
-            // Header
             document.getElementById('story-author-icon').innerText = story.icon;
             document.getElementById('story-author-title').innerText = story.title;
-            
-            // Card Content
             document.getElementById('story-slide-icon').innerText = slide.icon;
             document.getElementById('story-slide-title').innerText = slide.title;
             document.getElementById('story-slide-text').innerText = slide.text;
             document.getElementById('story-slide-btn').innerText = slide.btnText;
             
-            // Progress Segments
             const progContainer = document.getElementById('story-progress-container');
             progContainer.innerHTML = story.slides.map((_, idx) => {
                 let fillStyle = 'width: 0%;';
@@ -101,13 +96,11 @@
                 return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
             }).join('');
             
-            // Trigger animation for current slide
             setTimeout(() => {
                 const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
                 if (curProg) curProg.style.width = '100%';
             }, 50);
 
-            // Auto advance
             storySlideTimer = setTimeout(() => {
                 nextStorySlide();
             }, SLIDE_DURATION);
@@ -157,7 +150,41 @@
             }
         }
 
-        // Set student name on home greeting
+        // Mediatheque functions
+        function openMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) {
+                m.style.display = 'none';
+                // Stop any playing audio
+                m.querySelectorAll('audio').forEach(a => a.pause());
+            }
+        }
+
+        function filterMediatheque(type, btn) {
+            document.querySelectorAll('#mediatheque-modal .faq-cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            
+            const videos = document.querySelectorAll('#mediatheque-list .item-video');
+            const audios = document.querySelectorAll('#mediatheque-list .item-audio');
+            
+            if (type === 'all') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'block');
+            } else if (type === 'video') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'none');
+            } else if (type === 'audio') {
+                videos.forEach(v => v.style.display = 'none');
+                audios.forEach(a => a.style.display = 'block');
+            }
+        }
+
+        // Set student name on home greeting & check ticket alert
         function initHomeGreeting() {
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
             const greetEl = document.getElementById('home-student-greeting');
@@ -169,8 +196,19 @@
 
     </script>
     <script src="bot-config.js">
+        
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    
         // ========================
-        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // STORIES & MEDIATHEQUE ENGINE
         // ========================
         const ACADEMY_STORIES = [
             {
@@ -222,7 +260,7 @@
         let currentStoryIdx = 0;
         let currentSlideIdx = 0;
         let storySlideTimer = null;
-        const SLIDE_DURATION = 5000; // 5 seconds per slide
+        const SLIDE_DURATION = 5000;
 
         function openStoryViewer(storyIdx) {
             currentStoryIdx = storyIdx;
@@ -245,18 +283,13 @@
             if (!story || !story.slides[currentSlideIdx]) return;
             
             const slide = story.slides[currentSlideIdx];
-            
-            // Header
             document.getElementById('story-author-icon').innerText = story.icon;
             document.getElementById('story-author-title').innerText = story.title;
-            
-            // Card Content
             document.getElementById('story-slide-icon').innerText = slide.icon;
             document.getElementById('story-slide-title').innerText = slide.title;
             document.getElementById('story-slide-text').innerText = slide.text;
             document.getElementById('story-slide-btn').innerText = slide.btnText;
             
-            // Progress Segments
             const progContainer = document.getElementById('story-progress-container');
             progContainer.innerHTML = story.slides.map((_, idx) => {
                 let fillStyle = 'width: 0%;';
@@ -265,13 +298,11 @@
                 return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
             }).join('');
             
-            // Trigger animation for current slide
             setTimeout(() => {
                 const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
                 if (curProg) curProg.style.width = '100%';
             }, 50);
 
-            // Auto advance
             storySlideTimer = setTimeout(() => {
                 nextStorySlide();
             }, SLIDE_DURATION);
@@ -321,7 +352,41 @@
             }
         }
 
-        // Set student name on home greeting
+        // Mediatheque functions
+        function openMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) {
+                m.style.display = 'none';
+                // Stop any playing audio
+                m.querySelectorAll('audio').forEach(a => a.pause());
+            }
+        }
+
+        function filterMediatheque(type, btn) {
+            document.querySelectorAll('#mediatheque-modal .faq-cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            
+            const videos = document.querySelectorAll('#mediatheque-list .item-video');
+            const audios = document.querySelectorAll('#mediatheque-list .item-audio');
+            
+            if (type === 'all') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'block');
+            } else if (type === 'video') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'none');
+            } else if (type === 'audio') {
+                videos.forEach(v => v.style.display = 'none');
+                audios.forEach(a => a.style.display = 'block');
+            }
+        }
+
+        // Set student name on home greeting & check ticket alert
         function initHomeGreeting() {
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
             const greetEl = document.getElementById('home-student-greeting');
@@ -661,6 +726,106 @@
         }
         .story-nav-left, .story-nav-right { flex: 1; height: 100%; }
 
+    
+        /* STORIES & MEDIA LIBRARY STYLES */
+        .stories-bar {
+            display: flex; gap: 14px; overflow-x: auto; padding: 6px 2px 14px 2px;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        }
+        .stories-bar::-webkit-scrollbar { display: none; }
+        
+        .story-circle-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; flex-shrink: 0; width: 72px; text-align: center;
+        }
+        .story-ring {
+            width: 62px; height: 62px; border-radius: 50%;
+            padding: 2.5px; background: linear-gradient(45deg, #f1c40f, #e67e22, #e74c3c, #9b59b6);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 12px rgba(241,196,15,0.25);
+        }
+        .story-circle-item:active .story-ring { transform: scale(0.92); }
+        .story-avatar {
+            width: 100%; height: 100%; border-radius: 50%; background: #000b29;
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
+            border: 2px solid #0f172a;
+        }
+        .story-label {
+            font-size: 0.74rem; font-weight: 700; color: var(--text-1);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+
+        /* STORY FULLSCREEN MODAL */
+        .story-viewer-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 100000;
+            flex-direction: column; justify-content: space-between;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        }
+        .story-progress-bar {
+            display: flex; gap: 5px; padding: 12px 15px; width: 100%; box-sizing: border-box;
+            position: absolute; top: 0; left: 0; z-index: 10;
+        }
+        .story-progress-seg {
+            flex: 1; height: 3.5px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden;
+        }
+        .story-progress-fill {
+            height: 100%; width: 0%; background: #ffffff; border-radius: 4px;
+        }
+        .story-header {
+            position: absolute; top: 25px; left: 0; width: 100%; padding: 0 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-sizing: border-box; z-index: 10;
+        }
+        .story-author {
+            display: flex; align-items: center; gap: 8px; color: #fff; font-weight: bold; font-size: 0.88rem;
+        }
+        .story-close-btn {
+            background: rgba(255,255,255,0.2); border: none; color: #fff;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .story-body {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 70px 20px 30px 20px; box-sizing: border-box; text-align: center; position: relative;
+        }
+        .story-card-slide {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 24px 20px;
+            width: 100%; max-width: 380px; box-shadow: 0 10px 35px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; align-items: center; animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .story-slide-icon {
+            font-size: 3.5rem; margin-bottom: 12px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+        }
+        .story-slide-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 10px;
+        }
+        .story-slide-text {
+            font-size: 0.92rem; color: #ffffff; line-height: 1.6; opacity: 0.9; margin-bottom: 20px;
+        }
+        .story-slide-btn {
+            background: var(--accent); color: #1e3a8a; font-weight: 800; border: none;
+            padding: 12px 26px; border-radius: 25px; font-size: 0.9rem; cursor: pointer;
+            font-family: 'Tajawal', sans-serif; box-shadow: 0 4px 15px rgba(241,196,15,0.3);
+        }
+        .story-nav-zones {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 5;
+        }
+        .story-nav-left, .story-nav-right { flex: 1; height: 100%; }
+
+        /* MEDIATHEQUE MODAL */
+        .media-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px; padding: 14px; margin-bottom: 12px; transition: transform 0.2s;
+        }
+        .media-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+
     </style>
 </head>
 <body>
@@ -669,80 +834,89 @@
         <!-- NEW TICKET TAB -->
         
         <!-- HOME TAB -->
-        <div class="tab-content active" id="tab-home">
-            <div class="header" style="margin-bottom:20px;">
-                <h1 style="font-size:1.5rem;">&#127968; الرئيسية</h1>
-                <p class="subtitle">مرحباً بك في مركز الطالب</p>
+                <!-- HOME TAB -->
+        <div class="tab-content active" id="tab-home" style="padding-bottom:100px;">
+            <!-- Welcome Header -->
+            <div class="header" style="margin-bottom:15px; text-align:right;">
+                <h1 style="font-size:1.45rem; margin:0;" id="home-student-greeting">👋 مرحباً بك يا بطل</h1>
+                <p class="subtitle" style="margin-top:3px;">مركز خدمات ودعم طلاب أكاديمية أُسوة</p>
             </div>
-            
-            <!-- ONBOARDING BANNER -->
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
-                <button onclick="window.location.href='/guide.html'" style="flex:1; background: linear-gradient(135deg, #1A2980, #26D0CE); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
-                    <span style="font-size:1.2rem;">🗺️</span> دليل الطالب
-                </button>
-                <button onclick="window.location.href='/tuto.html'" style="flex:1; background: linear-gradient(135deg, #FF416C, #FF4B2B); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; font-family:'Tajawal',sans-serif; cursor:pointer; box-shadow:0 4px 15px rgba(255,75,43,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
-                    <span style="font-size:1.2rem;">🎥</span> كيف أستخدم؟
-                </button>
-            </div>
-            
-            <!-- Messages / Notifications -->
-            <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; margin-bottom:15px;">
-                <h3 style="font-size:1.1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
-                    &#128276; أحدث الإشعارات
-                </h3>
-                <div style="background:rgba(59, 130, 246, 0.1); border-left:4px solid #3b82f6; padding:12px; border-radius:8px; margin-bottom:10px;">
-                    <div style="font-weight:bold; font-size:0.9rem; color:#3b82f6; margin-bottom:5px;">الإدارة</div>
-                    <div style="font-size:0.85rem; color:var(--text-1);">تم الرد على تذكرتك الأخيرة. يرجى التحقق من صندوق الرسائل.</div>
-                    <div style="font-size:0.75rem; color:var(--text-2); margin-top:5px; text-align:left;">منذ ساعتين</div>
-                </div>
-                <div style="background:rgba(255, 255, 255, 0.05); border-left:4px solid var(--accent); padding:12px; border-radius:8px;">
-                    <div style="font-weight:bold; font-size:0.9rem; color:var(--accent); margin-bottom:5px;">تحديث النظام</div>
-                    <div style="font-size:0.85rem; color:var(--text-1);">تمت إضافة ملخصات جديدة في قسم الكيمياء.</div>
-                    <div style="font-size:0.75rem; color:var(--text-2); margin-top:5px; text-align:left;">أمس</div>
+
+            <!-- Dynamic Ticket Reply Alert -->
+            <div id="home-ticket-alert" style="display:none; margin-bottom:15px; background:linear-gradient(90deg, rgba(46,204,113,0.15), rgba(46,204,113,0.05)); border:1px solid rgba(46,204,113,0.4); border-radius:14px; padding:12px 16px; cursor:pointer;" onclick="switchTab('inbox')">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.4rem;">📬</span>
+                        <div>
+                            <div style="font-weight:bold; font-size:0.9rem; color:#2ecc71;">لديك رد جديد من المشرف!</div>
+                            <div style="font-size:0.78rem; color:var(--text-2);">انقر هنا لعرض تفاصيل المحادثة والمتابعة</div>
+                        </div>
+                    </div>
+                    <span style="font-size:0.85rem; color:var(--accent); font-weight:bold;">عرض ➔</span>
                 </div>
             </div>
 
-            <!-- Tutorials -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
-                <div onclick="window.location.href='/guide.html'" style="background: linear-gradient(135deg, #1A2980, #26D0CE); border-radius:16px; padding:15px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(38,208,206,0.2);">
-                    <div style="font-size:2rem; margin-bottom:8px;">&#128214;</div>
-                    <div style="font-weight:bold; color:white; font-size:0.9rem;">دليل المنصة</div>
+            <!-- STORIES CAROUSEL -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:0.88rem; font-weight:800; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                    <span>⚡</span> شروحات وقصص سريعة (Tutos)
                 </div>
-                <div onclick="switchTab('ai')" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0); border-radius:16px; padding:15px; text-align:center; cursor:pointer; box-shadow:0 4px 15px rgba(142,45,226,0.2);">
-                    <div style="font-size:2rem; margin-bottom:8px;">&#129302;</div>
-                    <div style="font-weight:bold; color:white; font-size:0.9rem;">المساعد الذكي</div>
+                <div class="stories-bar" id="academy-stories-bar">
+                    <!-- Story 1 -->
+                    <div class="story-circle-item" onclick="openStoryViewer(0)">
+                        <div class="story-ring"><div class="story-avatar">🗺️</div></div>
+                        <span class="story-label">شرح المنصة</span>
+                    </div>
+                    <!-- Story 2 -->
+                    <div class="story-circle-item" onclick="openStoryViewer(1)">
+                        <div class="story-ring"><div class="story-avatar">💳</div></div>
+                        <span class="story-label">تفعيل الحساب</span>
+                    </div>
+                    <!-- Story 3 -->
+                    <div class="story-circle-item" onclick="openStoryViewer(2)">
+                        <div class="story-ring"><div class="story-avatar">🎥</div></div>
+                        <span class="story-label">تشغيل الدروس</span>
+                    </div>
+                    <!-- Story 4 -->
+                    <div class="story-circle-item" onclick="openStoryViewer(3)">
+                        <div class="story-ring"><div class="story-avatar">📝</div></div>
+                        <span class="story-label">الاختبارات</span>
+                    </div>
+                    <!-- Story 5 -->
+                    <div class="story-circle-item" onclick="openStoryViewer(4)">
+                        <div class="story-ring"><div class="story-avatar">🎓</div></div>
+                        <span class="story-label">الشهادات</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Motivation Corner -->
-            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; text-align:center; margin-bottom:15px; position:relative; overflow:hidden;">
-                <div style="font-size:2.5rem; opacity:0.2; position:absolute; top:-10px; right:-10px;">&#10024;</div>
-                <div style="font-size:1.1rem; font-weight:bold; margin-bottom:10px; color:var(--accent);">جرعة تحفيز</div>
-                <div style="font-size:0.95rem; color:var(--text-1); line-height:1.6; font-family:'Tajawal', sans-serif;">
-                    "النجاح ليس النهاية، والفشل ليس قاتلاً. الشجاعة لمواصلة الطريق هي ما يهم."
+            <!-- 2 MAIN CARDS -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                <div onclick="window.location.href='/guide.html'" style="background:linear-gradient(135deg, rgba(26, 41, 128, 0.7), rgba(38, 208, 206, 0.7)); border:1px solid rgba(255,255,255,0.15); border-radius:18px; padding:18px 14px; text-align:center; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,0.3);">
+                    <div style="font-size:2.2rem; margin-bottom:8px;">🗺️</div>
+                    <div style="font-weight:800; color:#fff; font-size:0.95rem; margin-bottom:4px;">دليل الطالب</div>
+                    <div style="font-size:0.75rem; color:rgba(255,255,255,0.8);">خريطة تفاعلية للمنصة</div>
+                </div>
+                <div onclick="openMediathequeModal()" style="background:linear-gradient(135deg, rgba(142, 45, 226, 0.7), rgba(74, 0, 224, 0.7)); border:1px solid rgba(255,255,255,0.15); border-radius:18px; padding:18px 14px; text-align:center; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,0.3);">
+                    <div style="font-size:2.2rem; margin-bottom:8px;">🎬</div>
+                    <div style="font-weight:800; color:#fff; font-size:0.95rem; margin-bottom:4px;">المكتبة المرئية</div>
+                    <div style="font-size:0.75rem; color:rgba(255,255,255,0.8);">فيديوهات وبودكاست سريع</div>
                 </div>
             </div>
 
-            <!-- Recent FAQ -->
-            <div style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:15px; margin-bottom:80px;">
-                <h3 style="font-size:1.1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
-                    &#10067; أضيفت مؤخراً للأسئلة الشائعة
-                </h3>
-                <div style="border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:10px; margin-bottom:10px;">
-                    <div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px;">كيف أقوم بتغيير كلمة المرور؟</div>
-                    <div style="font-size:0.8rem; color:var(--text-2);">يمكنك تغيير كلمة المرور من خلال إعدادات حسابك في التطبيق...</div>
+            <!-- Quick FAQ Access Banner -->
+            <div onclick="switchTab('faq')" style="background:var(--surface); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5rem;">📚</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:0.92rem; color:var(--text-1);">الأسئلة الشائعة والشروحات</div>
+                        <div style="font-size:0.76rem; color:var(--text-2);">إجابات مصورة وفيديوهات توضيحية فورية</div>
+                    </div>
                 </div>
-                <div style="padding-bottom:5px;">
-                    <div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px;">أين أجد ملخصات الدروس؟</div>
-                    <div style="font-size:0.8rem; color:var(--text-2);">يتم رفع الملخصات أسفل كل فيديو في قسم المرفقات...</div>
-                </div>
-                <button onclick="switchTab('faq')" style="width:100%; margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:var(--text-1); cursor:pointer;">
-                    عرض كل الأسئلة
-                </button>
+                <span style="color:var(--accent); font-size:1.1rem;">➔</span>
             </div>
         </div>
 
-        
         <!-- NEW TICKET TAB -->
         <div class="tab-content" id="tab-new" style="padding-bottom:100px;">
             
@@ -797,8 +971,19 @@
                                 }
                             });
                         
+        
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    
         // ========================
-        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // STORIES & MEDIATHEQUE ENGINE
         // ========================
         const ACADEMY_STORIES = [
             {
@@ -850,7 +1035,7 @@
         let currentStoryIdx = 0;
         let currentSlideIdx = 0;
         let storySlideTimer = null;
-        const SLIDE_DURATION = 5000; // 5 seconds per slide
+        const SLIDE_DURATION = 5000;
 
         function openStoryViewer(storyIdx) {
             currentStoryIdx = storyIdx;
@@ -873,18 +1058,13 @@
             if (!story || !story.slides[currentSlideIdx]) return;
             
             const slide = story.slides[currentSlideIdx];
-            
-            // Header
             document.getElementById('story-author-icon').innerText = story.icon;
             document.getElementById('story-author-title').innerText = story.title;
-            
-            // Card Content
             document.getElementById('story-slide-icon').innerText = slide.icon;
             document.getElementById('story-slide-title').innerText = slide.title;
             document.getElementById('story-slide-text').innerText = slide.text;
             document.getElementById('story-slide-btn').innerText = slide.btnText;
             
-            // Progress Segments
             const progContainer = document.getElementById('story-progress-container');
             progContainer.innerHTML = story.slides.map((_, idx) => {
                 let fillStyle = 'width: 0%;';
@@ -893,13 +1073,11 @@
                 return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
             }).join('');
             
-            // Trigger animation for current slide
             setTimeout(() => {
                 const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
                 if (curProg) curProg.style.width = '100%';
             }, 50);
 
-            // Auto advance
             storySlideTimer = setTimeout(() => {
                 nextStorySlide();
             }, SLIDE_DURATION);
@@ -949,7 +1127,41 @@
             }
         }
 
-        // Set student name on home greeting
+        // Mediatheque functions
+        function openMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) {
+                m.style.display = 'none';
+                // Stop any playing audio
+                m.querySelectorAll('audio').forEach(a => a.pause());
+            }
+        }
+
+        function filterMediatheque(type, btn) {
+            document.querySelectorAll('#mediatheque-modal .faq-cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            
+            const videos = document.querySelectorAll('#mediatheque-list .item-video');
+            const audios = document.querySelectorAll('#mediatheque-list .item-audio');
+            
+            if (type === 'all') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'block');
+            } else if (type === 'video') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'none');
+            } else if (type === 'audio') {
+                videos.forEach(v => v.style.display = 'none');
+                audios.forEach(a => a.style.display = 'block');
+            }
+        }
+
+        // Set student name on home greeting & check ticket alert
         function initHomeGreeting() {
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
             const greetEl = document.getElementById('home-student-greeting');
@@ -2280,8 +2492,19 @@
         }
 
 
+        
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    
         // ========================
-        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // STORIES & MEDIATHEQUE ENGINE
         // ========================
         const ACADEMY_STORIES = [
             {
@@ -2333,7 +2556,7 @@
         let currentStoryIdx = 0;
         let currentSlideIdx = 0;
         let storySlideTimer = null;
-        const SLIDE_DURATION = 5000; // 5 seconds per slide
+        const SLIDE_DURATION = 5000;
 
         function openStoryViewer(storyIdx) {
             currentStoryIdx = storyIdx;
@@ -2356,18 +2579,13 @@
             if (!story || !story.slides[currentSlideIdx]) return;
             
             const slide = story.slides[currentSlideIdx];
-            
-            // Header
             document.getElementById('story-author-icon').innerText = story.icon;
             document.getElementById('story-author-title').innerText = story.title;
-            
-            // Card Content
             document.getElementById('story-slide-icon').innerText = slide.icon;
             document.getElementById('story-slide-title').innerText = slide.title;
             document.getElementById('story-slide-text').innerText = slide.text;
             document.getElementById('story-slide-btn').innerText = slide.btnText;
             
-            // Progress Segments
             const progContainer = document.getElementById('story-progress-container');
             progContainer.innerHTML = story.slides.map((_, idx) => {
                 let fillStyle = 'width: 0%;';
@@ -2376,13 +2594,11 @@
                 return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
             }).join('');
             
-            // Trigger animation for current slide
             setTimeout(() => {
                 const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
                 if (curProg) curProg.style.width = '100%';
             }, 50);
 
-            // Auto advance
             storySlideTimer = setTimeout(() => {
                 nextStorySlide();
             }, SLIDE_DURATION);
@@ -2432,7 +2648,41 @@
             }
         }
 
-        // Set student name on home greeting
+        // Mediatheque functions
+        function openMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeMediathequeModal() {
+            const m = document.getElementById('mediatheque-modal');
+            if (m) {
+                m.style.display = 'none';
+                // Stop any playing audio
+                m.querySelectorAll('audio').forEach(a => a.pause());
+            }
+        }
+
+        function filterMediatheque(type, btn) {
+            document.querySelectorAll('#mediatheque-modal .faq-cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            
+            const videos = document.querySelectorAll('#mediatheque-list .item-video');
+            const audios = document.querySelectorAll('#mediatheque-list .item-audio');
+            
+            if (type === 'all') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'block');
+            } else if (type === 'video') {
+                videos.forEach(v => v.style.display = 'block');
+                audios.forEach(a => a.style.display = 'none');
+            } else if (type === 'audio') {
+                videos.forEach(v => v.style.display = 'none');
+                audios.forEach(a => a.style.display = 'block');
+            }
+        }
+
+        // Set student name on home greeting & check ticket alert
         function initHomeGreeting() {
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
             const greetEl = document.getElementById('home-student-greeting');
@@ -2537,12 +2787,10 @@
     </div>
 
 
+    
     <!-- STORY VIEWER FULLSCREEN MODAL -->
     <div class="story-viewer-overlay" id="story-viewer-modal">
-        <!-- Progress Segments -->
         <div class="story-progress-bar" id="story-progress-container"></div>
-        
-        <!-- Header -->
         <div class="story-header">
             <div class="story-author">
                 <span style="font-size:1.3rem;" id="story-author-icon">🎓</span>
@@ -2550,20 +2798,83 @@
             </div>
             <button class="story-close-btn" onclick="closeStoryViewer()">✕</button>
         </div>
-
-        <!-- Body / Slide Content -->
-        <div class="story-body" id="story-body-content">
-            <!-- Nav Zones (Tap right / Tap left) -->
+        <div class="story-body">
             <div class="story-nav-zones">
                 <div class="story-nav-right" onclick="prevStorySlide()"></div>
                 <div class="story-nav-left" onclick="nextStorySlide()"></div>
             </div>
-
-            <div class="story-card-slide" id="story-card-slide">
+            <div class="story-card-slide">
                 <div class="story-slide-icon" id="story-slide-icon">📱</div>
                 <div class="story-slide-title" id="story-slide-title">عنوان القصة</div>
                 <div class="story-slide-text" id="story-slide-text">شرح وتفاصيل الخطوة...</div>
                 <button class="story-slide-btn" id="story-slide-btn" onclick="handleStoryAction()">🚀 تصفح المزيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEDIATHEQUE VIDEO & AUDIO MODAL -->
+    <div class="modal-overlay" id="mediatheque-modal" style="display:none; z-index:3500;">
+        <div class="modal-content" style="max-height:85vh; padding:20px; overflow-y:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <div>
+                    <h2 style="font-size:1.25rem; margin:0; color:var(--accent);">🎬 المكتبة المرئية والصوتية</h2>
+                    <p style="font-size:0.8rem; color:var(--text-2); margin:3px 0 0 0;">كبسولات فيديو وبودكاست سريع لتسهيل تجربتك</p>
+                </div>
+                <button class="modal-close" style="position:static;" onclick="closeMediathequeModal()">✕</button>
+            </div>
+
+            <!-- Media Filter Chips -->
+            <div style="display:flex; gap:8px; margin-bottom:15px; overflow-x:auto; scrollbar-width:none;">
+                <button class="faq-cat-btn active" id="mf-all" onclick="filterMediatheque('all', this)">📋 الكل</button>
+                <button class="faq-cat-btn" id="mf-video" onclick="filterMediatheque('video', this)">🎥 كبسولات فيديو</button>
+                <button class="faq-cat-btn" id="mf-audio" onclick="filterMediatheque('audio', this)">🎙️ بودكاست صوتي</button>
+            </div>
+
+            <!-- Media Items List -->
+            <div id="mediatheque-list">
+                <!-- Video 1 -->
+                <div class="media-card item-video">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:bold; font-size:0.92rem; color:#fff;">🎥 جولة في منصة أُسوة وكيفية الدراسة</span>
+                        <span style="font-size:0.72rem; background:rgba(231,76,60,0.15); color:#ff6b6b; padding:2px 6px; border-radius:6px;">1 دقيقة</span>
+                    </div>
+                    <div class="faq-video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+                    </div>
+                </div>
+
+                <!-- Video 2 -->
+                <div class="media-card item-video">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:bold; font-size:0.92rem; color:#fff;">🎥 طريقة إجراء الاختبارات ومراجعة الأخطاء</span>
+                        <span style="font-size:0.72rem; background:rgba(231,76,60,0.15); color:#ff6b6b; padding:2px 6px; border-radius:6px;">45 ثانية</span>
+                    </div>
+                    <div class="faq-video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+                    </div>
+                </div>
+
+                <!-- Audio 1 -->
+                <div class="media-card item-audio">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:bold; font-size:0.92rem; color:#fff;">🎙️ نصائح ذهبية لضبط الحفظ والمراجعة اليومية</span>
+                        <span style="font-size:0.72rem; background:rgba(155,89,182,0.15); color:#cc5de8; padding:2px 6px; border-radius:6px;">2 دقيقة</span>
+                    </div>
+                    <div class="faq-audio-box">
+                        <audio controls src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+                    </div>
+                </div>
+
+                <!-- Audio 2 -->
+                <div class="media-card item-audio">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:bold; font-size:0.92rem; color:#fff;">🎙️ كيف تحقق أقصى استفادة من دروس التجويد؟</span>
+                        <span style="font-size:0.72rem; background:rgba(155,89,182,0.15); color:#cc5de8; padding:2px 6px; border-radius:6px;">1:30 دقيقة</span>
+                    </div>
+                    <div class="faq-audio-box">
+                        <audio controls src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
