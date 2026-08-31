@@ -603,7 +603,7 @@
 
     <div class="container" id="main-form">
         <div style="text-align: center; margin-bottom: 25px; position:relative;">
-            <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 2px solid var(--accent); margin-bottom: 10px;">
+            <div id="logo-secret-trigger" onclick="handleSecretTesterClick()" style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 2px solid var(--accent); margin-bottom: 10px; cursor: pointer; user-select: none; -webkit-user-select: none;" title="🎓">
                 <span style="font-size: 2rem;">🎓</span>
             </div>
             <h2 style="color: var(--accent); margin: 0; font-size: 1.8rem; font-weight: 800; display:flex; align-items:center; justify-content:center; gap:10px;">
@@ -725,7 +725,7 @@
             📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام
         </button>
 
-        <button onclick="resetTestState()" style="background:transparent; border:1px dashed rgba(255,255,255,0.2); color:var(--text-muted); padding:8px 16px; border-radius:10px; font-size:0.78rem; margin-top:20px; cursor:pointer;" title="إعادة تعيين للتجربة مع حساب آخر">
+        <button onclick="resetTestState()" class="tester-reset-btn" style="display:none; background:transparent; border:1px dashed #f1c40f; color:#f1c40f; padding:8px 16px; border-radius:10px; font-size:0.78rem; margin-top:20px; cursor:pointer;" title="إعادة تعيين للتجربة مع حساب آخر">
             🔄 وضع التجربة: إعادة المحاولة من جديد (Reset)
         </button>
     </div>
@@ -751,7 +751,7 @@
             </button>
         </div>
 
-        <button onclick="resetTestState()" style="background:transparent; border:1px dashed rgba(255,255,255,0.2); color:var(--text-muted); padding:8px 16px; border-radius:10px; font-size:0.78rem; margin-top:20px; cursor:pointer;" title="إعادة تعيين للتجربة مع حساب آخر">
+        <button onclick="resetTestState()" class="tester-reset-btn" style="display:none; background:transparent; border:1px dashed #f1c40f; color:#f1c40f; padding:8px 16px; border-radius:10px; font-size:0.78rem; margin-top:20px; cursor:pointer;" title="إعادة تعيين للتجربة مع حساب آخر">
             🔄 وضع التجربة: إعادة المحاولة من جديد (Reset)
         </button>
     </div>
@@ -761,6 +761,52 @@
         // ==========================================
         // STATE PERSISTENCE & RESET FOR TESTING
         // ==========================================
+        
+        // ==========================================
+        // TESTER MODE & SECRET TRIPLE CLICK ENGINE
+        // ==========================================
+        const TESTER_IDS = [2045194295]; // ID Admin Houssam
+        let secretClickCount = 0;
+        let secretClickTimer = null;
+
+        function isTesterUser() {
+            const currentTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
+            const hasParam = window.location.search.includes('mode=test');
+            const hasStorage = localStorage.getItem('is_tester_mode') === 'true';
+            return TESTER_IDS.includes(currentTgId) || hasParam || hasStorage;
+        }
+
+        function checkAndApplyTesterMode() {
+            const isTester = isTesterUser();
+            document.querySelectorAll('.tester-reset-btn').forEach(btn => {
+                btn.style.display = isTester ? 'inline-block' : 'none';
+            });
+        }
+
+        function handleSecretTesterClick() {
+            secretClickCount++;
+            clearTimeout(secretClickTimer);
+            
+            if (secretClickCount >= 3) {
+                secretClickCount = 0;
+                const currentStatus = localStorage.getItem('is_tester_mode') === 'true';
+                const newStatus = !currentStatus;
+                localStorage.setItem('is_tester_mode', newStatus ? 'true' : 'false');
+                
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred(newStatus ? 'success' : 'warning');
+                }
+                
+                alert(newStatus ? '🧪 تم تفعيل وضع التجربة (Tester Mode ON)\n\nأزرار إعادة المحاولة أصبحت ظاهرة الآن.' : '🔒 تم إيقاف وضع التجربة (Tester Mode OFF)');
+                checkAndApplyTesterMode();
+                return;
+            }
+            
+            secretClickTimer = setTimeout(() => {
+                secretClickCount = 0;
+            }, 1200);
+        }
+
         function saveStudentState(status, data) {
             try {
                 localStorage.setItem('student_auth_status', status);
