@@ -4,7 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مركز الدعم الذكي</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+        function openStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) {
+                document.getElementById('suggest-form-body').style.display = 'block';
+                document.getElementById('suggest-success-body').style.display = 'none';
+                document.getElementById('suggest-question-input').value = '';
+                document.getElementById('suggest-desc-input').value = '';
+                m.style.display = 'flex';
+            }
+        }
+
+        function closeStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        async function submitStudentFaqSuggestion() {
+            const q = document.getElementById('suggest-question-input').value.trim();
+            const desc = document.getElementById('suggest-desc-input').value.trim();
+            const cat = document.getElementById('suggest-cat-input').value;
+            const btn = document.getElementById('btn-submit-suggest');
+            
+            if (!q) {
+                alert("يرجى كتابة صيغة السؤال المقترح.");
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = "جاري الإرسال...";
+            
+            const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const tid = tgUser?.id || '';
+            const name = tgUser?.first_name || 'طالب';
+            
+            try {
+                const res = await fetch(`${BOT_BASE}/api/faq/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: q,
+                        description: desc,
+                        category: cat,
+                        telegram_id: tid,
+                        student_name: name
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('suggest-form-body').style.display = 'none';
+                    document.getElementById('suggest-success-body').style.display = 'block';
+                } else {
+                    alert("حدث خطأ: " + (data.error || "تعذر إرسال الاقتراح"));
+                }
+            } catch(e) {
+                alert("خطأ في الاتصال بالخادم.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "🚀 إرسال الاقتراح";
+            }
+        }
+
+</script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
                 :root {
@@ -290,7 +353,70 @@
                                     nameEl.style.display = 'none';
                                 }
                             });
-                        </script>
+                        
+        function openStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) {
+                document.getElementById('suggest-form-body').style.display = 'block';
+                document.getElementById('suggest-success-body').style.display = 'none';
+                document.getElementById('suggest-question-input').value = '';
+                document.getElementById('suggest-desc-input').value = '';
+                m.style.display = 'flex';
+            }
+        }
+
+        function closeStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        async function submitStudentFaqSuggestion() {
+            const q = document.getElementById('suggest-question-input').value.trim();
+            const desc = document.getElementById('suggest-desc-input').value.trim();
+            const cat = document.getElementById('suggest-cat-input').value;
+            const btn = document.getElementById('btn-submit-suggest');
+            
+            if (!q) {
+                alert("يرجى كتابة صيغة السؤال المقترح.");
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = "جاري الإرسال...";
+            
+            const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const tid = tgUser?.id || '';
+            const name = tgUser?.first_name || 'طالب';
+            
+            try {
+                const res = await fetch(`${BOT_BASE}/api/faq/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: q,
+                        description: desc,
+                        category: cat,
+                        telegram_id: tid,
+                        student_name: name
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('suggest-form-body').style.display = 'none';
+                    document.getElementById('suggest-success-body').style.display = 'block';
+                } else {
+                    alert("حدث خطأ: " + (data.error || "تعذر إرسال الاقتراح"));
+                }
+            } catch(e) {
+                alert("خطأ في الاتصال بالخادم.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "🚀 إرسال الاقتراح";
+            }
+        }
+
+</script>
                     </div>
                     <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
                     <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
@@ -424,7 +550,70 @@
         </button>
     </nav>
 
-    <script src="bot-config.js"></script>
+    <script src="bot-config.js">
+        function openStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) {
+                document.getElementById('suggest-form-body').style.display = 'block';
+                document.getElementById('suggest-success-body').style.display = 'none';
+                document.getElementById('suggest-question-input').value = '';
+                document.getElementById('suggest-desc-input').value = '';
+                m.style.display = 'flex';
+            }
+        }
+
+        function closeStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        async function submitStudentFaqSuggestion() {
+            const q = document.getElementById('suggest-question-input').value.trim();
+            const desc = document.getElementById('suggest-desc-input').value.trim();
+            const cat = document.getElementById('suggest-cat-input').value;
+            const btn = document.getElementById('btn-submit-suggest');
+            
+            if (!q) {
+                alert("يرجى كتابة صيغة السؤال المقترح.");
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = "جاري الإرسال...";
+            
+            const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const tid = tgUser?.id || '';
+            const name = tgUser?.first_name || 'طالب';
+            
+            try {
+                const res = await fetch(`${BOT_BASE}/api/faq/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: q,
+                        description: desc,
+                        category: cat,
+                        telegram_id: tid,
+                        student_name: name
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('suggest-form-body').style.display = 'none';
+                    document.getElementById('suggest-success-body').style.display = 'block';
+                } else {
+                    alert("حدث خطأ: " + (data.error || "تعذر إرسال الاقتراح"));
+                }
+            } catch(e) {
+                alert("خطأ في الاتصال بالخادم.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "🚀 إرسال الاقتراح";
+            }
+        }
+
+</script>
     <script>
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
@@ -1195,7 +1384,70 @@
             setInterval(sendPing, 15000);
         }
         setTimeout(initLiveRadarPing, 1000);
-    </script>
+    
+        function openStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) {
+                document.getElementById('suggest-form-body').style.display = 'block';
+                document.getElementById('suggest-success-body').style.display = 'none';
+                document.getElementById('suggest-question-input').value = '';
+                document.getElementById('suggest-desc-input').value = '';
+                m.style.display = 'flex';
+            }
+        }
+
+        function closeStudentSuggestModal() {
+            const m = document.getElementById('student-suggest-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        async function submitStudentFaqSuggestion() {
+            const q = document.getElementById('suggest-question-input').value.trim();
+            const desc = document.getElementById('suggest-desc-input').value.trim();
+            const cat = document.getElementById('suggest-cat-input').value;
+            const btn = document.getElementById('btn-submit-suggest');
+            
+            if (!q) {
+                alert("يرجى كتابة صيغة السؤال المقترح.");
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = "جاري الإرسال...";
+            
+            const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const tid = tgUser?.id || '';
+            const name = tgUser?.first_name || 'طالب';
+            
+            try {
+                const res = await fetch(`${BOT_BASE}/api/faq/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: q,
+                        description: desc,
+                        category: cat,
+                        telegram_id: tid,
+                        student_name: name
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('suggest-form-body').style.display = 'none';
+                    document.getElementById('suggest-success-body').style.display = 'block';
+                } else {
+                    alert("حدث خطأ: " + (data.error || "تعذر إرسال الاقتراح"));
+                }
+            } catch(e) {
+                alert("خطأ في الاتصال بالخادم.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "🚀 إرسال الاقتراح";
+            }
+        }
+
+</script>
 
     
     <!-- TICKET THREAD MODAL -->
@@ -1237,6 +1489,54 @@
                 <button onclick="sendStudentFollowupReply()" style="background:var(--accent); color:#1e3a8a; border:none; padding:0 18px; border-radius:10px; font-weight:bold; font-family:'Tajawal'; cursor:pointer;">
                     إرسال
                 </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- STUDENT FAQ SUGGESTION MODAL -->
+    <div id="student-suggest-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
+        <div style="background:#16162a; border:1px solid rgba(255,255,255,0.15); border-radius:16px; max-width:420px; width:100%; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-family:'Tajawal', sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                <div style="font-weight:bold; font-size:1.1rem; color:var(--text-1); display:flex; align-items:center; gap:8px;">
+                    <span>💡</span> اقترح سؤالاً للـ FAQ
+                </div>
+                <button onclick="closeStudentSuggestModal()" style="background:none; border:none; color:var(--text-2); font-size:1.4rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div id="suggest-form-body">
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-2); display:block; margin-bottom:5px;">📌 القسم / التصنيف</label>
+                    <select id="suggest-cat-input" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-1); font-family:'Tajawal';">
+                        <option value="الدخول">🔐 تسجيل الدخول والحساب</option>
+                        <option value="الدفع">💳 الدفع والاشتراكات</option>
+                        <option value="الدروس">📚 الدروس والمرفقات</option>
+                        <option value="الشهادات">🎓 الشهادات والاختبارات</option>
+                        <option value="عام" selected>💬 عام</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-2); display:block; margin-bottom:5px;">❓ صيغة السؤال المقترح</label>
+                    <input type="text" id="suggest-question-input" placeholder="مثال: كيف يمكنني تحميل فيديوهات الدورة؟" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-1); font-family:'Tajawal'; font-size:0.88rem; box-sizing:border-box;">
+                </div>
+                
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:0.8rem; color:var(--text-2); display:block; margin-bottom:5px;">📝 تفاصيل إضافية أو الإجابة المتوقعة (اختياري)</label>
+                    <textarea id="suggest-desc-input" rows="3" placeholder="اكتب هنا أي توضيح أو سياق إضافي..." style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-1); font-family:'Tajawal'; font-size:0.85rem; box-sizing:border-box; resize:none;"></textarea>
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <button onclick="closeStudentSuggestModal()" style="flex:1; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-1); cursor:pointer; font-family:'Tajawal';">إلغاء</button>
+                    <button onclick="submitStudentFaqSuggestion()" id="btn-submit-suggest" style="flex:2; padding:10px; border-radius:8px; background:linear-gradient(135deg, #8E2DE2, #4A00E0); border:none; color:white; font-weight:bold; cursor:pointer; font-family:'Tajawal';">🚀 إرسال الاقتراح</button>
+                </div>
+            </div>
+            
+            <div id="suggest-success-body" style="display:none; text-align:center; padding:20px 10px;">
+                <div style="font-size:3rem; margin-bottom:10px;">🎉</div>
+                <div style="font-weight:bold; font-size:1.1rem; color:#2ecc71; margin-bottom:8px;">شكراً لمساهمتك!</div>
+                <div style="font-size:0.85rem; color:var(--text-2); line-height:1.5; margin-bottom:15px;">تم إرسال اقتراحك لفريق الإدارة. بعد مراجعته واعتماده سيظهر مباشرة في الأسئلة الشائعة لجميع الطلاب.</div>
+                <button onclick="closeStudentSuggestModal()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:8px 20px; border-radius:20px; cursor:pointer; font-family:'Tajawal';">إغلاق</button>
             </div>
         </div>
     </div>

@@ -809,9 +809,17 @@ async def init_db():
                 source_ticket_ids TEXT DEFAULT '',
                 occurrence_count INTEGER DEFAULT 1,
                 status TEXT DEFAULT 'pending',
+                suggested_by_role TEXT DEFAULT 'student',
+                suggested_by_name TEXT DEFAULT '',
+                suggested_by_id TEXT DEFAULT '',
                 created_at TEXT DEFAULT (datetime('now'))
             );
         """)
+        for col_def in ["suggested_by_role TEXT DEFAULT 'student'", "suggested_by_name TEXT DEFAULT ''", "suggested_by_id TEXT DEFAULT ''"]:
+            try:
+                await db.execute(f"ALTER TABLE faq_suggestions ADD COLUMN {col_def}")
+            except Exception:
+                pass
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS faq_analytics (
@@ -3981,3 +3989,34 @@ async def rate_crm_ticket(ticket_id: int, rating: int, feedback: str = ""):
     except Exception as e:
         logger.error(f"Error rating ticket: {e}")
         return False
+
+async def add_student_faq_suggestion(question: str, description: str = '', category: str = 'عام', telegram_id: str = '', student_name: str = '') -> int:
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            cur = await db.execute(
+                "INSERT INTO faq_suggestions (suggested_question, suggested_answer, category, suggested_by_role, suggested_by_name, suggested_by_id) VALUES (?, ?, ?, 'student', ?, ?)",
+                (question, description, category, student_name, str(telegram_id))
+            )
+            await db.commit()
+            return cur.lastrowid
+    except Exception as e:
+        logger.error(f"[FAQ] add_student_faq_suggestion error: {e}")
+        return -1
+
+async def add_admin_faq_from_ticket(ticket_id: int, question: str, answer: str, category: str = 'عام', admin_name: str = 'Admin') -> int:
+    from config import DATABASE_PATH
+    import aiosqlite
+    import json as _json
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            cur = await db.execute(
+                "INSERT INTO faq_suggestions (suggested_question, suggested_answer, category, source_ticket_ids, suggested_by_role, suggested_by_name) VALUES (?, ?, ?, ?, 'admin', ?)",
+                (question, answer, category, _json.dumps([ticket_id]), admin_name)
+            )
+            await db.commit()
+            return cur.lastrowid
+    except Exception as e:
+        logger.error(f"[FAQ] add_admin_faq_from_ticket error: {e}")
+        return -1

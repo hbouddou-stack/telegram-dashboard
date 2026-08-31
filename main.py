@@ -4948,6 +4948,8 @@ async def start_web_server(bot: Bot):
 
     app.router.add_get('/tuto.html', handle_tuto)
     app.router.add_get('/guide.html', handle_guide)
+    app.router.add_get('/admin-guide.html', lambda r: web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin-guide.html')))
+    app.router.add_get('/admin-guide', lambda r: web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin-guide.html')))
     app.router.add_get('/interactive.html', handle_interactive)
     app.router.add_get('/admin_mindmap.html', handle_admin_mindmap)
     app.router.add_get('/course_slides.html', handle_course_slides)
@@ -5567,6 +5569,8 @@ def register_crm_routes(app):
     app.router.add_get('/api/faq/suggestions', api_faq_suggestions_get)
     app.router.add_post('/api/faq/suggestions/{id}/approve', api_faq_suggestion_approve)
     app.router.add_post('/api/faq/suggestions/{id}/reject', api_faq_suggestion_reject)
+    app.router.add_post('/api/faq/suggest', api_faq_suggest_student)
+    app.router.add_post('/api/faq/suggest_from_ticket', api_faq_suggest_from_ticket)
 
 async def api_admin_draft_reply(request):
     try:
@@ -5886,3 +5890,45 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.info("Bot stopped.")
+
+async def api_faq_suggest_student(request):
+    try:
+        data = await request.json()
+        question = data.get('question', '').strip()
+        description = data.get('description', '').strip()
+        category = data.get('category', 'عام')
+        telegram_id = data.get('telegram_id', '')
+        student_name = data.get('student_name', 'طالب')
+        
+        if not question:
+            from aiohttp import web
+            return web.json_response({'success': False, 'error': 'Missing question'}, status=400)
+            
+        import database as db
+        sid = await db.add_student_faq_suggestion(question, description, category, telegram_id, student_name)
+        from aiohttp import web
+        return web.json_response({'success': True, 'suggestion_id': sid})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_faq_suggest_from_ticket(request):
+    try:
+        data = await request.json()
+        ticket_id = data.get('ticket_id')
+        question = data.get('question', '').strip()
+        answer = data.get('answer', '').strip()
+        category = data.get('category', 'عام')
+        admin_name = data.get('admin_name', 'Admin')
+        
+        if not question or not answer:
+            from aiohttp import web
+            return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+            
+        import database as db
+        sid = await db.add_admin_faq_from_ticket(ticket_id, question, answer, category, admin_name)
+        from aiohttp import web
+        return web.json_response({'success': True, 'suggestion_id': sid})
+    except Exception as e:
+        from aiohttp import web
+        return web.json_response({'success': False, 'error': str(e)}, status=500)

@@ -1,0 +1,321 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل المشرف الشامل | أكاديمية الباجي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0e15;
+            --surface: #161822;
+            --surface-hover: #1e2130;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #8736ff;
+            --text-1: #ffffff;
+            --text-2: #a0a5b8;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-1);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, rgba(135, 54, 255, 0.2) 0%, rgba(74, 0, 224, 0.2) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-banner h1 {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .badge-version {
+            display: inline-block;
+            background: rgba(135, 54, 255, 0.3);
+            color: #d1b3ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            border: 1px solid rgba(135, 54, 255, 0.4);
+        }
+
+        .grid-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .nav-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            text-decoration: none;
+            color: var(--text-1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-card:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-card .icon {
+            font-size: 1.6rem;
+            background: rgba(255, 255, 255, 0.05);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .section-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 26px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 1.3rem;
+            color: var(--text-1);
+        }
+
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-item {
+            position: relative;
+            padding-right: 45px;
+            margin-bottom: 20px;
+        }
+
+        .step-item::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .step-item h3 {
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+            color: var(--text-1);
+        }
+
+        .step-item p {
+            color: var(--text-2);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .tip-box {
+            background: rgba(52, 152, 219, 0.1);
+            border-right: 4px solid var(--info);
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: #cce5ff;
+        }
+
+        .warning-box {
+            background: rgba(243, 156, 18, 0.1);
+            border-right: 4px solid var(--warning);
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: #ffeaa7;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-1);
+            padding: 8px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/support" class="btn-back">➔ العودة إلى لوحة التحكم CRM</a>
+
+        <div class="hero-banner">
+            <span class="badge-version">🌟 الدليل الحي للمشرفين v1.0</span>
+            <h1>📘 دليل إدارة التذاكر والدعم الفني</h1>
+            <p>مرجعك الشامل لتقديم تجربة دعم استثنائية، إدارة المعرفة، والتعامل مع استفسارات الطلاب باحترافية.</p>
+        </div>
+
+        <div class="grid-nav">
+            <a href="#sec-workflow" class="nav-card">
+                <div class="icon">📬</div>
+                <div><strong>دورة حياة التذكرة</strong><br><small style="color:var(--text-2);">الاستلام والمعالجة</small></div>
+            </a>
+            <a href="#sec-profile" class="nav-card">
+                <div class="icon">👤</div>
+                <div><strong>ملف الطالب 360°</strong><br><small style="color:var(--text-2);">السياق والاشتراكات</small></div>
+            </a>
+            <a href="#sec-copilot" class="nav-card">
+                <div class="icon">🤖</div>
+                <div><strong>الطيار الآلي (Copilot)</strong><br><small style="color:var(--text-2);">توليد الردود الذكية</small></div>
+            </a>
+            <a href="#sec-faq" class="nav-card">
+                <div class="icon">📚</div>
+                <div><strong>إثراء الـ FAQ</strong><br><small style="color:var(--text-2);">تحويل التذاكر لمقالات</small></div>
+            </a>
+        </div>
+
+        <!-- SECTION 1 -->
+        <div id="sec-workflow" class="section-card">
+            <div class="section-header">
+                <span style="font-size:1.5rem;">📬</span>
+                <h2>1. دورة حياة التذكرة (Ticket Workflow)</h2>
+            </div>
+            <ol class="step-list">
+                <li class="step-item">
+                    <h3>استلام التذكرة من صندوق "جديد"</h3>
+                    <p>عند دخول تذكرة جديدة، اضغط على <strong>"استلام"</strong> لتصبح التذكرة مسندة لك شخصياً وتنتقل إلى خانة <strong>"قيد المعالجة"</strong>. هذا يمنع ازدواجية الرد بين المشرفين.</p>
+                </li>
+                <li class="step-item">
+                    <h3>قراءة المشكلة والاطلاع على المرفقات</h3>
+                    <p>تأكد من قراءة استفسار الطالب بعناية، ومعاينة أي صورة أو وصل بنكي مرفق مع التذكرة قبل كتابة الرد.</p>
+                </li>
+                <li class="step-item">
+                    <h3>صياغة الرد وإرساله</h3>
+                    <p>اكتب رداً واضحاً وموجزاً، أو اضغط على <strong>"✨ توليد مسودة من FAQ"</strong> لاقتراح إجابة سريعة. بمجرد الإرسال، يتلقى الطالب إشعاراً فورياً على تليجرام.</p>
+                </li>
+                <li class="step-item">
+                    <h3>إغلاق التذكرة والتقييم (CSAT)</h3>
+                    <p>عند حل المشكلة، اضغط على <strong>"✅ إغلاق وحل التذكرة"</strong>. سيصل الطالب استبيان الرضا (1 إلى 5 نجوم ⭐) لتقييم جودة الخدمة.</p>
+                </li>
+            </ol>
+            <div class="tip-box">
+                💡 <strong>معيار الجودة:</strong> متوسط سرعة الرد المستهدف هو أقل من 15 دقيقة خلال ساعات العمل.
+            </div>
+        </div>
+
+        <!-- SECTION 2 -->
+        <div id="sec-profile" class="section-card">
+            <div class="section-header">
+                <span style="font-size:1.5rem;">👤</span>
+                <h2>2. فحص ملف الطالب 360°</h2>
+            </div>
+            <p style="color:var(--text-2); margin-bottom:15px;">قبل الرد، يمكنك الضغط على زر <strong>"ℹ️ الملف 360°"</strong> في أعلى المحادثة لمعاينة بيانات الطالب فورياً:</p>
+            <ul style="color:var(--text-2); padding-right:20px; line-height:1.8; margin-bottom:15px;">
+                <li><strong>حالة الاشتراك:</strong> نشط / غير نشط / معلق.</li>
+                <li><strong>بيانات الاتصال:</strong> رقم الهاتف، البريد الإلكتروني، ومعرف تليجرام.</li>
+                <li><strong>تاريخ التذاكر السابقة:</strong> آخر 3 استفسارات طرحها الطالب ومستوى رضاه عنها.</li>
+            </ul>
+            <div class="warning-box">
+                ⚠️ <strong>تنبيه مالي:</strong> إذا كان الاستفسار متعلقاً بدفع لم يتم تفعيله، قارن رقم التحويل المرفق مع الحسابات قبل تأكيد التفعيل للطالب.
+            </div>
+        </div>
+
+        <!-- SECTION 3 -->
+        <div id="sec-copilot" class="section-card">
+            <div class="section-header">
+                <span style="font-size:1.5rem;">🤖</span>
+                <h2>3. استخدام الطيار الآلي والذكاء الاصطناعي</h2>
+            </div>
+            <p style="color:var(--text-2); margin-bottom:12px;">المساعد الذكي يبحث في قاعدة المعرفة وملخصات الدروس ليقترح عليك أفضل صيغة للإجابة:</p>
+            <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border:1px solid var(--border); margin-bottom:15px;">
+                <strong>زر ✨ مسودة ذكية:</strong> يملأ حقل الرد بنص جاهز ومراجع.<br>
+                <small style="color:var(--text-2);">يمكنك دائماً تعديل النص أو إضافة لمستك الشخصية قبل الضغط على إرسال.</small>
+            </div>
+        </div>
+
+        <!-- SECTION 4 -->
+        <div id="sec-faq" class="section-card">
+            <div class="section-header">
+                <span style="font-size:1.5rem;">📚</span>
+                <h2>4. إثراء الأسئلة الشائعة (FAQ Knowledge Base)</h2>
+            </div>
+            <p style="color:var(--text-2); margin-bottom:15px;">قاعدة المعرفة القوية تحل 70% من مشاكل الطلاب تلقائياً دون الحاجة لفتح تذكرة. يمكنك المساهمة بطريقتين:</p>
+            <ol class="step-list">
+                <li class="step-item">
+                    <h3>تحويل تذكرة إلى سؤال FAQ</h3>
+                    <p>عند تقديم إجابة شاملة على سؤال يتكرر كثيراً، اضغط على زر <strong>"💾 تحويل إلى FAQ"</strong> داخل التذكرة ليتم حفظها كمسودة مقال.</p>
+                </li>
+                <li class="step-item">
+                    <h3>اعتماد اقتراحات الطلاب والزملاء</h3>
+                    <p>في تبويب <strong>"مدير FAQ"</strong>، راجع الاقتراحات الواردة من الطلاب، ثم اضغط <strong>"قبول ونشر"</strong> لتصبح متاحة فورياً في محرك البحث التنبؤي.</p>
+                </li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
