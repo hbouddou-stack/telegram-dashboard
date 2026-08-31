@@ -662,27 +662,30 @@
         // ========================
         // STUDENT FAQ LOGIC
         // ========================
-        let studentFaqAll = [];
-        let studentFaqActiveCat = null;
-
-        const defaultFallbackFaq = [
-            { id: 1, category: "عام", question: "كيف يمكنني التواصل مع الدعم الفني؟", answer: "يمكنك التواصل معنا مباشرة عبر تبويب (طرح سؤال) أو التحدث مع المساعد الذكي في أي وقت.", is_pinned: 1 },
-            { id: 2, category: "الدخول", question: "نسيت كلمة المرور، كيف أسترجعها؟", answer: "اضغط على 'نسيت كلمة المرور' في صفحة تسجيل الدخول وسيصلك رابط إعادة التعيين على بريدك الإلكتروني.", is_pinned: 1 },
-            { id: 3, category: "الدروس", question: "أين أجد المرفقات وملخصات الدروس؟", answer: "تجد جميع المرفقات والملخصات بصيغة PDF أسفل كل فيديو تدريبي في المنصة.", is_pinned: 0 },
-            { id: 4, category: "الدفع", question: "ما هي وسائل الدفع المعتمدة؟", answer: "نقبل الدفع عبر البطاقات البنكية (Visa / Mastercard)، التحويل البنكي، والمحافظ الإلكترونية.", is_pinned: 0 },
-            { id: 5, category: "الشهادات", question: "متى أحصل على شهادة إتمام الدورة؟", answer: "تصدر الشهادة تلقائياً بمجرد إكمال 80% على الأقل من محتوى الدورة واجتياز الاختبار النهائي.", is_pinned: 0 }
+                const defaultFallbackFaq = [
+            { id: 1, category: "الدفع", question: "ما هي طرق ووسائل الدفع المتاحة؟", answer: "نقبل الدفع عبر البطاقات البنكية (Visa / Mastercard)، التحويل البنكي المباشر (CIH / Maroc Pay)، والتحويل عبر الوكالات.", is_pinned: 1 },
+            { id: 2, category: "الدفع", question: "تم خصم المبلغ ولم يتفعل الحساب، ما العمل؟", answer: "يرجى إرفاق وصل التحويل عبر تبويب (طرح سؤال) وسيقوم فريق الحسابات بتفعيل اشتراكك خلال 15 دقيقة.", is_pinned: 1 },
+            { id: 3, category: "الدخول", question: "نسيت كلمة المرور أو لا أستطيع تسجيل الدخول؟", answer: "اضغط على 'نسيت كلمة المرور' في صفحة الدخول، أو تواصل معنا هنا لنرسل لك رابط إعادة تعيين فوري.", is_pinned: 1 },
+            { id: 4, category: "الدروس", question: "الفيديو لا يعمل أو يتوقف باستمرار؟", answer: "تأكد من سرعة الإنترنت لديك وجرب تغيير الجودة إلى 720p أو مسح الذاكرة المؤقتة (Cache) للمتصفح.", is_pinned: 0 },
+            { id: 5, category: "الدروس", question: "أين أجد ملخصات الدروس وملفات PDF؟", answer: "تجد جميع المرفقات والملخصات بصيغة PDF أسفل كل فيديو في قسم المرفقات.", is_pinned: 0 },
+            { id: 6, category: "الشهادات", question: "متى وكيف أحصل على شهادة إتمام الدورة؟", answer: "تصدر الشهادة تلقائياً بمجرد إكمال 80% على الأقل من محتوى الدورة واجتياز الاختبار النهائي.", is_pinned: 0 },
+            { id: 7, category: "عام", question: "كيف يمكنني التواصل المباشر مع إدارة الأكاديمية؟", answer: "يمكنك طرح سؤالك في أي وقت عبر هذا المركز، وسيرد عليك مشرف مختص عبر صندوق الرسائل.", is_pinned: 0 }
         ];
+        
+        let studentFaqAll = [...defaultFallbackFaq];
+        let studentFaqLoadedFromApi = false;
+        let studentFaqActiveCat = null;
 
         async function loadStudentFaq() {
             const listEl = document.getElementById('student-faq-list');
             const catsEl = document.getElementById('student-faq-cats');
-            if (studentFaqAll.length > 0) return; // Already loaded
+            if (studentFaqLoadedFromApi) return; // Already loaded
             try {
                 const res = await fetch(`${BOT_BASE}/api/faq`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && data.entries && data.entries.length > 0) {
-                        studentFaqAll = data.entries;
+                        studentFaqAll = data.entries; studentFaqLoadedFromApi = true;
                         const rawCats = (data.categories || []).map(c => c ? c.category : null).filter(Boolean);
                         const cats = [...new Set(rawCats)];
                         
@@ -939,26 +942,53 @@
         };
         
         
+                // ========================
+        // LIVE PREDICTIVE FAQ (ULTRA SMART)
         // ========================
-        // LIVE PREDICTIVE FAQ
-        // ========================
+        function normalizeArabic(text) {
+            if (!text) return '';
+            return String(text)
+                .toLowerCase()
+                .replace(/[إأآا]/g, 'ا')
+                .replace(/[ىي]/g, 'ي')
+                .replace(/ة/g, 'ه')
+                .replace(/[\u064B-\u065F\u0670]/g, '')
+                .trim();
+        }
+
         let liveSearchTimer;
         function livePredictiveFaqSearch(text) {
-            const query = (text || '').trim().toLowerCase();
+            const rawQuery = (text || '').trim();
             const box = document.getElementById('predictive-faq-box');
             const resEl = document.getElementById('predictive-faq-results');
             if (!box || !resEl) return;
             
-            if (query.length < 3) {
+            if (rawQuery.length < 2) {
                 box.style.display = 'none';
                 return;
             }
             
             clearTimeout(liveSearchTimer);
             liveSearchTimer = setTimeout(() => {
-                const matches = (studentFaqAll || []).filter(item => {
-                    return (item.question && item.question.toLowerCase().includes(query)) ||
-                           (item.answer && item.answer.toLowerCase().includes(query));
+                const normQuery = normalizeArabic(rawQuery);
+                const words = normQuery.split(/\s+/).filter(w => w.length >= 2);
+                
+                const searchTokens = [];
+                words.forEach(w => {
+                    searchTokens.push(w);
+                    if (w.startsWith('ال') && w.length > 3) {
+                        searchTokens.push(w.substring(2));
+                    }
+                });
+
+                const dataset = (studentFaqAll && studentFaqAll.length > 0) ? studentFaqAll : defaultFallbackFaq;
+                
+                const matches = dataset.filter(item => {
+                    const qNorm = normalizeArabic(item.question);
+                    const aNorm = normalizeArabic(item.answer);
+                    const catNorm = normalizeArabic(item.category || '');
+                    const combined = qNorm + ' ' + aNorm + ' ' + catNorm;
+                    return searchTokens.some(token => combined.includes(token));
                 }).slice(0, 3);
                 
                 if (matches.length === 0) {
@@ -968,13 +998,14 @@
                 
                 resEl.innerHTML = matches.map(m => `
                     <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; margin-top:8px;">
-                        <div style="font-weight:bold; font-size:0.88rem; color:var(--text-1); cursor:pointer;" onclick="togglePredictiveAnswer(${m.id})">
-                            ❓ ${m.question} <span style="font-size:0.75rem; color:var(--accent); float:left;">عرض الحل</span>
+                        <div style="font-weight:bold; font-size:0.88rem; color:var(--text-1); cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="togglePredictiveAnswer(${m.id})">
+                            <span>❓ ${m.question}</span>
+                            <span style="font-size:0.75rem; color:var(--accent); background:rgba(241,196,15,0.15); padding:2px 8px; border-radius:10px;">عرض الحل ➔</span>
                         </div>
                         <div id="pred-ans-${m.id}" style="display:none; margin-top:8px; font-size:0.84rem; color:var(--text-2); border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; line-height:1.5;">
-                            ${m.answer}
-                            <div style="margin-top:8px; text-align:left;">
-                                <button onclick="acceptPredictiveSolution(${m.id})" style="background:#2ecc71; color:white; border:none; padding:5px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-family:'Tajawal'; font-weight:bold;">
+                            ${(m.answer || '').replace(/\n/g, '<br>')}
+                            <div style="margin-top:10px; text-align:left;">
+                                <button onclick="acceptPredictiveSolution(${m.id})" style="background:#2ecc71; color:white; border:none; padding:6px 14px; border-radius:8px; font-size:0.78rem; cursor:pointer; font-family:'Tajawal'; font-weight:bold;">
                                     ✅ هذه الإجابة حلت مشكلتي
                                 </button>
                             </div>
@@ -983,7 +1014,7 @@
                 `).join('');
                 
                 box.style.display = 'block';
-            }, 300);
+            }, 50);
         }
 
         function togglePredictiveAnswer(id) {
