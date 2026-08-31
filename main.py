@@ -5190,7 +5190,10 @@ async def start_web_server(bot: Bot):
     # Student Practice & Quiz API routes
     app.router.add_post('/api/link_account', api_link_account)
     app.router.add_post('/api/validate_student', api_validate_student)
+    app.router.add_get('/admin_gateway.html', handle_admin_gateway)
     app.router.add_get('/admin-gateway.html', handle_admin_gateway)
+    app.router.add_get('/admin_gateway', handle_admin_gateway)
+    app.router.add_get('/admin-gateway', handle_admin_gateway)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
