@@ -4,8 +4,334 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مركز الدعم الذكي</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="bot-config.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+        // ========================
+        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // ========================
+        const ACADEMY_STORIES = [
+            {
+                title: "شرح المنصة",
+                icon: "🗺️",
+                slides: [
+                    { icon: "🏛️", title: "أهلاً بك في أُسوة!", text: "منصتك التعليمية الرائدة لدراسة العلوم الشرعية وتجويد القرآن الكريم بمنهجية عصرية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📚", title: "تصفح المقررات", text: "يمكنك متابعة المحاضرات والملخصات من أي مكان، والاطلاع على الخطة الدراسية السنوية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🗺️", title: "دليل الطالب التفاعلي", text: "استخدم دليل المنصة للتعرف على جميع الميزات والوصول السريع للأقسام.", btnText: "فتح الدليل 📖", action: "guide" }
+                ]
+            },
+            {
+                title: "تفعيل الحساب",
+                icon: "💳",
+                slides: [
+                    { icon: "💳", title: "طرق الدفع المعتمدة", text: "نوفر الدفع عبر البطاقة البنكية، التحويل المباشر، أو وكالات كاش بلس / وفاكاش.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📸", title: "إرسال وصل التحويل", text: "قم بتصوير وصل التحويل وإرفاقه في تذكرة دعم ليتم التحقق منه وتفعيل حسابك.", btnText: "التالي ➔", action: "next" },
+                    { icon: "⚡", title: "تفعيل فوري", text: "يقوم فريق الدعم بمطابقة الوصل وتفعيل اشتراكك خلال دقائق معدودة!", btnText: "طرح استفسار ✍️", action: "ask" }
+                ]
+            },
+            {
+                title: "تشغيل الدروس",
+                icon: "🎥",
+                slides: [
+                    { icon: "🎬", title: "مشاهدة الدروس بدقة HD", text: "تتوفر المحاضرات بجودات متعددة لتناسب سرعة الإنترنت لديك على الهاتف.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📑", title: "تحميل الملخصات", text: "أسفل كل درس ستجد زر تحميل الملخص بصيغة PDF للطباعة والمراجعة.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🎧", title: "التسجيلات الصوتية", text: "يمكنك الاستماع للتلاوات والشروحات الصوتية في أي وقت ومن دون انقطاع.", btnText: "الأسئلة الشائعة 📚", action: "faq" }
+                ]
+            },
+            {
+                title: "الاختبارات",
+                icon: "📝",
+                slides: [
+                    { icon: "✍️", title: "نظام الامتحانات الذكي", text: "اختبر فهمك بعد كل وحدة دراسية بأسئلة تفاعلية ومؤقت زمني دقيق.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📊", title: "النتيجة والتصحيح النموذجي", text: "تظهر نتيجتك فوراً مع توضيح الإجابات الصحيحة وشرح أسبابها.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🏆", title: "بنك الأخطاء والمراجعة", text: "تُحفظ الأسئلة التي أخطأت فيها تلقائياً لمساعدتك على مراجعتها لاحقاً!", btnText: "فهمت الفكرة 👍", action: "close" }
+                ]
+            },
+            {
+                title: "الشهادات",
+                icon: "🎓",
+                slides: [
+                    { icon: "🎯", title: "شروط الحصول على الشهادة", text: "إكمال 80% على الأقل من المحاضرات واجتياز الاختبار النهائي بنجاح.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📜", title: "شهادة معتمدة برقم تسلسلي", text: "تحصل على شهادة رقمية موثقة يمكن طباعتها ومشاركتها بكل فخر.", btnText: "إغلاق الشرح ✨", action: "close" }
+                ]
+            }
+        ];
+
+        let currentStoryIdx = 0;
+        let currentSlideIdx = 0;
+        let storySlideTimer = null;
+        const SLIDE_DURATION = 5000; // 5 seconds per slide
+
+        function openStoryViewer(storyIdx) {
+            currentStoryIdx = storyIdx;
+            currentSlideIdx = 0;
+            const modal = document.getElementById('story-viewer-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            renderStorySlide();
+        }
+
+        function closeStoryViewer() {
+            clearTimeout(storySlideTimer);
+            const modal = document.getElementById('story-viewer-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function renderStorySlide() {
+            clearTimeout(storySlideTimer);
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (!story || !story.slides[currentSlideIdx]) return;
+            
+            const slide = story.slides[currentSlideIdx];
+            
+            // Header
+            document.getElementById('story-author-icon').innerText = story.icon;
+            document.getElementById('story-author-title').innerText = story.title;
+            
+            // Card Content
+            document.getElementById('story-slide-icon').innerText = slide.icon;
+            document.getElementById('story-slide-title').innerText = slide.title;
+            document.getElementById('story-slide-text').innerText = slide.text;
+            document.getElementById('story-slide-btn').innerText = slide.btnText;
+            
+            // Progress Segments
+            const progContainer = document.getElementById('story-progress-container');
+            progContainer.innerHTML = story.slides.map((_, idx) => {
+                let fillStyle = 'width: 0%;';
+                if (idx < currentSlideIdx) fillStyle = 'width: 100%;';
+                else if (idx === currentSlideIdx) fillStyle = 'width: 0%; transition: width 5s linear;';
+                return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
+            }).join('');
+            
+            // Trigger animation for current slide
+            setTimeout(() => {
+                const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
+                if (curProg) curProg.style.width = '100%';
+            }, 50);
+
+            // Auto advance
+            storySlideTimer = setTimeout(() => {
+                nextStorySlide();
+            }, SLIDE_DURATION);
+        }
+
+        function nextStorySlide() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (currentSlideIdx < story.slides.length - 1) {
+                currentSlideIdx++;
+                renderStorySlide();
+            } else if (currentStoryIdx < ACADEMY_STORIES.length - 1) {
+                currentStoryIdx++;
+                currentSlideIdx = 0;
+                renderStorySlide();
+            } else {
+                closeStoryViewer();
+            }
+        }
+
+        function prevStorySlide() {
+            if (currentSlideIdx > 0) {
+                currentSlideIdx--;
+                renderStorySlide();
+            } else if (currentStoryIdx > 0) {
+                currentStoryIdx--;
+                currentSlideIdx = ACADEMY_STORIES[currentStoryIdx].slides.length - 1;
+                renderStorySlide();
+            }
+        }
+
+        function handleStoryAction() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            const slide = story.slides[currentSlideIdx];
+            if (slide.action === 'guide') {
+                closeStoryViewer();
+                window.location.href = '/guide.html';
+            } else if (slide.action === 'ask') {
+                closeStoryViewer();
+                switchTab('new');
+            } else if (slide.action === 'faq') {
+                closeStoryViewer();
+                switchTab('faq');
+            } else if (slide.action === 'close') {
+                closeStoryViewer();
+            } else {
+                nextStorySlide();
+            }
+        }
+
+        // Set student name on home greeting
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    </script>
+    <script src="bot-config.js">
+        // ========================
+        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // ========================
+        const ACADEMY_STORIES = [
+            {
+                title: "شرح المنصة",
+                icon: "🗺️",
+                slides: [
+                    { icon: "🏛️", title: "أهلاً بك في أُسوة!", text: "منصتك التعليمية الرائدة لدراسة العلوم الشرعية وتجويد القرآن الكريم بمنهجية عصرية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📚", title: "تصفح المقررات", text: "يمكنك متابعة المحاضرات والملخصات من أي مكان، والاطلاع على الخطة الدراسية السنوية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🗺️", title: "دليل الطالب التفاعلي", text: "استخدم دليل المنصة للتعرف على جميع الميزات والوصول السريع للأقسام.", btnText: "فتح الدليل 📖", action: "guide" }
+                ]
+            },
+            {
+                title: "تفعيل الحساب",
+                icon: "💳",
+                slides: [
+                    { icon: "💳", title: "طرق الدفع المعتمدة", text: "نوفر الدفع عبر البطاقة البنكية، التحويل المباشر، أو وكالات كاش بلس / وفاكاش.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📸", title: "إرسال وصل التحويل", text: "قم بتصوير وصل التحويل وإرفاقه في تذكرة دعم ليتم التحقق منه وتفعيل حسابك.", btnText: "التالي ➔", action: "next" },
+                    { icon: "⚡", title: "تفعيل فوري", text: "يقوم فريق الدعم بمطابقة الوصل وتفعيل اشتراكك خلال دقائق معدودة!", btnText: "طرح استفسار ✍️", action: "ask" }
+                ]
+            },
+            {
+                title: "تشغيل الدروس",
+                icon: "🎥",
+                slides: [
+                    { icon: "🎬", title: "مشاهدة الدروس بدقة HD", text: "تتوفر المحاضرات بجودات متعددة لتناسب سرعة الإنترنت لديك على الهاتف.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📑", title: "تحميل الملخصات", text: "أسفل كل درس ستجد زر تحميل الملخص بصيغة PDF للطباعة والمراجعة.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🎧", title: "التسجيلات الصوتية", text: "يمكنك الاستماع للتلاوات والشروحات الصوتية في أي وقت ومن دون انقطاع.", btnText: "الأسئلة الشائعة 📚", action: "faq" }
+                ]
+            },
+            {
+                title: "الاختبارات",
+                icon: "📝",
+                slides: [
+                    { icon: "✍️", title: "نظام الامتحانات الذكي", text: "اختبر فهمك بعد كل وحدة دراسية بأسئلة تفاعلية ومؤقت زمني دقيق.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📊", title: "النتيجة والتصحيح النموذجي", text: "تظهر نتيجتك فوراً مع توضيح الإجابات الصحيحة وشرح أسبابها.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🏆", title: "بنك الأخطاء والمراجعة", text: "تُحفظ الأسئلة التي أخطأت فيها تلقائياً لمساعدتك على مراجعتها لاحقاً!", btnText: "فهمت الفكرة 👍", action: "close" }
+                ]
+            },
+            {
+                title: "الشهادات",
+                icon: "🎓",
+                slides: [
+                    { icon: "🎯", title: "شروط الحصول على الشهادة", text: "إكمال 80% على الأقل من المحاضرات واجتياز الاختبار النهائي بنجاح.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📜", title: "شهادة معتمدة برقم تسلسلي", text: "تحصل على شهادة رقمية موثقة يمكن طباعتها ومشاركتها بكل فخر.", btnText: "إغلاق الشرح ✨", action: "close" }
+                ]
+            }
+        ];
+
+        let currentStoryIdx = 0;
+        let currentSlideIdx = 0;
+        let storySlideTimer = null;
+        const SLIDE_DURATION = 5000; // 5 seconds per slide
+
+        function openStoryViewer(storyIdx) {
+            currentStoryIdx = storyIdx;
+            currentSlideIdx = 0;
+            const modal = document.getElementById('story-viewer-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            renderStorySlide();
+        }
+
+        function closeStoryViewer() {
+            clearTimeout(storySlideTimer);
+            const modal = document.getElementById('story-viewer-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function renderStorySlide() {
+            clearTimeout(storySlideTimer);
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (!story || !story.slides[currentSlideIdx]) return;
+            
+            const slide = story.slides[currentSlideIdx];
+            
+            // Header
+            document.getElementById('story-author-icon').innerText = story.icon;
+            document.getElementById('story-author-title').innerText = story.title;
+            
+            // Card Content
+            document.getElementById('story-slide-icon').innerText = slide.icon;
+            document.getElementById('story-slide-title').innerText = slide.title;
+            document.getElementById('story-slide-text').innerText = slide.text;
+            document.getElementById('story-slide-btn').innerText = slide.btnText;
+            
+            // Progress Segments
+            const progContainer = document.getElementById('story-progress-container');
+            progContainer.innerHTML = story.slides.map((_, idx) => {
+                let fillStyle = 'width: 0%;';
+                if (idx < currentSlideIdx) fillStyle = 'width: 100%;';
+                else if (idx === currentSlideIdx) fillStyle = 'width: 0%; transition: width 5s linear;';
+                return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
+            }).join('');
+            
+            // Trigger animation for current slide
+            setTimeout(() => {
+                const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
+                if (curProg) curProg.style.width = '100%';
+            }, 50);
+
+            // Auto advance
+            storySlideTimer = setTimeout(() => {
+                nextStorySlide();
+            }, SLIDE_DURATION);
+        }
+
+        function nextStorySlide() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (currentSlideIdx < story.slides.length - 1) {
+                currentSlideIdx++;
+                renderStorySlide();
+            } else if (currentStoryIdx < ACADEMY_STORIES.length - 1) {
+                currentStoryIdx++;
+                currentSlideIdx = 0;
+                renderStorySlide();
+            } else {
+                closeStoryViewer();
+            }
+        }
+
+        function prevStorySlide() {
+            if (currentSlideIdx > 0) {
+                currentSlideIdx--;
+                renderStorySlide();
+            } else if (currentStoryIdx > 0) {
+                currentStoryIdx--;
+                currentSlideIdx = ACADEMY_STORIES[currentStoryIdx].slides.length - 1;
+                renderStorySlide();
+            }
+        }
+
+        function handleStoryAction() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            const slide = story.slides[currentSlideIdx];
+            if (slide.action === 'guide') {
+                closeStoryViewer();
+                window.location.href = '/guide.html';
+            } else if (slide.action === 'ask') {
+                closeStoryViewer();
+                switchTab('new');
+            } else if (slide.action === 'faq') {
+                closeStoryViewer();
+                switchTab('faq');
+            } else if (slide.action === 'close') {
+                closeStoryViewer();
+            } else {
+                nextStorySlide();
+            }
+        }
+
+        // Set student name on home greeting
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
                 :root {
@@ -242,6 +568,99 @@
             font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;
             box-shadow: 0 0 5px rgba(231, 76, 60, 0.5); z-index: 10;
         }
+    
+        /* STORIES CAROUSEL & FULLSCREEN VIEWER */
+        .stories-bar {
+            display: flex; gap: 14px; overflow-x: auto; padding: 10px 4px 16px 4px;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        }
+        .stories-bar::-webkit-scrollbar { display: none; }
+        
+        .story-circle-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; flex-shrink: 0; width: 72px; text-align: center;
+        }
+        .story-ring {
+            width: 62px; height: 62px; border-radius: 50%;
+            padding: 2.5px; background: linear-gradient(45deg, #f1c40f, #e67e22, #e74c3c, #9b59b6);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 12px rgba(241,196,15,0.25);
+        }
+        .story-circle-item:active .story-ring { transform: scale(0.92); }
+        .story-avatar {
+            width: 100%; height: 100%; border-radius: 50%; background: #000b29;
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
+            border: 2px solid #0f172a;
+        }
+        .story-label {
+            font-size: 0.74rem; font-weight: 700; color: var(--text-1);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+
+        /* STORY FULLSCREEN MODAL */
+        .story-viewer-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 100000;
+            flex-direction: column; justify-content: space-between;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        }
+        .story-progress-bar {
+            display: flex; gap: 5px; padding: 12px 15px; width: 100%; box-sizing: border-box;
+            position: absolute; top: 0; left: 0; z-index: 10;
+        }
+        .story-progress-seg {
+            flex: 1; height: 3.5px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden;
+        }
+        .story-progress-fill {
+            height: 100%; width: 0%; background: #ffffff; border-radius: 4px;
+        }
+        .story-header {
+            position: absolute; top: 25px; left: 0; width: 100%; padding: 0 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-sizing: border-box; z-index: 10;
+        }
+        .story-author {
+            display: flex; align-items: center; gap: 8px; color: #fff; font-weight: bold; font-size: 0.88rem;
+        }
+        .story-close-btn {
+            background: rgba(255,255,255,0.2); border: none; color: #fff;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .story-body {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 70px 20px 30px 20px; box-sizing: border-box; text-align: center; position: relative;
+        }
+        .story-card-slide {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 24px 20px;
+            width: 100%; max-width: 380px; box-shadow: 0 10px 35px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; align-items: center; animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .story-slide-icon {
+            font-size: 3.5rem; margin-bottom: 12px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+        }
+        .story-slide-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 10px;
+        }
+        .story-slide-text {
+            font-size: 0.92rem; color: #ffffff; line-height: 1.6; opacity: 0.9; margin-bottom: 20px;
+        }
+        .story-slide-btn {
+            background: var(--accent); color: #1e3a8a; font-weight: 800; border: none;
+            padding: 12px 26px; border-radius: 25px; font-size: 0.9rem; cursor: pointer;
+            font-family: 'Tajawal', sans-serif; box-shadow: 0 4px 15px rgba(241,196,15,0.3);
+        }
+        .story-nav-zones {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 5;
+        }
+        .story-nav-left, .story-nav-right { flex: 1; height: 100%; }
+
     </style>
 </head>
 <body>
@@ -377,7 +796,170 @@
                                     nameEl.style.display = 'none';
                                 }
                             });
-                        </script>
+                        
+        // ========================
+        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // ========================
+        const ACADEMY_STORIES = [
+            {
+                title: "شرح المنصة",
+                icon: "🗺️",
+                slides: [
+                    { icon: "🏛️", title: "أهلاً بك في أُسوة!", text: "منصتك التعليمية الرائدة لدراسة العلوم الشرعية وتجويد القرآن الكريم بمنهجية عصرية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📚", title: "تصفح المقررات", text: "يمكنك متابعة المحاضرات والملخصات من أي مكان، والاطلاع على الخطة الدراسية السنوية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🗺️", title: "دليل الطالب التفاعلي", text: "استخدم دليل المنصة للتعرف على جميع الميزات والوصول السريع للأقسام.", btnText: "فتح الدليل 📖", action: "guide" }
+                ]
+            },
+            {
+                title: "تفعيل الحساب",
+                icon: "💳",
+                slides: [
+                    { icon: "💳", title: "طرق الدفع المعتمدة", text: "نوفر الدفع عبر البطاقة البنكية، التحويل المباشر، أو وكالات كاش بلس / وفاكاش.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📸", title: "إرسال وصل التحويل", text: "قم بتصوير وصل التحويل وإرفاقه في تذكرة دعم ليتم التحقق منه وتفعيل حسابك.", btnText: "التالي ➔", action: "next" },
+                    { icon: "⚡", title: "تفعيل فوري", text: "يقوم فريق الدعم بمطابقة الوصل وتفعيل اشتراكك خلال دقائق معدودة!", btnText: "طرح استفسار ✍️", action: "ask" }
+                ]
+            },
+            {
+                title: "تشغيل الدروس",
+                icon: "🎥",
+                slides: [
+                    { icon: "🎬", title: "مشاهدة الدروس بدقة HD", text: "تتوفر المحاضرات بجودات متعددة لتناسب سرعة الإنترنت لديك على الهاتف.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📑", title: "تحميل الملخصات", text: "أسفل كل درس ستجد زر تحميل الملخص بصيغة PDF للطباعة والمراجعة.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🎧", title: "التسجيلات الصوتية", text: "يمكنك الاستماع للتلاوات والشروحات الصوتية في أي وقت ومن دون انقطاع.", btnText: "الأسئلة الشائعة 📚", action: "faq" }
+                ]
+            },
+            {
+                title: "الاختبارات",
+                icon: "📝",
+                slides: [
+                    { icon: "✍️", title: "نظام الامتحانات الذكي", text: "اختبر فهمك بعد كل وحدة دراسية بأسئلة تفاعلية ومؤقت زمني دقيق.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📊", title: "النتيجة والتصحيح النموذجي", text: "تظهر نتيجتك فوراً مع توضيح الإجابات الصحيحة وشرح أسبابها.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🏆", title: "بنك الأخطاء والمراجعة", text: "تُحفظ الأسئلة التي أخطأت فيها تلقائياً لمساعدتك على مراجعتها لاحقاً!", btnText: "فهمت الفكرة 👍", action: "close" }
+                ]
+            },
+            {
+                title: "الشهادات",
+                icon: "🎓",
+                slides: [
+                    { icon: "🎯", title: "شروط الحصول على الشهادة", text: "إكمال 80% على الأقل من المحاضرات واجتياز الاختبار النهائي بنجاح.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📜", title: "شهادة معتمدة برقم تسلسلي", text: "تحصل على شهادة رقمية موثقة يمكن طباعتها ومشاركتها بكل فخر.", btnText: "إغلاق الشرح ✨", action: "close" }
+                ]
+            }
+        ];
+
+        let currentStoryIdx = 0;
+        let currentSlideIdx = 0;
+        let storySlideTimer = null;
+        const SLIDE_DURATION = 5000; // 5 seconds per slide
+
+        function openStoryViewer(storyIdx) {
+            currentStoryIdx = storyIdx;
+            currentSlideIdx = 0;
+            const modal = document.getElementById('story-viewer-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            renderStorySlide();
+        }
+
+        function closeStoryViewer() {
+            clearTimeout(storySlideTimer);
+            const modal = document.getElementById('story-viewer-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function renderStorySlide() {
+            clearTimeout(storySlideTimer);
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (!story || !story.slides[currentSlideIdx]) return;
+            
+            const slide = story.slides[currentSlideIdx];
+            
+            // Header
+            document.getElementById('story-author-icon').innerText = story.icon;
+            document.getElementById('story-author-title').innerText = story.title;
+            
+            // Card Content
+            document.getElementById('story-slide-icon').innerText = slide.icon;
+            document.getElementById('story-slide-title').innerText = slide.title;
+            document.getElementById('story-slide-text').innerText = slide.text;
+            document.getElementById('story-slide-btn').innerText = slide.btnText;
+            
+            // Progress Segments
+            const progContainer = document.getElementById('story-progress-container');
+            progContainer.innerHTML = story.slides.map((_, idx) => {
+                let fillStyle = 'width: 0%;';
+                if (idx < currentSlideIdx) fillStyle = 'width: 100%;';
+                else if (idx === currentSlideIdx) fillStyle = 'width: 0%; transition: width 5s linear;';
+                return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
+            }).join('');
+            
+            // Trigger animation for current slide
+            setTimeout(() => {
+                const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
+                if (curProg) curProg.style.width = '100%';
+            }, 50);
+
+            // Auto advance
+            storySlideTimer = setTimeout(() => {
+                nextStorySlide();
+            }, SLIDE_DURATION);
+        }
+
+        function nextStorySlide() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (currentSlideIdx < story.slides.length - 1) {
+                currentSlideIdx++;
+                renderStorySlide();
+            } else if (currentStoryIdx < ACADEMY_STORIES.length - 1) {
+                currentStoryIdx++;
+                currentSlideIdx = 0;
+                renderStorySlide();
+            } else {
+                closeStoryViewer();
+            }
+        }
+
+        function prevStorySlide() {
+            if (currentSlideIdx > 0) {
+                currentSlideIdx--;
+                renderStorySlide();
+            } else if (currentStoryIdx > 0) {
+                currentStoryIdx--;
+                currentSlideIdx = ACADEMY_STORIES[currentStoryIdx].slides.length - 1;
+                renderStorySlide();
+            }
+        }
+
+        function handleStoryAction() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            const slide = story.slides[currentSlideIdx];
+            if (slide.action === 'guide') {
+                closeStoryViewer();
+                window.location.href = '/guide.html';
+            } else if (slide.action === 'ask') {
+                closeStoryViewer();
+                switchTab('new');
+            } else if (slide.action === 'faq') {
+                closeStoryViewer();
+                switchTab('faq');
+            } else if (slide.action === 'close') {
+                closeStoryViewer();
+            } else {
+                nextStorySlide();
+            }
+        }
+
+        // Set student name on home greeting
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    </script>
                     </div>
                     <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
                     <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
@@ -1697,7 +2279,170 @@
             }
         }
 
-</script>
+
+        // ========================
+        // STORIES ENGINE (INTERACTIVE MOBILE TUTOS)
+        // ========================
+        const ACADEMY_STORIES = [
+            {
+                title: "شرح المنصة",
+                icon: "🗺️",
+                slides: [
+                    { icon: "🏛️", title: "أهلاً بك في أُسوة!", text: "منصتك التعليمية الرائدة لدراسة العلوم الشرعية وتجويد القرآن الكريم بمنهجية عصرية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📚", title: "تصفح المقررات", text: "يمكنك متابعة المحاضرات والملخصات من أي مكان، والاطلاع على الخطة الدراسية السنوية.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🗺️", title: "دليل الطالب التفاعلي", text: "استخدم دليل المنصة للتعرف على جميع الميزات والوصول السريع للأقسام.", btnText: "فتح الدليل 📖", action: "guide" }
+                ]
+            },
+            {
+                title: "تفعيل الحساب",
+                icon: "💳",
+                slides: [
+                    { icon: "💳", title: "طرق الدفع المعتمدة", text: "نوفر الدفع عبر البطاقة البنكية، التحويل المباشر، أو وكالات كاش بلس / وفاكاش.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📸", title: "إرسال وصل التحويل", text: "قم بتصوير وصل التحويل وإرفاقه في تذكرة دعم ليتم التحقق منه وتفعيل حسابك.", btnText: "التالي ➔", action: "next" },
+                    { icon: "⚡", title: "تفعيل فوري", text: "يقوم فريق الدعم بمطابقة الوصل وتفعيل اشتراكك خلال دقائق معدودة!", btnText: "طرح استفسار ✍️", action: "ask" }
+                ]
+            },
+            {
+                title: "تشغيل الدروس",
+                icon: "🎥",
+                slides: [
+                    { icon: "🎬", title: "مشاهدة الدروس بدقة HD", text: "تتوفر المحاضرات بجودات متعددة لتناسب سرعة الإنترنت لديك على الهاتف.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📑", title: "تحميل الملخصات", text: "أسفل كل درس ستجد زر تحميل الملخص بصيغة PDF للطباعة والمراجعة.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🎧", title: "التسجيلات الصوتية", text: "يمكنك الاستماع للتلاوات والشروحات الصوتية في أي وقت ومن دون انقطاع.", btnText: "الأسئلة الشائعة 📚", action: "faq" }
+                ]
+            },
+            {
+                title: "الاختبارات",
+                icon: "📝",
+                slides: [
+                    { icon: "✍️", title: "نظام الامتحانات الذكي", text: "اختبر فهمك بعد كل وحدة دراسية بأسئلة تفاعلية ومؤقت زمني دقيق.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📊", title: "النتيجة والتصحيح النموذجي", text: "تظهر نتيجتك فوراً مع توضيح الإجابات الصحيحة وشرح أسبابها.", btnText: "التالي ➔", action: "next" },
+                    { icon: "🏆", title: "بنك الأخطاء والمراجعة", text: "تُحفظ الأسئلة التي أخطأت فيها تلقائياً لمساعدتك على مراجعتها لاحقاً!", btnText: "فهمت الفكرة 👍", action: "close" }
+                ]
+            },
+            {
+                title: "الشهادات",
+                icon: "🎓",
+                slides: [
+                    { icon: "🎯", title: "شروط الحصول على الشهادة", text: "إكمال 80% على الأقل من المحاضرات واجتياز الاختبار النهائي بنجاح.", btnText: "التالي ➔", action: "next" },
+                    { icon: "📜", title: "شهادة معتمدة برقم تسلسلي", text: "تحصل على شهادة رقمية موثقة يمكن طباعتها ومشاركتها بكل فخر.", btnText: "إغلاق الشرح ✨", action: "close" }
+                ]
+            }
+        ];
+
+        let currentStoryIdx = 0;
+        let currentSlideIdx = 0;
+        let storySlideTimer = null;
+        const SLIDE_DURATION = 5000; // 5 seconds per slide
+
+        function openStoryViewer(storyIdx) {
+            currentStoryIdx = storyIdx;
+            currentSlideIdx = 0;
+            const modal = document.getElementById('story-viewer-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            renderStorySlide();
+        }
+
+        function closeStoryViewer() {
+            clearTimeout(storySlideTimer);
+            const modal = document.getElementById('story-viewer-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function renderStorySlide() {
+            clearTimeout(storySlideTimer);
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (!story || !story.slides[currentSlideIdx]) return;
+            
+            const slide = story.slides[currentSlideIdx];
+            
+            // Header
+            document.getElementById('story-author-icon').innerText = story.icon;
+            document.getElementById('story-author-title').innerText = story.title;
+            
+            // Card Content
+            document.getElementById('story-slide-icon').innerText = slide.icon;
+            document.getElementById('story-slide-title').innerText = slide.title;
+            document.getElementById('story-slide-text').innerText = slide.text;
+            document.getElementById('story-slide-btn').innerText = slide.btnText;
+            
+            // Progress Segments
+            const progContainer = document.getElementById('story-progress-container');
+            progContainer.innerHTML = story.slides.map((_, idx) => {
+                let fillStyle = 'width: 0%;';
+                if (idx < currentSlideIdx) fillStyle = 'width: 100%;';
+                else if (idx === currentSlideIdx) fillStyle = 'width: 0%; transition: width 5s linear;';
+                return `<div class="story-progress-seg"><div class="story-progress-fill" id="story-prog-${idx}" style="${fillStyle}"></div></div>`;
+            }).join('');
+            
+            // Trigger animation for current slide
+            setTimeout(() => {
+                const curProg = document.getElementById(`story-prog-${currentSlideIdx}`);
+                if (curProg) curProg.style.width = '100%';
+            }, 50);
+
+            // Auto advance
+            storySlideTimer = setTimeout(() => {
+                nextStorySlide();
+            }, SLIDE_DURATION);
+        }
+
+        function nextStorySlide() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            if (currentSlideIdx < story.slides.length - 1) {
+                currentSlideIdx++;
+                renderStorySlide();
+            } else if (currentStoryIdx < ACADEMY_STORIES.length - 1) {
+                currentStoryIdx++;
+                currentSlideIdx = 0;
+                renderStorySlide();
+            } else {
+                closeStoryViewer();
+            }
+        }
+
+        function prevStorySlide() {
+            if (currentSlideIdx > 0) {
+                currentSlideIdx--;
+                renderStorySlide();
+            } else if (currentStoryIdx > 0) {
+                currentStoryIdx--;
+                currentSlideIdx = ACADEMY_STORIES[currentStoryIdx].slides.length - 1;
+                renderStorySlide();
+            }
+        }
+
+        function handleStoryAction() {
+            const story = ACADEMY_STORIES[currentStoryIdx];
+            const slide = story.slides[currentSlideIdx];
+            if (slide.action === 'guide') {
+                closeStoryViewer();
+                window.location.href = '/guide.html';
+            } else if (slide.action === 'ask') {
+                closeStoryViewer();
+                switchTab('new');
+            } else if (slide.action === 'faq') {
+                closeStoryViewer();
+                switchTab('faq');
+            } else if (slide.action === 'close') {
+                closeStoryViewer();
+            } else {
+                nextStorySlide();
+            }
+        }
+
+        // Set student name on home greeting
+        function initHomeGreeting() {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const greetEl = document.getElementById('home-student-greeting');
+            if (greetEl && user && user.first_name) {
+                greetEl.innerText = `👋 مرحباً بك يا ${user.first_name}`;
+            }
+        }
+        setTimeout(initHomeGreeting, 500);
+
+    </script>
 
     
     <!-- TICKET THREAD MODAL -->
@@ -1787,6 +2532,38 @@
                 <div style="font-weight:bold; font-size:1.1rem; color:#2ecc71; margin-bottom:8px;">شكراً لمساهمتك!</div>
                 <div style="font-size:0.85rem; color:var(--text-2); line-height:1.5; margin-bottom:15px;">تم إرسال اقتراحك لفريق الإدارة. بعد مراجعته واعتماده سيظهر مباشرة في الأسئلة الشائعة لجميع الطلاب.</div>
                 <button onclick="closeStudentSuggestModal()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:8px 20px; border-radius:20px; cursor:pointer; font-family:'Tajawal';">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- STORY VIEWER FULLSCREEN MODAL -->
+    <div class="story-viewer-overlay" id="story-viewer-modal">
+        <!-- Progress Segments -->
+        <div class="story-progress-bar" id="story-progress-container"></div>
+        
+        <!-- Header -->
+        <div class="story-header">
+            <div class="story-author">
+                <span style="font-size:1.3rem;" id="story-author-icon">🎓</span>
+                <span id="story-author-title">أكاديمية أُسوة</span>
+            </div>
+            <button class="story-close-btn" onclick="closeStoryViewer()">✕</button>
+        </div>
+
+        <!-- Body / Slide Content -->
+        <div class="story-body" id="story-body-content">
+            <!-- Nav Zones (Tap right / Tap left) -->
+            <div class="story-nav-zones">
+                <div class="story-nav-right" onclick="prevStorySlide()"></div>
+                <div class="story-nav-left" onclick="nextStorySlide()"></div>
+            </div>
+
+            <div class="story-card-slide" id="story-card-slide">
+                <div class="story-slide-icon" id="story-slide-icon">📱</div>
+                <div class="story-slide-title" id="story-slide-title">عنوان القصة</div>
+                <div class="story-slide-text" id="story-slide-text">شرح وتفاصيل الخطوة...</div>
+                <button class="story-slide-btn" id="story-slide-btn" onclick="handleStoryAction()">🚀 تصفح المزيد</button>
             </div>
         </div>
     </div>
