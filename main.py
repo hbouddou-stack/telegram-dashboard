@@ -4293,6 +4293,7 @@ async def api_link_account(request: web.Request):
         
         # 1. Upsert users table
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            db_conn.row_factory = aiosqlite.Row
             await db_conn.execute("""
                 INSERT INTO users (telegram_id, first_name, last_name, username) 
                 VALUES (?, ?, ?, ?) 
@@ -4304,15 +4305,16 @@ async def api_link_account(request: web.Request):
             student_row = None
             if email:
                 async with db_conn.execute("SELECT * FROM academy_students WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))", (email,)) as cur:
-                    db_conn.row_factory = aiosqlite.Row
                     student_row = await cur.fetchone()
             elif phone:
                 async with db_conn.execute("SELECT * FROM academy_students WHERE phone = ?", (phone,)) as cur:
-                    db_conn.row_factory = aiosqlite.Row
                     student_row = await cur.fetchone()
                     
             if student_row:
-                student = dict(student_row)
+                try:
+                    student = dict(student_row)
+                except Exception:
+                    student = dict(zip([c[0] for c in cur.description], student_row))
                 p_status = (student.get('payment_status') or 'PAID').upper()
                 real_first_name = student.get('first_name') or telegram_first_name
                 
