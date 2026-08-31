@@ -5481,6 +5481,23 @@ async def api_ticket_rate(request):
         import traceback
         traceback.print_exc()
         from aiohttp import web
+async def api_admin_assign_ticket(request):
+    try:
+        data = await request.json()
+        ticket_id = data.get('ticket_id')
+        admin_name = data.get('admin_name', 'Admin')
+        if not ticket_id:
+             from aiohttp import web
+             return web.json_response({'success': False, 'error': 'Missing parameters'}, status=400)
+             
+        import database as db
+        await db.assign_crm_ticket(ticket_id, admin_name)
+        from aiohttp import web
+        return web.json_response({'success': True})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 async def api_admin_resolve_ticket(request):
