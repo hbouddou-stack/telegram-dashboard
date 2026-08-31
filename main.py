@@ -338,7 +338,10 @@ async def handle_editor(request):
     return web.FileResponse(f)
 
 async def handle_support_app(request):
-    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
 
 async def handle_support_css(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'support.css'))
@@ -374,7 +377,10 @@ async def handle_dossiertelegram_jpg(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'dossiertelegram.jpg'))
 
 async def handle_support(request):
-    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
 
 async def handle_app(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'app.html'))

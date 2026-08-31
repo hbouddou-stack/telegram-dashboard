@@ -5,7 +5,7 @@ from aiogram.types import Message, ChatJoinRequest, InlineKeyboardMarkup, Inline
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 import aiosqlite
-from config import DATABASE_PATH
+from config import DATABASE_PATH, TELEGRAM_ADMIN_IDS
 import re
 import logging
 from database import log_student_action
@@ -29,7 +29,7 @@ def get_webapp_base_url() -> str:
 @router.message(Command("start"))
 @router.message(F.text == "/start")
 async def handle_command_start(message: Message, state: FSMContext):
-    """Gestionnaire principal de la commande /start."""
+    """Gestionnaire principal de la commande /start (Bouton Unique : منصة ربط الحساب)."""
     user_id = message.from_user.id
     first_name = message.from_user.first_name or "طالب العلم"
     username = message.from_user.username or ""
@@ -42,48 +42,51 @@ async def handle_command_start(message: Message, state: FSMContext):
                 student = await cur.fetchone()
 
         if student:
-            # Élève déjà lié et validé
             s_dict = dict(student)
             real_name = s_dict.get('first_name') or first_name
-            
-            kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🎓 منصة الطالب والدروس (Mini App)", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))],
-                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html"))],
-                [InlineKeyboardButton(text="🔗 إدارة بيانات الحساب والمجموعات", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
-            ])
-            
             welcome_text = (
                 f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية أُسوة! 🎓\n\n"
                 f"حسابك مفعل ومربوط بنجاح ✅\n\n"
-                f"اختر من القائمة أدناه للوصول إلى المنصة التعليمية أو مركز الدعم:"
+                f"👇 اضغط على الزر أدناه لإدارة حسابك ومجموعاتك الدراسية:"
             )
-            await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
-            await log_student_action(s_dict['student_id'], 'BOT_START_LINKED', "فتح البوت (حساب مفعل)", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
         else:
-            # Élève non encore lié -> Invitation à se lier via link.html
-            kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🔗 ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html"))],
-                [InlineKeyboardButton(text="💬 مركز الدعم والاستفسار", web_app=WebAppInfo(url=f"{base_url}/ask.html"))]
-            ])
-            
             welcome_text = (
                 f"مرحباً بك يا <b>{first_name}</b> في أكاديمية أُسوة! 🎓\n\n"
-                f"هذا البوت هو رفيقك التعليمي الرسمي لدراسة المقررات وحل التمارين والانضمام للمجموعات الدراسية.\n\n"
-                f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه لربط حسابك وتفعيل اشتراكك:"
+                f"هذا البوت هو بوابتك الرسمية لربط حسابك وتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
+                f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه للبدء:"
             )
-            await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
-            await log_student_action(0, 'BOT_START_UNLINKED', "فتح البوت لأول مرة (في انتظار الربط)", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
+
+        # UN SEUL BOUTON PRINCIPAL : منصة ربط الحساب وتفعيل الاشتراك
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?v=auth_{user_id}"))]
+        ])
+
+        await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
+        await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"فتح البوت ({'مفعل' if student else 'جديد'})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
 
     except Exception as e:
-        logger.error(f"[START] Error in handle_command_start: {e}")
+        logger.error(f"[START] Error: {e}")
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔗 ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
+            [InlineKeyboardButton(text="🔗 منصة ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
         ])
         await message.answer("مرحباً بك في أكاديمية أُسوة! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
+@router.message(Command("federer"))
+async def cmd_federer(message: Message):
+    """Menu complet pour les administrateurs et accès à toutes les applications."""
+    user_id = message.from_user.id
+    base_url = get_webapp_base_url()
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎓 منصة الطالب والدروس (reader.html)", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))],
+        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=ask2"))],
+        [InlineKeyboardButton(text="🔗 منصة ربط الحساب (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))],
+        [InlineKeyboardButton(text="🔧 لوحة تحكم المشرفين (admin.html)", web_app=WebAppInfo(url=f"{base_url}/admin.html"))]
+    ])
+    await message.answer("🤫 <b>لوحة الوصول الكامل والتطبيقات (Menu Federer) :</b>", reply_markup=kb, parse_mode="HTML")
+
 @router.chat_join_request()
 async def handle_join_request(update: ChatJoinRequest, bot: Bot):
-    """Gestionnaire intelligent des demandes d'adhésion aux groupes et canaux."""
     user_id = update.from_user.id
     chat_id = update.chat.id
     chat_title = update.chat.title or "مجموعات الأكاديمية"
@@ -139,7 +142,7 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
                     pass
                 return
 
-        # En attente de validation
+        # En attente
         import database as db_mod
         await db_mod.add_pending_verification(user_id, "", username, tg_first_name)
         await log_student_action(0, 'JOIN_REQUEST_WAITING', f"طلب انضمام قيد الانتظار لمجموعة: {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=username)
