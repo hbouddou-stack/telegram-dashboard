@@ -170,6 +170,38 @@
         
         /* Confetti Canvas */
         #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+    
+        /* ROADMAP STEPPER & SEARCH */
+        .guide-search-box {
+            width: 100%; padding: 12px 16px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3);
+            color: #fff; font-family: 'Tajawal', sans-serif; font-size: 0.92rem;
+            outline: none; box-sizing: border-box; margin-bottom: 15px;
+        }
+        .roadmap-stepper {
+            display: flex; justify-content: space-between; position: relative;
+            margin: 15px 0 20px 0; padding: 0 10px;
+        }
+        .roadmap-stepper::before {
+            content: ''; position: absolute; top: 16px; left: 30px; right: 30px;
+            height: 2px; background: rgba(255,255,255,0.15); z-index: 1;
+        }
+        .roadmap-step {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            position: relative; z-index: 2; cursor: pointer;
+        }
+        .roadmap-node {
+            width: 34px; height: 34px; border-radius: 50%; background: #0f172a;
+            border: 2px solid #8736ff; color: #fff; font-weight: bold; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .roadmap-step:hover .roadmap-node {
+            background: #8736ff; transform: scale(1.1);
+        }
+        .roadmap-label {
+            font-size: 0.75rem; color: #cbd5e1; font-weight: 700; text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -188,6 +220,27 @@
             </div>
             <div class="progress-track">
                 <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div style="padding: 15px 20px 0 20px;">
+            <input type="text" class="guide-search-box" id="guide-search-input" placeholder="🔍 ابحث في دليل الطالب (مثال: امتحانات، دفع، شروط)..." oninput="filterGuideTopics(this.value)" />
+
+            <!-- Roadmap Stepper in 3 Stages -->
+            <div style="font-size:0.82rem; font-weight:800; color:#f1c40f; margin-bottom:8px;">🗺️ خارطة طريق الطالب الناجح:</div>
+            <div class="roadmap-stepper">
+                <div class="roadmap-step" onclick="openDetail('welcome')">
+                    <div class="roadmap-node" style="border-color:#26D0CE;">1</div>
+                    <span class="roadmap-label">الانطلاق</span>
+                </div>
+                <div class="roadmap-step" onclick="openDetail('program')">
+                    <div class="roadmap-node" style="border-color:#FF4B2B;">2</div>
+                    <span class="roadmap-label">المقررات</span>
+                </div>
+                <div class="roadmap-step" onclick="openDetail('exams')">
+                    <div class="roadmap-node" style="border-color:#a18cd1;">3</div>
+                    <span class="roadmap-label">الشهادة</span>
+                </div>
             </div>
         </div>
         
