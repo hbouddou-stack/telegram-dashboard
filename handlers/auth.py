@@ -180,3 +180,70 @@ async def handle_confirm_join(callback: CallbackQuery):
         await callback.message.answer("✅ <b>شكراً لتأكيدك!</b> حسابك الآن مفعل 100% ومكتمل في المنصة.")
     except Exception:
         pass
+
+
+@router.message(Command("png"))
+async def cmd_png_diagrams(message: Message, bot: Bot):
+    """Affiche les boutons pour visualiser et télécharger les schémas en PNG."""
+    base_url = get_webapp_base_url()
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🗺️ 1. المخطط الشامل (يوسف، مريم، حمزة)", callback_data="show_png_journey")],
+        [InlineKeyboardButton(text="🔒 2. تفصيل الحالة 3 (حمزة والرابط المحمي)", callback_data="show_png_case3")],
+        [InlineKeyboardButton(text="🌐 فتح المخطط بدقة عالية (HD Web Link)", url=f"{base_url}/diagrams/journey_3_cases.png")]
+    ])
+    
+    msg_text = (
+        "📊 <b>المخططات التوضيحية للمشروع (Mermaid PNG) :</b>\n\n"
+        "اختر المخطط الذي ترغب في استعراضه بالصور:"
+    )
+    await message.answer(msg_text, reply_markup=kb, parse_mode="HTML")
+
+@router.callback_query(F.data == "show_png_journey")
+async def handle_png_journey(callback: CallbackQuery, bot: Bot):
+    await callback.answer()
+    base_url = get_webapp_base_url()
+    img_path = os.path.join(os.path.dirname(__file__), "..", "dashboard", "diagrams", "journey_3_cases.png")
+    
+    caption = (
+        "🗺️ <b>المخطط الشامل لرحلة الطالب (الحالات الثلاث):</b>\n\n"
+        "🟢 <b>يوسف (رجل):</b> دافع ➔ مجموعة الإخوة 🧔\n"
+        "🟣 <b>مريم (امرأة):</b> دافعة ➔ مجموعة الأخوات 🧕\n"
+        "🟠 <b>حمزة (معلق):</b> تحويل بنكي ➔ طابور الانتظار ➔ تفعيل تلقائي فور التحديث ⚡"
+    )
+    
+    try:
+        from aiogram.types import FSInputFile
+        if os.path.exists(img_path):
+            photo = FSInputFile(img_path)
+            await callback.message.answer_photo(photo, caption=caption, parse_mode="HTML")
+        else:
+            await callback.message.answer_photo(f"{base_url}/diagrams/journey_3_cases.png", caption=caption, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"Error sending photo 1: {e}")
+        await callback.message.answer(f"🔗 رابط الصورة: {base_url}/diagrams/journey_3_cases.png\n\n{caption}", parse_mode="HTML")
+
+@router.callback_query(F.data == "show_png_case3")
+async def handle_png_case3(callback: CallbackQuery, bot: Bot):
+    await callback.answer()
+    base_url = get_webapp_base_url()
+    img_path = os.path.join(os.path.dirname(__file__), "..", "dashboard", "diagrams", "case_3_detailed.png")
+    
+    caption = (
+        "🔒 <b>تفصيل الحالة 3: رحلة حمزة مع الرابط أحادي الاستخدام:</b>\n\n"
+        "1️⃣ حمزة يُدخل بريده ➔ يوضع في قائمة الانتظار المؤقتة.\n"
+        "2️⃣ الإدارة تُحدّث الملف ➔ البوت يُنشئ رابطاً فريداً (member_limit=1) ويرسله لحمزة.\n"
+        "3️⃣ حمزة ينضم ➔ تليجرام يحرق الرابط فوراً 🔥.\n"
+        "4️⃣ حمزة يُحوّل الرابط لصديقه بلال ➔ تليجرام يرفض دخول بلال ❌."
+    )
+    
+    try:
+        from aiogram.types import FSInputFile
+        if os.path.exists(img_path):
+            photo = FSInputFile(img_path)
+            await callback.message.answer_photo(photo, caption=caption, parse_mode="HTML")
+        else:
+            await callback.message.answer_photo(f"{base_url}/diagrams/case_3_detailed.png", caption=caption, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"Error sending photo 2: {e}")
+        await callback.message.answer(f"🔗 رابط الصورة: {base_url}/diagrams/case_3_detailed.png\n\n{caption}", parse_mode="HTML")

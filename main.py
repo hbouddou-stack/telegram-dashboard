@@ -5044,6 +5044,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/support', handle_support_app)
     app.router.add_get('/support.css', handle_support_css)
     app.router.add_static('/js/', os.path.join(os.path.dirname(__file__), 'dashboard', 'js'))
+    app.router.add_static('/diagrams/', os.path.join(DASHBOARD_DIR, 'diagrams'))
     app.router.add_get('/admin', handle_admin)
     app.router.add_get('/admin.html', handle_admin)
     app.router.add_get('/admin-bot', handle_admin_bot)
