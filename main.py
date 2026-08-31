@@ -252,7 +252,7 @@ async def handle_editor(request):
     return web.FileResponse(f)
 
 async def handle_support_app(request):
-    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'support.html'))
+    return web.FileResponse(os.path.join(DASHBOARD_DIR, 'ask.html'))
 
 async def handle_support_css(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'support.css'))
@@ -2630,7 +2630,7 @@ async def reply_ticket_message_api(request):
                         label = type_labels.get(row["report_type"], "✉️ رسالتك")
                         
                         host = request.host
-                        webapp_url = f"https://{host}/support.html?view=chat&ticket_id={ticket_id}"
+                        webapp_url = f"https://{host}/ask.html?view=chat&ticket_id={ticket_id}"
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
@@ -3477,7 +3477,7 @@ async def resolve_admin_ticket(request):
                         
                         # Force https for WebApp compatibility on Telegram
                         host = request.host
-                        webapp_url = f"https://{host}/support.html?view=chat&ticket_id={ticket_id}"
+                        webapp_url = f"https://{host}/ask.html?view=chat&ticket_id={ticket_id}"
                         
                         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
                         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
