@@ -4344,12 +4344,11 @@ async def api_link_account(request: web.Request):
                     bot = request.app.get('bot')
                     if bot and telegram_id:
                         try:
-                            msg_text = (
-                                f"⏳ <b>مرحباً بك يا {real_first_name}!</b>\n\n"
-                                f"📥 تم تسجيل طلبك بالبريد: <code>{email}</code> بنجاح.\n\n"
-                                f"📋 طلبك حالياً <b>قيد المراجعة والمصادقة</b> مع إدارة الأكاديمية لتأكيد التحويل البنكي.\n\n"
-                                f"⚡ <b>لا تقلق:</b> ستصلك روابط مجموعاتك الخاصة هنا على تليجرام تلقائياً فور تأكيد الإدارة!"
-                            )
+                            msg_text = """⏳ <b>طلبك قيد المراجعة والمصادقة</b>
+
+تم تسجيل بياناتك وحسابك على تليجرام بنجاح ✅
+
+يقوم فريق الإدارة بمطابقة الدفع والتحويلات البنكية دورياً. <b>ستصلك رسالة تلقائية هنا على تليجرام برابط مجموعتك الخاصة فور المصادقة</b> دون الحاجة لإعادة التسجيل."""
                             await bot.send_message(chat_id=int(telegram_id), text=msg_text, parse_mode='HTML')
                         except Exception as e:
                             _log.error(f"Error sending pending TG message: {e}")
@@ -4369,10 +4368,10 @@ async def api_link_account(request: web.Request):
                 if bot and telegram_id:
                     try:
                         msg_text = (
-                            f"⏳ <b>مرحباً بك يا {telegram_first_name or 'طالب العلم'}!</b>\n\n"
-                            f"📥 تم تسجيل بياناتك بالبريد: <code>{email}</code> بنجاح.\n\n"
-                            f"📋 طلبك حالياً <b>قيد المراجعة والمصادقة</b> مع إدارة الأكاديمية (لمطابقة كشف التحويلات البنكية).\n\n"
-                            f"⚡ <b>لا تقلق:</b> ستصلك روابط مجموعاتك الخاصة هنا تلقائياً فور المصادقة دون الحاجة لإعادة التسجيل!"
+                            "⏳ <b>طلبك قيد المراجعة والمصادقة</b>\n\n"
+                            "تم تسجيل بياناتك وحسابك على تليجرام بنجاح ✅\n\n"
+                            "يقوم فريق الإدارة بمطابقة الدفع والتحويلات البنكية دورياً. "
+                            "<b>ستصلك رسالة تلقائية هنا على تليجرام برابط مجموعتك الخاصة فور المصادقة</b> دون الحاجة لإعادة التسجيل."
                         )
                         await bot.send_message(chat_id=int(telegram_id), text=msg_text, parse_mode='HTML')
                     except Exception as e:

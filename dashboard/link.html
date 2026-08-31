@@ -606,8 +606,15 @@
         <div class="input-group">
             <label>البريد الإلكتروني</label>
             <div style="position: relative;">
-                <input type="email" id="email" oninput="debouncedValidateField()" placeholder="البريد الإلكتروني المستخدم في التسجيل" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
+                <input type="email" id="email" oninput="debouncedValidateField()" placeholder="مثال: name@gmail.com" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
                 <div id="email_status" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
+            </div>
+            <!-- QUICK EMAIL DOMAIN PILLS -->
+            <div style="display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
+                <button type="button" onclick="appendEmailDomain('@gmail.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--accent); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@gmail.com</button>
+                <button type="button" onclick="appendEmailDomain('@hotmail.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@hotmail.com</button>
+                <button type="button" onclick="appendEmailDomain('@outlook.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@outlook.com</button>
+                <button type="button" onclick="appendEmailDomain('@yahoo.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@yahoo.com</button>
             </div>
             <div class="inline-error-text" id="err-email"></div>
         </div>
@@ -711,10 +718,7 @@
             </p>
         </div>
 
-        <!-- SHARED FOLDER BUTTON AVAILABLE IN PENDING STATUS -->
-        <button onclick="logAndJoinFolder()" id="btn-pending-join-folder" class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:16px; width:100%; animation: pulse-glow 1.5s infinite; transition: all 0.3s ease; padding:14px; border-radius:12px; font-weight:bold; font-size:1.05rem; cursor:pointer;">
-            📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام
-        </button>
+        
 
         <div style="display:flex; gap:10px; width:100%; margin-top:14px;">
             <button onclick="window.location.href='/ask.html'" style="flex:1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px; border-radius:12px; font-family:'Tajawal', sans-serif; cursor:pointer; font-weight:bold; font-size:0.85rem;">
@@ -735,6 +739,23 @@
         // ==========================================
         // AUTO-ADVANCING 6-DIGIT OTP ENGINE
         // ==========================================
+        
+        function appendEmailDomain(domain) {
+            const emailInput = document.getElementById('email');
+            if (!emailInput) return;
+            let val = emailInput.value.trim();
+            if (!val) {
+                emailInput.value = domain;
+            } else if (val.includes('@')) {
+                val = val.split('@')[0] + domain;
+                emailInput.value = val;
+            } else {
+                emailInput.value = val + domain;
+            }
+            emailInput.focus();
+            if (typeof debouncedValidateField === 'function') debouncedValidateField();
+        }
+
         function initOTP() {
             const inputs = Array.from(document.querySelectorAll('.otp-input'));
             const hiddenInput = document.getElementById('student_id');
