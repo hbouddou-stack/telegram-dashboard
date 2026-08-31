@@ -79,10 +79,9 @@ async def cmd_federer(message: Message):
     base_url = get_webapp_base_url()
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎓 منصة الطالب والدروس (reader.html)", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))],
+        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين وإدارة الطلاب (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin"))],
         [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=pro_new"))],
-        [InlineKeyboardButton(text="🔗 منصة ربط الحساب (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))],
-        [InlineKeyboardButton(text="🔧 لوحة تحكم المشرفين (admin.html)", web_app=WebAppInfo(url=f"{base_url}/admin.html"))]
+        [InlineKeyboardButton(text="🔗 منصة ربط الحساب والتحقق (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))]
     ])
     await message.answer("🤫 <b>لوحة الوصول الكامل والتطبيقات (Menu Federer) :</b>", reply_markup=kb, parse_mode="HTML")
 
