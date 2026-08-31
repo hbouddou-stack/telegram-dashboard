@@ -5601,34 +5601,52 @@ async def api_admin_student_profile(request):
         from config import DATABASE_PATH
         import aiosqlite
         
+        tid_int = int(telegram_id)
         profile = {
             'telegram_id': telegram_id,
-            'name': '??? ?????',
-            'join_date': '??? ?????',
-            'total_score': 0,
-            'quizzes_taken': 0,
-            'status': '??? ????'
+            'name': 'غير معروف',
+            'username': '',
+            'email': 'غير مسجل',
+            'phone': 'غير مسجل',
+            'join_date': 'غير متوفر',
+            'status': 'نشط',
+            'payment_status': 'غير محدد',
+            'recent_tickets': []
         }
         
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
             db_conn.row_factory = aiosqlite.Row
-            # Try to get user
-            async with db_conn.execute("SELECT first_name, username, created_at FROM users WHERE telegram_id = ?", (int(telegram_id),)) as cur:
+            
+            # 1. Look in academy_students
+            async with db_conn.execute("SELECT first_name, last_name, email, phone, telegram_username, payment_status, is_active, created_at FROM academy_students WHERE telegram_id = ?", (tid_int,)) as cur:
                 row = await cur.fetchone()
                 if row:
-                    profile['name'] = row['first_name'] or row['username'] or '????'
-                    profile['join_date'] = row['created_at']
-                    profile['status'] = '? ???'
-                    
-            # Try to get quiz stats
-            try:
-                async with db_conn.execute("SELECT COUNT(*) as count, SUM(score) as total_score FROM quiz_results WHERE user_id = ?", (int(telegram_id),)) as cur:
-                    row = await cur.fetchone()
-                    if row:
-                        profile['quizzes_taken'] = row['count'] or 0
-                        profile['total_score'] = row['total_score'] or 0
-            except Exception:
-                pass
+                    fname = row["first_name"] or ""
+                    lname = row["last_name"] or ""
+                    profile['name'] = f"{fname} {lname}".strip() or "طالب"
+                    profile['username'] = row["telegram_username"] or ""
+                    profile['email'] = row["email"] or "غير مسجل"
+                    profile['phone'] = row["phone"] or "غير مسجل"
+                    profile['join_date'] = row["created_at"] or "غير متوفر"
+                    profile['status'] = "نشط" if row["is_active"] else "غير نشط"
+                    profile['payment_status'] = row["payment_status"] or "مدفوع"
+
+            # 2. If not found, look in users table
+            if profile['name'] == 'غير معروف':
+                try:
+                    async with db_conn.execute("SELECT first_name, username, created_at FROM users WHERE telegram_id = ?", (tid_int,)) as cur:
+                        row = await cur.fetchone()
+                        if row:
+                            profile['name'] = row["first_name"] or "طالب"
+                            profile['username'] = row["username"] or ""
+                            profile['join_date'] = row["created_at"] or "غير متوفر"
+                except Exception:
+                    pass
+
+            # 3. Get recent tickets
+            async with db_conn.execute("SELECT id, theme, subtheme, status, timestamp, rating FROM crm_tickets WHERE telegram_id = ? ORDER BY timestamp DESC LIMIT 3", (tid_int,)) as cur:
+                tickets_rows = await cur.fetchall()
+                profile['recent_tickets'] = [dict(r) for r in tickets_rows]
                 
         from aiohttp import web
         return web.json_response({'success': True, 'profile': profile})
@@ -5638,28 +5656,6 @@ async def api_admin_student_profile(request):
         from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
-# ====================================================
-# FAQ API ROUTES
-# ====================================================
-async def api_analytics_track(request):
-    """POST /api/analytics/track - Log student interactions (tabs, searches)"""
-    try:
-        data = await request.json()
-        event_type = data.get('event_type')
-        keyword = data.get('keyword', '')
-        has_results = data.get('has_results', False)
-        tab_name = data.get('tab_name', '')
-        user_id = data.get('user_id', 0)
-        
-        async with db.execute(
-            """INSERT INTO faq_analytics 
-               (event_type, keyword, has_results, tab_name, user_id) 
-               VALUES (?, ?, ?, ?, ?)""",
-            (event_type, keyword, has_results, tab_name, user_id)
-        ) as cur:
-            await db.commit()
-            
-        return web.json_response({"success": True})
     except Exception as e:
         logger.error(f"[API] Error in api_analytics_track: {e}")
         return web.json_response({"error": str(e)}, status=500)

@@ -110,6 +110,10 @@ export function initInboxView(container) {
                     <div class="nav-icon-wrap"><span class="nav-icon">✅</span></div>
                     <span class="nav-label">مكتمل</span>
                 </div>
+                <div class="nav-item" data-status="FAQ">
+                    <div class="nav-icon-wrap"><span class="nav-icon">🤖</span></div>
+                    <span class="nav-label">محلولة بالـ FAQ</span>
+                </div>
             </nav>
 
             <!-- Bulk Action Bar -->
@@ -210,11 +214,18 @@ async function loadTickets() {
 function applyFilters() {
     filteredTickets = allTickets.filter(t => {
         // Status filter
+        const isFaqResolved = (t.is_ghost == 1 || t.is_ghost === true || t.ai_topic === 'IA' || t.status === 'resolved_faq');
         let s = t.status || 'Nouveau';
-        if (s === 'pending' || s === 'new') s = 'Nouveau';
-        if (s === 'En cours de traitement' || s === 'En cours') s = 'En cours';
-        if (s === 'Déjà traité' || s === 'resolved' || s === 'Résolu') s = 'Résolu';
-        if (s !== currentStatus) return false;
+        
+        if (currentStatus === 'FAQ') {
+            if (!isFaqResolved && !(s === 'resolved' && !t.admin_reply)) return false;
+        } else {
+            if (isFaqResolved && currentStatus !== 'Résolu') return false;
+            if (s === 'pending' || s === 'new') s = 'Nouveau';
+            if (s === 'En cours de traitement' || s === 'En cours') s = 'En cours';
+            if (s === 'Déjà traité' || s === 'resolved' || s === 'Résolu') s = 'Résolu';
+            if (s !== currentStatus) return false;
+        }
         
         // Category filter
         if (currentCategory !== 'all') {

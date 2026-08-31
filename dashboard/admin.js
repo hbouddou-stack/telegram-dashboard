@@ -13043,10 +13043,11 @@ window.setSupportStatusFilter = function(status) {
     
     // Update active UI state for bottom nav
     document.querySelectorAll('.support-nav-item').forEach(el => el.classList.remove('active'));
-    if (status === 'all') document.getElementById('nav-status-all').classList.add('active');
-    else if (status === 'Nouveau') document.getElementById('nav-status-nouveau').classList.add('active');
-    else if (status === 'En cours') document.getElementById('nav-status-encours').classList.add('active');
-    else if (status === 'Résolu') document.getElementById('nav-status-resolu').classList.add('active');
+    if (status === 'all') { const el = document.getElementById('nav-status-all'); if (el) el.classList.add('active'); }
+    else if (status === 'Nouveau') { const el = document.getElementById('nav-status-nouveau'); if (el) el.classList.add('active'); }
+    else if (status === 'En cours') { const el = document.getElementById('nav-status-encours'); if (el) el.classList.add('active'); }
+    else if (status === 'Résolu') { const el = document.getElementById('nav-status-resolu'); if (el) el.classList.add('active'); }
+    else if (status === 'FAQ') { const el = document.getElementById('nav-status-faq'); if (el) el.classList.add('active'); }
     
     applySupportFilters();
 };
@@ -13090,8 +13091,10 @@ window.applySupportFilters = function() {
     
     let filtered = window._allSupportTickets;
     
-    if (window.supportFilters.status !== 'all') {
-        filtered = filtered.filter(t => t.status === window.supportFilters.status);
+    if (window.supportFilters.status === 'FAQ') {
+        filtered = filtered.filter(t => (t.is_ghost == 1 || t.is_ghost === true || t.ai_topic === 'IA' || t.status === 'resolved_faq' || (t.status === 'resolved' && !t.admin_reply)));
+    } else if (window.supportFilters.status !== 'all') {
+        filtered = filtered.filter(t => (t.status === window.supportFilters.status && t.is_ghost != 1));
     }
     
     if (window.supportFilters.urgent) {
