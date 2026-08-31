@@ -4236,26 +4236,22 @@ async def api_validate_student(request: web.Request):
             if email:
                 async with db.execute("SELECT telegram_id, first_name FROM academy_students WHERE student_id = ? AND LOWER(email) = ?", (student_id, email)) as cur:
                     row = await cur.fetchone()
-                    if not row:
-                        return web.json_response({'valid': False, 'message': 'البيانات غير متطابقة'})
-                    
-                    telegram_id, first_name = row
-                    if telegram_id:
-                        return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name}! (مربوط مسبقاً)'})
-                    return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name} ✅'})
+                    if row:
+                        telegram_id, first_name = row
+                        return web.json_response({'valid': True, 'message': f'أهلاً بك {first_name} ✅'})
+                    else:
+                        # New / Pending student
+                        return web.json_response({'valid': True, 'message': 'سيتم مراجعة الطلب مع الإدارة ⏳'})
             else:
-                async with db.execute("SELECT telegram_id FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
+                async with db.execute("SELECT telegram_id, first_name FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
                     row = await cur.fetchone()
-                    if not row:
-                        return web.json_response({'valid': False, 'message': 'الرقم غير مسجل'})
-                    
-                    telegram_id = row[0]
-                    if telegram_id:
-                        return web.json_response({'valid': True, 'message': 'رقم صحيح ✅ (مربوط مسبقاً)'})
-                    return web.json_response({'valid': True, 'message': 'رقم صحيح ✅'})
+                    if row:
+                        return web.json_response({'valid': True, 'message': 'رقم مسجل ✅'})
+                    else:
+                        return web.json_response({'valid': True, 'message': 'رقم جديد (قيد المراجعة) ⏳'})
                 
     except Exception as e:
-        return web.json_response({'valid': False, 'message': ''})
+        return web.json_response({'valid': True, 'message': ''})
 
 async def api_link_account(request: web.Request):
     import aiosqlite
@@ -4344,6 +4340,20 @@ async def api_link_account(request: web.Request):
                     # Trouvé mais statut non payé -> En attente
                     await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
                     await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في انتظار تأكيد التحويل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    
+                    bot = request.app.get('bot')
+                    if bot and telegram_id:
+                        try:
+                            msg_text = (
+                                f"⏳ <b>مرحباً بك يا {real_first_name}!</b>\n\n"
+                                f"📥 تم تسجيل طلبك بالبريد: <code>{email}</code> بنجاح.\n\n"
+                                f"📋 طلبك حالياً <b>قيد المراجعة والمصادقة</b> مع إدارة الأكاديمية لتأكيد التحويل البنكي.\n\n"
+                                f"⚡ <b>لا تقلق:</b> ستصلك روابط مجموعاتك الخاصة هنا على تليجرام تلقائياً فور تأكيد الإدارة!"
+                            )
+                            await bot.send_message(chat_id=int(telegram_id), text=msg_text, parse_mode='HTML')
+                        except Exception as e:
+                            _log.error(f"Error sending pending TG message: {e}")
+
                     return web.json_response({
                         'success': True,
                         'status': 'pending',
@@ -4354,6 +4364,20 @@ async def api_link_account(request: web.Request):
                 # Cas 2 : L'élève n'est pas encore dans l'Excel -> Buffer d'attente
                 await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
                 await log_student_action(0, 'LINK_WAITING_EXCEL', f"تسجيل جديد قيد الانتظار لمطابقة الإكسيل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                
+                bot = request.app.get('bot')
+                if bot and telegram_id:
+                    try:
+                        msg_text = (
+                            f"⏳ <b>مرحباً بك يا {telegram_first_name or 'طالب العلم'}!</b>\n\n"
+                            f"📥 تم تسجيل بياناتك بالبريد: <code>{email}</code> بنجاح.\n\n"
+                            f"📋 طلبك حالياً <b>قيد المراجعة والمصادقة</b> مع إدارة الأكاديمية (لمطابقة كشف التحويلات البنكية).\n\n"
+                            f"⚡ <b>لا تقلق:</b> ستصلك روابط مجموعاتك الخاصة هنا تلقائياً فور المصادقة دون الحاجة لإعادة التسجيل!"
+                        )
+                        await bot.send_message(chat_id=int(telegram_id), text=msg_text, parse_mode='HTML')
+                    except Exception as e:
+                        _log.error(f"Error sending pending TG message: {e}")
+
                 return web.json_response({
                     'success': True,
                     'status': 'pending',

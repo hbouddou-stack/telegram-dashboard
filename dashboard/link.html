@@ -711,7 +711,12 @@
             </p>
         </div>
 
-        <div style="display:flex; gap:10px; width:100%; margin-top:16px;">
+        <!-- SHARED FOLDER BUTTON AVAILABLE IN PENDING STATUS -->
+        <button onclick="logAndJoinFolder()" id="btn-pending-join-folder" class="btn-primary" style="background: linear-gradient(90deg, #0a84ff 0%, #0056b3 100%); margin-top:16px; width:100%; animation: pulse-glow 1.5s infinite; transition: all 0.3s ease; padding:14px; border-radius:12px; font-weight:bold; font-size:1.05rem; cursor:pointer;">
+            📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام
+        </button>
+
+        <div style="display:flex; gap:10px; width:100%; margin-top:14px;">
             <button onclick="window.location.href='/ask.html'" style="flex:1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px; border-radius:12px; font-family:'Tajawal', sans-serif; cursor:pointer; font-weight:bold; font-size:0.85rem;">
                 💬 مركز الدعم والـ FAQ
             </button>
