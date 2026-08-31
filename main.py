@@ -1,5 +1,3 @@
-
-
 # ==========================================
 # SINGLE-USE INVITE LINKS & GENDER SEGREGATION ENGINE
 # ==========================================
@@ -6027,11 +6025,7 @@ async def api_ticket_message_edit(request):
         from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logger.info("Bot stopped.")
+
 
 
 async def api_admin_group_settings_get(request: web.Request):
@@ -6102,3 +6096,9 @@ async def api_admin_pending_verifications(request: web.Request):
     import database as db
     pending = await db.get_pending_verifications('waiting')
     return web.json_response({"success": True, "pending": pending})
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Bot stopped.")
