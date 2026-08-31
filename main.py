@@ -5385,39 +5385,16 @@ async def main():
         dp.include_router(csat_router)
         dp.startup.register(on_startup)
         
-        async def watch_for_new_instance():
-            while True:
-                await asyncio.sleep(5)
-                try:
-                    from config import DATABASE_PATH
-                    if not os.path.exists(DATABASE_PATH):
-                        continue
-                    async with aiosqlite.connect(DATABASE_PATH) as db_conn:
-                        async with db_conn.execute("SELECT value FROM settings WHERE key = 'current_instance_id'") as cur:
-                            row = await cur.fetchone()
-                            if row and row[0] and row[0] != INSTANCE_ID:
-                                logger.warning(f"🚨 NOUVELLE INSTANCE DÉTECTÉE ({row[0]}). Arrêt du polling pour éviter les conflits Telegram !")
-                                await dp.stop_polling()
-                                break
-                except Exception:
-                    pass
-                    
-        asyncio.create_task(watch_for_new_instance())
-        
         async def run_bot_polling():
-            logger.info("Starting Telegram Backup Bot polling...")
-            try:
-                await bot.delete_webhook(drop_pending_updates=True)
-                await dp.start_polling(bot)
-            except Exception as e:
-                logger.error(f"Telegram polling error: {e}")
-            finally:
+            logger.info("Starting Telegram Bot polling loop...")
+            while True:
                 try:
-                    await bot.session.close()
-                except Exception:
-                    pass
-                while True:
-                    await asyncio.sleep(3600)
+                    await bot.delete_webhook(drop_pending_updates=True)
+                    logger.info("Polling successfully started and active.")
+                    await dp.start_polling(bot, handle_signals=False)
+                except Exception as e:
+                    logger.error(f"Telegram polling error: {e}")
+                    await asyncio.sleep(5)
                     
         await asyncio.gather(web_server_coro, run_bot_polling(), return_exceptions=True)
     else:
