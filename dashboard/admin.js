@@ -13333,6 +13333,34 @@ function renderExcelPreview() {
     previewArea.style.display = 'block';
 }
 
+
+async function executeGoogleSheetSync() {
+    const btn = document.getElementById('btn-sync-gsheet');
+    const sheetId = document.getElementById('cfg-google-sheet-id')?.value.trim() || '';
+    
+    if (btn) { btn.innerHTML = '<span>⏳</span> جاري المزامنة من Google Sheet...'; btn.disabled = true; }
+    
+    try {
+        const res = await fetch('/api/admin/gateway/sync_sheets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sheet_id: sheetId })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            alert(`🎉 تمت مزامنة Google Sheet بنجاح!\n\nتم استيراد وتحديث ${data.imported || 0} طالب.`);
+            loadAdminPendingVerifications();
+        } else {
+            alert('⚠️ لم تتم المزامنة: ' + (data.error || 'يرجى التأكد من صلاحيات الوصول للملف'));
+        }
+    } catch(e) {
+        alert('❌ فشل الاتصال بالخادم أثناء مزامنة Google Sheet');
+    } finally {
+        if (btn) { btn.innerHTML = '<span>🔄</span> مزامنة الآن من Google Sheet'; btn.disabled = false; }
+    }
+}
+
 async function executeExcelSync() {
     if (parsedExcelRecords.length === 0) {
         alert('لا توجد بيانات مستخرجة للاستيراد.');
