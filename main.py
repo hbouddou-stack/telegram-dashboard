@@ -5025,7 +5025,11 @@ async def start_web_server(bot: Bot):
         try:
             with open(html_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            return web.Response(text=content, content_type='text/html')
+            return web.Response(
+                text=content, 
+                content_type='text/html',
+                headers={'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', 'Pragma': 'no-cache'}
+            )
         except FileNotFoundError:
             return web.Response(text="Guide not found", status=404)
 
