@@ -56,9 +56,10 @@ async def handle_command_start(message: Message, state: FSMContext):
                 f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه للبدء:"
             )
 
-        # UN SEUL BOUTON PRINCIPAL : منصة ربط الحساب وتفعيل الاشتراك
+        # 1. منصة ربط الحساب + 2. مركز الدعم والأسئلة الشائعة والفيديوهات (ask.html)
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?v=auth_{user_id}"))]
+            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?v=auth_{user_id}"))],
+            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=support_{user_id}"))]
         ])
 
         await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
