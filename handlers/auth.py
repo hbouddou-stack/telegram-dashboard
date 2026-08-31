@@ -59,7 +59,7 @@ async def handle_command_start(message: Message, state: FSMContext):
         # 1. منصة ربط الحساب + 2. مركز الدعم والأسئلة الشائعة والفيديوهات (ask.html)
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?v=auth_{user_id}"))],
-            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=support_{user_id}"))]
+            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=pro_new"))]
         ])
 
         await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
@@ -80,7 +80,7 @@ async def cmd_federer(message: Message):
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🎓 منصة الطالب والدروس (reader.html)", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=dash2"))],
-        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=ask2"))],
+        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=pro_new"))],
         [InlineKeyboardButton(text="🔗 منصة ربط الحساب (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))],
         [InlineKeyboardButton(text="🔧 لوحة تحكم المشرفين (admin.html)", web_app=WebAppInfo(url=f"{base_url}/admin.html"))]
     ])
