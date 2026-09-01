@@ -460,15 +460,8 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         greeting = f"أهلاً بكِ يا طالبتنا العزيزة {first_name}" if is_female else f"أهلاً بك يا طالبنا العزيز {first_name}"
         group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
         
-        base_url = "https://web-production-64c9ab.up.railway.app"
-        try:
-            from handlers.auth import get_webapp_base_url
-            base_url = get_webapp_base_url()
-        except Exception:
-            pass
-            
-        tracking_pixel = f"{base_url}/api/track/open?id={student_id}"
-        tracked_link = f"{base_url}/api/track/click?id={student_id}&src=email"
+        bot_username = cfg.MAIN_BOT_USERNAME or "As2ilabot"
+        direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
         
         msg = MIMEMultipart('alternative')
         msg['Subject'] = f"🎓 تفعيل الحساب الأكاديمي - {greeting}"
@@ -513,9 +506,9 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
                     للانضمام الفوري إلى مجموعتك الدراسية وإضافة مجلد الأكاديمية كاملاً على تليجرام، يرجى الضغط على الزر أدناه:
                 </p>
                 
-                <!-- CTA BUTTON -->
+                <!-- CTA BUTTON (DIRECT TELEGRAM DEEP-LINK) -->
                 <div style="text-align: center; margin: 30px 0 35px 0;">
-                    <a href="{tracked_link}" style="background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%); color: #ffffff; text-decoration: none; padding: 16px 36px; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 6px 20px rgba(12,74,60,0.25);">
+                    <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%); color: #ffffff !important; text-decoration: none; padding: 16px 36px; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 6px 20px rgba(12,74,60,0.25);">
                         🚀 تفعيل الحساب وإضافة المجلد (تيليجرام)
                     </a>
                 </div>
@@ -525,7 +518,6 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
                     أكاديمية البدر • تم إرسال هذه الرسالة تلقائياً لتأكيد انضمامك إلى مجموعات الدراسة الرسمية.
                 </p>
             </div>
-            <img src="{tracking_pixel}" width="1" height="1" style="display:none !important;" alt="" />
         </body>
         </html>
         """
