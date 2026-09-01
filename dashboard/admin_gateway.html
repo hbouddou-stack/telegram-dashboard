@@ -47,7 +47,51 @@
             --text2: #6b7280;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            padding-bottom: 80px;
+        }
+        * { box-sizing: border-box; }
+        
+        .header, .tab-content {
+            max-width: 650px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 16px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 100;
+            align-items: flex-end;
+            justify-content: center;
+            width: 100vw;
+            max-width: 100vw;
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 600px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 24px 20px;
+            border-top: 1px solid var(--border);
+            text-align: right;
+            margin: 0 auto;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+
         body { background: var(--bg); color: var(--text1); font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
         
         .header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
@@ -442,12 +486,22 @@
     <!-- TAB: الإعدادات (Settings) -->
     <div id="tab-settings" class="tab-content">
         <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">📥 استيراد ملف الطلاب (إكسل)</h3>
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">📥 استيراد وتنزيل نماذج الطلاب</h3>
             <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
-                اختر ملف إكسل بصيغة (.xlsx) يحتوي على الأعمدة التالية لرفع الطلاب إلى قاعدة البيانات: email, dob, first_name, last_name, year, gender.
+                يمكنك تنزيل النموذج المعتمد الجاهز أو تصدير قاعدة بيانات الطلاب الحالية:
             </div>
-            <label class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px;">
-                <span>📁 اختر ملف الطلاب</span>
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                <a href="/api/admin/gateway/export_template" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #059669; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>📥 تنزيل النموذج الفارغ (Excel/CSV)</span>
+                </a>
+                <a href="/api/admin/gateway/export_all" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #0284c7; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>📤 تصدير كل الطلاب الحاليين</span>
+                </a>
+            </div>
+
+            <label class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                <span>📁 اختر ملف الإكسيل لرفعه الآن (.xlsx / .csv)</span>
                 <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
             </label>
         </div>
