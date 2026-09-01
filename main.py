@@ -626,12 +626,13 @@ async def api_track_open(request: web.Request):
     )
 
 async def api_track_click(request: web.Request):
-    """Méthode 2: Capture le clic immédiatement (Source WhatsApp vs Email vs Web) puis redirige vers Telegram."""
+    """Méthode 2: Capture le clic immédiatement (Source WhatsApp vs Email vs Web) puis redirige proprement vers Telegram."""
     student_id = request.query.get('id', '').strip()
     source = (request.query.get('src') or request.query.get('source') or 'email').lower().strip()
     
     import config as cfg
-    bot_url = f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=src_{source}_{student_id}" if student_id else f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=link"
+    bot_username = cfg.MAIN_BOT_USERNAME or "As2ilabot"
+    target_tg_url = f"https://t.me/{bot_username}?start=auth_{student_id}" if student_id else f"https://t.me/{bot_username}?start=link"
     
     try:
         import aiosqlite
@@ -643,15 +644,13 @@ async def api_track_click(request: web.Request):
         ua = request.headers.get('User-Agent', '')[:200]
         
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            # 1. Log every click in click_tracking table
             await db.execute(
                 "INSERT INTO click_tracking (student_id, source, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?)",
                 (student_id, source, ip, ua, now_str)
             )
             
-            # 2. Update student row if student_id provided
             if student_id:
-                if source == 'whatsapp' or source == 'wa':
+                if source in ['whatsapp', 'wa']:
                     await db.execute(
                         "UPDATE academy_students SET whatsapp_clicked_at = ?, last_click_source = ? WHERE student_id = ?",
                         (now_str, 'whatsapp', student_id)
@@ -663,9 +662,33 @@ async def api_track_click(request: web.Request):
                     )
             await db.commit()
     except Exception as e:
-        _log.error(f"[TRACK_CLICK] Error recording click: {e}")
+        _log.error(f"[TRACK_CLICK] Error: {e}")
         
-    raise web.HTTPFound(location=bot_url)
+    # Return seamless instant HTML redirect that works on all mobile in-app browsers
+    html_redirect = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url={target_tg_url}">
+    <title>أكاديمية البدر - جاري الفتح...</title>
+    <style>
+        body {{ font-family: -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fbf9f4; text-align: center; direction: rtl; }}
+        .box {{ background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 380px; width: 90%; }}
+        .btn {{ display: inline-block; background: #0c4a3c; color: white; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: bold; margin-top: 15px; }}
+    </style>
+    <script>
+        window.location.href = "{target_tg_url}";
+    </script>
+</head>
+<body>
+    <div class="box">
+        <h3 style="color:#0c4a3c; margin:0 0 10px 0;">أكاديمية البدر 🎓</h3>
+        <p style="color:#666; font-size:14px;">جاري فتح تطبيق تليجرام لتفعيل حسابك...</p>
+        <a href="{target_tg_url}" class="btn">🚀 فتح تليجرام الآن</a>
+    </div>
+</body>
+</html>"""
+    return web.Response(text=html_redirect, content_type='text/html')
 
 async def api_admin_gateway_kpi(request: web.Request):
     try:
