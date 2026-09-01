@@ -14,7 +14,7 @@ logger = logging.getLogger('bot')
 router = Router(name="auth")
 
 def get_webapp_base_url() -> str:
-    """Retourne toujours l'URL publique HTTPS valide de Railway."""
+    """Retourne l'URL publique HTTPS valide de Railway."""
     for k in ["WEBAPP_URL", "BASE_URL", "RAILWAY_PUBLIC_DOMAIN", "RAILWAY_STATIC_URL", "RAILWAY_SERVICE_URL"]:
         val = os.getenv(k)
         if val and val.strip():
@@ -28,7 +28,7 @@ def get_webapp_base_url() -> str:
 @router.message(Command("start"))
 @router.message(F.text.startswith("/start"))
 async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
-    """Gestionnaire intelligent de démarrage : Si l'élève arrive depuis son lien d'email/WhatsApp, il reçoit son dossier directement sans Mini-App."""
+    """Expérience 100% Native Telegram Bot : Rapide, fluide et sans aucune lenteur de Mini-App."""
     user_id = message.from_user.id
     first_name = message.from_user.first_name or "طالب العلم"
     username = message.from_user.username or ""
@@ -44,7 +44,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             db.row_factory = aiosqlite.Row
             student = None
             
-            # If start_arg is provided (Magic Link from Email / WhatsApp)
+            # 1. Traitement du Lien Magique depuis Email / WhatsApp
             if start_arg:
                 clean_sid = re.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_)', '', start_arg)
                 
@@ -54,37 +54,40 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 if student:
                     s_dict = dict(student)
                     real_sid = s_dict['student_id']
-                    # Associate telegram_id immediately in database!
+                    # Association instantanée du Telegram ID
                     await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (user_id, username, real_sid))
                     await db.commit()
                     
-                    # Fetch folder link
+                    # Récupération du lien de dossier / groupe
                     async with db.execute("SELECT * FROM group_settings LIMIT 1") as cur:
                         settings_row = await cur.fetchone()
                     settings = dict(settings_row) if settings_row else {}
                     
                     folder_link = settings.get('folder_link') or "https://t.me/addlist/u2f-aW9sdhk1NmVk"
                     student_first = s_dict.get('first_name') or first_name
+                    gender_clean = (s_dict.get('gender') or 'HOMME').upper()
+                    is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
+                    group_desc = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
                     
+                    # BOUTONS DIRECTS NATIFS TELEGRAM (0 LATENCE)
                     kb = InlineKeyboardMarkup(inline_keyboard=[
                         [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                        [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic"))],
-                        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic"))]
+                        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=native"))]
                     ])
                     
                     magic_welcome = (
                         f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
-                        f"✅ <b>تم تفعيل وربط حسابك بنجاح!</b>\n"
+                        f"✅ <b>تم تفعيل وربط حسابك الدراسي بنجاح!</b>\n"
                         f"• رقم الطالب: <code>{real_sid}</code>\n"
-                        f"• البريد: <code>{s_dict.get('email', '')}</code>\n\n"
-                        f"👇 <b>اضغط مباشرة على الزر أدناه لإضافة مجلد قنوات ومجموعات دراستك بنقرة واحدة:</b>"
+                        f"• مجموعتك: <b>{group_desc}</b>\n\n"
+                        f"👇 <b>اضغط على الزر أدناه لإضافة مجلد قنوات ومجموعات دراستك بنقرة واحدة:</b>"
                     )
                     
                     await message.answer(magic_welcome, reply_markup=kb, parse_mode="HTML")
                     await log_student_action(real_sid, 'MAGIC_LINK_SUCCESS', f"تم الربط التلقائي بنقرة واحدة من الإيميل ({start_arg})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
                     return
 
-            # Normal fallback: check by telegram_id
+            # 2. Vérification par Telegram ID si déjà lié
             async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
                 student = await cur.fetchone()
 
@@ -106,18 +109,17 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             )
             kb = InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية إلى تليجرام", url=folder_link)],
-                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وإدارة العضوية", web_app=WebAppInfo(url=f"{base_url}/link.html?v=active"))],
-                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=active"))]
+                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=native"))]
             ])
         else:
             welcome_text = (
                 f"مرحباً بك يا <b>{first_name}</b> في أكاديمية البدر! 🎓\n\n"
-                f"هذا البوت هو بوابتك الرسمية لربط حسابك وتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
-                f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه للبدء:"
+                f"هذا البوت هو بوابتك الرسمية لتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
+                f"إذا كنت مسجلاً في الأكاديمية، يرجى الضغط على رابط التفعيل الذي وصلك عبر البريد الإلكتروني، أو استخدام الزر أدناه:"
             )
             kb = InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?v=start"))],
-                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=start"))]
+                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=start"))]
             ])
 
         await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
@@ -126,7 +128,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
     except Exception as e:
         logger.error(f"[START] Error: {e}")
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔗 منصة ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
+            [InlineKeyboardButton(text="🔗 تفعيل الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
         ])
         await message.answer("مرحباً بك في أكاديمية البدر! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
@@ -222,7 +224,7 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             
             msg = (
                 f"✅ <b>تم انضمامك وتأكيد عضويتك بنجاح في: {chat_title}!</b>\n\n"
-                f"🎉 نتمنى لك مسيرة علمية موفقة ومباركة.\n"
+                f"🎉 نتمنى لك مسيرة علمية موفقة ومباركة في أكاديمية البدر.\n"
                 f"👇 يمكنك في أي وقت مراجعة دليل الطالب أو طرح استفساراتك عبر الأزرار أدناه:"
             )
             
@@ -240,7 +242,7 @@ async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
     try:
         data = callback.data
         parts = data.split("_")
-        gender_type = parts[2]  # "man" or "woman"
+        gender_type = parts[2]
         target_tg_id = int(parts[3])
         
         admin_name = callback.from_user.first_name or "المشرف"

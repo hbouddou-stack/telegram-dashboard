@@ -471,7 +471,7 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         tracked_link = f"{base_url}/api/track/click?id={student_id}&src=email"
         
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"تفعيل الحساب الأكاديمي - {greeting}"
+        msg['Subject'] = f"🎓 تفعيل الحساب الأكاديمي - {greeting}"
         msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
         msg['To'] = email
         
@@ -483,48 +483,47 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>أكاديمية البدر</title>
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8faf9; margin: 0; padding: 40px 15px; color: #17262c; direction: rtl; text-align: right;">
-            <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e7eb; box-shadow: 0 4px 25px rgba(0,0,0,0.03);">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fbf9f4; margin: 0; padding: 30px 15px; color: #17262c; direction: rtl; text-align: right;">
+            <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 20px; padding: 35px; border: 1px solid rgba(12,74,60,0.12); box-shadow: 0 8px 30px rgba(12,74,60,0.06);">
                 
-                <!-- HEADER -->
-                <div style="border-bottom: 2px solid #f3f4f6; padding-bottom: 25px; margin-bottom: 30px; text-align: center;">
-                    <h1 style="color: #0c4a3c; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">أكاديمية البدر</h1>
-                    <p style="color: #079176; font-size: 14px; margin: 6px 0 0 0; font-weight: 600;">بوابة الانضمام والتفعيل الرسمية</p>
+                <!-- HEADER BADGE -->
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="display: inline-block; background: rgba(7, 145, 118, 0.1); border: 1px solid rgba(7, 145, 118, 0.25); padding: 6px 18px; border-radius: 30px; margin-bottom: 12px;">
+                        <span style="color: #0c4a3c; font-weight: bold; font-size: 14px;">● رسالة التفعيل الرسمية</span>
+                    </div>
+                    <h1 style="color: #0c4a3c; margin: 0; font-size: 25px; font-weight: 800;">أكاديمية البدر للعلوم الشرعية 🎓</h1>
                 </div>
                 
                 <!-- BODY TEXT -->
-                <p style="font-size: 16px; line-height: 1.8; color: #1f2937; margin: 0 0 16px 0;">السلام عليكم ورحمة الله وبركاته،</p>
-                <p style="font-size: 16px; line-height: 1.8; color: #1f2937; margin: 0 0 24px 0;">
-                    <b>{greeting}</b>، نبارك لك الانضمام إلى البرنامج الأكاديمي.
+                <p style="font-size: 16px; line-height: 1.8; color: #17262c; margin: 0 0 14px 0;">السلام عليكم ورحمة الله وبركاته،</p>
+                <p style="font-size: 16px; line-height: 1.8; color: #17262c; margin: 0 0 20px 0;">
+                    <b>{greeting}</b>! نبارك لك انضمامك وتأكيد تسجيلك في البرنامج الأكاديمي.
                 </p>
                 
                 <!-- DETAILS CARD -->
-                <div style="background: #f9fafb; border-right: 4px solid #0c4a3c; padding: 20px; border-radius: 8px; margin: 25px 0;">
-                    <p style="margin: 0 0 10px 0; font-size: 15px; color: #374151;">
-                        <strong style="color: #111827;">رقم الطالب:</strong> <span style="font-family: monospace; font-size: 16px; font-weight: bold; color: #0c4a3c;">{student_id}</span>
-                    </p>
-                    <p style="margin: 0; font-size: 15px; color: #374151;">
-                        <strong style="color: #111827;">المجموعة الدراسية:</strong> {group_title}
+                <div style="background: #edf6f2; border-right: 4px solid #079176; padding: 18px 20px; border-radius: 12px; margin: 25px 0;">
+                    <p style="margin: 0 0 8px 0; font-size: 15px; line-height: 1.6; color: #0c4a3c;">
+                        📌 <b>بيانات حسابك الأكاديمي:</b><br>
+                        • رقم الطالب: <code style="font-size: 16px; font-weight: bold; color: #079176; font-family: monospace;">{student_id}</code><br>
+                        • المجموعة الدراسية: <b>{group_title}</b>
                     </p>
                 </div>
                 
-                <p style="font-size: 15px; line-height: 1.8; color: #4b5563; margin: 25px 0 35px 0;">
-                    للانضمام إلى مجموعتك الدراسية وقنوات الدروس المباشرة، يرجى الضغط على الزر أدناه لتفعيل حسابك عبر تليجرام:
+                <p style="font-size: 15px; line-height: 1.8; color: #4c5d65; margin: 20px 0 30px 0;">
+                    للانضمام الفوري إلى مجموعتك الدراسية وإضافة مجلد الأكاديمية كاملاً على تليجرام، يرجى الضغط على الزر أدناه:
                 </p>
                 
                 <!-- CTA BUTTON -->
-                <div style="text-align: center; margin: 35px 0 40px 0;">
-                    <a href="{tracked_link}" style="background-color: #0c4a3c; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 2px 8px rgba(12,74,60,0.2);">
-                        تفعيل الحساب والانضمام للدروس
+                <div style="text-align: center; margin: 30px 0 35px 0;">
+                    <a href="{tracked_link}" style="background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%); color: #ffffff; text-decoration: none; padding: 16px 36px; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 6px 20px rgba(12,74,60,0.25);">
+                        🚀 تفعيل الحساب وإضافة المجلد (تيليجرام)
                     </a>
                 </div>
                 
                 <!-- FOOTER -->
-                <div style="border-top: 1px solid #f3f4f6; padding-top: 25px; text-align: center;">
-                    <p style="font-size: 13px; color: #9ca3af; margin: 0; line-height: 1.6;">
-                        أكاديمية البدر • تم إرسال هذه الرسالة تلقائياً لتأكيد تسجيلكم في البرنامج الأكاديمي.
-                    </p>
-                </div>
+                <p style="font-size: 13px; color: #8a9ba3; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; line-height: 1.6;">
+                    أكاديمية البدر • تم إرسال هذه الرسالة تلقائياً لتأكيد انضمامك إلى مجموعات الدراسة الرسمية.
+                </p>
             </div>
             <img src="{tracking_pixel}" width="1" height="1" style="display:none !important;" alt="" />
         </body>
