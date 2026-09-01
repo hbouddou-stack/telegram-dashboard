@@ -1016,8 +1016,17 @@ async def api_admin_gateway_import_students(request: web.Request):
         
         rows_data = []
         
-        # 1. Parsing CSV or XLSX
-        if filename.endswith('.csv') or b',' in file_data[:500] or b';' in file_data[:500]:
+        # 1. Detection of XLSX (ZIP binary header PK) vs CSV text
+        is_excel_binary = file_data[:4] == b'PK\x03\x04' or filename.endswith('.xlsx') or filename.endswith('.xlsm') or filename.endswith('.xls')
+        
+        if is_excel_binary:
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(file_data), data_only=True)
+            sheet = wb.active
+            for r in sheet.iter_rows(values_only=True):
+                if any(r):
+                    rows_data.append([str(c).strip() if c is not None else '' for c in r])
+        else:
             try:
                 text_content = file_data.decode('utf-8-sig')
             except Exception:
@@ -1026,16 +1035,16 @@ async def api_admin_gateway_import_students(request: web.Request):
                 except Exception:
                     text_content = file_data.decode('latin-1')
             
-            # Detect delimiter
-            delimiter = ';' if ';' in text_content.splitlines()[0] else ','
-            csv_reader = csv.reader(io.StringIO(text_content), delimiter=delimiter)
-            rows_data = list(csv_reader)
-        else:
-            import openpyxl
-            wb = openpyxl.load_workbook(io.BytesIO(file_data), data_only=True)
-            sheet = wb.active
-            for r in sheet.iter_rows(values_only=True):
-                rows_data.append([str(c) if c is not None else '' for c in r])
+            lines = [l for l in text_content.splitlines() if l.strip()]
+            if lines:
+                first_line = lines[0]
+                delimiter = ';' if ';' in first_line and ',' not in first_line else ','
+                if '\t' in first_line:
+                    delimiter = '\t'
+                csv_reader = csv.reader(io.StringIO(text_content), delimiter=delimiter)
+                for r in csv_reader:
+                    if any(r):
+                        rows_data.append([str(c).strip() for c in r])
                 
         if not rows_data or len(rows_data) < 2:
             return web.json_response({'success': False, 'error': 'الملف فارغ أو لا يحتوي على بيانات طلاب'})
@@ -1050,7 +1059,7 @@ async def api_admin_gateway_import_students(request: web.Request):
             return None
             
         email_idx = find_col('email', 'mail', 'courriel', 'البريد', 'إيميل')
-        sid_idx = find_col('student_id', 'matricule', 'id', 'رقم الطالب', 'المعرف')
+        sid_idx = find_col('student_id', 'matricule', 'id', 'رقم الطالب', 'المعرف', 'رقم')
         fn_idx = find_col('first_name', 'first', 'prenom', 'prénom', 'الاسم', 'اسم')
         ln_idx = find_col('last_name', 'last', 'nom', 'اللقب', 'النسب', 'عائلة')
         gender_idx = find_col('gender', 'genre', 'sexe', 'الجنس', 'نوع')
@@ -1059,13 +1068,19 @@ async def api_admin_gateway_import_students(request: web.Request):
         dob_idx = find_col('dob', 'naissance', 'birth', 'تاريخ الميلاد', 'الميلاد')
         year_idx = find_col('year', 'annee', 'année', 'level', 'السنة', 'المستوى')
         
+        # Fallback if no header matched email: look for column containing '@' in row 1
+        if email_idx is None:
+            for idx, cell in enumerate(rows_data[1]):
+                if '@' in str(cell):
+                    email_idx = idx
+                    break
         if email_idx is None:
             email_idx = 0
             
         def get_val(row, idx, default=''):
             if idx is not None and isinstance(idx, int) and 0 <= idx < len(row):
                 v = str(row[idx]).strip()
-                return v if v != 'None' else default
+                return v if v != 'None' and v != '' else default
             return default
             
         imported = 0
