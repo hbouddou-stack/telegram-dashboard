@@ -626,13 +626,14 @@ async def api_track_open(request: web.Request):
     )
 
 async def api_track_click(request: web.Request):
-    """Méthode 2: Capture le clic immédiatement (Source WhatsApp vs Email vs Web) puis redirige proprement vers Telegram."""
+    """Méthode 2: Capture le clic immédiatement et ouvre Telegram via le protocole natif tg://."""
     student_id = request.query.get('id', '').strip()
     source = (request.query.get('src') or request.query.get('source') or 'email').lower().strip()
     
     import config as cfg
     bot_username = cfg.MAIN_BOT_USERNAME or "As2ilabot"
-    target_tg_url = f"https://t.me/{bot_username}?start=auth_{student_id}" if student_id else f"https://t.me/{bot_username}?start=link"
+    tg_deep_link = f"tg://resolve?domain={bot_username}&start=auth_{student_id}" if student_id else f"tg://resolve?domain={bot_username}&start=link"
+    https_tg_url = f"https://t.me/{bot_username}?start=auth_{student_id}" if student_id else f"https://t.me/{bot_username}?start=link"
     
     try:
         import aiosqlite
@@ -664,27 +665,31 @@ async def api_track_click(request: web.Request):
     except Exception as e:
         _log.error(f"[TRACK_CLICK] Error: {e}")
         
-    # Return seamless instant HTML redirect that works on all mobile in-app browsers
     html_redirect = f"""<!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url={target_tg_url}">
-    <title>أكاديمية البدر - جاري الفتح...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أكاديمية البدر 🎓</title>
     <style>
-        body {{ font-family: -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fbf9f4; text-align: center; direction: rtl; }}
-        .box {{ background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 380px; width: 90%; }}
-        .btn {{ display: inline-block; background: #0c4a3c; color: white; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: bold; margin-top: 15px; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #fbf9f4; text-align: center; padding: 20px; box-sizing: border-box; }}
+        .card {{ background: #ffffff; padding: 35px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(12,74,60,0.08); max-width: 420px; width: 100%; border: 1px solid rgba(12,74,60,0.1); }}
+        .btn {{ display: block; background: #0c4a3c; color: #ffffff !important; padding: 16px 24px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 15px 0 0 0; box-shadow: 0 4px 15px rgba(12,74,60,0.25); }}
     </style>
     <script>
-        window.location.href = "{target_tg_url}";
+        // Essai d'ouverture directe de l'application Telegram native
+        window.location.href = "{tg_deep_link}";
+        setTimeout(function() {{
+            window.location.href = "{https_tg_url}";
+        }}, 800);
     </script>
 </head>
 <body>
-    <div class="box">
-        <h3 style="color:#0c4a3c; margin:0 0 10px 0;">أكاديمية البدر 🎓</h3>
-        <p style="color:#666; font-size:14px;">جاري فتح تطبيق تليجرام لتفعيل حسابك...</p>
-        <a href="{target_tg_url}" class="btn">🚀 فتح تليجرام الآن</a>
+    <div class="card">
+        <h2 style="color: #0c4a3c; margin: 0 0 10px 0; font-size: 22px;">أكاديمية البدر 🎓</h2>
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">جاري فتح تطبيق تليجرام لتفعيل حسابك الأكاديمي...</p>
+        <a href="{tg_deep_link}" class="btn">🚀 فتح تطبيق تليجرام الآن</a>
+        <a href="{https_tg_url}" style="display:inline-block; margin-top:15px; color:#079176; font-size:13px; text-decoration:none;">إذا لم يفتح التطبيق تلقائياً، اضغط هنا ➔</a>
     </div>
 </body>
 </html>"""
