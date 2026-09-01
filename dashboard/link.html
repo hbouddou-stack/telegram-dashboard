@@ -530,17 +530,19 @@
             margin-top: 10px; width: 100%; font-size: 0.9rem; cursor: pointer;
         }
 
-        /* OTP FIELDS */
+        
+        /* OTP FIELDS STRICT LTR */
         .otp-container {
-            display: flex;
-            gap: 8px;
-            justify-content: space-between;
-            direction: ltr; /* Ensure LTR typing for numbers */
+            display: flex !important;
+            gap: 8px !important;
+            justify-content: center !important;
+            direction: ltr !important;
+            unicode-bidi: bidi-override !important;
         }
         .otp-input {
             width: calc(100% / 6 - 6px);
             height: 50px;
-            text-align: center;
+            text-align: center !important;
             font-size: 1.5rem;
             font-weight: bold;
             border-radius: 12px;
@@ -548,7 +550,9 @@
             border: 1px solid rgba(255,255,255,0.2);
             color: #fff;
             transition: all 0.3s ease;
+            direction: ltr !important;
         }
+
         .otp-input:focus {
             border-color: var(--accent);
             box-shadow: 0 0 10px rgba(135, 54, 255, 0.4);
@@ -603,18 +607,21 @@
             <div class="inline-error-text" id="err-student_id" style="margin-top: 4px;"></div>
         </div>
         
-        <div class="input-group">
-            <label>البريد الإلكتروني</label>
-            <div style="position: relative;">
-                <input type="email" id="email" oninput="debouncedValidateField()" placeholder="مثال: name@gmail.com" required style="width: 100%; box-sizing: border-box; padding-left: 40px;">
-                <div id="email_status" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
+                <div class="input-group">
+            <label style="display:flex; justify-content:space-between; align-items:center;">
+                <span>البريد الإلكتروني</span>
+                <span style="font-size:0.78rem; color:var(--accent);">@gmail.com افتراضي</span>
+            </label>
+            <div style="position: relative; direction: ltr; text-align: left;">
+                <input type="email" id="email" oninput="debouncedValidateField()" placeholder="username@gmail.com" required style="width: 100%; box-sizing: border-box; direction: ltr; text-align: left; padding-left: 15px; font-family: monospace; font-size: 1rem;">
+                <div id="email_status" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
             </div>
-            <!-- QUICK EMAIL DOMAIN PILLS -->
-            <div style="display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
-                <button type="button" onclick="appendEmailDomain('@gmail.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--accent); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@gmail.com</button>
-                <button type="button" onclick="appendEmailDomain('@hotmail.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@hotmail.com</button>
-                <button type="button" onclick="appendEmailDomain('@outlook.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@outlook.com</button>
-                <button type="button" onclick="appendEmailDomain('@yahoo.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:'Tajawal';">@yahoo.com</button>
+            <!-- QUICK DOMAIN PILLS -->
+            <div style="display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; direction: ltr;">
+                <button type="button" onclick="appendEmailDomain('@gmail.com')" style="background: rgba(241,196,15,0.15); border: 1px solid rgba(241,196,15,0.4); color: #f1c40f; padding: 5px 12px; border-radius: 12px; font-size: 0.82rem; cursor: pointer; white-space: nowrap; font-family:monospace; font-weight:bold;">@gmail.com</button>
+                <button type="button" onclick="appendEmailDomain('@hotmail.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:monospace;">@hotmail.com</button>
+                <button type="button" onclick="appendEmailDomain('@outlook.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:monospace;">@outlook.com</button>
+                <button type="button" onclick="appendEmailDomain('@yahoo.com')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: var(--text-1); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-family:monospace;">@yahoo.com</button>
             </div>
             <div class="inline-error-text" id="err-email"></div>
         </div>
@@ -647,6 +654,31 @@
         </div>
     </div>
 
+    
+    <!-- TUTO MODAL WITH PHOTO -->
+    <div class="modal-overlay" id="tuto-modal" style="display:none;" onclick="if(event.target===this)closeTutoModal();">
+        <div class="modal-content" style="max-width:380px; text-align:center; padding:20px;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0; color:var(--accent); font-size:1.15rem;">📌 أين أجد رقم الطالب؟</h3>
+                <button class="close-btn" onclick="closeTutoModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <p style="color:var(--text-2); font-size:0.88rem; line-height:1.5; margin-bottom:12px; text-align:right;">
+                رقم الطالب يتكون من <b>6 أرقام</b> وتجده في بطاقتك الدراسية أو في رسالة تأكيد التسجيل التي استلمتها:
+            </p>
+            <div style="border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.15); margin-bottom:14px; background:#000;">
+                <img src="/tuto.jpg?v=live" alt="مكان رقم الطالب" style="width:100%; height:auto; display:block;" onerror="this.src='/albaji_preview.jpg'">
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="window.location.href='/tuto.html'" style="flex:1; background:var(--accent); color:#fff; border:none; padding:10px; border-radius:10px; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.88rem;">
+                    📱 مشاهدة القصة التوضيحية (Story)
+                </button>
+                <button onclick="closeTutoModal()" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:10px 16px; border-radius:10px; font-family:'Tajawal'; cursor:pointer; font-size:0.88rem;">
+                    حسناً
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- SOS MODAL -->
         <!-- Onboarding Overlay Elements -->
     <div id="tour-overlay" class="tour-overlay">
@@ -663,6 +695,31 @@
         <div class="spinner"></div>
     </div>
     
+    
+    <!-- TUTO MODAL WITH PHOTO -->
+    <div class="modal-overlay" id="tuto-modal" style="display:none;" onclick="if(event.target===this)closeTutoModal();">
+        <div class="modal-content" style="max-width:380px; text-align:center; padding:20px;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0; color:var(--accent); font-size:1.15rem;">📌 أين أجد رقم الطالب؟</h3>
+                <button class="close-btn" onclick="closeTutoModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <p style="color:var(--text-2); font-size:0.88rem; line-height:1.5; margin-bottom:12px; text-align:right;">
+                رقم الطالب يتكون من <b>6 أرقام</b> وتجده في بطاقتك الدراسية أو في رسالة تأكيد التسجيل التي استلمتها:
+            </p>
+            <div style="border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.15); margin-bottom:14px; background:#000;">
+                <img src="/tuto.jpg?v=live" alt="مكان رقم الطالب" style="width:100%; height:auto; display:block;" onerror="this.src='/albaji_preview.jpg'">
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="window.location.href='/tuto.html'" style="flex:1; background:var(--accent); color:#fff; border:none; padding:10px; border-radius:10px; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.88rem;">
+                    📱 مشاهدة القصة التوضيحية (Story)
+                </button>
+                <button onclick="closeTutoModal()" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:10px 16px; border-radius:10px; font-family:'Tajawal'; cursor:pointer; font-size:0.88rem;">
+                    حسناً
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- SOS MODAL -->
     <div class="modal-overlay" id="sos-modal">
         <div class="modal-content">
@@ -1014,25 +1071,16 @@
         }
 
         function showTuto() {
-            try {
-                let tid = null;
-                let name = '';
-                let uname = '';
-                if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                    tid = window.Telegram.WebApp.initDataUnsafe.user.id;
-                    name = window.Telegram.WebApp.initDataUnsafe.user.first_name || '';
-                    uname = window.Telegram.WebApp.initDataUnsafe.user.username || '';
-                }
-                fetch('/api/gateway/log_action', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ telegram_id: tid, action_type: 'TUTO_OPENED', first_name: name, username: uname })
-                });
-            } catch(e) { console.error('Error logging tuto click:', e); }
-            
-            setTimeout(() => {
+            const modal = document.getElementById('tuto-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
                 window.location.href = '/tuto.html';
-            }, 100);
+            }
+        }
+        function closeTutoModal() {
+            const modal = document.getElementById('tuto-modal');
+            if (modal) modal.style.display = 'none';
         }
         window.Telegram.WebApp.expand();
         

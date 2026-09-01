@@ -5146,8 +5146,21 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin.js', handle_admin_js)
     app.router.add_get('/admin-late.js', handle_admin_late_js)
     app.router.add_get('/logo.png', handle_logo_png)
+    async def handle_tuto_jpg(request):
+        return web.FileResponse(os.path.join(DASHBOARD_DIR, 'tuto.jpg'), headers={'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'})
+
+    async def handle_dossiertelegram_jpg(request):
+        return web.FileResponse(os.path.join(DASHBOARD_DIR, 'dossiertelegram.jpg'), headers={'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'})
+
+    async def handle_albaji_preview(request):
+        p = os.path.join(DASHBOARD_DIR, 'albaji_preview.jpg')
+        if not os.path.exists(p):
+            p = os.path.join(DASHBOARD_DIR, 'tuto.jpg')
+        return web.FileResponse(p, headers={'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'})
+
     app.router.add_get('/tuto.jpg', handle_tuto_jpg)
     app.router.add_get('/dossiertelegram.jpg', handle_dossiertelegram_jpg)
+    app.router.add_get('/albaji_preview.jpg', handle_albaji_preview)
     app.router.add_get('/search', handle_search)
     app.router.add_get('/search.html', handle_search)
     app.router.add_get('/transcripts.json', handle_transcripts)

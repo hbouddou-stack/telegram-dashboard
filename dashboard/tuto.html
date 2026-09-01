@@ -130,31 +130,35 @@
     
     <div id="story-content-container">
         
-        <!-- Story 0 -->
-        <div class="story-slide" id="story-slide-0">
-            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.6;">
-            <div class="floating-emoji">👋</div>
-            <h2 id="welcome-text" style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">أهلاً بك!</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.8); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; text-align:center; width:80%;">دعنا نأخذك في جولة سريعة لمعرفة كيف تستخدم الأكاديمية.</p>
+                <!-- Story 0: Welcome & Student ID Photo -->
+        <div class="story-slide" id="story-slide-0" style="display:flex;">
+            <img src="/tuto.jpg" style="position:absolute; width:100%; height:100%; object-fit:contain; z-index:-1; background:#000;">
+            <div style="position:absolute; bottom:40px; left:20px; right:20px; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); border-radius:16px; padding:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
+                <h3 style="color:#f1c40f; margin:0 0 6px 0; font-size:1.2rem;">🔢 أين تجد رقم الطالب؟</h3>
+                <p style="color:#fff; font-size:0.92rem; margin:0; line-height:1.5;">يتكون رقم الطالب من 6 أرقام وتجده واضحاً في بطاقتك أو بريد التأكيد كما هو موضح بالصورة أعلاه.</p>
+            </div>
         </div>
         
-        <!-- Story 1 -->
+        <!-- Story 1: Albaji Academy Preview -->
         <div class="story-slide" id="story-slide-1">
-            <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.6;">
-            <div class="floating-emoji">❓</div>
-            <h2 style="color:#fff; font-size:2.2rem; margin-bottom:10px; font-weight:800; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">طرح الأسئلة</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.1rem; margin-bottom:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; text-align:center; width:80%;">يمكنك طرح أي سؤال علمي وسيأتيك الرد فوراً من المساعد الذكي.</p>
+            <img src="/albaji_preview.jpg" style="position:absolute; width:100%; height:100%; object-fit:contain; z-index:-1; background:#000;">
+            <div style="position:absolute; bottom:40px; left:20px; right:20px; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); border-radius:16px; padding:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
+                <h3 style="color:#079176; margin:0 0 6px 0; font-size:1.2rem;">🏛️ البرامج الأكاديمية والدروس</h3>
+                <p style="color:#fff; font-size:0.92rem; margin:0; line-height:1.5;">منهج شرعي متكامل على مدار سنتين و4 مستويات مع إمكانية متابعة المحاضرات والملخصات مباشرة.</p>
+            </div>
         </div>
         
-        <!-- Story 2 -->
+        <!-- Story 2: Telegram Folder 2-clicks -->
         <div class="story-slide" id="story-slide-2">
-            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.6;">
-            <div class="floating-emoji">🚀</div>
-            <h2 style="color:#fff; font-size:2.5rem; margin-bottom:10px; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">جاهز للبدء؟</h2>
-            <p style="color:rgba(255,255,255,0.9); font-size:1.2rem; text-shadow: 0 1px 2px rgba(0,0,0,0.8); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; text-align:center; width:80%;">استمتع برحلتك التعليمية معنا! بالتوفيق.</p>
-            <button class="story-btn" onclick="finishTuto()" style="margin-top:20px;">انطلق الآن</button>
+            <img src="/dossiertelegram.jpg" style="position:absolute; width:100%; height:100%; object-fit:contain; z-index:-1; background:#000;">
+            <div style="position:absolute; bottom:40px; left:20px; right:20px; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); border-radius:16px; padding:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
+                <h3 style="color:#3498db; margin:0 0 6px 0; font-size:1.2rem;">📁 إضافة مجلد الأكاديمية كاملاً</h3>
+                <p style="color:#fff; font-size:0.92rem; margin:0 0 10px 0; line-height:1.5;">بضغطة واحدة يمكنك إضافة مجلد الأكاديمية إلى تيليجرام للوصول السريع لجميع قنوات ومجموعات دراستك.</p>
+                <button class="story-btn" onclick="finishTuto()" style="width:100%; margin:0; background:linear-gradient(135deg, #0c4a3c, #079176); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold; font-size:1rem; cursor:pointer;">
+                    🚀 ابدأ الآن وادخل بياناتك
+                </button>
+            </div>
         </div>
-        
     </div>
     
     <div class="tap-left" id="tap-left"></div>
