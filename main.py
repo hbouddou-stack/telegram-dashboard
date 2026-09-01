@@ -460,7 +460,16 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
         msg['To'] = email
         
-        bot_link = f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=link"
+        base_url = "https://verficationeleves-production.up.railway.app"
+        try:
+            from handlers.auth import get_webapp_base_url
+            base_url = get_webapp_base_url()
+        except Exception:
+            pass
+            
+        tracking_pixel = f"{base_url}/api/track/open?id={student_id}"
+        tracked_link = f"{base_url}/api/track/click?id={student_id}"
+        bot_link = tracked_link
         group_desc = "مجموعة الإخوة (رجال)" if gender == 'HOMME' else "مجموعة الأخوات (نساء)"
         
         html_content = f"""
@@ -499,7 +508,8 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
                     أكاديمية أُسوة • في حال واجهتك أي صعوبة يمكنك التواصل مع فريق الدعم عبر البوت.
                 </p>
             </div>
-        </body>
+        <img src="{tracking_pixel}" width="1" height="1" style="display:none !important;" alt="" />
+</body>
         </html>
         """
         
@@ -558,6 +568,128 @@ async def run_email_dispatcher_task(students_to_send):
         
     email_dispatch_state["is_running"] = False
     email_dispatch_state["current_student"] = "اكتمل الإرسال بنجاح ✅"
+
+
+# ==========================================
+# EMAIL PIXEL TRACKING & KPI ANALYTICS
+# ==========================================
+# 1x1 Transparent GIF Byte Data
+TRANSPARENT_GIF_1X1 = bytes([
+    0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00,
+    0x01, 0x00, 0x80, 0x00, 0x00, 0xff, 0xff, 0xff,
+    0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
+    0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44,
+    0x01, 0x00, 0x3b
+])
+
+async def api_track_open(request: web.Request):
+    student_id = request.query.get('id')
+    if student_id:
+        try:
+            import aiosqlite
+            from config import DATABASE_PATH
+            from datetime import datetime
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            async with aiosqlite.connect(DATABASE_PATH) as db:
+                await db.execute(
+                    "UPDATE academy_students SET email_opened_at = ? WHERE student_id = ? AND email_opened_at IS NULL",
+                    (now_str, student_id)
+                )
+                await db.commit()
+        except Exception as e:
+            _log.error(f"[TRACK_OPEN] Error: {e}")
+            
+    return web.Response(
+        body=TRANSPARENT_GIF_1X1,
+        content_type='image/gif',
+        headers={
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma': 'no-cache'
+        }
+    )
+
+async def api_track_click(request: web.Request):
+    student_id = request.query.get('id')
+    import config as cfg
+    bot_url = f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=link"
+    
+    if student_id:
+        try:
+            import aiosqlite
+            from config import DATABASE_PATH
+            from datetime import datetime
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            async with aiosqlite.connect(DATABASE_PATH) as db:
+                await db.execute(
+                    "UPDATE academy_students SET email_clicked_at = ? WHERE student_id = ? AND email_clicked_at IS NULL",
+                    (now_str, student_id)
+                )
+                await db.commit()
+        except Exception as e:
+            _log.error(f"[TRACK_CLICK] Error: {e}")
+            
+    raise web.HTTPFound(location=bot_url)
+
+async def api_admin_gateway_kpi(request: web.Request):
+    try:
+        import aiosqlite
+        from config import DATABASE_PATH
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            
+            # 1. Total paid
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE payment_status = 'PAID' OR payment_status = 'PAYE'") as cur:
+                total_paid = (await cur.fetchone())['cnt']
+                
+            # 2. Email sent
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_sent = 1") as cur:
+                email_sent = (await cur.fetchone())['cnt']
+                
+            # 3. Email opened
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_opened_at IS NOT NULL") as cur:
+                email_opened = (await cur.fetchone())['cnt']
+                
+            # 4. Email clicked
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_clicked_at IS NOT NULL") as cur:
+                email_clicked = (await cur.fetchone())['cnt']
+                
+            # 5. Telegram linked
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != ''") as cur:
+                telegram_linked = (await cur.fetchone())['cnt']
+                
+            # 6. Overdue (+24h paid without telegram link)
+            async with db.execute("""
+                SELECT student_id, first_name, email, phone, email_sent_at, email_opened_at, created_at 
+                FROM academy_students 
+                WHERE (payment_status = 'PAID' OR payment_status = 'PAYE') 
+                  AND (telegram_id IS NULL OR telegram_id = '')
+                ORDER BY created_at DESC
+            """) as cur:
+                overdue_students = [dict(r) for r in await cur.fetchall()]
+                
+        # Calculate percentages
+        open_rate = round((email_opened / email_sent * 100), 1) if email_sent > 0 else 0
+        click_rate = round((email_clicked / email_sent * 100), 1) if email_sent > 0 else 0
+        conversion_rate = round((telegram_linked / total_paid * 100), 1) if total_paid > 0 else 0
+        
+        return web.json_response({
+            "success": True,
+            "kpi": {
+                "total_paid": total_paid,
+                "email_sent": email_sent,
+                "email_opened": email_opened,
+                "email_clicked": email_clicked,
+                "telegram_linked": telegram_linked,
+                "open_rate": open_rate,
+                "click_rate": click_rate,
+                "conversion_rate": conversion_rate,
+                "pending_count": len(overdue_students),
+                "overdue_students": overdue_students
+            }
+        })
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
 
 async def api_admin_send_bulk_emails(request: web.Request):
     global email_dispatch_state
@@ -5367,6 +5499,9 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin-gateway', handle_admin_gateway)
     app.router.add_post('/api/admin/gateway/send_bulk_emails', api_admin_send_bulk_emails)
     app.router.add_get('/api/admin/gateway/email_dispatch_status', api_admin_email_dispatch_status)
+    app.router.add_get('/api/track/open', api_track_open)
+    app.router.add_get('/api/track/click', api_track_click)
+    app.router.add_get('/api/admin/gateway/kpi', api_admin_gateway_kpi)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)

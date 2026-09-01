@@ -292,3 +292,38 @@ async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
     except Exception as e:
         logger.error(f"[ADMIN_APPROVE] Error: {e}")
         await callback.answer(f"حدث خطأ: {e}", show_alert=True)
+
+
+@router.chat_member()
+async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
+    """Détecte quand l'élève rejoint effectivement le groupe via son lien unique et met à jour son statut."""
+    try:
+        new_status = update.new_chat_member.status
+        old_status = update.old_chat_member.status
+        
+        # When user transitions to member/administrator
+        if old_status not in ["member", "administrator"] and new_status in ["member", "administrator"]:
+            user_id = update.new_chat_member.user.id
+            chat_title = update.chat.title or "المجموعة الرسمية"
+            base_url = get_webapp_base_url()
+            
+            # Send friendly confirmation DM to student with FAQ button
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة (FAQ)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=joined"))],
+                [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=support"))]
+            ])
+            
+            msg = (
+                f"✅ <b>تم انضمامك وتأكيد عضويتك بنجاح في: {chat_title}!</b>\n\n"
+                f"🎉 نتمنى لك مسيرة علمية موفقة ومباركة.\n"
+                f"👇 يمكنك في أي وقت مراجعة دليل الطالب أو طرح استفساراتك عبر الأزرار أدناه:"
+            )
+            
+            try:
+                await bot.send_message(user_id, msg, reply_markup=kb, parse_mode="HTML")
+            except Exception:
+                pass
+                
+            await log_student_action(0, 'MEMBER_JOINED', f"انضم إلى {chat_title}", telegram_id=user_id, telegram_name=update.new_chat_member.user.first_name, telegram_username=update.new_chat_member.user.username)
+    except Exception as e:
+        logger.error(f"[CHAT_MEMBER] Error: {e}")

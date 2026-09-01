@@ -670,6 +670,22 @@
             }
         }
 
+        
+        async function fetchKpiMetrics() {
+            try {
+                const res = await fetch('/api/admin/gateway/kpi');
+                const data = await res.json();
+                if (data.success && data.kpi) {
+                    const k = data.kpi;
+                    document.getElementById('kpi-total-paid').innerText = k.total_paid || 0;
+                    document.getElementById('kpi-emails-sent').innerText = k.email_sent || 0;
+                    document.getElementById('kpi-open-rate').innerText = `${k.open_rate || 0}% (${k.email_opened || 0})`;
+                    document.getElementById('kpi-click-rate').innerText = `${k.click_rate || 0}% (${k.email_clicked || 0})`;
+                    document.getElementById('kpi-conversion-rate').innerText = `${k.conversion_rate || 0}% (${k.telegram_linked || 0})`;
+                }
+            } catch(e) {}
+        }
+
         function startEmailProgressPolling() {
             if (emailPollInterval) clearInterval(emailPollInterval);
             emailPollInterval = setInterval(async () => {
@@ -692,7 +708,7 @@
                             const btn = document.getElementById('btn-start-bulk-email');
                             btn.disabled = false;
                             btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
-                            fetchStudents(); // Refresh student list
+                            fetchStudents(); fetchKpiMetrics(); // Refresh student list
                         }
                     }
                 } catch(e) {}
@@ -769,7 +785,7 @@
                 const data = await res.json();
                 if(data.success) {
                     alert('✅ تمت المزامنة بنجاح! تم استيراد/تحديث ' + data.count + ' طالب.');
-                    fetchStudents();
+                    fetchStudents(); fetchKpiMetrics();
                 } else {
                     alert('❌ خطأ في المزامنة: ' + data.error);
                 }
@@ -814,7 +830,7 @@
                 const data = await res.json();
                 if(data.success) {
                     alert('تم استيراد أو تحديث ' + data.count + ' طالب بنجاح.');
-                    fetchStudents();
+                    fetchStudents(); fetchKpiMetrics();
                 } else {
                     alert('خطأ: ' + data.error);
                 }
@@ -849,7 +865,7 @@
                     document.getElementById('manual-student-fn').value = '';
                     document.getElementById('manual-student-ln').value = '';
                     document.getElementById('manual-student-id').value = '';
-                    fetchStudents();
+                    fetchStudents(); fetchKpiMetrics();
                 } else {
                     alert('خطأ: ' + data.error);
                 }
@@ -1127,7 +1143,7 @@
                 if (data.success) {
                     alert('تم إلغاء الربط بنجاح.');
                     document.getElementById('logs-overlay').style.display = 'none';
-                    fetchStudents();
+                    fetchStudents(); fetchKpiMetrics();
                 } else {
                     alert('خطأ: ' + data.error);
                 }
@@ -1593,7 +1609,7 @@
         }
 
         // ============ INIT ============
-        fetchStudents();
+        fetchStudents(); fetchKpiMetrics();
     </script>
 </body>
 </html>
