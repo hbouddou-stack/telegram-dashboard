@@ -5881,10 +5881,39 @@ async def api_admin_presence_live(request):
 async def main():
     try:
         import database as db
+        import aiosqlite
+        from config import DATABASE_PATH
         if hasattr(db, 'ensure_email_and_score_columns'):
             await db.ensure_email_and_score_columns()
         if hasattr(db, 'ensure_click_tracking_table'):
             await db.ensure_click_tracking_table()
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            # 1. Guarantee official folder link in group_settings
+            await db_conn.execute("""
+                CREATE TABLE IF NOT EXISTS group_settings (
+                    id INTEGER PRIMARY KEY,
+                    general_channel_id TEXT,
+                    men_group_id TEXT,
+                    women_group_id TEXT,
+                    folder_link TEXT,
+                    updated_at TEXT
+                )
+            """)
+            await db_conn.execute("""
+                INSERT INTO group_settings (id, folder_link, updated_at)
+                VALUES (1, 'https://t.me/addlist/jcgwXUtzsfBhMGI8', datetime('now'))
+                ON CONFLICT(id) DO UPDATE SET folder_link = 'https://t.me/addlist/jcgwXUtzsfBhMGI8'
+            """)
+            
+            # 2. Guarantee Houssam Bouddou is always seeded and visible in table
+            await db_conn.execute("""
+                INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, email_sent, is_active, created_at)
+                VALUES ('104820', 'Houssam', 'Bouddou', 'h.bouddou@gmail.com', '+33668959911', 'HOMME', 'PAID', 1, 1, datetime('now'))
+                ON CONFLICT(student_id) DO UPDATE SET first_name = 'Houssam', last_name = 'Bouddou', email = 'h.bouddou@gmail.com', phone = '+33668959911', gender = 'HOMME', payment_status = 'PAID'
+            """)
+            await db_conn.commit()
+            logger.info("Auto-seeded group_settings and test student 104820 in database.")
     except Exception as e:
         logger.error(f"Startup DB migration warning: {e}")
         

@@ -983,6 +983,9 @@
                 `;
                 list.appendChild(div);
             });
+            if (typeof renderStudents === 'function') {
+                renderStudents(filtered);
+            }
         }
 
         async function openStudentCard(student) {
