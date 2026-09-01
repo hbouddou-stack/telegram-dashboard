@@ -658,37 +658,51 @@ async def api_admin_gateway_kpi(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             
-            # Total paid
+            # 1. Total paid
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE payment_status = 'PAID' OR payment_status = 'PAYE'") as cur:
                 total_paid = (await cur.fetchone())['cnt']
                 
-            # Email sent
+            # 2. Email funnel
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_sent = 1") as cur:
                 email_sent = (await cur.fetchone())['cnt']
                 
-            # Email opened
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_opened_at IS NOT NULL") as cur:
                 email_opened = (await cur.fetchone())['cnt']
                 
-            # Clicks by channel from click_tracking table
-            async with db.execute("SELECT COUNT(*) as cnt FROM click_tracking WHERE LOWER(source) LIKE '%email%'") as cur:
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_clicked_at IS NOT NULL") as cur:
                 email_clicks = (await cur.fetchone())['cnt']
                 
-            async with db.execute("SELECT COUNT(*) as cnt FROM click_tracking WHERE LOWER(source) LIKE '%wa%' OR LOWER(source) LIKE '%whatsapp%'") as cur:
+            # 3. WhatsApp funnel
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE whatsapp_sent = 1") as cur:
+                wa_sent = (await cur.fetchone())['cnt']
+                
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE whatsapp_clicked_at IS NOT NULL") as cur:
                 wa_clicks = (await cur.fetchone())['cnt']
                 
-            async with db.execute("SELECT COUNT(*) as cnt FROM click_tracking WHERE LOWER(source) LIKE '%web%'") as cur:
-                web_clicks = (await cur.fetchone())['cnt']
-                
-            total_clicks = email_clicks + wa_clicks + web_clicks
-            
-            # Telegram linked
+            # 4. Telegram Group conversions
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != ''") as cur:
                 telegram_linked = (await cur.fetchone())['cnt']
                 
-            # Overdue
+            # Joined directly via email
             async with db.execute("""
-                SELECT student_id, first_name, email, phone, email_sent_at, email_opened_at, created_at 
+                SELECT COUNT(*) as cnt FROM academy_students 
+                WHERE telegram_id IS NOT NULL AND telegram_id != '' 
+                  AND (last_click_source = 'email' OR last_click_source IS NULL OR last_click_source = '')
+            """) as cur:
+                joined_via_email = (await cur.fetchone())['cnt']
+                
+            # Joined after WhatsApp follow-up
+            async with db.execute("""
+                SELECT COUNT(*) as cnt FROM academy_students 
+                WHERE telegram_id IS NOT NULL AND telegram_id != '' 
+                  AND (last_click_source = 'whatsapp' OR last_click_source = 'wa')
+            """) as cur:
+                joined_after_wa = (await cur.fetchone())['cnt']
+                
+            # 5. Overdue / Needs Follow-up (Paid but no telegram_id)
+            async with db.execute("""
+                SELECT student_id, first_name, last_name, email, phone, email_sent, email_sent_at, email_opened_at, email_clicked_at, 
+                       whatsapp_sent, whatsapp_sent_at, whatsapp_clicked_at, created_at 
                 FROM academy_students 
                 WHERE (payment_status = 'PAID' OR payment_status = 'PAYE') 
                   AND (telegram_id IS NULL OR telegram_id = '')
@@ -699,6 +713,7 @@ async def api_admin_gateway_kpi(request: web.Request):
         open_rate = round((email_opened / email_sent * 100), 1) if email_sent > 0 else 0
         click_rate = round((email_clicks / email_sent * 100), 1) if email_sent > 0 else 0
         conversion_rate = round((telegram_linked / total_paid * 100), 1) if total_paid > 0 else 0
+        wa_conversion_rate = round((joined_after_wa / wa_sent * 100), 1) if wa_sent > 0 else 0
         
         return web.json_response({
             "success": True,
@@ -707,13 +722,15 @@ async def api_admin_gateway_kpi(request: web.Request):
                 "email_sent": email_sent,
                 "email_opened": email_opened,
                 "email_clicks": email_clicks,
+                "wa_sent": wa_sent,
                 "wa_clicks": wa_clicks,
-                "web_clicks": web_clicks,
-                "total_clicks": total_clicks,
                 "telegram_linked": telegram_linked,
+                "joined_via_email": joined_via_email,
+                "joined_after_wa": joined_after_wa,
                 "open_rate": open_rate,
                 "click_rate": click_rate,
                 "conversion_rate": conversion_rate,
+                "wa_conversion_rate": wa_conversion_rate,
                 "pending_count": len(overdue_students),
                 "overdue_students": overdue_students
             }
@@ -784,11 +801,14 @@ async def api_admin_gateway_students(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.year, s.gender, s.dob, s.source, s.phone, s.created_at, s.payment_status,
+                SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
+                       s.year, s.gender, s.dob, s.source, s.phone, s.created_at, s.payment_status,
+                       s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
+                       s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.last_click_source,
                        u.first_name as tg_first_name, u.last_name as tg_last_name
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
-                ORDER BY s.first_name ASC
+                ORDER BY s.created_at DESC, s.first_name ASC
             """) as cur:
                 students = [dict(row) for row in await cur.fetchall()]
         return web.json_response({'success': True, 'students': students})

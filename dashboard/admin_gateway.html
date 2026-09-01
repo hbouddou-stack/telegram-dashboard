@@ -678,15 +678,17 @@
                 if (data.success && data.kpi) {
                     const k = data.kpi;
                     const elPaid = document.getElementById('kpi-total-paid');
+                    const elSent = document.getElementById('kpi-emails-sent');
                     const elOpen = document.getElementById('kpi-open-rate');
-                    const elEmail = document.getElementById('kpi-email-clicks');
-                    const elWa = document.getElementById('kpi-wa-clicks');
+                    const elWaSent = document.getElementById('kpi-wa-sent');
+                    const elWaConv = document.getElementById('kpi-wa-converted');
                     const elConv = document.getElementById('kpi-conversion-rate');
                     
                     if (elPaid) elPaid.innerText = k.total_paid || 0;
+                    if (elSent) elSent.innerText = k.email_sent || 0;
                     if (elOpen) elOpen.innerText = `${k.open_rate || 0}% (${k.email_opened || 0})`;
-                    if (elEmail) elEmail.innerText = `${k.email_clicks || 0} نقرة`;
-                    if (elWa) elWa.innerText = `${k.wa_clicks || 0} نقرة`;
+                    if (elWaSent) elWaSent.innerText = `${k.wa_sent || 0} مرسل`;
+                    if (elWaConv) elWaConv.innerText = `${k.joined_after_wa || 0} طالب`;
                     if (elConv) elConv.innerText = `${k.conversion_rate || 0}% (${k.telegram_linked || 0})`;
                 }
             } catch(e) {
