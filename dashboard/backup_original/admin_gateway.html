@@ -34,6 +34,20 @@
             --text2: #9ca3af;
         }
 
+        
+        body.theme-albaji {
+            --bg: #fbf9f4;
+            --surface: #ffffff;
+            --border: rgba(12, 74, 60, 0.12);
+            --accent: #0c4a3c;
+            --accent2: #079176;
+            --success: #079176;
+            --danger: #e40014;
+            --warning: #b4530b;
+            --text1: #17262c;
+            --text2: #4c5d65;
+        }
+
         body.theme-light {
             --bg: #f9fafb;
             --surface: #ffffff;
@@ -632,7 +646,7 @@
             localStorage.setItem('admin-theme', themeName);
         }
 
-        const savedTheme = localStorage.getItem('admin-theme') || 'cpi';
+        const savedTheme = localStorage.getItem('admin-theme') || 'albaji';
         changeTheme(savedTheme);
 
         // ============ TABS ============
