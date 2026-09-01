@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخطط رحلة الطلاب ومنظومة الأمان - أكاديمية البدر 🎓</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0b1518; color: #e5e7eb; margin: 0; padding: 25px 15px; direction: rtl; text-align: right; }
+        .container { max-width: 1100px; margin: 0 auto; background: #132227; border-radius: 20px; padding: 35px; border: 1px solid rgba(12,74,60,0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        h1 { color: #10b981; margin: 0 0 10px 0; font-size: 26px; font-weight: 900; text-align: center; }
+        p.subtitle { color: #9ca3af; text-align: center; margin: 0 0 30px 0; font-size: 15px; }
+        .mermaid { background: #1a2c33; padding: 25px; border-radius: 16px; overflow-x: auto; border: 1px solid #243b42; display: flex; justify-content: center; }
+        .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 30px; }
+        .legend-card { background: #1a2c33; padding: 15px; border-radius: 12px; border: 1px solid #243b42; }
+        .legend-card h4 { margin: 0 0 6px 0; font-size: 15px; }
+        .legend-card p { margin: 0; font-size: 13px; color: #9ca3af; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 المخطط الهندسي الشامل لرحلة الطلاب (أكاديمية البدر)</h1>
+        <p class="subtitle">توضيح مسار الربط بالبريد، التمييز بين الجنسين، والموافقة التلقائية على المجموعات الخاصة</p>
+        
+        <div class="mermaid">
+flowchart TD
+    classDef admin fill:#0c4a3c,stroke:#079176,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef email fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef men fill:#0284c7,stroke:#0369a1,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef women fill:#db2777,stroke:#be185d,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef fraud fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef wait fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef bot fill:#059669,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold;
+
+    subgraph STEP1 ["1️⃣ لوحة تحكم الإدارة (Gateway Admin)"]
+        A["📁 المشرف يرفع ملف الإكسيل (Excel)<br>البوت يفحص كل سطر: (الجنس + حالة الدفع)"]:::admin
+        A --> B["🚀 ضغط زر: إرسال الإيميلات بالروابط السحرية<br>(مع فاصل زمني 2 ثانية مانع للسبام)"]:::admin
+    end
+
+    subgraph CASE1 ["🧔 الحالة 1: عمر الإدريسي (رجل - دافع فوري)"]
+        B --> C1["📧 عمر يستلم إيميل التفعيل الرسمي<br>🔗 ?start=auth_OMAR_101"]:::email
+        C1 --> C2["📱 عمر يضغط الزر في الإيميل<br>البوت يربط Telegram_ID الخاص به فوراً"]:::men
+        C2 --> C3["📁 البوت يرسل له رابط مجموعة الرجال الخاصة"]:::men
+        C3 --> C4["🚪 عمر يطلب الانضمام للمجموعة الخاصة"]:::men
+        C4 --> C5{"🤖 فحص البوت المشرف<br>(Gender=HOMME & Status=PAID)"}:::bot
+        C5 -- "مطابق 100% ✅" --> C6["🎉 موافقة فورية وتلقائية ودخول للمجموعة 🧔"]:::men
+    end
+
+    subgraph CASE2 ["🧕 الحالة 2: خديجة العمراني (امرأة - دافعة فورية)"]
+        B --> D1["📧 خديجة تستلم إيميل التفعيل الرسمي<br>🔗 ?start=auth_KHADIJA_102"]:::email
+        D1 --> D2["📱 خديجة تضغط الزر في الإيميل<br>البوت يربط حسابها فوراً بنقرة واحدة"]:::women
+        D2 --> D3["📁 البوت يرسل لها رابط مجموعة النساء الخاصة"]:::women
+        D3 --> D4["🚪 خديجة تطلب الانضمام للمجموعة الخاصة"]:::women
+        D4 --> D5{"🤖 فحص البوت المشرف<br>(Gender=FEMME & Status=PAID)"}:::bot
+        D5 -- "مطابقة 100% ✅" --> D6["🎉 موافقة فورية وتلقائية ودخول لمجموعة الأخوات 🧕"]:::women
+    end
+
+    subgraph CASE3 ["🕵️ الحالة 3: فهد المنصوري (إيميل أو رابط محوّل)"]
+        C1 -. "عمر يحول الإيميل لصديقه فهد ⚠️" .-> E1["🕵️ فهد يضغط على الرابط في تليجرام"]:::fraud
+        E1 --> E2["🚪 فهد يطلب الانضمام للمجموعة الخاصة"]:::fraud
+        E2 --> E3{"🤖 فحص البوت المشرف في باب المجموعة<br>(هل فهد مسجل ودافع؟)"}:::bot
+        E3 -- "غير مسجل في قاعدة البيانات ❌" --> E4["🛑 رفض فوري لطلب الانضمام (Decline Request)"]:::fraud
+        E4 --> E5["🚫 فهد يظل خارج المجموعة ولا يرى أي درس أو رسالة !"]:::fraud
+    end
+
+    subgraph CASE4 ["⏳ الحالة 4: طارق الجعفري (دافع متأخر بعد 48 ساعة)"]
+        A -. "اليوم 1: مسجل غير دافع (UNPAID)" .-> F1["⏳ طارق لا يصله إيميل (محجوب آلياً)"]:::wait
+        F1 -. "بعد 48 ساعة: طارق يقوم بالتحويل والدفع" .-> F2["💳 تأكيد الدفع في المنصة"]:::wait
+        F2 --> F3["📥 المشرف يرفع ملف الإكسيل المحدث في اليوم الثالث"]:::admin
+        F3 --> F4["⚡ البوت يكتشف تحول طارق إلى (PAID)<br>ويرسل له إيميل التفعيل فوراً"]:::email
+        F4 --> F5["📱 طارق يضغط الرابط ➔ موافقة فورية ودخول لمجموعة الرجال 🧔"]:::men
+    end
+
+    subgraph CASE5 ["💬 الحالة 5: أسماء بنجلون (تذكير ريلانس واتساب H+24)"]
+        B --> G1["📧 أُرسل الإيميل لأسماء ولكنها لم تفتحه خلال 24 ساعة"]:::wait
+        G1 --> G2["📊 لوحة التحكم تظهر أسماء كمتأخرة عن الانضمام"]:::admin
+        G2 --> G3["💬 المشرف يضغط زر: تذكير واتساب برابط سحري"]:::women
+        G3 --> G4["📱 أسماء تفتح رسالة الواتساب وتضغط الرابط بنقرة واحدة"]:::women
+        G4 --> G5["🎉 البوت يربط حسابها ويدخلها فوراً لمجموعة الأخوات 🧕"]:::women
+    end
+        </div>
+
+        <div class="legend">
+            <div class="legend-card" style="border-right: 4px solid #0284c7;">
+                <h4 style="color:#0284c7;">🧔 1. عمر الإدريسي</h4>
+                <p>دافع فوري ➔ تفعيل تلقائي بنقرة واحدة وانضمام لمجموعة الرجال.</p>
+            </div>
+            <div class="legend-card" style="border-right: 4px solid #db2777;">
+                <h4 style="color:#db2777;">🧕 2. خديجة العمراني</h4>
+                <p>دافعة فورية ➔ تفعيل مباشر وانضمام لمجموعة الأخوات (نساء).</p>
+            </div>
+            <div class="legend-card" style="border-right: 4px solid #ef4444;">
+                <h4 style="color:#ef4444;">🕵️ 3. فهد المنصوري</h4>
+                <p>رابط محوّل ➔ البوت يرفض طلب انضمامه فوراً لأنه غير مسجل.</p>
+            </div>
+            <div class="legend-card" style="border-right: 4px solid #f59e0b;">
+                <h4 style="color:#f59e0b;">⏳ 4. طارق الجعفري</h4>
+                <p>دفع متأخر 48 ساعة ➔ تفعيل فوري عند رفع الإكسيل المحدث.</p>
+            </div>
+            <div class="legend-card" style="border-right: 4px solid #10b981;">
+                <h4 style="color:#10b981;">💬 5. أسماء بنجلون</h4>
+                <p>ريلانس واتساب ➔ تفعيل الحساب عبر رسالة الواتساب بعد 24 ساعة.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+</body>
+</html>

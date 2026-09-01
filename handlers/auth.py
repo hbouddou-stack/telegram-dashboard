@@ -137,6 +137,31 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
         ])
         await message.answer("مرحباً بك في أكاديمية البدر! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
+
+@router.message(Command("png"))
+@router.message(Command("schema"))
+@router.message(Command("diagrams"))
+async def cmd_png(message: Message):
+    """عرض المخطط الهندسي الشامل لرحلة الطلاب والحالات الخمسة."""
+    base_url = get_webapp_base_url()
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🌐 استعراض المخطط التفاعلي عالي الدقة (HD)", web_app=WebAppInfo(url=f"{base_url}/diagrams/customer_journey_5_cases.html"))],
+        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin"))]
+    ])
+    
+    msg_text = (
+        "📊 <b>المخطط الهندسي لرحلة الطلاب ومنظومة الأمان (أكاديمية البدر) :</b>\n\n"
+        "👥 <b>الحالات الخمسة الموضحة في المخطط:</b>\n"
+        "1️⃣ <b>عمر الإدريسي (رجل):</b> دافع فوري ➔ تفعيل مباشر لمجموعة الرجال 🧔\n"
+        "2️⃣ <b>خديجة العمراني (امرأة):</b> تفعيل مباشر لمجموعة النساء 🧕\n"
+        "3️⃣ <b>فهد المنصوري (متطفل):</b> رابط محول ➔ البوت يرفض دخوله فوراً 🛑\n"
+        "4️⃣ <b>طارق الجعفري (دفع متأخر 48h):</b> تفعيل فوري عند رفع الإكسيل المحدث ⚡\n"
+        "5️⃣ <b>أسماء بنجلون (ريلانس واتساب H+24):</b> تفعيل بضغطة واحدة من الواتساب 💬\n\n"
+        "👇 <b>اضغط على الزر أدناه لفتح المخطط المرئي الكامل بجودة فائقة (HD):</b>"
+    )
+    await message.answer(msg_text, reply_markup=kb, parse_mode="HTML")
+
 @router.message(Command("federer"))
 async def cmd_federer(message: Message):
     """Menu complet pour les administrateurs et accès à toutes les applications."""
