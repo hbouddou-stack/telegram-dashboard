@@ -966,69 +966,123 @@ async def api_admin_gateway_add_student(request: web.Request):
 async def api_admin_gateway_import_students(request: web.Request):
     try:
         import aiosqlite
-        import openpyxl
         import io
+        import csv
         from config import DATABASE_PATH
+        
         reader = await request.multipart()
         field = await reader.next()
         if not field or field.name != 'file':
-            return web.json_response({'success': False, 'error': 'Aucun fichier trouve'})
+            return web.json_response({'success': False, 'error': 'لم يتم العثور على أي ملف'})
         
+        filename = (field.filename or '').lower()
         file_data = await field.read()
-        wb = openpyxl.load_workbook(io.BytesIO(file_data))
-        sheet = wb.active
         
-        headers = [cell.value for cell in sheet[1]]
-        def get_idx(*names):
-            for name in names:
-                for i, h in enumerate(headers):
-                    if h and name.lower() in str(h).lower():
-                        return i
+        rows_data = []
+        
+        # 1. Parsing CSV or XLSX
+        if filename.endswith('.csv') or b',' in file_data[:500] or b';' in file_data[:500]:
+            try:
+                text_content = file_data.decode('utf-8-sig')
+            except Exception:
+                try:
+                    text_content = file_data.decode('utf-8')
+                except Exception:
+                    text_content = file_data.decode('latin-1')
+            
+            # Detect delimiter
+            delimiter = ';' if ';' in text_content.splitlines()[0] else ','
+            csv_reader = csv.reader(io.StringIO(text_content), delimiter=delimiter)
+            rows_data = list(csv_reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(file_data), data_only=True)
+            sheet = wb.active
+            for r in sheet.iter_rows(values_only=True):
+                rows_data.append([str(c) if c is not None else '' for c in r])
+                
+        if not rows_data or len(rows_data) < 2:
+            return web.json_response({'success': False, 'error': 'الملف فارغ أو لا يحتوي على بيانات طلاب'})
+            
+        headers = [str(h).strip().lower() for h in rows_data[0]]
+        
+        def find_col(*keywords):
+            for kw in keywords:
+                for idx, h in enumerate(headers):
+                    if kw.lower() in h:
+                        return idx
             return None
             
-        email_idx = get_idx('email', 'mail', 'courriel', 'بريد')
-        dob_idx = get_idx('dob', 'naissance', 'birth', 'date', 'تاريخ', 'مواليد')
-        fn_idx = get_idx('first', 'prenom', 'prénom', 'اسم')
-        ln_idx = get_idx('last', 'nom', 'لقب', 'عائلة')
-        year_idx = get_idx('year', 'annee', 'année', 'level', 'niveau', 'سنة', 'مستوى')
-        gender_idx = get_idx('gender', 'genre', 'sexe', 'جنس')
-        sid_idx = get_idx('student_id', 'matricule', 'id')
-
-        if email_idx is None: email_idx = 0
+        email_idx = find_col('email', 'mail', 'courriel', 'البريد', 'إيميل')
+        sid_idx = find_col('student_id', 'matricule', 'id', 'رقم الطالب', 'المعرف')
+        fn_idx = find_col('first_name', 'first', 'prenom', 'prénom', 'الاسم', 'اسم')
+        ln_idx = find_col('last_name', 'last', 'nom', 'اللقب', 'النسب', 'عائلة')
+        gender_idx = find_col('gender', 'genre', 'sexe', 'الجنس', 'نوع')
+        phone_idx = find_col('phone', 'tel', 'mobile', 'whatsapp', 'هاتف', 'جوال', 'واتساب')
+        pay_idx = find_col('payment', 'status', 'statut', 'paye', 'paiement', 'الدفع', 'حالة')
+        dob_idx = find_col('dob', 'naissance', 'birth', 'تاريخ الميلاد', 'الميلاد')
+        year_idx = find_col('year', 'annee', 'année', 'level', 'السنة', 'المستوى')
         
+        if email_idx is None:
+            email_idx = 0
+            
+        def get_val(row, idx, default=''):
+            if idx is not None and isinstance(idx, int) and 0 <= idx < len(row):
+                v = str(row[idx]).strip()
+                return v if v != 'None' else default
+            return default
+            
         imported = 0
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            for row in list(sheet.iter_rows(min_row=2)):
-                if len(row) <= max(email_idx, dob_idx):
+            for row in rows_data[1:]:
+                if not any(row):
                     continue
-                email = str(row[email_idx].value or '').strip().lower()
-                dob = str(row[dob_idx].value or '').strip()
-                if not email or not dob:
+                email = get_val(row, email_idx).lower()
+                if not email or '@' not in email:
                     continue
                     
-                first_name = str(row[fn_idx].value or '').strip() if fn_idx < len(row) else ''
-                last_name = str(row[ln_idx].value or '').strip() if ln_idx < len(row) else ''
-                year = str(row[year_idx].value or '').strip() if year_idx < len(row) else '1'
-                gender = str(row[gender_idx].value or '').strip().lower() if gender_idx < len(row) else 'homme'
+                first_name = get_val(row, fn_idx, 'طالب')
+                last_name = get_val(row, ln_idx, '')
+                phone = get_val(row, phone_idx, '')
+                dob = get_val(row, dob_idx, '')
+                year = get_val(row, year_idx, '1')
                 
-                async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
+                raw_gender = get_val(row, gender_idx, 'HOMME').upper()
+                is_female = any(k in raw_gender for k in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'أنث', 'بنت', 'نساء'])
+                gender = 'FEMME' if is_female else 'HOMME'
+                
+                raw_pay = get_val(row, pay_idx, 'PAID').upper()
+                is_unpaid = any(k in raw_pay for k in ['UNPAID', 'NON', 'NO', 'ATTENTE', 'PENDING', 'غير'])
+                payment_status = 'UNPAID' if is_unpaid else 'PAID'
+                
+                # Generate or clean student_id
+                student_id = get_val(row, sid_idx, '')
+                if not student_id:
+                    import hashlib
+                    student_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]
+                    
+                async with db.execute("SELECT student_id FROM academy_students WHERE LOWER(email) = ? OR student_id = ?", (email, student_id)) as cur:
                     exists = await cur.fetchone()
-                    if exists:
-                        await db.execute("""
-                            UPDATE academy_students 
-                            SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?
-                            WHERE email = ?
-                        """, (dob, first_name, last_name, year, gender, 'excel', email))
-                    else:
-                        await db.execute("""
-                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """, (email, dob, first_name, last_name, year, gender, 'excel'))
+                    
+                if exists:
+                    await db.execute("""
+                        UPDATE academy_students 
+                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, source = 'excel'
+                        WHERE LOWER(email) = ? OR student_id = ?
+                    """, (first_name, last_name, phone, gender, payment_status, dob, year, email, student_id))
+                else:
+                    await db.execute("""
+                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, source, is_active, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', 1, datetime('now'))
+                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year))
+                    
                 imported += 1
             await db.commit()
             
         return web.json_response({'success': True, 'count': imported})
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return web.json_response({'success': False, 'error': str(e)})
 
 async def api_admin_gateway_sync_sheets(request: web.Request):
