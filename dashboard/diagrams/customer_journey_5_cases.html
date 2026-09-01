@@ -2,28 +2,137 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>مخطط رحلة الطلاب ومنظومة الأمان - أكاديمية البدر 🎓</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: #0b1518; color: #e5e7eb; margin: 0; padding: 25px 15px; direction: rtl; text-align: right; }
-        .container { max-width: 1100px; margin: 0 auto; background: #132227; border-radius: 20px; padding: 35px; border: 1px solid rgba(12,74,60,0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        h1 { color: #10b981; margin: 0 0 10px 0; font-size: 26px; font-weight: 900; text-align: center; }
-        p.subtitle { color: #9ca3af; text-align: center; margin: 0 0 30px 0; font-size: 15px; }
-        .mermaid { background: #1a2c33; padding: 25px; border-radius: 16px; overflow-x: auto; border: 1px solid #243b42; display: flex; justify-content: center; }
-        .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 30px; }
-        .legend-card { background: #1a2c33; padding: 15px; border-radius: 12px; border: 1px solid #243b42; }
-        .legend-card h4 { margin: 0 0 6px 0; font-size: 15px; }
-        .legend-card p { margin: 0; font-size: 13px; color: #9ca3af; line-height: 1.5; }
+        body {
+            font-family: 'Tajawal', -apple-system, sans-serif;
+            background: #091316;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 15px;
+            direction: rtl;
+            text-align: right;
+            touch-action: pan-x pan-y pinch-zoom;
+        }
+        .header-bar {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        h1 {
+            color: #10b981;
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            font-weight: 900;
+        }
+        p.subtitle {
+            color: #9ca3af;
+            margin: 0 0 15px 0;
+            font-size: 13px;
+        }
+        
+        /* Floating Zoom Controls */
+        .zoom-controls {
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(19, 34, 39, 0.95);
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+        .zoom-btn {
+            background: #0c4a3c;
+            color: #ffffff;
+            border: 1px solid #10b981;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .zoom-btn:active {
+            transform: scale(0.95);
+            background: #10b981;
+        }
+        
+        /* Diagram Container */
+        .diagram-wrapper {
+            background: #112025;
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid #1d333b;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: auto;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #diagram-target {
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Legend Cards */
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .legend-card {
+            background: #132227;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #1d333b;
+        }
+        .legend-card h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 800;
+        }
+        .legend-card p {
+            margin: 0;
+            font-size: 12px;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header-bar">
         <h1>🎓 المخطط الهندسي الشامل لرحلة الطلاب (أكاديمية البدر)</h1>
-        <p class="subtitle">توضيح مسار الربط بالبريد، التمييز بين الجنسين، والموافقة التلقائية على المجموعات الخاصة</p>
-        
-        <div class="mermaid">
+        <p class="subtitle">استخدم أزرار التكبير أدناه أو اسحب بأصابعك للتقريب والتكبير بدقة فائقة</p>
+    </div>
+
+    <!-- ZOOM CONTROLS -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()">🔍+ تكبير (Zoom In)</button>
+        <button class="zoom-btn" onclick="zoomOut()">🔍- تصغير (Zoom Out)</button>
+        <button class="zoom-btn" onclick="resetZoom()" style="background:#1f2937; border-color:#4b5563;">↺ إعادة ضبط</button>
+    </div>
+
+    <!-- DIAGRAM VIEWPORT -->
+    <div class="diagram-wrapper">
+        <div id="diagram-target">
+            <div class="mermaid">
 flowchart TD
     classDef admin fill:#0c4a3c,stroke:#079176,stroke-width:2px,color:#ffffff,font-weight:bold;
     classDef email fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#ffffff,font-weight:bold;
@@ -34,7 +143,7 @@ flowchart TD
     classDef bot fill:#059669,stroke:#047857,stroke-width:2px,color:#ffffff,font-weight:bold;
 
     subgraph STEP1 ["1️⃣ لوحة تحكم الإدارة (Gateway Admin)"]
-        A["📁 المشرف يرفع ملف الإكسيل (Excel)<br>البوت يفحص كل سطر: (الجنس + حالة الدفع)"]:::admin
+        A["📁 المشرف يرفع ملف الإكسيل (Excel)<br>البوت يفحص: (الجنس + حالة الدفع)"]:::admin
         A --> B["🚀 ضغط زر: إرسال الإيميلات بالروابط السحرية<br>(مع فاصل زمني 2 ثانية مانع للسبام)"]:::admin
     end
 
@@ -79,33 +188,56 @@ flowchart TD
         G3 --> G4["📱 أسماء تفتح رسالة الواتساب وتضغط الرابط بنقرة واحدة"]:::women
         G4 --> G5["🎉 البوت يربط حسابها ويدخلها فوراً لمجموعة الأخوات 🧕"]:::women
     end
-        </div>
-
-        <div class="legend">
-            <div class="legend-card" style="border-right: 4px solid #0284c7;">
-                <h4 style="color:#0284c7;">🧔 1. عمر الإدريسي</h4>
-                <p>دافع فوري ➔ تفعيل تلقائي بنقرة واحدة وانضمام لمجموعة الرجال.</p>
-            </div>
-            <div class="legend-card" style="border-right: 4px solid #db2777;">
-                <h4 style="color:#db2777;">🧕 2. خديجة العمراني</h4>
-                <p>دافعة فورية ➔ تفعيل مباشر وانضمام لمجموعة الأخوات (نساء).</p>
-            </div>
-            <div class="legend-card" style="border-right: 4px solid #ef4444;">
-                <h4 style="color:#ef4444;">🕵️ 3. فهد المنصوري</h4>
-                <p>رابط محوّل ➔ البوت يرفض طلب انضمامه فوراً لأنه غير مسجل.</p>
-            </div>
-            <div class="legend-card" style="border-right: 4px solid #f59e0b;">
-                <h4 style="color:#f59e0b;">⏳ 4. طارق الجعفري</h4>
-                <p>دفع متأخر 48 ساعة ➔ تفعيل فوري عند رفع الإكسيل المحدث.</p>
-            </div>
-            <div class="legend-card" style="border-right: 4px solid #10b981;">
-                <h4 style="color:#10b981;">💬 5. أسماء بنجلون</h4>
-                <p>ريلانس واتساب ➔ تفعيل الحساب عبر رسالة الواتساب بعد 24 ساعة.</p>
             </div>
         </div>
     </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-card" style="border-right: 4px solid #0284c7;">
+            <h4 style="color:#0284c7;">🧔 1. عمر الإدريسي</h4>
+            <p>دافع فوري ➔ تفعيل تلقائي بنقرة واحدة وانضمام لمجموعة الرجال.</p>
+        </div>
+        <div class="legend-card" style="border-right: 4px solid #db2777;">
+            <h4 style="color:#db2777;">🧕 2. خديجة العمراني</h4>
+            <p>دافعة فورية ➔ تفعيل مباشر وانضمام لمجموعة الأخوات (نساء).</p>
+        </div>
+        <div class="legend-card" style="border-right: 4px solid #ef4444;">
+            <h4 style="color:#ef4444;">🕵️ 3. فهد المنصوري</h4>
+            <p>رابط محوّل ➔ البوت يرفض طلب انضمامه فوراً لأنه غير مسجل.</p>
+        </div>
+        <div class="legend-card" style="border-right: 4px solid #f59e0b;">
+            <h4 style="color:#f59e0b;">⏳ 4. طارق الجعفري</h4>
+            <p>دفع متأخر 48 ساعة ➔ تفعيل فوري عند رفع الإكسيل المحدث.</p>
+        </div>
+        <div class="legend-card" style="border-right: 4px solid #10b981;">
+            <h4 style="color:#10b981;">💬 5. أسماء بنجلون</h4>
+            <p>ريلانس واتساب ➔ تفعيل الحساب عبر رسالة الواتساب بعد 24 ساعة.</p>
+        </div>
+    </div>
+
     <script>
         mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        
+        let currentScale = 1.0;
+        const target = document.getElementById('diagram-target');
+        
+        function zoomIn() {
+            currentScale = Math.min(3.5, currentScale + 0.3);
+            applyZoom();
+        }
+        function zoomOut() {
+            currentScale = Math.max(0.5, currentScale - 0.3);
+            applyZoom();
+        }
+        function resetZoom() {
+            currentScale = 1.0;
+            applyZoom();
+        }
+        function applyZoom() {
+            target.style.transform = `scale(${currentScale})`;
+            target.style.transformOrigin = 'top center';
+        }
     </script>
 </body>
 </html>
