@@ -65,7 +65,7 @@ async def generate_and_send_student_links(bot, telegram_id: int, student_data: d
             reply_markup = InlineKeyboardMarkup(inline_keyboard=kb_buttons)
             
             welcome_text = (
-                f"🎉 <b>أهلاً بك يا {first_name} في أكاديمية أُسوة!</b>\n\n"
+                f"🎉 <b>أهلاً بك يا {first_name} في أكاديمية البدر!</b>\n\n"
                 f"✅ تم تأكيد اشتراكك وتفعيل حسابك بنجاح.\n\n"
                 f"🔒 <b>تنبيه أمني هام:</b> هذه الروابط مخصصة لك فقط (أحادية الاستخدام)، وتنتهي صلاحيتها فور استخدامك لها.\n\n"
                 f"👇 اضغط على الأزرار أدناه للانضمام إلى مجموعاتك المقررة:"
@@ -451,16 +451,16 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
     import config as cfg
     
     if not cfg.SMTP_USER or not cfg.SMTP_PASSWORD:
-        # Simulation mode if credentials not set yet
         return True, "Simulated (No SMTP credentials configured yet)"
         
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"🎓 تفعيل حسابك في أكاديمية أُسوة - أهلاً بك يا {first_name or 'طالب العلم'}"
-        msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
-        msg['To'] = email
+        gender_clean = (gender or 'HOMME').upper()
+        is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
         
-        base_url = "https://verficationeleves-production.up.railway.app"
+        greeting = f"أهلاً بكِ يا طالبتنا العزيزة {first_name}" if is_female else f"أهلاً بك يا طالبنا العزيز {first_name}"
+        group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
+        
+        base_url = "https://web-production-64c9ab.up.railway.app"
         try:
             from handlers.auth import get_webapp_base_url
             base_url = get_webapp_base_url()
@@ -468,55 +468,72 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
             pass
             
         tracking_pixel = f"{base_url}/api/track/open?id={student_id}"
-        tracked_link = f"{base_url}/api/track/click?id={student_id}"
-        bot_link = tracked_link
-        group_desc = "مجموعة الإخوة (رجال)" if gender == 'HOMME' else "مجموعة الأخوات (نساء)"
+        tracked_link = f"{base_url}/api/track/click?id={student_id}&src=email"
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"تفعيل الحساب الأكاديمي - {greeting}"
+        msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
+        msg['To'] = email
         
         html_content = f"""
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
-        <head><meta charset="UTF-8"></head>
-        <body style="font-family: Arial, sans-serif; background-color: #fbf9f4; margin: 0; padding: 20px; color: #17262c; direction: rtl;">
-            <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 30px; border: 1px solid rgba(12,74,60,0.15); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <h1 style="color: #0c4a3c; margin: 0; font-size: 24px;">أكاديمية أُسوة للعلوم الشرعية 🎓</h1>
-                    <p style="color: #079176; font-size: 14px; font-weight: bold; margin-top: 5px;">بوابة الانضمام الرسمية</p>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>أكاديمية البدر</title>
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8faf9; margin: 0; padding: 40px 15px; color: #17262c; direction: rtl; text-align: right;">
+            <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e7eb; box-shadow: 0 4px 25px rgba(0,0,0,0.03);">
+                
+                <!-- HEADER -->
+                <div style="border-bottom: 2px solid #f3f4f6; padding-bottom: 25px; margin-bottom: 30px; text-align: center;">
+                    <h1 style="color: #0c4a3c; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">أكاديمية البدر</h1>
+                    <p style="color: #079176; font-size: 14px; margin: 6px 0 0 0; font-weight: 600;">بوابة الانضمام والتفعيل الرسمية</p>
                 </div>
                 
-                <p style="font-size: 16px; line-height: 1.6;">السلام عليكم ورحمة الله وبركاته،</p>
-                <p style="font-size: 16px; line-height: 1.6;">أهلاً بك يا <b>{first_name or 'طالب العلم'}</b>! نبارك لك تسجيلك وتأكيد اشتراكك في البرنامج الأكاديمي.</p>
+                <!-- BODY TEXT -->
+                <p style="font-size: 16px; line-height: 1.8; color: #1f2937; margin: 0 0 16px 0;">السلام عليكم ورحمة الله وبركاته،</p>
+                <p style="font-size: 16px; line-height: 1.8; color: #1f2937; margin: 0 0 24px 0;">
+                    <b>{greeting}</b>، نبارك لك الانضمام إلى البرنامج الأكاديمي.
+                </p>
                 
-                <div style="background: #edf6f2; border-right: 4px solid #079176; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 15px; line-height: 1.5;">
-                        📌 <b>بيانات حسابك:</b><br>
-                        • رقم الطالب: <code>{student_id}</code><br>
-                        • مجموعتك الدراسية: <b>{group_desc}</b>
+                <!-- DETAILS CARD -->
+                <div style="background: #f9fafb; border-right: 4px solid #0c4a3c; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                    <p style="margin: 0 0 10px 0; font-size: 15px; color: #374151;">
+                        <strong style="color: #111827;">رقم الطالب:</strong> <span style="font-family: monospace; font-size: 16px; font-weight: bold; color: #0c4a3c;">{student_id}</span>
+                    </p>
+                    <p style="margin: 0; font-size: 15px; color: #374151;">
+                        <strong style="color: #111827;">المجموعة الدراسية:</strong> {group_title}
                     </p>
                 </div>
                 
-                <p style="font-size: 15px; line-height: 1.6;">
-                    للانضمام إلى مجموعتك الرسمية وقنوات الدروس المباشرة، يرجى الضغط على الزر أدناه لربط حسابك عبر بوت تيليجرام:
+                <p style="font-size: 15px; line-height: 1.8; color: #4b5563; margin: 25px 0 35px 0;">
+                    للانضمام إلى مجموعتك الدراسية وقنوات الدروس المباشرة، يرجى الضغط على الزر أدناه لتفعيل حسابك عبر تليجرام:
                 </p>
                 
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{bot_link}" style="background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(12,74,60,0.3);">
-                        🚀 تفعيل الحساب والانضمام للدروس (تيليجرام)
+                <!-- CTA BUTTON -->
+                <div style="text-align: center; margin: 35px 0 40px 0;">
+                    <a href="{tracked_link}" style="background-color: #0c4a3c; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 2px 8px rgba(12,74,60,0.2);">
+                        تفعيل الحساب والانضمام للدروس
                     </a>
                 </div>
                 
-                <p style="font-size: 13px; color: #8a9ba3; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
-                    أكاديمية أُسوة • في حال واجهتك أي صعوبة يمكنك التواصل مع فريق الدعم عبر البوت.
-                </p>
+                <!-- FOOTER -->
+                <div style="border-top: 1px solid #f3f4f6; padding-top: 25px; text-align: center;">
+                    <p style="font-size: 13px; color: #9ca3af; margin: 0; line-height: 1.6;">
+                        أكاديمية البدر • تم إرسال هذه الرسالة تلقائياً لتأكيد تسجيلكم في البرنامج الأكاديمي.
+                    </p>
+                </div>
             </div>
-        <img src="{tracking_pixel}" width="1" height="1" style="display:none !important;" alt="" />
-</body>
+            <img src="{tracking_pixel}" width="1" height="1" style="display:none !important;" alt="" />
+        </body>
         </html>
         """
         
         msg.attach(MIMEText(html_content, 'html', 'utf-8'))
         
-        # Connect to SMTP server
-        server = smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=10)
+        server = smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=15)
         server.starttls()
         server.login(cfg.SMTP_USER, cfg.SMTP_PASSWORD)
         server.send_message(msg)
@@ -767,6 +784,25 @@ async def api_admin_send_bulk_emails(request: web.Request):
 async def api_admin_email_dispatch_status(request: web.Request):
     global email_dispatch_state
     return web.json_response({"success": True, "state": email_dispatch_state})
+
+
+async def api_admin_gateway_export_template(request: web.Request):
+    """Génère un fichier CSV / Excel modèle pour tester ou importer de nouveaux étudiants."""
+    import io, csv
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['first_name', 'last_name', 'email', 'phone', 'gender', 'student_id', 'payment_status', 'year'])
+    writer.writerow(['حسام', 'بودو', 'h.bouddou@gmail.com', '+33668959911', 'HOMME', '104820', 'PAID', '1'])
+    writer.writerow(['مريم', 'العلمي', 'maryam.test@gmail.com', '+33600000000', 'FEMME', '104821', 'PAID', '1'])
+    
+    csv_data = output.getvalue().encode('utf-8-sig')
+    return web.Response(
+        body=csv_data,
+        content_type='text/csv',
+        headers={
+            'Content-Disposition': 'attachment; filename="albadr_students_template.csv"'
+        }
+    )
 
 async def handle_admin_gateway(request):
     resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin_gateway.html'))
@@ -5552,6 +5588,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/track/open', api_track_open)
     app.router.add_get('/api/track/click', api_track_click)
     app.router.add_get('/api/admin/gateway/kpi', api_admin_gateway_kpi)
+    app.router.add_get('/api/admin/gateway/export_template', api_admin_gateway_export_template)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)

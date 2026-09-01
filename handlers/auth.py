@@ -22,7 +22,7 @@ def get_webapp_base_url() -> str:
             if not v.startswith("http://") and not v.startswith("https://"):
                 v = f"https://{v}"
             return v
-    return "https://verficationeleves-production.up.railway.app"
+    return "https://web-production-64c9ab.up.railway.app"
 
 @router.message(CommandStart())
 @router.message(Command("start"))
@@ -66,14 +66,14 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     folder_link = settings.get('folder_link') or "https://t.me/addlist/u2f-aW9sdhk1NmVk"
                     student_first = s_dict.get('first_name') or first_name
                     
-                    # DIRECT 1-CLICK FOLDER & GROUP DELIVERY (NO MINI APP NEEDED!)
                     kb = InlineKeyboardMarkup(inline_keyboard=[
                         [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic"))]
+                        [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic"))],
+                        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic"))]
                     ])
                     
                     magic_welcome = (
-                        f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية أُسوة</b> 🎓\n\n"
+                        f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
                         f"✅ <b>تم تفعيل وربط حسابك بنجاح!</b>\n"
                         f"• رقم الطالب: <code>{real_sid}</code>\n"
                         f"• البريد: <code>{s_dict.get('email', '')}</code>\n\n"
@@ -100,17 +100,18 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             folder_link = settings.get('folder_link') or "https://t.me/addlist/u2f-aW9sdhk1NmVk"
             
             welcome_text = (
-                f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية أُسوة! 🎓\n\n"
+                f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"
                 f"حسابك مفعل ومربوط بنجاح ✅\n\n"
                 f"👇 يمكنك إضافة مجلد دراستك أو التواصل مع الدعم عبر الأزرار أدناه:"
             )
             kb = InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية إلى تليجرام", url=folder_link)],
-                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=joined"))]
+                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وإدارة العضوية", web_app=WebAppInfo(url=f"{base_url}/link.html?v=active"))],
+                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=active"))]
             ])
         else:
             welcome_text = (
-                f"مرحباً بك يا <b>{first_name}</b> في أكاديمية أُسوة! 🎓\n\n"
+                f"مرحباً بك يا <b>{first_name}</b> في أكاديمية البدر! 🎓\n\n"
                 f"هذا البوت هو بوابتك الرسمية لربط حسابك وتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
                 f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه للبدء:"
             )
@@ -127,7 +128,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🔗 منصة ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
         ])
-        await message.answer("مرحباً بك في أكاديمية أُسوة! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
+        await message.answer("مرحباً بك في أكاديمية البدر! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
 @router.message(Command("federer"))
 async def cmd_federer(message: Message):
@@ -178,7 +179,7 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
                     welcome_text = (
                         f"🎉 <b>أهلاً بك يا {real_first_name}!</b>\n\n"
                         f"✅ تمت الموافقة على انضمامك إلى: <b>{chat_title}</b>.\n\n"
-                        f"نتمنى لك رحلة تعليمية مباركة ونافعة في أكاديمية أُسوة! 📚"
+                        f"نتمنى لك رحلة تعليمية مباركة ونافعة في أكاديمية البدر! 📚"
                     )
                     await bot.send_message(user_id, welcome_text, reply_markup=confirm_kb, parse_mode="HTML")
                     await log_student_action(student_dict['student_id'], 'JOIN_REQUEST_APPROVED', f"تمت الموافقة على الدخول إلى {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=username)
