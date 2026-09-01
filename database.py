@@ -4364,3 +4364,30 @@ async def ensure_email_and_score_columns():
             await db.commit()
     except Exception as e:
         logger.error(f"Error migrating email columns: {e}")
+
+
+async def ensure_click_tracking_table():
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute('''
+                CREATE TABLE IF NOT EXISTS click_tracking (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    student_id TEXT,
+                    source TEXT,
+                    ip_address TEXT,
+                    user_agent TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            # Add whatsapp_clicked_at to academy_students if not present
+            async with db.execute('PRAGMA table_info(academy_students)') as cur:
+                cols = [r[1] for r in await cur.fetchall()]
+            if 'whatsapp_clicked_at' not in cols:
+                await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_clicked_at TEXT')
+            if 'last_click_source' not in cols:
+                await db.execute('ALTER TABLE academy_students ADD COLUMN last_click_source TEXT')
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error creating click_tracking table: {e}")

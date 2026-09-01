@@ -670,20 +670,28 @@
             }
         }
 
-        
+        // ============ KPI LIVE METRICS ============
         async function fetchKpiMetrics() {
             try {
                 const res = await fetch('/api/admin/gateway/kpi');
                 const data = await res.json();
                 if (data.success && data.kpi) {
                     const k = data.kpi;
-                    document.getElementById('kpi-total-paid').innerText = k.total_paid || 0;
-                    document.getElementById('kpi-emails-sent').innerText = k.email_sent || 0;
-                    document.getElementById('kpi-open-rate').innerText = `${k.open_rate || 0}% (${k.email_opened || 0})`;
-                    document.getElementById('kpi-click-rate').innerText = `${k.click_rate || 0}% (${k.email_clicked || 0})`;
-                    document.getElementById('kpi-conversion-rate').innerText = `${k.conversion_rate || 0}% (${k.telegram_linked || 0})`;
+                    const elPaid = document.getElementById('kpi-total-paid');
+                    const elOpen = document.getElementById('kpi-open-rate');
+                    const elEmail = document.getElementById('kpi-email-clicks');
+                    const elWa = document.getElementById('kpi-wa-clicks');
+                    const elConv = document.getElementById('kpi-conversion-rate');
+                    
+                    if (elPaid) elPaid.innerText = k.total_paid || 0;
+                    if (elOpen) elOpen.innerText = `${k.open_rate || 0}% (${k.email_opened || 0})`;
+                    if (elEmail) elEmail.innerText = `${k.email_clicks || 0} نقرة`;
+                    if (elWa) elWa.innerText = `${k.wa_clicks || 0} نقرة`;
+                    if (elConv) elConv.innerText = `${k.conversion_rate || 0}% (${k.telegram_linked || 0})`;
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error('Error fetching KPI metrics:', e);
+            }
         }
 
         function startEmailProgressPolling() {

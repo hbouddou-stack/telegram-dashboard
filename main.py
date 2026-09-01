@@ -610,25 +610,45 @@ async def api_track_open(request: web.Request):
     )
 
 async def api_track_click(request: web.Request):
-    student_id = request.query.get('id')
-    import config as cfg
-    bot_url = f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=link"
+    """Méthode 2: Capture le clic immédiatement (Source WhatsApp vs Email vs Web) puis redirige vers Telegram."""
+    student_id = request.query.get('id', '').strip()
+    source = (request.query.get('src') or request.query.get('source') or 'email').lower().strip()
     
-    if student_id:
-        try:
-            import aiosqlite
-            from config import DATABASE_PATH
-            from datetime import datetime
-            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            async with aiosqlite.connect(DATABASE_PATH) as db:
-                await db.execute(
-                    "UPDATE academy_students SET email_clicked_at = ? WHERE student_id = ? AND email_clicked_at IS NULL",
-                    (now_str, student_id)
-                )
-                await db.commit()
-        except Exception as e:
-            _log.error(f"[TRACK_CLICK] Error: {e}")
+    import config as cfg
+    bot_url = f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=src_{source}_{student_id}" if student_id else f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=link"
+    
+    try:
+        import aiosqlite
+        from config import DATABASE_PATH
+        from datetime import datetime
+        
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ip = request.remote or request.headers.get('X-Forwarded-For', '')
+        ua = request.headers.get('User-Agent', '')[:200]
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            # 1. Log every click in click_tracking table
+            await db.execute(
+                "INSERT INTO click_tracking (student_id, source, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?)",
+                (student_id, source, ip, ua, now_str)
+            )
             
+            # 2. Update student row if student_id provided
+            if student_id:
+                if source == 'whatsapp' or source == 'wa':
+                    await db.execute(
+                        "UPDATE academy_students SET whatsapp_clicked_at = ?, last_click_source = ? WHERE student_id = ?",
+                        (now_str, 'whatsapp', student_id)
+                    )
+                else:
+                    await db.execute(
+                        "UPDATE academy_students SET email_clicked_at = ?, last_click_source = ? WHERE student_id = ? AND email_clicked_at IS NULL",
+                        (now_str, 'email', student_id)
+                    )
+            await db.commit()
+    except Exception as e:
+        _log.error(f"[TRACK_CLICK] Error recording click: {e}")
+        
     raise web.HTTPFound(location=bot_url)
 
 async def api_admin_gateway_kpi(request: web.Request):
@@ -638,27 +658,35 @@ async def api_admin_gateway_kpi(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             
-            # 1. Total paid
+            # Total paid
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE payment_status = 'PAID' OR payment_status = 'PAYE'") as cur:
                 total_paid = (await cur.fetchone())['cnt']
                 
-            # 2. Email sent
+            # Email sent
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_sent = 1") as cur:
                 email_sent = (await cur.fetchone())['cnt']
                 
-            # 3. Email opened
+            # Email opened
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_opened_at IS NOT NULL") as cur:
                 email_opened = (await cur.fetchone())['cnt']
                 
-            # 4. Email clicked
-            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE email_clicked_at IS NOT NULL") as cur:
-                email_clicked = (await cur.fetchone())['cnt']
+            # Clicks by channel from click_tracking table
+            async with db.execute("SELECT COUNT(*) as cnt FROM click_tracking WHERE LOWER(source) LIKE '%email%'") as cur:
+                email_clicks = (await cur.fetchone())['cnt']
                 
-            # 5. Telegram linked
+            async with db.execute("SELECT COUNT(*) as cnt FROM click_tracking WHERE LOWER(source) LIKE '%wa%' OR LOWER(source) LIKE '%whatsapp%'") as cur:
+                wa_clicks = (await cur.fetchone())['cnt']
+                
+            async with db.execute("SELECT COUNT(*) as cnt FROM click_tracking WHERE LOWER(source) LIKE '%web%'") as cur:
+                web_clicks = (await cur.fetchone())['cnt']
+                
+            total_clicks = email_clicks + wa_clicks + web_clicks
+            
+            # Telegram linked
             async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != ''") as cur:
                 telegram_linked = (await cur.fetchone())['cnt']
                 
-            # 6. Overdue (+24h paid without telegram link)
+            # Overdue
             async with db.execute("""
                 SELECT student_id, first_name, email, phone, email_sent_at, email_opened_at, created_at 
                 FROM academy_students 
@@ -668,9 +696,8 @@ async def api_admin_gateway_kpi(request: web.Request):
             """) as cur:
                 overdue_students = [dict(r) for r in await cur.fetchall()]
                 
-        # Calculate percentages
         open_rate = round((email_opened / email_sent * 100), 1) if email_sent > 0 else 0
-        click_rate = round((email_clicked / email_sent * 100), 1) if email_sent > 0 else 0
+        click_rate = round((email_clicks / email_sent * 100), 1) if email_sent > 0 else 0
         conversion_rate = round((telegram_linked / total_paid * 100), 1) if total_paid > 0 else 0
         
         return web.json_response({
@@ -679,7 +706,10 @@ async def api_admin_gateway_kpi(request: web.Request):
                 "total_paid": total_paid,
                 "email_sent": email_sent,
                 "email_opened": email_opened,
-                "email_clicked": email_clicked,
+                "email_clicks": email_clicks,
+                "wa_clicks": wa_clicks,
+                "web_clicks": web_clicks,
+                "total_clicks": total_clicks,
                 "telegram_linked": telegram_linked,
                 "open_rate": open_rate,
                 "click_rate": click_rate,
