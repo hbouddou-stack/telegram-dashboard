@@ -1004,28 +1004,27 @@ async def api_admin_gateway_import_students(request: web.Request):
         import aiosqlite
         import io
         import csv
+        import hashlib
         from config import DATABASE_PATH
         
         reader = await request.multipart()
         field = await reader.next()
-        if not field or field.name != 'file':
-            return web.json_response({'success': False, 'error': 'لم يتم العثور على أي ملف'})
+        if not field:
+            return web.json_response({'success': False, 'error': 'لم يتم العثور على أي ملف مرفوع'})
         
         filename = (field.filename or '').lower()
         file_data = await field.read()
         
-        rows_data = []
+        raw_rows = []
         
-        # 1. Detection of XLSX (ZIP binary header PK) vs CSV text
-        is_excel_binary = file_data[:4] == b'PK\x03\x04' or filename.endswith('.xlsx') or filename.endswith('.xlsm') or filename.endswith('.xls')
-        
-        if is_excel_binary:
+        # 1. Extraction from XLSX or CSV
+        if file_data.startswith(b'PK') or filename.endswith('.xlsx') or filename.endswith('.xls') or filename.endswith('.xlsm'):
             import openpyxl
             wb = openpyxl.load_workbook(io.BytesIO(file_data), data_only=True)
             sheet = wb.active
             for r in sheet.iter_rows(values_only=True):
                 if any(r):
-                    rows_data.append([str(c).strip() if c is not None else '' for c in r])
+                    raw_rows.append([str(c).strip() if c is not None else '' for c in r])
         else:
             try:
                 text_content = file_data.decode('utf-8-sig')
@@ -1037,79 +1036,99 @@ async def api_admin_gateway_import_students(request: web.Request):
             
             lines = [l for l in text_content.splitlines() if l.strip()]
             if lines:
-                first_line = lines[0]
-                delimiter = ';' if ';' in first_line and ',' not in first_line else ','
-                if '\t' in first_line:
+                delimiter = ';' if ';' in lines[0] and ',' not in lines[0] else ','
+                if '\t' in lines[0]:
                     delimiter = '\t'
                 csv_reader = csv.reader(io.StringIO(text_content), delimiter=delimiter)
                 for r in csv_reader:
                     if any(r):
-                        rows_data.append([str(c).strip() for c in r])
-                
-        if not rows_data or len(rows_data) < 2:
-            return web.json_response({'success': False, 'error': 'الملف فارغ أو لا يحتوي على بيانات طلاب'})
-            
-        headers = [str(h).strip().lower() for h in rows_data[0]]
-        
-        def find_col(*keywords):
-            for kw in keywords:
-                for idx, h in enumerate(headers):
-                    if kw.lower() in h:
-                        return idx
-            return None
-            
-        email_idx = find_col('email', 'mail', 'courriel', 'البريد', 'إيميل')
-        sid_idx = find_col('student_id', 'matricule', 'id', 'رقم الطالب', 'المعرف', 'رقم')
-        fn_idx = find_col('first_name', 'first', 'prenom', 'prénom', 'الاسم', 'اسم')
-        ln_idx = find_col('last_name', 'last', 'nom', 'اللقب', 'النسب', 'عائلة')
-        gender_idx = find_col('gender', 'genre', 'sexe', 'الجنس', 'نوع')
-        phone_idx = find_col('phone', 'tel', 'mobile', 'whatsapp', 'هاتف', 'جوال', 'واتساب')
-        pay_idx = find_col('payment', 'status', 'statut', 'paye', 'paiement', 'الدفع', 'حالة')
-        dob_idx = find_col('dob', 'naissance', 'birth', 'تاريخ الميلاد', 'الميلاد')
-        year_idx = find_col('year', 'annee', 'année', 'level', 'السنة', 'المستوى')
-        
-        # Fallback if no header matched email: look for column containing '@' in row 1
-        if email_idx is None:
-            for idx, cell in enumerate(rows_data[1]):
-                if '@' in str(cell):
-                    email_idx = idx
-                    break
-        if email_idx is None:
-            email_idx = 0
-            
-        def get_val(row, idx, default=''):
-            if idx is not None and isinstance(idx, int) and 0 <= idx < len(row):
-                v = str(row[idx]).strip()
-                return v if v != 'None' and v != '' else default
-            return default
+                        raw_rows.append([str(c).strip() for c in r])
+                        
+        if not raw_rows:
+            return web.json_response({'success': False, 'error': 'الملف فارغ'})
             
         imported = 0
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            for row in rows_data[1:]:
-                if not any(row):
-                    continue
-                email = get_val(row, email_idx).lower()
-                if not email or '@' not in email:
+            for row in raw_rows:
+                # Find the email cell anywhere in the row
+                email = None
+                for cell in row:
+                    cell_clean = cell.strip().lower()
+                    if '@' in cell_clean and '.' in cell_clean and len(cell_clean) > 5:
+                        email = cell_clean
+                        break
+                        
+                # Skip header rows or rows without a valid email
+                if not email or email.startswith('email') or email.startswith('mail') or email.startswith('البريد'):
                     continue
                     
-                first_name = get_val(row, fn_idx, 'طالب')
-                last_name = get_val(row, ln_idx, '')
-                phone = get_val(row, phone_idx, '')
-                dob = get_val(row, dob_idx, '')
-                year = get_val(row, year_idx, '1')
+                # Intelligent Field Extraction
+                first_name = 'طالب'
+                last_name = ''
+                phone = ''
+                gender = 'HOMME'
+                payment_status = 'PAID'
+                student_id = ''
+                dob = ''
+                year = '1'
                 
-                raw_gender = get_val(row, gender_idx, 'HOMME').upper()
-                is_female = any(k in raw_gender for k in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'أنث', 'بنت', 'نساء'])
-                gender = 'FEMME' if is_female else 'HOMME'
-                
-                raw_pay = get_val(row, pay_idx, 'PAID').upper()
-                is_unpaid = any(k in raw_pay for k in ['UNPAID', 'NON', 'NO', 'ATTENTE', 'PENDING', 'غير'])
-                payment_status = 'UNPAID' if is_unpaid else 'PAID'
-                
-                # Generate or clean student_id
-                student_id = get_val(row, sid_idx, '')
+                text_candidates = []
+                for cell in row:
+                    c = cell.strip()
+                    if not c or c.lower() == email:
+                        continue
+                    
+                    # Gender
+                    c_up = c.upper()
+                    if any(k in c_up for k in ['FEMME', 'FEMALE', 'FILLE', 'أنث', 'بنت', 'نساء', 'F']):
+                        gender = 'FEMME'
+                        continue
+                    elif any(k in c_up for k in ['HOMME', 'MALE', 'GARCON', 'ذك', 'رجل', 'رجال', 'M']):
+                        gender = 'HOMME'
+                        continue
+                        
+                    # Payment
+                    if any(k in c_up for k in ['UNPAID', 'NON', 'ATTENTE', 'PENDING', 'غير مدفوع', 'معلق']):
+                        payment_status = 'UNPAID'
+                        continue
+                    elif any(k in c_up for k in ['PAID', 'PAYE', 'VALIDE', 'CONFIRME', 'مدفوع', 'مؤكد']):
+                        payment_status = 'PAID'
+                        continue
+                        
+                    # Phone
+                    if (c.startswith('+') or (c.isdigit() and len(c) >= 9 and len(c) <= 15)) and not phone:
+                        phone = c
+                        continue
+                        
+                    # Date of birth (YYYY-MM-DD or DD/MM/YYYY)
+                    if ('/' in c or '-' in c) and any(ch.isdigit() for ch in c) and len(c) <= 12 and not dob:
+                        dob = c
+                        continue
+                        
+                    # Student ID (short integer or alphanumeric code)
+                    if (c.isdigit() and len(c) >= 4 and len(c) <= 8) and not student_id:
+                        student_id = c
+                        continue
+                        
+                    # Year (1, 2, 3, 4)
+                    if c in ['1', '2', '3', '4', 'سنة 1', 'السنة الأولى', 'Année 1']:
+                        year = re.sub(r'\D', '', c) or '1'
+                        continue
+                        
+                    # Names
+                    if len(c) >= 2 and not any(ch.isdigit() for ch in c):
+                        text_candidates.append(c)
+                        
+                if text_candidates:
+                    if len(text_candidates) == 1:
+                        parts = text_candidates[0].split(None, 1)
+                        first_name = parts[0]
+                        last_name = parts[1] if len(parts) > 1 else ''
+                    else:
+                        first_name = text_candidates[0]
+                        last_name = ' '.join(text_candidates[1:])
+                        
                 if not student_id:
-                    import hashlib
                     student_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]
                     
                 async with db.execute("SELECT student_id FROM academy_students WHERE LOWER(email) = ? OR student_id = ?", (email, student_id)) as cur:

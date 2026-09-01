@@ -2,6 +2,8 @@ import gspread
 import aiosqlite
 import os
 import json
+import re
+import hashlib
 from config import DATABASE_PATH
 
 def get_gspread_client():
@@ -18,58 +20,91 @@ async def run_google_sheets_sync(sheet_id: str):
     client = get_gspread_client()
     try:
         sheet = client.open_by_key(sheet_id).sheet1
-    except gspread.exceptions.APIError as e:
-        if "permission" in str(e).lower() or e.response.status_code in [403, 404]:
-            raise Exception("Le bot n'a pas accès au fichier Google Sheets. Avez-vous bien partagé le fichier avec l'adresse e-mail du bot (en tant que Lecteur) ?")
-        raise Exception(f"Erreur API Google: {e}")
     except Exception as e:
-        if "PermissionError" in type(e).__name__:
-            raise Exception("Le bot n'a pas accès au fichier Google Sheets. Vérifiez le partage.")
-        raise
+        raise Exception(f"Erreur d'accès Google Sheets: {e}")
     
-    records = sheet.get_all_records()
-    if not records:
+    all_values = sheet.get_all_values()
+    if not all_values:
         return 0
         
     imported = 0
     async with aiosqlite.connect(DATABASE_PATH) as db:
-        for row_list in sheet.get_all_values()[1:]: # Skip header row
-            if len(row_list) < 14:
+        for row in all_values[1:]:
+            if not any(row):
                 continue
                 
-            academic_id = str(row_list[0]).strip() # Col A: الرقم الأكاديمي
-            full_name = str(row_list[2]).strip()  # Col C: الإسم الكامل
-            email = str(row_list[3]).strip().lower() # Col D: البريد الإلكتروني
-            phone = str(row_list[4]).strip()      # Col E: رقم الهاتف
-            year = str(row_list[5]).strip()       # Col F: المستوى
-            gender = str(row_list[6]).strip().lower() # Col G: الجنس
-            payment_status = str(row_list[7]).strip() # Col H: وضعية الحساب
-            dob = str(row_list[9]).strip()        # Col J: تاريخ الميلاد
-            created_at = str(row_list[13]).strip() # Col N: ﺗﺎرﻳﺦ اﻟﺘﺴﺠﻴﻞ
-            
-            if not email or not dob:
+            email = None
+            for cell in row:
+                c = str(cell).strip().lower()
+                if '@' in c and '.' in c and len(c) > 5:
+                    email = c
+                    break
+                    
+            if not email or email.startswith('email') or email.startswith('mail') or email.startswith('البريد'):
                 continue
                 
-            parts = full_name.split(' ', 1)
-            first_name = parts[0] if len(parts) > 0 else ''
-            last_name = parts[1] if len(parts) > 1 else ''
+            first_name = 'طالب'
+            last_name = ''
+            phone = ''
+            gender = 'HOMME'
+            payment_status = 'PAID'
+            academic_id = ''
+            dob = ''
+            year = '1'
+            created_at = ''
             
-            if not year: year = '1'
-            if not gender: gender = 'homme'
-            
-            async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
-                exists = await cur.fetchone()
-                if exists:
-                    await db.execute("""
-                        UPDATE academy_students 
-                        SET dob = ?, first_name = ?, last_name = ?, year = ?, gender = ?, source = ?, phone = ?, created_at = ?, payment_status = ?, academic_id = ?
-                        WHERE email = ?
-                    """, (dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status, academic_id, email))
+            # Row-level cell scanning
+            text_candidates = []
+            for cell in row:
+                c = str(cell).strip()
+                if not c or c.lower() == email:
+                    continue
+                c_up = c.upper()
+                if any(k in c_up for k in ['FEMME', 'FEMALE', 'أنث', 'نساء', 'F']):
+                    gender = 'FEMME'
+                    continue
+                elif any(k in c_up for k in ['HOMME', 'MALE', 'ذك', 'رجال', 'M']):
+                    gender = 'HOMME'
+                    continue
+                if any(k in c_up for k in ['UNPAID', 'NON', 'ATTENTE', 'PENDING', 'غير مدفوع']):
+                    payment_status = 'UNPAID'
+                    continue
+                if (c.startswith('+') or (c.isdigit() and len(c) >= 9 and len(c) <= 15)) and not phone:
+                    phone = c
+                    continue
+                if (c.isdigit() and len(c) >= 4 and len(c) <= 8) and not academic_id:
+                    academic_id = c
+                    continue
+                if len(c) >= 2 and not any(ch.isdigit() for ch in c):
+                    text_candidates.append(c)
+                    
+            if text_candidates:
+                if len(text_candidates) == 1:
+                    parts = text_candidates[0].split(None, 1)
+                    first_name = parts[0]
+                    last_name = parts[1] if len(parts) > 1 else ''
                 else:
-                    await db.execute("""
-                        INSERT INTO academy_students (academic_id, email, dob, first_name, last_name, year, gender, source, phone, created_at, payment_status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (academic_id, email, dob, first_name, last_name, year, gender, 'google_sheets', phone, created_at, payment_status))
+                    first_name = text_candidates[0]
+                    last_name = ' '.join(text_candidates[1:])
+                    
+            if not academic_id:
+                academic_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]
+                
+            async with db.execute("SELECT student_id FROM academy_students WHERE LOWER(email) = ? OR student_id = ?", (email, academic_id)) as cur:
+                exists = await cur.fetchone()
+                
+            if exists:
+                await db.execute("""
+                    UPDATE academy_students 
+                    SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, source = 'google_sheets'
+                    WHERE LOWER(email) = ? OR student_id = ?
+                """, (first_name, last_name, phone, gender, payment_status, dob, year, email, academic_id))
+            else:
+                await db.execute("""
+                    INSERT INTO academy_students (student_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, source, is_active, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, datetime('now'))
+                """, (academic_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year))
+                
             imported += 1
         await db.commit()
     return imported
