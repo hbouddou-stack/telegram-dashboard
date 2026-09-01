@@ -6,28 +6,97 @@
     <title>مركز الدعم الذكي</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="bot-config.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <style>
-                :root {
-            --bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-            --surface: rgba(255, 255, 255, 0.05);
-            --primary: #ffffff;
-            --text-1: #ffffff;
-            --text-2: #cbd5e1;
-            --accent: #f1c40f;
-            --card-hover: rgba(241, 196, 15, 0.15);
-            --rag-bg: rgba(46, 204, 113, 0.1);
-            --rag-border: #2ecc71;
+                
+        :root {
+            --bg: #fbf9f4;
+            --surface: #ffffff;
+            --surface-2: #f5f8f7;
+            --border: rgba(12, 74, 60, 0.12);
+            --primary: #0c4a3c;
+            --primary-dark: #07352b;
+            --accent: #079176;
+            --accent-gold: #d49b20;
+            --text-1: #17262c;
+            --text-2: #4c5d65;
+            --text-3: #8a9ba3;
+            --success: #079176;
+            --danger: #e40014;
+            --warning: #b4530b;
         }
-        html, body {
-            background-color: #000b29;
-            background-image: var(--bg);
-            color: var(--text-1);
-            font-family: 'Tajawal', sans-serif;
-            margin: 0; padding: 0;
-            min-height: 100vh;
-            overflow-x: hidden;
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            background: radial-gradient(ellipse at top, #edf6f2 0%, #f7f9f7 50%, #fbf9f4 100%) !important;
+            color: var(--text-1) !important;
         }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+            color: var(--primary) !important;
+        }
+
+        .header-box {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 4px 20px rgba(12, 74, 60, 0.05) !important;
+        }
+
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-top: 1px solid var(--border) !important;
+            box-shadow: 0 -4px 25px rgba(12, 74, 60, 0.08) !important;
+        }
+
+        .nav-btn {
+            color: #64748b !important;
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+            font-weight: 600 !important;
+        }
+
+        .nav-btn.active {
+            color: #0c4a3c !important;
+            font-weight: 800 !important;
+        }
+
+        .nav-btn.active .icon {
+            transform: scale(1.15);
+            filter: drop-shadow(0 2px 4px rgba(12, 74, 60, 0.2));
+        }
+
+        .faq-item {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 2px 10px rgba(12, 74, 60, 0.03) !important;
+        }
+
+        .faq-q {
+            color: var(--primary) !important;
+            font-weight: 700 !important;
+        }
+
+        .faq-cat-btn {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-2) !important;
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+        }
+
+        .faq-cat-btn.active {
+            background: #0c4a3c !important;
+            color: #ffffff !important;
+            border-color: #0c4a3c !important;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%) !important;
+            color: #ffffff !important;
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+        }
+
         .container { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .header { text-align: center; margin-bottom: 10px; animation: fadeInDown 0.5s ease; }
         .header-icon { font-size: 3rem; margin-bottom: 10px; }
