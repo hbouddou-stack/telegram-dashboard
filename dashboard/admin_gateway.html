@@ -304,17 +304,64 @@
 
         <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
         
-        <!-- FUNNEL ANALYTICS -->
-        <div style="background:var(--card-bg); padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border);">
-            <h3 style="margin-top:0; margin-bottom:15px; font-size:1.1rem; color:var(--text1);">📊 مسار التحويل (Funnel)</h3>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                <!-- Step 1 -->
+        <!-- FUNNEL ANALYTICS PRO -->
+        <div style="background:var(--card-bg); padding:18px; border-radius:14px; margin-bottom:18px; border:1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text1);">📊 مسار تحويل الطلاب (Funnel d'Adhésion)</h3>
+                <span style="font-size: 0.8rem; background: rgba(16,185,129,0.15); color: var(--success); padding: 4px 10px; border-radius: 20px; font-weight: bold;">تتبع حي 🟢</span>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Step 1: Base -->
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="width:120px; font-size:0.85rem; color:var(--text2);">قاعدة البيانات</div>
+                    <div style="width:140px; font-size:0.83rem; color:var(--text2);">📥 1. الطلاب المدفوعون</div>
                     <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
-                        <div id="funnel-bar-1" style="width:0%; background:var(--text2); height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-bar-1" style="width:100%; background:#64748b; height:100%; transition:width 1s ease;"></div>
                         <div id="funnel-val-1" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
                     </div>
+                </div>
+                <!-- Step 2: Email Sent -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:140px; font-size:0.83rem; color:var(--text2);">📧 2. تم إرسال الإيميل</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-2" style="width:0%; background:#0284c7; height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-2" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 3: Email Opened -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:140px; font-size:0.83rem; color:var(--text2);">👁️ 3. فتحوا الإيميل</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-3" style="width:0%; background:#8b5cf6; height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-3" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 4: Bot Started / Clicked -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:140px; font-size:0.83rem; color:var(--text2);">📱 4. فتحوا البوت وربطوا الحساب</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-4" style="width:0%; background:#06b6d4; height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-4" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 5: Groups Joined (Real OK) -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:140px; font-size:0.83rem; color:var(--text2); font-weight:bold; color:#10b981;">✅ 5. انضموا للمجموعات (OK)</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-5" style="width:0%; background:#10b981; height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-5" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+                <!-- Step 6: WhatsApp Relance -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:140px; font-size:0.83rem; color:var(--text2);">💬 6. تذكيرات الواتساب</div>
+                    <div style="flex:1; background:rgba(255,255,255,0.05); border-radius:6px; height:24px; position:relative; overflow:hidden;">
+                        <div id="funnel-bar-6" style="width:0%; background:#f59e0b; height:100%; transition:width 1s ease;"></div>
+                        <div id="funnel-val-6" style="position:absolute; right:10px; top:3px; font-size:0.8rem; font-weight:bold; color:#fff;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
                 </div>
                 <!-- Step 2 -->
                 <div style="display:flex; align-items:center; gap:10px;">

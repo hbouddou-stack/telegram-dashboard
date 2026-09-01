@@ -870,18 +870,45 @@ async def api_admin_gateway_stats(request: web.Request):
     from config import DATABASE_PATH
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute("SELECT COUNT(*) FROM academy_students") as cur:
-                total = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE payment_status = 'PAID'") as cur:
+                total_paid = (await cur.fetchone())[0]
+            if total_paid == 0:
+                async with db.execute("SELECT COUNT(*) FROM academy_students") as cur:
+                    total_paid = (await cur.fetchone())[0]
+                    
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_sent = 1") as cur:
+                email_sent = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_opened_at IS NOT NULL") as cur:
+                email_opened = (await cur.fetchone())[0]
             async with db.execute("SELECT COUNT(*) FROM academy_students WHERE telegram_id IS NOT NULL") as cur:
-                linked = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE student_id != 0 AND action_type IN ('APP_OPENED', 'TUTO_OPENED', 'LINK_SUCCESS', 'ACCOUNT_LINKED', 'JOIN_GROUP_CLICK')") as cur:
-                bot_opened = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE student_id != 0 AND action_type = 'JOIN_GROUP_CLICK'") as cur:
-                joined_group = (await cur.fetchone())[0]
+                bot_linked = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE action_type IN ('FOLDER_CLICKED', 'APP_OPENED', 'TUTO_OPENED')") as cur:
+                folder_clicked = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE group_joined = 1") as cur:
+                group_joined = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE whatsapp_sent = 1") as cur:
+                wa_sent = (await cur.fetchone())[0]
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE whatsapp_sent = 1 AND group_joined = 1") as cur:
+                wa_converted = (await cur.fetchone())[0]
+                
             async with db.execute("SELECT value FROM settings WHERE key = 'night_patrol_enabled'") as cur:
                 row = await cur.fetchone()
                 patrol_enabled = row[0] == 'true' if row else False
-        return web.json_response({'success': True, 'stats': {'total': total, 'bot_opened': bot_opened, 'linked': linked, 'joined_group': joined_group, 'patrol_enabled': patrol_enabled}})
+                
+        return web.json_response({
+            'success': True,
+            'stats': {
+                'total_paid': total_paid,
+                'email_sent': email_sent,
+                'email_opened': email_opened,
+                'bot_linked': bot_linked,
+                'folder_clicked': folder_clicked,
+                'group_joined': group_joined,
+                'wa_sent': wa_sent,
+                'wa_converted': wa_converted,
+                'patrol_enabled': patrol_enabled
+            }
+        })
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
