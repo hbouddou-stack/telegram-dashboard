@@ -5823,6 +5823,15 @@ async def api_admin_presence_live(request):
         return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 async def main():
+    try:
+        import database as db
+        if hasattr(db, 'ensure_email_and_score_columns'):
+            await db.ensure_email_and_score_columns()
+        if hasattr(db, 'ensure_click_tracking_table'):
+            await db.ensure_click_tracking_table()
+    except Exception as e:
+        logger.error(f"Startup DB migration warning: {e}")
+        
     asyncio.create_task(active_users_cleanup_task())
     
     bot = None

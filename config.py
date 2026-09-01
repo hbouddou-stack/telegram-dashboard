@@ -34,6 +34,6 @@ MAIN_CREDENTIALS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 
 # SMTP Email Configuration (Gmail / Google Workspace)
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_USER = os.getenv("SMTP_USER", "h.bouddou@gmail.com")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "cvwfznkwxlqjpwhv")
 SMTP_SENDER_NAME = os.getenv("SMTP_SENDER_NAME", "أكاديمية أُسوة")
