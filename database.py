@@ -4345,3 +4345,22 @@ async def approve_pending_student(telegram_id, gender='HOMME', approved_by='Admi
     except Exception as e:
         logger.error(f"Error approving pending student: {e}")
         return False
+
+
+async def ensure_email_and_score_columns():
+    from config import DATABASE_PATH
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            # Check columns in academy_students
+            async with db.execute('PRAGMA table_info(academy_students)') as cur:
+                cols = [r[1] for r in await cur.fetchall()]
+            if 'email_sent' not in cols:
+                await db.execute('ALTER TABLE academy_students ADD COLUMN email_sent INTEGER DEFAULT 0')
+            if 'email_sent_at' not in cols:
+                await db.execute('ALTER TABLE academy_students ADD COLUMN email_sent_at TEXT')
+            if 'score' not in cols:
+                await db.execute('ALTER TABLE academy_students ADD COLUMN score INTEGER DEFAULT 0')
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Error migrating email columns: {e}")

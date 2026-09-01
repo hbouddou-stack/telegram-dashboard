@@ -636,6 +636,69 @@
         changeTheme(savedTheme);
 
         // ============ TABS ============
+        
+        // ============ BULK EMAIL DISPATCH ENGINE ============
+        let emailPollInterval = null;
+
+        async function startBulkEmailDispatch() {
+            const btn = document.getElementById('btn-start-bulk-email');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ جاري البدء...';
+            
+            try {
+                const res = await fetch('/api/admin/gateway/send_bulk_emails', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.success) {
+                    if (data.count === 0) {
+                        alert('✅ ' + data.message);
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+                        return;
+                    }
+                    document.getElementById('email-progress-container').style.display = 'block';
+                    startEmailProgressPolling();
+                } else {
+                    alert('❌ خطأ: ' + data.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+                }
+            } catch(e) {
+                alert('حدث خطأ في الاتصال: ' + e);
+                btn.disabled = false;
+                btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+            }
+        }
+
+        function startEmailProgressPolling() {
+            if (emailPollInterval) clearInterval(emailPollInterval);
+            emailPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/admin/gateway/email_dispatch_status');
+                    const data = await res.json();
+                    if (data.success && data.state) {
+                        const st = data.state;
+                        const total = st.total || 1;
+                        const sent = st.sent + st.failed;
+                        const pct = Math.min(100, Math.round((sent / total) * 100));
+                        
+                        document.getElementById('email-progress-bar').style.width = pct + '%';
+                        document.getElementById('email-progress-counter').innerText = `${sent} / ${total} (${pct}%)`;
+                        document.getElementById('email-current-student').innerText = st.current_student || '';
+                        
+                        if (!st.is_running && sent >= total) {
+                            clearInterval(emailPollInterval);
+                            document.getElementById('email-progress-status').innerText = '🎉 تم اكتمال الإرسال بنجاح!';
+                            const btn = document.getElementById('btn-start-bulk-email');
+                            btn.disabled = false;
+                            btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+                            fetchStudents(); // Refresh student list
+                        }
+                    }
+                } catch(e) {}
+            }, 1500);
+        }
+
         function switchTab(id) {
             document.querySelectorAll('.nav-item').forEach((b,i) => {
                 b.classList.toggle('active', ['students','sos','links','logs','settings'][i] === id);

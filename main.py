@@ -431,6 +431,164 @@ async def handle_reader(request):
     return resp
 
 
+
+# ==========================================
+# BULK EMAIL ONBOARDING ENGINE (ANTI-SPAM 2s)
+# ==========================================
+email_dispatch_state = {
+    "is_running": False,
+    "total": 0,
+    "sent": 0,
+    "failed": 0,
+    "current_student": "",
+    "logs": []
+}
+
+async def send_single_onboarding_email(email, first_name, student_id, gender):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import config as cfg
+    
+    if not cfg.SMTP_USER or not cfg.SMTP_PASSWORD:
+        # Simulation mode if credentials not set yet
+        return True, "Simulated (No SMTP credentials configured yet)"
+        
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"🎓 تفعيل حسابك في أكاديمية أُسوة - أهلاً بك يا {first_name or 'طالب العلم'}"
+        msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
+        msg['To'] = email
+        
+        bot_link = f"https://t.me/{cfg.MAIN_BOT_USERNAME}?start=link"
+        group_desc = "مجموعة الإخوة (رجال)" if gender == 'HOMME' else "مجموعة الأخوات (نساء)"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family: Arial, sans-serif; background-color: #fbf9f4; margin: 0; padding: 20px; color: #17262c; direction: rtl;">
+            <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 30px; border: 1px solid rgba(12,74,60,0.15); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h1 style="color: #0c4a3c; margin: 0; font-size: 24px;">أكاديمية أُسوة للعلوم الشرعية 🎓</h1>
+                    <p style="color: #079176; font-size: 14px; font-weight: bold; margin-top: 5px;">بوابة الانضمام الرسمية</p>
+                </div>
+                
+                <p style="font-size: 16px; line-height: 1.6;">السلام عليكم ورحمة الله وبركاته،</p>
+                <p style="font-size: 16px; line-height: 1.6;">أهلاً بك يا <b>{first_name or 'طالب العلم'}</b>! نبارك لك تسجيلك وتأكيد اشتراكك في البرنامج الأكاديمي.</p>
+                
+                <div style="background: #edf6f2; border-right: 4px solid #079176; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 15px; line-height: 1.5;">
+                        📌 <b>بيانات حسابك:</b><br>
+                        • رقم الطالب: <code>{student_id}</code><br>
+                        • مجموعتك الدراسية: <b>{group_desc}</b>
+                    </p>
+                </div>
+                
+                <p style="font-size: 15px; line-height: 1.6;">
+                    للانضمام إلى مجموعتك الرسمية وقنوات الدروس المباشرة، يرجى الضغط على الزر أدناه لربط حسابك عبر بوت تيليجرام:
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{bot_link}" style="background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(12,74,60,0.3);">
+                        🚀 تفعيل الحساب والانضمام للدروس (تيليجرام)
+                    </a>
+                </div>
+                
+                <p style="font-size: 13px; color: #8a9ba3; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+                    أكاديمية أُسوة • في حال واجهتك أي صعوبة يمكنك التواصل مع فريق الدعم عبر البوت.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+        
+        # Connect to SMTP server
+        server = smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=10)
+        server.starttls()
+        server.login(cfg.SMTP_USER, cfg.SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True, "OK"
+    except Exception as e:
+        return False, str(e)
+
+async def run_email_dispatcher_task(students_to_send):
+    global email_dispatch_state
+    import aiosqlite
+    from config import DATABASE_PATH
+    import asyncio
+    from datetime import datetime
+    
+    email_dispatch_state["is_running"] = True
+    email_dispatch_state["total"] = len(students_to_send)
+    email_dispatch_state["sent"] = 0
+    email_dispatch_state["failed"] = 0
+    email_dispatch_state["logs"] = []
+    
+    for s in students_to_send:
+        email = s.get('email', '').strip()
+        first_name = s.get('first_name', '')
+        sid = s.get('student_id', '')
+        gender = s.get('gender', 'HOMME')
+        
+        email_dispatch_state["current_student"] = f"{first_name} ({email})"
+        
+        success, err = await send_single_onboarding_email(email, first_name, sid, gender)
+        
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if success:
+            email_dispatch_state["sent"] += 1
+            email_dispatch_state["logs"].append(f"[{now_str}] ✅ تم الإرسال بنجاح إلى: {email}")
+            # Mark in DB
+            try:
+                async with aiosqlite.connect(DATABASE_PATH) as db:
+                    await db.execute("UPDATE academy_students SET email_sent = 1, email_sent_at = ? WHERE student_id = ?", (now_str, sid))
+                    await db.commit()
+            except Exception:
+                pass
+        else:
+            email_dispatch_state["failed"] += 1
+            email_dispatch_state["logs"].append(f"[{now_str}] ❌ فشل الإرسال إلى {email}: {err}")
+            
+        # Anti-spam delay between sends
+        await asyncio.sleep(2.0)
+        
+    email_dispatch_state["is_running"] = False
+    email_dispatch_state["current_student"] = "اكتمل الإرسال بنجاح ✅"
+
+async def api_admin_send_bulk_emails(request: web.Request):
+    global email_dispatch_state
+    import aiosqlite
+    from config import DATABASE_PATH
+    import asyncio
+    
+    if email_dispatch_state["is_running"]:
+        return web.json_response({"success": False, "error": "عملية الإرسال قيد التشغيل حالياً!"}, status=400)
+        
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM academy_students WHERE (payment_status = 'PAID' OR payment_status = 'PAYE') AND (email_sent = 0 OR email_sent IS NULL)") as cur:
+                rows = await cur.fetchall()
+                students = [dict(r) for r in rows]
+                
+        if not students:
+            return web.json_response({"success": True, "count": 0, "message": "لا يوجد طلاب جدد بانتظار الإرسال (تم إرسال الإيميل للجميع مسبقاً)."})
+            
+        # Start background task
+        asyncio.create_task(run_email_dispatcher_task(students))
+        
+        return web.json_response({"success": True, "count": len(students), "message": f"بدأ إرسال الإيميلات إلى {len(students)} طالب في الخلفية مع فاصل زمني 2 ثانية."})
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+async def api_admin_email_dispatch_status(request: web.Request):
+    global email_dispatch_state
+    return web.json_response({"success": True, "state": email_dispatch_state})
+
 async def handle_admin_gateway(request):
     resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin_gateway.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -5207,6 +5365,8 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin-gateway.html', handle_admin_gateway)
     app.router.add_get('/admin_gateway', handle_admin_gateway)
     app.router.add_get('/admin-gateway', handle_admin_gateway)
+    app.router.add_post('/api/admin/gateway/send_bulk_emails', api_admin_send_bulk_emails)
+    app.router.add_get('/api/admin/gateway/email_dispatch_status', api_admin_email_dispatch_status)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)

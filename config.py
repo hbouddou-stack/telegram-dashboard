@@ -29,3 +29,11 @@ ACADEMY_GROUP_ID = int(os.getenv("ACADEMY_GROUP_ID", "-1003724140001"))
 DATABASE_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "backup_bot.db"))
 MAIN_DATABASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../telegram-bot/persistent_storage/academy.db"))
 MAIN_CREDENTIALS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../telegram-bot/credentials.json"))
+
+
+# SMTP Email Configuration (Gmail / Google Workspace)
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_SENDER_NAME = os.getenv("SMTP_SENDER_NAME", "أكاديمية أُسوة")
