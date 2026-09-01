@@ -460,7 +460,7 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         greeting = f"أهلاً بكِ يا طالبتنا العزيزة {first_name}" if is_female else f"أهلاً بك يا طالبنا العزيز {first_name}"
         group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
         
-        bot_username = cfg.MAIN_BOT_USERNAME or "As2ilabot"
+        bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
         direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
         
         msg = MIMEMultipart('alternative')
@@ -623,7 +623,7 @@ async def api_track_click(request: web.Request):
     source = (request.query.get('src') or request.query.get('source') or 'email').lower().strip()
     
     import config as cfg
-    bot_username = cfg.MAIN_BOT_USERNAME or "As2ilabot"
+    bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
     tg_deep_link = f"tg://resolve?domain={bot_username}&start=auth_{student_id}" if student_id else f"tg://resolve?domain={bot_username}&start=link"
     https_tg_url = f"https://t.me/{bot_username}?start=auth_{student_id}" if student_id else f"https://t.me/{bot_username}?start=link"
     

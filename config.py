@@ -19,7 +19,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_API_KEYS = [k.strip() for k in [GEMINI_API_KEY, GOOGLE_API_KEY] if k.strip()]
 
 # Username configurations
-MAIN_BOT_USERNAME = "As2ilabot"
+MAIN_BOT_USERNAME = os.getenv("MAIN_BOT_USERNAME", "alsirahquizz_bot")
 BACKUP_BOT_USERNAME = "minassatalbajibot"
 
 # Academy group — only members of this group can use the bot
