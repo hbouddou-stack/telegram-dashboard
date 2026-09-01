@@ -196,6 +196,39 @@ async def cmd_png(message: Message):
             
     await message.answer(caption_text, reply_markup=kb, parse_mode="HTML")
 
+
+@router.message(Command("template"))
+@router.message(Command("excel"))
+@router.message(Command("modele"))
+async def cmd_send_template(message: Message):
+    """إرسال ملف إكسيل النموذجي مباشرة في محادثة تليجرام."""
+    template_file = os.path.join(os.path.dirname(__file__), "..", "dashboard", "albadr_students_template.csv")
+    if os.path.exists(template_file):
+        doc = FSInputFile(template_file, filename="albadr_students_template.csv")
+        await message.answer_document(
+            document=doc,
+            caption=(
+                "📥 <b>نموذج تسجيل الطلاب المعتمد (أكاديمية البدر)</b> 🎓\n\n"
+                "• يمكنك فتح هذا الملف في Excel وتعديل البيانات أو إضافة الطلاب.\n"
+                "• بعد حفظ الملف، يمكنك رفعه مباشرة عبر لوحة التحكم /federer."
+            ),
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer("⚠️ تعذر العثور على ملف النموذج.")
+
+@router.callback_query(F.data == "btn_send_excel_template")
+async def cb_send_excel_template(callback: CallbackQuery):
+    await callback.answer("⏳ جاري إرسال النموذج...")
+    template_file = os.path.join(os.path.dirname(__file__), "..", "dashboard", "albadr_students_template.csv")
+    if os.path.exists(template_file):
+        doc = FSInputFile(template_file, filename="albadr_students_template.csv")
+        await callback.message.answer_document(
+            document=doc,
+            caption="📥 <b>نموذج تسجيل الطلاب المعتمد (Excel/CSV)</b> 🎓",
+            parse_mode="HTML"
+        )
+
 @router.message(Command("federer"))
 async def cmd_federer(message: Message):
     """Menu complet pour les administrateurs et accès à toutes les applications."""
@@ -204,6 +237,7 @@ async def cmd_federer(message: Message):
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين وإدارة الطلاب (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin"))],
+        [InlineKeyboardButton(text="📥 إرسال نموذج الإكسيل الفارغ هنا (Telegram)", callback_data="btn_send_excel_template")],
         [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=pro_new"))],
         [InlineKeyboardButton(text="🔗 منصة ربط الحساب والتحقق (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))]
     ])
