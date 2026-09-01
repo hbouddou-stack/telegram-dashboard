@@ -806,7 +806,7 @@ async def api_admin_email_dispatch_status(request: web.Request):
 
 
 async def api_admin_gateway_export_template(request: web.Request):
-    """Génère un fichier CSV / Excel modèle pour tester ou importer de nouveaux étudiants."""
+    """Génère un fichier CSV modèle vierge avec 2 exemples pour importer de nouveaux étudiants."""
     import io, csv
     output = io.StringIO()
     writer = csv.writer(output)
@@ -818,9 +818,45 @@ async def api_admin_gateway_export_template(request: web.Request):
     return web.Response(
         body=csv_data,
         content_type='text/csv',
-        headers={
-            'Content-Disposition': 'attachment; filename="albadr_students_template.csv"'
-        }
+        headers={'Content-Disposition': 'attachment; filename="albadr_students_template.csv"'}
+    )
+
+async def api_admin_gateway_export_all_students(request: web.Request):
+    """Exporte TOUS les étudiants réels de la base de données avec leurs statuts réels en direct."""
+    import io, csv, aiosqlite
+    from config import DATABASE_PATH
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['student_id', 'first_name', 'last_name', 'email', 'phone', 'gender', 'payment_status', 'year', 'telegram_id', 'telegram_username', 'email_sent', 'email_opened_at', 'created_at'])
+    
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute("SELECT * FROM academy_students ORDER BY created_at DESC") as cur:
+            rows = await cur.fetchall()
+            for r in rows:
+                d = dict(r)
+                writer.writerow([
+                    d.get('student_id', ''),
+                    d.get('first_name', ''),
+                    d.get('last_name', ''),
+                    d.get('email', ''),
+                    d.get('phone', ''),
+                    d.get('gender', 'HOMME'),
+                    d.get('payment_status', 'PAID'),
+                    d.get('year', '1'),
+                    d.get('telegram_id', ''),
+                    d.get('telegram_username', ''),
+                    d.get('email_sent', 0),
+                    d.get('email_opened_at', ''),
+                    d.get('created_at', '')
+                ])
+                
+    csv_data = output.getvalue().encode('utf-8-sig')
+    return web.Response(
+        body=csv_data,
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="albadr_students_database_export.csv"'}
     )
 
 async def handle_admin_gateway(request):
@@ -5662,6 +5698,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/track/click', api_track_click)
     app.router.add_get('/api/admin/gateway/kpi', api_admin_gateway_kpi)
     app.router.add_get('/api/admin/gateway/export_template', api_admin_gateway_export_template)
+    app.router.add_get('/api/admin/gateway/export_all', api_admin_gateway_export_all_students)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
