@@ -62,7 +62,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         settings_row = await cur.fetchone()
                     settings = dict(settings_row) if settings_row else {}
                     
-                    folder_link = settings.get('folder_link') or "https://t.me/addlist/jcgwXUtzsfBhMGI8"
+                    folder_link = settings.get('folder_link') or "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
                     student_first = s_dict.get('first_name') or first_name
                     gender_clean = (s_dict.get('gender') or 'HOMME').upper()
                     is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
@@ -103,7 +103,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 async with db.execute("SELECT * FROM group_settings LIMIT 1") as cur:
                     settings_row = await cur.fetchone()
                 settings = dict(settings_row) if settings_row else {}
-            folder_link = settings.get('folder_link') or "https://t.me/addlist/jcgwXUtzsfBhMGI8"
+            folder_link = settings.get('folder_link') or "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
             
             welcome_text = (
                 f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"

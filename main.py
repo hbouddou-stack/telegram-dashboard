@@ -5902,8 +5902,8 @@ async def main():
             """)
             await db_conn.execute("""
                 INSERT INTO group_settings (id, folder_link, updated_at)
-                VALUES (1, 'https://t.me/addlist/jcgwXUtzsfBhMGI8', datetime('now'))
-                ON CONFLICT(id) DO UPDATE SET folder_link = 'https://t.me/addlist/jcgwXUtzsfBhMGI8'
+                VALUES (1, 'https://t.me/addlist/Yw-eXYtl1BVkYTdk', datetime('now'))
+                ON CONFLICT(id) DO UPDATE SET folder_link = 'https://t.me/addlist/Yw-eXYtl1BVkYTdk'
             """)
             
             # 2. Guarantee Houssam Bouddou is always seeded and visible in table
