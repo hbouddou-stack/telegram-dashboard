@@ -1,9 +1,8 @@
 import os
 from aiogram import Router, F, Bot
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, ChatJoinRequest, ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
+from aiogram.types import Message, ChatJoinRequest, ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo, FSInputFile
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
 import aiosqlite
 from config import DATABASE_PATH, TELEGRAM_ADMIN_IDS
 import re
@@ -27,7 +26,7 @@ def get_webapp_base_url() -> str:
 @router.message(Command("start"))
 @router.message(F.text.startswith("/start"))
 async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
-    """Accueil intelligent : liaison automatique via magic link + accès complet au Dossier et aux 2 Mini-Apps."""
+    """Accueil intelligent : liaison automatique via magic link + gestion dynamique des boutons."""
     user_id = message.from_user.id
     first_name = message.from_user.first_name or "طالب العلم"
     username = message.from_user.username or ""
@@ -67,21 +66,34 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     gender_clean = (s_dict.get('gender') or 'HOMME').upper()
                     is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
                     group_desc = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
+                    has_joined = s_dict.get('group_joined') == 1
                     
-                    # LES 3 BOUTONS COMPLETS (Dossier + Mini-App Liaison + Mini-App Support)
-                    kb = InlineKeyboardMarkup(inline_keyboard=[
-                        [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                        [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic"))],
-                        [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic"))]
-                    ])
-                    
-                    magic_welcome = (
-                        f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
-                        f"✅ <b>تم تفعيل وربط حسابك الدراسي بنجاح!</b>\n"
-                        f"• رقم الطالب: <code>{real_sid}</code>\n"
-                        f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
-                        f"👇 <b>اضغط على الزر أدناه لإضافة مجلد قنوات ومجموعات دراستك بنقرة واحدة:</b>"
-                    )
+                    if has_joined:
+                        # DÉJÀ REJOINT : PAS DE BOUTON DOSSIER
+                        kb = InlineKeyboardMarkup(inline_keyboard=[
+                            [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic_active"))],
+                            [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_active"))]
+                        ])
+                        magic_welcome = (
+                            f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
+                            f"✅ <b>حسابك مفعل وأنت عضو في مجموعات الدراسة الرسمية:</b>\n"
+                            f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
+                            f"👇 يمكنك الدخول للمكتبة أو طرح استفساراتك عبر الأزرار أدناه:"
+                        )
+                    else:
+                        # EN ATTENTE DE REJOINDRE : BOUTON DOSSIER PRÉSENT
+                        kb = InlineKeyboardMarkup(inline_keyboard=[
+                            [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
+                            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic"))],
+                            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic"))]
+                        ])
+                        magic_welcome = (
+                            f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
+                            f"✅ <b>تم تفعيل وربط حسابك الدراسي بنجاح!</b>\n"
+                            f"• رقم الطالب: <code>{real_sid}</code>\n"
+                            f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
+                            f"👇 <b>اضغط على الزر أدناه لإضافة مجلد قنوات ومجموعات دراستك بنقرة واحدة:</b>"
+                        )
                     
                     await message.answer(magic_welcome, reply_markup=kb, parse_mode="HTML")
                     await log_student_action(real_sid, 'MAGIC_LINK_SUCCESS', f"تم الربط التلقائي بنقرة واحدة من الإيميل ({start_arg})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
@@ -97,6 +109,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             gender_clean = (s_dict.get('gender') or 'HOMME').upper()
             is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
             group_desc = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
+            has_joined = s_dict.get('group_joined') == 1
             
             async with aiosqlite.connect(DATABASE_PATH) as db:
                 db.row_factory = aiosqlite.Row
@@ -105,17 +118,31 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 settings = dict(settings_row) if settings_row else {}
             folder_link = settings.get('folder_link') or "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
             
-            welcome_text = (
-                f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"
-                f"✅ حسابك مفعل ومربوط بنجاح\n"
-                f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
-                f"👇 يمكنك إضافة مجلد دراستك أو فتح المنصة أو التواصل مع الدعم عبر الأزرار أدناه:"
-            )
-            kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية إلى تليجرام", url=folder_link)],
-                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=linked"))],
-                [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=linked"))]
-            ])
+            if has_joined:
+                # ÉLÈVE AYANT DÉJÀ REJOINT : LE BOUTON DU DOSSIER DISPARAÎT !
+                welcome_text = (
+                    f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"
+                    f"✅ <b>حسابك مفعل وأنت عضو رسمي في مجموعات الدراسة:</b>\n"
+                    f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
+                    f"👇 يمكنك متابعة الدروس أو استخدام المنصة أو التواصل مع الدعم عبر الأزرار أدناه:"
+                )
+                kb = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=joined_active"))],
+                    [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=linked_active"))]
+                ])
+            else:
+                # ÉLÈVE N'AYANT PAS ENCORE REJOINT : BOUTON DU DOSSIER PRÉSENT
+                welcome_text = (
+                    f"أهلاً بك يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"
+                    f"✅ حسابك مربوط وجاهز لتأكيد الدخول.\n"
+                    f"• مجموعتك المقررة: <b>{group_desc}</b>\n\n"
+                    f"👇 <b>اضغط على الزر أدناه لإضافة مجلد الأكاديمية والانضمام فوراً للمجموعات:</b>"
+                )
+                kb = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
+                    [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=pending_folder"))],
+                    [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=pending_folder"))]
+                ])
         else:
             welcome_text = (
                 f"مرحباً بك يا <b>{first_name}</b> في أكاديمية البدر! 🎓\n\n"
@@ -137,13 +164,11 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
         ])
         await message.answer("مرحباً بك في أكاديمية البدر! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
-
 @router.message(Command("png"))
 @router.message(Command("schema"))
 @router.message(Command("diagrams"))
 async def cmd_png(message: Message):
     """عرض وإرسال المخطط الهندسي كصورة PNG مباشرة في المحادثة."""
-    from aiogram.types import FSInputFile
     base_url = get_webapp_base_url()
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -213,13 +238,19 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
             if payment_status in ['PAID', 'PAYE', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED'] and not wrong_gender:
                 try:
                     await update.approve()
+                    
+                    # Update group_joined = 1
+                    async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                        await db_conn.execute("UPDATE academy_students SET group_joined = 1, joined_at = datetime('now') WHERE telegram_id = ?", (user_id,))
+                        await db_conn.commit()
+                        
                     confirm_kb = InlineKeyboardMarkup(inline_keyboard=[
-                        [InlineKeyboardButton(text="✅ دخلت المجموعات بنجاح", callback_data=f"confirm_join_{student_dict['student_id']}")],
-                        [InlineKeyboardButton(text="🆘 لدي مشكلة / لم أتمكن من الدخول", web_app=WebAppInfo(url=support_url))]
+                        [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=approved"))],
+                        [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=support_url))]
                     ])
                     welcome_text = (
                         f"🎉 <b>أهلاً بك يا {real_first_name}!</b>\n\n"
-                        f"✅ تمت الموافقة على انضمامك إلى: <b>{chat_title}</b>.\n\n"
+                        f"✅ تمت الموافقة على انضمامك بنجاح إلى: <b>{chat_title}</b>.\n\n"
                         f"نتمنى لك رحلة تعليمية مباركة ونافعة في أكاديمية البدر! 📚"
                     )
                     await bot.send_message(user_id, welcome_text, reply_markup=confirm_kb, parse_mode="HTML")
@@ -246,7 +277,7 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
 
 @router.chat_member()
 async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
-    """Détecte quand l'élève rejoint effectivement le groupe via son lien unique et met à jour son statut."""
+    """Détecte quand l'élève appuie sur OK et rejoint effectivement le groupe via le dossier."""
     try:
         new_status = update.new_chat_member.status
         old_status = update.old_chat_member.status
@@ -256,15 +287,21 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             chat_title = update.chat.title or "المجموعة الرسمية"
             base_url = get_webapp_base_url()
             
+            # Persist group_joined = 1
+            async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                await db_conn.execute("UPDATE academy_students SET group_joined = 1, joined_at = datetime('now') WHERE telegram_id = ?", (user_id,))
+                await db_conn.commit()
+                
             kb = InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة (FAQ)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=joined"))],
                 [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=support"))]
             ])
             
             msg = (
-                f"✅ <b>تم انضمامك وتأكيد عضويتك بنجاح في: {chat_title}!</b>\n\n"
-                f"🎉 نتمنى لك مسيرة علمية موفقة ومباركة في أكاديمية البدر.\n"
-                f"👇 يمكنك في أي وقت مراجعة دليل الطالب أو طرح استفساراتك عبر الأزرار أدناه:"
+                f"🎉 <b>تم تأكيد انضمامك رسمياً وبنجاح إلى: {chat_title}!</b>\n\n"
+                f"✅ تم تفعيل عضويتك واكتمال إعداد حسابك.\n"
+                f"📚 نتمنى لك مسيرة علمية موفقة ومباركة في أكاديمية البدر!\n\n"
+                f"👇 يمكنك في أي وقت مراجعة الدليل أو طرح استفساراتك:"
             )
             
             try:
@@ -272,47 +309,6 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             except Exception:
                 pass
                 
-            await log_student_action(0, 'MEMBER_JOINED', f"انضم إلى {chat_title}", telegram_id=user_id, telegram_name=update.new_chat_member.user.first_name, telegram_username=update.new_chat_member.user.username)
+            await log_student_action(0, 'MEMBER_JOINED', f"انضم رسمياً إلى {chat_title}", telegram_id=user_id, telegram_name=update.new_chat_member.user.first_name, telegram_username=update.new_chat_member.user.username)
     except Exception as e:
         logger.error(f"[CHAT_MEMBER] Error: {e}")
-
-@router.callback_query(F.data.startswith("admin_approve_"))
-async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
-    try:
-        data = callback.data
-        parts = data.split("_")
-        gender_type = parts[2]
-        target_tg_id = int(parts[3])
-        
-        admin_name = callback.from_user.first_name or "المشرف"
-        gender_str = "HOMME" if gender_type == "man" else "FEMME"
-        
-        import database as db
-        success = await db.approve_pending_student(target_tg_id, gender_str, admin_name)
-        
-        if success:
-            await callback.answer("✅ تمت المصادقة بنجاح!", show_alert=True)
-            async with aiosqlite.connect(DATABASE_PATH) as conn:
-                conn.row_factory = aiosqlite.Row
-                async with conn.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (target_tg_id,)) as cur:
-                    row = await cur.fetchone()
-            
-            if row:
-                student_data = dict(row)
-                from main import generate_and_send_student_links
-                await generate_and_send_student_links(bot, target_tg_id, student_data)
-                
-            await callback.message.edit_text(
-                f"{callback.message.text}\n\n"
-                f"━━━━━━━━━━━━━━━━━━━━\n"
-                f"✅ <b>تمت المصادقة بنجاح بواسطة: {admin_name}</b>\n"
-                f"• تم تفعيل الحساب وتحديد الجنس: ({'رجال 🧔' if gender_str == 'HOMME' else 'نساء 🧕'})\n"
-                f"• تم إرسال روابط المجموعات الخاصة للطالب فوراً.",
-                parse_mode="HTML",
-                reply_markup=None
-            )
-        else:
-            await callback.answer("⚠️ تعذر العثور على بيانات هذا الطالب أو تمت معالجته مسبقاً.", show_alert=True)
-    except Exception as e:
-        logger.error(f"[ADMIN_APPROVE_ERROR] {e}")
-        await callback.answer(f"خطأ أثناء المصادقة: {e}", show_alert=True)
