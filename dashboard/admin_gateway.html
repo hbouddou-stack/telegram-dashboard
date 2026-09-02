@@ -951,11 +951,8 @@
                 const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
                 const data = await res.json();
                 if(data.success) {
-                    alert('FETCH SUCCESS. Rows: ' + data.students.length);
                     allStudents = data.students;
                     filterStudents();
-                } else {
-                    alert('FETCH ERROR: ' + data.error);
                 }
             } catch(e) { console.error(e); }
         }
