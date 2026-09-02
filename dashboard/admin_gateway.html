@@ -958,22 +958,24 @@
         }
 
         function filterStudents() {
+            try {
+
             const q = document.getElementById('search-input').value.toLowerCase();
             const filtered = allStudents.filter(s => {
-                const name = (s.first_name || '').toLowerCase();
-                const lname = (s.last_name || '').toLowerCase();
-                const email = (s.email || '').toLowerCase();
-                const source = (s.source || '').toLowerCase();
-                const dob = (s.dob || '').toLowerCase();
+                const name = String(s.first_name || '').toLowerCase();
+                const lname = String(s.last_name || '').toLowerCase();
+                const email = String(s.email || '').toLowerCase();
+                const source = String(s.source || '').toLowerCase();
+                const dob = String(s.dob || '').toLowerCase();
                 const year = String(s.year || '');
                 const telegramId = String(s.telegram_id || '');
-                const tgFirstName = (s.tg_first_name || '').toLowerCase();
+                const tgFirstName = String(s.tg_first_name || '').toLowerCase();
                 
                 const matchSearch = name.includes(q) || lname.includes(q) || email.includes(q) || 
                                   source.includes(q) || dob.includes(q) || year.includes(q) ||
                                   telegramId.includes(q) || tgFirstName.includes(q);
 
-                const g = (s.gender || '').toLowerCase();
+                const g = String(s.gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
                 const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
                 const matchGender = filters.gender === 'all'
@@ -999,7 +1001,10 @@
                 const matchColor = filters.color === 'all' || filters.color === studentColor;
 
                 return matchSearch && matchGender && matchLevel && matchStatus && matchColor;
-            });
+
+            } catch(err) {
+                alert('UI Render Error: ' + err.message + '\n' + err.stack);
+            }            });
 
             const linkedCount = filtered.filter(s => s.telegram_id).length;
             document.getElementById('stat-total').textContent = filtered.length;
@@ -1021,7 +1026,7 @@
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 
-                const g = (s.gender || '').toLowerCase();
+                const g = String(s.gender || '').toLowerCase();
                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
                     div.style.borderLeft = '6px solid #0084ff';
                     div.style.backgroundColor = 'rgba(0,132,255,0.15)';
@@ -1046,8 +1051,8 @@
                 const dot = `<span title="${dotTitle}" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${dotColor};margin-left:6px;vertical-align:middle;flex-shrink:0;"></span>`;
                 // ─────────────────────────────────────────────────────────
 
-                let tgFullName = s.tg_first_name || '';
-                if (s.tg_last_name) tgFullName += ' ' + s.tg_last_name;
+                let tgFullName = String(s.tg_first_name || '');
+                if (s.tg_last_name) tgFullName += ' ' + String(s.tg_last_name);
                 tgFullName = tgFullName.trim();
                 
                 const display = linked 
@@ -1094,7 +1099,7 @@
             const tgContainer = document.getElementById('profile-tg-container');
             
             let displayGender = 'غير محدد';
-            const g = (student.gender || '').toLowerCase();
+            const g = String(student.gender || '').toLowerCase();
             const profileNameChip = document.getElementById('profile-name');
             
             if (g.startsWith('h') || g === 'm' || g.includes('ذكر')) {
@@ -1391,7 +1396,7 @@
                 if (!matchState) return false;
                 
                 // Gender filter
-                const g = (s.gender || '').toLowerCase();
+                const g = String(s.gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
                 const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
                 
