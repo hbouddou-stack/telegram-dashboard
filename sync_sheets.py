@@ -57,6 +57,7 @@ async def run_google_sheets_sync(sheet_id: str):
             country = ''
             nationality = ''
             arabic_level = ''
+            school_level = ''
             
             # Row-level cell scanning
             text_candidates = []
@@ -68,7 +69,23 @@ async def run_google_sheets_sync(sheet_id: str):
                 d_val = str(row[9]).strip()
                 if d_val and d_val.lower() not in ['dob', 'date de naissance']: dob = d_val
                 
-            if len(row) > 8:
+            if len(row) > 5:
+                y_val = str(row[5]).strip()
+                if y_val and y_val.lower() not in ['moustawa', 'مستوى', 'niveau', 'year']: year = y_val
+                
+            if len(row) > 12:
+                sl_val = str(row[12]).strip()
+                if sl_val and sl_val.lower() not in ['niveau scolaire', 'مستوى دراسي']: school_level = sl_val
+                
+            if len(row) > 5:
+                    y_val = str(row[5]).strip()
+                    if y_val and y_val.lower() not in ['moustawa', 'مستوى', 'niveau', 'year']: year = y_val
+                
+                if len(row) > 12:
+                    sl_val = str(row[12]).strip()
+                    if sl_val and sl_val.lower() not in ['niveau scolaire', 'مستوى دراسي']: school_level = sl_val
+                
+                if len(row) > 8:
                 c_val = str(row[8]).strip()
                 if c_val and c_val.lower() not in ['pays', 'country', 'بلد']: country = c_val
                 
@@ -130,14 +147,14 @@ async def run_google_sheets_sync(sheet_id: str):
             if exists:
                 await db.execute("""
                     UPDATE academy_students 
-                    SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, source = 'google_sheets'
+                    SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, source = 'google_sheets'
                     WHERE LOWER(email) = ? OR student_id = ?
-                """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, email, academic_id))
+                """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, email, academic_id))
             else:
                 await db.execute("""
-                    INSERT INTO academy_students (student_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, source, is_active, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, datetime('now'))
-                """, (academic_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level))
+                    INSERT INTO academy_students (student_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, is_active, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, datetime('now'))
+                """, (academic_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level))
                 
             imported += 1
         await db.commit()

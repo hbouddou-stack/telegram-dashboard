@@ -970,7 +970,7 @@ async def api_admin_gateway_students(request: web.Request):
             async with db.execute("""
                 SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
                        s.year, s.gender, s.dob, s.source, s.phone, s.created_at, s.payment_status,
-                       s.profession, s.country, s.nationality, s.arabic_level,
+                       s.profession, s.country, s.nationality, s.arabic_level, s.school_level,
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.last_click_source,
                        s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,
@@ -1154,6 +1154,7 @@ async def api_admin_gateway_import_students(request: web.Request):
                 country = ''
                 nationality = ''
                 arabic_level = ''
+                school_level = ''
                 
                 text_candidates = []
                 
@@ -1164,6 +1165,22 @@ async def api_admin_gateway_import_students(request: web.Request):
                     d_val = str(row[9]).strip()
                     if d_val and d_val.lower() not in ['dob', 'date de naissance']: dob = d_val
                     
+                if len(row) > 5:
+                y_val = str(row[5]).strip()
+                if y_val and y_val.lower() not in ['moustawa', 'مستوى', 'niveau', 'year']: year = y_val
+                
+            if len(row) > 12:
+                sl_val = str(row[12]).strip()
+                if sl_val and sl_val.lower() not in ['niveau scolaire', 'مستوى دراسي']: school_level = sl_val
+                
+            if len(row) > 5:
+                    y_val = str(row[5]).strip()
+                    if y_val and y_val.lower() not in ['moustawa', 'مستوى', 'niveau', 'year']: year = y_val
+                
+                if len(row) > 12:
+                    sl_val = str(row[12]).strip()
+                    if sl_val and sl_val.lower() not in ['niveau scolaire', 'مستوى دراسي']: school_level = sl_val
+                
                 if len(row) > 8:
                     c_val = str(row[8]).strip()
                     if c_val and c_val.lower() not in ['pays', 'country', 'بلد']: country = c_val
@@ -1246,14 +1263,14 @@ async def api_admin_gateway_import_students(request: web.Request):
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
-                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, source = 'excel'
+                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, source = 'excel'
                         WHERE LOWER(email) = ? OR student_id = ?
-                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, email, student_id))
+                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, email, student_id))
                 else:
                     await db.execute("""
-                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, source, magic_token, is_active, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?, 1, datetime('now'))
-                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, secrets.token_urlsafe(8)))
+                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, magic_token, is_active, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?, 1, datetime('now'))
+                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, secrets.token_urlsafe(8)))
                     
                 imported += 1
             await db.commit()

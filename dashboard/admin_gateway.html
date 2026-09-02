@@ -544,7 +544,8 @@
             <!-- Tab 2: Academy -->
             <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="chip" id="profile-studentid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
-                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📚 المستوى / السنة : <span id="profile-year-text">-</span></div>
+                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📚 المستوى : <span id="profile-year-text">-</span></div>
+                 <div class="chip" id="profile-school-level" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏫 المستوى الدراسي : <span id="profile-school-level-text">-</span></div>
                 <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
                 <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📅 تاريخ التسجيل : <span id="profile-inscription-text">-</span></div>
                 <div class="chip" id="profile-source" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 المصدر : <span id="profile-source-text">-</span></div>
@@ -559,6 +560,9 @@
                 <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✅ حالة الربط : <span id="profile-tg-display">-</span></div>
                 <div class="chip" id="profile-tg-username-container" style="background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ اسم المستخدم : <span id="profile-tg-username-text" dir="ltr">-</span></div>
                 <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 معرّف تيليجرام : <span id="profile-tgid-text" dir="ltr">-</span></div>
+            <div class="chip" id="profile-tg-firstname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الأول : <span id="profile-tg-firstname-text">-</span></div>
+            <div class="chip" id="profile-tg-lastname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم العائلي : <span id="profile-tg-lastname-text">-</span></div>
+            <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📁 تاريخ الانضمام للملف : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
             </div>
 
             <!-- Tab 4: Funnel -->
@@ -1329,13 +1333,58 @@
                 switchModalTab('general');
             }
 
-            // Additional Info
+            // Translation dictionaries
+            const trPays = {'france':'فرنسا', 'maroc':'المغرب', 'algerie':'الجزائر', 'algérie':'الجزائر', 'belgique':'بلجيكا', 'suisse':'سويسرا', 'canada':'كندا', 'tunisie':'تونس'};
+            const trNat = {'marocaine':'مغربية', 'marocain':'مغربي', 'algerienne':'جزائرية', 'algérienne':'جزائرية', 'algerien':'جزائري', 'algérien':'جزائري', 'francaise':'فرنسية', 'française':'فرنسية', 'francais':'فرنسي', 'français':'فرنسي', 'tunisienne':'تونسية', 'tunisien':'تونسي'};
+            const trAr = {'debutant':'مبتدئ', 'débutant':'مبتدئ', 'intermediaire':'متوسط', 'intermédiaire':'متوسط', 'moyen':'متوسط', 'avance':'متقدم', 'avancé':'متقدم'};
+
+            function tr(val, dict) {
+                if(!val) return '-';
+                const v = String(val).toLowerCase().trim();
+                return dict[v] || val;
+            }
+
             const cEl = document.getElementById('profile-country-text');
-            if(cEl) cEl.textContent = student.country || '-';
+            if(cEl) cEl.textContent = tr(student.country, trPays);
             const natEl = document.getElementById('profile-nationality-text');
-            if(natEl) natEl.textContent = student.nationality || '-';
+            if(natEl) natEl.textContent = tr(student.nationality, trNat);
             const arEl = document.getElementById('profile-arabiclevel-text');
-            if(arEl) arEl.textContent = student.arabic_level || '-';
+            if(arEl) arEl.textContent = tr(student.arabic_level, trAr);
+            
+            const slEl = document.getElementById('profile-school-level-text');
+            if(slEl) slEl.textContent = student.school_level || '-';
+
+            const tgFEl = document.getElementById('profile-tg-firstname-text');
+            if(tgFEl) tgFEl.textContent = student.tg_first_name || '-';
+            const tgLEl = document.getElementById('profile-tg-lastname-text');
+            if(tgLEl) tgLEl.textContent = student.tg_last_name || '-';
+            const tgFolder = document.getElementById('profile-tg-folder-text');
+            if(tgFolder) tgFolder.textContent = student.folder_clicked_at ? student.folder_clicked_at.substring(0, 16).replace('T', ' ') : '-';
+            
+            const inscEl = document.getElementById('profile-inscription-text');
+            if(inscEl) inscEl.textContent = student.created_at ? student.created_at.split(' ')[0] : '-';
+
+            // Phone number fancy display
+            const phoneEl = document.getElementById('profile-phone-text');
+            if (phoneEl) {
+                let p = String(student.phone || '').trim();
+                if (p && p !== '-' && p !== 'null') {
+                    if (p.startsWith('+')) {
+                        let ind = p.substring(0, 4); // basic guess
+                        let rest = p.substring(4);
+                        if (p.startsWith('+212') || p.startsWith('+213') || p.startsWith('+216')) {
+                            ind = p.substring(0, 4); rest = p.substring(4);
+                        } else if (p.startsWith('+33') || p.startsWith('+32') || p.startsWith('+41')) {
+                            ind = p.substring(0, 3); rest = p.substring(3);
+                        }
+                        phoneEl.innerHTML = `<span style="background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:2px 6px; font-size:0.8rem; margin-right:5px; color:var(--text1);">${ind}</span> <span dir="ltr">${rest}</span>`;
+                    } else {
+                        phoneEl.innerHTML = `<span dir="ltr">${p}</span>`;
+                    }
+                } else {
+                    phoneEl.textContent = '-';
+                }
+            }
 
             // Age Calculator
             let ageText = student.dob || '-';
