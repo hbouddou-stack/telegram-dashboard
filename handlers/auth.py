@@ -22,6 +22,18 @@ def get_webapp_base_url() -> str:
             return v
     return "https://web-production-64c9ab.up.railway.app"
 
+async def send_welcome_with_banner(message: Message, text: str, reply_markup: InlineKeyboardMarkup):
+    logo_path = os.path.join(os.path.dirname(__file__), "..", "dashboard", "logo_albaji.png")
+    if os.path.exists(logo_path):
+        try:
+            photo = FSInputFile(logo_path)
+            await message.answer_photo(photo=photo, caption=text, reply_markup=reply_markup, parse_mode="HTML")
+            return
+        except Exception as e:
+            logger.error(f"[BANNER_ERROR] {e}")
+    await message.answer(text, reply_markup=reply_markup, parse_mode="HTML")
+
+
 @router.message(CommandStart())
 @router.message(Command("start"))
 @router.message(F.text.startswith("/start"))
@@ -95,7 +107,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                             f"👇 <b>اضغط على الزر أدناه لإضافة مجلد قنوات ومجموعات دراستك بنقرة واحدة:</b>"
                         )
                     
-                    await message.answer(magic_welcome, reply_markup=kb, parse_mode="HTML")
+                    await send_welcome_with_banner(message, magic_welcome, kb)
                     await log_student_action(real_sid, 'MAGIC_LINK_SUCCESS', f"تم الربط التلقائي بنقرة واحدة من الإيميل ({start_arg})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
                     return
 
@@ -154,7 +166,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=start"))]
             ])
 
-        await message.answer(welcome_text, reply_markup=kb, parse_mode="HTML")
+        await send_welcome_with_banner(message, welcome_text, kb)
         await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"فتح البوت ({'مفعل' if student else 'جديد'})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
 
     except Exception as e:

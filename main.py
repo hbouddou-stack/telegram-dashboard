@@ -448,6 +448,7 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
+    from email.mime.image import MIMEImage
     import config as cfg
     
     if not cfg.SMTP_USER or not cfg.SMTP_PASSWORD:
@@ -463,10 +464,13 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
         direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
         
-        msg = MIMEMultipart('alternative')
+        msg = MIMEMultipart('related')
         msg['Subject'] = f"🎓 تفعيل الحساب الأكاديمي - {greeting}"
         msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
         msg['To'] = email
+        
+        msg_alternative = MIMEMultipart('alternative')
+        msg.attach(msg_alternative)
         
         html_content = f"""
         <!DOCTYPE html>
@@ -476,45 +480,37 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>أكاديمية البدر</title>
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fbf9f4; margin: 0; padding: 30px 15px; color: #17262c; direction: rtl; text-align: right;">
-            <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 20px; padding: 35px; border: 1px solid rgba(12,74,60,0.12); box-shadow: 0 8px 30px rgba(12,74,60,0.06);">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f3; margin: 0; padding: 25px 12px; color: #17262c; direction: rtl; text-align: right;">
+            <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 24px; padding: 35px 25px; border-top: 6px solid #079176; box-shadow: 0 10px 35px rgba(12,74,60,0.08);">
                 
-                <!-- HEADER BADGE -->
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <div style="display: inline-block; background: rgba(7, 145, 118, 0.1); border: 1px solid rgba(7, 145, 118, 0.25); padding: 6px 18px; border-radius: 30px; margin-bottom: 12px;">
-                        <span style="color: #0c4a3c; font-weight: bold; font-size: 14px;">● رسالة التفعيل الرسمية</span>
+                <!-- HEADER WITH OFFICIAL LOGO -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="cid:albaji_logo" alt="شعار الأكاديمية" width="130" style="max-width: 130px; height: auto; margin-bottom: 12px; display: inline-block;">
+                    <div>
+                        <span style="background: rgba(7, 145, 118, 0.12); color: #0c4a3c; font-weight: 800; font-size: 13px; padding: 5px 16px; border-radius: 20px;">● رسالة التفعيل الرسمية</span>
                     </div>
-                    <h1 style="color: #0c4a3c; margin: 0; font-size: 25px; font-weight: 800;">أكاديمية البدر للعلوم الشرعية 🎓</h1>
+                    <h1 style="color: #0c4a3c; margin: 12px 0 4px 0; font-size: 24px; font-weight: 900;">أكاديمية البدر للعلوم الشرعية 🎓</h1>
+                    <p style="color: #64748b; font-size: 15px; margin: 0;"><b>{greeting}</b></p>
                 </div>
                 
-                <!-- BODY TEXT -->
-                <p style="font-size: 16px; line-height: 1.8; color: #17262c; margin: 0 0 14px 0;">السلام عليكم ورحمة الله وبركاته،</p>
-                <p style="font-size: 16px; line-height: 1.8; color: #17262c; margin: 0 0 20px 0;">
-                    <b>{greeting}</b>! نبارك لك انضمامك وتأكيد تسجيلك في البرنامج الأكاديمي.
-                </p>
-                
-                <!-- DETAILS CARD -->
-                <div style="background: #edf6f2; border-right: 4px solid #079176; padding: 18px 20px; border-radius: 12px; margin: 25px 0;">
-                    <p style="margin: 0 0 8px 0; font-size: 15px; line-height: 1.6; color: #0c4a3c;">
-                        📌 <b>بيانات حسابك الأكاديمي:</b><br>
-                        • رقم الطالب: <code style="font-size: 16px; font-weight: bold; color: #079176; font-family: monospace;">{student_id}</code><br>
-                        • المجموعة الدراسية: <b>{group_title}</b>
-                    </p>
-                </div>
-                
-                <p style="font-size: 15px; line-height: 1.8; color: #4c5d65; margin: 20px 0 30px 0;">
-                    للانضمام الفوري إلى مجموعتك الدراسية وإضافة مجلد الأكاديمية كاملاً على تليجرام، يرجى الضغط على الزر أدناه:
-                </p>
-                
-                <!-- CTA BUTTON (DIRECT TELEGRAM DEEP-LINK) -->
-                <div style="text-align: center; margin: 30px 0 35px 0;">
-                    <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #0c4a3c 0%, #079176 100%); color: #ffffff !important; text-decoration: none; padding: 16px 36px; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 6px 20px rgba(12,74,60,0.25);">
+                <!-- 🚀 BOUTON ULTRA-VISIBLE DÈS L'OUVERTURE -->
+                <div style="text-align: center; margin: 25px 0; background: linear-gradient(180deg, #edf7f4 0%, #e1f2ec 100%); padding: 22px 18px; border-radius: 18px; border: 1px dashed #079176;">
+                    <p style="margin: 0 0 12px 0; font-weight: 800; color: #0c4a3c; font-size: 15px;">👇 اضغط هنا لتفعيل حسابك وإضافة مجلد الدروس فوراً:</p>
+                    <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #079176 0%, #0c4a3c 100%); color: #ffffff !important; text-decoration: none; padding: 18px 36px; border-radius: 35px; font-weight: 900; font-size: 18px; display: inline-block; box-shadow: 0 8px 25px rgba(7, 145, 118, 0.35);">
                         🚀 تفعيل الحساب وإضافة المجلد (تيليجرام)
                     </a>
                 </div>
                 
+                <!-- DETAILS CARD -->
+                <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 20px 0;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr><td style="color: #64748b; padding: 6px 0;">• رقم الطالب:</td><td style="font-weight: bold; color: #079176; text-align: left; font-family: monospace; font-size: 16px;">{student_id}</td></tr>
+                        <tr><td style="color: #64748b; padding: 6px 0;">• المجموعة الدراسية:</td><td style="font-weight: bold; color: #1e293b; text-align: left;">{group_title}</td></tr>
+                    </table>
+                </div>
+                
                 <!-- FOOTER -->
-                <p style="font-size: 13px; color: #8a9ba3; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; line-height: 1.6;">
+                <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; line-height: 1.6;">
                     أكاديمية البدر • تم إرسال هذه الرسالة تلقائياً لتأكيد انضمامك إلى مجموعات الدراسة الرسمية.
                 </p>
             </div>
@@ -522,8 +518,18 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         </html>
         """
         
-        msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+        msg_alternative.attach(MIMEText(html_content, 'html', 'utf-8'))
         
+        # Attach logo image with Content-ID for instant offline rendering
+        logo_path = os.path.join(os.path.dirname(__file__), "dashboard", "logo_albaji.png")
+        if os.path.exists(logo_path):
+            with open(logo_path, 'rb') as f:
+                img_data = f.read()
+            img = MIMEImage(img_data)
+            img.add_header('Content-ID', '<albaji_logo>')
+            img.add_header('Content-Disposition', 'inline', filename="logo_albaji.png")
+            msg.attach(img)
+            
         server = smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=15)
         server.starttls()
         server.login(cfg.SMTP_USER, cfg.SMTP_PASSWORD)
