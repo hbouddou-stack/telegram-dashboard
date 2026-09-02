@@ -502,6 +502,8 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         plain_text = f"مرحباً بك {first_name} في أكاديمية الباجي.\nرابط تفعيل حسابك والدخول للمجموعات: {direct_tg_link}"
         msg_alternative.attach(MIMEText(plain_text, 'plain', 'utf-8'))
         
+        student_id_display = str(student_id).strip() if student_id and str(student_id).lower() != 'none' else '—'
+        
         html_content = f"""
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
@@ -519,7 +521,6 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
                     <div>
                         <span style="background: rgba(7, 145, 118, 0.12); color: #0c4a3c; font-weight: 800; font-size: 13px; padding: 5px 16px; border-radius: 20px;">● رسالة التفعيل والانضمام الرسمية</span>
                     </div>
-                    <h1 style="color: #0c4a3c; margin: 12px 0 6px 0; font-size: 24px; font-weight: 900;">أكاديمية الباجي للعلوم الشرعية 🎓</h1>
                 </div>
 
                 <!-- PERSONALIZED WELCOME TEXT -->
@@ -535,18 +536,18 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
                     </p>
                 </div>
                 
-                <!-- 🚀 BOUTON ULTRA-VISIBLE DÈS L'OUVERTURE -->
+                <!-- BOUTON SANS FUSÉE ULTRA-VISIBLE -->
                 <div style="text-align: center; margin: 25px 0; background: linear-gradient(180deg, #edf7f4 0%, #e1f2ec 100%); padding: 22px 18px; border-radius: 18px; border: 1px dashed #079176;">
                     <p style="margin: 0 0 12px 0; font-weight: 800; color: #0c4a3c; font-size: 15px;">👇 اضغط هنا لتفعيل حسابك وإضافة مجلد القنوات والمنتدى فوراً:</p>
                     <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #079176 0%, #0c4a3c 100%); color: #ffffff !important; text-decoration: none; padding: 18px 36px; border-radius: 35px; font-weight: 900; font-size: 18px; display: inline-block; box-shadow: 0 8px 25px rgba(7, 145, 118, 0.35);">
-                        🚀 تفعيل الحساب وإضافة المجلد (تيليجرام)
+                        تفعيل الحساب وإضافة المجلد (تيليجرام)
                     </a>
                 </div>
                 
                 <!-- DETAILS CARD -->
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 20px 0;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                        <tr><td style="color: #64748b; padding: 6px 0;">• رقم الطالب:</td><td style="font-weight: bold; color: #079176; text-align: left; font-family: monospace; font-size: 16px;">{student_id}</td></tr>
+                        <tr><td style="color: #64748b; padding: 6px 0;">• رقم الطالب:</td><td style="font-weight: bold; color: #079176; text-align: left; font-family: monospace; font-size: 16px;">{student_id_display}</td></tr>
                         <tr><td style="color: #64748b; padding: 6px 0;">• الشعبة والمجموعة:</td><td style="font-weight: bold; color: #1e293b; text-align: left;">{group_title}</td></tr>
                     </table>
                 </div>
