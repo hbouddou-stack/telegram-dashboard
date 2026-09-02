@@ -1266,7 +1266,7 @@
             if(inscriptionEl) inscriptionEl.textContent = student.created_at ? formatDateArabic(student.created_at) : 'غير متوفر';
             
             // Phone - fix RTL, put + on the left
-            const phoneEl = document.getElementById('profile-phone-text');
+            let oldPhoneEl = document.getElementById('profile-phone-text');
             if(phoneEl) {
                 let phone = String(student.phone || '').trim();
                 if (phone && !phone.startsWith('+')) phone = '+' + phone;
