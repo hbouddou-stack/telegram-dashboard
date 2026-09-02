@@ -1,3 +1,4 @@
+import secrets
 # ==========================================
 # SINGLE-USE INVITE LINKS & GENDER SEGREGATION ENGINE
 # ==========================================
@@ -85,7 +86,6 @@ async def generate_and_send_student_links(bot, telegram_id: int, student_data: d
     return links
 
 import asyncio
-import secrets
 
 # --- DB TRANSCRIPTS HELPERS ---
 async def load_lessons_from_db():
@@ -118,7 +118,6 @@ async def save_lesson_to_db(subject, lesson_num, lesson_data):
 
 async def init_static_cache():
     import asyncio
-    import secrets
     asyncio.create_task(update_static_json_cache())
 # ------------------------------
 
@@ -472,7 +471,7 @@ email_dispatch_state = {
     "logs": []
 }
 
-async def send_single_onboarding_email(email, first_name, student_id, gender, magic_token=None):
+async def send_single_onboarding_email(email, first_name, student_id, gender):
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -490,10 +489,7 @@ async def send_single_onboarding_email(email, first_name, student_id, gender, ma
         group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
         
         bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
-        
-        # USE MAGIC TOKEN IF AVAILABLE, ELSE FALLBACK TO STUDENT_ID (temporarily)
-        link_payload = magic_token if magic_token else student_id
-        direct_tg_link = f"https://t.me/{bot_username}?start=src_email_{link_payload}"
+        direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
         
         # Structure MIME standard sans pièce jointe externe
         msg_root = MIMEMultipart('related')
@@ -592,7 +588,6 @@ async def run_email_dispatcher_task(students_to_send):
     import aiosqlite
     from config import DATABASE_PATH
     import asyncio
-    import secrets
     from datetime import datetime
     
     email_dispatch_state["is_running"] = True
@@ -605,12 +600,11 @@ async def run_email_dispatcher_task(students_to_send):
         email = s.get('email', '').strip()
         first_name = s.get('first_name', '')
         sid = s.get('student_id', '')
-        magic_token = s.get('magic_token', '')
         gender = s.get('gender', 'HOMME')
         
         email_dispatch_state["current_student"] = f"{first_name} ({email})"
         
-        success, err = await send_single_onboarding_email(email, first_name, sid, gender, magic_token)
+        success, err = await send_single_onboarding_email(email, first_name, sid, gender)
         
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if success:
@@ -835,7 +829,6 @@ async def api_admin_send_bulk_emails(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
     import asyncio
-    import secrets
     
     if email_dispatch_state["is_running"]:
         return web.json_response({"success": False, "error": "عملية الإرسال قيد التشغيل حالياً!"}, status=400)
@@ -1073,13 +1066,13 @@ async def api_admin_gateway_add_student(request: web.Request):
                     if student_id:
                         await db.execute("""
                             INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (student_id, email, dob, first_name, last_name, '1', 'homme', 'manual'))
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (student_id, email, dob, first_name, last_name, '1', 'homme', 'manual', secrets.token_urlsafe(8)))
                     else:
                         await db.execute("""
                             INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """, (email, dob, first_name, last_name, '1', 'homme', 'manual'))
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (email, dob, first_name, last_name, '1', 'homme', 'manual', secrets.token_urlsafe(8)))
             await db.commit()
         return web.json_response({'success': True})
     except Exception as e:
@@ -1228,9 +1221,9 @@ async def api_admin_gateway_import_students(request: web.Request):
                     """, (first_name, last_name, phone, gender, payment_status, dob, year, email, student_id))
                 else:
                     await db.execute("""
-                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, source, is_active, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', 1, datetime('now'))
-                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year))
+                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, source, magic_token, is_active, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?, 1, datetime('now'))
+                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, secrets.token_urlsafe(8)))
                     
                 imported += 1
             await db.commit()
@@ -3413,7 +3406,6 @@ async def admin_broadcast(request):
         users = await get_all_user_ids(academic_year=academic_year)
         
         import asyncio
-        import secrets
         async def send_to_all():
             success_count = 0
             for uid in users:
@@ -5944,7 +5936,6 @@ async def start_web_server(bot: Bot):
 
 async def night_patrol_task(bot):
     import asyncio
-    import secrets
     import aiosqlite
     from config import DATABASE_PATH
     from database import log_student_action
@@ -6125,18 +6116,22 @@ async def main():
             
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
             # 1. Guarantee official folder link in group_settings
-            await db_conn.execute("""
-                INSERT INTO group_settings (key, value)
-                VALUES ('folder_link', 'https://t.me/addlist/Yw-eXYtl1BVkYTdk')
-                ON CONFLICT(key) DO UPDATE SET value = 'https://t.me/addlist/Yw-eXYtl1BVkYTdk'
-            """)
+            try:
+                await db_conn.execute("""
+                    INSERT INTO group_settings (key, value)
+                    VALUES ('folder_link', 'https://t.me/addlist/Yw-eXYtl1BVkYTdk')
+                    ON CONFLICT(key) DO UPDATE SET value = 'https://t.me/addlist/Yw-eXYtl1BVkYTdk'
+                """)
+            except Exception: pass
             
             # 2. Guarantee Houssam Bouddou is always seeded and visible in table
-            await db_conn.execute("""
-                INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, email_sent, is_active, created_at)
-                VALUES ('104820', 'Houssam', 'Bouddou', 'h.bouddou@gmail.com', '+33668959911', 'HOMME', 'PAID', 1, 1, datetime('now'))
-                ON CONFLICT(student_id) DO UPDATE SET first_name = 'Houssam', last_name = 'Bouddou', email = 'h.bouddou@gmail.com', phone = '+33668959911', gender = 'HOMME', payment_status = 'PAID'
-            """)
+            try:
+                await db_conn.execute("""
+                    INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, email_sent, is_active, created_at)
+                    VALUES ('104820', 'Houssam', 'Bouddou', 'h.bouddou@gmail.com', '+33668959911', 'HOMME', 'PAID', 1, 1, datetime('now'))
+                    ON CONFLICT(student_id) DO UPDATE SET first_name = 'Houssam', last_name = 'Bouddou', email = 'h.bouddou@gmail.com', phone = '+33668959911', gender = 'HOMME', payment_status = 'PAID'
+                """)
+            except Exception: pass
             await db_conn.commit()
             logger.info("Auto-seeded group_settings and test student 104820 in database.")
     except Exception as e:
