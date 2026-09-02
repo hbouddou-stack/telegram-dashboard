@@ -18,7 +18,8 @@ async def log_chat_message(telegram_id, sender, message_text):
                 'INSERT INTO bot_conversations (telegram_id, sender, message_text) VALUES (?, ?, ?)',
                 (telegram_id, sender, message_text)
             )
-            await db.commit()
+
+        await db.commit()
     except Exception as e:
         logger.error(f"Error logging chat message: {e}")
 
@@ -98,6 +99,21 @@ async def init_db():
         except Exception:
             pass
             
+        for col, col_def in [
+            ('email_opened_at', 'TEXT'),
+            ('email_clicked_at', 'TEXT'),
+            ('whatsapp_sent', 'INTEGER DEFAULT 0'),
+            ('whatsapp_sent_at', 'TEXT'),
+            ('whatsapp_clicked_at', 'TEXT'),
+            ('last_click_source', 'TEXT'),
+            ('group_joined', 'INTEGER DEFAULT 0'),
+            ('joined_at', 'TEXT')
+        ]:
+            try:
+                await db.execute(f'ALTER TABLE academy_students ADD COLUMN {col} {col_def}')
+            except Exception:
+                pass
+                
         # POPULATE MISSING TOKENS
         try:
             async with db.execute("SELECT student_id FROM academy_students WHERE magic_token IS NULL") as cur:
@@ -4437,30 +4453,6 @@ async def ensure_click_tracking_table():
                 await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_clicked_at TEXT')
             if 'last_click_source' not in cols:
                 await db.execute('ALTER TABLE academy_students ADD COLUMN last_click_source TEXT')
-        try:
-            await db.execute('ALTER TABLE academy_students ADD COLUMN email_opened_at TEXT')
-        except Exception:
-            pass
-        try:
-            await db.execute('ALTER TABLE academy_students ADD COLUMN email_clicked_at TEXT')
-        except Exception:
-            pass
-        try:
-            await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_sent INTEGER DEFAULT 0')
-        except Exception:
-            pass
-        try:
-            await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_sent_at TEXT')
-        except Exception:
-            pass
-        try:
-            await db.execute('ALTER TABLE academy_students ADD COLUMN group_joined INTEGER DEFAULT 0')
-        except Exception:
-            pass
-        try:
-            await db.execute('ALTER TABLE academy_students ADD COLUMN joined_at TEXT')
-        except Exception:
-            pass
             await db.commit()
     except Exception as e:
         logger.error(f"Error creating click_tracking table: {e}")
