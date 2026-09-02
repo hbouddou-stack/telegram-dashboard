@@ -118,7 +118,7 @@ async def save_lesson_to_db(subject, lesson_num, lesson_data):
 
 async def init_static_cache():
     import asyncio
-import secrets
+    import secrets
     asyncio.create_task(update_static_json_cache())
 # ------------------------------
 
