@@ -448,7 +448,6 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
-    from email.mime.image import MIMEImage
     import config as cfg
     
     if not cfg.SMTP_USER or not cfg.SMTP_PASSWORD:
@@ -464,13 +463,13 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
         direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
         
-        msg = MIMEMultipart('related')
+        # Hosted public logo URL (fastest loading, 0 attachment icon in Gmail preview)
+        logo_url = "https://web-production-64c9ab.up.railway.app/logo_albaji.png"
+        
+        msg = MIMEMultipart('alternative')
         msg['Subject'] = f"🎓 تفعيل الحساب الأكاديمي - مرحباً بك في أكاديمية الباجي"
         msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
         msg['To'] = email
-        
-        msg_alternative = MIMEMultipart('alternative')
-        msg.attach(msg_alternative)
         
         html_content = f"""
         <!DOCTYPE html>
@@ -483,9 +482,9 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f3; margin: 0; padding: 25px 12px; color: #17262c; direction: rtl; text-align: right;">
             <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 24px; padding: 35px 25px; border-top: 6px solid #079176; box-shadow: 0 10px 35px rgba(12,74,60,0.08);">
                 
-                <!-- HEADER WITH OFFICIAL LOGO -->
+                <!-- HEADER WITH OFFICIAL LOGO (HOSTED CDN, INSTANT LOAD) -->
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="cid:albaji_logo" alt="شعار أكاديمية الباجي" width="130" style="max-width: 130px; height: auto; margin-bottom: 12px; display: inline-block;">
+                    <img src="{logo_url}" alt="شعار أكاديمية الباجي" width="120" style="max-width: 120px; height: auto; margin-bottom: 12px; display: inline-block; border: 0; outline: none;">
                     <div>
                         <span style="background: rgba(7, 145, 118, 0.12); color: #0c4a3c; font-weight: 800; font-size: 13px; padding: 5px 16px; border-radius: 20px;">● رسالة التفعيل والانضمام الرسمية</span>
                     </div>
@@ -530,18 +529,11 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         </html>
         """
         
-        msg_alternative.attach(MIMEText(html_content, 'html', 'utf-8'))
+        plain_text = f"مرحباً بك {first_name} في أكاديمية الباجي.\nرابط تفعيل حسابك والدخول للمجموعات: {direct_tg_link}"
         
-        # Attach logo image with Content-ID for instant offline rendering
-        logo_path = os.path.join(os.path.dirname(__file__), "dashboard", "logo_albaji.png")
-        if os.path.exists(logo_path):
-            with open(logo_path, 'rb') as f:
-                img_data = f.read()
-            img = MIMEImage(img_data)
-            img.add_header('Content-ID', '<albaji_logo>')
-            img.add_header('Content-Disposition', 'inline', filename="logo_albaji.png")
-            msg.attach(img)
-            
+        msg.attach(MIMEText(plain_text, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+        
         server = smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=15)
         server.starttls()
         server.login(cfg.SMTP_USER, cfg.SMTP_PASSWORD)
