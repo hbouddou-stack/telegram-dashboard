@@ -1151,10 +1151,20 @@ async def api_admin_gateway_import_students(request: web.Request):
                 year = '1'
                 
                 text_candidates = []
-                for cell in row:
+                
+                if len(row) > 4 and not phone:
+                    p_val = str(row[4]).strip()
+                    if p_val and p_val.lower() not in ['phone', 'téléphone', 'هاتف']: phone = p_val
+                if len(row) > 9 and not dob:
+                    d_val = str(row[9]).strip()
+                    if d_val and d_val.lower() not in ['dob', 'date de naissance']: dob = d_val
+                    
+                for idx, cell in enumerate(row):
                     c = cell.strip()
                     if not c or c.lower() == email:
                         continue
+                    if idx == 4 and phone == c: continue
+                    if idx == 9 and dob == c: continue
                     
                     # Gender
                     c_up = c.upper()

@@ -56,19 +56,32 @@ async def run_google_sheets_sync(sheet_id: str):
             
             # Row-level cell scanning
             text_candidates = []
-            for cell in row:
+            
+            if len(row) > 4 and not phone:
+                p_val = str(row[4]).strip()
+                if p_val and p_val.lower() not in ['phone', 'téléphone', 'هاتف']: phone = p_val
+            if len(row) > 9 and not dob:
+                d_val = str(row[9]).strip()
+                if d_val and d_val.lower() not in ['dob', 'date de naissance']: dob = d_val
+                
+            for idx, cell in enumerate(row):
                 c = str(cell).strip()
                 if not c or c.lower() == email:
                     continue
+                if idx == 4 and phone == c: continue
+                if idx == 9 and dob == c: continue
                 c_up = c.upper()
-                if c_up in ["FEMME", "FEMALE", "FILLE", "F", "????"]:
+                if c_up in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]:
                     gender = 'FEMME'
                     continue
-                elif c_up in ["HOMME", "MALE", "GARCON", "M", "???"]:
+                elif c_up in ["HOMME", "MALE", "GARCON", "M", "ذكر"]:
                     gender = 'HOMME'
                     continue
                 if c_up in ["UNPAID", "NON", "ATTENTE", "PENDING", "غير مدفوع", "غير"]:
                     payment_status = 'UNPAID'
+                    continue
+                if c_up in ["PAID", "PAYE", "VALIDE", "CONFIRME", "مدفوع", "نعم"]:
+                    payment_status = 'PAID'
                     continue
                 if (c.startswith('+') or (c.isdigit() and len(c) >= 9 and len(c) <= 15)) and not phone:
                     phone = c
