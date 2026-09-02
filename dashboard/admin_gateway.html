@@ -346,6 +346,14 @@
             </div>
         </div>
 
+                <!-- COLOR FILTERS -->
+        <div style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
+            <div class="chip chip-color active" onclick="setColorFilter('all', this)" style="border-radius:20px;">?? ????</div>
+            <div class="chip chip-color" onclick="setColorFilter('green', this)" style="border-radius:20px; background: rgba(22, 163, 74, 0.1); color: #16a34a; border-color: #16a34a;">?? ?????? ????????</div>
+            <div class="chip chip-color" onclick="setColorFilter('red', this)" style="border-radius:20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444;">?? ?? ?????? ???</div>
+            <div class="chip chip-color" onclick="setColorFilter('orange', this)" style="border-radius:20px; background: rgba(249, 115, 22, 0.1); color: #f97316; border-color: #f97316;">?? ????? ??? ????</div>
+            <div class="chip chip-color" onclick="setColorFilter('black', this)" style="border-radius:20px; background: rgba(17, 17, 17, 0.1); color: #111111; border-color: #111111;">? ?????</div>
+        </div>
         <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
         
         <!-- FUNNEL ANALYTICS PRO -->
@@ -700,7 +708,7 @@
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all' };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -858,6 +866,14 @@
         }
         function setStatusFilter(val) {
             filters.status = val;
+            filterStudents();
+        }
+        function setColorFilter(val, el) {
+            filters.color = val;
+            if (el && el.parentElement) {
+                el.parentElement.querySelectorAll('.chip-color').forEach(c => c.classList.remove('active'));
+                el.classList.add('active');
+            }
             filterStudents();
         }
 
@@ -1062,7 +1078,14 @@
                     || (filters.status === 'linked' && linked)
                     || (filters.status === 'unlinked' && !linked);
 
-                return matchSearch && matchGender && matchLevel && matchStatus;
+                let studentColor = 'red';
+                if (s.excluded) studentColor = 'black';
+                else if (s.group_joined) studentColor = 'green';
+                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) studentColor = 'orange';
+
+                const matchColor = filters.color === 'all' || filters.color === studentColor;
+
+                return matchSearch && matchGender && matchLevel && matchStatus && matchColor;
             });
 
             const linkedCount = filtered.filter(s => s.telegram_id).length;
