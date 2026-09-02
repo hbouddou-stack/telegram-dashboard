@@ -367,7 +367,33 @@ async def handle_admin_js(request):
 async def handle_admin_late_js(request):
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'admin-late.js'))
 
+
+async def handle_logo_albaji_png(request):
+    p = os.path.join(DASHBOARD_DIR, 'logo_albaji.png')
+    if not os.path.exists(p):
+        p = os.path.join(DASHBOARD_DIR, 'شعار الباجي.png')
+    if not os.path.exists(p):
+        p = os.path.join(DASHBOARD_DIR, 'logo.png')
+    return web.FileResponse(p, headers={
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Access-Control-Allow-Origin': '*'
+    })
+
+async def handle_logo_albaji_svg(request):
+    p = os.path.join(DASHBOARD_DIR, 'logo_albaji.svg')
+    if not os.path.exists(p):
+        p = os.path.join(DASHBOARD_DIR, 'Logo Baji vert.svg')
+    if not os.path.exists(p):
+        p = os.path.join(DASHBOARD_DIR, 'logo.svg')
+    return web.FileResponse(p, headers={
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Access-Control-Allow-Origin': '*'
+    })
+
 async def handle_logo_png(request):
+    return await handle_logo_albaji_png(request)
     return web.FileResponse(os.path.join(DASHBOARD_DIR, 'logo.png'))
 
 async def handle_tuto_jpg(request):
@@ -5701,7 +5727,10 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin.css', handle_admin_css)
     app.router.add_get('/admin.js', handle_admin_js)
     app.router.add_get('/admin-late.js', handle_admin_late_js)
-    app.router.add_get('/logo.png', handle_logo_png)
+    app.router.add_get('/logo_albaji.png', handle_logo_albaji_png)
+    app.router.add_get('/logo_albaji.svg', handle_logo_albaji_svg)
+    app.router.add_get('/logo.svg', handle_logo_albaji_svg)
+    app.router.add_get('/logo.png', handle_logo_albaji_png)
     async def handle_tuto_jpg(request):
         return web.FileResponse(os.path.join(DASHBOARD_DIR, 'tuto.jpg'), headers={'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'})
 
