@@ -1,4 +1,3 @@
-import secrets
 # ==========================================
 # SINGLE-USE INVITE LINKS & GENDER SEGREGATION ENGINE
 # ==========================================
@@ -1065,12 +1064,12 @@ async def api_admin_gateway_add_student(request: web.Request):
                 else:
                     if student_id:
                         await db.execute("""
-                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source)
+                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source, magic_token)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """, (student_id, email, dob, first_name, last_name, '1', 'homme', 'manual', secrets.token_urlsafe(8)))
                     else:
                         await db.execute("""
-                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source)
+                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source, magic_token)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         """, (email, dob, first_name, last_name, '1', 'homme', 'manual', secrets.token_urlsafe(8)))
             await db.commit()
@@ -6116,6 +6115,17 @@ async def main():
             
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
             # 1. Guarantee official folder link in group_settings
+            await db_conn.execute("""
+                CREATE TABLE IF NOT EXISTS group_settings (
+                    id INTEGER PRIMARY KEY,
+                    general_channel_id TEXT,
+                    men_group_id TEXT,
+                    women_group_id TEXT,
+                    folder_link TEXT,
+                    updated_at TEXT
+                )
+            """)
+            # 1. Guarantee official folder link in group_settings
             try:
                 await db_conn.execute("""
                     INSERT INTO group_settings (key, value)
@@ -6132,6 +6142,7 @@ async def main():
                     ON CONFLICT(student_id) DO UPDATE SET first_name = 'Houssam', last_name = 'Bouddou', email = 'h.bouddou@gmail.com', phone = '+33668959911', gender = 'HOMME', payment_status = 'PAID'
                 """)
             except Exception: pass
+            
             await db_conn.commit()
             logger.info("Auto-seeded group_settings and test student 104820 in database.")
     except Exception as e:

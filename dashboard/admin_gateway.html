@@ -423,7 +423,7 @@
 
             <label class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
                 <span>📁 اختر ملف الإكسيل لرفعه الآن (.xlsx / .csv)</span>
-                <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
+                <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="display:none;" onchange="importExcel(this)">
             </label>
         </div>
         
