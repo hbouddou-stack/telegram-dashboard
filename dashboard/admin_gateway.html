@@ -1004,9 +1004,12 @@
             });
 
             const linkedCount = filtered.filter(s => s.telegram_id).length;
-            document.getElementById('stat-total').textContent = filtered.length;
-            document.getElementById('stat-linked').textContent = linkedCount;
-            document.getElementById('stat-pct').textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
+            const elTotal = document.getElementById('stat-total');
+            const elLinked = document.getElementById('stat-linked');
+            const elPct = document.getElementById('stat-pct');
+            if (elTotal) elTotal.textContent = filtered.length;
+            if (elLinked) elLinked.textContent = linkedCount;
+            if (elPct) elPct.textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
 
             const list = document.getElementById('students-list');
             list.innerHTML = '';
