@@ -836,6 +836,24 @@
                 input.setAttribute('pattern', '[0-9]*');
                 input.setAttribute('autocomplete', 'off');
 
+                // --- AUTO PASTE ---
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    let paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+                    if (!paste) return;
+                    for (let i = 0; i < inputs.length; i++) {
+                        if (i >= index && paste[i - index]) {
+                            inputs[i].value = paste[i - index];
+                        }
+                    }
+                    // Focus on the next empty box, or the last one if full
+                    let nextIndex = index + paste.length;
+                    if (nextIndex >= inputs.length) nextIndex = inputs.length - 1;
+                    inputs[nextIndex].focus();
+                    updateHidden();
+                });
+                // ------------------
+
                 input.addEventListener('input', (e) => {
                     const cleanVal = input.value.replace(/[^0-9]/g, '');
                     if (cleanVal.length > 0) {

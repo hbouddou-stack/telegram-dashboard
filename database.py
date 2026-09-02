@@ -117,7 +117,20 @@ async def init_db():
         except Exception:
             pass
 
-        # 0b. student_logs
+        # New tracking columns (safe migrations)
+        for _col_def in [
+            "group_joined INTEGER DEFAULT 0",
+            "joined_at TEXT",
+            "folder_clicked_at TEXT",
+            "bot_started_at TEXT",
+            "excluded INTEGER DEFAULT 0",
+        ]:
+            try:
+                await db.execute(f"ALTER TABLE academy_students ADD COLUMN {_col_def}")
+            except Exception:
+                pass
+
+
         await db.execute("""
             CREATE TABLE IF NOT EXISTS student_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -127,6 +140,17 @@ async def init_db():
                 action_type TEXT,
                 description TEXT,
                 timestamp TEXT DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
+
+        # 0b2. bot_visitors
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS bot_visitors (
+                telegram_id INTEGER PRIMARY KEY,
+                first_name TEXT,
+                username TEXT,
+                source TEXT,
+                first_visit_at TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)
 

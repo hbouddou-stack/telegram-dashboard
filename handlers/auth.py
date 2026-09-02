@@ -52,6 +52,16 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
+            
+            # --- TRACKING ALL VISITORS ---
+            visitor_source = start_arg if start_arg else 'organic'
+            await db.execute("""
+                INSERT OR IGNORE INTO bot_visitors (telegram_id, first_name, username, source)
+                VALUES (?, ?, ?, ?)
+            """, (user_id, first_name, username, visitor_source))
+            await db.commit()
+            # -----------------------------
+
             student = None
             
             # 1. Traitement du Lien Magique depuis Email / WhatsApp
