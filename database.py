@@ -4437,6 +4437,30 @@ async def ensure_click_tracking_table():
                 await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_clicked_at TEXT')
             if 'last_click_source' not in cols:
                 await db.execute('ALTER TABLE academy_students ADD COLUMN last_click_source TEXT')
+        try:
+            await db.execute('ALTER TABLE academy_students ADD COLUMN email_opened_at TEXT')
+        except Exception:
+            pass
+        try:
+            await db.execute('ALTER TABLE academy_students ADD COLUMN email_clicked_at TEXT')
+        except Exception:
+            pass
+        try:
+            await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_sent INTEGER DEFAULT 0')
+        except Exception:
+            pass
+        try:
+            await db.execute('ALTER TABLE academy_students ADD COLUMN whatsapp_sent_at TEXT')
+        except Exception:
+            pass
+        try:
+            await db.execute('ALTER TABLE academy_students ADD COLUMN group_joined INTEGER DEFAULT 0')
+        except Exception:
+            pass
+        try:
+            await db.execute('ALTER TABLE academy_students ADD COLUMN joined_at TEXT')
+        except Exception:
+            pass
             await db.commit()
     except Exception as e:
         logger.error(f"Error creating click_tracking table: {e}")

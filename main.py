@@ -5702,7 +5702,7 @@ async def api_tickets_create(request: web.Request):
         return web.json_response({'success': False, 'error': str(e), 'trace': traceback.format_exc()}, status=500)
 
 async def start_web_server(bot: Bot):
-    app = web.Application(middlewares=[cors_middleware])
+    app = web.Application(middlewares=[cors_middleware], client_max_size=1024**2 * 50)
     app['bot'] = bot
     
     app.router.add_get('/health', lambda r: web.Response(text='OK'))
