@@ -1721,7 +1721,28 @@
         }
 
         // ============ INIT ============
-        fetchStudents(); fetchKpiMetrics();
+        (async function() {
+            try {
+                document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:orange;font-size:1.2rem;">⏳ جاري تحميل الطلاب...</div>';
+                const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch(pe) {
+                    document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:red;">❌ JSON PARSE ERROR: ' + pe.message + '<br>Response: ' + text.substring(0, 200) + '</div>';
+                    return;
+                }
+                if (!data.success) {
+                    document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:red;">❌ API ERROR: ' + data.error + '</div>';
+                    return;
+                }
+                allStudents = data.students;
+                document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:lime;font-size:1.1rem;">✅ ' + allStudents.length + ' طالب تم تحميلهم! جاري العرض...</div>';
+                setTimeout(function() { filterStudents(); }, 300);
+            } catch(e) {
+                document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:red;">❌ FETCH ERROR: ' + e.message + '</div>';
+            }
+        })();
+        fetchKpiMetrics();
     </script>
 </body>
 </html>
