@@ -161,11 +161,15 @@ async def init_db():
 
         # New tracking columns (safe migrations)
         for _col_def in [
-            "group_joined INTEGER DEFAULT 0",
-            "joined_at TEXT",
             "folder_clicked_at TEXT",
             "bot_started_at TEXT",
+            "group_joined INTEGER DEFAULT 0",
+            "joined_at TEXT",
             "excluded INTEGER DEFAULT 0",
+            "profession TEXT",
+            "country TEXT",
+            "nationality TEXT",
+            "arabic_level TEXT"
         ]:
             try:
                 await db.execute(f"ALTER TABLE academy_students ADD COLUMN {_col_def}")

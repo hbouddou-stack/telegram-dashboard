@@ -498,7 +498,7 @@
 
     <!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
-        <div class="modal">
+        <div class="modal" id="fiche-eleve-modal" style="width: 95%; max-width: 1200px; height: 90vh; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <h2>📋 بطاقة الطالب التفصيلية</h2>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
@@ -529,17 +529,20 @@
             </div>
 
             <!-- Tab 1: General -->
-            <div id="mcontent-general" class="mcontent active">
+            <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الكامل : <span id="profile-name-text">-</span></div>
                 <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 البريد الإلكتروني : <span id="profile-email-text" dir="ltr">-</span></div>
                 <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📱 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left;">-</span></div>
                 <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 تاريخ الميلاد : <span id="profile-dob-text">-</span></div>
                 <div class="chip" id="profile-gender" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">⚧ الجنس : <span id="profile-gender-text">-</span></div>
                 <div class="chip" id="profile-profession" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💼 المهنة : <span id="profile-profession-text">-</span></div>
+                <div class="chip" id="profile-country" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🌍 بلد الإقامة : <span id="profile-country-text">-</span></div>
+                <div class="chip" id="profile-nationality" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🪪 الجنسية : <span id="profile-nationality-text">-</span></div>
+                <div class="chip" id="profile-arabiclevel" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🗣️ مستوى اللغة العربية : <span id="profile-arabiclevel-text">-</span></div>
             </div>
 
             <!-- Tab 2: Academy -->
-            <div id="mcontent-academy" class="mcontent">
+            <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="chip" id="profile-studentid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
                 <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📚 المستوى / السنة : <span id="profile-year-text">-</span></div>
                 <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
@@ -552,14 +555,14 @@
             </div>
 
             <!-- Tab 3: Telegram -->
-            <div id="mcontent-telegram" class="mcontent">
+            <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✅ حالة الربط : <span id="profile-tg-display">-</span></div>
                 <div class="chip" id="profile-tg-username-container" style="background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ اسم المستخدم : <span id="profile-tg-username-text" dir="ltr">-</span></div>
                 <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 معرّف تيليجرام : <span id="profile-tgid-text" dir="ltr">-</span></div>
             </div>
 
             <!-- Tab 4: Funnel -->
-            <div id="mcontent-funnel" class="mcontent">
+            <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="funnel-step">
                     <div class="funnel-icon" id="f-icon-email-sent">-</div>
                     <div class="funnel-text">إرسال الإيميل الأول</div>
@@ -1171,6 +1174,35 @@
         }
 
 
+        
+        function switchModalTab(tabId) {
+            ['general', 'academy', 'telegram', 'funnel'].forEach(t => {
+                const mt = document.getElementById('mtab-' + t);
+                const mc = document.getElementById('mcontent-' + t);
+                if(mt) mt.classList.remove('active');
+                if(mc) mc.classList.remove('active');
+            });
+            const amt = document.getElementById('mtab-' + tabId);
+            const amc = document.getElementById('mcontent-' + tabId);
+            if(amt) amt.classList.add('active');
+            if(amc) amc.classList.add('active');
+        }
+        
+        function setFunnelStep(stepId, dateVal) {
+            const icon = document.getElementById('f-icon-' + stepId);
+            const dateEl = document.getElementById('f-date-' + stepId);
+            if(!icon) return;
+            if (dateVal && dateVal !== '0' && dateVal !== 'false') {
+                icon.className = 'funnel-icon success';
+                icon.innerHTML = '✔';
+                dateEl.textContent = String(dateVal).substring(0,16).replace('T', ' ');
+            } else {
+                icon.className = 'funnel-icon pending';
+                icon.innerHTML = '✖';
+                dateEl.textContent = 'لم يتم بعد';
+            }
+        }
+
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             
@@ -1285,6 +1317,51 @@
 
             // Student Logs
             document.getElementById('logs-body').innerHTML = '<div class="no-items">جاري التحميل...</div>';
+            
+            // Funnel & Tab logic
+            if(typeof setFunnelStep === 'function') {
+                setFunnelStep('email-sent', student.email_sent_at || (student.email_sent ? 'نعم' : null));
+                setFunnelStep('email-opened', student.email_opened_at);
+                setFunnelStep('email-clicked', student.email_clicked_at || student.folder_clicked_at);
+                setFunnelStep('whatsapp-sent', student.whatsapp_sent_at || (student.whatsapp_sent ? 'نعم' : null));
+                setFunnelStep('bot-started', student.bot_started_at);
+                setFunnelStep('group-joined', student.joined_at || (student.group_joined ? 'نعم' : null));
+                switchModalTab('general');
+            }
+
+            // Additional Info
+            const cEl = document.getElementById('profile-country-text');
+            if(cEl) cEl.textContent = student.country || '-';
+            const natEl = document.getElementById('profile-nationality-text');
+            if(natEl) natEl.textContent = student.nationality || '-';
+            const arEl = document.getElementById('profile-arabiclevel-text');
+            if(arEl) arEl.textContent = student.arabic_level || '-';
+
+            // Age Calculator
+            let ageText = student.dob || '-';
+            if (student.dob) {
+                try {
+                    let parts = student.dob.split(/[\/\-]/);
+                    let d = null;
+                    if(parts.length === 3) {
+                        if(parts[0].length === 4) d = new Date(parts[0], parts[1]-1, parts[2]);
+                        else d = new Date(parts[2], parts[1]-1, parts[0]);
+                    }
+                    if(d && !isNaN(d.getTime())) {
+                        let today = new Date();
+                        let years = today.getFullYear() - d.getFullYear();
+                        let months = today.getMonth() - d.getMonth();
+                        if (months < 0 || (months === 0 && today.getDate() < d.getDate())) {
+                            years--;
+                            months += 12;
+                        }
+                        ageText = student.dob + ' (' + years + ' سنة و ' + months + ' أشهر)';
+                    }
+                } catch(e) {}
+            }
+            const dobEl = document.getElementById('profile-dob-text');
+            if(dobEl) dobEl.textContent = ageText;
+
             document.getElementById('logs-overlay').style.display = 'flex';
             try {
                 const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id + '&tid=' + (student.telegram_id || 'null'));
