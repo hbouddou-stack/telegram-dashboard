@@ -337,13 +337,31 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
                     f"يرجى استخدام رابط مجموعتك المناسبة."
                 )
                 try:
+                    await update.decline()
                     await bot.send_message(user_id, msg_text, parse_mode="HTML")
                 except Exception:
                     pass
+                await log_student_action(student_dict['student_id'], 'JOIN_REQUEST_WRONG_GENDER', f"رُفض الانضمام إلى {chat_title} بسبب الجنس", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=username)
                 return
+
+        else:
+            # ❌ Pas dans la base → refus AVANT d'entrer dans le groupe
+            try:
+                await update.decline()
+                await bot.send_message(
+                    user_id,
+                    f"⛔ <b>تعذّر الانضمام إلى {chat_title}</b>\n\n"
+                    f"لم يتم التعرف على حسابك في قاعدة بيانات أكاديمية الباجي.\n"
+                    f"يُرجى التواصل مع الإدارة إذا كنت تعتقد أن هناك خطأ.",
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
+            await log_student_action(0, 'JOIN_REQUEST_DECLINED', f"رُفض طلب انضمام حساب غير مسجل إلى {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=username)
 
     except Exception as e:
         logger.error(f"[JOIN_REQUEST] Error: {e}")
+
 
 @router.chat_member()
 async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
