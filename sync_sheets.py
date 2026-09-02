@@ -34,112 +34,39 @@ async def run_google_sheets_sync(sheet_id: str):
             if not any(row):
                 continue
                 
-            email = None
-            for cell in row:
-                c = str(cell).strip().lower()
-                if '@' in c and '.' in c and len(c) > 5:
-                    email = c
-                    break
-                    
-            if not email or email.startswith('email') or email.startswith('mail') or email.startswith('البريد'):
+
+            academic_id = str(row[0]).strip() if len(row) > 0 else ''
+            first_name = str(row[2]).strip() if len(row) > 2 else ''
+            email = str(row[3]).strip().lower() if len(row) > 3 else ''
+            
+            if not email or '@' not in email or email in ['email', 'بريد']:
                 continue
                 
-            first_name = 'طالب'
-            last_name = ''
-            phone = ''
+            phone = str(row[4]).strip() if len(row) > 4 else ''
+            year = str(row[5]).strip() if len(row) > 5 else '1'
+            
+            gender_raw = str(row[6]).upper().strip() if len(row) > 6 else ''
             gender = 'HOMME'
-            payment_status = 'PAID'
-            academic_id = ''
-            dob = ''
-            year = '1'
-            created_at = ''
-            profession = ''
-            country = ''
-            nationality = ''
-            arabic_level = ''
-            school_level = ''
+            if gender_raw in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]: gender = 'FEMME'
+            elif gender_raw in ["HOMME", "MALE", "GARCON", "M", "ذكر"]: gender = 'HOMME'
             
-            # Row-level cell scanning
-            text_candidates = []
+            pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
+            payment_status = 'UNPAID'
+            if pay_raw in ["PAID", "PAYE", "VALIDE", "CONFIRME", "مدفوع", "نعم"]: payment_status = 'PAID'
             
-            if len(row) > 4 and not phone:
-                p_val = str(row[4]).strip()
-                if p_val and p_val.lower() not in ['phone', 'téléphone', 'هاتف']: phone = p_val
-            if len(row) > 9 and not dob:
-                d_val = str(row[9]).strip()
-                if d_val and d_val.lower() not in ['dob', 'date de naissance']: dob = d_val
-                
-            if len(row) > 5:
-                y_val = str(row[5]).strip()
-                if y_val and y_val.lower() not in ['moustawa', 'مستوى', 'niveau', 'year']: year = y_val
-                
-            if len(row) > 12:
-                sl_val = str(row[12]).strip()
-                if sl_val and sl_val.lower() not in ['niveau scolaire', 'مستوى دراسي']: school_level = sl_val
-                
-            if len(row) > 5:
-                    y_val = str(row[5]).strip()
-                    if y_val and y_val.lower() not in ['moustawa', 'مستوى', 'niveau', 'year']: year = y_val
-                
-                if len(row) > 12:
-                    sl_val = str(row[12]).strip()
-                    if sl_val and sl_val.lower() not in ['niveau scolaire', 'مستوى دراسي']: school_level = sl_val
-                
-                if len(row) > 8:
-                c_val = str(row[8]).strip()
-                if c_val and c_val.lower() not in ['pays', 'country', 'بلد']: country = c_val
-                
-            if len(row) > 14:
-                pro_val = str(row[14]).strip()
-                if pro_val and pro_val.lower() not in ['profession', 'métier', 'مهنة']: profession = pro_val
-                
-            if len(row) > 16:
-                nat_val = str(row[16]).strip()
-                if nat_val and nat_val.lower() not in ['nationalité', 'nationality', 'جنسية']: nationality = nat_val
-                
-            if len(row) > 17:
-                ar_val = str(row[17]).strip()
-                if ar_val and ar_val.lower() not in ['niveau', 'arabe', 'arabic', 'عربي']: arabic_level = ar_val
-                
-            for idx, cell in enumerate(row):
-                c = str(cell).strip()
-                if not c or c.lower() == email:
-                    continue
-                if idx == 4 and phone == c: continue
-                if idx == 9 and dob == c: continue
-                c_up = c.upper()
-                if c_up in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]:
-                    gender = 'FEMME'
-                    continue
-                elif c_up in ["HOMME", "MALE", "GARCON", "M", "ذكر"]:
-                    gender = 'HOMME'
-                    continue
-                if c_up in ["UNPAID", "NON", "ATTENTE", "PENDING", "غير مدفوع", "غير"]:
-                    payment_status = 'UNPAID'
-                    continue
-                if c_up in ["PAID", "PAYE", "VALIDE", "CONFIRME", "مدفوع", "نعم"]:
-                    payment_status = 'PAID'
-                    continue
-                if (c.startswith('+') or (c.isdigit() and len(c) >= 9 and len(c) <= 15)) and not phone:
-                    phone = c
-                    continue
-                if (c.isdigit() and len(c) >= 4 and len(c) <= 8) and not academic_id:
-                    academic_id = c
-                    continue
-                if len(c) >= 2 and not any(ch.isdigit() for ch in c):
-                    text_candidates.append(c)
-                    
-            if text_candidates:
-                if len(text_candidates) == 1 or ' ' in text_candidates[0].strip():
-                    parts = text_candidates[0].split(None, 1)
-                    first_name = parts[0]
-                    last_name = parts[1] if len(parts) > 1 else ''
-                else:
-                    first_name = text_candidates[0]
-                    last_name = text_candidates[1] if len(text_candidates) > 1 else ''
-                    
+            country = str(row[8]).strip() if len(row) > 8 else ''
+            dob = str(row[9]).strip() if len(row) > 9 else ''
+            school_level = str(row[12]).strip() if len(row) > 12 else ''
+            created_at_val = str(row[13]).strip() if len(row) > 13 else ''
+            profession = str(row[14]).strip() if len(row) > 14 else ''
+            last_name = str(row[15]).strip() if len(row) > 15 else ''
+            nationality = str(row[16]).strip() if len(row) > 16 else ''
+            arabic_level = str(row[17]).strip() if len(row) > 17 else ''
+            
             if not academic_id:
+                import hashlib
                 academic_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]
+
                 
             async with db.execute("SELECT student_id FROM academy_students WHERE LOWER(email) = ? OR student_id = ?", (email, academic_id)) as cur:
                 exists = await cur.fetchone()
@@ -147,14 +74,14 @@ async def run_google_sheets_sync(sheet_id: str):
             if exists:
                 await db.execute("""
                     UPDATE academy_students 
-                    SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, source = 'google_sheets'
+                    SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), source = 'google_sheets'
                     WHERE LOWER(email) = ? OR student_id = ?
-                """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, email, academic_id))
+                """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, email, academic_id))
             else:
                 await db.execute("""
                     INSERT INTO academy_students (student_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, is_active, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, datetime('now'))
-                """, (academic_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, COALESCE(NULLIF(?, ''), datetime('now')))
+                """, (academic_id, academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val))
                 
             imported += 1
         await db.commit()
