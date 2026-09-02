@@ -68,7 +68,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             if start_arg:
                 clean_sid = re.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_)', '', start_arg)
                 
-                async with db.execute("SELECT * FROM academy_students WHERE student_id = ? OR LOWER(email) = ?", (clean_sid, clean_sid.lower())) as cur:
+                async with db.execute("SELECT * FROM academy_students WHERE magic_token = ? OR student_id = ? OR LOWER(email) = ?", (clean_sid, clean_sid, clean_sid.lower())) as cur:
                     student = await cur.fetchone()
                     
                 if student:
