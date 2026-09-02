@@ -110,6 +110,17 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     await send_welcome_with_banner(message, magic_welcome, kb)
                     await log_student_action(real_sid, 'MAGIC_LINK_SUCCESS', f"تم الربط التلقائي بنقرة واحدة من الإيميل ({start_arg})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
                     return
+                
+                else:
+                    # LIEN INVALIDE : numéro non trouvé en base → message d'erreur clair
+                    await message.answer(
+                        f"❌ <b>رابط غير صالح أو منتهي الصلاحية</b>\n\n"
+                        f"الرابط الذي استخدمته لا يطابق أي حساب مسجل في أكاديمية الباجي.\n\n"
+                        f"يُرجى التواصل مع إدارة الأكاديمية للحصول على الرابط الصحيح.",
+                        parse_mode="HTML"
+                    )
+                    await log_student_action(0, 'INVALID_LINK_ATTEMPT', f"محاولة رابط غير صالح: {start_arg}", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
+                    return
 
             # 2. Vérification par Telegram ID si déjà lié
             async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
