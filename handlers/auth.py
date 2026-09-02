@@ -347,17 +347,50 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
 
 @router.chat_member()
 async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
-    """Détecte quand l'élève appuie sur OK et rejoint effectivement le groupe via le dossier."""
+    """Détecte quand quelqu'un rejoint le groupe — vérifie s'il est inscrit en base."""
     try:
         new_status = update.new_chat_member.status
         old_status = update.old_chat_member.status
         
         if old_status not in ["member", "administrator"] and new_status in ["member", "administrator"]:
             user_id = update.new_chat_member.user.id
+            tg_first_name = update.new_chat_member.user.first_name or "مجهول"
+            tg_username = update.new_chat_member.user.username or ""
+            chat_id = update.chat.id
             chat_title = update.chat.title or "المجموعة الرسمية"
             base_url = get_webapp_base_url()
             
-            # Persist group_joined = 1
+            # Vérifier si ce Telegram ID est dans la base des élèves inscrits
+            async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+                db_conn.row_factory = aiosqlite.Row
+                async with db_conn.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
+                    student = await cur.fetchone()
+            
+            if not student:
+                # ❌ INTRUS : pas dans la base → expulser immédiatement
+                try:
+                    await bot.ban_chat_member(chat_id, user_id)
+                    await bot.unban_chat_member(chat_id, user_id)  # unban pour ne pas le blacklister, juste virer
+                except Exception as e:
+                    logger.error(f"[KICK] Failed to kick unauthorized user {user_id}: {e}")
+                
+                # Avertir l'intrus
+                try:
+                    await bot.send_message(
+                        user_id,
+                        f"⛔ <b>تعذّر الانضمام إلى {chat_title}</b>\n\n"
+                        f"لم يتم التعرف على حسابك في قاعدة بيانات أكاديمية الباجي.\n"
+                        f"يُرجى التواصل مع الإدارة إذا كنت تعتقد أن هناك خطأ.",
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
+                
+                await log_student_action(0, 'UNAUTHORIZED_JOIN_KICKED', f"تم طرد مستخدم غير مسجل من {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=tg_username)
+                return
+            
+            # ✅ Élève reconnu → marquer group_joined = 1
+            student_dict = dict(student)
             async with aiosqlite.connect(DATABASE_PATH) as db_conn:
                 await db_conn.execute("UPDATE academy_students SET group_joined = 1, joined_at = datetime('now') WHERE telegram_id = ?", (user_id,))
                 await db_conn.commit()
@@ -379,6 +412,6 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             except Exception:
                 pass
                 
-            await log_student_action(0, 'MEMBER_JOINED', f"انضم رسمياً إلى {chat_title}", telegram_id=user_id, telegram_name=update.new_chat_member.user.first_name, telegram_username=update.new_chat_member.user.username)
+            await log_student_action(student_dict['student_id'], 'MEMBER_JOINED', f"انضم رسمياً إلى {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=tg_username)
     except Exception as e:
         logger.error(f"[CHAT_MEMBER] Error: {e}")
