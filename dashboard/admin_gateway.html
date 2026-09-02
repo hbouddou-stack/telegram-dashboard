@@ -290,11 +290,11 @@
 
     <!-- Bottom Navigation Menu -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('overview')">
+        <div class="nav-item" onclick="switchTab('overview')">
             <span class="nav-icon">📊</span>
             <span>نظرة</span>
         </div>
-        <div class="nav-item" onclick="switchTab('students')">
+        <div class="nav-item active" onclick="switchTab('students')">
             <span class="nav-icon">👥</span>
             <span>الطلاب</span>
         </div>
@@ -317,7 +317,7 @@
     </div>
     
     <!-- TAB: الطلاب -->
-    <div id="tab-students" class="tab-content">
+    <div id="tab-students" class="tab-content active">
         <!-- Intelligent Compact Filters at the very top -->
         <div class="filter-section">
             <!-- Gender filter row with colors: Blue (Male) and Pink (Female) taking full width 50/50 -->
@@ -754,10 +754,12 @@
 
         function switchTab(id) {
             document.querySelectorAll('.nav-item').forEach((b,i) => {
-                b.classList.toggle('active', ['students','sos','links','logs','settings'][i] === id);
+                b.classList.toggle('active', ['overview','students','sos','links','logs','settings'][i] === id);
             });
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
+            const tabEl = document.getElementById('tab-' + id);
+            if (tabEl) tabEl.classList.add('active');
+            if(id === 'students') filterStudents();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
             if(id === 'logs') fetchGlobalLogs();
