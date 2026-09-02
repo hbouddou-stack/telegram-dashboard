@@ -107,7 +107,12 @@ async def init_db():
             ('whatsapp_clicked_at', 'TEXT'),
             ('last_click_source', 'TEXT'),
             ('group_joined', 'INTEGER DEFAULT 0'),
-            ('joined_at', 'TEXT')
+            ('joined_at', 'TEXT'),
+            ('folder_clicked_at', 'TEXT'),
+            ('bot_started_at', 'TEXT'),
+            ('excluded', 'INTEGER DEFAULT 0'),
+            ('email_sent', 'INTEGER DEFAULT 0'),
+            ('email_sent_at', 'TEXT')
         ]:
             try:
                 await db.execute(f'ALTER TABLE academy_students ADD COLUMN {col} {col_def}')
