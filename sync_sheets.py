@@ -61,13 +61,13 @@ async def run_google_sheets_sync(sheet_id: str):
                 if not c or c.lower() == email:
                     continue
                 c_up = c.upper()
-                if any(k in c_up for k in ['FEMME', 'FEMALE', 'أنث', 'نساء', 'F']):
+                if c_up in ["FEMME", "FEMALE", "FILLE", "F", "????"]:
                     gender = 'FEMME'
                     continue
-                elif any(k in c_up for k in ['HOMME', 'MALE', 'ذك', 'رجال', 'M']):
+                elif c_up in ["HOMME", "MALE", "GARCON", "M", "???"]:
                     gender = 'HOMME'
                     continue
-                if any(k in c_up for k in ['UNPAID', 'NON', 'ATTENTE', 'PENDING', 'غير مدفوع']):
+                if c_up in ["UNPAID", "NON", "ATTENTE", "PENDING", "غير مدفوع", "غير"]:
                     payment_status = 'UNPAID'
                     continue
                 if (c.startswith('+') or (c.isdigit() and len(c) >= 9 and len(c) <= 15)) and not phone:
@@ -80,13 +80,13 @@ async def run_google_sheets_sync(sheet_id: str):
                     text_candidates.append(c)
                     
             if text_candidates:
-                if len(text_candidates) == 1:
+                if len(text_candidates) == 1 or ' ' in text_candidates[0].strip():
                     parts = text_candidates[0].split(None, 1)
                     first_name = parts[0]
                     last_name = parts[1] if len(parts) > 1 else ''
                 else:
                     first_name = text_candidates[0]
-                    last_name = ' '.join(text_candidates[1:])
+                    last_name = text_candidates[1] if len(text_candidates) > 1 else ''
                     
             if not academic_id:
                 academic_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]

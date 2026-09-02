@@ -1158,18 +1158,18 @@ async def api_admin_gateway_import_students(request: web.Request):
                     
                     # Gender
                     c_up = c.upper()
-                    if any(k in c_up for k in ['FEMME', 'FEMALE', 'FILLE', 'أنث', 'بنت', 'نساء', 'F']):
+                    if c_up in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]:
                         gender = 'FEMME'
                         continue
-                    elif any(k in c_up for k in ['HOMME', 'MALE', 'GARCON', 'ذك', 'رجل', 'رجال', 'M']):
+                    elif c_up in ["HOMME", "MALE", "GARCON", "M", "ذكر"]:
                         gender = 'HOMME'
                         continue
                         
                     # Payment
-                    if any(k in c_up for k in ['UNPAID', 'NON', 'ATTENTE', 'PENDING', 'غير مدفوع', 'معلق']):
+                    if c_up in ['UNPAID', 'NON', 'ATTENTE', 'PENDING', 'غير مدفوع', 'غير']:
                         payment_status = 'UNPAID'
                         continue
-                    elif any(k in c_up for k in ['PAID', 'PAYE', 'VALIDE', 'CONFIRME', 'مدفوع', 'مؤكد']):
+                    elif c_up in ['PAID', 'PAYE', 'VALIDE', 'CONFIRME', 'مدفوع', 'نعم']:
                         payment_status = 'PAID'
                         continue
                         
@@ -1198,13 +1198,13 @@ async def api_admin_gateway_import_students(request: web.Request):
                         text_candidates.append(c)
                         
                 if text_candidates:
-                    if len(text_candidates) == 1:
+                    if len(text_candidates) == 1 or ' ' in text_candidates[0].strip():
                         parts = text_candidates[0].split(None, 1)
                         first_name = parts[0]
                         last_name = parts[1] if len(parts) > 1 else ''
                     else:
                         first_name = text_candidates[0]
-                        last_name = ' '.join(text_candidates[1:])
+                        last_name = text_candidates[1] if len(text_candidates) > 1 else ''
                         
                 if not student_id:
                     student_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]
