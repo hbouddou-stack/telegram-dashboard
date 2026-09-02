@@ -507,13 +507,18 @@
         </div>
         
         <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">🔄 مزامنة من Google Sheets</h3>
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🔄 Google Sheets (مزامنة وتصدير)</h3>
             <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
-                جلب أحدث التغييرات من ملف Google Sheets تلقائياً بدون الحاجة إلى رفع ملف إكسل.
+                جلب أحدث التسجيلات أو تصدير إحصائيات التتبع (روابط الإيميل والمجموعات).
             </div>
-            <button id="btn-sync-sheets" class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #0f9d58;" onclick="syncGoogleSheets()">
-                <span>🔄 بدء المزامنة الآن</span>
-            </button>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-sync-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #0f9d58;" onclick="syncGoogleSheets()">
+                    <span>📥 جلب البيانات</span>
+                </button>
+                <button id="btn-export-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #1a73e8;" onclick="exportGoogleSheets()">
+                    <span>📤 تصدير الإحصائيات</span>
+                </button>
+            </div>
         </div>
 
         <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
@@ -908,6 +913,32 @@
                 btn.disabled = false;
             }
         }
+
+        async function exportGoogleSheets() {
+            const btn = document.getElementById('btn-export-sheets');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ جاري التصدير...</span>';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/admin/gateway/export_sheets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('✅ تم التصدير بنجاح! تم تصدير بيانات ' + data.count + ' طالب إلى ورقة "Suivi Élèves".');
+                } else {
+                    alert('❌ خطأ في التصدير: ' + data.error);
+                }
+            } catch(e) { 
+                console.error(e); 
+                alert('حدث خطأ غير متوقع أثناء التصدير.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
         
         async function saveStudentTheme() {
             try {
@@ -1061,14 +1092,28 @@
 
                 div.onclick = () => openStudentCard(s);
                 
+                // ── STATUS DOT ──────────────────────────────────────────
+                let dotColor, dotTitle;
+                if (s.excluded) {
+                    dotColor = '#111111'; dotTitle = 'مُعفى / مُقصى من المجموعة';
+                } else if (s.group_joined) {
+                    dotColor = '#16a34a'; dotTitle = 'عضو في المجموعة ✅';
+                } else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) {
+                    dotColor = '#f97316'; dotTitle = 'تفاعل مع الرابط لكن لم ينضم بعد';
+                } else {
+                    dotColor = '#ef4444'; dotTitle = 'لم ينضم بعد';
+                }
+                const dot = `<span title="${dotTitle}" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${dotColor};margin-left:6px;vertical-align:middle;flex-shrink:0;"></span>`;
+                // ─────────────────────────────────────────────────────────
+
                 let tgFullName = s.tg_first_name || '';
                 if (s.tg_last_name) tgFullName += ' ' + s.tg_last_name;
                 tgFullName = tgFullName.trim();
                 
                 const display = linked 
-                    ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'} ${s.last_name || ''}</div>
+                    ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1); display:flex; align-items:center; gap:4px;">${dot}${s.first_name || '—'} ${s.last_name || ''}</div>
                        <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">✈️ ${tgFullName || 'مجهول'}</div>`
-                    : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1);">${s.first_name || '—'} ${s.last_name || ''}</div>`;
+                    : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1); display:flex; align-items:center; gap:4px;">${dot}${s.first_name || '—'} ${s.last_name || ''}</div>`;
                 
                 const yrStr = String(s.year || '');
                 const matchYr = yrStr.match(/\d+/);
@@ -1088,6 +1133,7 @@
                 renderStudents(filtered);
             }
         }
+
 
         async function openStudentCard(student) {
             activeStudentId = student.student_id;

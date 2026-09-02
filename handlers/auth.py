@@ -78,7 +78,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         return
                     
                     # Association instantanée du Telegram ID
-                    await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (user_id, username, real_sid))
+                    await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ?, bot_started_at = COALESCE(bot_started_at, datetime('now')) WHERE student_id = ?", (user_id, username, real_sid))
                     await db.commit()
                     
                     # Récupération du lien officiel du dossier

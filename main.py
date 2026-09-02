@@ -972,6 +972,7 @@ async def api_admin_gateway_students(request: web.Request):
                        s.year, s.gender, s.dob, s.source, s.phone, s.created_at, s.payment_status,
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.last_click_source,
+                       s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,
                        u.first_name as tg_first_name, u.last_name as tg_last_name
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
@@ -981,6 +982,7 @@ async def api_admin_gateway_students(request: web.Request):
         return web.json_response({'success': True, 'students': students})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
+
 
 async def api_admin_gateway_logs(request: web.Request):
     student_id = request.query.get('id')
@@ -1244,6 +1246,24 @@ async def api_admin_gateway_sync_sheets(request: web.Request):
             
         imported = await run_google_sheets_sync(sheet_id)
         return web.json_response({'success': True, 'count': imported})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_gateway_export_sheets(request: web.Request):
+    try:
+        from sync_sheets import export_students_to_sheets
+        from config import GOOGLE_SHEET_ID
+        
+        data = await request.json()
+        sheet_id = data.get('sheet_id') or GOOGLE_SHEET_ID
+        
+        if not sheet_id:
+            return web.json_response({'success': False, 'error': "L'ID de la Google Sheet n'a pas été fourni ou configuré."})
+            
+        exported = await export_students_to_sheets(sheet_id)
+        return web.json_response({'success': True, 'count': exported})
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -5820,6 +5840,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/admin/gateway/add_student', api_admin_gateway_add_student)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_post('/api/admin/gateway/sync_sheets', api_admin_gateway_sync_sheets)
+    app.router.add_post('/api/admin/gateway/export_sheets', api_admin_gateway_export_sheets)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/settings', api_admin_gateway_settings_get)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
