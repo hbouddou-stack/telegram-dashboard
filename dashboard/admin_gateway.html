@@ -505,17 +505,20 @@
             </div>
             
             <div class="profile-chips-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 Nom complet : <span id="profile-name-text">-</span></div>
-                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">📱 Telegram : <span id="profile-tg-display">-</span></div>
-                <div class="chip" id="profile-studentid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 N° Étudiant: <span id="profile-studentid-text">-</span></div>
-                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 Email : <span id="profile-email-text">-</span></div>
-                <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 Statut Paiement: <span id="profile-payment-text">-</span></div>
-                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📅 Inscription: <span id="profile-inscription-text">-</span></div>
-                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Téléphone : <span id="profile-phone-text">-</span></div>
-                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📚 Niveau/Année : <span id="profile-year-text">-</span></div>
-                <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 Date de Naissance : <span id="profile-dob-text">-</span></div>
-                <div class="chip" id="profile-gender" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">⚧️ Genre : <span id="profile-gender-text">-</span></div>
-                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 ID Telegram : <span id="profile-tgid-text">-</span></div>
+                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الكامل : <span id="profile-name-text">-</span></div>
+                <div class="chip" id="profile-tg-container" style="display:none; background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">📱 تيليجرام : <span id="profile-tg-display">-</span></div>
+                <div class="chip" id="profile-tg-username-container" style="display:none; background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ اسم المستخدم : <span id="profile-tg-username-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-studentid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
+                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 البريد الإلكتروني : <span id="profile-email-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
+                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📅 تاريخ التسجيل : <span id="profile-inscription-text">-</span></div>
+                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left;">-</span></div>
+                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">📚 المستوى / السنة : <span id="profile-year-text">-</span></div>
+                <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 تاريخ الميلاد : <span id="profile-dob-text">-</span></div>
+                <div class="chip" id="profile-gender" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">⚧️ الجنس : <span id="profile-gender-text">-</span></div>
+                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 معرّف تيليجرام : <span id="profile-tgid-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-profession" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💼 المهنة : <span id="profile-profession-text">-</span></div>
+                <div class="chip" id="profile-source" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 المصدر : <span id="profile-source-text">-</span></div>
             </div>
             
             <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:15px; font-size:0.85rem; color:var(--text1);">
@@ -524,7 +527,7 @@
 
             <div style="display:flex; gap:10px; margin-bottom:18px;">
                 <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">إلغاء ربط حساب تيليجرام</button>
-                <button class="btn btn-primary" onclick="document.getElementById('student-logs-modal').style.display='flex'" style="padding:10px; font-size:0.85rem; flex:1;">Voir l'historique</button>
+                <button class="btn btn-primary" onclick="document.getElementById('student-logs-modal').style.display='flex'" style="padding:10px; font-size:0.85rem; flex:1;">📜 عرض السجل</button>
             </div>
         </div>
     </div>
@@ -533,23 +536,23 @@
     <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header">
-                <h2>Historique & Identité</h2>
+                <h2>📜 السجل والهوية</h2>
                 <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✖</button>
             </div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
                 <div style="flex:1; min-width: 250px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--accent);">📋 DB Identity</h3>
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
                     <div id="modal-db-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
                 </div>
                 <div style="flex:1; min-width: 250px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:#0088cc;">✈️ Telegram Identity</h3>
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
                     <div id="modal-tg-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
                 </div>
             </div>
 
             <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; max-height:300px;">
-                <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--text1);">📜 Action History</h3>
+                <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--text1);">📜 سجل النشاطات</h3>
                 <div id="logs-body" style="overflow-y:auto; flex:1;">
                     <div class="no-items">جاري التحميل...</div>
                 </div>
@@ -1021,67 +1024,77 @@
             const displayLimit = Math.min(filtered.length, 500);
             for(let i=0; i<displayLimit; i++) {
                 const s = filtered[i];
-
                 const linked = !!s.telegram_id;
                 const div = document.createElement('div');
                 div.className = 'list-item';
+                div.style.padding = '12px 14px';
+                div.style.display = 'flex';
+                div.style.flexDirection = 'column';
+                div.style.gap = '6px';
                 
                 const g = String(s.gender || '').toLowerCase();
                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
-                    div.style.borderLeft = '6px solid #0084ff';
-                    div.style.backgroundColor = 'rgba(0,132,255,0.15)';
+                    div.style.borderRight = '5px solid #0084ff';
                 } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
-                    div.style.borderLeft = '6px solid #ec4899';
-                    div.style.backgroundColor = 'rgba(236,72,153,0.15)';
+                    div.style.borderRight = '5px solid #ec4899';
                 }
 
                 div.onclick = () => openStudentCard(s);
                 
-                // ── STATUS DOT ──────────────────────────────────────────
+                // Status dot
                 let dotColor, dotTitle;
-                if (s.excluded) {
-                    dotColor = '#111111'; dotTitle = 'مُعفى / مُقصى من المجموعة';
-                } else if (s.group_joined) {
-                    dotColor = '#16a34a'; dotTitle = 'عضو في المجموعة ✅';
-                } else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) {
-                    dotColor = '#f97316'; dotTitle = 'تفاعل مع الرابط لكن لم ينضم بعد';
-                } else {
-                    dotColor = '#ef4444'; dotTitle = 'لم ينضم بعد';
-                }
-                const dot = `<span title="${dotTitle}" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${dotColor};margin-left:6px;vertical-align:middle;flex-shrink:0;"></span>`;
-                // ─────────────────────────────────────────────────────────
+                if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
+                else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
+                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
+                else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
+                const dot = `<span title="${dotTitle}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;"></span>`;
 
-                let tgFullName = String(s.tg_first_name || '');
-                if (s.tg_last_name) tgFullName += ' ' + String(s.tg_last_name);
-                tgFullName = tgFullName.trim();
-                
-                const display = linked 
-                    ? `<div style="font-weight:800; font-size:0.95rem; color:var(--text1); display:flex; align-items:center; gap:4px;">${dot}${s.first_name || '—'} ${s.last_name || ''}</div>
-                       <div style="color:var(--text2); font-size:0.82rem; margin-top:4px;">✈️ ${tgFullName || 'مجهول'}</div>`
-                    : `<div style="font-weight:800; font-size:0.95rem; color:var(--text1); display:flex; align-items:center; gap:4px;">${dot}${s.first_name || '—'} ${s.last_name || ''}</div>`;
-                
+                // Year in Arabic
                 const yrStr = String(s.year || '');
-                const matchYr = yrStr.match(/\d+/);
-                const yrNum = matchYr ? matchYr[0] : '';
-                const yearBadge = yrNum ? `<span style="font-size:0.75rem; background:var(--accent2); color:white; padding:2px 6px; border-radius:4px; margin-right:6px;">Année ${yrNum}</span>` : '';
-                
+                const yrMatch = yrStr.match(/\d+/);
+                const yrNum = yrMatch ? yrMatch[0] : '';
+                const yearAr = yrNum ? `السنة ${yrNum}` : '';
+
+                // Payment badge
+                const paid = String(s.payment_status || '').toUpperCase();
+                const isPaid = paid.includes('PAID') || paid.includes('مدفوع') || paid.includes('OUI');
+                const payBadge = isPaid
+                    ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
+                    : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
+
+                // Source
+                const src = String(s.source || 'غير محدد');
+
+                // Telegram info
+                let tgLine = '';
+                if (linked) {
+                    let tgName = String(s.tg_first_name || '');
+                    if (s.tg_last_name) tgName += ' ' + String(s.tg_last_name);
+                    const tgUser = s.telegram_username ? `@${s.telegram_username}` : '';
+                    tgLine = `<div style="font-size:0.78rem;color:#0088cc;display:flex;align-items:center;gap:4px;">✈️ ${tgUser || tgName.trim() || 'مرتبط'}</div>`;
+                }
+
                 div.innerHTML = `
-                    <div>
-                        <div class="list-name">${display}</div>
-                        <div class="list-meta" style="margin-top:6px;">${s.email || ''} ${yearBadge}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);">
+                            ${dot} ${String(s.first_name || '—')} ${String(s.last_name || '')}
+                        </div>
+                        ${payBadge}
                     </div>
-                    <span class="badge ${linked ? 'badge-linked' : 'badge-unlinked'}">${linked ? 'مرتبط' : 'غير مرتبط'}</span>
+                    <div style="font-size:0.8rem;color:var(--text2);" dir="ltr">${String(s.email || '')}</div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        ${yearAr ? `<span style="font-size:0.72rem;background:rgba(255,159,10,0.15);color:#ff9f0a;padding:2px 8px;border-radius:10px;font-weight:600;">${yearAr}</span>` : ''}
+                        <span style="font-size:0.72rem;color:var(--text2);">📥 ${src}</span>
+                    </div>
+                    ${tgLine}
                 `;
                 fragment.appendChild(div);
-            
             }
             list.appendChild(fragment);
             if(filtered.length > 500) {
                 const more = document.createElement('div');
-                more.style.textAlign = 'center';
-                more.style.padding = '15px';
-                more.style.color = 'var(--text2)';
-                more.innerHTML = `?? ????? ${filtered.length - 500} ???? ?????? ??????. ?????? ????? ?????? ?????.`;
+                more.style.cssText = 'text-align:center;padding:15px;color:var(--text2);font-size:0.85rem;';
+                more.innerHTML = `تم إخفاء ${filtered.length - 500} طالب لتحسين الأداء. استخدم البحث للوصول إليهم.`;
                 list.appendChild(more);
             }
             if (typeof renderStudents === 'function') {
@@ -1093,44 +1106,42 @@
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             
-            const fullName = (student.first_name || '') + (student.last_name ? ' ' + student.last_name : '');
+            // Name - ONLY first + last name
+            const fullName = String(student.first_name || '').trim() + (student.last_name ? ' ' + String(student.last_name).trim() : '');
             document.getElementById('profile-name-text').textContent = fullName.trim() || 'غير محدد';
             
             const tgContainer = document.getElementById('profile-tg-container');
+            const tgUsernameContainer = document.getElementById('profile-tg-username-container');
             
+            // Gender with colors
             let displayGender = 'غير محدد';
             const g = String(student.gender || '').toLowerCase();
             const profileNameChip = document.getElementById('profile-name');
             
             if (g.startsWith('h') || g === 'm' || g.includes('ذكر')) {
                 displayGender = 'رجل';
-                if (profileNameChip) {
-                    profileNameChip.style.background = 'rgba(10,132,255,0.15)';
-                    profileNameChip.style.borderColor = '#0a84ff';
-                    profileNameChip.style.color = '#0a84ff';
-                }
+                if (profileNameChip) { profileNameChip.style.background = 'rgba(10,132,255,0.15)'; profileNameChip.style.borderColor = '#0a84ff'; profileNameChip.style.color = '#0a84ff'; }
             } else if (g.startsWith('f') || g === 'fille' || g.includes('أنثى')) {
                 displayGender = 'امرأة';
-                if (profileNameChip) {
-                    profileNameChip.style.background = 'rgba(255,45,85,0.15)';
-                    profileNameChip.style.borderColor = '#ff2d55';
-                    profileNameChip.style.color = '#ff2d55';
-                }
+                if (profileNameChip) { profileNameChip.style.background = 'rgba(255,45,85,0.15)'; profileNameChip.style.borderColor = '#ff2d55'; profileNameChip.style.color = '#ff2d55'; }
             } else {
-                if (profileNameChip) {
-                    profileNameChip.style.background = 'rgba(10,132,255,0.15)';
-                    profileNameChip.style.borderColor = '#0a84ff';
-                    profileNameChip.style.color = '#0a84ff';
-                }
+                if (profileNameChip) { profileNameChip.style.background = 'rgba(10,132,255,0.15)'; profileNameChip.style.borderColor = '#0a84ff'; profileNameChip.style.color = '#0a84ff'; }
             }
             document.getElementById('profile-gender-text').textContent = displayGender;
             
+            // Telegram name + username
             if (student.telegram_id && student.tg_first_name) {
                 tgContainer.style.display = 'flex';
-                const tgName = student.tg_first_name + (student.tg_last_name ? ' ' + student.tg_last_name : '');
+                const tgName = String(student.tg_first_name || '') + (student.tg_last_name ? ' ' + String(student.tg_last_name) : '');
                 document.getElementById('profile-tg-display').textContent = tgName;
             } else {
                 tgContainer.style.display = 'none';
+            }
+            if (student.telegram_username) {
+                tgUsernameContainer.style.display = 'flex';
+                document.getElementById('profile-tg-username-text').textContent = '@' + student.telegram_username;
+            } else {
+                tgUsernameContainer.style.display = 'none';
             }
             
             document.getElementById('profile-email-text').textContent = student.email || 'غير متوفر';
@@ -1138,21 +1149,42 @@
             const studentIdEl = document.getElementById('profile-studentid-text');
             if(studentIdEl) studentIdEl.textContent = student.academic_id || 'غير متوفر';
             
+            // Payment status in Arabic
             const paymentEl = document.getElementById('profile-payment-text');
-            if(paymentEl) paymentEl.textContent = student.payment_status || 'غير متوفر';
+            if(paymentEl) {
+                const ps = String(student.payment_status || '').toUpperCase();
+                if (ps.includes('PAID') || ps.includes('مدفوع') || ps.includes('OUI')) paymentEl.textContent = '✅ مدفوع';
+                else if (ps.includes('UNPAID') || ps.includes('NON') || ps.includes('PENDING')) paymentEl.textContent = '❌ غير مدفوع';
+                else paymentEl.textContent = student.payment_status || 'غير متوفر';
+            }
             
             const inscriptionEl = document.getElementById('profile-inscription-text');
-            if(inscriptionEl) inscriptionEl.textContent = student.created_at || 'غير متوفر';
+            if(inscriptionEl) inscriptionEl.textContent = student.created_at ? formatDateArabic(student.created_at) : 'غير متوفر';
             
+            // Phone - fix RTL, put + on the left
             const phoneEl = document.getElementById('profile-phone-text');
-            if(phoneEl) phoneEl.textContent = student.phone || 'غير متوفر';
+            if(phoneEl) {
+                let phone = String(student.phone || '').trim();
+                if (phone && !phone.startsWith('+')) phone = '+' + phone;
+                phoneEl.textContent = phone || 'غير متوفر';
+            }
             
+            // Year in Arabic
             const yrStr = String(student.year || '').trim();
-            document.getElementById('profile-year-text').textContent = yrStr ? yrStr : 'غير محدد';
+            const yrMatch = yrStr.match(/\d+/);
+            const yrArabic = yrMatch ? 'السنة ' + yrMatch[0] : yrStr;
+            document.getElementById('profile-year-text').textContent = yrArabic || 'غير محدد';
             
             document.getElementById('profile-dob-text').textContent = student.dob || 'غير متوفر';
-            
             document.getElementById('profile-tgid-text').textContent = student.telegram_id || 'غير مرتبط';
+            
+            // Source
+            const srcEl = document.getElementById('profile-source-text');
+            if(srcEl) srcEl.textContent = student.source || 'غير محدد';
+            
+            // Profession (if available)
+            const profEl = document.getElementById('profile-profession-text');
+            if(profEl) profEl.textContent = student.profession || student.job || 'غير متوفر';
 
             const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (student.telegram_id) {
@@ -1197,18 +1229,19 @@
                     
                     document.getElementById('modal-tg-identity').innerHTML = `
                         <strong>ID:</strong> ${student.telegram_id}<br>
-                        <strong>Prénom:</strong> ${student.tg_first_name || '-'}<br>
-                        <strong>Nom:</strong> ${student.tg_last_name || '-'}
+                        <strong>المعرّف:</strong> ${student.telegram_id}<br>
+                        <strong>الاسم:</strong> ${student.tg_first_name || '-'}<br>
+                        <strong>اللقب:</strong> ${student.tg_last_name || '-'}${student.telegram_username ? '<br><strong>المستخدم:</strong> @' + student.telegram_username : ''}
                     `;
                 } else {
-                    document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">Non lié</span>`;
+                    document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">غير مرتبط</span>`;
                 }
                 
                 document.getElementById('modal-db-identity').innerHTML = `
-                    <strong>ID:</strong> ${student.student_id || '-'}<br>
-                    <strong>Nom DB:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
-                    <strong>Email:</strong> ${student.email || '-'}<br>
-                    <strong>Genre:</strong> ${student.gender || '-'}
+                    <strong>المعرّف:</strong> ${student.student_id || '-'}<br>
+                    <strong>الاسم:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
+                    <strong>البريد:</strong> ${student.email || '-'}<br>
+                    <strong>الجنس:</strong> ${student.gender || '-'}
                 `;
 
                 if(data.success && data.logs.length > 0) {
@@ -1724,28 +1757,7 @@
         }
 
         // ============ INIT ============
-        (async function() {
-            try {
-                document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:orange;font-size:1.2rem;">⏳ جاري تحميل الطلاب...</div>';
-                const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
-                const text = await res.text();
-                let data;
-                try { data = JSON.parse(text); } catch(pe) {
-                    document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:red;">❌ JSON PARSE ERROR: ' + pe.message + '<br>Response: ' + text.substring(0, 200) + '</div>';
-                    return;
-                }
-                if (!data.success) {
-                    document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:red;">❌ API ERROR: ' + data.error + '</div>';
-                    return;
-                }
-                allStudents = data.students;
-                document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:lime;font-size:1.1rem;">✅ ' + allStudents.length + ' طالب تم تحميلهم! جاري العرض...</div>';
-                setTimeout(function() { filterStudents(); }, 300);
-            } catch(e) {
-                document.getElementById('students-list').innerHTML = '<div style="padding:20px;color:red;">❌ FETCH ERROR: ' + e.message + '</div>';
-            }
-        })();
-        fetchKpiMetrics();
+        fetchStudents(); fetchKpiMetrics();
     </script>
 </body>
 </html>
