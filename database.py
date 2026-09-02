@@ -650,7 +650,7 @@ async def init_db():
 
         # Migration: Load course_chapters from sync file if present
         import json
-import secrets
+        import secrets
         sync_files = [
             os.path.join(os.path.dirname(__file__), "course_chapters_sync.json"),
             os.path.join(os.path.dirname(__file__), "course_chapters_tajweed_sync.json")
@@ -923,8 +923,7 @@ import secrets
         async with db.execute("SELECT COUNT(*) FROM faq_entries") as cur:
             faq_count = (await cur.fetchone())[0]
         if faq_count == 0:
-            import json
-import secrets as _json, os as _os
+            import json as _json, os as _os
             _faq_path = _os.path.join(_os.path.dirname(__file__), 'faq_db.json')
             if _os.path.exists(_faq_path):
                 with open(_faq_path, 'r', encoding='utf-8') as _f:
@@ -2976,7 +2975,7 @@ async def search_similar_triage(query: str, use_ai: bool = False) -> list[dict]:
     from config import DATABASE_PATH, GEMINI_API_KEY
     import google.generativeai as genai
     import json
-import secrets
+    import secrets
     import logging
     logger = logging.getLogger(__name__)
 
@@ -3695,7 +3694,7 @@ async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, 
     from config import DATABASE_PATH
     import aiosqlite
     import json
-import secrets
+    import secrets
     import base64
     from datetime import datetime
     try:
@@ -3978,8 +3977,7 @@ async def add_faq_suggestion(suggested_question: str, suggested_answer: str, cat
     """Add a suggestion for a new FAQ entry (from ticket analysis)."""
     from config import DATABASE_PATH
     import aiosqlite
-    import json
-import secrets as _json
+    import json as _json
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             await db.execute(
@@ -4050,7 +4048,7 @@ async def reject_faq_suggestion(suggestion_id: int):
 
 async def add_crm_ticket_reply(ticket_id: int, sender: str, text: str, sender_name: str = "", file_data: str = None, file_name: str = None):
     import json
-import secrets
+    import secrets
     from datetime import datetime
     from config import DATABASE_PATH
     import aiosqlite
@@ -4127,8 +4125,7 @@ async def add_student_faq_suggestion(question: str, description: str = '', categ
 async def add_admin_faq_from_ticket(ticket_id: int, question: str, answer: str, category: str = 'عام', admin_name: str = 'Admin') -> int:
     from config import DATABASE_PATH
     import aiosqlite
-    import json
-import secrets as _json
+    import json as _json
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             cur = await db.execute(
@@ -4156,8 +4153,7 @@ async def reopen_crm_ticket(ticket_id: int) -> bool:
 async def edit_crm_ticket_message(ticket_id: int, message_index: int, new_text: str, editor_role: str = 'student') -> bool:
     from config import DATABASE_PATH
     import aiosqlite
-    import json
-import secrets as _json
+    import json as _json
     from datetime import datetime
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
