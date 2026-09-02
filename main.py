@@ -592,7 +592,7 @@ async def run_email_dispatcher_task(students_to_send):
     import aiosqlite
     from config import DATABASE_PATH
     import asyncio
-import secrets
+    import secrets
     from datetime import datetime
     
     email_dispatch_state["is_running"] = True
@@ -835,7 +835,7 @@ async def api_admin_send_bulk_emails(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
     import asyncio
-import secrets
+    import secrets
     
     if email_dispatch_state["is_running"]:
         return web.json_response({"success": False, "error": "عملية الإرسال قيد التشغيل حالياً!"}, status=400)
@@ -3413,7 +3413,7 @@ async def admin_broadcast(request):
         users = await get_all_user_ids(academic_year=academic_year)
         
         import asyncio
-import secrets
+        import secrets
         async def send_to_all():
             success_count = 0
             for uid in users:
@@ -5944,7 +5944,7 @@ async def start_web_server(bot: Bot):
 
 async def night_patrol_task(bot):
     import asyncio
-import secrets
+    import secrets
     import aiosqlite
     from config import DATABASE_PATH
     from database import log_student_action
