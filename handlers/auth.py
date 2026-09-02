@@ -64,6 +64,19 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 if student:
                     s_dict = dict(student)
                     real_sid = s_dict['student_id']
+                    existing_tg_id = s_dict.get('telegram_id')
+                    
+                    # SÉCURITÉ : si le compte est déjà lié à un AUTRE Telegram, on bloque
+                    if existing_tg_id and str(existing_tg_id) != str(user_id):
+                        await message.answer(
+                            f"⚠️ <b>هذا الرابط مرتبط بحساب آخر</b>\n\n"
+                            f"هذا الرابط تم استخدامه مسبقاً وربطه بحساب تيليجرام مختلف.\n\n"
+                            f"إذا كنت تعتقد أن هناك خطأ، يُرجى التواصل مع إدارة الأكاديمية مباشرةً.",
+                            parse_mode="HTML"
+                        )
+                        await log_student_action(real_sid, 'DUPLICATE_LINK_ATTEMPT', f"محاولة استخدام رابط مسجل لحساب آخر: {start_arg} من Telegram ID {user_id}", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
+                        return
+                    
                     # Association instantanée du Telegram ID
                     await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (user_id, username, real_sid))
                     await db.commit()
