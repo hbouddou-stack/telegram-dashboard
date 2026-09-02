@@ -5940,7 +5940,8 @@ async def on_startup(bot: Bot):
     # 1. Set Chat Menu Button (Persistent Bottom-Left Web App Button!)
     try:
         from aiogram.types import MenuButtonWebApp, WebAppInfo
-        base_url = get_webapp_base_url()
+        import os
+        base_url = os.getenv("WEBAPP_BASE_URL", "https://oswah.academy")
         menu_url = f"{base_url}/reader.html?v=dash2"
         if not menu_url.startswith("http"):
             menu_url = f"https://{menu_url}"
