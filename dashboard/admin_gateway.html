@@ -958,8 +958,6 @@
         }
 
         function filterStudents() {
-            try {
-
             const q = document.getElementById('search-input').value.toLowerCase();
             const filtered = allStudents.filter(s => {
                 const name = String(s.first_name || '').toLowerCase();
@@ -1001,10 +999,7 @@
                 const matchColor = filters.color === 'all' || filters.color === studentColor;
 
                 return matchSearch && matchGender && matchLevel && matchStatus && matchColor;
-
-            } catch(err) {
-                alert('UI Render Error: ' + err.message + '\n' + err.stack);
-            }            });
+            });
 
             const linkedCount = filtered.filter(s => s.telegram_id).length;
             document.getElementById('stat-total').textContent = filtered.length;
