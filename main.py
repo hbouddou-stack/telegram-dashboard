@@ -484,7 +484,7 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         gender_clean = (gender or 'HOMME').upper()
         is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
         
-        greeting = f"أهلاً بكِ يا <b>{first_name}</b>" if is_female else f"أهلاً بك يا <b>{first_name}</b>"
+        greeting = f"أهلاً بكِ يا طالبتنا العزيزة <b>{first_name}</b>" if is_female else f"أهلاً بك يا طالبنا العزيز <b>{first_name}</b>"
         group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
         
         bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
@@ -512,49 +512,43 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>أكاديمية الباجي</title>
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f3; margin: 0; padding: 25px 12px; color: #17262c; direction: rtl; text-align: right;">
-            <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 24px; padding: 35px 25px; border-top: 6px solid #079176; box-shadow: 0 10px 35px rgba(12,74,60,0.08);">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f3; margin: 0; padding: 12px 8px; color: #17262c; direction: rtl; text-align: right;">
+            <div style="max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 20px; padding: 20px 18px; border-top: 5px solid #079176; box-shadow: 0 6px 25px rgba(12,74,60,0.06);">
                 
-                <!-- HEADER WITH OFFICIAL LOGO -->
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="cid:albaji_logo" alt="شعار أكاديمية الباجي" width="130" style="max-width: 130px; height: auto; margin-bottom: 12px; display: inline-block; border: 0;">
+                <!-- COMPACT HEADER -->
+                <div style="text-align: center; margin-bottom: 12px;">
+                    <img src="cid:albaji_logo" alt="شعار أكاديمية الباجي" width="95" style="max-width: 95px; height: auto; margin-bottom: 6px; display: inline-block; border: 0;">
                     <div>
-                        <span style="background: rgba(7, 145, 118, 0.12); color: #0c4a3c; font-weight: 800; font-size: 13px; padding: 5px 16px; border-radius: 20px;">● رسالة التفعيل والانضمام الرسمية</span>
+                        <span style="background: rgba(7, 145, 118, 0.1); color: #0c4a3c; font-weight: 800; font-size: 12px; padding: 3px 12px; border-radius: 15px;">● رسالة التفعيل والانضمام الرسمية</span>
                     </div>
                 </div>
 
-                <!-- PERSONALIZED WELCOME TEXT -->
-                <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 22px; line-height: 1.8; font-size: 15px; color: #2d3748;">
-                    <p style="margin: 0 0 10px 0; font-size: 16px;">
-                        {greeting}،
-                    </p>
-                    <p style="margin: 0 0 10px 0;">
-                        يسعدنا ويشرفنا جداً انضمامك إلى <b>أكاديمية الباجي</b>! نحن فخورون وسعداء بأن تكون جزءاً من أسرتنا التعليمية المباركة.
-                    </p>
-                    <p style="margin: 0; color: #079176; font-weight: bold;">
-                        تبقى لك خطوة واحدة وأخيرة لتتمكن من الانضمام إلى <b>قنوات الإعلانات الرسمية</b> و<b>منتدى النقاش والتدارس</b> عبر تطبيق تيليجرام.
+                <!-- WELCOME GREETING -->
+                <div style="text-align: center; margin-bottom: 14px;">
+                    <h2 style="color: #0c4a3c; margin: 0 0 6px 0; font-size: 19px; font-weight: 900;">{greeting} 🌸</h2>
+                    <p style="margin: 0; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                        يسعدنا ويشرفنا انضمامك إلى <b>أكاديمية الباجي</b>! تبقى لك خطوة أخيرة للانضمام إلى <b>قنوات الإعلانات الرسمية</b> و<b>منتدى النقاش والتدارس</b>:
                     </p>
                 </div>
                 
-                <!-- BOUTON SANS FUSÉE ULTRA-VISIBLE -->
-                <div style="text-align: center; margin: 25px 0; background: linear-gradient(180deg, #edf7f4 0%, #e1f2ec 100%); padding: 22px 18px; border-radius: 18px; border: 1px dashed #079176;">
-                    <p style="margin: 0 0 12px 0; font-weight: 800; color: #0c4a3c; font-size: 15px;">👇 اضغط هنا لتفعيل حسابك وإضافة مجلد القنوات والمنتدى فوراً:</p>
-                    <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #079176 0%, #0c4a3c 100%); color: #ffffff !important; text-decoration: none; padding: 18px 36px; border-radius: 35px; font-weight: 900; font-size: 18px; display: inline-block; box-shadow: 0 8px 25px rgba(7, 145, 118, 0.35);">
+                <!-- 🚀 BOUTON IMMÉDIATEMENT VISIBLE SANS SCROLLER -->
+                <div style="text-align: center; margin: 14px 0 16px 0; background: linear-gradient(180deg, #edf7f4 0%, #e1f2ec 100%); padding: 16px 12px; border-radius: 14px; border: 1px dashed #079176;">
+                    <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #079176 0%, #0c4a3c 100%); color: #ffffff !important; text-decoration: none; padding: 16px 28px; border-radius: 30px; font-weight: 900; font-size: 16px; display: inline-block; box-shadow: 0 6px 20px rgba(7, 145, 118, 0.3);">
                         تفعيل الحساب وإضافة المجلد (تيليجرام)
                     </a>
                 </div>
                 
-                <!-- DETAILS CARD -->
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 20px 0;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                        <tr><td style="color: #64748b; padding: 6px 0;">• رقم الطالب:</td><td style="font-weight: bold; color: #079176; text-align: left; font-family: monospace; font-size: 16px;">{student_id_display}</td></tr>
-                        <tr><td style="color: #64748b; padding: 6px 0;">• الشعبة والمجموعة:</td><td style="font-weight: bold; color: #1e293b; text-align: left;">{group_title}</td></tr>
+                <!-- COMPACT DETAILS CARD -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; margin: 12px 0;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tr><td style="color: #64748b; padding: 4px 0;">• رقم الطالب:</td><td style="font-weight: bold; color: #079176; text-align: left; font-family: monospace; font-size: 15px;">{student_id_display}</td></tr>
+                        <tr><td style="color: #64748b; padding: 4px 0;">• الشعبة والمجموعة:</td><td style="font-weight: bold; color: #1e293b; text-align: left;">{group_title}</td></tr>
                     </table>
                 </div>
                 
                 <!-- FOOTER -->
-                <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; line-height: 1.6;">
-                    أكاديمية الباجي • تم إرسال هذه الرسالة تلقائياً لتأكيد انضمامك إلى مجموعات الدراسة الرسمية.
+                <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 14px; border-top: 1px solid #f1f5f9; padding-top: 10px; line-height: 1.5;">
+                    أكاديمية الباجي • رسالة تأكيد رسمية للانضمام لمجموعات الدراسة.
                 </p>
             </div>
         </body>
