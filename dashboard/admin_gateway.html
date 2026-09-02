@@ -1208,6 +1208,7 @@
         }
 
         async function openStudentCard(student) {
+    try {
             activeStudentId = student.student_id;
             
             // Name - ONLY first + last name
@@ -1265,13 +1266,7 @@
             const inscriptionEl = document.getElementById('profile-inscription-text');
             if(inscriptionEl) inscriptionEl.textContent = student.created_at ? formatDateArabic(student.created_at) : 'غير متوفر';
             
-            // Phone - fix RTL, put + on the left
-            let oldPhoneEl = document.getElementById('profile-phone-text');
-            if(phoneEl) {
-                let phone = String(student.phone || '').trim();
-                if (phone && !phone.startsWith('+')) phone = '+' + phone;
-                phoneEl.textContent = phone || 'غير متوفر';
-            }
+            
             
             // Year in Arabic
             const yrStr = String(student.year || '').trim();
