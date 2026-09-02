@@ -87,7 +87,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                             [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_active"))]
                         ])
                         magic_welcome = (
-                            f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
+                            f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية الباجي</b> 🎓\n\n"
                             f"✅ <b>حسابك مفعل وأنت عضو في مجموعات الدراسة الرسمية:</b>\n"
                             f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
                             f"👇 يمكنك الدخول للمكتبة أو طرح استفساراتك عبر الأزرار أدناه:"
@@ -100,7 +100,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                             [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic"))]
                         ])
                         magic_welcome = (
-                            f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية البدر</b> 🎓\n\n"
+                            f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية الباجي</b> 🎓\n\n"
                             f"✅ <b>تم تفعيل وربط حسابك الدراسي بنجاح!</b>\n"
                             f"• رقم الطالب: <code>{real_sid}</code>\n"
                             f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
@@ -133,7 +133,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             if has_joined:
                 # ÉLÈVE AYANT DÉJÀ REJOINT : LE BOUTON DU DOSSIER DISPARAÎT !
                 welcome_text = (
-                    f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"
+                    f"أهلاً بك مجدداً يا <b>{real_name}</b> في أكاديمية الباجي! 🎓\n\n"
                     f"✅ <b>حسابك مفعل وأنت عضو رسمي في مجموعات الدراسة:</b>\n"
                     f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
                     f"👇 يمكنك متابعة الدروس أو استخدام المنصة أو التواصل مع الدعم عبر الأزرار أدناه:"
@@ -145,7 +145,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             else:
                 # ÉLÈVE N'AYANT PAS ENCORE REJOINT : BOUTON DU DOSSIER PRÉSENT
                 welcome_text = (
-                    f"أهلاً بك يا <b>{real_name}</b> في أكاديمية البدر! 🎓\n\n"
+                    f"أهلاً بك يا <b>{real_name}</b> في أكاديمية الباجي! 🎓\n\n"
                     f"✅ حسابك مربوط وجاهز لتأكيد الدخول.\n"
                     f"• مجموعتك المقررة: <b>{group_desc}</b>\n\n"
                     f"👇 <b>اضغط على الزر أدناه لإضافة مجلد الأكاديمية والانضمام فوراً للمجموعات:</b>"
@@ -157,7 +157,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 ])
         else:
             welcome_text = (
-                f"مرحباً بك يا <b>{first_name}</b> في أكاديمية البدر! 🎓\n\n"
+                f"مرحباً بك يا <b>{first_name}</b> في أكاديمية الباجي! 🎓\n\n"
                 f"هذا البوت هو بوابتك الرسمية لتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
                 f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه لربط حسابك أو التواصل مع الدعم:"
             )
@@ -174,7 +174,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🔗 منصة ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
         ])
-        await message.answer("مرحباً بك في أكاديمية البدر! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
+        await message.answer("مرحباً بك في أكاديمية الباجي! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
 @router.message(Command("png"))
 @router.message(Command("schema"))
@@ -189,7 +189,7 @@ async def cmd_png(message: Message):
     ])
     
     caption_text = (
-        "📊 <b>مخطط رحلة الطلاب ومنظومة الأمان الذكية (أكاديمية البدر)</b> 🎓\n\n"
+        "📊 <b>مخطط رحلة الطلاب ومنظومة الأمان الذكية (أكاديمية الباجي)</b> 🎓\n\n"
         "1️⃣ <b>عمر الإدريسي (رجل):</b> دافع فوري ➔ تفعيل مباشر لمجموعة الرجال 🧔\n"
         "2️⃣ <b>خديجة العمراني (امرأة):</b> تفعيل مباشر لمجموعة النساء 🧕\n"
         "3️⃣ <b>فهد المنصوري (متطفل):</b> رابط محول ➔ البوت يرفض دخوله فوراً 🛑\n"
@@ -220,7 +220,7 @@ async def cmd_send_template(message: Message):
         await message.answer_document(
             document=doc,
             caption=(
-                "📥 <b>نموذج تسجيل الطلاب المعتمد (أكاديمية البدر)</b> 🎓\n\n"
+                "📥 <b>نموذج تسجيل الطلاب المعتمد (أكاديمية الباجي)</b> 🎓\n\n"
                 "• يمكنك فتح هذا الملف في Excel وتعديل البيانات أو إضافة الطلاب.\n"
                 "• بعد حفظ الملف، يمكنك رفعه مباشرة عبر لوحة التحكم /federer."
             ),
@@ -297,7 +297,7 @@ async def handle_join_request(update: ChatJoinRequest, bot: Bot):
                     welcome_text = (
                         f"🎉 <b>أهلاً بك يا {real_first_name}!</b>\n\n"
                         f"✅ تمت الموافقة على انضمامك بنجاح إلى: <b>{chat_title}</b>.\n\n"
-                        f"نتمنى لك رحلة تعليمية مباركة ونافعة في أكاديمية البدر! 📚"
+                        f"نتمنى لك رحلة تعليمية مباركة ونافعة في أكاديمية الباجي! 📚"
                     )
                     await bot.send_message(user_id, welcome_text, reply_markup=confirm_kb, parse_mode="HTML")
                     await log_student_action(student_dict['student_id'], 'JOIN_REQUEST_APPROVED', f"تمت الموافقة على الدخول إلى {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=username)
@@ -346,7 +346,7 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             msg = (
                 f"🎉 <b>تم تأكيد انضمامك رسمياً وبنجاح إلى: {chat_title}!</b>\n\n"
                 f"✅ تم تفعيل عضويتك واكتمال إعداد حسابك.\n"
-                f"📚 نتمنى لك مسيرة علمية موفقة ومباركة في أكاديمية البدر!\n\n"
+                f"📚 نتمنى لك مسيرة علمية موفقة ومباركة في أكاديمية الباجي!\n\n"
                 f"👇 يمكنك في أي وقت مراجعة الدليل أو طرح استفساراتك:"
             )
             

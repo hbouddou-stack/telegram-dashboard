@@ -65,7 +65,7 @@ async def generate_and_send_student_links(bot, telegram_id: int, student_data: d
             reply_markup = InlineKeyboardMarkup(inline_keyboard=kb_buttons)
             
             welcome_text = (
-                f"🎉 <b>أهلاً بك يا {first_name} في أكاديمية البدر!</b>\n\n"
+                f"🎉 <b>أهلاً بك يا {first_name} في أكاديمية الباجي!</b>\n\n"
                 f"✅ تم تأكيد اشتراكك وتفعيل حسابك بنجاح.\n\n"
                 f"🔒 <b>تنبيه أمني هام:</b> هذه الروابط مخصصة لك فقط (أحادية الاستخدام)، وتنتهي صلاحيتها فور استخدامك لها.\n\n"
                 f"👇 اضغط على الأزرار أدناه للانضمام إلى مجموعاتك المقررة:"
@@ -458,14 +458,14 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         gender_clean = (gender or 'HOMME').upper()
         is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
         
-        greeting = f"أهلاً بكِ يا طالبتنا العزيزة {first_name}" if is_female else f"أهلاً بك يا طالبنا العزيز {first_name}"
+        greeting = f"أهلاً بكِ يا <b>{first_name}</b>" if is_female else f"أهلاً بك يا <b>{first_name}</b>"
         group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
         
         bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
         direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
         
         msg = MIMEMultipart('related')
-        msg['Subject'] = f"🎓 تفعيل الحساب الأكاديمي - {greeting}"
+        msg['Subject'] = f"🎓 تفعيل الحساب الأكاديمي - مرحباً بك في أكاديمية الباجي"
         msg['From'] = f"{cfg.SMTP_SENDER_NAME} <{cfg.SMTP_USER}>"
         msg['To'] = email
         
@@ -478,40 +478,52 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>أكاديمية البدر</title>
+            <title>أكاديمية الباجي</title>
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f3; margin: 0; padding: 25px 12px; color: #17262c; direction: rtl; text-align: right;">
             <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 24px; padding: 35px 25px; border-top: 6px solid #079176; box-shadow: 0 10px 35px rgba(12,74,60,0.08);">
                 
                 <!-- HEADER WITH OFFICIAL LOGO -->
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="cid:albaji_logo" alt="شعار الأكاديمية" width="130" style="max-width: 130px; height: auto; margin-bottom: 12px; display: inline-block;">
+                    <img src="cid:albaji_logo" alt="شعار أكاديمية الباجي" width="130" style="max-width: 130px; height: auto; margin-bottom: 12px; display: inline-block;">
                     <div>
-                        <span style="background: rgba(7, 145, 118, 0.12); color: #0c4a3c; font-weight: 800; font-size: 13px; padding: 5px 16px; border-radius: 20px;">● رسالة التفعيل الرسمية</span>
+                        <span style="background: rgba(7, 145, 118, 0.12); color: #0c4a3c; font-weight: 800; font-size: 13px; padding: 5px 16px; border-radius: 20px;">● رسالة التفعيل والانضمام الرسمية</span>
                     </div>
-                    <h1 style="color: #0c4a3c; margin: 12px 0 4px 0; font-size: 24px; font-weight: 900;">أكاديمية البدر للعلوم الشرعية 🎓</h1>
-                    <p style="color: #64748b; font-size: 15px; margin: 0;"><b>{greeting}</b></p>
+                    <h1 style="color: #0c4a3c; margin: 12px 0 6px 0; font-size: 24px; font-weight: 900;">أكاديمية الباجي للعلوم الشرعية 🎓</h1>
+                </div>
+
+                <!-- PERSONALIZED WELCOME TEXT -->
+                <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 22px; line-height: 1.8; font-size: 15px; color: #2d3748;">
+                    <p style="margin: 0 0 10px 0; font-size: 16px;">
+                        {greeting}،
+                    </p>
+                    <p style="margin: 0 0 10px 0;">
+                        يسعدنا ويشرفنا جداً انضمامك إلى <b>أكاديمية الباجي</b>! نحن فخورون وسعداء بأن تكون جزءاً من أسرتنا التعليمية المباركة.
+                    </p>
+                    <p style="margin: 0; color: #079176; font-weight: bold;">
+                        تبقى لك خطوة واحدة وأخيرة لتتمكن من الانضمام إلى <b>قنوات الإعلانات الرسمية</b> و<b>منتدى النقاش والتدارس</b> عبر تطبيق تيليجرام.
+                    </p>
                 </div>
                 
                 <!-- 🚀 BOUTON ULTRA-VISIBLE DÈS L'OUVERTURE -->
                 <div style="text-align: center; margin: 25px 0; background: linear-gradient(180deg, #edf7f4 0%, #e1f2ec 100%); padding: 22px 18px; border-radius: 18px; border: 1px dashed #079176;">
-                    <p style="margin: 0 0 12px 0; font-weight: 800; color: #0c4a3c; font-size: 15px;">👇 اضغط هنا لتفعيل حسابك وإضافة مجلد الدروس فوراً:</p>
+                    <p style="margin: 0 0 12px 0; font-weight: 800; color: #0c4a3c; font-size: 15px;">👇 اضغط هنا لتفعيل حسابك وإضافة مجلد القنوات والمنتدى فوراً:</p>
                     <a href="{direct_tg_link}" style="background: linear-gradient(135deg, #079176 0%, #0c4a3c 100%); color: #ffffff !important; text-decoration: none; padding: 18px 36px; border-radius: 35px; font-weight: 900; font-size: 18px; display: inline-block; box-shadow: 0 8px 25px rgba(7, 145, 118, 0.35);">
                         🚀 تفعيل الحساب وإضافة المجلد (تيليجرام)
                     </a>
                 </div>
                 
                 <!-- DETAILS CARD -->
-                <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 20px 0;">
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 20px 0;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                         <tr><td style="color: #64748b; padding: 6px 0;">• رقم الطالب:</td><td style="font-weight: bold; color: #079176; text-align: left; font-family: monospace; font-size: 16px;">{student_id}</td></tr>
-                        <tr><td style="color: #64748b; padding: 6px 0;">• المجموعة الدراسية:</td><td style="font-weight: bold; color: #1e293b; text-align: left;">{group_title}</td></tr>
+                        <tr><td style="color: #64748b; padding: 6px 0;">• الشعبة والمجموعة:</td><td style="font-weight: bold; color: #1e293b; text-align: left;">{group_title}</td></tr>
                     </table>
                 </div>
                 
                 <!-- FOOTER -->
                 <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; line-height: 1.6;">
-                    أكاديمية البدر • تم إرسال هذه الرسالة تلقائياً لتأكيد انضمامك إلى مجموعات الدراسة الرسمية.
+                    أكاديمية الباجي • تم إرسال هذه الرسالة تلقائياً لتأكيد انضمامك إلى مجموعات الدراسة الرسمية.
                 </p>
             </div>
         </body>
@@ -668,7 +680,7 @@ async def api_track_click(request: web.Request):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أكاديمية البدر 🎓</title>
+    <title>أكاديمية الباجي 🎓</title>
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #fbf9f4; text-align: center; padding: 20px; box-sizing: border-box; }}
         .card {{ background: #ffffff; padding: 35px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(12,74,60,0.08); max-width: 420px; width: 100%; border: 1px solid rgba(12,74,60,0.1); }}
@@ -684,7 +696,7 @@ async def api_track_click(request: web.Request):
 </head>
 <body>
     <div class="card">
-        <h2 style="color: #0c4a3c; margin: 0 0 10px 0; font-size: 22px;">أكاديمية البدر 🎓</h2>
+        <h2 style="color: #0c4a3c; margin: 0 0 10px 0; font-size: 22px;">أكاديمية الباجي 🎓</h2>
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">جاري فتح تطبيق تليجرام لتفعيل حسابك الأكاديمي...</p>
         <a href="{tg_deep_link}" class="btn">🚀 فتح تطبيق تليجرام الآن</a>
         <a href="{https_tg_url}" style="display:inline-block; margin-top:15px; color:#079176; font-size:13px; text-decoration:none;">إذا لم يفتح التطبيق تلقائياً، اضغط هنا ➔</a>
