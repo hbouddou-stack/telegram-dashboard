@@ -830,22 +830,35 @@ async def api_admin_send_bulk_emails(request: web.Request):
     import asyncio
     
     if email_dispatch_state["is_running"]:
-        return web.json_response({"success": False, "error": "عملية الإرسال قيد التشغيل حالياً!"}, status=400)
+        return web.json_response({"success": False, "error": "Un envoi est déjà en cours !"}, status=400)
+        
+    try:
+        data = await request.json()
+    except:
+        data = {}
+        
+    action_type = data.get('action_type', 'email_1')
+    target_ids = data.get('student_ids', [])
+    
+    if not target_ids:
+        return web.json_response({"success": False, "error": "Aucun étudiant sélectionné."}, status=400)
         
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT * FROM academy_students WHERE (payment_status = 'PAID' OR payment_status = 'PAYE') AND (email_sent = 0 OR email_sent IS NULL)") as cur:
+            placeholders = ','.join('?' for _ in target_ids)
+            query = f"SELECT * FROM academy_students WHERE student_id IN ({placeholders})"
+            async with db.execute(query, tuple(target_ids)) as cur:
                 rows = await cur.fetchall()
                 students = [dict(r) for r in rows]
                 
         if not students:
-            return web.json_response({"success": True, "count": 0, "message": "لا يوجد طلاب جدد بانتظار الإرسال (تم إرسال الإيميل للجميع مسبقاً)."})
+            return web.json_response({"success": True, "count": 0, "message": "Aucun étudiant valide trouvé."})
             
         # Start background task
-        asyncio.create_task(run_email_dispatcher_task(students))
+        asyncio.create_task(run_email_dispatcher_task(students, action_type))
         
-        return web.json_response({"success": True, "count": len(students), "message": f"بدأ إرسال الإيميلات إلى {len(students)} طالب في الخلفية مع فاصل زمني 2 ثانية."})
+        return web.json_response({"success": True, "count": len(students), "message": f"Envoi de {len(students)} emails en tâche de fond (Pause de 2s)."})
     except Exception as e:
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
