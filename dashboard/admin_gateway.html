@@ -382,9 +382,9 @@
             <span class="nav-icon">🆘</span>
             <span>الطلبات</span>
         </div>
-        <div class="nav-item" onclick="switchTab('links')">
-            <span class="nav-icon">🔗</span>
-            <span>الروابط</span>
+        <div class="nav-item" onclick="switchTab('actions')">
+            <span style="font-size: 1.2rem;">🚀</span>
+            <span>إجراءات</span>
         </div>
         <div class="nav-item" onclick="switchTab('logs')">
             <span class="nav-icon">📋</span>
@@ -463,10 +463,23 @@
         <div id="sos-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
     
-    <!-- TAB: Liens Groupes -->
-    <div id="tab-links" class="tab-content">
-        <div id="links-container"><div class="no-items">جاري التحميل...</div></div>
-        <br>
+    <!-- TAB: Accueil / Stats -->
+    <div id="tab-overview" class="tab-content">
+        <div style="padding:20px; text-align:center; background:var(--surface); border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+            <h2 style="color:var(--text1); margin-bottom:10px;">📊 نظرة عامة وإحصائيات</h2>
+            <p style="color:var(--text2); line-height:1.6;">جاري بناء لوحة الإحصائيات (Statistiques et Tableau de Bord). قريباً ستجد هنا ملخصاً لنسبة التحويل والتفاعل في الأكاديمية.</p>
+        </div>
+    </div>
+
+    <!-- TAB: Actions (Vide pour l'instant) -->
+    <div id="tab-actions" class="tab-content">
+        <div style="padding:40px; text-align:center; color:var(--text2);">
+            <div style="font-size:3rem; margin-bottom:10px;">🚀</div>
+            <h3>قسم الإجراءات</h3>
+            <p>هذا القسم مخصص للعمليات الجماعية (قيد التطوير)</p>
+        </div>
+    </div>
+            <br>
         <button class="btn btn-primary" onclick="saveLinks()">💾 حفظ الروابط</button>
     </div>
 
@@ -832,8 +845,11 @@
             <button class="btn btn-primary" onclick="window.open('https://t.me/c/' + activeSosTid, '_blank')" style="margin-top:10px; background:#2481cc; width:100%; padding:10px;">📱 Voir l'historique Telegram</button>
             <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
         </div>
+    
+        <hr style="border-color:var(--border); margin:20px 0;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 15px; color:var(--text1);">🔗 إدارة روابط المجموعات (Liens)</h3>
+        <div id="links-container"><div class="no-items">جاري التحميل...</div>
     </div>
-
     <script>
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
