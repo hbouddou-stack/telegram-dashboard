@@ -654,7 +654,7 @@
             </div>
 
             <!-- Tab 4: Funnel -->
-            <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
+            <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom:15px;">
     
     <div id="funnel-victory-banner" class="success-banner" style="display:none;">
         🎉 الهدف تحقق : الطالب مسجل في المنصة ولا يحتاج إلى متابعة إضافية !
@@ -746,35 +746,7 @@
 
     </div>
 </div>
-</div>
-                <div class="funnel-step">
-                    <div class="funnel-icon" id="f-icon-email-opened">-</div>
-                    <div class="funnel-text">فتح الإيميل</div>
-                    <div class="funnel-date" id="f-date-email-opened">-</div>
-                </div>
-                <div class="funnel-step">
-                    <div class="funnel-icon" id="f-icon-email-clicked">-</div>
-                    <div class="funnel-text">الضغط على الرابط</div>
-                    <div class="funnel-date" id="f-date-email-clicked">-</div>
-                </div>
-                <div class="funnel-step">
-                    <div class="funnel-icon" id="f-icon-whatsapp-sent">-</div>
-                    <div class="funnel-text">إرسال واتساب (تذكير)</div>
-                    <div class="funnel-date" id="f-date-whatsapp-sent">-</div>
-                </div>
-                <div class="funnel-step">
-                    <div class="funnel-icon" id="f-icon-bot-started">-</div>
-                    <div class="funnel-text">بدء محادثة البوت</div>
-                    <div class="funnel-date" id="f-date-bot-started">-</div>
-                </div>
-                <div class="funnel-step">
-                    <div class="funnel-icon" id="f-icon-group-joined">-</div>
-                    <div class="funnel-text">الانضمام للمجموعة</div>
-                    <div class="funnel-date" id="f-date-group-joined">-</div>
-                </div>
-            </div>
-
-              <div style="display:flex; gap:10px; margin-bottom:18px;">
+            <div style="display:flex; gap:10px; margin-bottom:18px;">
                   <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">فك ربط تيليجرام</button>
 
                 <button class="btn btn-primary" onclick="document.getElementById('student-logs-modal').style.display='flex'" style="padding:10px; font-size:0.85rem; flex:1;">📜 عرض السجل</button>
@@ -1506,12 +1478,10 @@
                 const stepWa = document.getElementById('funnel-step-wa');
                 
                 if (student.telegram_id) {
-                    // L'élève est synchronisé ! On cache Email2 et WA, on montre le bandeau
                     if (victoryBanner) victoryBanner.style.display = 'block';
                     if (stepEmail2) stepEmail2.style.display = 'none';
                     if (stepWa) stepWa.style.display = 'none';
                 } else {
-                    // L'élève n'est pas synchronisé. On montre tout.
                     if (victoryBanner) victoryBanner.style.display = 'none';
                     if (stepEmail2) stepEmail2.style.display = 'block';
                     if (stepWa) stepWa.style.display = 'block';
