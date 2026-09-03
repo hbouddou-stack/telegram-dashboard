@@ -143,6 +143,18 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         parse_mode="HTML"
                     )
                     await log_student_action(0, 'INVALID_LINK_ATTEMPT', f"محاولة رابط غير صالح: {start_arg}", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
+                    try:
+                        from config import TELEGRAM_SUPPORT_GROUP_ID
+                        await message.bot.send_message(
+                            TELEGRAM_SUPPORT_GROUP_ID,
+                            f"🚨 <b>تنبيه أمني: محاولة دخول غير مصرح بها</b>\n\n"
+                            f"الرابط المستخدم: <code>{start_arg}</code>\n"
+                            f"الشخص: {first_name} (@{username})\n"
+                            f"ID: <code>{user_id}</code>",
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        print("Alert error:", e)
                     return
 
             # 2. Vérification par Telegram ID si déjà lié

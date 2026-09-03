@@ -5937,12 +5937,7 @@ async def night_patrol_task(bot):
                     try:
                         user = await bot.get_chat(telegram_id)
                         current_first_name = user.first_name
-                        if current_first_name and real_first_name.lower() not in current_first_name.lower():
-                            await log_student_action(student_id, 'NAME_VIOLATION_DETECTED', f'Prénom actuel: {current_first_name}')
-                            try:
-                                await bot.send_message(telegram_id, f'⚠️ Attention ! Ton prénom Telegram actuel est "{current_first_name}". Tu dois impérativement utiliser ton vrai prénom "{real_first_name}". Merci de le modifier dans tes paramètres Telegram.')
-                            except Exception:
-                                pass
+# Name enforcement disabled per user request
                     except Exception as e:
                         pass
                     await asyncio.sleep(1)
