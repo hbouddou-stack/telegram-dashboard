@@ -850,6 +850,7 @@
         const LOG_RULES = {
             'AUTH_FAILED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: 'فشل تسجيل الدخول' },
             'LINK_FAILED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: 'فشل الربط' },
+            'LINK_INVALID': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'رابط غير صالح' },
             'SOS_SUBMITTED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'طلب مساعدة (SOS)' },
             'MANUAL_UNLINK': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '💔', label: 'إلغاء الربط اليدوي' },
             'NAME_VIOLATION_DETECTED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🚩', label: 'اسم غير مسموح' },
@@ -1298,9 +1299,13 @@
                     || (filters.gender === 'inconnu' && !isM && !isF);
 
                 const yr = String(s.year || '');
-                const matchYr = yr.match(/\d+/);
-                const yrNum = matchYr ? matchYr[0] : yr;
-                const matchLevel = filters.level === 'all' || yrNum === filters.level || yr.includes(filters.level);
+                const yrLower = yr.toLowerCase();
+                const matchLevel = filters.level === 'all' 
+                    || yrLower.includes(filters.level)
+                    || (filters.level === '1' && (yrLower.includes('أول') || yrLower.includes('1')))
+                    || (filters.level === '2' && (yrLower.includes('ثاني') || yrLower.includes('2')))
+                    || (filters.level === '3' && (yrLower.includes('ثالث') || yrLower.includes('3')))
+                    || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
 
                 const linked = !!s.telegram_id;
                 const matchStatus = filters.status === 'all'
@@ -1385,17 +1390,19 @@
                     tgLine = `<div style="font-size:0.78rem;color:#0088cc;display:flex;align-items:center;gap:4px;">✈️ ${tgUser || tgName.trim() || 'مرتبط'}</div>`;
                 }
 
+                const acaId = String(s.academic_id || s.student_id || '').trim();
                 div.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);">
-                            ${dot} ${String(s.first_name || '—')} ${String(s.last_name || '')}
+                            ${dot} ${String(s.first_name || '')} ${String(s.last_name || '')}
                         </div>
                         ${payBadge}
                     </div>
                     <div style="font-size:0.8rem;color:var(--text2);" dir="ltr">${String(s.email || '')}</div>
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        ${acaId ? `<span style="font-size:0.72rem;background:rgba(0,0,0,0.1);color:var(--text1);padding:2px 8px;border-radius:10px;font-family:monospace;font-weight:bold;">ID: ${acaId}</span>` : ''}
                         ${yearAr ? `<span style="font-size:0.72rem;background:rgba(255,159,10,0.15);color:#ff9f0a;padding:2px 8px;border-radius:10px;font-weight:600;">${yearAr}</span>` : ''}
-                        <span style="font-size:0.72rem;color:var(--text2);">📥 ${src}</span>
+                        <span style="font-size:0.72rem;color:var(--text2);">م. ${src}</span>
                     </div>
                     ${tgLine}
                 `;
@@ -2058,13 +2065,13 @@
             }
             
             if (currentLogFilter === 'SUCCESS') {
-                filteredLogs = filteredLogs.filter(l => l.action_type === 'LINK_SUCCESS' || l.action_type === 'ACCOUNT_LINKED');
+                filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#16a34a' || l.action_type.includes('SUCCESS'));
             } else if (currentLogFilter === 'FAIL') {
-                filteredLogs = filteredLogs.filter(l => l.action_type === 'LINK_FAILED');
+                filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#dc2626' || l.action_type.includes('FAILED') || l.action_type.includes('UNLINKED'));
             } else if (currentLogFilter === 'APP') {
-                filteredLogs = filteredLogs.filter(l => l.action_type === 'APP_OPENED' || l.action_type === 'APP_OPENED_UNLINKED');
-            } else if (currentLogFilter === 'TUTO') {
-                filteredLogs = filteredLogs.filter(l => l.action_type === 'TUTO_OPENED');
+                filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#2563eb' || l.action_type.includes('OPEN') || l.action_type.includes('CLICK') || l.action_type.includes('QUIZ'));
+            } else if (currentLogFilter === 'COMM') {
+                filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#d97706' || l.action_type.includes('SENT'));
             }
 
             const searchInput = document.getElementById('log-search-input');
