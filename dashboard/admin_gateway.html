@@ -218,15 +218,7 @@
         .list-name { font-weight: 700; font-size: 0.95rem; }
         .list-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
 
-        .log-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
+        .log-card { font-family: 'Tajawal', sans-serif; border-radius: 8px; padding: 12px; margin-bottom: 10px; position: relative; overflow: hidden; line-height: 1.5; }
         .log-card:hover {
             border-color: var(--accent);
         }
@@ -869,7 +861,7 @@
             'JOIN_GROUP_CLICK': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '🎓', label: 'دخول المجموعة' },
             
             'APP_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📱', label: 'فتح التطبيق' },
-            'APP_OPENED_UNLINKED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📱', label: 'فتح التطبيق (غير مربوط)' },
+            'APP_OPENED_UNLINKED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'محاولة دخول مرفوضة (غير مربوط)' },
             'FOLDER_CLICKED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📁', label: 'فتح مجلد الدروس' },
             'QUIZ_STARTED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📝', label: 'بدأ اختبار' },
             'TUTO_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📖', label: 'فتح الشرح' },
