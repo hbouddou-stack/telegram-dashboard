@@ -1083,6 +1083,29 @@
                 const data = await res.json();
                 
                 if (data.success) {
+                    // Open WA or TG links based on action
+                    const student = allStudents.find(s => s.student_id === activeStudentId);
+                    if (student) {
+                        const token = student.magic_token || student.student_id;
+                        let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
+                        
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        } else if (actionType === 'log_tg_1') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://t.me/+${phoneStr}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        }
+                    }
+
                     if (data.count === 0) {
                         alert('✅ ' + data.message);
                         btn.disabled = false;
@@ -1563,6 +1586,29 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    // Open WA or TG links based on action
+                    const student = allStudents.find(s => s.student_id === activeStudentId);
+                    if (student) {
+                        const token = student.magic_token || student.student_id;
+                        let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
+                        
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        } else if (actionType === 'log_tg_1') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://t.me/+${phoneStr}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        }
+                    }
+
                     alert('Action réussie !');
                     loadStudents(); // Rafraîchit la liste et les données
                     // Pour fermer la modale ou la rafraîchir :
@@ -1840,6 +1886,29 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    // Open WA or TG links based on action
+                    const student = allStudents.find(s => s.student_id === activeStudentId);
+                    if (student) {
+                        const token = student.magic_token || student.student_id;
+                        let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
+                        
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        } else if (actionType === 'log_tg_1') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://t.me/+${phoneStr}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        }
+                    }
+
                     alert('تم إلغاء الربط بنجاح.');
                     document.getElementById('logs-overlay').style.display = 'none';
                     fetchStudents(); fetchKpiMetrics();

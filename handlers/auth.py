@@ -66,7 +66,15 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             
             # 1. Traitement du Lien Magique depuis Email / WhatsApp
             if start_arg:
-                clean_sid = re.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_)', '', start_arg)
+                                # Determine source for statistics
+                click_source = "Lien Inconnu"
+                if start_arg.startswith('e1_'): click_source = 'Email 1'
+                elif start_arg.startswith('e2_'): click_source = 'Email 2'
+                elif start_arg.startswith('w1_'): click_source = 'WhatsApp 1'
+                elif start_arg.startswith('w2_'): click_source = 'WhatsApp 2'
+                elif start_arg.startswith('auth_'): click_source = 'Admin Dashboard'
+                
+                clean_sid = re.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_|e1_|e2_|w1_|w2_)', '', start_arg)
                 
                 async with db.execute("SELECT * FROM academy_students WHERE magic_token = ? OR student_id = ? OR LOWER(email) = ?", (clean_sid, clean_sid, clean_sid.lower())) as cur:
                     student = await cur.fetchone()

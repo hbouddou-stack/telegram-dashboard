@@ -470,7 +470,7 @@ email_dispatch_state = {
     "logs": []
 }
 
-async def send_single_onboarding_email(email, first_name, student_id, gender):
+async def send_single_onboarding_email(email, first_name, student_id, gender, step_prefix="auth"):
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -488,7 +488,7 @@ async def send_single_onboarding_email(email, first_name, student_id, gender):
         group_title = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
         
         bot_username = cfg.MAIN_BOT_USERNAME or "alsirahquizz_bot"
-        direct_tg_link = f"https://t.me/{bot_username}?start=auth_{student_id}"
+        direct_tg_link = f"https://t.me/{bot_username}?start={step_prefix}_{student_id}"
         
         # Structure MIME standard sans pièce jointe externe
         msg_root = MIMEMultipart('related')
@@ -603,7 +603,7 @@ async def run_email_dispatcher_task(students_to_send):
         
         email_dispatch_state["current_student"] = f"{first_name} ({email})"
         
-        success, err = await send_single_onboarding_email(email, first_name, sid, gender)
+        success, err = await send_single_onboarding_email(email, first_name, sid, gender, step_prefix="e1")
         
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if success:
@@ -1458,7 +1458,8 @@ async def api_admin_gateway_action(request: web.Request):
                 
             elif action == 'send_email_1' or action == 'send_email_2':
                 # Pour l'instant on utilise le template d'onboarding par défaut (à faire évoluer plus tard si on veut 2 templates différents)
-                success, msg = await send_single_onboarding_email(student['email'], student['first_name'], student['student_id'], student['gender'])
+                step_prefix = 'e1' if action == 'send_email_1' else 'e2'
+                success, msg = await send_single_onboarding_email(student['email'], student['first_name'], student['student_id'], student['gender'], step_prefix=step_prefix)
                 if success:
                     now_str = datetime.utcnow().isoformat()
                     step_num = 1 if action == 'send_email_1' else 2
@@ -1467,6 +1468,9 @@ async def api_admin_gateway_action(request: web.Request):
                 else:
                     return web.json_response({'success': False, 'error': msg})
                     
+            elif action == 'log_tg_1':
+                await log_student_action(student_id, 'TELEGRAM_CONTACT', f"Contact Telegram direct ({action}) effectué.")
+                
             elif action == 'log_wa_1' or action == 'log_wa_2':
                 now_str = datetime.utcnow().isoformat()
                 step_wa = 1 if action == 'log_wa_1' else 2
