@@ -1589,7 +1589,13 @@
                     : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
 
                 // Source
-                const src = String(s.source || 'غير محدد');
+                const srcStr = String(s.source || '').toLowerCase();
+                let srcBadge = `<span style="font-size:0.72rem;color:var(--text2);">&#1605;. ${s.source || '-'}</span>`;
+                if (srcStr.includes('sheet') || srcStr.includes('google')) {
+                    srcBadge = `<span style="background:#0f9d58; color:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.72rem;">Sheet</span>`;
+                } else if (srcStr.includes('excel')) {
+                    srcBadge = `<span style="background:#107c41; color:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.72rem;">Excel</span>`;
+                }
 
                 // Telegram info
                 let tgLine = '';
@@ -1601,6 +1607,7 @@
                 }
 
                 const acaId = String(s.academic_id || s.student_id || '').trim();
+                
                 div.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                         <div style="display:flex;flex-direction:column;gap:2px;">
@@ -1614,9 +1621,8 @@
                     <div style="font-size:0.8rem;color:var(--text2); margin-top:4px;" dir="ltr">${String(s.email || '')}</div>
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:4px;">
                         ${acaId ? `<span style="font-size:0.72rem;background:rgba(52,199,89,0.15);color:#34c759;padding:2px 8px;border-radius:10px;font-weight:bold;">رقم الطالب: ${acaId}</span>` : ''}
-                        ${s.year ? `<span style="font-size:0.72rem;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-weight:bold;">السنة الدراسية: ${s.year}</span>` : ''}
-                        ${s.school_level ? `<span style="font-size:0.72rem;background:#0088cc;color:white;padding:2px 8px;border-radius:10px;font-weight:bold;">المستوى الدراسي: ${s.school_level}</span>` : ''}
-                        <span style="font-size:0.72rem;color:var(--text2);">. ${src}</span>
+                        ${s.year ? `<span style="font-size:0.72rem;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-weight:bold;">المستوى ${s.year}</span>` : ''}
+                        ${srcBadge}
                     </div>
                     ${tgLine}
                 `;
