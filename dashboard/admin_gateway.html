@@ -1474,6 +1474,34 @@
             }
         }
 
+        
+        async function sendFunnelAction(actionType) {
+            if (!activeStudentId) return;
+            if (!confirm('Voulez-vous vraiment effectuer cette action ?')) return;
+            
+            try {
+                const res = await fetch('/api/admin/gateway/action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: actionType,
+                        student_id: activeStudentId
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Action réussie !');
+                    loadStudents(); // Rafraîchit la liste et les données
+                    // Pour fermer la modale ou la rafraîchir :
+                    document.getElementById('student-modal').style.display = 'none';
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            } catch(e) {
+                alert('Erreur de connexion');
+            }
+        }
+
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             
