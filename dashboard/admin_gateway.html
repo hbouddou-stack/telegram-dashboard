@@ -773,7 +773,7 @@
                  <div class="chip" id="profile-school-level" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏫 المستوى الدراسي : <span id="profile-school-level-text">-</span></div>
                 <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
                 <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📅 تاريخ التسجيل : <span id="profile-inscription-text">-</span></div>
-                <div class="chip" id="profile-source" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 المصدر : <span id="profile-source-text">-</span></div>
+                <div class="chip" id="profile-source" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 المصدر : <span id="profile-source-text">-</span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span></div>
                 
                 <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:5px; font-size:0.85rem; color:var(--text1);">
                     <strong>حالة العضوية:</strong> <span id="profile-membership">جاري التحميل...</span>
@@ -843,45 +843,69 @@
             <div class="timeline-dot" style="background:#25D366;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>💬 المرحلة 3 : التواصل عبر واتساب</span>
+                    <span>💬 ÉTAPE 3 : WhatsApp</span>
                     <div>
-                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">إرسال واتساب 1</button>
-                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">إرسال واتساب 2 (عاجل)</button>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">💬 WhatsApp 1</button>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">💬 WhatsApp 2 (Dernier)</button>
                     </div>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
                         <span id="f-icon-whatsapp-sent">⏳</span>
-                        <span>تم التواصل (واتساب) :</span>
+                        <span>Dernier WhatsApp envoyé :</span>
                         <span id="f-date-whatsapp-sent" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ÉTAPE 4 : Intégration Finale -->
-        <div class="timeline-block" id="funnel-step-final">
-            <div class="timeline-dot" style="background:#8b5cf6;"></div>
+        <!-- ÉTAPE 4 : Telegram -->
+        <div class="timeline-block" id="funnel-step-tg">
+            <div class="timeline-dot" style="background:#0088cc;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>🎓 المرحلة 4 : التسجيل النهائي</span>
+                    <span>✈️ ÉTAPE 4 : Envoi sur Telegram</span>
+                    <button class="btn-action" onclick="sendFunnelAction('log_tg_1')" style="background:#0088cc;">✈️ Message direct</button>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-bot-started">⏳</span>
-                        <span>بدأ استخدام البوت :</span>
-                        <span id="f-date-bot-started" dir="ltr" style="font-weight:bold;">-</span>
-                    </div>
-                    <div class="timeline-sub-item">
-                        <span id="f-icon-group-joined">⏳</span>
-                        <span>انضم للمجموعة :</span>
-                        <span id="f-date-group-joined" dir="ltr" style="font-weight:bold;">-</span>
+                        <span id="f-icon-telegram-sent">⏳</span>
+                        <span>Message Telegram envoyé :</span>
+                        <span id="f-date-telegram-sent" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- ÉTAPE FINALE -->
+        <div class="timeline-block" id="funnel-step-final">
+            <div class="timeline-dot" style="background:#8b5cf6;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>🏁 ÉTAPE FINALE : Action de l'Élève</span>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-bot-started">⏳</span>
+                        <span>Appuyer sur le lien (Démarrage) :</span>
+                        <span id="f-date-bot-started" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-folder-clicked">⏳</span>
+                        <span>Appuyer sur le bouton Folder :</span>
+                        <span id="f-date-folder-clicked" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-group-joined">⏳</span>
+                        <span>Rejoindre le groupe :</span>
+                        <span id="f-date-group-joined" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
+
 </div>
             <div style="display:flex; gap:10px; margin-bottom:18px;">
                   <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:10px; font-size:0.85rem;">فك ربط تيليجرام</button>
