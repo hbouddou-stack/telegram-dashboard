@@ -1470,7 +1470,7 @@ async def api_admin_gateway_action(request: web.Request):
             elif action == 'log_wa_1' or action == 'log_wa_2':
                 now_str = datetime.utcnow().isoformat()
                 step_wa = 1 if action == 'log_wa_1' else 2
-                  await db.execute("UPDATE academy_students SET whatsapp_sent = ?, whatsapp_sent_at = ? WHERE student_id = ?", (step_wa, now_str, student_id))
+                await db.execute("UPDATE academy_students SET whatsapp_sent = ?, whatsapp_sent_at = ? WHERE student_id = ?", (step_wa, now_str, student_id))
                 await log_student_action(student_id, 'WHATSAPP_SENT', f"Relance WhatsApp ({action}) effectuée.")
                 
             await db.commit()
