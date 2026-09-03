@@ -440,6 +440,7 @@
         </div>
         <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
         
+        <div id="students-count-display" style="padding: 10px 15px; font-weight: 800; color: var(--text1); font-size: 0.9rem; background: rgba(0, 132, 255, 0.05); border-bottom: 1px solid var(--border);"></div>
         <div id="students-list"></div>
     </div>
     
@@ -1330,6 +1331,10 @@
             if (elTotal) elTotal.textContent = filtered.length;
             if (elLinked) elLinked.textContent = linkedCount;
             if (elPct) elPct.textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
+            const countDisplay = document.getElementById('students-count-display');
+            if (countDisplay) {
+                countDisplay.innerHTML = `📊 <span>العدد الإجمالي: <span style="color:#0084ff;">${filtered.length}</span> طالب</span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(منهم ${linkedCount} مربوط)</span>`;
+            }
 
             const list = document.getElementById('students-list');
             list.innerHTML = '';
