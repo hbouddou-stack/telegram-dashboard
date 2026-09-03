@@ -974,7 +974,7 @@ async def api_admin_gateway_students(request: web.Request):
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.last_click_source,
                        s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,
-                       u.first_name as tg_first_name, u.last_name as tg_last_name
+                       u.first_name as tg_first_name, u.last_name as tg_last_name, s.magic_token
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
                 ORDER BY s.created_at DESC, s.first_name ASC
@@ -1013,7 +1013,7 @@ async def api_admin_gateway_logs_all(request: web.Request):
             async with db.execute("""
                 SELECT sl.action_type, sl.description, sl.timestamp, sl.telegram_id, sl.telegram_name, sl.telegram_username,
                        COALESCE(s.first_name, 'ID:'||sl.student_id) as first_name,
-                       u.first_name as tg_first_name, u.last_name as tg_last_name, u.username as tg_username,
+                       u.first_name as tg_first_name, u.last_name as tg_last_name, s.magic_token, u.username as tg_username,
                        sl.student_id
                 FROM student_logs sl
                 LEFT JOIN academy_students s ON s.student_id = sl.student_id
@@ -1438,15 +1438,41 @@ async def api_admin_gateway_action(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
     from database import log_student_action
+    from datetime import datetime
     try:
         data = await request.json()
         action = data.get('action')
         student_id = data.get('student_id')
-        if action == 'unlink':
-            async with aiosqlite.connect(DATABASE_PATH) as db:
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
+                student = await cur.fetchone()
+                
+            if not student:
+                return web.json_response({'success': False, 'error': 'Student not found'})
+                
+            if action == 'unlink':
                 await db.execute("UPDATE academy_students SET telegram_id = NULL WHERE student_id = ?", (student_id,))
-                await db.commit()
-            await log_student_action(student_id, 'MANUAL_UNLINK', 'L\'administrateur a dissocié le compte manuellement.')
+                await log_student_action(student_id, 'MANUAL_UNLINK', "L'administrateur a dissocié le compte manuellement.")
+                
+            elif action == 'send_email_1' or action == 'send_email_2':
+                # Pour l'instant on utilise le template d'onboarding par défaut (à faire évoluer plus tard si on veut 2 templates différents)
+                success, msg = await send_single_onboarding_email(student['email'], student['first_name'], student['student_id'], student['gender'])
+                if success:
+                    now_str = datetime.utcnow().isoformat()
+                    await db.execute("UPDATE academy_students SET email_sent = 1, email_sent_at = ? WHERE student_id = ?", (now_str, student_id))
+                    await log_student_action(student_id, 'EMAIL_SENT', f"Email de type {action} envoyé.")
+                else:
+                    return web.json_response({'success': False, 'error': msg})
+                    
+            elif action == 'log_wa_1' or action == 'log_wa_2':
+                now_str = datetime.utcnow().isoformat()
+                await db.execute("UPDATE academy_students SET whatsapp_sent = 1, whatsapp_sent_at = ? WHERE student_id = ?", (now_str, student_id))
+                await log_student_action(student_id, 'WHATSAPP_SENT', f"Relance WhatsApp ({action}) effectuée.")
+                
+            await db.commit()
+            
         return web.json_response({'success': True})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
