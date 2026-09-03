@@ -851,6 +851,7 @@
             'AUTH_FAILED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: 'فشل تسجيل الدخول' },
             'LINK_FAILED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: 'فشل الربط' },
             'LINK_INVALID': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'رابط غير صالح' },
+            'INVALID_LINK_ATTEMPT': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'محاولة رابط غير صالح' },
             'SOS_SUBMITTED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'طلب مساعدة (SOS)' },
             'MANUAL_UNLINK': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '💔', label: 'إلغاء الربط اليدوي' },
             'NAME_VIOLATION_DETECTED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🚩', label: 'اسم غير مسموح' },
@@ -1351,8 +1352,10 @@
                 const g = String(s.gender || '').toLowerCase();
                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
                     div.style.borderRight = '5px solid #0084ff';
+                    div.style.background = 'rgba(0, 132, 255, 0.08)';
                 } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
                     div.style.borderRight = '5px solid #ec4899';
+                    div.style.background = 'rgba(236, 72, 153, 0.08)';
                 }
 
                 div.onclick = () => openStudentCard(s);
