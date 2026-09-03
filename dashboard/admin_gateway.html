@@ -755,7 +755,15 @@
 
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الكامل : <span id="profile-name-text">-</span></div>
+                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        👤 الاسم الكامل : <span id="profile-name-text" style="font-size:1.1rem; font-weight:bold;">-</span>
+                    </div>
+                    <div id="profile-level-badge" style="background:var(--accent); color:white; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:bold;">-</div>
+                </div>
+                <div class="chip" id="profile-foreign-name" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">
+                    🌍 Nom étranger : <span id="profile-foreign-name-text" dir="ltr">-</span>
+                </div>
                 <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 البريد الإلكتروني : <span id="profile-email-text" dir="ltr">-</span></div>
                 <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📱 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left;">-</span></div>
                 <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 تاريخ الميلاد : <span id="profile-dob-text">-</span></div>
@@ -771,7 +779,7 @@
 
             <!-- Tab 2: Academy -->
             <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <div class="chip" id="profile-studentid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
+                <div class="chip" id="profile-studentid" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
                 
                  
                 <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
@@ -1712,15 +1720,29 @@
             activeStudentId = student.student_id;
             
             // Name - ONLY first + last name
-            const first = String(student.first_name || '').trim();
-            const last = String(student.last_name || '').trim();
-            document.getElementById('profile-name-text').innerHTML = `${last || '-'} <span style="font-size:0.9rem; color:var(--text2); font-weight:normal; margin-left:10px;">${first || ''}</span>`;
+            const arabicName = String(student.first_name || '').trim();
+            const foreignName = String(student.last_name || '').trim();
+            document.getElementById('profile-name-text').innerHTML = `${arabicName || '-'}`;
+            const foreignNameEl = document.getElementById('profile-foreign-name-text');
+            if (foreignNameEl) foreignNameEl.textContent = foreignName || '-';
             
             const tgContainer = document.getElementById('profile-tg-container');
             const tgUsernameContainer = document.getElementById('profile-tg-username-container');
             
             // Gender with colors
             let displayGender = 'غير محدد';
+            
+            // Set level badge
+            const yr = String(student.year || '').trim();
+            const lvlBadge = document.getElementById('profile-level-badge');
+            if(lvlBadge) {
+                if(yr === '1') lvlBadge.textContent = '1ère Année';
+                else if(yr === '2') lvlBadge.textContent = '2ème Année';
+                else if(yr === '3') lvlBadge.textContent = '3ème Année';
+                else if(yr === '4') lvlBadge.textContent = '4ème Année';
+                else lvlBadge.textContent = 'Année: ' + yr;
+            }
+
             const g = String(student.gender || '').toLowerCase();
             const profileNameChip = document.getElementById('profile-name');
             
@@ -1780,7 +1802,16 @@
             
             // Source
             const srcEl = document.getElementById('profile-source-text');
-            if(srcEl) srcEl.textContent = student.source || 'غير محدد';
+            if(srcEl) {
+                const s = String(student.source || '').toLowerCase();
+                if(s.includes('sheet') || s.includes('google')) {
+                    srcEl.innerHTML = '<span style="background:#0f9d58; color:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.8rem;">Sheet</span>';
+                } else if(s.includes('excel')) {
+                    srcEl.innerHTML = '<span style="background:#107c41; color:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.8rem;">Excel</span>';
+                } else {
+                    srcEl.textContent = student.source || '-';
+                }
+            }
             
             // Profession (if available)
             const profEl = document.getElementById('profile-profession-text');
