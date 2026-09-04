@@ -771,6 +771,7 @@
                 <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy">الأكاديمية</div>
                 <div class="mtab" onclick="switchModalTab('telegram')" id="mtab-telegram">تيليجرام</div>
                 <div class="mtab" onclick="switchModalTab('funnel')" id="mtab-funnel">مسار الانضمام</div>
+                <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm">📝 CRM</div>
             </div>
 
             <!-- Tab 1: General -->
@@ -2223,6 +2224,7 @@
             if(dobEl) dobEl.textContent = ageText;
 
             document.getElementById('logs-overlay').style.display = 'flex';
+            if(typeof fetchCrmTimeline === 'function') fetchCrmTimeline(student.student_id, student.telegram_id);
             try {
                 const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id + '&tid=' + (student.telegram_id || 'null'));
                 const data = await res.json();
