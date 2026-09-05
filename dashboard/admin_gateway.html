@@ -871,7 +871,7 @@
                         <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نص الملاحظة:</label>
                         <textarea id="crm-note" placeholder="اكتب تفاصيل المحادثة هنا..." style="width:100%; height:100px; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; outline:none; resize:none; margin-bottom:20px;"></textarea>
                         
-                        <button class="btn btn-primary" onclick="addCrmNote()" style="width:100%; padding:12px; border-radius:8px; font-size:1rem; font-weight:bold;">💾 حفظ الملاحظة وإرسال</button>
+                        <button id="btn-save-note" class="btn btn-primary" onclick="addCrmNote()" style="width:100%; padding:12px; border-radius:8px; font-size:1rem; font-weight:bold;">💾 حفظ الملاحظة وإرسال</button>
                     </div>
                 </div>
             </div>
@@ -1933,10 +1933,13 @@
                 }
                 
                 // Disable button to prevent double click
-                const btn = event.currentTarget;
-                const oldText = btn.innerHTML;
-                btn.innerHTML = '⏳ جاري الحفظ...';
-                btn.disabled = true;
+                const btn = document.getElementById('btn-save-note');
+                let oldText = '💾 حفظ الملاحظة وإرسال';
+                if(btn) {
+                    oldText = btn.innerHTML;
+                    btn.innerHTML = '⏳ جاري الحفظ...';
+                    btn.disabled = true;
+                }
                 
                 const res = await fetch('/api/admin/gateway/add_crm_note', {
                     method: 'POST',
@@ -1952,8 +1955,10 @@
                 });
                 
                 const data = await res.json();
-                btn.innerHTML = oldText;
-                btn.disabled = false;
+                if(btn) {
+                    btn.innerHTML = oldText;
+                    btn.disabled = false;
+                }
                 
                 if(data.success) {
                     alert('✅ تم حفظ الملاحظة بنجاح!');
