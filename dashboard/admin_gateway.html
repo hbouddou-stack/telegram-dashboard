@@ -1883,8 +1883,8 @@
             let adminName = localStorage.getItem('adminName');
             if(!adminName) {
                 adminName = prompt("Quel est votre nom ? (Sera affiché sur la note)");
-                if(!adminName) return;
-                localStorage.setItem('adminName', adminName);
+                if(!adminName) adminName = "Admin";
+                else localStorage.setItem('adminName', adminName);
             }
             
             try {
