@@ -998,6 +998,33 @@ async def api_admin_gateway_students(request: web.Request):
         return web.json_response({'success': False, 'error': str(e)})
 
 
+
+async def api_admin_gateway_ghost_visitors(request: web.Request):
+    """Returns users who started the bot but are not linked to any student record"""
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("""
+                SELECT 
+                    u.telegram_id,
+                    u.first_name,
+                    u.last_name,
+                    u.username,
+                    u.created_at
+                FROM users u
+                LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
+                WHERE s.telegram_id IS NULL
+                ORDER BY u.created_at DESC
+                LIMIT 200
+            """) as cur:
+                rows = [dict(r) for r in await cur.fetchall()]
+        return web.json_response({'success': True, 'visitors': rows, 'count': len(rows)})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_student_timeline(request: web.Request):
     student_id = request.query.get('id')
     tid = request.query.get('tid')
