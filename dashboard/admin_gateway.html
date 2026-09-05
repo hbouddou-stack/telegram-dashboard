@@ -1103,6 +1103,7 @@
         let activeSosEmail = null;
         let activeSosStudentId = null;
         let activeStudentId = null;
+        let activeStudentObj = null;
         let activeSosSubtabState = 'open';
 
         
@@ -1912,7 +1913,7 @@
             if (tab === 'timeline') {
                 document.getElementById('crm-view-timeline').style.display = 'flex';
                 document.getElementById('crm-view-add').style.display = 'none';
-                if(activeStudent) fetchCrmTimeline(activeStudent.student_id, activeStudent.telegram_id);
+                if(activeStudent) fetchCrmTimeline(activeStudentObj.student_id, activeStudentObj.telegram_id);
             } else {
                 document.getElementById('crm-view-timeline').style.display = 'none';
                 document.getElementById('crm-view-add').style.display = 'flex';
@@ -1921,8 +1922,8 @@
 
         async function addCrmNote() {
             try {
-                if(!activeStudent) {
-                    alert('Erreur: Aucun étudiant sélectionné !');
+                if(!activeStudentObj) {
+                    alert('لم يتم اختيار أي طالب!');
                     return;
                 }
                 const ctype = document.getElementById('crm-type').value;
@@ -1948,8 +1949,8 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        student_id: activeStudent.student_id,
-                        telegram_id: activeStudent.telegram_id,
+                        student_id: activeStudentObj.student_id,
+                        telegram_id: activeStudentObj.telegram_id,
                         type: ctype,
                         tag: tag,
                         note: note,
@@ -1986,8 +1987,6 @@
                 }
             }
         }
-
-
 
 
         function switchModalTab(tabId) {
@@ -2075,6 +2074,7 @@
 
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
+            activeStudentObj = student;
             
             // Name - ONLY first + last name
             const arabicName = String(student.first_name || '').trim();
