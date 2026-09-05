@@ -868,6 +868,9 @@
                             <option value="AUTRE">📌 أخرى</option>
                         </select>
                         
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">اسم المسؤول (يُحفظ تلقائياً):</label>
+                        <input id="crm-admin-name" type="text" placeholder="اسمك..." style="width:100%; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;" oninput="localStorage.setItem('adminName', this.value)">
+                        
                         <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نص الملاحظة:</label>
                         <textarea id="crm-note" placeholder="اكتب تفاصيل المحادثة هنا..." style="width:100%; height:100px; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; outline:none; resize:none; margin-bottom:20px;"></textarea>
                         
@@ -1900,6 +1903,12 @@
             document.getElementById('csub-' + tab).style.borderColor = '#0a84ff';
             document.getElementById('csub-' + tab).style.fontWeight = 'bold';
             
+            if (tab === 'add') {
+                // Pre-fill admin name from localStorage
+                const savedName = localStorage.getItem('adminName');
+                const nameField = document.getElementById('crm-admin-name');
+                if(nameField && savedName) nameField.value = savedName;
+            }
             if (tab === 'timeline') {
                 document.getElementById('crm-view-timeline').style.display = 'flex';
                 document.getElementById('crm-view-add').style.display = 'none';
@@ -1919,24 +1928,18 @@
                 const ctype = document.getElementById('crm-type').value;
                 const tag = document.getElementById('crm-tag').value;
                 const note = document.getElementById('crm-note').value.trim();
+                const adminNameField = document.getElementById('crm-admin-name');
                 
                 if(!note) { 
                     alert('الرجاء كتابة الملاحظة أولا'); 
                     return; 
                 }
                 
-                let adminName = localStorage.getItem('adminName');
-                if(!adminName) {
-                    adminName = prompt("ما هو اسمك؟ (سيظهر في الملاحظة)");
-                    if(!adminName || adminName.trim() === '') adminName = "Admin";
-                    else localStorage.setItem('adminName', adminName);
-                }
+                let adminName = (adminNameField && adminNameField.value.trim()) || localStorage.getItem('adminName') || 'Admin';
+                localStorage.setItem('adminName', adminName);
                 
-                // Disable button to prevent double click
                 const btn = document.getElementById('btn-save-note');
-                let oldText = '💾 حفظ الملاحظة وإرسال';
                 if(btn) {
-                    oldText = btn.innerHTML;
                     btn.innerHTML = '⏳ جاري الحفظ...';
                     btn.disabled = true;
                 }
@@ -1954,24 +1957,37 @@
                     })
                 });
                 
-                const data = await res.json();
                 if(btn) {
-                    btn.innerHTML = oldText;
+                    btn.innerHTML = '💾 حفظ الملاحظة وإرسال';
                     btn.disabled = false;
                 }
                 
+                if(!res.ok) {
+                    alert('❌ خطأ من السيرفر: ' + res.status);
+                    return;
+                }
+                
+                const data = await res.json();
+                
                 if(data.success) {
-                    alert('✅ تم حفظ الملاحظة بنجاح!');
                     document.getElementById('crm-note').value = '';
-                    switchCrmSubtab('timeline'); // Switch back to timeline
+                    alert('✅ تم حفظ الملاحظة بنجاح!');
+                    switchCrmSubtab('timeline');
                 } else {
                     alert('❌ خطأ في الحفظ: ' + data.error);
                 }
             } catch(e) {
-                alert('❌ حدث خطأ في الاتصال بالسيرفر');
+                alert('❌ حدث خطأ: ' + e.message);
                 console.error(e);
+                const btn = document.getElementById('btn-save-note');
+                if(btn) {
+                    btn.innerHTML = '💾 حفظ الملاحظة وإرسال';
+                    btn.disabled = false;
+                }
             }
         }
+
+
 
 
         function switchModalTab(tabId) {
