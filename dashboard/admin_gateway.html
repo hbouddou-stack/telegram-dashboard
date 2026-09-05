@@ -766,7 +766,7 @@
                 .funnel-date { font-size: 0.75rem; color: var(--text2); dir: ltr; }
             </style>
 
-            <div class="mtab-container">
+            <div class="mtab-container" style="flex-wrap:wrap; display:flex;">
                 <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عامة</div>
                 <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy">الأكاديمية</div>
                 <div class="mtab" onclick="switchModalTab('telegram')" id="mtab-telegram">تيليجرام</div>
@@ -1792,7 +1792,7 @@
             if (currentCrmFilter === 'notes') {
                 filtered = filtered.filter(item => item.source_table === 'student_logs' && item.action_type === 'CRM_NOTE');
             } else if (currentCrmFilter === 'tickets') {
-                filtered = filtered.filter(item => item.source_table === 'gateway_sos');
+                filtered = filtered.filter(item => (item.source_table === 'gateway_sos' || item.source_table === 'crm_tickets'));
             } else if (currentCrmFilter === 'system') {
                 filtered = filtered.filter(item => item.source_table === 'student_logs' && item.action_type !== 'CRM_NOTE');
             }
@@ -1811,19 +1811,19 @@
                 let color = 'var(--text2)';
                 let content = item.description;
                 
-                if (item.source_table === 'gateway_sos') {
+                if ((item.source_table === 'gateway_sos' || item.source_table === 'crm_tickets') || item.source_table === 'crm_tickets') {
                     icon = '🚨';
-                    title = 'Ticket SOS';
+                    title = item.source_table === 'crm_tickets' ? 'تذكرة الأسئلة (FAQ)' : 'تذكرة الدعم (SOS)';
                     color = '#ef4444';
-                    content = `<strong>Sujet :</strong> Ticket<br><strong>Message :</strong> ${item.message || ''}<br><span style="font-size:0.8rem; color:${item.status==='closed'?'#16a34a':'#f97316'};">Statut: ${item.status}</span>`;
+                    let subj = item.theme || "طلب مساعدة";
+                    content = `<strong>الموضوع :</strong> ${subj}<br><strong>الرسالة :</strong> ${item.message || ''}<br><span style="font-size:0.8rem; color:${item.status==='closed'?'#16a34a':'#f97316'};">الحالة: ${item.status}</span>`;
                 } else if (item.action_type === 'CRM_NOTE') {
                     icon = '🗣️';
-                    title = 'Note de l\'équipe';
+                    title = 'ملاحظة الإدارة';
                     color = '#0a84ff';
-                    // Parse description "[APPEL] [MALADIE] details"
                     let badge = '';
-                    let cleanDesc = item.description;
-                    const bMatch = item.description.match(/^\[(.*?)\]\s*\[(.*?)\]\s*(.*)$/);
+                    let cleanDesc = item.description || '';
+                    const bMatch = cleanDesc.match(/^\[(.*?)\]\s*\[(.*?)\]\s*(.*)$/);
                     if (bMatch) {
                         badge = `<span style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-right:5px; font-weight:bold;">${bMatch[1]}</span><span style="background:rgba(255,159,10,0.1); color:#ff9f0a; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">${bMatch[2]}</span>`;
                         cleanDesc = bMatch[3];
@@ -1877,6 +1877,13 @@
             const note = document.getElementById('crm-note').value.trim();
             if(!note) { alert('Veuillez entrer une note.'); return; }
             
+            let adminName = localStorage.getItem('adminName');
+            if(!adminName) {
+                adminName = prompt("Quel est votre nom ? (Sera affiché sur la note)");
+                if(!adminName) return;
+                localStorage.setItem('adminName', adminName);
+            }
+            
             try {
                 const res = await fetch('/api/admin/gateway/add_crm_note', {
                     method: 'POST',
@@ -1886,24 +1893,29 @@
                         telegram_id: activeStudent.telegram_id,
                         type: ctype,
                         tag: tag,
-                        note: note
+                        note: note,
+                        admin_name: adminName
                     })
                 });
                 const data = await res.json();
                 if(data.success) {
                     document.getElementById('crm-note').value = '';
-                    // Refresh timeline
                     fetchCrmTimeline(activeStudent.student_id, activeStudent.telegram_id);
                 } else {
                     alert('Erreur: ' + data.error);
                 }
             } catch(e) {
+                alert('Erreur de connexion API');
+            }
+        }
+
+ catch(e) {
                 alert('Erreur de connexion');
             }
         }
 
         function switchModalTab(tabId) {
-            ['general', 'academy', 'telegram', 'funnel'].forEach(t => {
+            ['general', 'academy', 'telegram', 'funnel', 'crm'].forEach(t => {
                 const mt = document.getElementById('mtab-' + t);
                 const mc = document.getElementById('mcontent-' + t);
                 if(mt) mt.classList.remove('active');

@@ -1018,6 +1018,11 @@ async def api_admin_gateway_student_timeline(request: web.Request):
                         r = dict(row)
                         r['source_table'] = 'gateway_sos'
                         timeline.append(r)
+                async with db.execute("SELECT id, message, status, timestamp, theme FROM crm_tickets WHERE telegram_id = ? ORDER BY id DESC", (tid,)) as cur:
+                    for row in await cur.fetchall():
+                        r = dict(row)
+                        r['source_table'] = 'crm_tickets'
+                        timeline.append(r)
             else:
                 async with db.execute("SELECT id, action_type, description, timestamp FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 100", (student_id,)) as cur:
                     for row in await cur.fetchall():
@@ -1044,11 +1049,12 @@ async def api_admin_gateway_add_crm_note(request: web.Request):
     ctype = data.get('type', 'AUTRE')
     tag = data.get('tag', 'INFO')
     note = data.get('note', '')
+    admin_name = data.get('admin_name', 'Admin')
     
     if not note:
         return web.json_response({'success': False, 'error': 'Note is empty'})
         
-    description = f"[{ctype}] [{tag}] {note}"
+    description = f"[{ctype}] [{tag}] [بواسطة: {admin_name}] {note}"
     import database as db
     try:
         await db.log_student_action(student_id, "CRM_NOTE", description, telegram_id=tid)
