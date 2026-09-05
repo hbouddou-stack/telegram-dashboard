@@ -370,27 +370,27 @@
 
     <!-- Bottom Navigation Menu -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="switchTab('overview')">
+        <div class="nav-item" onclick="switchTab('overview')" id="nav-overview">
             <span class="nav-icon">📊</span>
             <span>نظرة</span>
         </div>
-        <div class="nav-item active" onclick="switchTab('students')">
+        <div class="nav-item active" onclick="switchTab('students')" id="nav-students">
             <span class="nav-icon">👥</span>
             <span>الطلاب</span>
         </div>
-        <div class="nav-item" onclick="switchTab('sos')">
+        <div class="nav-item" onclick="switchTab('sos')" id="nav-sos">
             <span class="nav-icon">🆘</span>
             <span>الطلبات</span>
         </div>
-        <div class="nav-item" onclick="switchTab('actions')">
+        <div class="nav-item" onclick="switchTab('actions')" id="nav-actions">
             <span style="font-size: 1.2rem;">🚀</span>
             <span>إجراءات</span>
         </div>
-        <div class="nav-item" onclick="switchTab('logs')">
+        <div class="nav-item" onclick="switchTab('logs')" id="nav-logs">
             <span class="nav-icon">📋</span>
             <span>السجل</span>
         </div>
-        <div class="nav-item" onclick="switchTab('settings')">
+        <div class="nav-item" onclick="switchTab('settings')" id="nav-settings">
             <span class="nav-icon">⚙️</span>
             <span>الإعدادات</span>
         </div>
@@ -1444,17 +1444,40 @@
         // =================== END GHOST VISITORS ===================
 
         function switchTab(id) {
-            document.querySelectorAll('.nav-item').forEach((b,i) => {
-                b.classList.toggle('active', ['overview','students','sos','links','logs','settings'][i] === id);
+            // Update nav item active states
+            document.querySelectorAll('.nav-item').forEach(b => {
+                b.classList.remove('active');
             });
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            // Mark the matching nav item active
+            const navEl = document.getElementById('nav-' + id);
+            if(navEl) {
+                navEl.classList.add('active');
+            } else {
+                // Fallback: match by onclick text
+                document.querySelectorAll('.nav-item').forEach(b => {
+                    if(b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) {
+                        b.classList.add('active');
+                    }
+                });
+            }
+            // Hide all tab-content sections
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active');
+            });
+            // Show the requested tab
             const tabEl = document.getElementById('tab-' + id);
-            if (tabEl) tabEl.classList.add('active');
+            if (tabEl) {
+                tabEl.style.display = 'flex';
+                tabEl.classList.add('active');
+            }
+            // Trigger data loading
             if(id === 'students') filterStudents();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
             if(id === 'logs') fetchGlobalLogs();
             if(id === 'settings') loadGeneralSettings();
+            if(id === 'ghosts') loadGhostVisitors();
         }
 
         // ============ FILTER TRIGGERS ============
