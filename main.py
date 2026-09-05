@@ -5898,6 +5898,8 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/export_all', api_admin_gateway_export_all_students)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
+    app.router.add_get('/api/admin/gateway/student_timeline', api_admin_gateway_student_timeline)
+    app.router.add_post('/api/admin/gateway/add_crm_note', api_admin_gateway_add_crm_note)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
     app.router.add_get('/api/admin/gateway/logs/all', api_admin_gateway_logs_all)
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
