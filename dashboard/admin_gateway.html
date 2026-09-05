@@ -1913,7 +1913,7 @@
             if (tab === 'timeline') {
                 document.getElementById('crm-view-timeline').style.display = 'flex';
                 document.getElementById('crm-view-add').style.display = 'none';
-                if(activeStudent) fetchCrmTimeline(activeStudentObj.student_id, activeStudentObj.telegram_id);
+                if(activeStudentObj) fetchCrmTimeline(activeStudentObj.student_id, activeStudentObj.telegram_id);
             } else {
                 document.getElementById('crm-view-timeline').style.display = 'none';
                 document.getElementById('crm-view-add').style.display = 'flex';
