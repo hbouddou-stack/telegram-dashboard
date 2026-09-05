@@ -654,7 +654,7 @@
     </div>
 
     <!-- TAB: الإعدادات (Settings) -->
-    <div id="tab-ghosts" class="tab-content" style="display:none; flex-direction:column; height:100%; overflow:hidden; background:var(--bg);">
+    <div id="tab-ghosts" class="tab-content" style="flex-direction:column; height:100%; overflow:hidden; background:var(--bg);">
         <!-- Header -->
         <div style="padding:15px 15px 10px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1460,15 +1460,18 @@
                     }
                 });
             }
-            // Hide all tab-content sections
+            // Hide all tab-content sections by removing active class and clearing inline display
             document.querySelectorAll('.tab-content').forEach(el => {
-                el.style.display = 'none';
+                el.style.display = ''; // Let CSS handle it
                 el.classList.remove('active');
             });
             // Show the requested tab
             const tabEl = document.getElementById('tab-' + id);
             if (tabEl) {
-                tabEl.style.display = 'flex';
+                // Only for ghosts tab we might need flex, others use the CSS display:block from .active
+                if (id === 'ghosts') {
+                    tabEl.style.display = 'flex';
+                }
                 tabEl.classList.add('active');
             }
             // Trigger data loading
