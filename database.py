@@ -933,7 +933,7 @@ async def init_db():
             except Exception:
                 pass
 
-        cursor.execute("""
+        await db.execute("""
             CREATE TABLE IF NOT EXISTS faq_analytics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 event_type TEXT NOT NULL,

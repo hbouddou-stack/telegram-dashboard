@@ -936,14 +936,14 @@ async def api_admin_gateway_stats(request: web.Request):
             async with db.execute("SELECT COUNT(*) FROM academy_students WHERE payment_status = 'PAID'") as cur:
                 total_paid = (await cur.fetchone())[0]
             if total_paid == 0:
-                async with db.execute("SELECT COUNT(*) FROM academy_students") as cur:
+                async with db.execute("SELECT COUNT(*) FROM academy_students WHERE excluded = 0 OR excluded IS NULL") as cur:
                     total_paid = (await cur.fetchone())[0]
                     
             async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_sent = 1") as cur:
                 email_sent = (await cur.fetchone())[0]
             async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_opened_at IS NOT NULL") as cur:
                 email_opened = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE telegram_id IS NOT NULL") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND (telegram_id IS NOT NULL)") as cur:
                 bot_linked = (await cur.fetchone())[0]
             async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE action_type IN ('FOLDER_CLICKED', 'APP_OPENED', 'TUTO_OPENED')") as cur:
                 folder_clicked = (await cur.fetchone())[0]
@@ -983,7 +983,7 @@ async def api_admin_gateway_students(request: web.Request):
             db.row_factory = aiosqlite.Row
             async with db.execute("""
                 SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
-                       s.year, s.gender, s.dob, s.source, s.phone, s.created_at, s.payment_status,
+                       s.year, s.gender, s.dob, s.source, s.source_file, s.phone, s.created_at, s.payment_status,
                        s.profession, s.country, s.nationality, s.arabic_level, s.school_level,
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.last_click_source,
@@ -1183,6 +1183,42 @@ async def api_admin_gateway_add_student(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+
+async def api_admin_gateway_archive_student(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        student_id = data.get('student_id')
+        reason = data.get('reason', 'Non specifie')
+        admin_name = data.get('admin_name', 'Admin')
+        
+        if not student_id:
+            return web.json_response({'success': False, 'error': 'ID etudiant manquant'})
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            # Check if student exists
+            async with db.execute("SELECT first_name FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
+                if not await cur.fetchone():
+                    return web.json_response({'success': False, 'error': 'Etudiant introuvable'})
+            
+            # Archive
+            await db.execute("UPDATE academy_students SET excluded = 1 WHERE student_id = ?", (student_id,))
+            
+            # Add CRM Note
+            note_text = f"[ARCHIVÉ] L'étudiant a été archivé/exclu.\nRaison : {reason}"
+            await db.execute(
+                "INSERT INTO student_logs (student_id, action_type, description, telegram_name) VALUES (?, ?, ?, ?)",
+                (student_id, "CRM_NOTE", f"[بواسطة: {admin_name}] [نوع: SYSTEM]\n{note_text}", "Admin")
+            )
+            await db.commit()
+            
+        return web.json_response({'success': True})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
+
 async def api_admin_gateway_import_students(request: web.Request):
     try:
         import aiosqlite
@@ -1274,15 +1310,16 @@ async def api_admin_gateway_import_students(request: web.Request):
                     
                 if exists:
                     await db.execute("""
+                    original_file_name = field.filename if field.filename else 'Fichier Excel'
                         UPDATE academy_students 
-                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), source = 'excel'
+                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), source = 'excel', source_file = ?
                         WHERE LOWER(email) = ? OR student_id = ?
-                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, email, student_id))
+                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, original_file_name, email, student_id))
                 else:
                     await db.execute("""
-                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, magic_token, is_active, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?, 1, COALESCE(NULLIF(?, ''), datetime('now')))
-                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, secrets.token_urlsafe(8), created_at_val))
+                        INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, source_file, magic_token, is_active, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?, ?, 1, COALESCE(NULLIF(?, ''), datetime('now')))
+                    """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, original_file_name, secrets.token_urlsafe(8), created_at_val))
                     
                 imported += 1
             await db.commit()
@@ -5933,6 +5970,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/logs/all', api_admin_gateway_logs_all)
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
     app.router.add_post('/api/admin/gateway/add_student', api_admin_gateway_add_student)
+    app.router.add_post('/api/admin/gateway/archive_student', api_admin_gateway_archive_student)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_post('/api/admin/gateway/sync_sheets', api_admin_gateway_sync_sheets)
     app.router.add_post('/api/admin/gateway/export_sheets', api_admin_gateway_export_sheets)
