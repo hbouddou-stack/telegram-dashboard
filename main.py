@@ -737,6 +737,75 @@ async def api_track_click(request: web.Request):
 </html>"""
     return web.Response(text=html_redirect, content_type='text/html')
 
+
+async def api_admin_gateway_home_stats(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            
+            # KPIs
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE excluded = 0 OR excluded IS NULL") as cur:
+                total_students = (await cur.fetchone())['cnt']
+                
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND telegram_id IS NOT NULL") as cur:
+                linked_students = (await cur.fetchone())['cnt']
+                
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND folder_clicked_at IS NOT NULL") as cur:
+                in_groups = (await cur.fetchone())['cnt']
+                
+            async with db.execute("SELECT COUNT(*) as cnt FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL") as cur:
+                ghosts = (await cur.fetchone())['cnt']
+
+            # Funnel Data
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND (email_sent > 0 OR whatsapp_sent > 0)") as cur:
+                contacted = (await cur.fetchone())['cnt']
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND bot_started_at IS NOT NULL") as cur:
+                started_bot = (await cur.fetchone())['cnt']
+                
+            # Demographics
+            async with db.execute("SELECT school_level, COUNT(*) as cnt FROM academy_students WHERE excluded = 0 OR excluded IS NULL GROUP BY school_level") as cur:
+                levels = {str(r['school_level']): r['cnt'] for r in await cur.fetchall()}
+            async with db.execute("SELECT gender, COUNT(*) as cnt FROM academy_students WHERE excluded = 0 OR excluded IS NULL GROUP BY gender") as cur:
+                genders = {str(r['gender']): r['cnt'] for r in await cur.fetchall()}
+
+            # Alerts
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND email_sent = 0 AND whatsapp_sent = 0") as cur:
+                uncontacted = (await cur.fetchone())['cnt']
+            
+            # Ghosts from today
+            async with db.execute("SELECT COUNT(*) as cnt FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND u.created_at >= date('now')") as cur:
+                ghosts_today = (await cur.fetchone())['cnt']
+
+            return web.json_response({
+                "success": True,
+                "kpis": {
+                    "total": total_students,
+                    "linked": linked_students,
+                    "groups": in_groups,
+                    "ghosts": ghosts
+                },
+                "funnel": {
+                    "imported": total_students,
+                    "contacted": contacted,
+                    "started_bot": started_bot,
+                    "linked": linked_students,
+                    "joined": in_groups
+                },
+                "demographics": {
+                    "levels": levels,
+                    "genders": genders
+                },
+                "alerts": {
+                    "uncontacted": uncontacted,
+                    "ghosts_today": ghosts_today
+                }
+            })
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)})
+
+
 async def api_admin_gateway_kpi(request: web.Request):
     try:
         import aiosqlite
@@ -5959,6 +6028,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/track/open', api_track_open)
     app.router.add_get('/api/track/click', api_track_click)
     app.router.add_get('/api/admin/gateway/kpi', api_admin_gateway_kpi)
+    app.router.add_get('/api/admin/gateway/home_stats', api_admin_gateway_home_stats)
     app.router.add_get('/api/admin/gateway/export_template', api_admin_gateway_export_template)
     app.router.add_get('/api/admin/gateway/export_all', api_admin_gateway_export_all_students)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
