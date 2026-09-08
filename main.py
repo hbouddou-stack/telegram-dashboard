@@ -1360,7 +1360,7 @@ async def api_admin_gateway_import_students(request: web.Request):
                 
                 pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
                 payment_status = 'UNPAID'
-                if pay_raw in ['PAID', 'PAYE', 'PAYÉ', 'VALIDE', 'CONFIRME', 'OUI', 'YES', 'مدفوع']: payment_status = 'PAID'
+                if pay_raw in ['PAID', 'PAYE', 'PAYÉ', 'VALIDE', 'CONFIRME', 'OUI', 'YES', 'مدفوع', 'مسدد']: payment_status = 'PAID'
                 
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''

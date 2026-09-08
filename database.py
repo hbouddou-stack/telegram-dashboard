@@ -4346,7 +4346,7 @@ async def import_students_excel(records: list) -> dict:
                     
                 payment_status = (r.get('payment_status') or 'UNPAID').strip().upper()
                 # Normalisation du statut de paiement
-                if payment_status in ['PAYE', 'PAYÉ', 'PAID', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED', '1', 'TRUE', 'مدفوع']:
+                if payment_status in ['PAYE', 'PAYÉ', 'PAID', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED', '1', 'TRUE', 'مدفوع', 'مسدد']:
                     payment_status = 'PAID'
                 else:
                     payment_status = 'UNPAID'
