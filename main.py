@@ -780,6 +780,17 @@ async def api_admin_gateway_home_stats(request: web.Request):
             async with db.execute("SELECT COUNT(*) as cnt FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND u.created_at >= date('now')") as cur:
                 ghosts_today = (await cur.fetchone())['cnt']
 
+            # Finances
+            async with db.execute("SELECT payment_status, COUNT(*) as cnt FROM academy_students WHERE excluded = 0 OR excluded IS NULL GROUP BY payment_status") as cur:
+                payments_raw = await cur.fetchall()
+            finances = {"paid": 0, "unpaid": 0}
+            for r in payments_raw:
+                ps = str(r['payment_status'] or '').upper().strip()
+                if ps in ['PAID', 'PAYE', 'مسدد']:
+                    finances["paid"] += r['cnt']
+                else:
+                    finances["unpaid"] += r['cnt']
+
             return web.json_response({
                 "success": True,
                 "kpis": {
@@ -795,6 +806,7 @@ async def api_admin_gateway_home_stats(request: web.Request):
                     "linked": linked_students,
                     "joined": in_groups
                 },
+                "finances": finances,
                 "demographics": {
                     "levels": levels,
                     "genders": genders
