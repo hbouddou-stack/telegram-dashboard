@@ -222,15 +222,16 @@ INSTANCE_ID = str(uuid.uuid4())
 log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 log_file_path = os.path.join(os.path.dirname(__file__), "bot.log")
 logging.basicConfig(
-logging.getLogger('aiosqlite').setLevel(logging.WARNING)  # Suppress DEBUG noise
     level=logging.DEBUG,
     format=log_format,
     handlers=[
         logging.StreamHandler(sys.stderr),
         logging.FileHandler(log_file_path, encoding="utf-8")
+
     ]
 )
 logger = logging.getLogger("main")
+logging.getLogger('aiosqlite').setLevel(logging.WARNING)  # Suppress DEBUG noise
 
 # â”€â”€â”€ INSTANCE LOCK (anti-fantÃ´me) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 PID_FILE = os.path.join(os.path.dirname(__file__), ".bot.pid")
