@@ -456,7 +456,11 @@
         <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 15px; border-bottom: 1px solid var(--border);">
             <div style="font-weight: 800; color: var(--text1); font-size: 0.9rem;" id="students-count-display"></div>
             <div style="display:flex; gap:10px;">
-                <select id="card-style-selector" onchange="changeCardStyle(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.8rem; outline:none;">
+                
+                <button id="btn-mass-sms" onclick="sendMassSms()" style="background:#0ea5e9; color:white; border:none; padding:4px 10px; border-radius:6px; font-weight:bold; display:none; cursor:pointer; font-size:0.85rem; margin-right:10px;">
+                    📱 إرسال SMS للكل (<span id="mass-sms-count">0</span>)
+                </button>
+    <select id="card-style-selector" onchange="changeCardStyle(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.8rem; outline:none;">
                     <option value="1">✨ النموذج 1 (كلاسيكي)</option>
                     <option value="2">📋 النموذج 2 (حالة)</option>
                     <option value="3">📱 النموذج 3 (مدمج)</option>
@@ -472,7 +476,58 @@
             let currentViewMode = localStorage.getItem('viewMode') || 'grid';
             let currentSort = { key: 'date', order: 'desc' };
             
-            function changeViewMode(mode) {
+            
+        function toggleAllStudents() {
+            const isChecked = document.getElementById('selectAllCheckbox').checked;
+            const checkboxes = document.querySelectorAll('.student-select-cb');
+            checkboxes.forEach(cb => cb.checked = isChecked);
+            updateMassSmsButton();
+        }
+        document.addEventListener('change', (e) => {
+            if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
+                updateMassSmsButton();
+            }
+        });
+        function updateMassSmsButton() {
+            const selected = document.querySelectorAll('.student-select-cb:checked').length;
+            const btn = document.getElementById('btn-mass-sms');
+            if(btn) {
+                if(selected > 0) {
+                    btn.style.display = 'inline-block';
+                    document.getElementById('mass-sms-count').innerText = selected;
+                } else {
+                    btn.style.display = 'none';
+                }
+            }
+        }
+        async function sendMassSms() {
+            const cbs = document.querySelectorAll('.student-select-cb:checked');
+            const ids = Array.from(cbs).map(cb => cb.value);
+            if(ids.length === 0) return;
+            if(!confirm(`هل أنت متأكد من وضع ${ids.length} طالب في قائمة انتظار SMS ؟`)) return;
+            
+            try {
+                const res = await fetch('/api/admin/gateway/queue_sms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_ids: ids })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ تم وضع ${data.queued} رسالة SMS في قائمة الانتظار للروبوت بنجاح.`);
+                    cbs.forEach(cb => cb.checked = false);
+                    document.getElementById('selectAllCheckbox').checked = false;
+                    updateMassSmsButton();
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Erreur réseau.');
+            }
+        }
+
+        function changeViewMode(mode) {
                 currentViewMode = mode;
                 localStorage.setItem('viewMode', mode);
                 filterStudents();
@@ -1842,6 +1897,7 @@
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
+                        <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
                         <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${currentSort.key==='name'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
                         <th style="padding:12px; cursor:pointer;" onclick="sortTable('email')">الإيميل ${currentSort.key==='email'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
                         <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">الحالة ${currentSort.key==='status'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
@@ -1878,6 +1934,7 @@
                     const dateStr = !isNaN(d) ? d.toLocaleDateString('fr-FR') : '-';
                     
                     tr.innerHTML = `
+                        <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
                         <td style="padding:12px;"><strong>${name}</strong></td>
                         <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
                         <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>

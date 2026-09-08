@@ -6055,6 +6055,10 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/settings', api_admin_gateway_settings_get)
     app.router.add_get('/api/admin/gateway/chat', api_admin_gateway_chat)
     app.router.add_post('/api/admin/gateway/action', api_admin_gateway_action)
+    app.router.add_post('/api/admin/gateway/queue_sms', api_admin_gateway_queue_sms)
+    app.router.add_get('/api/sms_gateway/poll', api_sms_gateway_poll)
+    app.router.add_post('/api/sms_gateway/callback', api_sms_gateway_callback)
+
     app.router.add_post('/api/gateway/sos', api_gateway_sos)
     app.router.add_post('/api/gateway/log_open', api_gateway_log_open)
     app.router.add_post('/api/gateway/log_action', api_gateway_log_action)
