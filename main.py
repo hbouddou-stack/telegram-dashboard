@@ -1382,7 +1382,7 @@ async def api_admin_gateway_import_students(request: web.Request):
                             _found = True
                             break
                     if _found: break
-                # 2) Seulement si aucun mot UNPAID trouve, chercher PAID
+                 # 2) Seulement si aucun mot UNPAID trouve, chercher PAID
                 if not _found:
                     for _cell in _cells:
                         for _w in _PAID:
@@ -1391,8 +1391,14 @@ async def api_admin_gateway_import_students(request: web.Request):
                                 break
                         if payment_status == 'PAID': break
                 
+                # DEBUG TEMPORAIRE - voir dans les logs Railway exactement ce que contient col H
+                _cell_h_raw = row[7] if len(row) > 7 else 'COLONNE_H_MANQUANTE'
+                import logging as _log_tmp
+                _log_tmp.warning(f"[PAYMENT DEBUG] email={email} | col_H_raw={repr(_cell_h_raw)} | col_H_hex={str(_cell_h_raw).encode('utf-8').hex()} | result={payment_status}")
+                
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''
+
                 school_level = str(row[12]).strip() if len(row) > 12 else ''
                 created_at_val = str(row[13]).strip() if len(row) > 13 else ''
                 profession = str(row[14]).strip() if len(row) > 14 else ''
