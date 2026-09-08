@@ -1282,11 +1282,6 @@ async def api_admin_gateway_archive_student(request: web.Request):
                 "INSERT INTO student_logs (student_id, action_type, description, telegram_name) VALUES (?, ?, ?, ?)",
                 (student_id, "CRM_NOTE", f"[بواسطة: {admin_name}] [نوع: SYSTEM]\n{note_text}", "Admin")
             )
-            elif action == 'log_sms':
-                now_str = datetime.utcnow().isoformat()
-                await db.execute("UPDATE academy_students SET sms_sent = 1, sms_sent_at = ? WHERE student_id = ?", (now_str, student_id))
-                await log_student_action(student_id, 'SMS_SENT', "Lien direct envoyé par SMS.")
-                
             await db.commit()
             
         return web.json_response({'success': True})
