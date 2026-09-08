@@ -446,11 +446,17 @@
         <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
         <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 15px; border-bottom: 1px solid var(--border);">
             <div style="font-weight: 800; color: var(--text1); font-size: 0.9rem;" id="students-count-display"></div>
-            <select id="card-style-selector" onchange="changeCardStyle(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.8rem; outline:none;">
-                <option value="1">✨ النموذج 1 (كلاسيكي)</option>
-                <option value="2">📋 النموذج 2 (حالة)</option>
-                <option value="3">📱 النموذج 3 (مدمج)</option>
-            </select>
+            <div style="display:flex; gap:10px;">
+                <select id="card-style-selector" onchange="changeCardStyle(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.8rem; outline:none;">
+                    <option value="1">✨ النموذج 1 (كلاسيكي)</option>
+                    <option value="2">📋 النموذج 2 (حالة)</option>
+                    <option value="3">📱 النموذج 3 (مدمج)</option>
+                </select>
+                <select id="view-mode-selector" onchange="changeViewMode(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.8rem; outline:none;">
+                    <option value="grid">🗂️ بطاقات</option>
+                    <option value="table">📊 جدول</option>
+                </select>
+            </div>
         </div>
         <script>
                         let currentCardStyle = localStorage.getItem('cardStyle') || '1';
