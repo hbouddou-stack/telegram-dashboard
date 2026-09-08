@@ -1545,6 +1545,10 @@
             filters.status = val;
             filterStudents();
         }
+        function setSourceFilter(val) {
+            filters.source = val;
+            filterStudents();
+        }
         function setColorFilter(val, el) {
             filters.color = val;
             if (el && el.parentElement) {
