@@ -4344,12 +4344,12 @@ async def import_students_excel(records: list) -> dict:
                 else:
                     gender = 'HOMME'
                     
-                payment_status = (r.get('payment_status') or 'PAID').strip().upper()
+                payment_status = (r.get('payment_status') or 'UNPAID').strip().upper()
                 # Normalisation du statut de paiement
-                if any(k in payment_status for k in ['PAYE', 'PAID', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED', 'تم الدفع', 'مدفوع', '1', 'TRUE']):
+                if payment_status in ['PAYE', 'PAYÉ', 'PAID', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED', '1', 'TRUE', 'مدفوع']:
                     payment_status = 'PAID'
                 else:
-                    payment_status = 'PENDING'
+                    payment_status = 'UNPAID'
                     
                 year = str(r.get('year') or '1').strip()
                 dob = (r.get('dob') or '2000-01-01').strip()
