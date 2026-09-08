@@ -1358,9 +1358,18 @@ async def api_admin_gateway_import_students(request: web.Request):
                 if gender_raw in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]: gender = 'FEMME'
                 elif gender_raw in ["HOMME", "MALE", "GARCON", "M", "ذكر"]: gender = 'HOMME'
                 
-                pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
+                # RECHERCHE INTELLIGENTE DU PAIEMENT DANS TOUTE LA LIGNE
                 payment_status = 'UNPAID'
-                if pay_raw in ['PAID', 'PAYE', 'PAYÉ', 'VALIDE', 'CONFIRME', 'OUI', 'YES', 'مدفوع', 'مسدد']: payment_status = 'PAID'
+                row_str = " ".join([str(x) for x in row]).upper()
+                if 'غير مسدد' in row_str or 'UNPAID' in row_str:
+                    payment_status = 'UNPAID'
+                elif 'مسدد' in row_str or 'مدفوع' in row_str or 'PAID' in row_str or 'PAYÉ' in row_str or 'PAYE' in row_str:
+                    payment_status = 'PAID'
+                else:
+                    # Fallback sur la colonne H (7) au cas où
+                    pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
+                    if pay_raw in ['VALIDE', 'CONFIRME', 'OUI', 'YES', '1']:
+                        payment_status = 'PAID'
                 
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''

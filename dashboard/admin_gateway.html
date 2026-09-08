@@ -1824,9 +1824,12 @@
                     || filters.source === derivedSource;
 
                 const linked = !!s.telegram_id;
+                const isPaid = String(s.payment_status || '').toUpperCase() === 'PAID';
                 const matchStatus = filters.status === 'all'
                     || (filters.status === 'linked' && linked)
-                    || (filters.status === 'unlinked' && !linked);
+                    || (filters.status === 'unlinked' && !linked)
+                    || (filters.status === 'paid' && isPaid)
+                    || (filters.status === 'unpaid' && !isPaid);
 
                 let studentColor = 'red';
                 if (s.excluded) studentColor = 'black';
