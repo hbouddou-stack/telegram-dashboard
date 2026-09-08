@@ -959,6 +959,32 @@
             </div>
         </div>
 
+        
+        <!-- ÉTAPE SMS -->
+        <div class="timeline-block" id="funnel-step-sms">
+            <div class="timeline-dot" style="background:#0ea5e9;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>📱 المرحلة : رسالة SMS (Lien Direct)</span>
+                    <div>
+                        <button class="btn-action" onclick="sendFunnelAction('log_sms')" style="background:#0ea5e9;">📱 إرسال SMS / فتح التطبيق</button>
+                    </div>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-sms-sent">⏳</span>
+                        <span>آخر رسالة SMS :</span>
+                        <span id="f-date-sms-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-last-source">🔍</span>
+                        <span>مصدر الدخول الأخير :</span>
+                        <span id="f-source-last-click" style="font-weight:bold; color:var(--accent);">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ÉTAPE FINALE -->
         <div class="timeline-block" id="funnel-step-final">
             <div class="timeline-dot" style="background:#8b5cf6;"></div>
@@ -1252,7 +1278,15 @@
                         const token = student.magic_token || student.student_id;
                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                         
-                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                        if (actionType === 'log_sms') {
+                    if (phoneStr) {
+                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
+                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
+                    } else {
+                        alert("Aucun numéro de téléphone"); return;
+                    }
+                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
                             if (phoneStr) {
                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
@@ -1637,6 +1671,7 @@
                 const data = await res.json();
                 if(data.success) {
                     allStudents = data.students;
+                window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
                     filterStudents();
                 }
             } catch(e) { console.error(e); }
@@ -2114,7 +2149,15 @@
                 let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                 let phoneStr = String(student.phone || '').replace(/\D/g, '');
                 
-                if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                if (actionType === 'log_sms') {
+                    if (phoneStr) {
+                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
+                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
+                    } else {
+                        alert("Aucun numéro de téléphone"); return;
+                    }
+                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                     if (phoneStr) {
                         finalUrl = `https://wa.me/${phoneStr}?text=${text}`;
                     } else {
@@ -2456,7 +2499,15 @@
                         const token = student.magic_token || student.student_id;
                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                         
-                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                        if (actionType === 'log_sms') {
+                    if (phoneStr) {
+                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
+                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
+                    } else {
+                        alert("Aucun numéro de téléphone"); return;
+                    }
+                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
                             if (phoneStr) {
                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');

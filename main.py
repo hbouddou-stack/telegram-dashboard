@@ -1055,7 +1055,7 @@ async def api_admin_gateway_students(request: web.Request):
                        s.year, s.gender, s.dob, s.source, s.source_file, s.phone, s.created_at, s.payment_status,
                        s.profession, s.country, s.nationality, s.arabic_level, s.school_level,
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
-                       s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.last_click_source,
+                       s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.sms_sent, s.sms_sent_at, s.last_click_source,
                        s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,
                        u.first_name as tg_first_name, u.last_name as tg_last_name, s.magic_token
                 FROM academy_students s
@@ -1063,7 +1063,9 @@ async def api_admin_gateway_students(request: web.Request):
                 ORDER BY s.created_at DESC, s.first_name ASC
             """) as cur:
                 students = [dict(row) for row in await cur.fetchall()]
-        return web.json_response({'success': True, 'students': students})
+        import config as cfg
+        bot_user = getattr(cfg, 'MAIN_BOT_USERNAME', 'alsirahquizz_bot') or 'alsirahquizz_bot'
+        return web.json_response({'success': True, 'students': students, 'bot_username': bot_user})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
@@ -1280,6 +1282,11 @@ async def api_admin_gateway_archive_student(request: web.Request):
                 "INSERT INTO student_logs (student_id, action_type, description, telegram_name) VALUES (?, ?, ?, ?)",
                 (student_id, "CRM_NOTE", f"[بواسطة: {admin_name}] [نوع: SYSTEM]\n{note_text}", "Admin")
             )
+            elif action == 'log_sms':
+                now_str = datetime.utcnow().isoformat()
+                await db.execute("UPDATE academy_students SET sms_sent = 1, sms_sent_at = ? WHERE student_id = ?", (now_str, student_id))
+                await log_student_action(student_id, 'SMS_SENT', "Lien direct envoyé par SMS.")
+                
             await db.commit()
             
         return web.json_response({'success': True})
@@ -1687,6 +1694,11 @@ async def api_admin_gateway_action(request: web.Request):
                 step_wa = 1 if action == 'log_wa_1' else 2
                 await db.execute("UPDATE academy_students SET whatsapp_sent = ?, whatsapp_sent_at = ? WHERE student_id = ?", (step_wa, now_str, student_id))
                 await log_student_action(student_id, 'WHATSAPP_SENT', f"Relance WhatsApp ({action}) effectuée.")
+                
+            elif action == 'log_sms':
+                now_str = datetime.utcnow().isoformat()
+                await db.execute("UPDATE academy_students SET sms_sent = 1, sms_sent_at = ? WHERE student_id = ?", (now_str, student_id))
+                await log_student_action(student_id, 'SMS_SENT', "Lien direct envoyé par SMS.")
                 
             await db.commit()
             
@@ -6401,6 +6413,14 @@ async def main():
                 pass
             try:
                 await db_conn.execute("ALTER TABLE academy_students ADD COLUMN excluded INTEGER DEFAULT 0")
+            except Exception:
+                pass
+            try:
+                await db_conn.execute("ALTER TABLE academy_students ADD COLUMN sms_sent INTEGER DEFAULT 0")
+            except Exception:
+                pass
+            try:
+                await db_conn.execute("ALTER TABLE academy_students ADD COLUMN sms_sent_at TEXT")
                 print("Added excluded column to academy_students")
             except Exception:
                 pass
