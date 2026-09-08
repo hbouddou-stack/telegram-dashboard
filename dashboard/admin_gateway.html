@@ -413,7 +413,7 @@
             </div>
             
             <!-- Compact selection for Level and Status side-by-side -->
-            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; margin-top: 4px;">
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 10px; margin-top: 4px;">
                 <div>
                     <div class="filter-title">السنة الدراسية</div>
                     <select id="level-select" onchange="setLevelFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
@@ -430,6 +430,15 @@
                         <option value="all">كل الحالات</option>
                         <option value="linked">✅ مرتبط بتيليجرام</option>
                         <option value="unlinked">❌ غير مرتبط</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="filter-title">المصدر (Source)</div>
+                    <select id="source-select" onchange="setSourceFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                        <option value="all">كل المصادر</option>
+                        <option value="sheet">📊 Sheet</option>
+                        <option value="excel">📗 Excel</option>
+                        <option value="manuel">✍️ يدوي (Manuel)</option>
                     </select>
                 </div>
             </div>
@@ -590,6 +599,15 @@
                         <option value="all">الكل (Tous)</option>
                         <option value="male">ذكور (Garçons)</option>
                         <option value="female">إناث (Filles)</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="filter-title">المصدر (Source)</div>
+                    <select id="source-select" onchange="setSourceFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                        <option value="all">كل المصادر</option>
+                        <option value="sheet">📊 Sheet</option>
+                        <option value="excel">📗 Excel</option>
+                        <option value="manuel">✍️ يدوي (Manuel)</option>
                     </select>
                 </div>
             </div>
@@ -1737,6 +1755,15 @@
                     || (filters.level === '3' && (yrLower.includes('ثالث') || yrLower.includes('3')))
                     || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
 
+                
+                const srcLower = String(s.source || '').toLowerCase();
+                let derivedSource = 'manuel';
+                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
+                else if (srcLower.includes('excel')) derivedSource = 'excel';
+                
+                const matchSource = filters.source === 'all'
+                    || filters.source === derivedSource;
+
                 const linked = !!s.telegram_id;
                 const matchStatus = filters.status === 'all'
                     || (filters.status === 'linked' && linked)
@@ -1749,7 +1776,7 @@
 
                 const matchColor = filters.color === 'all' || filters.color === studentColor;
 
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor;
+                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource;
             
             }); // End of filtering
 
@@ -1864,6 +1891,15 @@
             const displayLimit = Math.min(filtered.length, 500);
             for(let i=0; i<displayLimit; i++) {
                 const s = filtered[i];
+                
+                const srcLower = String(s.source || '').toLowerCase();
+                let derivedSource = 'manuel';
+                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
+                else if (srcLower.includes('excel')) derivedSource = 'excel';
+                
+                const matchSource = filters.source === 'all'
+                    || filters.source === derivedSource;
+
                 const linked = !!s.telegram_id;
                 const div = document.createElement('div');
                 div.className = 'list-item';
