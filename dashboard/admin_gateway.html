@@ -1998,8 +1998,8 @@
                 const yearAr = yrNum ? `السنة ${yrNum}` : '';
 
                 // Payment badge
-                const paid = String(s.payment_status || '').toUpperCase();
-                const isPaid = paid.includes('PAID') || paid.includes('مدفوع') || paid.includes('OUI');
+                const paid = String(s.payment_status || '').toUpperCase().trim();
+                const isPaid = paid === 'PAID' || paid === 'PAYE' || paid === 'مدفوع' || paid === 'مسدد';
                 const payBadge = isPaid
                     ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
                     : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
@@ -2484,10 +2484,9 @@
             // Payment status in Arabic
             const paymentEl = document.getElementById('profile-payment-text');
             if(paymentEl) {
-                const ps = String(student.payment_status || '').toUpperCase();
-                if (ps.includes('PAID') || ps.includes('مدفوع') || ps.includes('OUI')) paymentEl.textContent = '✅ مدفوع';
-                else if (ps.includes('UNPAID') || ps.includes('NON') || ps.includes('PENDING')) paymentEl.textContent = '❌ غير مدفوع';
-                else paymentEl.textContent = student.payment_status || 'غير متوفر';
+                const ps = String(student.payment_status || '').toUpperCase().trim();
+                if (ps === 'PAID' || ps === 'PAYE' || ps === 'مدفوع' || ps === 'مسدد') paymentEl.textContent = '✅ مدفوع';
+                else paymentEl.textContent = '❌ غير مدفوع';
             }
             
             const inscriptionEl = document.getElementById('profile-inscription-text');
