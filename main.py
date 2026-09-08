@@ -1378,8 +1378,8 @@ async def api_admin_gateway_import_students(request: web.Request):
                     exists = await cur.fetchone()
                     
                 if exists:
-                    await db.execute("""
                     original_file_name = field.filename if field.filename else 'Fichier Excel'
+                    await db.execute("""
                         UPDATE academy_students 
                         SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), source = 'excel', source_file = ?
                         WHERE LOWER(email) = ? OR student_id = ?
