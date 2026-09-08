@@ -6391,6 +6391,22 @@ async def main():
             await db.ensure_email_and_score_columns()
         if hasattr(db, 'ensure_click_tracking_table'):
             await db.ensure_click_tracking_table()
+
+        # --- MIGRATIONS AUTOMATIQUES ---
+        async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            try:
+                await db_conn.execute("ALTER TABLE academy_students ADD COLUMN source_file TEXT")
+                print("Added source_file column to academy_students")
+            except Exception:
+                pass
+            try:
+                await db_conn.execute("ALTER TABLE academy_students ADD COLUMN excluded INTEGER DEFAULT 0")
+                print("Added excluded column to academy_students")
+            except Exception:
+                pass
+            await db_conn.commit()
+        # -------------------------------
+
             
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
             # 1. Guarantee official folder link in group_settings
