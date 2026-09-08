@@ -1619,6 +1619,7 @@
                 tabEl.classList.add('active');
             }
             // Trigger data loading
+            if(id === 'overview') loadHomeDashboard();
             if(id === 'students') filterStudents();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
