@@ -222,6 +222,7 @@ INSTANCE_ID = str(uuid.uuid4())
 log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 log_file_path = os.path.join(os.path.dirname(__file__), "bot.log")
 logging.basicConfig(
+logging.getLogger('aiosqlite').setLevel(logging.WARNING)  # Suppress DEBUG noise
     level=logging.DEBUG,
     format=log_format,
     handlers=[
@@ -1394,7 +1395,7 @@ async def api_admin_gateway_import_students(request: web.Request):
                 # DEBUG TEMPORAIRE - voir dans les logs Railway exactement ce que contient col H
                 _cell_h_raw = row[7] if len(row) > 7 else 'COLONNE_H_MANQUANTE'
                 import logging as _log_tmp
-                _log_tmp.warning(f"[PAYMENT DEBUG] email={email} | col_H_raw={repr(_cell_h_raw)} | col_H_hex={str(_cell_h_raw).encode('utf-8').hex()} | result={payment_status}")
+                _log_tmp.warning(f'[PAY] {email} | H={repr(str(row[7] if len(row)>7 else ""))[:40]} | {payment_status}')
                 
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''
