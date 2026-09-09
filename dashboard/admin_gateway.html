@@ -1947,8 +1947,25 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             try {
                 const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
                 const data = await res.json();
+                
                 if(data.success) {
                     allStudents = data.students;
+                    
+                    // Build dynamic Excel files dropdown
+                    const sourceSelect = document.getElementById('source-select');
+                    const currentVal = sourceSelect.value;
+                    let opts = `<option value="all">📁 كل المصادر</option>
+                                <option value="excel">📗 Excel (الكل)</option>
+                                <option value="sheet">📊 Sheet</option>
+                                <option value="manuel">✍️ يدوي</option>`;
+                    
+                    const excelFiles = [...new Set(allStudents.filter(s => s.source === 'excel' && s.source_file).map(s => s.source_file))];
+                    excelFiles.forEach(f => {
+                        opts += `<option value="file:${f}">📄 ${f}</option>`;
+                    });
+                    sourceSelect.innerHTML = opts;
+                    if (opts.includes(`value="${currentVal}"`)) sourceSelect.value = currentVal;
+
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
                     filterStudents();
                 }
