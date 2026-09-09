@@ -1,0 +1,6 @@
+446: <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." onin
+475: <input type="text" id="sos-search-input" placeholder="🔍 Rechercher par email, TG ID, etc..." oninput
+609: <input type="text" id="log-search-input" placeholder="🔍 Rechercher par ID Telegram, Nom ou Action...
+1681: const q = document.getElementById('search-input').value.toLowerCase();
+2657: const q = (document.getElementById('sos-search-input') ? document.getElementById('sos-search-input')
+2886: const searchInput = document.getElementById('log-search-input');

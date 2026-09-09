@@ -1,97 +1,9 @@
 
-                        let currentCardStyle = localStorage.getItem('cardStyle') || '1';
-            let currentViewMode = localStorage.getItem('viewMode') || 'grid';
-            let currentSort = { key: 'date', order: 'desc' };
-            
-            
-        function toggleAllStudents() {
-            const cb1 = document.getElementById('selectAllCheckbox');
-            const cb2 = document.getElementById('selectAllGrid');
-            // Find which one triggered it, or just use whichever is checked
-            const isChecked = (cb1 && cb1.checked) || (cb2 && cb2.checked);
-            
-            // Sync them
-            if (cb1) cb1.checked = isChecked;
-            if (cb2) cb2.checked = isChecked;
-            
-            const checkboxes = document.querySelectorAll('.student-select-cb');
-            checkboxes.forEach(cb => cb.checked = isChecked);
-            updateMassSmsButton();
-        }
-        document.addEventListener('change', (e) => {
-            if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
-                updateMassSmsButton();
-            }
-        });
-        function updateMassSmsButton() {
-    const selected = document.querySelectorAll('.student-select-cb:checked').length;
-    const bar = document.getElementById('bulk-action-bar');
-    if(bar) {
-        if(selected > 0) {
-            bar.style.display = 'flex';
-            document.getElementById('bulk-count').textContent = selected;
-        } else {
-            bar.style.display = 'none';
-        }
-    }
-}
-        async function sendMassSms() {
-            const cbs = document.querySelectorAll('.student-select-cb:checked');
-            const ids = Array.from(cbs).map(cb => cb.value);
-            if(ids.length === 0) return;
-            if(!confirm(`هل أنت متأكد من وضع ${ids.length} طالب في قائمة انتظار SMS ؟`)) return;
-            
-            try {
-                const res = await fetch('/api/admin/gateway/queue_sms', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_ids: ids })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert(`✅ تم وضع ${data.queued} رسالة SMS في قائمة الانتظار للروبوت بنجاح.`);
-                    cbs.forEach(cb => cb.checked = false);
-                    document.getElementById('selectAllCheckbox').checked = false;
-                    updateMassSmsButton();
-                } else {
-                    alert('Erreur: ' + data.error);
-                }
-            } catch(e) {
-                console.error(e);
-                alert('Erreur réseau.');
-            }
-        }
-
-        
-            
-            function sortTable(key) {
-                if(currentSort.key === key) {
-                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort.key = key;
-                    currentSort.order = 'asc';
-                }
-                filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-            }
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const sel = document.getElementById('card-style-selector');
-                if (sel) sel.value = currentCardStyle;
-                const vSel = document.getElementById('view-mode-selector');
-                if (vSel) vSel.value = currentViewMode;
-            });
-            function changeCardStyle(style) {
-                currentCardStyle = style;
-                localStorage.setItem('cardStyle', style);
-                filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-            }
-        
-
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all' };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -253,15 +165,7 @@
                         const token = student.magic_token || student.student_id;
                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                         
-                        if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
                             if (phoneStr) {
                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
@@ -450,124 +354,30 @@
                 tabEl.classList.add('active');
             }
             // Trigger data loading
-            if(id === 'overview') loadHomeDashboard();
-            if(id === 'students') filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            if(id === 'students') filterStudents();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
             if(id === 'logs') fetchGlobalLogs();
             if(id === 'settings') loadGeneralSettings();
             if(id === 'ghosts') loadGhostVisitors();
-            if(id === 'stats') loadDailyStats(7, document.getElementById('stats-7'));
         }
 
         // ============ FILTER TRIGGERS ============
-        
-        // ===== PILL BUTTON LOGIC =====
-        function _activatePill(groupPrefix, clickedEl) {
-            document.querySelectorAll('[id^="' + groupPrefix + '"]').forEach(el => {
-                el.classList.remove('pill-active');
-            });
-            if (clickedEl) clickedEl.classList.add('pill-active');
-        }
-
-        // Override existing filter triggers
         function setGenderFilter(val, el) {
-            filters.gender = val;
-            _activatePill('g-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setTelegramFilter(val, el) {
-            filters.telegram = val;
-            _activatePill('tg-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setPayFilter(val, el) {
-            filters.payment = val;
-            _activatePill('pay-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        
-        function setSort(key, order, el) {
-            currentSort = { key, order };
-            document.querySelectorAll('.sort-btn').forEach(b => {
-                b.style.background = 'var(--bg)';
-                b.style.color = 'var(--text1)';
-            });
-            if (el) { el.style.background = 'var(--accent2)'; el.style.color = 'white'; }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        
-        function changeViewMode(mode) {
-            currentViewMode = mode;
-            localStorage.setItem('viewMode', mode);
-            const gridBtn = document.getElementById('view-toggle-grid');
-            const tableBtn = document.getElementById('view-toggle-table');
-            if (gridBtn && tableBtn) {
-                if (mode === 'grid') {
-                    gridBtn.style.background = 'var(--accent2)'; gridBtn.style.color = 'white';
-                    tableBtn.style.background = 'var(--bg)'; tableBtn.style.color = 'var(--text1)';
-                } else {
-                    tableBtn.style.background = 'var(--accent2)'; tableBtn.style.color = 'white';
-                    gridBtn.style.background = 'var(--bg)'; gridBtn.style.color = 'var(--text1)';
-                }
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-
-        // Replaced old setGenderFilter
-        function oldSetGenderFilter(val, el) {
             filters.gender = val;
             if (el && el.parentElement) {
                 el.parentElement.querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
                 el.classList.add('active');
             }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents();
         }
         function setLevelFilter(val) {
             filters.level = val;
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents();
         }
         function setStatusFilter(val) {
             filters.status = val;
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setSourceFilter(val) {
-            filters.source = val;
-            const delBtn = document.getElementById('btn-delete-source');
-            if (val && val.startsWith('file:')) {
-                delBtn.style.display = 'block';
-            } else {
-                delBtn.style.display = 'none';
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-
-        async function deleteSelectedSource() {
-            const val = document.getElementById('source-select').value;
-            if (!val.startsWith('file:')) return;
-            const filename = val.replace('file:', '');
-            
-            if (!confirm(`⚠️ Attention !
-Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fichier :\n\n📄 ${filename}\n\nCette action est irréversible. Continuer ?`)) return;
-            
-            try {
-                const res = await fetch('/api/admin/gateway/delete_source', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source_file: filename })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert(`✅ Fichier supprimé avec succès !\n${data.deleted} étudiants ont été retirés.`);
-                    document.getElementById('source-select').value = 'all';
-                    setSourceFilter('all');
-                    fetchStudents();
-                } else {
-                    alert('Erreur: ' + (data.error || 'Inconnue'));
-                }
-            } catch(e) {
-                alert('Erreur réseau');
-            }
+            filterStudents();
         }
         function setColorFilter(val, el) {
             filters.color = val;
@@ -575,7 +385,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 el.parentElement.querySelectorAll('.chip-color').forEach(c => c.classList.remove('active'));
                 el.classList.add('active');
             }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents();
         }
 
         // ============ SETTINGS API ============
@@ -738,128 +548,11 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             try {
                 const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
                 const data = await res.json();
-                
                 if(data.success) {
                     allStudents = data.students;
-                    
-                    // Build dynamic Excel files dropdown
-                    const sourceSelect = document.getElementById('source-select');
-                    const currentVal = sourceSelect.value;
-                    let opts = `<option value="all">📁 كل المصادر</option>
-                                <option value="excel">📗 Excel (الكل)</option>
-                                <option value="sheet">📊 Sheet</option>
-                                <option value="manuel">✍️ يدوي</option>`;
-                    
-                    const excelFiles = [...new Set(allStudents.filter(s => s.source === 'excel' && s.source_file).map(s => s.source_file))];
-                    excelFiles.forEach(f => {
-                        opts += `<option value="file:${f}">📄 ${f}</option>`;
-                    });
-                    sourceSelect.innerHTML = opts;
-                    if (opts.includes(`value="${currentVal}"`)) sourceSelect.value = currentVal;
-
-                window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
-                    filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                    filterStudents();
                 }
             } catch(e) { console.error(e); }
-        }
-
-        
-        // ===== DUPLICATE SCANNER =====
-        function openDuplicateScanner() {
-            const container = document.getElementById('duplicates-container');
-            container.innerHTML = '<div style="text-align:center; padding:20px;">Analyse en cours...</div>';
-            document.getElementById('modal-duplicates').style.display = 'flex';
-
-            setTimeout(() => {
-                const groups = {};
-                
-                // Group by normalized name
-                allStudents.forEach(s => {
-                    let n = ((s.first_name || '') + ' ' + (s.last_name || '')).toLowerCase();
-                    // Remove common titles, spaces, and special chars to match closely
-                    n = n.replace(/[^a-z0-9أ-ي]/g, '');
-                    if (n.length < 3) return; // ignore too short names
-                    
-                    if (!groups[n]) groups[n] = [];
-                    groups[n].push(s);
-                });
-
-                // Filter groups with > 1 student
-                const duplicates = Object.values(groups).filter(g => g.length > 1);
-                
-                if (duplicates.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; padding:40px; color:#10b981; font-weight:bold;">✅ Aucun doublon détecté !</div>';
-                    return;
-                }
-
-                let html = '';
-                duplicates.forEach(group => {
-                    // Sort group by date descending (newest first)
-                    group.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-                    
-                    const name = (group[0].first_name || '') + ' ' + (group[0].last_name || '');
-                    
-                    html += `<div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--bg);">
-                        <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1rem;">🧑‍🎓 ${name} <span style="font-size:0.75rem; color:var(--text2);">(${group.length} comptes)</span></h4>
-                        <div style="display:flex; flex-direction:column; gap:8px;">`;
-                    
-                    group.forEach((s, idx) => {
-                        const isNewest = (idx === 0);
-                        const isExcluded = s.excluded == 1;
-                        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('fr-FR') : '-';
-                        const badgeColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
-                        const badgeText = isExcluded ? 'Exclu 👻' : (isNewest ? 'Le plus récent ⭐' : 'Ancien');
-                        const opacity = isExcluded ? '0.5' : '1';
-                        
-                        html += `
-                            <div id="dup-row-${s.student_id}" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; opacity:${opacity};">
-                                <div>
-                                    <div style="font-size:0.85rem; font-weight:bold; color:var(--text1);">${s.email || '-'}</div>
-                                    <div style="font-size:0.75rem; color:var(--text2); margin-top:4px;">
-                                        📅 ${dateStr} | 📄 Source: ${s.source_file || s.source || '-'} | 💳 ${s.payment_status === 'مسدد' || s.payment_status === 'PAID' ? 'Payé' : 'Non Payé'}
-                                    </div>
-                                    <div style="margin-top:6px;">
-                                        <span style="font-size:0.7rem; background:${badgeColor}22; color:${badgeColor}; padding:2px 8px; border-radius:10px; font-weight:bold;">${badgeText}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    ${isExcluded 
-                                        ? `<button onclick="toggleDuplicateExclude('${s.student_id}', 0)" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">🔄 Réintégrer</button>`
-                                        : `<button onclick="toggleDuplicateExclude('${s.student_id}', 1)" style="background:#ef4444; border:none; color:white; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">👻 Exclure</button>`
-                                    }
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `</div></div>`;
-                });
-                
-                container.innerHTML = html;
-            }, 100);
-        }
-
-        async function toggleDuplicateExclude(studentId, excludedState) {
-            try {
-                const res = await fetch('/api/admin/gateway/toggle_exclude', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ student_id: studentId, excluded: excludedState })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    // Update local data so we don't have to fetch everything immediately
-                    const student = allStudents.find(s => s.student_id === studentId);
-                    if (student) student.excluded = excludedState;
-                    
-                    // Re-render the scanner to update UI
-                    openDuplicateScanner();
-                } else {
-                    alert('Erreur : ' + (data.error || 'Inconnue'));
-                }
-            } catch(e) {
-                alert('Erreur réseau');
-            }
         }
 
         function filterStudents() {
@@ -895,29 +588,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     || (filters.level === '3' && (yrLower.includes('ثالث') || yrLower.includes('3')))
                     || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
 
-                
-                const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
-
                 const linked = !!s.telegram_id;
-                const botStarted = !!s.telegram_id;
-                const groupJoined = !!s.group_joined || !!s.joined_at;
-                const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === 'مسدد';
-                
-                const matchTelegram = filters.telegram === 'all'
-                    || (filters.telegram === 'bot' && botStarted)
-                    || (filters.telegram === 'group' && groupJoined)
-                    || (filters.telegram === 'none' && !botStarted);
-                
-                const matchPayment = filters.payment === 'all'
-                    || (filters.payment === 'paid' && isPaid)
-                    || (filters.payment === 'unpaid' && !isPaid);
-
                 const matchStatus = filters.status === 'all'
                     || (filters.status === 'linked' && linked)
                     || (filters.status === 'unlinked' && !linked);
@@ -929,34 +600,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
                 const matchColor = filters.color === 'all' || filters.color === studentColor;
 
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment;
-            
-            }); // End of filtering
-
-            // Sort filtered results
-            filtered.sort((a, b) => {
-                let valA, valB;
-                if (currentSort.key === 'name') {
-                    valA = (a.first_name || '').toLowerCase();
-                    valB = (b.first_name || '').toLowerCase();
-                } else if (currentSort.key === 'email') {
-                    valA = (a.email || '').toLowerCase();
-                    valB = (b.email || '').toLowerCase();
-                } else if (currentSort.key === 'level') {
-                    valA = String(a.year || '');
-                    valB = String(b.year || '');
-                } else if (currentSort.key === 'status') {
-                    valA = a.telegram_id ? 1 : 0;
-                    valB = b.telegram_id ? 1 : 0;
-                } else {
-                    // Default: date
-                    valA = new Date(a.created_at || 0).getTime();
-                    valB = new Date(b.created_at || 0).getTime();
-                }
-                
-                if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
-                if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
-                return 0;
+                return matchSearch && matchGender && matchLevel && matchStatus && matchColor;
             });
 
             const linkedCount = filtered.filter(s => s.telegram_id).length;
@@ -977,84 +621,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 list.innerHTML = '<div class="no-items">لم يتم العثور على أي طالب.</div>';
                 return;
             }
-            
-            if (currentViewMode === 'table') {
-                const table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '0.85rem';
-                table.style.background = 'var(--surface)';
-                table.style.borderRadius = '8px';
-                table.style.overflow = 'hidden';
-                table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-                
-                const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                        <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${currentSort.key==='name'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('email')">الإيميل ${currentSort.key==='email'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">الحالة ${currentSort.key==='status'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">المستوى ${currentSort.key==='level'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('date')">التاريخ ${currentSort.key==='date'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                    </tr>
-                `;
-                table.appendChild(thead);
-                const tbody = document.createElement('tbody');
-                
-                const displayLimit = Math.min(filtered.length, 500);
-                for(let i=0; i<displayLimit; i++) {
-                    const s = filtered[i];
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid var(--border)';
-                    tr.style.cursor = 'pointer';
-                    tr.onmouseover = () => tr.style.background = 'var(--bg)';
-                    tr.onmouseout = () => tr.style.background = 'transparent';
-                    tr.onclick = () => openStudentCard(s);
-                    
-                    // Status dot
-                    let dotColor, dotTitle;
-                    if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
-                    else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
-                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
-                    else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
-                    
-                    const name = (s.first_name || '') + ' ' + (s.last_name || '');
-                    const yrStr = String(s.year || '');
-                    const yrMatch = yrStr.match(/\d+/);
-                    const yrNum = yrMatch ? yrMatch[0] : '';
-                    
-                    const d = new Date(s.created_at);
-                    const dateStr = !isNaN(d) ? d.toLocaleDateString('fr-FR') : '-';
-                    
-                    tr.innerHTML = `
-                        <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
-                        <td style="padding:12px;"><strong><span style="color:var(--text2); font-size:0.75rem; margin-right:4px;">#${i + 1}</span> ${name}</strong></td>
-                        <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
-                        <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
-                        <td style="padding:12px;">${yrNum ? 'السنة '+yrNum : '-'}</td>
-                        <td style="padding:12px;">${dateStr}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-                table.appendChild(tbody);
-                list.appendChild(table);
-                return; // skip the grid rendering
-            }
-
             const fragment = document.createDocumentFragment();
             const displayLimit = Math.min(filtered.length, 500);
             for(let i=0; i<displayLimit; i++) {
                 const s = filtered[i];
-                
-                const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
-
                 const linked = !!s.telegram_id;
                 const div = document.createElement('div');
                 div.className = 'list-item';
@@ -1089,8 +659,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const yearAr = yrNum ? `السنة ${yrNum}` : '';
 
                 // Payment badge
-                const paid = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = paid === 'PAID' || paid === 'PAYE' || paid === 'مدفوع' || paid === 'مسدد';
+                const paid = String(s.payment_status || '').toUpperCase();
+                const isPaid = paid.includes('PAID') || paid.includes('مدفوع') || paid.includes('OUI');
                 const payBadge = isPaid
                     ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
                     : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
@@ -1116,7 +686,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const coloredEmail = s.email ? `<span style="font-size:0.8rem; color:#0a84ff; background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:4px;" dir="ltr">${String(s.email)}</span>` : '';
                 
                 // Names
-                const arName = '<span style="color:var(--text2); font-size:0.75rem; margin-left:6px;">#' + (i + 1) + '</span> ' + String(s.first_name || '');
+                const arName = String(s.first_name || '');
                 const frNameHTML = s.last_name ? `<div style="font-size:0.85rem;color:var(--text2);">${String(s.last_name)}</div>` : '';
 
                 // Telegram info
@@ -1137,7 +707,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     // Template 2: Status Kanban Style
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="font-weight:900;font-size:1.15rem;color:var(--text1);">
                                 ${arName}
                             </div>
@@ -1162,7 +731,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     div.style.padding = '8px 12px'; // tighter padding
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);">
                                 ${dot} ${arName} ${s.last_name ? `<span style="font-size:0.8rem;color:var(--text2);font-weight:normal;">(${String(s.last_name)})</span>` : ''}
                             </div>
@@ -1180,7 +748,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     // Template 1: Classic Enhanced (Default)
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="display:flex;flex-direction:column;gap:2px;">
                                 <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:1.15rem;color:var(--text1);">
                                     ${dot} ${arName}
@@ -1460,15 +1027,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                 let phoneStr = String(student.phone || '').replace(/\D/g, '');
                 
-                if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                     if (phoneStr) {
                         finalUrl = `https://wa.me/${phoneStr}?text=${text}`;
                     } else {
@@ -1578,9 +1137,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             // Payment status in Arabic
             const paymentEl = document.getElementById('profile-payment-text');
             if(paymentEl) {
-                const ps = String(student.payment_status || '').toUpperCase().trim();
-                if (ps === 'PAID' || ps === 'PAYE' || ps === 'مدفوع' || ps === 'مسدد') paymentEl.textContent = '✅ مدفوع';
-                else paymentEl.textContent = '❌ غير مدفوع';
+                const ps = String(student.payment_status || '').toUpperCase();
+                if (ps.includes('PAID') || ps.includes('مدفوع') || ps.includes('OUI')) paymentEl.textContent = '✅ مدفوع';
+                else if (ps.includes('UNPAID') || ps.includes('NON') || ps.includes('PENDING')) paymentEl.textContent = '❌ غير مدفوع';
+                else paymentEl.textContent = student.payment_status || 'غير متوفر';
             }
             
             const inscriptionEl = document.getElementById('profile-inscription-text');
@@ -1671,7 +1231,48 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 }
                 
                 switchModalTab('general');
-            }
+
+    // Re-added missing modal logic
+    document.getElementById('logs-overlay').style.display = 'flex';
+    if(typeof fetchCrmTimeline === 'function') fetchCrmTimeline(student.student_id, student.telegram_id);
+    
+    try {
+        const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id + '&tid=' + (student.telegram_id || 'null'));
+        const data = await res.json();
+
+        if (student.telegram_id) {
+            let tgFullName = student.tg_first_name || '';
+            if (student.tg_last_name) tgFullName += ' ' + student.tg_last_name;
+            document.getElementById('profile-tg-display').textContent = tgFullName.trim() || 'Non défini (Nom caché)';
+
+            document.getElementById('modal-tg-identity').innerHTML = `
+                <strong>ID:</strong> ${student.telegram_id}<br>
+                <strong>Prénom:</strong> ${student.tg_first_name || '-'}<br>
+                <strong>Nom:</strong> ${student.tg_last_name || '-'}${student.telegram_username ? '<br><strong>Pseudo:</strong> @' + student.telegram_username : ''}
+            `;
+        } else {
+            document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">Non lié</span>`;
+        }
+
+        document.getElementById('modal-db-identity').innerHTML = `
+            <strong>ID:</strong> ${student.student_id || '-'}<br>
+            <strong>Nom complet:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
+            <strong>Email:</strong> ${student.email || '-'}<br>
+            <strong>Genre:</strong> ${student.gender || '-'}
+        `;
+
+        if(data.success && data.logs.length > 0) {
+            let grouped = groupLogs(data.logs);
+            let html = grouped.map(l => renderLogCard(l, false)).join('');
+            document.getElementById('logs-body').innerHTML = html;
+        } else {
+            document.getElementById('logs-body').innerHTML = '<div class="no-items">Aucun historique pour le moment.</div>';
+        }
+    } catch(e) {
+        document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">Erreur lors du chargement de l\'historique.</div>';
+    }
+}
+
 
             // Translation dictionaries
             const trPays = {'france':'فرنسا', 'maroc':'المغرب', 'algerie':'الجزائر', 'algérie':'الجزائر', 'belgique':'بلجيكا', 'suisse':'سويسرا', 'canada':'كندا', 'tunisie':'تونس'};
@@ -1809,15 +1410,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         const token = student.magic_token || student.student_id;
                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                         
-                        if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
                             if (phoneStr) {
                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
@@ -2273,179 +1866,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         // ============ INIT ============
         fetchStudents(); fetchKpiMetrics();
     
-
-
-
-
-
-
-
-// ===== OVERVIEW DASHBOARD =====
-function switchOverviewSubtab(tab) {
-    document.querySelectorAll('.overview-subtab').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('[id^="subtab-"][id$="-btn"]').forEach(el => el.classList.remove('pill-active'));
-    
-    document.getElementById('subtab-' + tab).style.display = 'block';
-    document.getElementById('subtab-' + tab + '-btn').classList.add('pill-active');
-}
-
 let funnelChartInstance = null;
-let financeChartInstance = null;
 let levelChartInstance = null;
-let genderChartInstance = null;
-
-
-// ===== DASHBOARD DYNAMIC UPDATE =====
-function updateDashboardView() {
-    if (!allStudents || allStudents.length === 0) return;
-
-    const fYear = document.getElementById('dash-filter-year').value;
-    const fGender = document.getElementById('dash-filter-gender').value;
-    const fPay = document.getElementById('dash-filter-pay').value;
-
-    // Filter Students
-    const subset = allStudents.filter(s => {
-        if (s.excluded == 1) return false; // Ignore excluded students in KPIs
-        let match = true;
-        if (fYear !== 'all' && String(s.year) !== fYear) match = false;
-        
-        let gen = (s.gender || '').toUpperCase().trim();
-        if (gen === 'M') gen = 'HOMME';
-        if (gen === 'F') gen = 'FEMME';
-        if (fGender !== 'all' && gen !== fGender) match = false;
-        
-        let pay = (s.payment_status || '').toUpperCase().trim();
-        let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مسدد'].includes(pay);
-        if (fPay === 'PAID' && !isPaid) match = false;
-        if (fPay === 'UNPAID' && isPaid) match = false;
-        
-        return match;
-    });
-
-    // Compute Metrics
-    const total = subset.length;
-    const contacted = subset.filter(s => s.email_sent > 0 || s.whatsapp_sent > 0 || s.sms_sent > 0).length;
-    const started = subset.filter(s => s.bot_started_at).length;
-    const linked = subset.filter(s => s.telegram_id).length;
-    const joined = subset.filter(s => s.folder_clicked_at || s.group_joined).length;
-
-    // Finances
-    let paid = 0;
-    let unpaid = 0;
-    subset.forEach(s => {
-        let pay = (s.payment_status || '').toUpperCase().trim();
-        if (['PAID', 'PAYE', 'PAYÉ', 'مسدد'].includes(pay)) paid++;
-        else unpaid++;
-    });
-
-    // Update KPI UI
-    document.getElementById('home-kpi-total').textContent = total;
-    document.getElementById('home-kpi-linked').textContent = linked + (total>0 ? ` (${Math.round(linked/total*100)}%)` : '');
-    document.getElementById('home-kpi-groups').textContent = joined;
-    
-    // Ghost is global, let's keep it from backend or just mark N/A if filtered
-    const ghostEl = document.getElementById('home-kpi-ghosts');
-    if (fYear !== 'all' || fGender !== 'all' || fPay !== 'all') {
-        ghostEl.textContent = 'N/A';
-        ghostEl.style.fontSize = '1.5rem';
-    } else {
-        ghostEl.style.fontSize = '1.8rem';
-        // Global ghost count remains what was loaded from home_stats
-    }
-
-    document.getElementById('finance-kpi-paid').textContent = paid + (total>0 ? ` (${Math.round(paid/total*100)}%)` : '');
-    document.getElementById('finance-kpi-unpaid').textContent = unpaid;
-
-    // Render Pipeline Funnel
-    renderHtmlFunnel(total, contacted, started, linked, joined);
-
-    // Render Charts
-    renderFilteredCharts(subset, paid, unpaid);
-}
-
-function renderHtmlFunnel(total, contacted, started, linked, joined) {
-    const container = document.getElementById('html-funnel-container');
-    if(!container) return;
-
-    function makeStep(label, count, prevCount, color, icon) {
-        const pct = prevCount > 0 ? Math.round((count / prevCount) * 100) : 0;
-        const totalPct = total > 0 ? Math.round((count / total) * 100) : 0;
-        const drop = 100 - pct;
-        
-        let dropHtml = '';
-        if (prevCount !== null && drop > 0 && count !== total) {
-            dropHtml = `<div style="text-align:center; color:#ef4444; font-size:0.75rem; font-weight:bold; margin:-4px 0;">↓ -${drop}% (Perte)</div>`;
-        }
-
-        return `
-            ${dropHtml}
-            <div style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, ${color}22 0%, var(--surface) 100%); border:1px solid ${color}; border-radius:12px; padding:12px 20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.5rem;">${icon}</span>
-                    <span style="font-weight:700; color:var(--text1); font-size:1rem;">${label}</span>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:1.4rem; font-weight:900; color:${color};">${count}</div>
-                    <div style="font-size:0.75rem; color:var(--text2);">${totalPct}% du total</div>
-                </div>
-            </div>
-        `;
-    }
-
-    container.innerHTML = 
-        makeStep("Importés (Base de données)", total, null, "#64748b", "📦") +
-        makeStep("A cliqué / Démarré le Bot", started, total, "#0ea5e9", "🤖") +
-        makeStep("Comptes Liés (Identifiés)", linked, started, "#10b981", "🔗") +
-        makeStep("Ont rejoint les Groupes", joined, linked, "#8b5cf6", "🎓");
-}
-
-function renderFilteredCharts(subset, paid, unpaid) {
-    if(!window.Chart) return;
-    
-    // Finance Pie
-    const ctxFinance = document.getElementById('financeChart');
-    if(ctxFinance) {
-        if(financeChartInstance) financeChartInstance.destroy();
-        financeChartInstance = new Chart(ctxFinance.getContext('2d'), {
-            type: 'doughnut',
-            data: { labels: ['Payés', 'Non Payés'], datasets: [{ data: [paid, unpaid], backgroundColor: ['#16a34a', '#ef4444'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-
-    // Demographics
-    let m=0, f=0;
-    let levels = {};
-    subset.forEach(s => {
-        let gen = (s.gender || '').toUpperCase().trim();
-        if (gen === 'M' || gen === 'HOMME') m++;
-        else if (gen === 'F' || gen === 'FEMME') f++;
-
-        let lvl = s.school_level || 'Non Défini';
-        levels[lvl] = (levels[lvl] || 0) + 1;
-    });
-
-    const ctxGender = document.getElementById('genderChart');
-    if(ctxGender) {
-        if(genderChartInstance) genderChartInstance.destroy();
-        genderChartInstance = new Chart(ctxGender.getContext('2d'), {
-            type: 'doughnut',
-            data: { labels: ['Garçons', 'Filles'], datasets: [{ data: [m, f], backgroundColor: ['#3b82f6', '#ec4899'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-
-    const ctxLevel = document.getElementById('levelChart');
-    if(ctxLevel) {
-        if(levelChartInstance) levelChartInstance.destroy();
-        const lvlLabels = Object.keys(levels).filter(k => k !== 'None' && k !== '');
-        levelChartInstance = new Chart(ctxLevel.getContext('2d'), {
-            type: 'pie',
-            data: { labels: lvlLabels, datasets: [{ data: lvlLabels.map(k=>levels[k]), backgroundColor: ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#64748b'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-}
 
 async function loadHomeDashboard() {
     try {
@@ -2454,20 +1876,12 @@ async function loadHomeDashboard() {
         if(data.success) {
             // Update KPIs
             document.getElementById('home-kpi-total').textContent = data.kpis.total;
-            document.getElementById('home-kpi-linked').textContent = data.kpis.linked + ' (' + Math.round((data.kpis.linked/(data.kpis.total||1))*100) + '%)';
+            document.getElementById('home-kpi-linked').textContent = data.kpis.linked + ' (' + Math.round((data.kpis.linked/data.kpis.total)*100) + '%)';
             document.getElementById('home-kpi-groups').textContent = data.kpis.groups;
             document.getElementById('home-kpi-ghosts').textContent = data.kpis.ghosts;
 
-            // Finance KPIs
-            if (data.finances) {
-                const totalFin = data.finances.paid + data.finances.unpaid;
-                const paidPct = totalFin > 0 ? Math.round((data.finances.paid / totalFin) * 100) : 0;
-                document.getElementById('finance-kpi-paid').textContent = data.finances.paid + ' (' + paidPct + '%)';
-                document.getElementById('finance-kpi-unpaid').textContent = data.finances.unpaid;
-            }
-
             // Render Charts
-            if(typeof updateDashboardView === "function") updateDashboardView();
+            renderHomeCharts(data.funnel, data.demographics);
 
             // Render Alerts
             renderHomeAlerts(data.alerts);
@@ -2477,7 +1891,59 @@ async function loadHomeDashboard() {
     }
 }
 
+function renderHomeCharts(funnel, demographics) {
+    if(!window.Chart) return; // Prevent crash if chart.js failed to load
+    
+    // Funnel Chart
+    const ctxFunnel = document.getElementById('funnelChart').getContext('2d');
+    if(funnelChartInstance) funnelChartInstance.destroy();
+    funnelChartInstance = new Chart(ctxFunnel, {
+        type: 'bar',
+        data: {
+            labels: ['Importés', 'Contactés', 'Démarré Bot', 'Compte Lié', 'Dans groupe'],
+            datasets: [{
+                label: 'Étudiants',
+                data: [funnel.imported, funnel.contacted, funnel.started_bot, funnel.linked, funnel.joined],
+                backgroundColor: ['#94a3b8', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
 
+    // Level Donut Chart
+    const ctxLevel = document.getElementById('levelChart').getContext('2d');
+    if(levelChartInstance) levelChartInstance.destroy();
+    
+    const lbls = [];
+    const vals = [];
+    for(let k in demographics.levels) {
+        lbls.push((k === 'None' || k === 'null' || !k) ? 'Inconnu' : 'Niv ' + k);
+        vals.push(demographics.levels[k]);
+    }
+
+    levelChartInstance = new Chart(ctxLevel, {
+        type: 'doughnut',
+        data: {
+            labels: lbls,
+            datasets: [{
+                data: vals,
+                backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#06b6d4', '#6366f1']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: { legend: { position: 'right' } }
+        }
+    });
+}
 
 function renderHomeAlerts(alerts) {
     const container = document.getElementById('home-alerts-container');
@@ -2512,53 +1978,4 @@ function renderHomeAlerts(alerts) {
         container.innerHTML = `<div style="color: var(--text2); text-align:center; padding: 20px;">✅ Tout est au vert, aucune alerte.</div>`;
     }
 }
-
-
-
-
-        // ===== DAILY STATS =====
-        function loadDailyStats(days, el) {
-            _activatePill('stats-', el);
-            const chartArea = document.getElementById('daily-chart-area');
-            const tbody = document.getElementById('daily-stats-body');
-            if (!chartArea || !tbody) return;
-
-            const now = new Date();
-            const rows = [];
-            for (let i = days - 1; i >= 0; i--) {
-                const d = new Date(now);
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().slice(0, 10);
-                const dayStudents = allStudents.filter(s => (s.created_at || '').startsWith(dateStr));
-                const paidCount = dayStudents.filter(s => {
-                    const ps = String(s.payment_status||'').toUpperCase().trim();
-                    return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-                }).length;
-                rows.push({ date: dateStr, total: dayStudents.length, paid: paidCount, unpaid: dayStudents.length - paidCount });
-            }
-
-            const maxVal = Math.max(...rows.map(r => r.total), 1);
-            chartArea.innerHTML = rows.map(r => {
-                const h = Math.max(4, Math.round((r.total / maxVal) * 120));
-                const dateLabel = r.date.slice(5);
-                const paidPct = r.total > 0 ? Math.round((r.paid/r.total)*100) : 0;
-                return `<div style="display:flex; flex-direction:column; align-items:center; gap:3px; min-width:36px; flex:1;">
-                    <span style="font-size:0.65rem; font-weight:800; color:var(--accent2);">${r.total > 0 ? r.total : ''}</span>
-                    <div style="width:100%; background:linear-gradient(180deg, var(--accent2), #60a5fa); border-radius:6px 6px 0 0; height:${h}px; position:relative; min-height:4px;" title="${r.date}: ${r.total} inscrits (${paidPct}% payés)">
-                        <div style="position:absolute; bottom:0; width:100%; background:#16a34a; border-radius:0 0 6px 6px; height:${Math.round(h * r.paid / Math.max(r.total,1))}px;"></div>
-                    </div>
-                    <span style="font-size:0.6rem; color:var(--text2); white-space:nowrap;">${dateLabel}</span>
-                </div>`;
-            }).join('');
-
-            tbody.innerHTML = rows.slice().reverse().map(r => `
-                <tr style="border-top:1px solid var(--border);">
-                    <td style="padding:9px 12px; font-weight:700;">${r.date}</td>
-                    <td style="padding:9px 12px; font-weight:800; color:var(--accent2);">${r.total}</td>
-                    <td style="padding:9px 12px; color:#16a34a; font-weight:700;">${r.paid}</td>
-                    <td style="padding:9px 12px; color:#ef4444; font-weight:700;">${r.unpaid}</td>
-                </tr>
-            `).join('');
-        }
-
 

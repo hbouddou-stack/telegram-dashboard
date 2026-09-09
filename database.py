@@ -3720,7 +3720,7 @@ async def log_student_action_by_tg(telegram_id, action_type, description):
         logger.error(f"Error logging student action by tg: {e}")
 
 # --- CRM TICKETS API ---
-async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, message, status='new', is_ghost=False, ai_topic='', file_data=None, file_name=None):
+async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, message, status='new', is_ghost=False, ai_topic='', file_data=None, file_name=None, ai_reply=None):
     from config import DATABASE_PATH
     import aiosqlite
     import json
@@ -3749,6 +3749,13 @@ async def create_crm_ticket(telegram_id, username, first_name, theme, subtheme, 
             "file_name": file_name,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
         }]
+        if ai_reply:
+            init_conv.append({
+                "sender": "admin",
+                "name": "المساعد الذكي",
+                "text": ai_reply,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
+            })
         conv_json = json.dumps(init_conv, ensure_ascii=False)
         async with aiosqlite.connect(DATABASE_PATH) as db:
             cursor = await db.execute(

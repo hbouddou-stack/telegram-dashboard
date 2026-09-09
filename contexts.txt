@@ -1,0 +1,9 @@
+=== profile-import-text JS context ===
+" inconnu' : (student.source || 'Manuel'));\n            document.getElementById('profile-import-text').innerHTML = `📅 ${createdAt} <br> 📁 ${sourceFile}`;\n            if (foreignNameEl) foreignNameEl.textContent = foreignName || '-'"
+
+=== profile-level-badge context ===
+"udent.year || '').trim();\n            const lvlBadge = document.getElementById('profile-level-badge');\n            if(lvlBadge) {\n                if(yr === '1') lvlBadge.textContent = '1ère Année';\n                else if(yr === '2') lvlBadge.textContent = '2ème Année';\n         "
+
+=== profile-name-text HTML context ===
+'y-content:flex-start; align-items:center; gap:8px;">\n                    👤 الاسم الكامل : <span id="profile-name-text" style="font-size:1.1rem; font-weight:bold;">-</span>\n                </div>\n                <div class="chip" id="profile-foreign-name" style="background:var(--surface); display:fle'
+

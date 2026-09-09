@@ -1,0 +1,31 @@
+229:         .badge-unlinked { background: rgba(239,68,68,0.15); color: var(--danger); }
+333: .btn-action {
+345: .btn-action:hover {
+432:                         <option value="unlinked">❌ غير مرتبط</option>
+580:                 إرسال الآن (Envoyer)
+847:                             <option value="WHATSAPP">💬 رسالة واتساب</option>
+890:                     <button class="btn-action" onclick="sendFunnelAction('send_email_1')">إرسال الإيميل</button>
+918:                     <button class="btn-action" onclick="sendFunnelAction('send_email_2')" style="background:#f59e0b;">إرسال تذكير</button>
+923:         <!-- ÉTAPE 3 : WhatsApp -->
+928:                     <span>💬 ÉTAPE 3 : WhatsApp</span>
+930:                         <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">💬 WhatsApp 1</button>
+931:                         <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">💬 WhatsApp 2 (Dernier)</button>
+936:                         <span id="f-icon-whatsapp-sent">⏳</span>
+937:                         <span>Dernier WhatsApp envoyé :</span>
+938:                         <span id="f-date-whatsapp-sent" dir="ltr" style="font-weight:bold;">-</span>
+950:                     <button class="btn-action" onclick="sendFunnelAction('log_tg_1')" style="background:#0088cc;">✈️ Message direct</button>
+993:                   <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:12px; font-size:0.95rem; width:100%; box-sizing:border-box;">فك ربط تيليجرام (Unlink)</button>
+1109:             'MANUAL_UNLINK': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '💔', label: 'إلغاء الربط اليدوي' },
+1119:             'APP_OPENED_UNLINKED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'محاولة دخول مرفوضة (غير مربوط)' },
+1125:             'WHATSAPP_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '💬', label: 'إرسال واتساب' },
+1134:             if (action_type.includes('FAIL') || action_type.includes('UNLINK') || action_type.includes('SOS')) return { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: action_type };
+1681:                     || (filters.status === 'unlinked' && !linked);
+2264:             const unlinkBtn = document.getElementById('profile-unlink-btn');
+2266:                 unlinkBtn.style.display = 'block';
+2268:                 unlinkBtn.style.display = 'none';
+2281:                             : `<span class="badge badge-unlinked">لم ينضم (خارج المجموعة)</span>` + (checkData.debug_error ? `<br><small style="color:var(--danger);font-size:10px;">${checkData.debug_error}</small>` : '');
+2301:                 setFunnelStep('whatsapp-sent', student.whatsapp_sent_at || (student.whatsapp_sent ? 'نعم' : null));
+2441:         async function manualUnlink() {
+2449:                     body: JSON.stringify({ action: 'unlink', student_id: activeStudentId })
+2828:                 filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#dc2626' || l.action_type.includes('FAILED') || l.action_type.includes('UNLINKED'));
+3004:                     <div style="font-size:0.85rem; color:var(--text2);">Ils n'ont reçu ni email ni WhatsApp.</div>

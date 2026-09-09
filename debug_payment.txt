@@ -1,0 +1,7 @@
+'مسدد' est sous-chaine de 'غير مسدد': True
+Donc si le match exact sur 'غير مسدد' echoue (ex: caracteres invisibles Unicode),
+le elif 'مسدد' in row_str s'active quand meme car 'مسدد' IS in 'غير مسدد'!
+
+Valeur Excel avec RTL marks: repr = '\u200fغير مسدد\u200f'
+'غير مسدد' in row_str (avec RTL marks): True
+Apres normalisation NFKC + strip: True

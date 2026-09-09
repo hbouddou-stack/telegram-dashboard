@@ -549,9 +549,9 @@
 
             <!-- Quick Filter Tabs (Pills) -->
             <div id="inbox-filter-pills" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:12px; margin-bottom:15px; scrollbar-width:none;">
-                <button class="faq-cat-btn active" id="pill-all" onclick="filterStudentInbox('all', this)">📋 الكل (<span id="cnt-all">0</span>)</button>
+                <button class="faq-cat-btn active" id="pill-all" onclick="filterStudentInbox('all', this)">💬 الإدارة (<span id="cnt-all">0</span>)</button>
                 <button class="faq-cat-btn" id="pill-pending" onclick="filterStudentInbox('pending', this)">⏳ قيد الانتظار (<span id="cnt-pending">0</span>)</button>
-                <button class="faq-cat-btn" id="pill-resolved" onclick="filterStudentInbox('resolved', this)">🟢 تم الحل (<span id="cnt-resolved">0</span>)</button>
+                <button class="faq-cat-btn" id="pill-ai" onclick="filterStudentInbox('ai', this)">🤖 السجل الذكي (<span id="cnt-ai">0</span>)</button>
             </div>
 
             <div id="student-tickets-list">
@@ -751,8 +751,10 @@
             const msg = document.getElementById('message').value.trim();
             if (!msg) { alert("يرجى كتابة رسالتك بوضوح."); return; }
             const btn = document.getElementById('btn-submit');
-            btn.textContent = "جاري البحث...";
+            btn.textContent = "جاري الإرسال...";
             btn.disabled = true;
+            let aiAnswer = null;
+            let storyId = null;
             try {
                 const ragRes = await fetch(`${BOT_BASE}/api/support/rag_check`, {
                     method: 'POST',
@@ -761,14 +763,14 @@
                 });
                 const ragData = await ragRes.json();
                 if (ragData.found) {
-                    document.getElementById('rag-answer-text').innerText = ragData.answer;
-                    goToStep(4);
-                    btn.textContent = "&#128640; إرسال";
-                    btn.disabled = false;
-                    return;
+                    aiAnswer = ragData.answer;
+                    if (ragData.story_id !== undefined) storyId = ragData.story_id;
                 }
             } catch (e) { console.error("RAG Error", e); }
-            escalateTicket(false);
+            
+            await escalateTicket(aiAnswer === null, aiAnswer, storyId);
+            btn.textContent = "إرسال";
+            btn.disabled = false;
         }
 
         async function resolveTicket() {
@@ -788,7 +790,7 @@
             document.getElementById('success-screen').style.display = 'block';
         }
 
-        async function escalateTicket(ragFailed = true) {
+        async function escalateTicket(ragFailed = true, aiReply = null, storyId = null) {
             const msg = document.getElementById('message').value.trim();
             const urlParams = new URLSearchParams(window.location.search);
             let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null);
@@ -816,7 +818,7 @@
             }
             
             try {
-                await fetch(`${BOT_BASE}/api/support`, {
+                const res = await fetch(`${BOT_BASE}/api/support`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -826,13 +828,18 @@
                         telegram_id: tid, 
                         username, 
                         first_name, 
-                        rag_failed: ragFailed,
+                        auto_resolved: aiReply !== null,
+                        ai_reply: aiReply,
+                        story_id: storyId,
                         file_data: initialFileData,
                         file_name: initialFileName
                     })
                 });
-                document.getElementById('support-form').style.display = 'none';
-                document.getElementById('success-screen').style.display = 'block';
+                // Switch to inbox and open this ticket immediately
+                document.getElementById('message').value = '';
+                goToStep(1); // reset form
+                switchTab('inbox');
+                await loadStudentTickets();
             } catch (e) {
                 alert("حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.");
                 const btn = document.getElementById('btn-submit');
@@ -1417,16 +1424,20 @@ function switchTab(tabName, btnEl) {
             
             studentLoadedTicketsMap = {};
 
+            // Split into AI and Human tickets
+            const aiList = studentAllTicketsList.filter(t => t.is_ghost == 1);
+            const humanList = studentAllTicketsList.filter(t => t.is_ghost != 1);
+            
             // Count for filter pills
-            const resolvedList = studentAllTicketsList.filter(t => t.status === 'resolved' || t.status === 'محلولة');
-            const pendingList = studentAllTicketsList.filter(t => !resolvedList.includes(t));
+            const resolvedList = humanList.filter(t => t.status === 'resolved' || t.status === 'محلولة');
+            const pendingList = humanList.filter(t => !resolvedList.includes(t));
             
             const cntAll = document.getElementById('cnt-all');
             const cntPending = document.getElementById('cnt-pending');
-            const cntResolved = document.getElementById('cnt-resolved');
-            if (cntAll) cntAll.innerText = studentAllTicketsList.length;
+            const cntAi = document.getElementById('cnt-ai');
+            if (cntAll) cntAll.innerText = humanList.length;
             if (cntPending) cntPending.innerText = pendingList.length;
-            if (cntResolved) cntResolved.innerText = resolvedList.length;
+            if (cntAi) cntAi.innerText = aiList.length;
 
             const badge = document.getElementById('inbox-badge');
             if (badge) {
@@ -1454,11 +1465,11 @@ function switchTab(tabName, btnEl) {
             }
 
             // Filter according to active pill
-            let displayTickets = [...studentAllTicketsList];
+            let displayTickets = [...humanList];
             if (activeInboxFilter === 'pending') {
                 displayTickets = pendingList;
-            } else if (activeInboxFilter === 'resolved') {
-                displayTickets = resolvedList;
+            } else if (activeInboxFilter === 'ai') {
+                displayTickets = aiList;
             }
 
             // Newest first for display

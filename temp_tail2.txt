@@ -1,0 +1,656 @@
+2414 
+2415             // Age Calculator
+2416             let ageText = student.dob || '-';
+2417             if (student.dob) {
+2418                 try {
+2419                     let parts = student.dob.split(/[\/\-]/);
+2420                     let d = null;
+2421                     if(parts.length === 3) {
+2422                         if(parts[0].length === 4) d = new Date(parts[0], parts[1]-1, parts[2]);
+2423                         else d = new Date(parts[2], parts[1]-1, parts[0]);
+2424                     }
+2425                     if(d && !isNaN(d.getTime())) {
+2426                         let today = new Date();
+2427                         let years = today.getFullYear() - d.getFullYear();
+2428                         let months = today.getMonth() - d.getMonth();
+2429                         if (months < 0 || (months === 0 && today.getDate() < d.getDate())) {
+2430                             years--;
+2431                             months += 12;
+2432                         }
+2433                         ageText = student.dob + ' (' + years + ' سنة و ' + months + ' أشهر)';
+2434                     }
+2435                 } catch(e) {}
+2436             }
+2437             const dobEl = document.getElementById('profile-dob-text');
+2438             if(dobEl) dobEl.textContent = ageText;
+2439 
+2440             document.getElementById('logs-overlay').style.display = 'flex';
+2441             if(typeof fetchCrmTimeline === 'function') fetchCrmTimeline(student.student_id, student.telegram_id);
+2442             try {
+2443                 const res = await fetch('/api/admin/gateway/logs?id=' + student.student_id + '&tid=' + (student.telegram_id || 'null'));
+2444                 const data = await res.json();
+2445                 
+2446                 if (student.telegram_id) {
+2447                     let tgFullName = student.tg_first_name || '';
+2448                     if (student.tg_last_name) tgFullName += ' ' + student.tg_last_name;
+2449                     document.getElementById('profile-tg-display').textContent = tgFullName.trim() || 'غير معروف (لم يسجل دخول مؤخراً)';
+2450                     
+2451                     document.getElementById('modal-tg-identity').innerHTML = `
+2452                         <strong>ID:</strong> ${student.telegram_id}<br>
+2453                         <strong>المعرّف:</strong> ${student.telegram_id}<br>
+2454                         <strong>الاسم:</strong> ${student.tg_first_name || '-'}<br>
+2455                         <strong>اللقب:</strong> ${student.tg_last_name || '-'}${student.telegram_username ? '<br><strong>المستخدم:</strong> @' + student.telegram_username : ''}
+2456                     `;
+2457                 } else {
+2458                     document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">غير مرتبط</span>`;
+2459                 }
+2460                 
+2461                 document.getElementById('modal-db-identity').innerHTML = `
+2462                     <strong>المعرّف:</strong> ${student.student_id || '-'}<br>
+2463                     <strong>الاسم:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
+2464                     <strong>البريد:</strong> ${student.email || '-'}<br>
+2465                     <strong>الجنس:</strong> ${student.gender || '-'}
+2466                 `;
+2467 
+2468                 if(data.success && data.logs.length > 0) {
+2469                     let grouped = groupLogs(data.logs);
+2470                     let html = grouped.map(l => renderLogCard(l, false)).join('');
+2471                     document.getElementById('logs-body').innerHTML = html;
+2472                 } else {
+2473                     document.getElementById('logs-body').innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
+2474                 }
+2475             } catch(e) {
+2476                 document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل.</div>';
+2477             }
+2478         }
+2479 
+2480         async function manualUnlink() {
+2481             if(!activeStudentId) return;
+2482             if(!confirm('هل أنت متأكد من رغبتك في إلغاء ربط حساب تيليجرام لهذا الطالب؟')) return;
+2483 
+2484             try {
+2485                 const res = await fetch('/api/admin/gateway/action', {
+2486                     method: 'POST',
+2487                     headers: {'Content-Type': 'application/json'},
+2488                     body: JSON.stringify({ action: 'unlink', student_id: activeStudentId })
+2489                 });
+2490                 const data = await res.json();
+2491                 if (data.success) {
+2492                     // Open WA or TG links based on action
+2493                     const student = allStudents.find(s => s.student_id === activeStudentId);
+2494                     if (student) {
+2495                         const token = student.magic_token || student.student_id;
+2496                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
+2497                         
+2498                         if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+2499                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
+2500                             if (phoneStr) {
+2501                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
+2502                             } else {
+2503                                 alert("Aucun numéro de téléphone pour cet étudiant.");
+2504                             }
+2505                         } else if (actionType === 'log_tg_1') {
+2506                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
+2507                             if (phoneStr) {
+2508                                 window.open(`https://t.me/+${phoneStr}`, '_blank');
+2509                             } else {
+2510                                 alert("Aucun numéro de téléphone pour cet étudiant.");
+2511                             }
+2512                         }
+2513                     }
+2514 
+2515                     alert('تم إلغاء الربط بنجاح.');
+2516                     document.getElementById('logs-overlay').style.display = 'none';
+2517                     fetchStudents(); fetchKpiMetrics();
+2518                 } else {
+2519                     alert('خطأ: ' + data.error);
+2520                 }
+2521             } catch(e) {
+2522                 alert('خطأ في الاتصال: ' + e.message);
+2523             }
+2524         }
+2525 
+2526         // ============ SOS TABS (Active vs Resolved) ============
+2527         function switchSosSubtab(state) {
+2528             activeSosSubtabState = state;
+2529             const btnOpen = document.getElementById('sos-filter-open');
+2530             const btnClosed = document.getElementById('sos-filter-closed');
+2531             if (state === 'open') {
+2532                 btnOpen.style.background = 'var(--accent)';
+2533                 btnOpen.style.color = 'white';
+2534                 btnClosed.style.background = 'var(--surface)';
+2535                 btnClosed.style.color = 'var(--text2)';
+2536             } else {
+2537                 btnOpen.style.background = 'var(--surface)';
+2538                 btnOpen.style.color = 'var(--text2)';
+2539                 btnClosed.style.background = 'var(--accent)';
+2540                 btnClosed.style.color = 'white';
+2541             }
+2542             renderSosList();
+2543         }
+2544 
+2545         let rawSosList = [];
+2546         async function fetchSos() {
+2547             try {
+2548                 const res = await fetch('/api/admin/sos');
+2549                 const data = await res.json();
+2550                 if(data.success) {
+2551                     rawSosList = data.sos_list;
+2552                     
+2553                     const openCount = rawSosList.filter(s => s.status === 'open').length;
+2554                     const badge = document.getElementById('sos-badge');
+2555                     if(badge) {
+2556                         if(openCount > 0) {
+2557                             badge.style.display = 'block';
+2558                             badge.textContent = openCount;
+2559                         } else {
+2560                             badge.style.display = 'none';
+2561                         }
+2562                     }
+2563 
+2564                     renderSosList();
+2565                 }
+2566             } catch(e) {
+2567                 document.getElementById('sos-list').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في الشبكة.</div>';
+2568             }
+2569         }
+2570 
+2571         function renderLogs() {
+2572             const list = document.getElementById('logs-list');
+2573             if(rawLogs.length === 0) {
+2574                 list.innerHTML = '<div class="no-items">لا توجد سجلات.</div>';
+2575                 return;
+2576             }
+2577             list.innerHTML = '';
+2578             
+2579             // Translation dictionary for action types
+2580             const actionTranslations = {
+2581                 'LINK_FAILED': 'فشل الربط',
+2582                 'LINK_SUCCESS': 'نجاح الربط',
+2583                 'ACCOUNT_LINKED': 'نجاح الربط',
+2584                 'TUTO_OPENED': 'فتح دليل المساعدة',
+2585                 'APP_OPENED': 'فتح التطبيق',
+2586                 'start_bot': 'بدء البوت',
+2587                 'finish_quiz': 'إنهاء اختبار',
+2588                 'JOIN_GROUP_CLICK': 'ضغط الانضمام للمجموعة'
+2589             };
+2590 
+2591             rawLogs.forEach(log => {
+2592                 const div = document.createElement('div');
+2593                 div.className = 'log-card';
+2594                 
+2595                 let studentStr = '';
+2596                 if (log.student_id == 0) {
+2597                     studentStr = 'طالب غير معروف';
+2598                 } else if (log.student_id) {
+2599                     const st = allStudents.find(s => s.student_id == log.student_id);
+2600                     studentStr = st ? (st.first_name || '') + ' (' + log.student_id + ')' : log.student_id;
+2601                 } else {
+2602                     studentStr = 'غير معروف';
+2603                 }
+2604                 
+2605                 const actionLabel = actionTranslations[log.action_type] || log.action_type;
+2606                 
+2607                 let labelColor = 'var(--accent)';
+2608                 if (log.action_type === 'LINK_FAILED') labelColor = 'var(--danger)';
+2609                 else if (log.action_type === 'LINK_SUCCESS' || log.action_type === 'ACCOUNT_LINKED') labelColor = 'var(--success)';
+2610                 
+2611                 let tgDisplay = log.telegram_name || '';
+2612                 if (!tgDisplay && log.tg_first_name) {
+2613                     tgDisplay = log.tg_first_name + (log.tg_last_name ? ' ' + log.tg_last_name : '');
+2614                 }
+2615                 
+2616                 div.innerHTML = `
+2617                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+2618                         <span style="color:${labelColor}; font-weight:700; font-size:0.95rem;">[${actionLabel}]</span>
+2619                         <span style="font-size:0.75rem; color:var(--text2);"><span dir="ltr">${formatDateArabic(log.timestamp)}</span></span>
+2620                     </div>
+2621                     <div style="font-size:0.85rem; color:var(--text1); margin-bottom:4px;">
+2622                         <strong>الطالب:</strong> <span dir="ltr">${studentStr}</span>
+2623                     </div>
+2624                     <div style="font-size:0.85rem; color:var(--text1); margin-bottom:4px;">
+2625                         <strong>تيليجرام:</strong> <span dir="ltr">${tgDisplay || 'غير معروف'}</span>
+2626                     </div>
+2627                     <div style="font-size:0.85rem; color:var(--text2); line-height:1.4;"><span dir="ltr">${log.description}</span></div>
+2628                 `;
+2629                 list.appendChild(div);
+2630             });
+2631         }
+2632 
+2633         let activeSosGenderFilter = 'all';
+2634         function setSosGenderFilter(val, el) {
+2635             activeSosGenderFilter = val;
+2636             if (el && el.parentElement) {
+2637                 el.parentElement.querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
+2638                 el.classList.add('active');
+2639             }
+2640             renderSosList();
+2641         }
+2642 
+2643         function renderSosList() {
+2644             const list = document.getElementById('sos-list');
+2645             const q = (document.getElementById('sos-search-input') ? document.getElementById('sos-search-input').value.toLowerCase() : '');
+2646             
+2647             const filtered = rawSosList.filter(s => {
+2648                 // State filter
+2649                 const matchState = (activeSosSubtabState === 'open') 
+2650                     ? (s.status === 'open' || !s.status) 
+2651                     : (s.status === 'closed' || s.status === 'resolved');
+2652                 if (!matchState) return false;
+2653                 
+2654                 // Gender filter
+2655                 const g = String(s.gender || '').toLowerCase();
+2656                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
+2657                 const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
+2658                 
+2659                 const matchGender = (activeSosGenderFilter === 'all')
+2660                     || (activeSosGenderFilter === 'homme' && isM)
+2661                     || (activeSosGenderFilter === 'femme' && isF);
+2662                 if (!matchGender) return false;
+2663                 
+2664                 // Search filter
+2665                 if (q) {
+2666                     const matchSearch = (s.email_tentative || '').toLowerCase().includes(q)
+2667                         || (s.student_id_tentative || '').toLowerCase().includes(q)
+2668                         || String(s.telegram_id || '').toLowerCase().includes(q)
+2669                         || (s.first_name || '').toLowerCase().includes(q)
+2670                         || (s.last_name || '').toLowerCase().includes(q);
+2671                     if (!matchSearch) return false;
+2672                 }
+2673                 
+2674                 return true;
+2675             });
+2676 
+2677             if(filtered.length === 0) {
+2678                 list.innerHTML = activeSosSubtabState === 'open' 
+2679                     ? '<div class="no-items">✅ لا توجد أي طلبات مساعدة قيد المعالجة.</div>'
+2680                     : '<div class="no-items">لا توجد طلبات تم حلها بعد.</div>';
+2681                 return;
+2682             }
+2683 
+2684             list.innerHTML = '';
+2685             filtered.forEach(sos => {
+2686                 const div = document.createElement('div');
+2687                 div.className = 'sos-item';
+2688                 div.onclick = () => openSosModal(sos);
+2689                 const statusBadge = sos.status === 'closed' || sos.status === 'resolved'
+2690                     ? '<span class="badge badge-linked">تم حلها</span>'
+2691                     : '<span class="badge badge-open">قيد المعالجة</span>';
+2692                 
+2693                 const matchedStudent = allStudents.find(st => st.telegram_id && String(st.telegram_id) === String(sos.telegram_id));
+2694                 const dbName = (sos.first_name || sos.last_name) ? ((sos.first_name || '') + ' ' + (sos.last_name || '')).trim() : 'غير معروف';
+2695                 const tgName = matchedStudent && matchedStudent.first_name ? matchedStudent.first_name : dbName;
+2696                 
+2697                 const g = (sos.gender || '').toLowerCase();
+2698                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
+2699                     div.style.borderLeft = '6px solid #0084ff';
+2700                     div.style.backgroundColor = 'rgba(0,132,255,0.15)';
+2701                 } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
+2702                     div.style.borderLeft = '6px solid #ec4899';
+2703                     div.style.backgroundColor = 'rgba(236,72,153,0.15)';
+2704                 }
+2705                 
+2706                 div.innerHTML = `
+2707                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+2708                         <div style="font-weight:800; color:var(--accent);">👤 ${tgName}</div>
+2709                         ${statusBadge}
+2710                     </div>
+2711                     <div style="font-weight:700; font-size:0.9rem; color:var(--text1); margin-bottom:4px;">📧 ${sos.email_tentative || 'غير معروف'}</div>
+2712                     <div style="font-size:0.8rem;color:var(--text2);margin-bottom:8px;">🕒 <span dir="ltr">${formatDateArabic(sos.timestamp)}</span></div>
+2713                     <div style="font-size:0.9rem;color:var(--text1); background:rgba(0,0,0,0.2); padding:8px; border-radius:8px;">${sos.message || ''}</div>
+2714                 `;
+2715 
+2716                 list.appendChild(div);
+2717             });
+2718         }
+2719 
+2720         function openSosModal(sos) {
+2721             activeSosId = sos.id;
+2722             activeSosTid = sos.telegram_id;
+2723             activeSosEmail = sos.email_tentative;
+2724             activeSosStudentId = sos.student_id_tentative;
+2725             document.getElementById('sos-modal-meta').innerHTML =
+2726                 '<strong>البريد:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
+2727                 '<strong>المطابقة:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
+2728                 '<strong>TG ID:</strong> ' + (sos.telegram_id || 'غير معروف') + '<br>' +
+2729                 '<strong>الوقت:</strong> ' + formatDateArabic(sos.timestamp);
+2730             document.getElementById('sos-modal-message').textContent = sos.message || '';
+2731             document.getElementById('sos-reply-text').value = '';
+2732             document.getElementById('debug-panel').innerHTML = '<span style="color:#555;">— سجل تصحيح الأخطاء —</span>';
+2733             document.getElementById('sos-overlay').style.display = 'flex';
+2734         }
+2735 
+2736         function viewUserHistoryFromSos() {
+2737             document.getElementById('sos-overlay').style.display = 'none';
+2738             switchTab('logs');
+2739             fetchGlobalLogs(activeSosTid);
+2740         }
+2741 
+2742         function dbg(msg, color) {
+2743             const d = document.getElementById('debug-panel');
+2744             const t = new Date().toTimeString().slice(0,8);
+2745             d.innerHTML += '<div style="color:' + (color||'#aaa') + ';padding:2px 0;">' + t + ' — ' + msg + '</div>';
+2746             d.scrollTop = d.scrollHeight;
+2747         }
+2748 
+2749         async function sendSosReply() {
+2750             const text = document.getElementById('sos-reply-text').value.trim();
+2751             dbg('▶ sendSosReply() calling...');
+2752             if(!text) { alert('يرجى كتابة رد.'); return; }
+2753 
+2754             const btn = document.querySelector('#sos-overlay button[onclick="sendSosReply()"]');
+2755             if(btn) { btn.textContent = '...'; btn.disabled = true; }
+2756 
+2757             try {
+2758                 const res = await fetch('/api/admin/sos/reply', {
+2759                     method: 'POST',
+2760                     headers: { 'Content-Type': 'application/json' },
+2761                     body: JSON.stringify({ sos_id: activeSosId, reply_message: text, telegram_id: activeSosTid })
+2762                 });
+2763                 const data = await res.json();
+2764                 if(data.success) {
+2765                     dbg('🎉 تم الإرسال والإغلاق بنجاح !', '#22c55e');
+2766                     setTimeout(() => {
+2767                         document.getElementById('sos-overlay').style.display = 'none';
+2768                         fetchSos();
+2769                     }, 800);
+2770                 } else {
+2771                     alert('خطأ: ' + data.error);
+2772                 }
+2773             } catch(e) {
+2774                 alert('خطأ شبكة: ' + e.message);
+2775             } finally {
+2776                 if(btn) { btn.textContent = 'إرسال ✈️'; btn.disabled = false; }
+2777             }
+2778         }
+2779 
+2780         // ============ LINKS ============
+2781         async function fetchLinks() {
+2782             const c = document.getElementById('links-container');
+2783             c.innerHTML = '<div class="no-items">جاري التحميل...</div>';
+2784             try {
+2785                 const res = await fetch('/api/admin/links');
+2786                 const data = await res.json();
+2787                 c.innerHTML = '';
+2788                 const genders = ['homme', 'femme'];
+2789                 const years = [1, 2, 3, 4];
+2790                 genders.forEach(g => {
+2791                     const grp = document.createElement('div');
+2792                     grp.className = 'link-group';
+2793                     grp.innerHTML = '<h3>' + (g === 'homme' ? '👨 الطلاب (ذكور)' : '👩 الطالبات (إناث)') + '</h3>';
+2794                     years.forEach(y => {
+2795                         const key = 'link_' + g + '_' + y;
+2796                         const found = data.links ? data.links.find(l => l.key === key) : null;
+2797                         grp.innerHTML += '<div class="link-label">السنة ' + y + '</div><input class="link-input" id="' + key + '" placeholder="https://t.me/..." value="' + (found ? found.value : '') + '">';
+2798                     });
+2799                     c.appendChild(grp);
+2800                 });
+2801             } catch(e) { c.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ: ' + e.message + '</div>'; }
+2802         }
+2803 
+2804         async function saveLinks() {
+2805             const genders = ['homme', 'femme'];
+2806             const years = [1, 2, 3, 4];
+2807             for(let g of genders) {
+2808                 for(let y of years) {
+2809                     const key = 'link_' + g + '_' + y;
+2810                     const el = document.getElementById(key);
+2811                     if(!el) continue;
+2812                     await fetch('/api/admin/gateway/settings', {
+2813                         method: 'POST',
+2814                         headers: {'Content-Type': 'application/json'},
+2815                         body: JSON.stringify({ key, value: el.value })
+2816                     });
+2817                 }
+2818             }
+2819             alert('تم حفظ جميع الروابط بنجاح.');
+2820         }
+2821 
+2822         // ============ GLOBAL LOGS (Clickable Cards) ============
+2823         let rawLogs = [];
+2824         let currentLogFilter = 'ALL';
+2825         
+2826         function setLogFilter(type) {
+2827             currentLogFilter = type;
+2828             ['all', 'success', 'fail', 'app', 'tuto'].forEach(id => {
+2829                 document.getElementById('filter-log-' + id).classList.remove('active');
+2830             });
+2831             document.getElementById('filter-log-' + type.toLowerCase()).classList.add('active');
+2832             renderGlobalLogs();
+2833         }
+2834 
+2835         async function fetchGlobalLogs(filterTid = null) {
+2836             const list = document.getElementById('global-logs-list');
+2837             list.innerHTML = '<div class="no-items">جاري التحميل...</div>';
+2838             try {
+2839                 const res = await fetch('/api/admin/gateway/logs/all');
+2840                 const data = await res.json();
+2841                 if(data.success && data.logs.length > 0) {
+2842                     rawLogs = data.logs;
+2843                     renderGlobalLogs(filterTid);
+2844                 } else {
+2845                     list.innerHTML = '<div class="no-items">لا يوجد أي سجل نشاط عام.</div>';
+2846                 }
+2847             } catch(e) {
+2848                 list.innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل: ' + e.message + '</div>';
+2849             }
+2850         }
+2851         
+2852         function renderGlobalLogs(filterTid = null) {
+2853             const list = document.getElementById('global-logs-list');
+2854             let filteredLogs = rawLogs;
+2855             
+2856             if (filterTid) {
+2857                 filteredLogs = filteredLogs.filter(l => String(l.telegram_id) === String(filterTid));
+2858                 if(filteredLogs.length === 0) {
+2859                     list.innerHTML = '<div class="no-items">لا توجد سجلات سابقة لهذا المتصل.</div>';
+2860                     return;
+2861                 }
+2862             }
+2863             
+2864             if (currentLogFilter === 'SUCCESS') {
+2865                 filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#16a34a' || l.action_type.includes('SUCCESS'));
+2866             } else if (currentLogFilter === 'FAIL') {
+2867                 filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#dc2626' || l.action_type.includes('FAILED') || l.action_type.includes('UNLINKED'));
+2868             } else if (currentLogFilter === 'APP') {
+2869                 filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#2563eb' || l.action_type.includes('OPEN') || l.action_type.includes('CLICK') || l.action_type.includes('QUIZ'));
+2870             } else if (currentLogFilter === 'COMM') {
+2871                 filteredLogs = filteredLogs.filter(l => getLogStyle(l.action_type).text === '#d97706' || l.action_type.includes('SENT'));
+2872             }
+2873 
+2874             const searchInput = document.getElementById('log-search-input');
+2875             if (searchInput) {
+2876                 const q = searchInput.value.toLowerCase().trim();
+2877                 if (q) {
+2878                     filteredLogs = filteredLogs.filter(l => {
+2879                         const tName = l.telegram_name || '';
+2880                         const tFirst = l.tg_first_name || '';
+2881                         const tLast = l.tg_last_name || '';
+2882                         const sName = l.student_name || '';
+2883                         const desc = l.description || '';
+2884                         const tId = String(l.telegram_id || '');
+2885                         const tUname = l.telegram_username || l.tg_username || '';
+2886                         
+2887                         return tId.includes(q) || 
+2888                                tName.toLowerCase().includes(q) || 
+2889                                tFirst.toLowerCase().includes(q) || 
+2890                                tLast.toLowerCase().includes(q) || 
+2891                                tUname.toLowerCase().includes(q) || 
+2892                                sName.toLowerCase().includes(q) || 
+2893                                desc.toLowerCase().includes(q);
+2894                     });
+2895                 }
+2896             }
+2897 
+2898             const actionTranslations = {
+2899                 'LINK_FAILED': 'فشل الربط',
+2900                 'LINK_SUCCESS': 'نجاح الربط',
+2901                 'ACCOUNT_LINKED': 'نجاح الربط',
+2902                 'TUTO_OPENED': 'فتح دليل المساعدة',
+2903                 'APP_OPENED': 'فتح التطبيق',
+2904                 'start_bot': 'بدء البوت',
+2905                 'finish_quiz': 'إنهاء اختبار',
+2906                 'JOIN_GROUP_CLICK': 'ضغط الانضمام للمجموعة'
+2907             };
+2908 
+2909             if(filteredLogs.length === 0) {
+2910                 list.innerHTML = '<div class="no-items">لا توجد نتائج مطابقة للفلتر.</div>';
+2911                 return;
+2912             }
+2913 
+2914             function colorizeDescription(desc) {
+2915                 if (!desc) return '';
+2916                 // Colorize 6-digit student IDs
+2917                 let colored = desc.replace(/\b(\d{6})\b/g, '<span style="color:#ff9f0a; font-family:monospace; font-weight:800; padding:2px 4px; background:rgba(255,159,10,0.15); border-radius:4px; letter-spacing:1px;">$1</span>');
+2918                 // Colorize Emails
+2919                 colored = colored.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi, '<span style="color:#0a84ff; font-family:monospace; font-weight:700; padding:2px 4px; background:rgba(10,132,255,0.15); border-radius:4px;">$1</span>');
+2920                 return colored;
+2921             }
+2922 
+2923             
+2924             let grouped = groupLogs(filteredLogs);
+2925             list.innerHTML = grouped.map(l => renderLogCard(l, true)).join('');
+2926            
+2927         }
+2928 
+2929         function openLogDetail(index) {
+2930             const log = rawLogs[index];
+2931             if (!log) return;
+2932             document.getElementById('log-detail-type').textContent = log.action_type || 'غير محدد';
+2933             document.getElementById('log-detail-time').textContent = formatDateArabic(log.timestamp);
+2934             document.getElementById('log-detail-name').textContent = log.first_name || 'غير معروف';
+2935             let tgDisplay = log.telegram_name || '';
+2936             if (!tgDisplay && log.tg_first_name) {
+2937                 tgDisplay = log.tg_first_name + (log.tg_last_name ? ' ' + log.tg_last_name : '');
+2938             }
+2939             document.getElementById('log-detail-tg').textContent = tgDisplay || 'غير معروف (أو غير مرتبط)';
+2940             
+2941             function colorizeDescDetail(desc) {
+2942                 if (!desc) return '';
+2943                 let colored = desc.replace(/\b(\d{6})\b/g, '<span style="color:#ff9f0a; font-family:monospace; font-weight:800; padding:2px 4px; background:rgba(255,159,10,0.15); border-radius:4px; letter-spacing:1px;">$1</span>');
+2944                 colored = colored.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi, '<span style="color:#0a84ff; font-family:monospace; font-weight:700; padding:2px 4px; background:rgba(10,132,255,0.15); border-radius:4px;">$1</span>');
+2945                 return colored;
+2946             }
+2947             document.getElementById('log-detail-desc').innerHTML = colorizeDescDetail(log.description) || 'لا توجد تفاصيل إضافية.';
+2948             document.getElementById('log-detail-overlay').style.display = 'flex';
+2949         }
+2950 
+2951         // ============ INIT ============
+2952         fetchStudents(); fetchKpiMetrics();
+2953     
+2954 let funnelChartInstance = null;
+2955 let levelChartInstance = null;
+2956 
+2957 async function loadHomeDashboard() {
+2958     try {
+2959         const res = await fetch('/api/admin/gateway/home_stats');
+2960         const data = await res.json();
+2961         if(data.success) {
+2962             // Update KPIs
+2963             document.getElementById('home-kpi-total').textContent = data.kpis.total;
+2964             document.getElementById('home-kpi-linked').textContent = data.kpis.linked + ' (' + Math.round((data.kpis.linked/data.kpis.total)*100) + '%)';
+2965             document.getElementById('home-kpi-groups').textContent = data.kpis.groups;
+2966             document.getElementById('home-kpi-ghosts').textContent = data.kpis.ghosts;
+2967 
+2968             // Render Charts
+2969             renderHomeCharts(data.funnel, data.demographics);
+2970 
+2971             // Render Alerts
+2972             renderHomeAlerts(data.alerts);
+2973         }
+2974     } catch(e) {
+2975         console.error("Erreur Home Dashboard:", e);
+2976     }
+2977 }
+2978 
+2979 function renderHomeCharts(funnel, demographics) {
+2980     if(!window.Chart) return; // Prevent crash if chart.js failed to load
+2981     
+2982     // Funnel Chart
+2983     const ctxFunnel = document.getElementById('funnelChart').getContext('2d');
+2984     if(funnelChartInstance) funnelChartInstance.destroy();
+2985     funnelChartInstance = new Chart(ctxFunnel, {
+2986         type: 'bar',
+2987         data: {
+2988             labels: ['Importés', 'Contactés', 'Démarré Bot', 'Compte Lié', 'Dans groupe'],
+2989             datasets: [{
+2990                 label: 'Étudiants',
+2991                 data: [funnel.imported, funnel.contacted, funnel.started_bot, funnel.linked, funnel.joined],
+2992                 backgroundColor: ['#94a3b8', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'],
+2993                 borderRadius: 6
+2994             }]
+2995         },
+2996         options: {
+2997             indexAxis: 'y',
+2998             responsive: true,
+2999             maintainAspectRatio: false,
+3000             plugins: { legend: { display: false } }
+3001         }
+3002     });
+3003 
+3004     // Level Donut Chart
+3005     const ctxLevel = document.getElementById('levelChart').getContext('2d');
+3006     if(levelChartInstance) levelChartInstance.destroy();
+3007     
+3008     const lbls = [];
+3009     const vals = [];
+3010     for(let k in demographics.levels) {
+3011         lbls.push((k === 'None' || k === 'null' || !k) ? 'Inconnu' : 'Niv ' + k);
+3012         vals.push(demographics.levels[k]);
+3013     }
+3014 
+3015     levelChartInstance = new Chart(ctxLevel, {
+3016         type: 'doughnut',
+3017         data: {
+3018             labels: lbls,
+3019             datasets: [{
+3020                 data: vals,
+3021                 backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#06b6d4', '#6366f1']
+3022             }]
+3023         },
+3024         options: {
+3025             responsive: true,
+3026             maintainAspectRatio: false,
+3027             cutout: '60%',
+3028             plugins: { legend: { position: 'right' } }
+3029         }
+3030     });
+3031 }
+3032 
+3033 function renderHomeAlerts(alerts) {
+3034     const container = document.getElementById('home-alerts-container');
+3035     if(!container) return;
+3036     container.innerHTML = '';
+3037     
+3038     if(alerts.uncontacted > 0) {
+3039         container.innerHTML += `
+3040             <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+3041                 <div>
+3042                     <strong style="color: #d97706;">⚠️ ${alerts.uncontacted} élèves importés non contactés</strong>
+3043                     <div style="font-size:0.85rem; color:var(--text2);">Ils n'ont reçu ni email ni WhatsApp.</div>
+3044                 </div>
+3045                 <button class="btn btn-primary" onclick="switchTab('actions')" style="padding: 6px 12px; font-size:0.85rem;">Actions</button>
+3046             </div>
+3047         `;
+3048     }
+3049     
+3050     if(alerts.ghosts_today > 0) {
+3051         container.innerHTML += `
+3052             <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+3053                 <div>
+3054                     <strong style="color: #b91c1c;">🚨 ${alerts.ghosts_today} nouveaux fantômes aujourd'hui</strong>
+3055                     <div style="font-size:0.85rem; color:var(--text2);">Ils ont démarré le bot mais n'ont pas de compte.</div>
+3056                 </div>
+3057                 <button class="btn btn-primary" onclick="switchTab('ghosts')" style="padding: 6px 12px; font-size:0.85rem;">Fantômes</button>
+3058             </div>
+3059         `;
+3060     }
+3061 
+3062     if(alerts.uncontacted === 0 && alerts.ghosts_today === 0) {
+3063         container.innerHTML = `<div style="color: var(--text2); text-align:center; padding: 20px;">✅ Tout est au vert, aucune alerte.</div>`;
+3064     }
+3065 }
+3066 
+3067 </script>
+3068 </body>
+3069 </html>

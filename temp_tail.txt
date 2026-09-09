@@ -1,0 +1,50 @@
+2365             const trAr = {'debutant':'مبتدئ', 'débutant':'مبتدئ', 'intermediaire':'متوسط', 'intermédiaire':'متوسط', 'moyen':'متوسط', 'avance':'متقدم', 'avancé':'متقدم'};
+2366 
+2367             function tr(val, dict) {
+2368                 if(!val) return '-';
+2369                 const v = String(val).toLowerCase().trim();
+2370                 return dict[v] || val;
+2371             }
+2372 
+2373             const cEl = document.getElementById('profile-country-text');
+2374             if(cEl) cEl.textContent = tr(student.country, trPays);
+2375             const natEl = document.getElementById('profile-nationality-text');
+2376             if(natEl) natEl.textContent = tr(student.nationality, trNat);
+2377             const arEl = document.getElementById('profile-arabiclevel-text');
+2378             if(arEl) arEl.textContent = tr(student.arabic_level, trAr);
+2379             
+2380             const slEl = document.getElementById('profile-school-level-text');
+2381             if(slEl) slEl.textContent = student.school_level || '-';
+2382 
+2383             const tgFEl = document.getElementById('profile-tg-firstname-text');
+2384             if(tgFEl) tgFEl.textContent = student.tg_first_name || '-';
+2385             const tgLEl = document.getElementById('profile-tg-lastname-text');
+2386             if(tgLEl) tgLEl.textContent = student.tg_last_name || '-';
+2387             const tgFolder = document.getElementById('profile-tg-folder-text');
+2388             if(tgFolder) tgFolder.textContent = student.folder_clicked_at ? student.folder_clicked_at.substring(0, 16).replace('T', ' ') : '-';
+2389             
+2390             const inscEl = document.getElementById('profile-inscription-text');
+2391             if(inscEl) inscEl.textContent = student.created_at ? student.created_at.split(' ')[0] : '-';
+2392 
+2393             // Phone number fancy display
+2394             const phoneEl = document.getElementById('profile-phone-text');
+2395             if (phoneEl) {
+2396                 let p = String(student.phone || '').trim();
+2397                 if (p && p !== '-' && p !== 'null') {
+2398                     if (p.startsWith('+')) {
+2399                         let ind = p.substring(0, 4); // basic guess
+2400                         let rest = p.substring(4);
+2401                         if (p.startsWith('+212') || p.startsWith('+213') || p.startsWith('+216')) {
+2402                             ind = p.substring(0, 4); rest = p.substring(4);
+2403                         } else if (p.startsWith('+33') || p.startsWith('+32') || p.startsWith('+41')) {
+2404                             ind = p.substring(0, 3); rest = p.substring(3);
+2405                         }
+2406                         phoneEl.innerHTML = `<span style="background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:2px 6px; font-size:0.8rem; margin-right:5px; color:var(--text1);">${ind}</span> <span dir="ltr">${rest}</span>`;
+2407                     } else {
+2408                         phoneEl.innerHTML = `<span dir="ltr">${p}</span>`;
+2409                     }
+2410                 } else {
+2411                     phoneEl.textContent = '-';
+2412                 }
+2413             }
+2414 

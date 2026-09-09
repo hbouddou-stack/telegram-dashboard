@@ -5910,10 +5910,14 @@ async def api_support_rag_check(request):
                 
             if theme in faq_data:
                 # Basic exact/keyword match for MVP
-                for question, answer in faq_data[theme].items():
-                    # Simple heuristic: if subtheme is in question or any word overlaps heavily
+                for question, answer_obj in faq_data[theme].items():
                     if question in subtheme or subtheme in question:
-                        return web.json_response({'found': True, 'answer': answer})
+                        if isinstance(answer_obj, dict):
+                            ans_text = answer_obj.get('text', '')
+                            story_id = answer_obj.get('story_id')
+                            return web.json_response({'found': True, 'answer': ans_text, 'story_id': story_id})
+                        else:
+                            return web.json_response({'found': True, 'answer': answer_obj})
                     
                     # Or if words from message overlap with question
                     words = msg.split()
@@ -5988,6 +5992,7 @@ async def api_support(request):
             username = data.get('username', 'غير معروف')
             first_name = data.get('first_name', 'غير معروف')
             auto_resolved = data.get('auto_resolved') == 'true'
+            ai_reply = data.get('ai_reply')
         else:
             data = await request.json()
             theme = data.get('theme')
@@ -5997,6 +6002,7 @@ async def api_support(request):
             username = data.get('username', 'غير معروف')
             first_name = data.get('first_name', 'غير معروف')
             auto_resolved = data.get('auto_resolved', False)
+            ai_reply = data.get('ai_reply')
             file_data = data.get('file_data')
             file_name = data.get('file_name')
 
@@ -6004,6 +6010,10 @@ async def api_support(request):
         
         status = 'resolved' if auto_resolved else 'new'
         ai_topic = 'IA' if auto_resolved else ''
+        
+        story_id = data.get('story_id')
+        if ai_reply and story_id is not None:
+            ai_reply += f'<br><br><button onclick="openStoryViewer({story_id})" style="background:linear-gradient(135deg, #FF416C, #FF4B2B); color:white; border:none; padding:8px 16px; border-radius:12px; cursor:pointer; font-family:\'Tajawal\'; font-weight:bold; display:inline-flex; align-items:center; gap:6px;">🎬 عرض التوضيح المباشر (Story)</button>'
         
         db_msg = msg
         if file_name:
@@ -6020,7 +6030,8 @@ async def api_support(request):
             is_ghost=auto_resolved,
             ai_topic=ai_topic,
             file_data=file_data,
-            file_name=file_name
+            file_name=file_name,
+            ai_reply=ai_reply
         )
         
         if not auto_resolved:

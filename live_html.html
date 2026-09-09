@@ -1,97 +1,1095 @@
-
-                        let currentCardStyle = localStorage.getItem('cardStyle') || '1';
-            let currentViewMode = localStorage.getItem('viewMode') || 'grid';
-            let currentSort = { key: 'date', order: 'desc' };
-            
-            
-        function toggleAllStudents() {
-            const cb1 = document.getElementById('selectAllCheckbox');
-            const cb2 = document.getElementById('selectAllGrid');
-            // Find which one triggered it, or just use whichever is checked
-            const isChecked = (cb1 && cb1.checked) || (cb2 && cb2.checked);
-            
-            // Sync them
-            if (cb1) cb1.checked = isChecked;
-            if (cb2) cb2.checked = isChecked;
-            
-            const checkboxes = document.querySelectorAll('.student-select-cb');
-            checkboxes.forEach(cb => cb.checked = isChecked);
-            updateMassSmsButton();
-        }
-        document.addEventListener('change', (e) => {
-            if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
-                updateMassSmsButton();
-            }
-        });
-        function updateMassSmsButton() {
-    const selected = document.querySelectorAll('.student-select-cb:checked').length;
-    const bar = document.getElementById('bulk-action-bar');
-    if(bar) {
-        if(selected > 0) {
-            bar.style.display = 'flex';
-            document.getElementById('bulk-count').textContent = selected;
-        } else {
-            bar.style.display = 'none';
-        }
-    }
-}
-        async function sendMassSms() {
-            const cbs = document.querySelectorAll('.student-select-cb:checked');
-            const ids = Array.from(cbs).map(cb => cb.value);
-            if(ids.length === 0) return;
-            if(!confirm(`هل أنت متأكد من وضع ${ids.length} طالب في قائمة انتظار SMS ؟`)) return;
-            
-            try {
-                const res = await fetch('/api/admin/gateway/queue_sms', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_ids: ids })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert(`✅ تم وضع ${data.queued} رسالة SMS في قائمة الانتظار للروبوت بنجاح.`);
-                    cbs.forEach(cb => cb.checked = false);
-                    document.getElementById('selectAllCheckbox').checked = false;
-                    updateMassSmsButton();
-                } else {
-                    alert('Erreur: ' + data.error);
-                }
-            } catch(e) {
-                console.error(e);
-                alert('Erreur réseau.');
-            }
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة التحكم - Gateway Admin</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Default: Dark Theme */
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --accent: #7c3aed;
+            --accent2: #a855f7;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text1: #f0f6fc;
+            --text2: #8b949e;
         }
 
+        body.theme-cpi {
+            --bg: #0a0f1d;
+            --surface: #111827;
+            --border: #1f2937;
+            --accent: #2563eb;
+            --accent2: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text1: #f3f4f6;
+            --text2: #9ca3af;
+        }
+
+        body.theme-light {
+            --bg: #f9fafb;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --accent: #6d28d9;
+            --accent2: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text1: #111827;
+            --text2: #6b7280;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            padding-bottom: 80px;
+        }
+        * { box-sizing: border-box; }
         
-            
-            function sortTable(key) {
-                if(currentSort.key === key) {
-                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort.key = key;
-                    currentSort.order = 'asc';
-                }
-                filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-            }
+        .header, .tab-content {
+            max-width: 650px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 16px;
+        }
 
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 100;
+            align-items: flex-end;
+            justify-content: center;
+            width: 100vw;
+            max-width: 100vw;
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 600px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 24px 20px;
+            border-top: 1px solid var(--border);
+            text-align: right;
+            margin: 0 auto;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+
+        body { background: var(--bg); color: var(--text1); font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
+        
+        .header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .header h1 { font-size: 1.2rem; font-weight: 800; background: linear-gradient(90deg, var(--accent2), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 90;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text2);
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: color 0.2s;
+            flex: 1;
+            padding: 8px 0;
+            text-decoration: none;
+        }
+        .nav-item.active {
+            color: var(--accent2);
+        }
+        .nav-icon {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+
+        .tab-content { display: none; padding: 16px; }
+        .tab-content.active { display: block; }
+        
+        /* Filters design at the top */
+        .filter-section { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
+        .filter-title { font-size: 0.75rem; color: var(--text2); font-weight: 700; margin-bottom: 4px; }
+        
+        .chip {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text2);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .chip.active {
+            color: var(--active-color, var(--accent));
+            background: var(--active-bg, rgba(52, 199, 89, 0.15));
+            border-color: var(--active-color, var(--accent));
+        }
+        
+        .chip-gender {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text2);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chip-gender.active {
+            color: var(--active-color, var(--accent2));
+            background: var(--active-bg, rgba(168,85,247,0.15));
+            border-color: var(--active-color, var(--accent2));
+        }
+        .chip-gender.chip-male {
+            border-color: rgba(0, 132, 255, 0.3);
+            color: #0084ff;
+        }
+        .chip-gender.chip-male.active {
+            background: #0084ff !important;
+            color: #ffffff !important;
+            border-color: #0084ff !important;
+        }
+        .chip-gender.chip-female {
+            border-color: rgba(236, 72, 153, 0.3);
+            color: #ec4899;
+        }
+        .chip-gender.chip-female.active {
+            background: #ec4899 !important;
+            color: #ffffff !important;
+            border-color: #ec4899 !important;
+        }
+        .chip-gender.chip-all {
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+        }
+        .chip-gender.chip-all.active {
+            background: #a855f7 !important;
+            color: #ffffff !important;
+            border-color: #a855f7 !important;
+        }
+
+        /* Search */
+        .search-box { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-size: 0.9rem; font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; outline: none; margin-bottom: 12px; transition: border 0.2s; text-align: right; }
+        .search-box:focus { border-color: var(--accent); }
+        
+        /* Stats */
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+        .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); }
+        .stat-lbl { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
+        
+        /* List & Cards */
+        .list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; text-align: right; }
+        .list-item:hover { border-color: var(--accent); }
+        .list-name { font-weight: 700; font-size: 0.95rem; }
+        .list-meta { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+
+        .log-card { font-family: 'Tajawal', sans-serif; border-radius: 8px; padding: 12px; margin-bottom: 10px; position: relative; overflow: hidden; line-height: 1.5; }
+        .log-card:hover {
+            border-color: var(--accent);
+        }
+        
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
+        .badge-linked { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-unlinked { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-joined { background: rgba(37,99,235,0.15); color: var(--accent2); }
+        .badge-open { background: rgba(245,158,11,0.15); color: var(--warning); }
+        
+        /* Buttons */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Input group */
+        .input-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
+        .input-row textarea { flex: 1; resize: none; height: 44px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text1); font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.88rem; outline: none; text-align: right; }
+        .input-row textarea:focus { border-color: var(--accent); }
+        .input-row button { flex-shrink: 0; padding: 10px 16px; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; height: 44px; font-size: 0.85rem; }
+        
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: flex-end; justify-content: center; }
+        .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; border-top: 1px solid var(--border); text-align: right; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-direction: row-reverse; }
+        .modal-header h2 { font-size: 1.1rem; }
+        .close-btn { background: none; border: none; color: var(--text2); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+        
+        /* Debug */
+        #debug-panel { margin-top: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 8px; min-height: 40px; font-family: monospace; max-height: 200px; overflow-y: auto; font-size: 11px; text-align: left; direction: ltr; }
+        
+        /* SOS item */
+        .sos-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; text-align: right; }
+        .sos-item:hover { border-color: var(--accent); }
+
+        /* Link group */
+        .link-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; text-align: right; }
+        .link-group h3 { font-size: 0.9rem; color: var(--text2); margin-bottom: 10px; }
+        .link-input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text1); font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.85rem; outline: none; margin-top: 4px; direction: ltr; text-align: left; }
+        .link-input:focus { border-color: var(--accent); }
+        .link-label { font-size: 0.8rem; color: var(--text2); margin-top: 10px; }
+
+        .no-items { text-align: center; color: var(--text2); padding: 40px 0; font-size: 0.9rem; }
+
+        /* Student card detailed grid */
+        .profile-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border); }
+        .profile-item { display: flex; flex-direction: column; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .profile-item:last-child { border-bottom: none; }
+        .profile-label { font-size: 0.72rem; color: var(--text2); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+        .profile-value { font-size: 0.92rem; font-weight: 600; color: var(--text1); }
+    </style>
+
+<style>
+.timeline {
+    position: relative;
+    padding-right: 20px;
+    margin-top: 10px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    right: 4px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+}
+.timeline-block {
+    position: relative;
+    margin-bottom: 20px;
+}
+.timeline-dot {
+    position: absolute;
+    right: -20px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--bg);
+}
+.timeline-content {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 8px;
+}
+.timeline-title {
+    font-weight: bold;
+    color: var(--text1);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.timeline-subs {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-top: 10px;
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+}
+.timeline-sub-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.btn-action {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.btn-action:hover {
+    opacity: 0.9;
+}
+.btn-wa {
+    background: #25D366;
+}
+.success-banner {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid #22c55e;
+    color: #16a34a;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+</style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="theme-cpi">
+    <div class="header">
+        <h1>🛠️ بوابة التحكم والربط</h1>
+        <span id="sos-badge" style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;display:none;">0 طلبات</span>
+    </div>
+
+    <!-- Bottom Navigation Menu -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="switchTab('overview')" id="nav-overview">
+            <span class="nav-icon">📊</span>
+            <span>نظرة</span>
+        </div>
+        <div class="nav-item active" onclick="switchTab('students')" id="nav-students">
+            <span class="nav-icon">👥</span>
+            <span>الطلاب</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('sos')" id="nav-sos">
+            <span class="nav-icon">🆘</span>
+            <span>الطلبات</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('actions')" id="nav-actions">
+            <span style="font-size: 1.2rem;">🚀</span>
+            <span>إجراءات</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('logs')" id="nav-logs">
+            <span class="nav-icon">📋</span>
+            <span>السجل</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('settings')" id="nav-settings">
+            <span class="nav-icon">⚙️</span>
+            <span>الإعدادات</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('ghosts')" id="nav-ghosts">
+            <span class="nav-icon">👻</span>
+            <span>زوار</span>
+        </div>
+    </div>
+    
+    <!-- TAB: الطلاب -->
+    <div id="tab-students" class="tab-content active">
+        <!-- Intelligent Compact Filters at the very top -->
+        <div class="filter-section">
+            <!-- Gender filter row with colors: Blue (Male) and Pink (Female) taking full width 50/50 -->
+            <div style="display: flex; gap: 10px; justify-content: center; width: 100%; margin-bottom: 8px;">
+                <div class="chip-gender chip-all active" id="g-all" onclick="setGenderFilter('all', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👥 الكل (Tous)</div>
+                <div class="chip-gender chip-male" id="g-homme" onclick="setGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👨 ذكور</div>
+                <div class="chip-gender chip-female" id="g-femme" onclick="setGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">👩 إناث</div>
+            </div>
+            
+            <!-- Compact selection for Level and Status side-by-side -->
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; margin-top: 4px;">
+                <div>
+                    <div class="filter-title">السنة الدراسية</div>
+                    <select id="level-select" onchange="setLevelFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                        <option value="all">جميع السنوات</option>
+                        <option value="1">السنة الأولى (1)</option>
+                        <option value="2">السنة الثانية (2)</option>
+                        <option value="3">السنة الثالثة (3)</option>
+                        <option value="4">السنة الرابعة (4)</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="filter-title">حالة الربط</div>
+                    <select id="status-select" onchange="setStatusFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                        <option value="all">كل الحالات</option>
+                        <option value="linked">✅ مرتبط بتيليجرام</option>
+                        <option value="unlinked">❌ غير مرتبط</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+                <!-- COLOR FILTERS -->
+        <div style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
+            <div class="chip chip-color active" onclick="setColorFilter('all', this)" style="border-radius:20px;">🌍 الكل</div>
+            <div class="chip chip-color" onclick="setColorFilter('green', this)" style="border-radius:20px; background: rgba(22, 163, 74, 0.1); color: #16a34a; border-color: #16a34a;">🟢 منضم للمجموعات</div>
+            <div class="chip chip-color" onclick="setColorFilter('red', this)" style="border-radius:20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444;">🔴 لم ينضم بعد</div>
+            <div class="chip chip-color" onclick="setColorFilter('orange', this)" style="border-radius:20px; background: rgba(249, 115, 22, 0.1); color: #f97316; border-color: #f97316;">🟠 في طور الانضمام</div>
+            <div class="chip chip-color" onclick="setColorFilter('black', this)" style="border-radius:20px; background: rgba(17, 17, 17, 0.1); color: #111111; border-color: #111111;">⚫ مستبعد</div>
+        </div>
+        <input class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterStudents()">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 15px; border-bottom: 1px solid var(--border);">
+            <div style="font-weight: 800; color: var(--text1); font-size: 0.9rem;" id="students-count-display"></div>
+            <select id="card-style-selector" onchange="changeCardStyle(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.8rem; outline:none;">
+                <option value="1">✨ النموذج 1 (كلاسيكي)</option>
+                <option value="2">📋 النموذج 2 (حالة)</option>
+                <option value="3">📱 النموذج 3 (مدمج)</option>
+            </select>
+        </div>
+        <script>
+            let currentCardStyle = localStorage.getItem('cardStyle') || '1';
             document.addEventListener("DOMContentLoaded", () => {
                 const sel = document.getElementById('card-style-selector');
                 if (sel) sel.value = currentCardStyle;
-                const vSel = document.getElementById('view-mode-selector');
-                if (vSel) vSel.value = currentViewMode;
             });
             function changeCardStyle(style) {
                 currentCardStyle = style;
                 localStorage.setItem('cardStyle', style);
-                filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                filterStudents();
             }
+        </script>
         
+        
+        <div id="students-list"></div>
+    </div>
+    
+    <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
+    <div id="tab-sos" class="tab-content">
+        <!-- Search and Filters -->
+        <input type="text" id="sos-search-input" placeholder="🔍 Rechercher par email, TG ID, etc..." oninput="renderSosList()" class="search-box">
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; margin-top: 10px;">
+            <div class="chip-gender chip-all active" id="sos-g-all" onclick="setSosGenderFilter('all', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">الكل (Tous)</div>
+            <div class="chip-gender chip-male" id="sos-g-homme" onclick="setSosGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">ذكر (Homme)</div>
+            <div class="chip-gender chip-female" id="sos-g-femme" onclick="setSosGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">أنثى (Femme)</div>
+        </div>
+        
+        <!-- Separate segmented buttons for SOS state -->
+        <div style="display:flex; width:100%; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px;">
+            <button id="sos-filter-open" onclick="switchSosSubtab('open')" style="flex:1; padding:12px; border:none; background:var(--accent); color:white; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem;">⏳ قيد الانتظار (En attente)</button>
+            <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ مغلق (Fermé)</button>
+        </div>
+        <div id="sos-list"><div class="no-items">جاري التحميل...</div></div>
+    </div>
+    
+    <!-- TAB: Accueil / Stats -->
+    <div id="tab-overview" class="tab-content">
+    <div style="max-width: 1200px; margin: 0 auto; animation: fade-in 0.3s ease;">
+        <h2 style="margin-bottom: 20px; font-weight: 800; color: var(--text1);">الرئيسية (Vue d'ensemble)</h2>
+        
+        <!-- KPIs Row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="font-size: 1rem; color: var(--text2); margin-bottom: 10px;">👥 إجمالي الطلاب (Total)</div>
+                <div id="home-kpi-total" style="font-size: 2.5rem; font-weight: 900; color: #3b82f6;">-</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="font-size: 1rem; color: var(--text2); margin-bottom: 10px;">✅ مرتبط بتيليجرام (Liés)</div>
+                <div id="home-kpi-linked" style="font-size: 2.5rem; font-weight: 900; color: #10b981;">-</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="font-size: 1rem; color: var(--text2); margin-bottom: 10px;">📱 في المجموعات (Groupes)</div>
+                <div id="home-kpi-groups" style="font-size: 2.5rem; font-weight: 900; color: #8b5cf6;">-</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="font-size: 1rem; color: var(--text2); margin-bottom: 10px;">👻 زوار أشباح (Fantômes)</div>
+                <div id="home-kpi-ghosts" style="font-size: 2.5rem; font-weight: 900; color: #ef4444;">-</div>
+            </div>
+        </div>
 
+        <!-- Charts Row -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <h3 style="margin-bottom: 15px; font-size: 1.1rem;">مسار الطالب (Funnel de Digitalisation)</h3>
+                <canvas id="funnelChart" style="max-height: 250px;"></canvas>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <h3 style="margin-bottom: 15px; font-size: 1.1rem;">حسب المستوى (Par Niveau)</h3>
+                <canvas id="levelChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Alerts Row -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h3 style="margin-bottom: 15px; font-size: 1.1rem;">🚨 التنبيهات (Centre d'Alertes)</h3>
+            <div id="home-alerts-container" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+<div id="tab-actions" class="tab-content">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
+            <h2 style="color:var(--text1); margin-bottom:15px;">🚀 الإجراءات الجماعية (Envois en masse)</h2>
+            <p style="color:var(--text2); margin-bottom:20px;">قم بإرسال دعوات الأكاديمية أو رسائل التذكير بضغطة زر. النظام سيقوم بتصفية الطلاب الذين سبق لهم الانضمام تلقائياً.</p>
+            
+            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px;">
+                <div style="flex:1; min-width:200px;">
+                    <label style="color:var(--text1); font-weight:bold; display:block; margin-bottom:5px;">📌 نوع الإجراء (Action) :</label>
+                    <select id="mass-action-type" onchange="calculateMassTarget()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
+                        <option value="email_1">📧 إرسال الإيميل الأول (Bienvenue)</option>
+                        <option value="email_2">📧 إرسال الإيميل الثاني (Relance 48h)</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <label style="color:var(--text1); font-weight:bold; display:block; margin-bottom:5px;">🎓 المستوى (Niveau) :</label>
+                    <select id="mass-action-year" onchange="calculateMassTarget()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
+                        <option value="all">الكل (Tous)</option>
+                        <option value="1">المستوى الأول (1)</option>
+                        <option value="2">المستوى الثاني (2)</option>
+                        <option value="3">المستوى الثالث (3)</option>
+                        <option value="4">المستوى الرابع (4)</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <label style="color:var(--text1); font-weight:bold; display:block; margin-bottom:5px;">🚻 الجنس (Sexe) :</label>
+                    <select id="mass-action-gender" onchange="calculateMassTarget()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
+                        <option value="all">الكل (Tous)</option>
+                        <option value="male">ذكور (Garçons)</option>
+                        <option value="female">إناث (Filles)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="mass-action-summary" style="background:rgba(0,132,255,0.1); border:1px solid #0084ff; border-radius:8px; padding:15px; margin-bottom:20px;">
+                <h4 style="color:#0084ff; margin:0 0 10px 0;">📊 ملخص الاستهداف (Résumé de la cible) :</h4>
+                <ul style="color:var(--text1); margin:0; padding-inline-start:20px; line-height:1.6;">
+                    <li>إجمالي الطلاب في هذا الفلتر : <b id="mass-total">0</b></li>
+                    <li>تم استبعاد (انضموا أو أرسل لهم) : <b id="mass-excluded" style="color:var(--warning);">0</b></li>
+                    <li>الهدف النهائي للرسالة : <b id="mass-target" style="color:var(--success); font-size:1.1rem;">0</b> طالب</li>
+                </ul>
+            </div>
+            
+            <button id="btn-execute-mass" class="btn btn-primary" onclick="executeMassAction()" style="width:100%; padding:15px; font-size:1.1rem; border-radius:8px; opacity:0.5; pointer-events:none;">
+                إرسال الآن (Envoyer)
+            </button>
+            
+            <!-- Dispatch Status -->
+            <div id="dispatch-status-container" style="display:none; margin-top:20px; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:8px;">
+                <h4 style="color:var(--text1); margin:0 0 10px 0;">⏳ حالة الإرسال (Progression)</h4>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:var(--text2);">تم الإرسال: <b id="dispatch-sent" style="color:var(--success);">0</b></span>
+                    <span style="color:var(--text2);">فشل: <b id="dispatch-fail" style="color:var(--danger);">0</b></span>
+                    <span style="color:var(--text2);">المجموع: <b id="dispatch-total">0</b></span>
+                </div>
+                <div style="width:100%; background:var(--border); border-radius:10px; height:8px; overflow:hidden;">
+                    <div id="dispatch-progress-bar" style="height:100%; background:var(--accent); width:0%; transition:width 0.3s;"></div>
+                </div>
+                <p id="dispatch-current" style="color:var(--text2); font-size:0.8rem; margin-top:10px; text-align:center;">-</p>
+            </div>
+        </div>
+    </div>
+            <h3>قسم الإجراءات</h3>
+            <p>هذا القسم مخصص للعمليات الجماعية (قيد التطوير)</p>
+        </div>
+    </div>
+            <br>
+        <button class="btn btn-primary" onclick="saveLinks()">💾 حفظ الروابط</button>
+    </div>
+
+    <!-- TAB: Historique Global -->
+    <div id="tab-logs" class="tab-content">
+        <div style="margin-bottom: 12px;">
+            <input type="text" id="log-search-input" placeholder="🔍 Rechercher par ID Telegram, Nom ou Action..." oninput="renderGlobalLogs()" style="width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.9rem;">
+        </div>
+        <div class="filter-row" style="margin-bottom: 12px; overflow-x: auto; padding-bottom: 8px; display: flex; gap: 8px; flex-wrap: nowrap;">
+            <div class="chip active" id="filter-log-all" onclick="setLogFilter('ALL')">الكل</div>
+            <div class="chip" id="filter-log-success" onclick="setLogFilter('SUCCESS')">🟢 نجاح الربط</div>
+            <div class="chip" id="filter-log-fail" onclick="setLogFilter('FAIL')">🔴 فشل الربط</div>
+            <div class="chip" id="filter-log-app" onclick="setLogFilter('APP')">📱 فتح التطبيق</div>
+            <div class="chip" id="filter-log-tuto" onclick="setLogFilter('TUTO')">ℹ️ دليل المساعدة</div>
+        </div>
+        <div id="global-logs-list"><div class="no-items">جاري التحميل...</div></div>
+    </div>
+
+    <!-- TAB: الإعدادات (Settings) -->
+    <div id="tab-ghosts" class="tab-content" style="flex-direction:column; height:100%; overflow:hidden; background:var(--bg);">
+        <!-- Header -->
+        <div style="padding:15px 15px 10px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="margin:0; font-size:1.1rem; color:var(--text1);">👻 الزوار المجهولون</h2>
+                    <p style="margin:4px 0 0; font-size:0.8rem; color:var(--text2);">مستخدمون بدأوا البوت لكن لم يربطوا حسابهم بعد</p>
+                </div>
+                <button class="btn btn-primary" onclick="loadGhostVisitors()" style="padding:8px 15px; border-radius:8px; font-size:0.85rem;">🔄 تحديث</button>
+            </div>
+            <div id="ghost-count-badge" style="margin-top:10px; display:none;">
+                <span id="ghost-count-text" style="background:rgba(239,68,68,0.15); color:#ef4444; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:bold;"></span>
+            </div>
+        </div>
+        <!-- List -->
+        <div id="ghost-list" style="flex:1; overflow-y:auto; padding:10px;">
+            <div style="text-align:center; padding:40px; color:var(--text2);">
+                <div style="font-size:3rem; margin-bottom:10px;">👻</div>
+                <div>اضغط على "تحديث" لتحميل القائمة</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-settings" class="tab-content">
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">📥 استيراد وتنزيل نماذج الطلاب</h3>
+            <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
+                يمكنك تنزيل النموذج المعتمد الجاهز أو تصدير قاعدة بيانات الطلاب الحالية:
+            </div>
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                <a href="/api/admin/gateway/export_template" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #059669; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>📥 تنزيل النموذج الفارغ (Excel/CSV)</span>
+                </a>
+                <a href="/api/admin/gateway/export_all" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #0284c7; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>📤 تصدير كل الطلاب الحاليين</span>
+                </a>
+            </div>
+
+            <label class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                <span>📁 اختر ملف الإكسيل لرفعه الآن (.xlsx / .csv)</span>
+                <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
+            </label>
+        </div>
+        
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🔄 Google Sheets (مزامنة وتصدير)</h3>
+            <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
+                جلب أحدث التسجيلات أو تصدير إحصائيات التتبع (روابط الإيميل والمجموعات).
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-sync-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #0f9d58;" onclick="syncGoogleSheets()">
+                    <span>📥 جلب البيانات</span>
+                </button>
+                <button id="btn-export-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #1a73e8;" onclick="exportGoogleSheets()">
+                    <span>📤 تصدير الإحصائيات</span>
+                </button>
+            </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">➕ إضافة طالب يدوياً</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (مثال: h.bouddou@gmail.com)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (مثال: 10/10/2000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                <input type="text" id="manual-student-id" placeholder="رقم الطالب (اختياري - مثلاً: 123456)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="manual-student-fn" placeholder="الاسم" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <input type="text" id="manual-student-ln" placeholder="النسب" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                </div>
+                <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px;">💾 حفظ الطالب</button>
+            </div>
+        </div>
+
+
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">⚙️ الإعدادات العامة</h3>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <span style="font-size: 0.88rem;">فرض مطابقة اسم تيليجرام</span>
+                <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;" onchange="toggleForceName(this)">
+            </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 مظهر واجهة الطالب</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 0.88rem;">السمة (Theme):</label>
+                <select id="setting-student-theme" onchange="saveStudentTheme()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <option value="default">الافتراضي الأكاديمي (داكن)</option>
+                    <option value="theme-light">فاتح (Light)</option>
+                    <option value="theme-neon">نيون (Cyberpunk)</option>
+                    <option value="theme-desert">صحراوي (Warm)</option>
+                </select>
+
+                <label style="font-size: 0.88rem; margin-top: 8px;">الخط (Font):</label>
+                <select id="setting-student-font" onchange="saveStudentTheme()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <option value="font-tajawal">تجوال (Tajawal)</option>
+                    <option value="font-cairo">كايرو (Cairo)</option>
+                    <option value="font-amiri">أميري (Amiri)</option>
+                    <option value="font-readex">ريدكس (Readex Pro)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 مظهر لوحة التحكم</h3>
+            <div class="filter-row">
+                <div class="chip active" id="theme-btn-cpi" onclick="changeTheme('cpi')">🔵 مظهر CPI</div>
+                <div class="chip" id="theme-btn-dark" onclick="changeTheme('dark')">⚫ مظهر داكن</div>
+                <div class="chip" id="theme-btn-light" onclick="changeTheme('light')">⚪ مظهر مضيء</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Fiche Étudiant (Card) -->
+    <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal" id="fiche-eleve-modal" style="width: 95%; max-width: 1200px; height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h2>📋 بطاقة الطالب التفصيلية</h2>
+                <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
+            </div>
+            
+            
+            <style>
+                .mtab-container { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 15px; overflow-x: auto;}
+                .mtab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: var(--text2); transition: 0.2s; white-space: nowrap; }
+                .mtab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: rgba(10,132,255,0.05); }
+                .mcontent { display: none; flex-direction: column; gap: 10px; }
+                .mcontent.active { display: flex; }
+                
+                /* Funnel specific */
+                .funnel-step { display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+                .funnel-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; background: var(--bg); border: 1px solid var(--border); }
+                .funnel-icon.success { background: rgba(52,199,89,0.1); border-color: #34c759; color: #34c759; }
+                .funnel-icon.pending { background: rgba(255,59,48,0.1); border-color: #ff3b30; color: #ff3b30; }
+                .funnel-text { flex: 1; font-size: 0.85rem; font-weight: 500; }
+                .funnel-date { font-size: 0.75rem; color: var(--text2); dir: ltr; }
+            </style>
+
+            <div class="mtab-container" style="flex-wrap:wrap; display:flex;">
+                <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عامة</div>
+                <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy">الأكاديمية</div>
+                <div class="mtab" onclick="switchModalTab('telegram')" id="mtab-telegram">تيليجرام</div>
+                <div class="mtab" onclick="switchModalTab('funnel')" id="mtab-funnel">مسار الانضمام</div>
+                <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm">📝 CRM</div>
+            </div>
+
+            <!-- Tab 1: General -->
+            <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
+                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">
+                    👤 الاسم الكامل : <span id="profile-name-text" style="font-size:1.1rem; font-weight:bold;">-</span>
+                </div>
+                <div class="chip" id="profile-foreign-name" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">
+                    🌍 الاسم باللغة الأجنبية : <span id="profile-foreign-name-text" dir="ltr">-</span>
+                </div>
+                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 البريد الإلكتروني : <span id="profile-email-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📱 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left;">-</span></div>
+                <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 تاريخ الميلاد : <span id="profile-dob-text">-</span></div>
+    
+    
+                <div class="chip" id="profile-gender" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">⚧ الجنس : <span id="profile-gender-text">-</span></div>
+                <div class="chip" id="profile-profession" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💼 المهنة : <span id="profile-profession-text">-</span></div>
+                <div class="chip" id="profile-country" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📍 بلد الإقامة : <span id="profile-country-text">-</span></div>
+                <div class="chip" id="profile-nationality" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🌍 الجنسية : <span id="profile-nationality-text">-</span></div>
+                
+            </div>
+
+            <!-- Tab 2: Academy -->
+            <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
+                <div class="chip" id="profile-arabiclevel" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🗣️ مستوى اللغة العربية : <span id="profile-arabiclevel-text">-</span></div>
+                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 السنة الدراسية : <span id="profile-year-text" style="font-weight:bold;">-</span></div>
+                <div class="chip" id="profile-school-level" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏫 المستوى الدراسي : <span id="profile-school-level-text" style="font-weight:bold;">-</span></div>
+                <div class="chip" id="profile-studentid" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
+                
+                 
+                <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
+                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📅 تاريخ التسجيل : <span id="profile-inscription-text">-</span></div>
+                <div class="chip" id="profile-source" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 المصدر : <span id="profile-source-text">-</span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span></div>
+                
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:5px; font-size:0.85rem; color:var(--text1);">
+                    <strong>حالة العضوية:</strong> <span id="profile-membership">جاري التحميل...</span>
+                </div>
+            </div>
+
+            <!-- Tab 3: Telegram -->
+            <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
+                <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✅ حالة الربط : <span id="profile-tg-display">-</span></div>
+                <div class="chip" id="profile-tg-username-container" style="background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ اسم المستخدم : <span id="profile-tg-username-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 معرّف تيليجرام : <span id="profile-tgid-text" dir="ltr">-</span></div>
+            <div class="chip" id="profile-tg-firstname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الأول : <span id="profile-tg-firstname-text">-</span></div>
+            <div class="chip" id="profile-tg-lastname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم العائلي : <span id="profile-tg-lastname-text">-</span></div>
+            <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📁 تاريخ الانضمام للملف : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
+            </div>
+
+            <!-- Tab CRM -->
+            <div id="mcontent-crm" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; padding:0;">
+                <!-- CRM Sub-tabs -->
+                <div style="display:flex; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+                    <div class="crm-subtab active" onclick="switchCrmSubtab('timeline')" id="csub-timeline" style="flex:1; text-align:center; padding:12px; cursor:pointer; font-weight:bold; color:#0a84ff; border-bottom:2px solid #0a84ff;">🕒 سجل النشاطات</div>
+                    <div class="crm-subtab" onclick="switchCrmSubtab('add')" id="csub-add" style="flex:1; text-align:center; padding:12px; cursor:pointer; color:var(--text2); border-bottom:2px solid transparent;">➕ إضافة ملاحظة</div>
+                </div>
+
+                <!-- Timeline View -->
+                <div id="crm-view-timeline" style="flex:1; display:flex; flex-direction:column; padding:15px; overflow:hidden;">
+                    <div style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px; flex-shrink:0;">
+                        <div class="chip crm-filter active" onclick="filterCrm('all')" id="crm-flt-all" style="cursor:pointer; background:rgba(10,132,255,0.15); color:#0a84ff; border-color:#0a84ff;">🔘 عرض الكل</div>
+                        <div class="chip crm-filter" onclick="filterCrm('notes')" id="crm-flt-notes" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🗣️ الملاحظات</div>
+                        <div class="chip crm-filter" onclick="filterCrm('tickets')" id="crm-flt-tickets" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🚨 التذاكر</div>
+                        <div class="chip crm-filter" onclick="filterCrm('system')" id="crm-flt-system" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🤖 النظام</div>
+                    </div>
+                    <div id="crm-timeline-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:5px; margin-bottom:20px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+
+                <!-- Add Note View -->
+                <div id="crm-view-add" style="flex:1; display:none; flex-direction:column; padding:15px; overflow-y:auto; background:var(--bg);">
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <h4 style="margin:0 0 15px 0; font-size:1.1rem; color:var(--text1);">تفاصيل الملاحظة (CRM)</h4>
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نوع التواصل:</label>
+                        <select id="crm-type" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;">
+                            <option value="APPEL">📞 اتصال عادي</option>
+                            <option value="APPEL_WA">📞 اتصال واتساب</option>
+                            <option value="WHATSAPP">💬 رسالة واتساب</option>
+                            <option value="TELEGRAM">✈️ تيليجرام</option>
+                            <option value="EMAIL">📧 بريد إلكتروني</option>
+                            <option value="AUTRE">📌 أخرى</option>
+                        </select>
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">التصنيف (المشكلة):</label>
+                        <select id="crm-tag" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;">
+                            <option value="TECHNIQUE">⚙️ مشكلة تقنية</option>
+                            <option value="REMBOURSEMENT">💳 استرداد أموال</option>
+                            <option value="MALADIE">🏥 مرض</option>
+                            <option value="VOYAGE">✈️ سفر</option>
+                            <option value="MOTIVATION">📉 نقص تحفيز</option>
+                            <option value="INFO">ℹ️ معلومة</option>
+                            <option value="AUTRE">📌 أخرى</option>
+                        </select>
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">اسم المسؤول (يُحفظ تلقائياً):</label>
+                        <input id="crm-admin-name" type="text" placeholder="اسمك..." style="width:100%; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;" oninput="localStorage.setItem('adminName', this.value)">
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نص الملاحظة:</label>
+                        <textarea id="crm-note" placeholder="اكتب تفاصيل المحادثة هنا..." style="width:100%; height:100px; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; outline:none; resize:none; margin-bottom:20px;"></textarea>
+                        
+                        <button id="btn-save-note" class="btn btn-primary" onclick="addCrmNote()" style="width:100%; padding:12px; border-radius:8px; font-size:1rem; font-weight:bold;">💾 حفظ الملاحظة وإرسال</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Funnel -->
+            <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom:15px;">
+    
+    <div id="funnel-victory-banner" class="success-banner" style="display:none;">
+        🎉 الهدف تحقق : الطالب مسجل في المنصة ولا يحتاج إلى متابعة إضافية !
+    </div>
+
+    <div class="timeline" id="funnel-timeline">
+        
+        <!-- ÉTAPE 1 : Email -->
+        <div class="timeline-block" id="funnel-step-email1">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>✉️ المرحلة 1 : الإيميل الترحيبي</span>
+                    <button class="btn-action" onclick="sendFunnelAction('send_email_1')">إرسال الإيميل</button>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-email-sent">⏳</span>
+                        <span>تم الإرسال :</span>
+                        <span id="f-date-email-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-email-opened">⏳</span>
+                        <span>تم فتح الإيميل :</span>
+                        <span id="f-date-email-opened" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-email-clicked">⏳</span>
+                        <span>تم النقر على الرابط :</span>
+                        <span id="f-date-email-clicked" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE 2 : Email 2 (Relance) -->
+        <div class="timeline-block" id="funnel-step-email2">
+            <div class="timeline-dot" style="background:#f59e0b;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>📨 المرحلة 2 : إيميل التذكير</span>
+                    <button class="btn-action" onclick="sendFunnelAction('send_email_2')" style="background:#f59e0b;">إرسال تذكير</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE 3 : WhatsApp -->
+        <div class="timeline-block" id="funnel-step-wa">
+            <div class="timeline-dot" style="background:#25D366;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>💬 ÉTAPE 3 : WhatsApp</span>
+                    <div>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">💬 WhatsApp 1</button>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">💬 WhatsApp 2 (Dernier)</button>
+                    </div>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-whatsapp-sent">⏳</span>
+                        <span>Dernier WhatsApp envoyé :</span>
+                        <span id="f-date-whatsapp-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE 4 : Telegram -->
+        <div class="timeline-block" id="funnel-step-tg">
+            <div class="timeline-dot" style="background:#0088cc;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>✈️ ÉTAPE 4 : Envoi sur Telegram</span>
+                    <button class="btn-action" onclick="sendFunnelAction('log_tg_1')" style="background:#0088cc;">✈️ Message direct</button>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-telegram-sent">⏳</span>
+                        <span>Message Telegram envoyé :</span>
+                        <span id="f-date-telegram-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE FINALE -->
+        <div class="timeline-block" id="funnel-step-final">
+            <div class="timeline-dot" style="background:#8b5cf6;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>🏁 ÉTAPE FINALE : Action de l'Élève</span>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-bot-started">⏳</span>
+                        <span>Appuyer sur le lien (Démarrage) :</span>
+                        <span id="f-date-bot-started" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-folder-clicked">⏳</span>
+                        <span>Appuyer sur le bouton Folder :</span>
+                        <span id="f-date-folder-clicked" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-group-joined">⏳</span>
+                        <span>Rejoindre le groupe :</span>
+                        <span id="f-date-group-joined" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px; width: 100%; box-sizing:border-box;">
+                  <button class="btn btn-primary" onclick="document.getElementById('student-logs-modal').style.display='flex'" style="padding:12px; font-size:0.95rem; width:100%; box-sizing:border-box;">📜 عرض السجل (Historique)</button>
+                  <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:12px; font-size:0.95rem; width:100%; box-sizing:border-box;">فك ربط تيليجرام (Unlink)</button>
+              </div>
+        </div>
+    </div>
+
+    <!-- Modal: Historique de l'élève -->
+    <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>📜 السجل والهوية</h2>
+                <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✖</button>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div style="flex:1; min-width: 250px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
+                    <div id="modal-db-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
+                </div>
+                <div style="flex:1; min-width: 250px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
+                    <div id="modal-tg-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
+                </div>
+            </div>
+
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; max-height:300px;">
+                <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--text1);">📜 سجل النشاطات</h3>
+                <div id="logs-body" style="overflow-y:auto; flex:1;">
+                    <div class="no-items">جاري التحميل...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: تفاصيل السجل والنشاط الكامل -->
+    <div class="modal-overlay" id="log-detail-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📋 تفاصيل سجل النشاط</h2>
+                <button class="close-btn" onclick="document.getElementById('log-detail-overlay').style.display='none'">✕</button>
+            </div>
+            
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <div class="profile-label">نوع النشاط / العملية</div>
+                    <div class="profile-value" id="log-detail-type" style="color:var(--warning); font-weight:800;">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">التاريخ والوقت بالتفصيل</div>
+                    <div class="profile-value" id="log-detail-time">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">اسم الطالب المسجل (في الملف)</div>
+                    <div class="profile-value" id="log-detail-name">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">الاسم الشخصي على تيليجرام (Telegram Name)</div>
+                    <div class="profile-value" id="log-detail-tg">-</div>
+                </div>
+                <div class="profile-item" style="border-bottom:none; margin-top:5px;">
+                    <div class="profile-label">النشاط وتفاصيل البيانات المدخلة</div>
+                    <div class="profile-value" id="log-detail-desc" style="background:var(--bg); padding:12px; border-radius:10px; line-height:1.5; color:var(--text1); font-size:0.9rem; margin-top:4px;">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Répondre SOS -->
+    <div class="modal-overlay" id="sos-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🆘 الرد على طلب المساعدة</h2>
+                <button class="close-btn" onclick="document.getElementById('sos-overlay').style.display='none'">✕</button>
+            </div>
+            
+            <!-- Quick Link button to student history -->
+            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-bottom:14px; background:var(--accent); font-size:0.88rem; padding:10px; display:flex; align-items:center; justify-content:center; gap:6px;">
+                🔍 عرض السجل الكامل والملف الشخصي لهذا الطالب
+            </button>
+            
+            <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px; direction: ltr; text-align: left;"></div>
+            <div id="sos-modal-message" style="background:var(--bg);padding:12px;border-radius:10px;font-size:0.9rem;line-height:1.5;margin-bottom:12px;"></div>
+            
+            <div class="input-row">
+                <textarea id="sos-reply-text" placeholder="اكتب ردك هنا... سيصل إلى الطالب في رسالة خاصة"></textarea>
+                <button class="btn btn-success" onclick="sendSosReply()" style="flex:1;">إرسال الرد ✉️</button>
+            </div>
+            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-top:10px; background:#4a90e2; width:100%; padding:10px;">📜 عرض سجل محاولات الطالب</button>
+            <button class="btn btn-primary" onclick="window.open('https://t.me/c/' + activeSosTid, '_blank')" style="margin-top:10px; background:#2481cc; width:100%; padding:10px;">📱 Voir l'historique Telegram</button>
+            <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
+        </div>
+    
+        <hr style="border-color:var(--border); margin:20px 0;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 15px; color:var(--text1);">🔗 إدارة روابط المجموعات (Liens)</h3>
+        <div id="links-container"><div class="no-items">جاري التحميل...</div>
+    </div>
+    <script>
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all' };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -253,15 +1251,7 @@
                         const token = student.magic_token || student.student_id;
                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                         
-                        if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
                             if (phoneStr) {
                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
@@ -450,124 +1440,30 @@
                 tabEl.classList.add('active');
             }
             // Trigger data loading
-            if(id === 'overview') loadHomeDashboard();
-            if(id === 'students') filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            if(id === 'students') filterStudents();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
             if(id === 'logs') fetchGlobalLogs();
             if(id === 'settings') loadGeneralSettings();
             if(id === 'ghosts') loadGhostVisitors();
-            if(id === 'stats') loadDailyStats(7, document.getElementById('stats-7'));
         }
 
         // ============ FILTER TRIGGERS ============
-        
-        // ===== PILL BUTTON LOGIC =====
-        function _activatePill(groupPrefix, clickedEl) {
-            document.querySelectorAll('[id^="' + groupPrefix + '"]').forEach(el => {
-                el.classList.remove('pill-active');
-            });
-            if (clickedEl) clickedEl.classList.add('pill-active');
-        }
-
-        // Override existing filter triggers
         function setGenderFilter(val, el) {
-            filters.gender = val;
-            _activatePill('g-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setTelegramFilter(val, el) {
-            filters.telegram = val;
-            _activatePill('tg-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setPayFilter(val, el) {
-            filters.payment = val;
-            _activatePill('pay-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        
-        function setSort(key, order, el) {
-            currentSort = { key, order };
-            document.querySelectorAll('.sort-btn').forEach(b => {
-                b.style.background = 'var(--bg)';
-                b.style.color = 'var(--text1)';
-            });
-            if (el) { el.style.background = 'var(--accent2)'; el.style.color = 'white'; }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        
-        function changeViewMode(mode) {
-            currentViewMode = mode;
-            localStorage.setItem('viewMode', mode);
-            const gridBtn = document.getElementById('view-toggle-grid');
-            const tableBtn = document.getElementById('view-toggle-table');
-            if (gridBtn && tableBtn) {
-                if (mode === 'grid') {
-                    gridBtn.style.background = 'var(--accent2)'; gridBtn.style.color = 'white';
-                    tableBtn.style.background = 'var(--bg)'; tableBtn.style.color = 'var(--text1)';
-                } else {
-                    tableBtn.style.background = 'var(--accent2)'; tableBtn.style.color = 'white';
-                    gridBtn.style.background = 'var(--bg)'; gridBtn.style.color = 'var(--text1)';
-                }
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-
-        // Replaced old setGenderFilter
-        function oldSetGenderFilter(val, el) {
             filters.gender = val;
             if (el && el.parentElement) {
                 el.parentElement.querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
                 el.classList.add('active');
             }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents();
         }
         function setLevelFilter(val) {
             filters.level = val;
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents();
         }
         function setStatusFilter(val) {
             filters.status = val;
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setSourceFilter(val) {
-            filters.source = val;
-            const delBtn = document.getElementById('btn-delete-source');
-            if (val && val.startsWith('file:')) {
-                delBtn.style.display = 'block';
-            } else {
-                delBtn.style.display = 'none';
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-
-        async function deleteSelectedSource() {
-            const val = document.getElementById('source-select').value;
-            if (!val.startsWith('file:')) return;
-            const filename = val.replace('file:', '');
-            
-            if (!confirm(`⚠️ Attention !
-Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fichier :\n\n📄 ${filename}\n\nCette action est irréversible. Continuer ?`)) return;
-            
-            try {
-                const res = await fetch('/api/admin/gateway/delete_source', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source_file: filename })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert(`✅ Fichier supprimé avec succès !\n${data.deleted} étudiants ont été retirés.`);
-                    document.getElementById('source-select').value = 'all';
-                    setSourceFilter('all');
-                    fetchStudents();
-                } else {
-                    alert('Erreur: ' + (data.error || 'Inconnue'));
-                }
-            } catch(e) {
-                alert('Erreur réseau');
-            }
+            filterStudents();
         }
         function setColorFilter(val, el) {
             filters.color = val;
@@ -575,7 +1471,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 el.parentElement.querySelectorAll('.chip-color').forEach(c => c.classList.remove('active'));
                 el.classList.add('active');
             }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents();
         }
 
         // ============ SETTINGS API ============
@@ -738,128 +1634,11 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             try {
                 const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
                 const data = await res.json();
-                
                 if(data.success) {
                     allStudents = data.students;
-                    
-                    // Build dynamic Excel files dropdown
-                    const sourceSelect = document.getElementById('source-select');
-                    const currentVal = sourceSelect.value;
-                    let opts = `<option value="all">📁 كل المصادر</option>
-                                <option value="excel">📗 Excel (الكل)</option>
-                                <option value="sheet">📊 Sheet</option>
-                                <option value="manuel">✍️ يدوي</option>`;
-                    
-                    const excelFiles = [...new Set(allStudents.filter(s => s.source === 'excel' && s.source_file).map(s => s.source_file))];
-                    excelFiles.forEach(f => {
-                        opts += `<option value="file:${f}">📄 ${f}</option>`;
-                    });
-                    sourceSelect.innerHTML = opts;
-                    if (opts.includes(`value="${currentVal}"`)) sourceSelect.value = currentVal;
-
-                window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
-                    filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                    filterStudents();
                 }
             } catch(e) { console.error(e); }
-        }
-
-        
-        // ===== DUPLICATE SCANNER =====
-        function openDuplicateScanner() {
-            const container = document.getElementById('duplicates-container');
-            container.innerHTML = '<div style="text-align:center; padding:20px;">Analyse en cours...</div>';
-            document.getElementById('modal-duplicates').style.display = 'flex';
-
-            setTimeout(() => {
-                const groups = {};
-                
-                // Group by normalized name
-                allStudents.forEach(s => {
-                    let n = ((s.first_name || '') + ' ' + (s.last_name || '')).toLowerCase();
-                    // Remove common titles, spaces, and special chars to match closely
-                    n = n.replace(/[^a-z0-9أ-ي]/g, '');
-                    if (n.length < 3) return; // ignore too short names
-                    
-                    if (!groups[n]) groups[n] = [];
-                    groups[n].push(s);
-                });
-
-                // Filter groups with > 1 student
-                const duplicates = Object.values(groups).filter(g => g.length > 1);
-                
-                if (duplicates.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; padding:40px; color:#10b981; font-weight:bold;">✅ Aucun doublon détecté !</div>';
-                    return;
-                }
-
-                let html = '';
-                duplicates.forEach(group => {
-                    // Sort group by date descending (newest first)
-                    group.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-                    
-                    const name = (group[0].first_name || '') + ' ' + (group[0].last_name || '');
-                    
-                    html += `<div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--bg);">
-                        <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1rem;">🧑‍🎓 ${name} <span style="font-size:0.75rem; color:var(--text2);">(${group.length} comptes)</span></h4>
-                        <div style="display:flex; flex-direction:column; gap:8px;">`;
-                    
-                    group.forEach((s, idx) => {
-                        const isNewest = (idx === 0);
-                        const isExcluded = s.excluded == 1;
-                        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('fr-FR') : '-';
-                        const badgeColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
-                        const badgeText = isExcluded ? 'Exclu 👻' : (isNewest ? 'Le plus récent ⭐' : 'Ancien');
-                        const opacity = isExcluded ? '0.5' : '1';
-                        
-                        html += `
-                            <div id="dup-row-${s.student_id}" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; opacity:${opacity};">
-                                <div>
-                                    <div style="font-size:0.85rem; font-weight:bold; color:var(--text1);">${s.email || '-'}</div>
-                                    <div style="font-size:0.75rem; color:var(--text2); margin-top:4px;">
-                                        📅 ${dateStr} | 📄 Source: ${s.source_file || s.source || '-'} | 💳 ${s.payment_status === 'مسدد' || s.payment_status === 'PAID' ? 'Payé' : 'Non Payé'}
-                                    </div>
-                                    <div style="margin-top:6px;">
-                                        <span style="font-size:0.7rem; background:${badgeColor}22; color:${badgeColor}; padding:2px 8px; border-radius:10px; font-weight:bold;">${badgeText}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    ${isExcluded 
-                                        ? `<button onclick="toggleDuplicateExclude('${s.student_id}', 0)" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">🔄 Réintégrer</button>`
-                                        : `<button onclick="toggleDuplicateExclude('${s.student_id}', 1)" style="background:#ef4444; border:none; color:white; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">👻 Exclure</button>`
-                                    }
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `</div></div>`;
-                });
-                
-                container.innerHTML = html;
-            }, 100);
-        }
-
-        async function toggleDuplicateExclude(studentId, excludedState) {
-            try {
-                const res = await fetch('/api/admin/gateway/toggle_exclude', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ student_id: studentId, excluded: excludedState })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    // Update local data so we don't have to fetch everything immediately
-                    const student = allStudents.find(s => s.student_id === studentId);
-                    if (student) student.excluded = excludedState;
-                    
-                    // Re-render the scanner to update UI
-                    openDuplicateScanner();
-                } else {
-                    alert('Erreur : ' + (data.error || 'Inconnue'));
-                }
-            } catch(e) {
-                alert('Erreur réseau');
-            }
         }
 
         function filterStudents() {
@@ -895,29 +1674,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     || (filters.level === '3' && (yrLower.includes('ثالث') || yrLower.includes('3')))
                     || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
 
-                
-                const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
-
                 const linked = !!s.telegram_id;
-                const botStarted = !!s.telegram_id;
-                const groupJoined = !!s.group_joined || !!s.joined_at;
-                const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === 'مسدد';
-                
-                const matchTelegram = filters.telegram === 'all'
-                    || (filters.telegram === 'bot' && botStarted)
-                    || (filters.telegram === 'group' && groupJoined)
-                    || (filters.telegram === 'none' && !botStarted);
-                
-                const matchPayment = filters.payment === 'all'
-                    || (filters.payment === 'paid' && isPaid)
-                    || (filters.payment === 'unpaid' && !isPaid);
-
                 const matchStatus = filters.status === 'all'
                     || (filters.status === 'linked' && linked)
                     || (filters.status === 'unlinked' && !linked);
@@ -929,34 +1686,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
                 const matchColor = filters.color === 'all' || filters.color === studentColor;
 
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment;
-            
-            }); // End of filtering
-
-            // Sort filtered results
-            filtered.sort((a, b) => {
-                let valA, valB;
-                if (currentSort.key === 'name') {
-                    valA = (a.first_name || '').toLowerCase();
-                    valB = (b.first_name || '').toLowerCase();
-                } else if (currentSort.key === 'email') {
-                    valA = (a.email || '').toLowerCase();
-                    valB = (b.email || '').toLowerCase();
-                } else if (currentSort.key === 'level') {
-                    valA = String(a.year || '');
-                    valB = String(b.year || '');
-                } else if (currentSort.key === 'status') {
-                    valA = a.telegram_id ? 1 : 0;
-                    valB = b.telegram_id ? 1 : 0;
-                } else {
-                    // Default: date
-                    valA = new Date(a.created_at || 0).getTime();
-                    valB = new Date(b.created_at || 0).getTime();
-                }
-                
-                if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
-                if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
-                return 0;
+                return matchSearch && matchGender && matchLevel && matchStatus && matchColor;
             });
 
             const linkedCount = filtered.filter(s => s.telegram_id).length;
@@ -977,84 +1707,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 list.innerHTML = '<div class="no-items">لم يتم العثور على أي طالب.</div>';
                 return;
             }
-            
-            if (currentViewMode === 'table') {
-                const table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '0.85rem';
-                table.style.background = 'var(--surface)';
-                table.style.borderRadius = '8px';
-                table.style.overflow = 'hidden';
-                table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-                
-                const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                        <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${currentSort.key==='name'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('email')">الإيميل ${currentSort.key==='email'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">الحالة ${currentSort.key==='status'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">المستوى ${currentSort.key==='level'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('date')">التاريخ ${currentSort.key==='date'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                    </tr>
-                `;
-                table.appendChild(thead);
-                const tbody = document.createElement('tbody');
-                
-                const displayLimit = Math.min(filtered.length, 500);
-                for(let i=0; i<displayLimit; i++) {
-                    const s = filtered[i];
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid var(--border)';
-                    tr.style.cursor = 'pointer';
-                    tr.onmouseover = () => tr.style.background = 'var(--bg)';
-                    tr.onmouseout = () => tr.style.background = 'transparent';
-                    tr.onclick = () => openStudentCard(s);
-                    
-                    // Status dot
-                    let dotColor, dotTitle;
-                    if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
-                    else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
-                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
-                    else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
-                    
-                    const name = (s.first_name || '') + ' ' + (s.last_name || '');
-                    const yrStr = String(s.year || '');
-                    const yrMatch = yrStr.match(/\d+/);
-                    const yrNum = yrMatch ? yrMatch[0] : '';
-                    
-                    const d = new Date(s.created_at);
-                    const dateStr = !isNaN(d) ? d.toLocaleDateString('fr-FR') : '-';
-                    
-                    tr.innerHTML = `
-                        <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
-                        <td style="padding:12px;"><strong><span style="color:var(--text2); font-size:0.75rem; margin-right:4px;">#${i + 1}</span> ${name}</strong></td>
-                        <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
-                        <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
-                        <td style="padding:12px;">${yrNum ? 'السنة '+yrNum : '-'}</td>
-                        <td style="padding:12px;">${dateStr}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-                table.appendChild(tbody);
-                list.appendChild(table);
-                return; // skip the grid rendering
-            }
-
             const fragment = document.createDocumentFragment();
             const displayLimit = Math.min(filtered.length, 500);
             for(let i=0; i<displayLimit; i++) {
                 const s = filtered[i];
-                
-                const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
-
                 const linked = !!s.telegram_id;
                 const div = document.createElement('div');
                 div.className = 'list-item';
@@ -1089,8 +1745,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const yearAr = yrNum ? `السنة ${yrNum}` : '';
 
                 // Payment badge
-                const paid = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = paid === 'PAID' || paid === 'PAYE' || paid === 'مدفوع' || paid === 'مسدد';
+                const paid = String(s.payment_status || '').toUpperCase();
+                const isPaid = paid.includes('PAID') || paid.includes('مدفوع') || paid.includes('OUI');
                 const payBadge = isPaid
                     ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
                     : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
@@ -1116,7 +1772,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const coloredEmail = s.email ? `<span style="font-size:0.8rem; color:#0a84ff; background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:4px;" dir="ltr">${String(s.email)}</span>` : '';
                 
                 // Names
-                const arName = '<span style="color:var(--text2); font-size:0.75rem; margin-left:6px;">#' + (i + 1) + '</span> ' + String(s.first_name || '');
+                const arName = String(s.first_name || '');
                 const frNameHTML = s.last_name ? `<div style="font-size:0.85rem;color:var(--text2);">${String(s.last_name)}</div>` : '';
 
                 // Telegram info
@@ -1137,7 +1793,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     // Template 2: Status Kanban Style
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="font-weight:900;font-size:1.15rem;color:var(--text1);">
                                 ${arName}
                             </div>
@@ -1162,7 +1817,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     div.style.padding = '8px 12px'; // tighter padding
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);">
                                 ${dot} ${arName} ${s.last_name ? `<span style="font-size:0.8rem;color:var(--text2);font-weight:normal;">(${String(s.last_name)})</span>` : ''}
                             </div>
@@ -1180,7 +1834,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     // Template 1: Classic Enhanced (Default)
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="display:flex;flex-direction:column;gap:2px;">
                                 <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:1.15rem;color:var(--text1);">
                                     ${dot} ${arName}
@@ -1460,15 +2113,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                 let phoneStr = String(student.phone || '').replace(/\D/g, '');
                 
-                if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                     if (phoneStr) {
                         finalUrl = `https://wa.me/${phoneStr}?text=${text}`;
                     } else {
@@ -1578,9 +2223,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             // Payment status in Arabic
             const paymentEl = document.getElementById('profile-payment-text');
             if(paymentEl) {
-                const ps = String(student.payment_status || '').toUpperCase().trim();
-                if (ps === 'PAID' || ps === 'PAYE' || ps === 'مدفوع' || ps === 'مسدد') paymentEl.textContent = '✅ مدفوع';
-                else paymentEl.textContent = '❌ غير مدفوع';
+                const ps = String(student.payment_status || '').toUpperCase();
+                if (ps.includes('PAID') || ps.includes('مدفوع') || ps.includes('OUI')) paymentEl.textContent = '✅ مدفوع';
+                else if (ps.includes('UNPAID') || ps.includes('NON') || ps.includes('PENDING')) paymentEl.textContent = '❌ غير مدفوع';
+                else paymentEl.textContent = student.payment_status || 'غير متوفر';
             }
             
             const inscriptionEl = document.getElementById('profile-inscription-text');
@@ -1809,15 +2455,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         const token = student.magic_token || student.student_id;
                         let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
                         
-                        if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                        if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
                             let phoneStr = String(student.phone || '').replace(/\D/g, '');
                             if (phoneStr) {
                                 window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
@@ -2273,179 +2911,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         // ============ INIT ============
         fetchStudents(); fetchKpiMetrics();
     
-
-
-
-
-
-
-
-// ===== OVERVIEW DASHBOARD =====
-function switchOverviewSubtab(tab) {
-    document.querySelectorAll('.overview-subtab').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('[id^="subtab-"][id$="-btn"]').forEach(el => el.classList.remove('pill-active'));
-    
-    document.getElementById('subtab-' + tab).style.display = 'block';
-    document.getElementById('subtab-' + tab + '-btn').classList.add('pill-active');
-}
-
 let funnelChartInstance = null;
-let financeChartInstance = null;
 let levelChartInstance = null;
-let genderChartInstance = null;
-
-
-// ===== DASHBOARD DYNAMIC UPDATE =====
-function updateDashboardView() {
-    if (!allStudents || allStudents.length === 0) return;
-
-    const fYear = document.getElementById('dash-filter-year').value;
-    const fGender = document.getElementById('dash-filter-gender').value;
-    const fPay = document.getElementById('dash-filter-pay').value;
-
-    // Filter Students
-    const subset = allStudents.filter(s => {
-        if (s.excluded == 1) return false; // Ignore excluded students in KPIs
-        let match = true;
-        if (fYear !== 'all' && String(s.year) !== fYear) match = false;
-        
-        let gen = (s.gender || '').toUpperCase().trim();
-        if (gen === 'M') gen = 'HOMME';
-        if (gen === 'F') gen = 'FEMME';
-        if (fGender !== 'all' && gen !== fGender) match = false;
-        
-        let pay = (s.payment_status || '').toUpperCase().trim();
-        let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مسدد'].includes(pay);
-        if (fPay === 'PAID' && !isPaid) match = false;
-        if (fPay === 'UNPAID' && isPaid) match = false;
-        
-        return match;
-    });
-
-    // Compute Metrics
-    const total = subset.length;
-    const contacted = subset.filter(s => s.email_sent > 0 || s.whatsapp_sent > 0 || s.sms_sent > 0).length;
-    const started = subset.filter(s => s.bot_started_at).length;
-    const linked = subset.filter(s => s.telegram_id).length;
-    const joined = subset.filter(s => s.folder_clicked_at || s.group_joined).length;
-
-    // Finances
-    let paid = 0;
-    let unpaid = 0;
-    subset.forEach(s => {
-        let pay = (s.payment_status || '').toUpperCase().trim();
-        if (['PAID', 'PAYE', 'PAYÉ', 'مسدد'].includes(pay)) paid++;
-        else unpaid++;
-    });
-
-    // Update KPI UI
-    document.getElementById('home-kpi-total').textContent = total;
-    document.getElementById('home-kpi-linked').textContent = linked + (total>0 ? ` (${Math.round(linked/total*100)}%)` : '');
-    document.getElementById('home-kpi-groups').textContent = joined;
-    
-    // Ghost is global, let's keep it from backend or just mark N/A if filtered
-    const ghostEl = document.getElementById('home-kpi-ghosts');
-    if (fYear !== 'all' || fGender !== 'all' || fPay !== 'all') {
-        ghostEl.textContent = 'N/A';
-        ghostEl.style.fontSize = '1.5rem';
-    } else {
-        ghostEl.style.fontSize = '1.8rem';
-        // Global ghost count remains what was loaded from home_stats
-    }
-
-    document.getElementById('finance-kpi-paid').textContent = paid + (total>0 ? ` (${Math.round(paid/total*100)}%)` : '');
-    document.getElementById('finance-kpi-unpaid').textContent = unpaid;
-
-    // Render Pipeline Funnel
-    renderHtmlFunnel(total, contacted, started, linked, joined);
-
-    // Render Charts
-    renderFilteredCharts(subset, paid, unpaid);
-}
-
-function renderHtmlFunnel(total, contacted, started, linked, joined) {
-    const container = document.getElementById('html-funnel-container');
-    if(!container) return;
-
-    function makeStep(label, count, prevCount, color, icon) {
-        const pct = prevCount > 0 ? Math.round((count / prevCount) * 100) : 0;
-        const totalPct = total > 0 ? Math.round((count / total) * 100) : 0;
-        const drop = 100 - pct;
-        
-        let dropHtml = '';
-        if (prevCount !== null && drop > 0 && count !== total) {
-            dropHtml = `<div style="text-align:center; color:#ef4444; font-size:0.75rem; font-weight:bold; margin:-4px 0;">↓ -${drop}% (Perte)</div>`;
-        }
-
-        return `
-            ${dropHtml}
-            <div style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, ${color}22 0%, var(--surface) 100%); border:1px solid ${color}; border-radius:12px; padding:12px 20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.5rem;">${icon}</span>
-                    <span style="font-weight:700; color:var(--text1); font-size:1rem;">${label}</span>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:1.4rem; font-weight:900; color:${color};">${count}</div>
-                    <div style="font-size:0.75rem; color:var(--text2);">${totalPct}% du total</div>
-                </div>
-            </div>
-        `;
-    }
-
-    container.innerHTML = 
-        makeStep("Importés (Base de données)", total, null, "#64748b", "📦") +
-        makeStep("A cliqué / Démarré le Bot", started, total, "#0ea5e9", "🤖") +
-        makeStep("Comptes Liés (Identifiés)", linked, started, "#10b981", "🔗") +
-        makeStep("Ont rejoint les Groupes", joined, linked, "#8b5cf6", "🎓");
-}
-
-function renderFilteredCharts(subset, paid, unpaid) {
-    if(!window.Chart) return;
-    
-    // Finance Pie
-    const ctxFinance = document.getElementById('financeChart');
-    if(ctxFinance) {
-        if(financeChartInstance) financeChartInstance.destroy();
-        financeChartInstance = new Chart(ctxFinance.getContext('2d'), {
-            type: 'doughnut',
-            data: { labels: ['Payés', 'Non Payés'], datasets: [{ data: [paid, unpaid], backgroundColor: ['#16a34a', '#ef4444'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-
-    // Demographics
-    let m=0, f=0;
-    let levels = {};
-    subset.forEach(s => {
-        let gen = (s.gender || '').toUpperCase().trim();
-        if (gen === 'M' || gen === 'HOMME') m++;
-        else if (gen === 'F' || gen === 'FEMME') f++;
-
-        let lvl = s.school_level || 'Non Défini';
-        levels[lvl] = (levels[lvl] || 0) + 1;
-    });
-
-    const ctxGender = document.getElementById('genderChart');
-    if(ctxGender) {
-        if(genderChartInstance) genderChartInstance.destroy();
-        genderChartInstance = new Chart(ctxGender.getContext('2d'), {
-            type: 'doughnut',
-            data: { labels: ['Garçons', 'Filles'], datasets: [{ data: [m, f], backgroundColor: ['#3b82f6', '#ec4899'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-
-    const ctxLevel = document.getElementById('levelChart');
-    if(ctxLevel) {
-        if(levelChartInstance) levelChartInstance.destroy();
-        const lvlLabels = Object.keys(levels).filter(k => k !== 'None' && k !== '');
-        levelChartInstance = new Chart(ctxLevel.getContext('2d'), {
-            type: 'pie',
-            data: { labels: lvlLabels, datasets: [{ data: lvlLabels.map(k=>levels[k]), backgroundColor: ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#64748b'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-}
 
 async function loadHomeDashboard() {
     try {
@@ -2454,20 +2921,12 @@ async function loadHomeDashboard() {
         if(data.success) {
             // Update KPIs
             document.getElementById('home-kpi-total').textContent = data.kpis.total;
-            document.getElementById('home-kpi-linked').textContent = data.kpis.linked + ' (' + Math.round((data.kpis.linked/(data.kpis.total||1))*100) + '%)';
+            document.getElementById('home-kpi-linked').textContent = data.kpis.linked + ' (' + Math.round((data.kpis.linked/data.kpis.total)*100) + '%)';
             document.getElementById('home-kpi-groups').textContent = data.kpis.groups;
             document.getElementById('home-kpi-ghosts').textContent = data.kpis.ghosts;
 
-            // Finance KPIs
-            if (data.finances) {
-                const totalFin = data.finances.paid + data.finances.unpaid;
-                const paidPct = totalFin > 0 ? Math.round((data.finances.paid / totalFin) * 100) : 0;
-                document.getElementById('finance-kpi-paid').textContent = data.finances.paid + ' (' + paidPct + '%)';
-                document.getElementById('finance-kpi-unpaid').textContent = data.finances.unpaid;
-            }
-
             // Render Charts
-            if(typeof updateDashboardView === "function") updateDashboardView();
+            renderHomeCharts(data.funnel, data.demographics);
 
             // Render Alerts
             renderHomeAlerts(data.alerts);
@@ -2477,7 +2936,59 @@ async function loadHomeDashboard() {
     }
 }
 
+function renderHomeCharts(funnel, demographics) {
+    if(!window.Chart) return; // Prevent crash if chart.js failed to load
+    
+    // Funnel Chart
+    const ctxFunnel = document.getElementById('funnelChart').getContext('2d');
+    if(funnelChartInstance) funnelChartInstance.destroy();
+    funnelChartInstance = new Chart(ctxFunnel, {
+        type: 'bar',
+        data: {
+            labels: ['Importés', 'Contactés', 'Démarré Bot', 'Compte Lié', 'Dans groupe'],
+            datasets: [{
+                label: 'Étudiants',
+                data: [funnel.imported, funnel.contacted, funnel.started_bot, funnel.linked, funnel.joined],
+                backgroundColor: ['#94a3b8', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
 
+    // Level Donut Chart
+    const ctxLevel = document.getElementById('levelChart').getContext('2d');
+    if(levelChartInstance) levelChartInstance.destroy();
+    
+    const lbls = [];
+    const vals = [];
+    for(let k in demographics.levels) {
+        lbls.push((k === 'None' || k === 'null' || !k) ? 'Inconnu' : 'Niv ' + k);
+        vals.push(demographics.levels[k]);
+    }
+
+    levelChartInstance = new Chart(ctxLevel, {
+        type: 'doughnut',
+        data: {
+            labels: lbls,
+            datasets: [{
+                data: vals,
+                backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#06b6d4', '#6366f1']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: { legend: { position: 'right' } }
+        }
+    });
+}
 
 function renderHomeAlerts(alerts) {
     const container = document.getElementById('home-alerts-container');
@@ -2513,52 +3024,6 @@ function renderHomeAlerts(alerts) {
     }
 }
 
-
-
-
-        // ===== DAILY STATS =====
-        function loadDailyStats(days, el) {
-            _activatePill('stats-', el);
-            const chartArea = document.getElementById('daily-chart-area');
-            const tbody = document.getElementById('daily-stats-body');
-            if (!chartArea || !tbody) return;
-
-            const now = new Date();
-            const rows = [];
-            for (let i = days - 1; i >= 0; i--) {
-                const d = new Date(now);
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().slice(0, 10);
-                const dayStudents = allStudents.filter(s => (s.created_at || '').startsWith(dateStr));
-                const paidCount = dayStudents.filter(s => {
-                    const ps = String(s.payment_status||'').toUpperCase().trim();
-                    return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-                }).length;
-                rows.push({ date: dateStr, total: dayStudents.length, paid: paidCount, unpaid: dayStudents.length - paidCount });
-            }
-
-            const maxVal = Math.max(...rows.map(r => r.total), 1);
-            chartArea.innerHTML = rows.map(r => {
-                const h = Math.max(4, Math.round((r.total / maxVal) * 120));
-                const dateLabel = r.date.slice(5);
-                const paidPct = r.total > 0 ? Math.round((r.paid/r.total)*100) : 0;
-                return `<div style="display:flex; flex-direction:column; align-items:center; gap:3px; min-width:36px; flex:1;">
-                    <span style="font-size:0.65rem; font-weight:800; color:var(--accent2);">${r.total > 0 ? r.total : ''}</span>
-                    <div style="width:100%; background:linear-gradient(180deg, var(--accent2), #60a5fa); border-radius:6px 6px 0 0; height:${h}px; position:relative; min-height:4px;" title="${r.date}: ${r.total} inscrits (${paidPct}% payés)">
-                        <div style="position:absolute; bottom:0; width:100%; background:#16a34a; border-radius:0 0 6px 6px; height:${Math.round(h * r.paid / Math.max(r.total,1))}px;"></div>
-                    </div>
-                    <span style="font-size:0.6rem; color:var(--text2); white-space:nowrap;">${dateLabel}</span>
-                </div>`;
-            }).join('');
-
-            tbody.innerHTML = rows.slice().reverse().map(r => `
-                <tr style="border-top:1px solid var(--border);">
-                    <td style="padding:9px 12px; font-weight:700;">${r.date}</td>
-                    <td style="padding:9px 12px; font-weight:800; color:var(--accent2);">${r.total}</td>
-                    <td style="padding:9px 12px; color:#16a34a; font-weight:700;">${r.paid}</td>
-                    <td style="padding:9px 12px; color:#ef4444; font-weight:700;">${r.unpaid}</td>
-                </tr>
-            `).join('');
-        }
-
-
+</script>
+</body>
+</html>
