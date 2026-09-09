@@ -110,7 +110,11 @@ async def init_db():
             ('joined_at', 'TEXT'),
             ('folder_clicked_at', 'TEXT'),
             ('bot_started_at', 'TEXT'),
-            ('excluded', 'INTEGER DEFAULT 0'),
+                        ('excluded', 'INTEGER DEFAULT 0'),
+            ('profession', 'TEXT'),
+            ('country', 'TEXT'),
+            ('nationality', 'TEXT'),
+            ('arabic_level', 'TEXT'),
             ('email_sent', 'INTEGER DEFAULT 0'),
             ('email_sent_at', 'TEXT')
         ]:
