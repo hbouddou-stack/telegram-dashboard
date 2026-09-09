@@ -2018,6 +2018,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             document.getElementById('modal-duplicates').style.display = 'flex';
 
             setTimeout(() => {
+            try {
                 const groups = {};
                 
                 // Group by normalized name
@@ -2083,6 +2084,11 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 });
                 
                 container.innerHTML = html;
+            } catch(err) {
+                alert("Erreur lors de l'analyse : " + err.message);
+                console.error(err);
+                container.innerHTML = 'Erreur...';
+            }
             }, 100);
         }
 
