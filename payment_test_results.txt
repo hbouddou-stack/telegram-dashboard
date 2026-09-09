@@ -1,6 +1,0 @@
-row[7]='غير مسدد' | all='' => UNPAID
-row[7]='مسدد' | all='' => PAID
-row[7]='' | all='' => UNPAID
-row[7]='مسدد' | all='غير مسدد' => UNPAID
-row[7]='PAID' | all='' => PAID
-row[7]='UNPAID' | all='' => UNPAID

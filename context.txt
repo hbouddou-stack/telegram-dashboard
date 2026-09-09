@@ -1,1 +1,0 @@
-"               }\n                \n                switchModalTab('general');\n\n    \n\n\n            // Translation dictionaries\n            const trPays = {'france':'فرنسا', 'maroc':'المغرب', 'algerie':'الجزائر', 'algérie':'الجزائر', 'belgique':'بلجيكا', 'suisse':'سويسرا', 'canada':'كندا', 'tunisie':'تونس'};\n            const trNat = {'marocaine':'مغر"
