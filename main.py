@@ -1096,6 +1096,41 @@ async def api_admin_gateway_toggle_exclude(request: web.Request):
         logging.getLogger('main').error(f"Error in toggle_exclude: {e}")
         return web.json_response({"success": False, "error": str(e)})
 
+
+async def api_admin_gateway_bulk_action(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        action = data.get('action')
+        student_ids = data.get('student_ids', [])
+        subject = data.get('subject', '')
+        message = data.get('message', '')
+        
+        if not student_ids:
+            return web.json_response({"success": False, "error": "Aucun étudiant sélectionné"})
+            
+        import logging
+        _log = logging.getLogger('main')
+        _log.info(f"Bulk action '{action}' triggered for {len(student_ids)} students.")
+        
+        # Here we could loop and send emails or whatsapp
+        # For now, just mark success to validate the UI workflow
+        # A real implementation would push to a background queue or use aiocron
+        
+        # Example of updating stats if it was email:
+        # if action == 'email':
+        #    async with aiosqlite.connect(DATABASE_PATH) as db:
+        #        for sid in student_ids:
+        #            await db.execute("UPDATE academy_students SET email_sent = email_sent + 1 WHERE student_id = ?", (sid,))
+        #        await db.commit()
+                
+        return web.json_response({"success": True, "count": len(student_ids)})
+    except Exception as e:
+        import logging
+        logging.getLogger('main').error(f"Error in bulk_action: {e}")
+        return web.json_response({"success": False, "error": str(e)})
+
 async def api_admin_gateway_students(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -6241,6 +6276,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/export_all', api_admin_gateway_export_all_students)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
+    app.router.add_post('/api/admin/gateway/bulk_action', api_admin_gateway_bulk_action)
     app.router.add_post('/api/admin/gateway/toggle_exclude', api_admin_gateway_toggle_exclude)
     app.router.add_post('/api/admin/gateway/delete_source', api_admin_gateway_delete_source)
     app.router.add_get('/api/admin/gateway/ghost_visitors', api_admin_gateway_ghost_visitors)
