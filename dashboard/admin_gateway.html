@@ -2017,129 +2017,267 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
         
         // ===== DUPLICATE SCANNER =====
+        
+        let dupCurrentView = 'cards'; // 'cards' or 'table'
+        let dupLastGroups = [];
+
+        function setDupView(mode) {
+            dupCurrentView = mode;
+            document.getElementById('dup-view-cards').style.background = mode === 'cards' ? 'var(--accent)' : 'var(--bg)';
+            document.getElementById('dup-view-cards').style.color = mode === 'cards' ? 'white' : 'var(--text2)';
+            document.getElementById('dup-view-cards').style.border = mode === 'cards' ? 'none' : '1px solid var(--border)';
+            document.getElementById('dup-view-table').style.background = mode === 'table' ? 'var(--accent)' : 'var(--bg)';
+            document.getElementById('dup-view-table').style.color = mode === 'table' ? 'white' : 'var(--text2)';
+            document.getElementById('dup-view-table').style.border = mode === 'table' ? 'none' : '1px solid var(--border)';
+            renderDuplicateGroups(dupLastGroups);
+        }
+
+        function closeDuplicateScanner() {
+            const modal = document.getElementById('modal-duplicates');
+            modal.style.display = 'none';
+        }
+
         function openDuplicateScanner() {
             const modal = document.getElementById('modal-duplicates');
             const container = document.getElementById('duplicates-container');
             
-            if (!modal || !container) {
-                alert("Erreur : elements introuvables.");
-                return;
-            }
+            if (!modal || !container) { alert('خطأ: العنصر غير موجود'); return; }
             
-            // KEY FIX: Move modal to document.body to escape any overflow:hidden or transform parent.
-            // This is the standard fix for Telegram WebView position:fixed bugs.
+            // Move to body to escape any overflow:hidden parent (Telegram WebView fix)
             document.body.appendChild(modal);
             
-            // Apply styles with !important via cssText to override anything
-            modal.style.cssText = [
-                'display: flex !important',
-                'position: fixed !important',
-                'top: 0 !important',
-                'left: 0 !important',
-                'right: 0 !important',
-                'bottom: 0 !important',
-                'width: 100% !important',
-                'height: 100% !important',
-                'z-index: 2147483647 !important',
-                'background: rgba(0,0,0,0.88) !important',
-                'align-items: flex-end !important',
-                'justify-content: center !important',
-                'margin: 0 !important',
-                'padding: 0 !important',
-                'box-sizing: border-box !important'
-            ].join('; ');
+            modal.style.cssText = 'display:flex !important; position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; width:100% !important; height:100% !important; z-index:2147483647 !important; background:rgba(0,0,0,0.88) !important; align-items:flex-end !important; justify-content:center !important; margin:0 !important; padding:0 !important;';
             
-            container.innerHTML = '<div style="text-align:center; padding:30px; font-weight:bold; font-size:1.1rem; color:var(--text1);">Analyse en cours...</div>';
+            // Determine which students to scan: currently filtered subset
+            // We use the same filtering logic applied on screen
+            const q = (document.getElementById('search-input') ? document.getElementById('search-input').value.toLowerCase() : '');
+            const payFilter = typeof currentPayFilter !== 'undefined' ? currentPayFilter : 'all';
+            const linkFilter = typeof currentLinkFilter !== 'undefined' ? currentLinkFilter : 'all';
+            
+            let sourceList = allStudents.filter(s => s.excluded != 1); // exclude already-excluded
+            
+            // Apply pay filter
+            if (payFilter === 'paid') sourceList = sourceList.filter(s => s.payment_status === 'PAID' || s.payment_status === 'مدفوع');
+            else if (payFilter === 'unpaid') sourceList = sourceList.filter(s => s.payment_status !== 'PAID' && s.payment_status !== 'مدفوع');
+            
+            // Apply link filter
+            if (linkFilter === 'linked') sourceList = sourceList.filter(s => s.telegram_id);
+            else if (linkFilter === 'unlinked') sourceList = sourceList.filter(s => !s.telegram_id);
+            
+            // Apply search query
+            if (q) {
+                sourceList = sourceList.filter(s => {
+                    const name = ((s.first_name || '') + ' ' + (s.last_name || '')).toLowerCase();
+                    const email = (s.email || '').toLowerCase();
+                    const phone = (s.phone || '').toLowerCase();
+                    return name.includes(q) || email.includes(q) || phone.includes(q);
+                });
+            }
+            
+            container.innerHTML = '<div style="text-align:center; padding:40px; font-size:1.1rem; color:var(--text2);" dir="rtl">⏳ جارٍ التحليل...</div>';
+            
+            const infoEl = document.getElementById('dup-scan-info');
+            if (infoEl) infoEl.textContent = `يتم الفحص على ${sourceList.length} طالب من إجمالي ${allStudents.filter(s => s.excluded != 1).length}`;
             
             setTimeout(() => {
                 try {
-                    const groupsByName = {};
-                    const groupsByEmail = {};
+                    const byEmail = {};
+                    const byPhone = {};
+                    const byName = {};
                     
-                    allStudents.forEach(s => {
-                        // By Name
-                        let n = ((s.first_name || '') + ' ' + (s.last_name || '')).toLowerCase();
-                        n = n.replace(/\s+/g, '').replace(/[^\u0600-\u06FFa-z0-9-]/g, '');
-                        if (n.length >= 3) {
-                            if (!groupsByName[n]) groupsByName[n] = [];
-                            groupsByName[n].push(s);
-                        }
-                        
+                    sourceList.forEach(s => {
                         // By Email
                         if (s.email && s.email.includes('@')) {
-                            let e = s.email.toLowerCase().trim();
-                            if (!groupsByEmail[e]) groupsByEmail[e] = [];
-                            groupsByEmail[e].push(s);
+                            const k = s.email.toLowerCase().trim();
+                            if (!byEmail[k]) byEmail[k] = [];
+                            byEmail[k].push(s);
+                        }
+                        // By Phone
+                        const rawPhone = (s.phone || s.telephone || s.mobile || '').replace(/\D/g, '');
+                        if (rawPhone.length >= 8) {
+                            const kp = rawPhone.slice(-9); // last 9 digits for matching
+                            if (!byPhone[kp]) byPhone[kp] = [];
+                            byPhone[kp].push(s);
+                        }
+                        // By Name (supports Arabic and Latin)
+                        let n = ((s.first_name || '') + ' ' + (s.last_name || '')).trim().toLowerCase();
+                        n = n.replace(/\s+/g, ' ').trim();
+                        if (n.length >= 3 && n !== ' ') {
+                            if (!byName[n]) byName[n] = [];
+                            byName[n].push(s);
                         }
                     });
 
                     const finalGroups = [];
                     const processedIds = new Set();
                     
-                    Object.values(groupsByEmail).forEach(g => {
-                        if (g.length > 1) {
-                            finalGroups.push({ type: 'Email identique', students: g });
-                            g.forEach(st => processedIds.add(st.student_id));
-                        }
-                    });
-                    
-                    Object.values(groupsByName).forEach(g => {
+                    const addGroup = (g, type, icon) => {
                         if (g.length > 1) {
                             const unhandled = g.filter(st => !processedIds.has(st.student_id));
                             if (unhandled.length > 1) {
-                                finalGroups.push({ type: 'Nom identique', students: unhandled });
+                                finalGroups.push({ type, icon, students: unhandled });
                                 unhandled.forEach(st => processedIds.add(st.student_id));
                             }
                         }
-                    });
+                    };
                     
-                    if (finalGroups.length === 0) {
-                        container.innerHTML = '<div style="text-align:center; padding:40px; color:#10b981; font-weight:bold; font-size:1.2rem;">Aucun doublon detecte !</div>';
-                        return;
-                    }
-
-                    let html = '';
-                    finalGroups.forEach(groupObj => {
-                        const group = groupObj.students;
-                        group.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-                        const name = (group[0].first_name || '') + ' ' + (group[0].last_name || '');
-                        
-                        html += `<div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--bg); margin-bottom:10px;">
-                            <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1rem;">${name} <span style="font-size:0.75rem; color:var(--text2);">(${group.length} comptes - ${groupObj.type})</span></h4>
-                            <div style="display:flex; flex-direction:column; gap:8px;">`;
-                        
-                        group.forEach((s, idx) => {
-                            const isNewest = (idx === 0);
-                            const isExcluded = s.excluded == 1;
-                            const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('fr-FR') : '-';
-                            const badgeColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
-                            const badgeText = isExcluded ? 'Exclu' : (isNewest ? 'Recent' : 'Ancien');
-                            const opacity = isExcluded ? '0.5' : '1';
-                            
-                            html += `<div id="dup-row-${s.student_id}" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; opacity:${opacity};">
-                                <div style="flex:1; overflow:hidden;">
-                                    <div style="font-size:0.85rem; font-weight:bold; color:var(--text1); word-break:break-all;">${s.email || '-'}</div>
-                                    <div style="font-size:0.75rem; color:var(--text2); margin-top:4px;">${dateStr} | ${s.source_file || s.source || '-'} | ${s.payment_status === 'PAID' ? 'Paye' : 'Non Paye'}</div>
-                                    <span style="font-size:0.7rem; background:${badgeColor}22; color:${badgeColor}; padding:2px 8px; border-radius:10px; font-weight:bold; display:inline-block; margin-top:4px;">${badgeText}</span>
-                                </div>
-                                <div style="margin-left:8px; flex-shrink:0;">
-                                    ${isExcluded
-                                        ? `<button onclick="toggleDuplicateExclude('${s.student_id}', 0)" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">Reintegrer</button>`
-                                        : `<button onclick="toggleDuplicateExclude('${s.student_id}', 1)" style="background:#ef4444; border:none; color:white; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">Exclure</button>`
-                                    }
-                                </div>
-                            </div>`;
-                        });
-                        
-                        html += `</div></div>`;
-                    });
+                    Object.values(byEmail).forEach(g => addGroup(g, 'بريد إلكتروني مكرر', '📧'));
+                    Object.values(byPhone).forEach(g => addGroup(g, 'هاتف مكرر', '📞'));
+                    Object.values(byName).forEach(g => addGroup(g, 'اسم مكرر', '👤'));
                     
-                    container.innerHTML = html;
+                    dupLastGroups = finalGroups;
+                    renderDuplicateGroups(finalGroups);
+                    renderExcludedList();
+                    
                 } catch(err) {
-                    alert("Erreur JS : " + err.message);
+                    container.innerHTML = `<div style="color:red; padding:20px; direction:rtl;">خطأ: ${err.message}</div>`;
                     console.error(err);
                 }
             }, 80);
+        }
+
+        function renderDuplicateGroups(finalGroups) {
+            const container = document.getElementById('duplicates-container');
+            if (!container) return;
+
+            if (finalGroups.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:60px; color:#10b981; font-weight:bold; font-size:1.3rem;" dir="rtl">✅ لا توجد تكرارات!</div>';
+                return;
+            }
+
+            let html = `<div dir="rtl" style="font-size:0.85rem; color:var(--text2); margin-bottom:8px;">وُجِد <strong style="color:var(--accent2);">${finalGroups.length}</strong> مجموعة مكررة</div>`;
+            
+            finalGroups.forEach((groupObj, gi) => {
+                const group = [...groupObj.students].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                
+                if (dupCurrentView === 'table') {
+                    // TABLE VIEW: side-by-side columns
+                    html += `<div style="border:2px solid var(--border); border-radius:14px; overflow:hidden; background:var(--bg);">
+                        <div style="padding:10px 14px; background:rgba(139,92,246,0.1); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px;" dir="rtl">
+                            <span style="font-size:1rem;">${groupObj.icon}</span>
+                            <strong style="color:var(--text1); font-size:0.9rem;">${groupObj.type}</strong>
+                            <span style="font-size:0.75rem; color:var(--text2); margin-right:auto;">${group.length} حسابات</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(${Math.min(group.length, 2)}, 1fr); gap:0;">`;
+                    
+                    group.forEach((s, idx) => {
+                        const isNewest = idx === 0;
+                        const isExcluded = s.excluded == 1;
+                        const borderColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
+                        const badgeAr = isExcluded ? 'مُستبعَد 👻' : (isNewest ? '⭐ الأحدث' : 'القديم');
+                        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('ar-MA') : '-';
+                        const phone = s.phone || s.telephone || s.mobile || '-';
+                        
+                        html += `<div style="padding:12px; border-left:${idx > 0 ? '1px solid var(--border)' : 'none'}; opacity:${isExcluded ? 0.5 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'transparent'}; border-top:3px solid ${borderColor};">
+                            <div style="font-size:0.7rem; background:${borderColor}20; color:${borderColor}; padding:2px 8px; border-radius:10px; font-weight:bold; display:inline-block; margin-bottom:8px;" dir="rtl">${badgeAr}</div>
+                            <div style="font-weight:900; font-size:1rem; color:var(--text1); margin-bottom:4px;" dir="rtl">${s.first_name || ''}</div>
+                            <div style="font-size:0.85rem; color:var(--text2); margin-bottom:4px;" dir="ltr">${s.last_name || ''}</div>
+                            <div style="font-size:0.78rem; color:#0a84ff; word-break:break-all; margin-bottom:4px;" dir="ltr">${s.email || '-'}</div>
+                            <div style="font-size:0.78rem; color:var(--text2); margin-bottom:4px;" dir="ltr">📞 ${phone}</div>
+                            <div style="font-size:0.72rem; color:var(--text2);" dir="rtl">📂 ${s.source_file || s.source || '-'}</div>
+                            <div style="font-size:0.72rem; color:var(--text2); margin-bottom:8px;" dir="rtl">📅 تاريخ الإضافة: ${dateStr}</div>
+                            <div style="font-size:0.72rem; font-weight:bold; color:${s.payment_status === 'PAID' ? '#10b981' : '#ef4444'};" dir="rtl">${s.payment_status === 'PAID' ? '✅ مسدَّد' : '❌ غير مسدَّد'}</div>
+                            <div style="margin-top:10px;">
+                                ${isExcluded
+                                    ? `<button onclick="confirmDupAction('${s.student_id}', 0, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:5px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; width:100%;" dir="rtl">🔄 إعادة تفعيل</button>`
+                                    : `<button onclick="confirmDupAction('${s.student_id}', 1, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:#ef4444; border:none; color:white; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; font-weight:bold; width:100%;" dir="rtl">👻 استبعاد</button>`
+                                }
+                            </div>
+                        </div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                    
+                } else {
+                    // CARDS VIEW: stacked with arrow
+                    html += `<div style="border:2px solid var(--border); border-radius:14px; overflow:hidden; background:var(--bg);">
+                        <div style="padding:10px 14px; background:rgba(139,92,246,0.1); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px;" dir="rtl">
+                            <span style="font-size:1rem;">${groupObj.icon}</span>
+                            <strong style="color:var(--text1); font-size:0.9rem;">${groupObj.type}</strong>
+                            <span style="font-size:0.75rem; color:var(--text2); margin-right:auto;">${group.length} حسابات</span>
+                        </div>
+                        <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">`;
+                    
+                    group.forEach((s, idx) => {
+                        const isNewest = idx === 0;
+                        const isExcluded = s.excluded == 1;
+                        const borderColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
+                        const badgeAr = isExcluded ? 'مُستبعَد 👻' : (isNewest ? '⭐ الأحدث' : 'القديم');
+                        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('ar-MA') : '-';
+                        const phone = s.phone || s.telephone || s.mobile || '-';
+                        
+                        if (idx > 0) {
+                            html += `<div style="text-align:center; color:var(--text2); font-size:1.2rem; padding:2px 0;">⬇️ مقارنة مع ⬇️</div>`;
+                        }
+                        
+                        html += `<div id="dup-row-${s.student_id}" style="border:2px solid ${borderColor}; border-radius:12px; padding:12px; opacity:${isExcluded ? 0.5 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'var(--surface)'};">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                                <div style="font-size:0.7rem; background:${borderColor}20; color:${borderColor}; padding:2px 8px; border-radius:10px; font-weight:bold;" dir="rtl">${badgeAr}</div>
+                                <div>
+                                    ${isExcluded
+                                        ? `<button onclick="confirmDupAction('${s.student_id}', 0, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:4px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem;" dir="rtl">🔄 إعادة تفعيل</button>`
+                                        : `<button onclick="confirmDupAction('${s.student_id}', 1, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:#ef4444; border:none; color:white; padding:4px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; font-weight:bold;" dir="rtl">👻 استبعاد</button>`
+                                    }
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.82rem;">
+                                <div>
+                                    <div style="font-weight:900; font-size:1rem; color:var(--text1);" dir="rtl">${s.first_name || '—'}</div>
+                                    <div style="color:var(--text2);" dir="ltr">${s.last_name || '—'}</div>
+                                </div>
+                                <div style="text-align:left;">
+                                    <div style="color:#0a84ff; word-break:break-all;" dir="ltr">${s.email || '-'}</div>
+                                    <div style="color:var(--text2);" dir="ltr">📞 ${phone}</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; font-size:0.72rem;" dir="rtl">
+                                <span style="color:${s.payment_status === 'PAID' ? '#10b981' : '#ef4444'}; font-weight:bold;">${s.payment_status === 'PAID' ? '✅ مسدَّد' : '❌ غير مسدَّد'}</span>
+                                <span style="color:var(--text2);">📅 تاريخ الإضافة: ${dateStr}</span>
+                                <span style="color:var(--text2);">📂 ${s.source_file || s.source || '-'}</span>
+                            </div>
+                        </div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function renderExcludedList() {
+            const excluded = allStudents.filter(s => s.excluded == 1);
+            const section = document.getElementById('dup-excluded-section');
+            const list = document.getElementById('dup-excluded-list');
+            const count = document.getElementById('dup-excluded-count');
+            if (!section || !list) return;
+            
+            if (excluded.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+            count.textContent = excluded.length + ' حساب';
+            
+            list.innerHTML = excluded.map(s => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:var(--surface); border-radius:8px; border:1px solid var(--border);" dir="rtl">
+                    <div>
+                        <span style="font-weight:bold; color:var(--text1); font-size:0.85rem;">${s.first_name || ''} ${s.last_name || ''}</span>
+                        <span style="font-size:0.75rem; color:var(--text2); margin-right:8px;">${s.email || '-'}</span>
+                    </div>
+                    <button onclick="confirmDupAction('${s.student_id}', 0, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem; flex-shrink:0;">🔄 إعادة تفعيل</button>
+                </div>
+            `).join('');
+        }
+
+        function confirmDupAction(studentId, excludedState, name) {
+            const msg = excludedState === 1
+                ? `هل أنت متأكد أنك تريد استبعاد حساب "${name}"؟\n\nسيُصبح هذا الحساب غير مرئي في الإحصائيات ولكن يمكنك إعادة تفعيله لاحقًا.`
+                : `هل تريد إعادة تفعيل حساب "${name}"؟`;
+            
+            if (confirm(msg)) {
+                toggleDuplicateExclude(studentId, excludedState);
+            }
         }
 
         async function toggleDuplicateExclude(studentId, excludedState) {
@@ -2151,370 +2289,20 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 });
                 const data = await res.json();
                 if(data.success) {
-                    // Update local data so we don't have to fetch everything immediately
                     const student = allStudents.find(s => s.student_id === studentId);
                     if (student) student.excluded = excludedState;
                     
-                    // Re-render the scanner to update UI
+                    // Re-scan with same scope
                     openDuplicateScanner();
                 } else {
-                    alert('Erreur : ' + (data.error || 'Inconnue'));
+                    alert('خطأ: ' + (data.error || 'غير معروف'));
                 }
             } catch(e) {
-                alert('Erreur réseau');
+                alert('خطأ في الشبكة');
             }
         }
 
-        function filterStudents() {
-            const q = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allStudents.filter(s => {
-                const name = String(s.first_name || '').toLowerCase();
-                const lname = String(s.last_name || '').toLowerCase();
-                const email = String(s.email || '').toLowerCase();
-                const source = String(s.source || '').toLowerCase();
-                const dob = String(s.dob || '').toLowerCase();
-                const year = String(s.year || '');
-                const telegramId = String(s.telegram_id || '');
-                const tgFirstName = String(s.tg_first_name || '').toLowerCase();
-                
-                const matchSearch = name.includes(q) || lname.includes(q) || email.includes(q) || 
-                                  source.includes(q) || dob.includes(q) || year.includes(q) ||
-                                  telegramId.includes(q) || tgFirstName.includes(q);
-
-                const g = String(s.gender || '').toLowerCase();
-                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
-                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
-                const matchGender = filters.gender === 'all'
-                    || (filters.gender === 'homme' && isM)
-                    || (filters.gender === 'femme' && isF)
-                    || (filters.gender === 'inconnu' && !isM && !isF);
-
-                const yr = String(s.year || '');
-                const yrLower = yr.toLowerCase();
-                const matchLevel = filters.level === 'all' 
-                    || yrLower.includes(filters.level)
-                    || (filters.level === '1' && (yrLower.includes('أول') || yrLower.includes('1')))
-                    || (filters.level === '2' && (yrLower.includes('ثاني') || yrLower.includes('2')))
-                    || (filters.level === '3' && (yrLower.includes('ثالث') || yrLower.includes('3')))
-                    || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
-
-                
-                const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
-
-                const linked = !!s.telegram_id;
-                const botStarted = !!s.telegram_id;
-                const groupJoined = !!s.group_joined || !!s.joined_at;
-                const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === 'مسدد';
-                
-                const matchTelegram = filters.telegram === 'all'
-                    || (filters.telegram === 'bot' && botStarted)
-                    || (filters.telegram === 'group' && groupJoined)
-                    || (filters.telegram === 'none' && !botStarted);
-                
-                const matchPayment = filters.payment === 'all'
-                    || (filters.payment === 'paid' && isPaid)
-                    || (filters.payment === 'unpaid' && !isPaid);
-
-                const matchStatus = filters.status === 'all'
-                    || (filters.status === 'linked' && linked)
-                    || (filters.status === 'unlinked' && !linked);
-
-                let studentColor = 'red';
-                if (s.excluded) studentColor = 'black';
-                else if (s.group_joined) studentColor = 'green';
-                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) studentColor = 'orange';
-
-                const matchColor = filters.color === 'all' || filters.color === studentColor;
-
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment;
-            
-            }); // End of filtering
-
-            // Sort filtered results
-            filtered.sort((a, b) => {
-                let valA, valB;
-                if (currentSort.key === 'name') {
-                    valA = (a.first_name || '').toLowerCase();
-                    valB = (b.first_name || '').toLowerCase();
-                } else if (currentSort.key === 'email') {
-                    valA = (a.email || '').toLowerCase();
-                    valB = (b.email || '').toLowerCase();
-                } else if (currentSort.key === 'level') {
-                    valA = String(a.year || '');
-                    valB = String(b.year || '');
-                } else if (currentSort.key === 'status') {
-                    valA = a.telegram_id ? 1 : 0;
-                    valB = b.telegram_id ? 1 : 0;
-                } else {
-                    // Default: date
-                    valA = new Date(a.created_at || 0).getTime();
-                    valB = new Date(b.created_at || 0).getTime();
-                }
-                
-                if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
-                if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            const linkedCount = filtered.filter(s => s.telegram_id).length;
-            const elTotal = document.getElementById('stat-total');
-            const elLinked = document.getElementById('stat-linked');
-            const elPct = document.getElementById('stat-pct');
-            if (elTotal) elTotal.textContent = filtered.length;
-            if (elLinked) elLinked.textContent = linkedCount;
-            if (elPct) elPct.textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
-            const countDisplay = document.getElementById('students-count-display');
-            if (countDisplay) {
-                countDisplay.innerHTML = `📊 <span>العدد الإجمالي: <span style="color:#0084ff;">${filtered.length}</span> طالب</span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(منهم ${linkedCount} مربوط)</span>`;
-            }
-
-            const list = document.getElementById('students-list');
-            list.innerHTML = '';
-            if(filtered.length === 0) {
-                list.innerHTML = '<div class="no-items">لم يتم العثور على أي طالب.</div>';
-                return;
-            }
-            
-            if (currentViewMode === 'table') {
-                const table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '0.85rem';
-                table.style.background = 'var(--surface)';
-                table.style.borderRadius = '8px';
-                table.style.overflow = 'hidden';
-                table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-                
-                const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                        <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${currentSort.key==='name'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('email')">الإيميل ${currentSort.key==='email'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">الحالة ${currentSort.key==='status'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">المستوى ${currentSort.key==='level'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('date')">التاريخ ${currentSort.key==='date'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
-                    </tr>
-                `;
-                table.appendChild(thead);
-                const tbody = document.createElement('tbody');
-                
-                const displayLimit = Math.min(filtered.length, 500);
-                for(let i=0; i<displayLimit; i++) {
-                    const s = filtered[i];
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid var(--border)';
-                    tr.style.cursor = 'pointer';
-                    tr.onmouseover = () => tr.style.background = 'var(--bg)';
-                    tr.onmouseout = () => tr.style.background = 'transparent';
-                    tr.onclick = () => openStudentCard(s);
-                    
-                    // Status dot
-                    let dotColor, dotTitle;
-                    if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
-                    else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
-                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
-                    else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
-                    
-                    const name = (s.first_name || '') + ' ' + (s.last_name || '');
-                    const yrStr = String(s.year || '');
-                    const yrMatch = yrStr.match(/\d+/);
-                    const yrNum = yrMatch ? yrMatch[0] : '';
-                    
-                    const d = new Date(s.created_at);
-                    const dateStr = !isNaN(d) ? d.toLocaleDateString('fr-FR') : '-';
-                    
-                    tr.innerHTML = `
-                        <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
-                        <td style="padding:12px;"><strong><span style="color:var(--text2); font-size:0.75rem; margin-right:4px;">#${i + 1}</span> ${name}</strong></td>
-                        <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
-                        <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
-                        <td style="padding:12px;">${yrNum ? 'السنة '+yrNum : '-'}</td>
-                        <td style="padding:12px;">${dateStr}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-                table.appendChild(tbody);
-                list.appendChild(table);
-                return; // skip the grid rendering
-            }
-
-            const fragment = document.createDocumentFragment();
-            const displayLimit = Math.min(filtered.length, 500);
-            for(let i=0; i<displayLimit; i++) {
-                const s = filtered[i];
-                
-                const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
-
-                const linked = !!s.telegram_id;
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.style.padding = '12px 14px';
-                div.style.display = 'flex';
-                div.style.flexDirection = 'column';
-                div.style.gap = '6px';
-                
-                const g = String(s.gender || '').toLowerCase();
-                if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
-                    div.style.borderRight = '5px solid #0084ff';
-                    div.style.background = 'rgba(0, 132, 255, 0.08)';
-                } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
-                    div.style.borderRight = '5px solid #ec4899';
-                    div.style.background = 'rgba(236, 72, 153, 0.08)';
-                }
-
-                div.onclick = () => openStudentCard(s);
-                
-                // Status dot
-                let dotColor, dotTitle;
-                if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
-                else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
-                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
-                else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
-                const dot = `<span title="${dotTitle}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;"></span>`;
-
-                // Year in Arabic
-                const yrStr = String(s.year || '');
-                const yrMatch = yrStr.match(/\d+/);
-                const yrNum = yrMatch ? yrMatch[0] : '';
-                const yearAr = yrNum ? `السنة ${yrNum}` : '';
-
-                // Payment badge
-                const paid = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = paid === 'PAID' || paid === 'PAYE' || paid === 'مدفوع' || paid === 'مسدد';
-                const payBadge = isPaid
-                    ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
-                    : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
-
-                // Extract Year correctly (avoid "Niveau Niveau")
-                let yearNum = '';
-                if (s.year) {
-                    const yrMatch = String(s.year).match(/\d+/);
-                    yearNum = yrMatch ? yrMatch[0] : '';
-                }
-                const yearBadgeHTML = yearNum ? `<span style="font-size:0.72rem;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-weight:bold;">المستوى ${yearNum}</span>` : '';
-
-                // Source Badge
-                const srcStr = String(s.source || '').toLowerCase();
-                let srcBadge = `<span style="font-size:0.72rem;color:var(--text2);">&#1605;. ${s.source || '-'}</span>`;
-                if (srcStr.includes('sheet') || srcStr.includes('google')) {
-                    srcBadge = `<span style="background:#0f9d58; color:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.72rem;">Sheet</span>`;
-                } else if (srcStr.includes('excel')) {
-                    srcBadge = `<span style="background:#107c41; color:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.72rem;">Excel</span>`;
-                }
-
-                // Colored Email
-                const coloredEmail = s.email ? `<span style="font-size:0.8rem; color:#0a84ff; background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:4px;" dir="ltr">${String(s.email)}</span>` : '';
-                
-                // Names
-                const arName = '<span style="color:var(--text2); font-size:0.75rem; margin-left:6px;">#' + (i + 1) + '</span> ' + String(s.first_name || '');
-                const frNameHTML = s.last_name ? `<div style="font-size:0.85rem;color:var(--text2);">${String(s.last_name)}</div>` : '';
-
-                // Telegram info
-                let tgLine = '';
-                if (linked) {
-                    let tgName = String(s.tg_first_name || '');
-                    if (s.tg_last_name) tgName += ' ' + String(s.tg_last_name);
-                    const tgUser = s.telegram_username ? `@${s.telegram_username}` : '';
-                    tgLine = `<div style="font-size:0.78rem;color:#0088cc;display:flex;align-items:center;gap:4px;">✈️ ${tgUser || tgName.trim() || 'مرتبط'}</div>`;
-                }
-
-                const acaId = String(s.academic_id || s.student_id || '').trim();
-                
-                // Templates
-                const styleOpt = (typeof currentCardStyle !== 'undefined') ? currentCardStyle : '1';
-
-                if (styleOpt === '2') {
-                    // Template 2: Status Kanban Style
-                    div.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
-                            <div style="font-weight:900;font-size:1.15rem;color:var(--text1);">
-                                ${arName}
-                            </div>
-                            <div style="display:flex; gap:4px; align-items:center;">
-                                ${payBadge}
-                            </div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                            ${frNameHTML}
-                        </div>
-                        <div style="margin-top:8px;">${coloredEmail}</div>
-                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:12px; background:rgba(255,255,255,0.03); padding:8px; border-radius:8px; border: 1px solid var(--border);">
-                            ${dot} 
-                            ${acaId ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">رقم: ${acaId}</span>` : ''}
-                            ${yearNum ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">| المستوى ${yearNum}</span>` : ''}
-                            ${srcBadge ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">| ${srcBadge}</span>` : ''}
-                        </div>
-                        ${tgLine ? `<div style="margin-top:8px;">${tgLine}</div>` : ''}
-                    `;
-                } else if (styleOpt === '3') {
-                    // Template 3: Dense and Compact
-                    div.style.padding = '8px 12px'; // tighter padding
-                    div.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
-                            <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);">
-                                ${dot} ${arName} ${s.last_name ? `<span style="font-size:0.8rem;color:var(--text2);font-weight:normal;">(${String(s.last_name)})</span>` : ''}
-                            </div>
-                            <div style="display:flex;align-items:center;gap:4px;">
-                                ${payBadge}
-                                ${yearBadgeHTML}
-                            </div>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;align-items:center; margin-top:6px;">
-                            ${coloredEmail}
-                            ${tgLine}
-                        </div>
-                    `;
-                } else {
-                    // Template 1: Classic Enhanced (Default)
-                    div.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
-                            <div style="display:flex;flex-direction:column;gap:2px;">
-                                <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:1.15rem;color:var(--text1);">
-                                    ${dot} ${arName}
-                                </div>
-                                ${frNameHTML}
-                            </div>
-                            ${payBadge}
-                        </div>
-                        <div style="margin-top:8px;">${coloredEmail}</div>
-                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:10px;">
-                            ${acaId ? `<span style="font-size:0.72rem;background:rgba(52,199,89,0.15);color:#34c759;padding:2px 8px;border-radius:10px;font-weight:bold;">رقم الطالب: ${acaId}</span>` : ''}
-                            ${yearBadgeHTML}
-                            ${srcBadge}
-                        </div>
-                        ${tgLine ? `<div style="margin-top:8px;">${tgLine}</div>` : ''}
-                    `;
-                }
-                
-                fragment.appendChild(div);
-            }
-            list.appendChild(fragment);
-            if(filtered.length > 500) {
-                const more = document.createElement('div');
-                more.style.cssText = 'text-align:center;padding:15px;color:var(--text2);font-size:0.85rem;';
-                more.innerHTML = `تم إخفاء ${filtered.length - 500} طالب لتحسين الأداء. استخدم البحث للوصول إليهم.`;
-                list.appendChild(more);
-            }
-            if (typeof renderStudents === 'function') {
-                renderStudents(filtered);
-            }
-        }
+        
 
 
         
@@ -3897,18 +3685,36 @@ function renderHomeAlerts(alerts) {
 </script>
 
     <!-- MODAL DOUBLONS -->
-    <div id="modal-duplicates" class="modal-overlay">
-        <div style="background:var(--surface); width:100%; max-width:650px; max-height:85vh; border-radius:20px 20px 0 0; padding:20px; overflow-y:auto; display:flex; flex-direction:column;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; font-size:1.2rem; color:var(--text1);">🔍 Scanner de Doublons</h3>
-                <button onclick="document.getElementById('modal-duplicates').style.display='none'; fetchStudents();" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:5px 12px; border-radius:8px; cursor:pointer;">Fermer</button>
+<div id="modal-duplicates" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2147483647; background:rgba(0,0,0,0.88); align-items:flex-end; justify-content:center;">
+    <div style="background:var(--surface); width:100%; max-width:700px; max-height:88vh; border-radius:20px 20px 0 0; display:flex; flex-direction:column; overflow:hidden;">
+        <!-- STICKY HEADER -->
+        <div style="flex-shrink:0; padding:16px 20px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:var(--surface); position:sticky; top:0; z-index:10;">
+            <div>
+                <h3 style="margin:0; font-size:1.2rem; color:var(--text1); font-weight:900;" dir="rtl">🔍 مُدقِّق التكرارات</h3>
+                <p style="margin:4px 0 0 0; font-size:0.78rem; color:var(--text2);" id="dup-scan-info" dir="rtl">يتم الفحص على الطلاب المعروضين حاليًا فقط</p>
             </div>
-            <p style="font-size:0.85rem; color:var(--text2); margin-top:0;">Les élèves avec un prénom et nom identiques (ou très similaires) sont regroupés ci-dessous. Excluez les anciens profils pour nettoyer votre base.</p>
-            <div id="duplicates-container" style="display:flex; flex-direction:column; gap:15px; margin-top:10px;">
-                <!-- Content injected via JS -->
+            <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                <!-- View toggle -->
+                <button id="dup-view-cards" onclick="setDupView('cards')" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:5px 10px; font-size:0.75rem; cursor:pointer;">🃏 بطاقات</button>
+                <button id="dup-view-table" onclick="setDupView('table')" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); border-radius:8px; padding:5px 10px; font-size:0.75rem; cursor:pointer;">📋 جدول</button>
+                <button onclick="closeDuplicateScanner()" style="background:#ef4444; border:none; color:white; padding:6px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.9rem;">✕ إغلاق</button>
             </div>
         </div>
+        <!-- SCROLLABLE BODY -->
+        <div id="duplicates-container" style="flex:1; overflow-y:scroll; padding:16px; display:flex; flex-direction:column; gap:16px;">
+            <!-- Content injected via JS -->
+        </div>
+        <!-- STICKY FOOTER: excluded list -->
+        <div id="dup-excluded-section" style="flex-shrink:0; border-top:1px solid var(--border); padding:12px 20px; background:var(--bg); display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;" dir="rtl">
+                <span style="font-size:0.85rem; font-weight:bold; color:var(--text2);">👻 الحسابات المُستبعَدة</span>
+                <span id="dup-excluded-count" style="font-size:0.75rem; color:var(--text2);">0 حساب</span>
+            </div>
+            <div id="dup-excluded-list" style="display:flex; flex-direction:column; gap:6px; max-height:150px; overflow-y:scroll;"></div>
+        </div>
     </div>
+</div>
+
 
 
     <!-- BULK ACTION BAR -->
