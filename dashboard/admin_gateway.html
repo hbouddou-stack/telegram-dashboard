@@ -488,8 +488,10 @@
             <label style="cursor:pointer; font-weight:bold; color:var(--text1); font-size:0.85rem;"><input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents()" style="margin-left:8px; transform:scale(1.2);"> Tout sélectionner</label>
         </div>
         <div style="padding:8px 12px 6px;">
-            <div style="display:flex; gap:8px;">
-                <input style="flex:1;" class="search-box" type="text" id="search-input" placeholder="🔍 بحث بالاسم أو البريد أو الهاتف..." oninput="filterStudents()" style="margin-bottom:8px;">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <input style="flex:1; margin-bottom:0;" class="search-box" type="text" id="search-input" placeholder="🔍 Rechercher (nom, email...)" oninput="filterStudents()">
+                <button onclick="openDuplicateScanner()" style="background:#8b5cf6; color:white; border:none; border-radius:12px; padding:0 15px; font-weight:bold; cursor:pointer;" title="Scanner les doublons">🔍 Doublons</button>
+            </div>
             <!-- Sort bar -->
             <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; flex-wrap:nowrap; align-items:center;">
                 <span style="font-size:0.72rem; color:var(--text2); white-space:nowrap; font-weight:600;">ترتيب:</span>
@@ -520,7 +522,15 @@
             
             
         function toggleAllStudents() {
-            const isChecked = document.getElementById('selectAllCheckbox').checked;
+            const cb1 = document.getElementById('selectAllCheckbox');
+            const cb2 = document.getElementById('selectAllGrid');
+            // Find which one triggered it, or just use whichever is checked
+            const isChecked = (cb1 && cb1.checked) || (cb2 && cb2.checked);
+            
+            // Sync them
+            if (cb1) cb1.checked = isChecked;
+            if (cb2) cb2.checked = isChecked;
+            
             const checkboxes = document.querySelectorAll('.student-select-cb');
             checkboxes.forEach(cb => cb.checked = isChecked);
             updateMassSmsButton();
