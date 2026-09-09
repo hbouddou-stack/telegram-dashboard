@@ -790,9 +790,15 @@
 
         async function escalateTicket(ragFailed = true) {
             const msg = document.getElementById('message').value.trim();
-            const tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || null;
-            const username = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "") || "";
-            const first_name = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "") || "";
+            const urlParams = new URLSearchParams(window.location.search);
+            let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null);
+            if (!tid) tid = urlParams.get('telegram_id') || urlParams.get('tid') || null;
+            
+            let username = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "");
+            if (!username) username = urlParams.get('username') || "";
+            
+            let first_name = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "");
+            if (!first_name) first_name = urlParams.get('first_name') || "الطالب";
             
             const fileInput = document.getElementById('attachment');
             let initialFileData = null;
@@ -1716,7 +1722,7 @@ function switchTab(tabName, btnEl) {
                         <span>${senderTitle}</span>
                         ${editBtn}
                     </div>
-                    <div id="msg-bubble-${idx}" style="background:${isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)'}; border:1px solid ${isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)'}; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">
+                    <div id="msg-bubble-${idx}" dir="auto" style="background:${isStudent ? '#1e3a8a' : 'rgba(255,255,255,0.08)'}; border:1px solid ${isStudent ? '#3b82f6' : 'rgba(255,255,255,0.15)'}; padding:12px 16px; border-radius:14px; max-width:85%; font-size:0.9rem; line-height:1.5; color:#fff;">
                         ${(m.text || '').replace(/\\n/g, '<br>')}
                         ${attachmentHtml}
                     </div>
