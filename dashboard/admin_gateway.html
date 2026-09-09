@@ -462,12 +462,15 @@
                     <div class="pill-btn" id="pay-unpaid" onclick="setPayFilter('unpaid', this)" style="flex:1; text-align:center; padding:9px 4px; font-size:0.75rem; font-weight:700; cursor:pointer;">🔴 غير مسدد</div>
                 </div>
                 <!-- Source select compact -->
-                <select id="source-select" onchange="setSourceFilter(this.value)" style="flex:1; padding:8px 6px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.75rem; cursor:pointer; font-weight:700;">
-                    <option value="all">📁 كل المصادر</option>
-                    <option value="excel">📗 Excel</option>
-                    <option value="sheet">📊 Sheet</option>
-                    <option value="manuel">✍️ يدوي</option>
-                </select>
+                <div style="flex:1; display:flex; gap:4px;">
+                    <select id="source-select" onchange="setSourceFilter(this.value)" style="flex:1; padding:8px 6px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.75rem; cursor:pointer; font-weight:700;">
+                        <option value="all">📁 كل المصادر</option>
+                        <option value="excel">📗 Excel (الكل)</option>
+                        <option value="sheet">📊 Sheet</option>
+                        <option value="manuel">✍️ يدوي</option>
+                    </select>
+                    <button id="btn-delete-source" onclick="deleteSelectedSource()" style="display:none; background:#ef4444; color:white; border:none; border-radius:12px; padding:4px 8px; cursor:pointer;" title="حذف هذا الملف (Supprimer ce fichier)">🗑️</button>
+                </div>
                 <!-- Niveau select compact -->
                 <select id="level-select" onchange="setLevelFilter(this.value)" style="flex:0.7; padding:8px 6px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.75rem; cursor:pointer; font-weight:700;">
                     <option value="all">📚 الكل</option>
@@ -1739,7 +1742,41 @@
         }
         function setSourceFilter(val) {
             filters.source = val;
+            const delBtn = document.getElementById('btn-delete-source');
+            if (val && val.startsWith('file:')) {
+                delBtn.style.display = 'block';
+            } else {
+                delBtn.style.display = 'none';
+            }
             filterStudents();
+        }
+
+        async function deleteSelectedSource() {
+            const val = document.getElementById('source-select').value;
+            if (!val.startsWith('file:')) return;
+            const filename = val.replace('file:', '');
+            
+            if (!confirm(`⚠️ Attention !
+Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fichier :\n\n📄 ${filename}\n\nCette action est irréversible. Continuer ?`)) return;
+            
+            try {
+                const res = await fetch('/api/admin/gateway/delete_source', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source_file: filename })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`✅ Fichier supprimé avec succès !\n${data.deleted} étudiants ont été retirés.`);
+                    document.getElementById('source-select').value = 'all';
+                    setSourceFilter('all');
+                    fetchStudents();
+                } else {
+                    alert('Erreur: ' + (data.error || 'Inconnue'));
+                }
+            } catch(e) {
+                alert('Erreur réseau');
+            }
         }
         function setColorFilter(val, el) {
             filters.color = val;

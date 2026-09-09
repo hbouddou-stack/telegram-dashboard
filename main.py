@@ -1058,6 +1058,27 @@ async def api_admin_gateway_stats(request: web.Request):
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
+
+async def api_admin_gateway_delete_source(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        source_file = data.get('source_file')
+        if not source_file:
+            return web.json_response({"success": False, "error": "No source_file provided"})
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            async with db.execute("DELETE FROM academy_students WHERE source_file = ?", (source_file,)) as cur:
+                deleted = cur.rowcount
+            await db.commit()
+            
+        return web.json_response({"success": True, "deleted": deleted})
+    except Exception as e:
+        import logging
+        logging.getLogger('main').error(f"Error in delete_source: {e}", exc_info=True)
+        return web.json_response({"success": False, "error": str(e)})
+
 async def api_admin_gateway_students(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -6203,6 +6224,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/export_all', api_admin_gateway_export_all_students)
     app.router.add_get('/api/admin/gateway/stats', api_admin_gateway_stats)
     app.router.add_get('/api/admin/gateway/students', api_admin_gateway_students)
+    app.router.add_post('/api/admin/gateway/delete_source', api_admin_gateway_delete_source)
     app.router.add_get('/api/admin/gateway/ghost_visitors', api_admin_gateway_ghost_visitors)
     app.router.add_get('/api/admin/gateway/student_timeline', api_admin_gateway_student_timeline)
     app.router.add_post('/api/admin/gateway/add_crm_note', api_admin_gateway_add_crm_note)
