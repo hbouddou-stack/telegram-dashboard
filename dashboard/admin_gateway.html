@@ -453,14 +453,15 @@
                 <div class="pill-btn" id="tg-none" onclick="setTelegramFilter('none', this)" style="flex:1; text-align:center; padding:9px 4px; font-size:0.75rem; font-weight:700; cursor:pointer;">❌ لم يبدأ</div>
             </div>
 
-            <!-- PAIEMENT + SOURCE + NIVEAU: côte à côte -->
+            <!-- PAIEMENT STATUS: Pill buttons (FULL WIDTH) -->
+            <div style="display:flex; gap:0; margin-bottom:10px; border-radius:12px; overflow:hidden; border:1px solid var(--border);">
+                <div class="pill-btn pill-active" id="pay-all" onclick="setPayFilter('all', this)" style="flex:1; text-align:center; padding:11px 6px; font-size:0.88rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">الكل (Tout)</div>
+                <div class="pill-btn" id="pay-paid" onclick="setPayFilter('paid', this)" style="flex:1; text-align:center; padding:11px 6px; font-size:0.88rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">مسدد (Payé)</div>
+                <div class="pill-btn" id="pay-unpaid" onclick="setPayFilter('unpaid', this)" style="flex:1; text-align:center; padding:11px 6px; font-size:0.88rem; font-weight:700; cursor:pointer;">غير مسدد (Non Payé)</div>
+            </div>
+
+            <!-- SOURCE + NIVEAU -->
             <div style="display:flex; gap:8px; margin-bottom:4px;">
-                <!-- Paiement Pill -->
-                <div style="flex:1.3; display:flex; gap:0; border-radius:12px; overflow:hidden; border:1px solid var(--border);">
-                    <div class="pill-btn pill-active" id="pay-all" onclick="setPayFilter('all', this)" style="flex:1; text-align:center; padding:9px 4px; font-size:0.75rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">💰 الكل</div>
-                    <div class="pill-btn" id="pay-paid" onclick="setPayFilter('paid', this)" style="flex:1; text-align:center; padding:9px 4px; font-size:0.75rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">🟢 مسدد</div>
-                    <div class="pill-btn" id="pay-unpaid" onclick="setPayFilter('unpaid', this)" style="flex:1; text-align:center; padding:9px 4px; font-size:0.75rem; font-weight:700; cursor:pointer;">🔴 غير مسدد</div>
-                </div>
                 <!-- Source select compact -->
                 <div style="flex:1; display:flex; gap:4px;">
                     <select id="source-select" onchange="setSourceFilter(this.value)" style="flex:1; padding:8px 6px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.75rem; cursor:pointer; font-weight:700;">
@@ -2162,7 +2163,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     
                     tr.innerHTML = `
                         <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
-                        <td style="padding:12px;"><strong>${name}</strong></td>
+                        <td style="padding:12px;"><strong><span style="color:var(--text2); font-size:0.75rem; margin-right:4px;">#${i + 1}</span> ${name}</strong></td>
                         <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
                         <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
                         <td style="padding:12px;">${yrNum ? 'السنة '+yrNum : '-'}</td>
@@ -2249,7 +2250,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const coloredEmail = s.email ? `<span style="font-size:0.8rem; color:#0a84ff; background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:4px;" dir="ltr">${String(s.email)}</span>` : '';
                 
                 // Names
-                const arName = String(s.first_name || '');
+                const arName = '<span style="color:var(--text2); font-size:0.75rem; margin-left:6px;">#' + (i + 1) + '</span> ' + String(s.first_name || '');
                 const frNameHTML = s.last_name ? `<div style="font-size:0.85rem;color:var(--text2);">${String(s.last_name)}</div>` : '';
 
                 // Telegram info
