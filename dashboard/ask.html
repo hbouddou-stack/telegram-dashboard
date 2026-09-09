@@ -742,6 +742,10 @@
         }
 
         async function submitTicket() {
+            if (typeof selectedTheme === 'undefined' || !selectedTheme) selectedTheme = 'عام';
+            if (typeof selectedSubtheme === 'undefined' || !selectedSubtheme) selectedSubtheme = 'سؤال';
+            if (typeof selectedTheme === 'undefined' || !selectedTheme) selectedTheme = 'عام';
+            if (typeof selectedSubtheme === 'undefined' || !selectedSubtheme) selectedSubtheme = 'سؤال';
             const customTitleInput = document.getElementById('custom-ticket-title');
             if (selectedSubtheme === 'مشكلة أخرى' && customTitleInput) {
                 const ct = customTitleInput.value.trim();
