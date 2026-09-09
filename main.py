@@ -5921,11 +5921,6 @@ async def api_support_rag_check(request):
                             return web.json_response({'found': True, 'answer': answer_obj})
             
             return web.json_response({'found': False})
-                    
-                    # Or if words from message overlap with question
-                    words = msg.split()
-                    if len(words) > 0 and sum(1 for w in words if w in question.lower()) >= 2:
-                        return web.json_response({'found': True, 'answer': answer})
         
         return web.json_response({'found': False})
     except Exception as e:
