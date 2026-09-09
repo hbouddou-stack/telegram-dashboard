@@ -2018,6 +2018,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         
         // ===== DUPLICATE SCANNER =====
         
+        
         function filterStudents() {
             const q = document.getElementById('search-input').value.toLowerCase();
             const filtered = allStudents.filter(s => {
@@ -2035,8 +2036,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                   telegramId.includes(q) || tgFirstName.includes(q);
 
                 const g = String(s.gender || '').toLowerCase();
-                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('Ï░┘â');
-                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('Ïú┘åÏ½');
+                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
+                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
                 const matchGender = filters.gender === 'all'
                     || (filters.gender === 'homme' && isM)
                     || (filters.gender === 'femme' && isF)
@@ -2046,10 +2047,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const yrLower = yr.toLowerCase();
                 const matchLevel = filters.level === 'all' 
                     || yrLower.includes(filters.level)
-                    || (filters.level === '1' && (yrLower.includes('Ïú┘ê┘ä') || yrLower.includes('1')))
-                    || (filters.level === '2' && (yrLower.includes('Ï½Ïº┘å┘è') || yrLower.includes('2')))
-                    || (filters.level === '3' && (yrLower.includes('Ï½Ïº┘äÏ½') || yrLower.includes('3')))
-                    || (filters.level === '4' && (yrLower.includes('Ï▒ÏºÏ¿Ï╣') || yrLower.includes('4')));
+                    || (filters.level === '1' && (yrLower.includes('أول') || yrLower.includes('1')))
+                    || (filters.level === '2' && (yrLower.includes('ثاني') || yrLower.includes('2')))
+                    || (filters.level === '3' && (yrLower.includes('ثالث') || yrLower.includes('3')))
+                    || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
 
                 
                 const srcLower = String(s.source || '').toLowerCase();
@@ -2063,7 +2064,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const linked = !!s.telegram_id;
                 const botStarted = !!s.telegram_id;
                 const groupJoined = !!s.group_joined || !!s.joined_at;
-                const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === '┘àÏ│Ï»Ï»';
+                const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === 'مسدد';
                 
                 const matchTelegram = filters.telegram === 'all'
                     || (filters.telegram === 'bot' && botStarted)
@@ -2121,16 +2122,16 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             const elPct = document.getElementById('stat-pct');
             if (elTotal) elTotal.textContent = filtered.length;
             if (elLinked) elLinked.textContent = linkedCount;
-            if (elPct) elPct.textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : 'ÔÇö';
+            if (elPct) elPct.textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
             const countDisplay = document.getElementById('students-count-display');
             if (countDisplay) {
-                countDisplay.innerHTML = `­ƒôè <span>Ïº┘äÏ╣Ï»Ï» Ïº┘äÏÑÏ¼┘àÏº┘ä┘è: <span style="color:#0084ff;">${filtered.length}</span> ÏÀÏº┘äÏ¿</span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(┘à┘å┘ç┘à ${linkedCount} ┘àÏ▒Ï¿┘êÏÀ)</span>`;
+                countDisplay.innerHTML = `📊 <span>العدد الإجمالي: <span style="color:#0084ff;">${filtered.length}</span> طالب</span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(منهم ${linkedCount} مربوط)</span>`;
             }
 
             const list = document.getElementById('students-list');
             list.innerHTML = '';
             if(filtered.length === 0) {
-                list.innerHTML = '<div class="no-items">┘ä┘à ┘èÏ¬┘à Ïº┘äÏ╣Ï½┘êÏ▒ Ï╣┘ä┘ë Ïú┘è ÏÀÏº┘äÏ¿.</div>';
+                list.innerHTML = '<div class="no-items">لم يتم العثور على أي طالب.</div>';
                 return;
             }
             
@@ -2148,11 +2149,11 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 thead.innerHTML = `
                     <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
                         <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">Ïº┘äÏºÏ│┘à ${currentSort.key==='name'?(currentSort.order==='asc'?'­ƒö╝':'­ƒö¢'):'Ôåò´©Å'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('email')">Ïº┘äÏÑ┘è┘à┘è┘ä ${currentSort.key==='email'?(currentSort.order==='asc'?'­ƒö╝':'­ƒö¢'):'Ôåò´©Å'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">Ïº┘äÏ¡Ïº┘äÏ® ${currentSort.key==='status'?(currentSort.order==='asc'?'­ƒö╝':'­ƒö¢'):'Ôåò´©Å'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">Ïº┘ä┘àÏ│Ï¬┘ê┘ë ${currentSort.key==='level'?(currentSort.order==='asc'?'­ƒö╝':'­ƒö¢'):'Ôåò´©Å'}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('date')">Ïº┘äÏ¬ÏºÏ▒┘èÏ« ${currentSort.key==='date'?(currentSort.order==='asc'?'­ƒö╝':'­ƒö¢'):'Ôåò´©Å'}</th>
+                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${currentSort.key==='name'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
+                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('email')">الإيميل ${currentSort.key==='email'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
+                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">الحالة ${currentSort.key==='status'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
+                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">المستوى ${currentSort.key==='level'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
+                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('date')">التاريخ ${currentSort.key==='date'?(currentSort.order==='asc'?'🔼':'🔽'):'↕️'}</th>
                     </tr>
                 `;
                 table.appendChild(thead);
@@ -2170,10 +2171,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     
                     // Status dot
                     let dotColor, dotTitle;
-                    if (s.excluded) { dotColor = '#111'; dotTitle = '┘àÏ│Ï¬Ï¿Ï╣Ï»'; }
-                    else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = '┘à┘åÏÂ┘à Ô£à'; }
-                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = '┘ü┘è ÏÀ┘êÏ▒ Ïº┘äÏº┘åÏÂ┘àÏº┘à'; }
-                    else { dotColor = '#ef4444'; dotTitle = '┘ä┘à ┘è┘åÏÂ┘à'; }
+                    if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
+                    else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
+                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
+                    else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
                     
                     const name = (s.first_name || '') + ' ' + (s.last_name || '');
                     const yrStr = String(s.year || '');
@@ -2188,7 +2189,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         <td style="padding:12px;"><strong><span style="color:var(--text2); font-size:0.75rem; margin-right:4px;">#${i + 1}</span> ${name}</strong></td>
                         <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
                         <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
-                        <td style="padding:12px;">${yrNum ? 'Ïº┘äÏ│┘åÏ® '+yrNum : '-'}</td>
+                        <td style="padding:12px;">${yrNum ? 'السنة '+yrNum : '-'}</td>
                         <td style="padding:12px;">${dateStr}</td>
                     `;
                     tbody.appendChild(tr);
@@ -2220,10 +2221,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 div.style.gap = '6px';
                 
                 const g = String(s.gender || '').toLowerCase();
-                if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('Ï░┘â')) {
+                if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
                     div.style.borderRight = '5px solid #0084ff';
                     div.style.background = 'rgba(0, 132, 255, 0.08)';
-                } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('Ïú┘åÏ½')) {
+                } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
                     div.style.borderRight = '5px solid #ec4899';
                     div.style.background = 'rgba(236, 72, 153, 0.08)';
                 }
@@ -2232,24 +2233,24 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 
                 // Status dot
                 let dotColor, dotTitle;
-                if (s.excluded) { dotColor = '#111'; dotTitle = '┘àÏ│Ï¬Ï¿Ï╣Ï»'; }
-                else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = '┘à┘åÏÂ┘à Ô£à'; }
-                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = '┘ü┘è ÏÀ┘êÏ▒ Ïº┘äÏº┘åÏÂ┘àÏº┘à'; }
-                else { dotColor = '#ef4444'; dotTitle = '┘ä┘à ┘è┘åÏÂ┘à'; }
+                if (s.excluded) { dotColor = '#111'; dotTitle = 'مستبعد'; }
+                else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'منضم ✅'; }
+                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
+                else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
                 const dot = `<span title="${dotTitle}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;"></span>`;
 
                 // Year in Arabic
                 const yrStr = String(s.year || '');
                 const yrMatch = yrStr.match(/\d+/);
                 const yrNum = yrMatch ? yrMatch[0] : '';
-                const yearAr = yrNum ? `Ïº┘äÏ│┘åÏ® ${yrNum}` : '';
+                const yearAr = yrNum ? `السنة ${yrNum}` : '';
 
                 // Payment badge
                 const paid = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = paid === 'PAID' || paid === 'PAYE' || paid === '┘àÏ»┘ü┘êÏ╣' || paid === '┘àÏ│Ï»Ï»';
+                const isPaid = paid === 'PAID' || paid === 'PAYE' || paid === 'مدفوع' || paid === 'مسدد';
                 const payBadge = isPaid
-                    ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">┘àÏ»┘ü┘êÏ╣</span>`
-                    : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">Ï║┘èÏ▒ ┘àÏ»┘ü┘êÏ╣</span>`;
+                    ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
+                    : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
 
                 // Extract Year correctly (avoid "Niveau Niveau")
                 let yearNum = '';
@@ -2257,7 +2258,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const yrMatch = String(s.year).match(/\d+/);
                     yearNum = yrMatch ? yrMatch[0] : '';
                 }
-                const yearBadgeHTML = yearNum ? `<span style="font-size:0.72rem;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-weight:bold;">Ïº┘ä┘àÏ│Ï¬┘ê┘ë ${yearNum}</span>` : '';
+                const yearBadgeHTML = yearNum ? `<span style="font-size:0.72rem;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-weight:bold;">المستوى ${yearNum}</span>` : '';
 
                 // Source Badge
                 const srcStr = String(s.source || '').toLowerCase();
@@ -2281,7 +2282,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     let tgName = String(s.tg_first_name || '');
                     if (s.tg_last_name) tgName += ' ' + String(s.tg_last_name);
                     const tgUser = s.telegram_username ? `@${s.telegram_username}` : '';
-                    tgLine = `<div style="font-size:0.78rem;color:#0088cc;display:flex;align-items:center;gap:4px;">Ô£ê´©Å ${tgUser || tgName.trim() || '┘àÏ▒Ï¬Ï¿ÏÀ'}</div>`;
+                    tgLine = `<div style="font-size:0.78rem;color:#0088cc;display:flex;align-items:center;gap:4px;">✈️ ${tgUser || tgName.trim() || 'مرتبط'}</div>`;
                 }
 
                 const acaId = String(s.academic_id || s.student_id || '').trim();
@@ -2307,8 +2308,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         <div style="margin-top:8px;">${coloredEmail}</div>
                         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:12px; background:rgba(255,255,255,0.03); padding:8px; border-radius:8px; border: 1px solid var(--border);">
                             ${dot} 
-                            ${acaId ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">Ï▒┘é┘à: ${acaId}</span>` : ''}
-                            ${yearNum ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">| Ïº┘ä┘àÏ│Ï¬┘ê┘ë ${yearNum}</span>` : ''}
+                            ${acaId ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">رقم: ${acaId}</span>` : ''}
+                            ${yearNum ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">| المستوى ${yearNum}</span>` : ''}
                             ${srcBadge ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">| ${srcBadge}</span>` : ''}
                         </div>
                         ${tgLine ? `<div style="margin-top:8px;">${tgLine}</div>` : ''}
@@ -2347,7 +2348,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         </div>
                         <div style="margin-top:8px;">${coloredEmail}</div>
                         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:10px;">
-                            ${acaId ? `<span style="font-size:0.72rem;background:rgba(52,199,89,0.15);color:#34c759;padding:2px 8px;border-radius:10px;font-weight:bold;">Ï▒┘é┘à Ïº┘äÏÀÏº┘äÏ¿: ${acaId}</span>` : ''}
+                            ${acaId ? `<span style="font-size:0.72rem;background:rgba(52,199,89,0.15);color:#34c759;padding:2px 8px;border-radius:10px;font-weight:bold;">رقم الطالب: ${acaId}</span>` : ''}
                             ${yearBadgeHTML}
                             ${srcBadge}
                         </div>
@@ -2361,7 +2362,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if(filtered.length > 500) {
                 const more = document.createElement('div');
                 more.style.cssText = 'text-align:center;padding:15px;color:var(--text2);font-size:0.85rem;';
-                more.innerHTML = `Ï¬┘à ÏÑÏ«┘üÏºÏí ${filtered.length - 500} ÏÀÏº┘äÏ¿ ┘äÏ¬Ï¡Ï│┘è┘å Ïº┘äÏúÏ»ÏºÏí. ÏºÏ│Ï¬Ï«Ï»┘à Ïº┘äÏ¿Ï¡Ï½ ┘ä┘ä┘êÏÁ┘ê┘ä ÏÑ┘ä┘è┘ç┘à.`;
+                more.innerHTML = `تم إخفاء ${filtered.length - 500} طالب لتحسين الأداء. استخدم البحث للوصول إليهم.`;
                 list.appendChild(more);
             }
             if (typeof renderStudents === 'function') {
@@ -2512,7 +2513,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                             <strong style="color:var(--text1); font-size:0.9rem;">${groupObj.type}</strong>
                             <span style="font-size:0.75rem; color:var(--text2); margin-right:auto;">${group.length} حسابات</span>
                         </div>
-                        <div style="display:grid; grid-template-columns:repeat(${Math.min(group.length, 2)}, 1fr); gap:0;">`;
+                        <div style="display:grid; display:flex; overflow-x:auto; gap:0; padding-bottom:8px; scroll-snap-type:x mandatory;">`;
                     
                     group.forEach((s, idx) => {
                         const isNewest = idx === 0;
@@ -2522,7 +2523,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('ar-MA') : '-';
                         const phone = s.phone || s.telephone || s.mobile || '-';
                         
-                        html += `<div style="padding:12px; border-left:${idx > 0 ? '1px solid var(--border)' : 'none'}; opacity:${isExcluded ? 0.5 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'transparent'}; border-top:3px solid ${borderColor};">
+                        html += `<div style="flex:0 0 250px; scroll-snap-align:start; padding:12px; border-left:${idx > 0 ? '1px solid var(--border)' : 'none'}; opacity:${isExcluded ? 0.5 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'transparent'}; border-top:3px solid ${borderColor};">
                             <div style="font-size:0.7rem; background:${borderColor}20; color:${borderColor}; padding:2px 8px; border-radius:10px; font-weight:bold; display:inline-block; margin-bottom:8px;" dir="rtl">${badgeAr}</div>
                             <div style="font-weight:900; font-size:1rem; color:var(--text1); margin-bottom:4px;" dir="rtl">${s.first_name || ''}</div>
                             <div style="font-size:0.85rem; color:var(--text2); margin-bottom:4px;" dir="ltr">${s.last_name || ''}</div>
