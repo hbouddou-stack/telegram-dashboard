@@ -2013,6 +2013,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         
         // ===== DUPLICATE SCANNER =====
         function openDuplicateScanner() {
+            alert("Clic reçu ! Analyse en cours...");
             const container = document.getElementById('duplicates-container');
             container.innerHTML = '<div style="text-align:center; padding:20px;">Analyse en cours...</div>';
             document.getElementById('modal-duplicates').style.display = 'flex';
