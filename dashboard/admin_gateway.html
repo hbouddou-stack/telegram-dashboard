@@ -643,7 +643,128 @@
         </script>
         
         
-<div id="students-list"></div>
+
+        <script>
+            let currentCardStyle = localStorage.getItem('cardStyle') || '1';
+            let currentViewMode = localStorage.getItem('viewMode') || 'grid';
+            let currentSort = { key: 'date', order: 'desc' };
+            
+            function toggleAllStudents(sourceCheckbox) {
+                let isChecked = false;
+                if (sourceCheckbox && sourceCheckbox.type === 'checkbox') {
+                    isChecked = sourceCheckbox.checked;
+                } else {
+                    const cb1 = document.getElementById('selectAllCheckbox');
+                    isChecked = cb1 ? cb1.checked : false;
+                }
+                
+                const cb1 = document.getElementById('selectAllCheckbox');
+                const cb2 = document.getElementById('selectAllGrid');
+                if (cb1) cb1.checked = isChecked;
+                if (cb2) cb2.checked = isChecked;
+                
+                const checkboxes = document.querySelectorAll('.student-select-cb');
+                checkboxes.forEach(cb => cb.checked = isChecked);
+                updateMassSmsButton();
+            }
+            
+            document.addEventListener('change', (e) => {
+                if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
+                    updateMassSmsButton();
+                }
+            });
+            
+            function updateMassSmsButton() {
+                const selected = document.querySelectorAll('.student-select-cb:checked').length;
+                const bar = document.getElementById('bulk-action-bar');
+                if(bar) {
+                    if(selected > 0) {
+                        bar.style.display = 'flex';
+                        document.getElementById('bulk-count').textContent = selected;
+                    } else {
+                        bar.style.display = 'none';
+                    }
+                }
+            }
+            
+            async function sendMassSms() {
+                const cbs = document.querySelectorAll('.student-select-cb:checked');
+                const ids = Array.from(cbs).map(cb => cb.value);
+                if(ids.length === 0) return;
+                if(!confirm(`هل أنت متأكد من إرسال رسالة لـ ${ids.length} طالب؟`)) return;
+                
+                try {
+                    const res = await fetch('/api/admin/gateway/queue_sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ student_ids: ids })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        alert(`تم وضع ${data.queued} رسالة في قائمة الانتظار بنجاح.`);
+                        cbs.forEach(cb => cb.checked = false);
+                        let sa = document.getElementById('selectAllGrid');
+                        if(sa) sa.checked = false;
+                        updateMassSmsButton();
+                    } else {
+                        alert('Erreur: ' + data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                    alert('Erreur réseau.');
+                }
+            }
+            
+            function sortTable(key) {
+                if(currentSort.key === key) {
+                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.key = key;
+                    currentSort.order = 'asc';
+                }
+                filterStudents(); 
+                if(typeof updateDashboardView === 'function') updateDashboardView();
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const sel = document.getElementById('card-style-selector');
+                if (sel) sel.value = currentCardStyle;
+                const vSel = document.getElementById('view-mode-selector');
+                if (vSel) vSel.value = currentViewMode;
+            });
+            
+            function changeCardStyle(style) {
+                currentCardStyle = style;
+                localStorage.setItem('cardStyle', style);
+                filterStudents(); 
+                if(typeof updateDashboardView === 'function') updateDashboardView();
+            }
+            
+            // Re-apply the view mode wrapper safely
+            function changeViewMode(mode) {
+                currentViewMode = mode;
+                localStorage.setItem('viewMode', mode);
+                
+                let vT = document.getElementById('view-toggle-table');
+                let vG = document.getElementById('view-toggle-grid');
+                let hint = document.getElementById('scroll-hint');
+                
+                if(vT && vG) {
+                    if(mode === 'table') {
+                        vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
+                        vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
+                        if(hint) hint.style.display = 'block';
+                    } else {
+                        vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
+                        vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
+                        if(hint) hint.style.display = 'none';
+                    }
+                }
+                filterStudents();
+            }
+        </script>
+        <div id="students-list"></div>
+
     </div>
     
     <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
