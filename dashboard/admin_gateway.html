@@ -464,10 +464,18 @@
                 </div>
             </div>
             
-            <!-- Line 3: Big Advanced Filters Button -->
-            <button onclick="document.getElementById('filter-drawer').style.display='block'" style="width:100%; background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:12px; cursor:pointer; font-size:1rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); transition:all 0.2s; font-family:'Tajawal', inherit; margin-bottom:10px;">
-                🎛️ فلاتر متقدمة
-            </button>
+            <!-- Line 3: Quick Action Buttons (Advanced Filters, Duplicates Only Toggle, Scanner V2) -->
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <button onclick="document.getElementById('filter-drawer').style.display='block'" style="flex:1; background:var(--surface); border:1px solid var(--border); padding:10px 8px; border-radius:12px; cursor:pointer; font-size:0.92rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); font-family:'Tajawal', inherit;">
+                    🎛️ فلاتر
+                </button>
+                <button id="btn-toggle-duplicates-filter" onclick="toggleDuplicatesOnlyFilter()" style="flex:1.4; background:var(--surface); border:1.5px solid var(--border); padding:10px 8px; border-radius:12px; cursor:pointer; font-size:0.88rem; font-weight:bold; color:var(--text1); font-family:'Tajawal', inherit; transition:all 0.2s; white-space:nowrap;">
+                    👥 المكررين فقط
+                </button>
+                <button onclick="openDuplicateScannerV2()" style="background:#dc2626; color:white; border:none; padding:10px 14px; border-radius:12px; cursor:pointer; font-size:0.92rem; font-weight:bold; box-shadow:0 2px 8px rgba(220,38,38,0.35); font-family:'Tajawal', inherit; white-space:nowrap;">
+                    🔍 كشف V2
+                </button>
+            </div>
             
             <!-- Line 4: Meta & Select All -->
             <div style="display:flex; justify-content:space-between; align-items:center; padding:0 2px;">
@@ -549,8 +557,14 @@
                     
                     <hr style="border:none; border-top:1px solid var(--border); margin:10px 0;">
                     
-                    <button onclick="openDuplicateScanner(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--accent2); color:white; border:none; border-radius:12px; padding:15px; font-weight:bold; cursor:pointer; font-size:1rem; box-shadow:0 4px 10px rgba(0,0,0,0.15); font-family:inherit;">
-                        🔍 البحث عن المكررين
+                    <button onclick="openDuplicateScannerV2(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:#dc2626; color:white; border:none; border-radius:12px; padding:14px; font-weight:bold; cursor:pointer; font-size:1rem; box-shadow:0 4px 10px rgba(220,38,38,0.3); font-family:inherit; margin-bottom:8px;">
+                        🔍 كاشف المكررين (V2 جديد ومباشر)
+                    </button>
+                    <button onclick="toggleDuplicatesOnlyFilter(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--surface); color:var(--text1); border:1px solid var(--border); border-radius:12px; padding:11px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; margin-bottom:8px;">
+                        👥 عرض المكررين فقط في القائمة
+                    </button>
+                    <button onclick="openDuplicateScanner(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:transparent; color:var(--text2); border:1px dashed var(--border); border-radius:12px; padding:8px; font-weight:normal; cursor:pointer; font-size:0.8rem; font-family:inherit;">
+                        🔍 النافذة السابقة (V1)
                     </button>
                 </div>
             </div>
@@ -2327,12 +2341,80 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         }
 
         
-        // ===== DUPLICATE SCANNER =====
-        
-        
+        // ===== IN-PAGE DUPLICATES FILTER =====
+        window.filterOnlyDuplicates = false;
+        window.duplicateReasonsMap = new Map();
+
+        function toggleDuplicatesOnlyFilter() {
+            window.filterOnlyDuplicates = !window.filterOnlyDuplicates;
+            const btn = document.getElementById('btn-toggle-duplicates-filter');
+            if (btn) {
+                if (window.filterOnlyDuplicates) {
+                    btn.style.background = '#dc2626';
+                    btn.style.color = '#ffffff';
+                    btn.style.borderColor = '#dc2626';
+                    btn.innerHTML = '👥 المكررين فقط (مفعَّل ✅)';
+                } else {
+                    btn.style.background = 'var(--surface)';
+                    btn.style.color = 'var(--text1)';
+                    btn.style.borderColor = 'var(--border)';
+                    btn.innerHTML = '👥 المكررين فقط';
+                }
+            }
+            filterStudents();
+        }
+
         function filterStudents() {
             const q = document.getElementById('search-input').value.toLowerCase();
+            
+            // Compute duplicate map when duplicates filter is active
+            window.duplicateReasonsMap = new Map();
+            if (window.filterOnlyDuplicates) {
+                const byEmail = {}, byPhone = {}, byName = {};
+                (allStudents || []).forEach(s => {
+                    if (s.excluded == 1) return;
+                    const em = (s.email || '').toLowerCase().trim();
+                    if (em && em.includes('@') && !em.startsWith('noemail') && !em.startsWith('test@') && !em.startsWith('none@') && !em.startsWith('0@')) {
+                        if (!byEmail[em]) byEmail[em] = [];
+                        byEmail[em].push(s);
+                    }
+                    const ph = String(s.phone || s.telephone || s.mobile || '').replace(/\D/g, '');
+                    if (ph.length >= 8) {
+                        const kp = ph.slice(-9);
+                        if (!/^0+$/.test(kp) && !/^(\d)\1+$/.test(kp) && kp !== '123456789') {
+                            if (!byPhone[kp]) byPhone[kp] = [];
+                            byPhone[kp].push(s);
+                        }
+                    }
+                    const fn = (s.first_name || '').trim();
+                    const ln = (s.last_name || '').trim();
+                    const full = `${fn} ${ln}`.trim().toLowerCase().replace(/\s+/g, ' ');
+                    const parts = full.split(' ').filter(p => p.length >= 2);
+                    if (parts.length >= 2 && full.length >= 6) {
+                        if (!byName[full]) byName[full] = [];
+                        byName[full].push(s);
+                    }
+                });
+
+                Object.entries(byEmail).forEach(([k, list]) => {
+                    if (list.length > 1) list.forEach(st => window.duplicateReasonsMap.set(String(st.student_id), 'إيميل'));
+                });
+                Object.entries(byPhone).forEach(([k, list]) => {
+                    if (list.length > 1) list.forEach(st => {
+                        if (!window.duplicateReasonsMap.has(String(st.student_id))) window.duplicateReasonsMap.set(String(st.student_id), 'هاتف');
+                    });
+                });
+                Object.entries(byName).forEach(([k, list]) => {
+                    if (list.length > 1) list.forEach(st => {
+                        if (!window.duplicateReasonsMap.has(String(st.student_id))) window.duplicateReasonsMap.set(String(st.student_id), 'اسم');
+                    });
+                });
+            }
+
             const filtered = allStudents.filter(s => {
+                if (window.filterOnlyDuplicates && !window.duplicateReasonsMap.has(String(s.student_id))) {
+                    return false;
+                }
                 const name = String(s.first_name || '').toLowerCase();
                 const lname = String(s.last_name || '').toLowerCase();
                 const email = String(s.email || '').toLowerCase();
@@ -2456,9 +2538,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             }
 
             if (countDisplay) {
-                countDisplay.style.color = themeColor;
-                countDisplay.style.background = themeBg;
-                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">الإجمالي: <span style="color:${themeColor}; font-weight:900;">${filtered.length}</span> طالب</span>`;
+                countDisplay.style.color = window.filterOnlyDuplicates ? '#dc2626' : themeColor;
+                countDisplay.style.background = window.filterOnlyDuplicates ? 'rgba(220, 38, 38, 0.12)' : themeBg;
+                const countPrefix = window.filterOnlyDuplicates ? '⚠️ مكررين: ' : 'الإجمالي: ';
+                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">${countPrefix}<span style="color:${window.filterOnlyDuplicates ? '#dc2626' : themeColor}; font-weight:900;">${filtered.length}</span> طالب</span>`;
             }
 
             const list = document.getElementById('students-list');
@@ -2588,12 +2671,16 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         }
                     }
 
+                    let dupBadge = (window.duplicateReasonsMap && window.duplicateReasonsMap.has(String(s.student_id)))
+                        ? `<br><span style="display:inline-block; font-size:0.68rem; background:#fee2e2; color:#dc2626; border:1px solid #ef4444; padding:1px 6px; border-radius:6px; font-weight:bold; margin-top:2px;">⚠️ مكرر (${window.duplicateReasonsMap.get(String(s.student_id))})</span>`
+                        : '';
+
                     tr.innerHTML = `
                         <td style="padding:12px 8px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
                         <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
                         <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
-                        <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}</td>
+                        <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
                         <td style="padding:12px; text-align:center;">${yrBadge}</td>
                         <td style="padding:12px;">${payBadge}</td>
                         <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
@@ -2645,6 +2732,9 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'في طور الانضمام'; }
                 else { dotColor = '#ef4444'; dotTitle = 'لم ينضم'; }
                 const dot = `<span title="${dotTitle}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;"></span>`;
+                const cardDupBadge = (window.duplicateReasonsMap && window.duplicateReasonsMap.has(String(s.student_id)))
+                    ? `<span style="font-size:0.7rem;background:#fee2e2;color:#dc2626;border:1px solid #ef4444;padding:1px 6px;border-radius:6px;font-weight:bold;">⚠️ مكرر (${window.duplicateReasonsMap.get(String(s.student_id))})</span>`
+                    : '';
 
                 // Year in Arabic
                 const yrStr = String(s.year || '');
@@ -2703,7 +2793,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="font-weight:900;font-size:1.15rem;color:var(--text1);">
-                                ${arName}
+                                ${arName} ${cardDupBadge}
                             </div>
                             <div style="display:flex; gap:4px; align-items:center;">
                                 ${payBadge}
@@ -2727,8 +2817,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
-                            <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);">
-                                ${dot} ${arName} ${s.last_name ? `<span style="font-size:0.8rem;color:var(--text2);font-weight:normal;">(${String(s.last_name)})</span>` : ''}
+                            <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);flex-wrap:wrap;">
+                                ${dot} ${arName} ${cardDupBadge} ${s.last_name ? `<span style="font-size:0.8rem;color:var(--text2);font-weight:normal;">(${String(s.last_name)})</span>` : ''}
                             </div>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 ${payBadge}
@@ -2746,8 +2836,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                             <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
                             <div style="display:flex;flex-direction:column;gap:2px;">
-                                <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:1.15rem;color:var(--text1);">
-                                    ${dot} ${arName}
+                                <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:1.15rem;color:var(--text1);flex-wrap:wrap;">
+                                    ${dot} ${arName} ${cardDupBadge}
                                 </div>
                                 ${frNameHTML}
                             </div>
@@ -3097,14 +3187,280 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const student = allStudents.find(s => s.student_id === studentId);
                     if (student) student.excluded = excludedState;
                     
-                    // Re-scan with same scope
-                    openDuplicateScanner();
+                    // Re-scan with same scope depending on active modal
+                    if (document.getElementById('modal-duplicates-v2') && document.getElementById('modal-duplicates-v2').style.display !== 'none') {
+                        openDuplicateScannerV2();
+                    } else {
+                        openDuplicateScanner();
+                    }
+                    if (window.filterOnlyDuplicates) {
+                        filterStudents();
+                    }
                 } else {
                     alert('خطأ: ' + (data.error || 'غير معروف'));
                 }
             } catch(e) {
                 alert('خطأ في الشبكة');
             }
+        }
+
+        window.v2DuplicateGroups = [];
+
+        function openDuplicateScannerV2() {
+            const modal = document.getElementById('modal-duplicates-v2');
+            const container = document.getElementById('duplicates-container-v2');
+            const infoEl = document.getElementById('dup-v2-info');
+
+            if (!modal || !container) {
+                alert('خطأ: نافذة كاشف المكررين V2 غير موجودة');
+                return;
+            }
+
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+            container.innerHTML = '<div style="text-align:center; padding:40px 15px; color:#94a3b8; font-size:1.05rem;" dir="rtl">⏳ جارٍ فحص التكرارات وتحليل البيانات المباشرة...</div>';
+
+            let sourceList = [];
+            let label = '';
+            const checkedBoxes = document.querySelectorAll('.student-select-cb:checked');
+            if (checkedBoxes.length > 0) {
+                const selectedIds = new Set(Array.from(checkedBoxes).map(cb => String(cb.value)));
+                sourceList = (allStudents || []).filter(s => selectedIds.has(String(s.student_id)) && s.excluded != 1);
+                label = `فحص ${sourceList.length} طالب محددين بالصناديق`;
+            } else if (window.currentFilteredStudents && window.currentFilteredStudents.length > 0 && !window.filterOnlyDuplicates) {
+                sourceList = window.currentFilteredStudents.filter(s => s.excluded != 1);
+                label = `فحص ${sourceList.length} طالب من الفلترة الحالية`;
+            } else {
+                sourceList = (allStudents || []).filter(s => s.excluded != 1);
+                label = `فحص كافة الطلاب المسجلين (${sourceList.length} طالب)`;
+            }
+
+            if (infoEl) infoEl.textContent = label;
+
+            setTimeout(() => {
+                try {
+                    const byPhone = {};
+                    const byEmail = {};
+                    const byName = {};
+
+                    sourceList.forEach(s => {
+                        // 1. Phone
+                        const rawPhone = String(s.phone || s.telephone || s.mobile || '').replace(/\D/g, '');
+                        if (rawPhone.length >= 8) {
+                            const kp = rawPhone.slice(-9);
+                            const isDummy = /^0+$/.test(kp) || /^(\d)\1+$/.test(kp) || kp === '123456789' || kp === '600000000';
+                            if (!isDummy) {
+                                if (!byPhone[kp]) byPhone[kp] = [];
+                                byPhone[kp].push(s);
+                            }
+                        }
+
+                        // 2. Email
+                        const email = (s.email || '').toLowerCase().trim();
+                        if (email && email.includes('@')) {
+                            const domain = email.split('@')[1] || '';
+                            const isPlaceholder = email.startsWith('noemail') || email.startsWith('test@') || email.startsWith('none@') || email.startsWith('0@') || !domain.includes('.');
+                            if (!isPlaceholder) {
+                                if (!byEmail[email]) byEmail[email] = [];
+                                byEmail[email].push(s);
+                            }
+                        }
+
+                        // 3. Name
+                        const fn = (s.first_name || '').trim();
+                        const ln = (s.last_name || '').trim();
+                        const fullName = `${fn} ${ln}`.trim().toLowerCase().replace(/\s+/g, ' ');
+                        const parts = fullName.split(' ').filter(p => p.length >= 2);
+                        if (parts.length >= 2 && fullName.length >= 6) {
+                            if (!byName[fullName]) byName[fullName] = [];
+                            byName[fullName].push(s);
+                        }
+                    });
+
+                    const groups = [];
+                    const processedIds = new Set();
+
+                    const pushGroup = (map, type, icon) => {
+                        Object.entries(map).forEach(([key, list]) => {
+                            if (list.length > 1) {
+                                const unhandled = list.filter(st => !processedIds.has(String(st.student_id)));
+                                if (unhandled.length > 1) {
+                                    groups.push({ type, icon, matchVal: key, students: unhandled });
+                                    unhandled.forEach(st => processedIds.add(String(st.student_id)));
+                                }
+                            }
+                        });
+                    };
+
+                    pushGroup(byPhone, 'تطابق رقم الهاتف', '📞');
+                    pushGroup(byEmail, 'تطابق البريد الإلكتروني', '✉️');
+                    pushGroup(byName, 'تطابق الاسم الكامل', '👤');
+
+                    window.v2DuplicateGroups = groups;
+
+                    if (groups.length === 0) {
+                        container.innerHTML = `
+                            <div style="text-align:center; padding:50px 20px;" dir="rtl">
+                                <div style="font-size:3.5rem; margin-bottom:10px;">🎉</div>
+                                <h3 style="color:#10b981; font-size:1.3rem; margin:0 0 8px 0; font-weight:900;">لا توجد أي تكرارات!</h3>
+                                <p style="color:#94a3b8; font-size:0.9rem; margin:0;">تم فحص ${sourceList.length} طالب، ولم يتم العثور على أي هاتف أو إيميل أو اسم مكرر.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let totalDupCount = 0;
+                    groups.forEach(g => totalDupCount += g.students.length);
+
+                    let outHtml = `
+                        <div style="background:rgba(239,68,68,0.12); border:1.5px solid #ef4444; border-radius:12px; padding:12px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;" dir="rtl">
+                            <div>
+                                <span style="font-weight:900; font-size:1.0rem; color:#f87171;">⚠️ تم اكتشاف ${groups.length} مجموعة مكررة</span>
+                                <div style="font-size:0.8rem; color:#cbd5e1; margin-top:2px;">إجمالي الحسابات المتكررة: <strong>${totalDupCount}</strong> حساب</div>
+                            </div>
+                            <button onclick="exportDuplicatesCSV()" style="background:#10b981; color:white; border:none; padding:6px 14px; border-radius:8px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                📥 تصدير CSV
+                            </button>
+                        </div>
+                    `;
+
+                    groups.forEach((g, gIdx) => {
+                        const sortedStudents = [...g.students].sort((a, b) => {
+                            const d1 = new Date(a.created_at || 0).getTime();
+                            const d2 = new Date(b.created_at || 0).getTime();
+                            return (isNaN(d2) ? 0 : d2) - (isNaN(d1) ? 0 : d1);
+                        });
+
+                        outHtml += `
+                            <div style="background:#1e293b; border:1px solid #334155; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;" dir="rtl">
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="font-size:1.2rem;">${g.icon}</span>
+                                        <div>
+                                            <strong style="color:#ffffff; font-size:0.95rem;">${g.type}</strong>
+                                            <span style="color:#38bdf8; font-size:0.82rem; margin-right:6px; direction:ltr; display:inline-block; font-family:monospace;">${g.matchVal}</span>
+                                        </div>
+                                    </div>
+                                    <span style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; border-radius:20px; padding:2px 10px; font-size:0.75rem; font-weight:900;">${g.students.length} مكرر</span>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+                        `;
+
+                        sortedStudents.forEach((st, sIdx) => {
+                            const isNewest = (sIdx === 0);
+                            const isEx = (st.excluded == 1);
+                            const stName = `${st.first_name || 'طالب'} ${st.last_name || ''}`.trim();
+                            const cleanName = stName.replace(/['"]/g, '');
+                            const ps = String(st.payment_status || '').toUpperCase().trim();
+                            const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'PAYÉ' || ps === 'مسدد' || ps === 'مدفوع';
+                            
+                            let dStr = '—';
+                            if (st.created_at) {
+                                try {
+                                    const d = new Date(st.created_at);
+                                    if (!isNaN(d.getTime())) dStr = d.toLocaleDateString('ar-MA');
+                                    else dStr = String(st.created_at).split('T')[0];
+                                } catch(e) {
+                                    dStr = String(st.created_at).split('T')[0];
+                                }
+                            }
+
+                            outHtml += `
+                                <div style="background:#0f172a; border:1px solid ${isEx ? '#475569' : (isNewest ? '#10b981' : '#f59e0b')}; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:6px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <span style="font-size:0.75rem; padding:2px 8px; border-radius:6px; font-weight:800; ${isNewest ? 'background:rgba(16,185,129,0.2); color:#34d399;' : 'background:rgba(245,158,11,0.2); color:#fbbf24;'}">
+                                                ${isNewest ? '⭐ الأحدث' : 'قديم'}
+                                            </span>
+                                            <span style="font-weight:900; font-size:1.05rem; color:#ffffff;">${stName}</span>
+                                            <span style="color:#64748b; font-size:0.75rem; font-family:monospace;">ID: ${st.student_id}</span>
+                                        </div>
+                                        <div>
+                                            ${isEx 
+                                                ? `<button onclick="confirmDupAction('${st.student_id}', 0, '${cleanName}')" style="background:#334155; color:#cbd5e1; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:bold;">🔄 إلغاء الاستبعاد</button>`
+                                                : `<button onclick="confirmDupAction('${st.student_id}', 1, '${cleanName}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:bold; box-shadow:0 2px 5px rgba(239,68,68,0.4);">👻 استبعاد</button>`
+                                            }
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:0.82rem; color:#cbd5e1;">
+                                        <div>📞 هاتف: <span style="color:#38bdf8; font-weight:bold; direction:ltr; display:inline-block;">${st.phone || st.telephone || '—'}</span></div>
+                                        <div>✉️ بريد: <span style="color:#60a5fa; font-weight:bold; direction:ltr; display:inline-block;">${st.email || '—'}</span></div>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; border-top:1px dashed #1e293b; padding-top:4px;">
+                                        <div>
+                                            <span style="padding:1px 6px; border-radius:4px; ${isPaid ? 'background:#064e3b; color:#34d399;' : 'background:#7f1d1d; color:#fca5a5;'} font-weight:bold;">
+                                                ${isPaid ? 'مسدد' : 'غير مسدد'}
+                                            </span>
+                                            ${st.year ? `<span style="margin-right:6px; color:#c084fc;">س${st.year}</span>` : ''}
+                                            ${st.academic_id ? `<span style="margin-right:6px; color:#cbd5e1;">مسار: ${st.academic_id}</span>` : ''}
+                                        </div>
+                                        <div>📅 ${dStr}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        outHtml += `</div></div>`;
+                    });
+
+                    container.innerHTML = outHtml;
+
+                } catch (err) {
+                    console.error("V2 Scanner error:", err);
+                    container.innerHTML = `
+                        <div style="background:#fee2e2; border:2px solid #ef4444; border-radius:10px; padding:15px; color:#991b1b;" dir="rtl">
+                            <strong>خطأ في فحص V2:</strong> ${err.message || err}
+                        </div>
+                    `;
+                }
+            }, 50);
+        }
+
+        function exportDuplicatesCSV() {
+            if (!window.v2DuplicateGroups || window.v2DuplicateGroups.length === 0) {
+                alert('لا توجد بيانات مكررة لتصديرها حالياً. يرجى الضغط على زر الفحص أولاً.');
+                return;
+            }
+
+            const headers = ["نوع التكرار", "قيمة التطابق", "المعرف ID", "الاسم", "رقم الهاتف", "البريد الإلكتروني", "السنة", "حالة الدفع", "رقم مسار", "تاريخ التسجيل", "مستبعد"];
+            const rows = [];
+
+            window.v2DuplicateGroups.forEach(g => {
+                g.students.forEach(st => {
+                    const stName = `${st.first_name || ''} ${st.last_name || ''}`.trim();
+                    const phone = String(st.phone || st.telephone || st.mobile || '');
+                    const email = String(st.email || '');
+                    const year = String(st.year || '');
+                    const pay = String(st.payment_status || '');
+                    const massar = String(st.academic_id || '');
+                    const date = String(st.created_at || '').split('T')[0];
+                    const ex = st.excluded == 1 ? "نعم" : "لا";
+
+                    rows.push([
+                        `"${g.type.replace(/"/g, '""')}"`,
+                        `"${g.matchVal.replace(/"/g, '""')}"`,
+                        `"${st.student_id}"`,
+                        `"${stName.replace(/"/g, '""')}"`,
+                        `"'\t${phone.replace(/"/g, '""')}"`,
+                        `"${email.replace(/"/g, '""')}"`,
+                        `"${year}"`,
+                        `"${pay.replace(/"/g, '""')}"`,
+                        `"${massar.replace(/"/g, '""')}"`,
+                        `"${date}"`,
+                        `"${ex}"`
+                    ]);
+                });
+            });
+
+            const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `moukararin_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         
@@ -4532,6 +4888,28 @@ function renderHomeAlerts(alerts) {
         </div>
     </div>
 </div>
+
+    <!-- MODAL DOUBLONS V2 -->
+    <div id="modal-duplicates-v2" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2147483647; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:12px; box-sizing:border-box;">
+        <div style="background:#1e293b; width:100%; max-width:680px; height:88vh; max-height:88vh; border-radius:18px; display:flex; flex-direction:column; overflow:hidden; border:1px solid #334155; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+            <!-- STICKY HEADER -->
+            <div style="flex-shrink:0; padding:14px 18px; background:#0f172a; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;" dir="rtl">
+                <div>
+                    <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; font-weight:900;">🔍 كاشف المكررين (V2 مباشر)</h3>
+                    <p style="margin:3px 0 0 0; font-size:0.75rem; color:#94a3b8;" id="dup-v2-info">جاري الفحص المباشر...</p>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button onclick="exportDuplicatesCSV()" style="background:#10b981; border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.8rem; display:flex; align-items:center; gap:4px;">📥 CSV</button>
+                    <button onclick="document.getElementById('modal-duplicates-v2').style.display='none'" style="background:#ef4444; border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.85rem;">✕ إغلاق</button>
+                </div>
+            </div>
+            <!-- SCROLLABLE LIST -->
+            <div id="duplicates-container-v2" style="flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:15px; display:flex; flex-direction:column; gap:12px; background:#0f172a;" dir="rtl">
+                <!-- V2 Results Injected Here -->
+            </div>
+        </div>
+    </div>
+
 
 
 
