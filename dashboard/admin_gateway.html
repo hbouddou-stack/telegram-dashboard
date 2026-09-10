@@ -3205,6 +3205,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         }
 
         window.v2DuplicateGroups = [];
+        window.v2ActiveFilter = 'all';
 
         function v2Levenshtein(a, b) {
             if (!a || !b) return (a || b || '').length;
@@ -3239,6 +3240,68 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 .replace(/[ç]/g, 'c')
                 .replace(/[^a-z0-9\u0621-\u064A\s]/g, '')
                 .replace(/\s+/g, ' ');
+        }
+
+        function v2DetectAnomalies(s) {
+            const flags = [];
+            const fn = String(s.first_name || '').trim();
+            const ln = String(s.last_name || '').trim();
+            const fullName = (fn + ' ' + ln).trim();
+            const email = String(s.email || '').toLowerCase().trim();
+            const phone = String(s.phone || s.telephone || s.mobile || '').trim();
+            const rawPhoneDigits = phone.replace(/\D/g, '');
+            const tgUser = String(s.telegram_username || '').toLowerCase().trim();
+
+            // 1. Test / Admin keywords
+            const testAdminRegex = /(test|admin|demo|root|debug|تجرب|تيست|ادمن)/i;
+            if (testAdminRegex.test(fullName) || testAdminRegex.test(email) || testAdminRegex.test(tgUser)) {
+                flags.push({ category: 'test_admin', label: '🧪 حساب اختباري / تجريبي (يحتوي على test أو admin)' });
+            }
+
+            // 2. Bizarre Phone Numbers
+            if (!rawPhoneDigits || rawPhoneDigits.length < 8) {
+                flags.push({ category: 'bizarre_phone', label: '📞 رقم هاتف ناقص أو فارغ (' + (phone || 'غير مسجل') + ')' });
+            } else {
+                const kp = rawPhoneDigits.slice(-9);
+                const isAllSame = /^(\d)\1+$/.test(kp);
+                const isSeq = kp === '123456789' || kp === '987654321' || kp === '012345678';
+                const isDummyMorocco = /^60+$/.test(kp) || /^70+$/.test(kp) || kp === '600000000' || kp === '700000000' || kp === '611111111';
+                if (isAllSame || isSeq || isDummyMorocco) {
+                    flags.push({ category: 'bizarre_phone', label: '📞 رقم هاتف وهمي أو غير حقيقي (' + phone + ')' });
+                }
+            }
+
+            // 3. Non-Arabic / Strange Name
+            const hasArabicLetters = /[\u0600-\u06FF]/.test(fullName);
+            const hasDigitsOrSymbols = /[0-9_@#$%^&*()_+=\[\]{}|<>?~]/.test(fullName);
+            
+            if (hasDigitsOrSymbols) {
+                flags.push({ category: 'non_arabic_name', label: '👤 الاسم يحتوي على أرقام أو رموز غير مقبولة (' + fullName + ')' });
+            } else if (!hasArabicLetters && fullName.length > 0) {
+                const lowerName = fullName.toLowerCase();
+                const commonMoroccanTokens = [
+                    'mohamed', 'mohammed', 'ahmed', 'youssef', 'omar', 'ali', 'hassan', 'houssam', 'hossam',
+                    'fatima', 'khadija', 'amina', 'mariam', 'meriem', 'souad', 'leila', 'layla', 'sara', 'salma',
+                    'imane', 'oumaima', 'karim', 'rachid', 'mehdi', 'hamza', 'anas', 'ayoub', 'zakaria', 'driss',
+                    'idrissi', 'alami', 'alaoui', 'amrani', 'tazi', 'bennani', 'bensouda', 'chraibi', 'filali',
+                    'fassi', 'kadiri', 'mansouri', 'benjelloun', 'el', 'al', 'ait', 'ben', 'ou', 'bou', 'mou',
+                    'saad', 'tariq', 'tarik', 'othmane', 'otmane', 'nabil', 'fouad', 'said', 'mustapha', 'mostafa',
+                    'abdel', 'abdellah', 'abderrahim', 'abdelali', 'abdelkader', 'aziz', 'kamal', 'hicham', 'hisham',
+                    'badr', 'mourad', 'morad', 'khalid', 'walid', 'yassine', 'yassin', 'amine', 'anass', 'reda',
+                    'siham', 'ghita', 'asmaa', 'asma', 'najat', 'hanane', 'kawtar', 'kaoutar', 'chaimaa', 'chaimae',
+                    'younes', 'youness', 'bilal', 'ilyas', 'ilyass', 'ayman', 'aymane', 'nouhaila', 'nohaila', 'issam'
+                ];
+                const words = lowerName.split(/[^a-z]+/).filter(w => w.length >= 2);
+                const hasMoroccanWord = words.some(w => commonMoroccanTokens.some(tok => w === tok || w.startsWith(tok) || w.endsWith(tok)));
+                const englishSpam = ['john', 'smith', 'david', 'crypto', 'user', 'student', 'bot', 'apple', 'google', 'alex', 'michael', 'robert', 'qwerty', 'asdf', 'unknown', 'anonymous'];
+                const isSpam = words.some(w => englishSpam.includes(w));
+
+                if (isSpam || !hasMoroccanWord) {
+                    flags.push({ category: 'non_arabic_name', label: '👤 اسم غير عربي أو غير مألوف في الأكاديمية (' + fullName + ')' });
+                }
+            }
+
+            return flags;
         }
 
         function v2CompareStudents(s1, s2) {
@@ -3316,6 +3379,11 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             return reasons;
         }
 
+        function v2SetFilter(filterKey) {
+            window.v2ActiveFilter = filterKey;
+            v2RenderGroups();
+        }
+
         function openDuplicateScannerV2() {
             const modal = document.getElementById('modal-duplicates-v2');
             const container = document.getElementById('duplicates-container-v2');
@@ -3328,7 +3396,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
             document.body.appendChild(modal);
             modal.style.display = 'flex';
-            container.innerHTML = '<div style="text-align:center; padding:50px 15px; color:#94a3b8; font-size:1.1rem;" dir="rtl">⏳ جارٍ فحص الحسابات وتحليل مؤشرات الشبهة والتكرار...</div>';
+            container.innerHTML = '<div style="text-align:center; padding:60px 15px; color:#64748b; font-size:1.1rem;" dir="rtl">⏳ جارٍ فحص الحسابات وتحليل مؤشرات الشبهة والتكرار...</div>';
 
             let sourceList = [];
             let label = '';
@@ -3390,7 +3458,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const groups = [];
                     const processedIds = new Set();
 
-                    const pushGroup = (map, type, icon) => {
+                    const pushGroup = (map, type, icon, category) => {
                         Object.entries(map).forEach(([key, list]) => {
                             if (list.length > 1) {
                                 const unhandled = list.filter(st => !processedIds.has(String(st.student_id)));
@@ -3403,16 +3471,16 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                     } else if (icon === '👤') {
                                         repVal = `${list[0].first_name || ''} ${list[0].last_name || ''}`.trim();
                                     }
-                                    groups.push({ type, icon, matchVal: repVal, students: unhandled });
+                                    groups.push({ type, icon, matchVal: repVal, category: category || 'duplicate', students: unhandled });
                                     unhandled.forEach(st => processedIds.add(String(st.student_id)));
                                 }
                             }
                         });
                     };
 
-                    pushGroup(byPhone, 'تطابق في رقم الهاتف', '📞');
-                    pushGroup(byEmail, 'تطابق في البريد الإلكتروني', '✉️');
-                    pushGroup(byName, 'تطابق في الاسم الكامل', '👤');
+                    pushGroup(byPhone, 'تطابق في رقم الهاتف', '📞', 'dup_phone');
+                    pushGroup(byEmail, 'تطابق في البريد الإلكتروني', '✉️', 'dup_email');
+                    pushGroup(byName, 'تطابق في الاسم الكامل', '👤', 'dup_name');
 
                     // Check for secondary fuzzy cross-matches
                     const remainingStudents = sourceList.filter(st => !processedIds.has(String(st.student_id)));
@@ -3438,209 +3506,319 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                 processedIds.add(String(sA.student_id));
                                 const repVal = `${sA.first_name || ''} ${sA.last_name || ''}`.trim();
                                 groups.push({
-                                    type: 'اشتباه قوي (تشابه متعدد)',
+                                    type: 'اشتباه قوي (تشابه متعدد في البيانات)',
                                     icon: '⚠️',
                                     matchVal: repVal,
+                                    category: 'dup_fuzzy',
                                     students: fuzzyGroup
                                 });
                             }
                         }
                     }
 
-                    window.v2DuplicateGroups = groups;
+                    // 4. ANOMALY DETECTION (Test/Admin, Bizarre Phone, Non-Arabic Name)
+                    const anomalyBuckets = {
+                        test_admin: { type: 'حسابات تحتوي على كلمة Test أو Admin', icon: '🧪', students: [] },
+                        bizarre_phone: { type: 'حسابات بأرقام هواتف غريبة أو وهمية', icon: '📞', students: [] },
+                        non_arabic_name: { type: 'حسابات بأسماء غير عربية أو غير معتادة', icon: '👤', students: [] }
+                    };
 
-                    if (groups.length === 0) {
-                        container.innerHTML = `
-                            <div style="text-align:center; padding:60px 20px;" dir="rtl">
-                                <div style="font-size:3.5rem; margin-bottom:12px;">🎉</div>
-                                <h3 style="color:#10b981; font-size:1.35rem; margin:0 0 8px 0; font-weight:900;">لا توجد أي حسابات مكررة أو مشتبه بها!</h3>
-                                <p style="color:#94a3b8; font-size:0.95rem; margin:0; line-height:1.6;">تم فحص ${sourceList.length} طالب، ولم يُعثر على أي تطابق أو تشابه في الهواتف أو البريد أو الأسماء.</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    let totalDupCount = 0;
-                    groups.forEach(g => totalDupCount += g.students.length);
-
-                    let outHtml = `
-                        <!-- Statistics Bar in Pure Arabic -->
-                        <div style="background:rgba(30,41,59,0.9); border:1.5px solid #334155; border-radius:14px; padding:14px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" dir="rtl">
-                            <div>
-                                <div style="font-weight:900; font-size:1.05rem; color:#ffffff; display:flex; align-items:center; gap:8px;">
-                                    <span>⚠️ تم العثور على</span>
-                                    <span style="background:#ef4444; color:white; padding:2px 10px; border-radius:12px; font-size:0.9rem;">${groups.length} مجموعة مشتبه بها</span>
-                                </div>
-                                <div style="font-size:0.82rem; color:#94a3b8; margin-top:4px;">
-                                    إجمالي الحسابات المقارنة: <strong style="color:#38bdf8;">${totalDupCount}</strong> طالب • عرض مقارنة بالأعمدة جنباً إلى جنب
-                                </div>
-                            </div>
-                            <button onclick="exportDuplicatesCSV()" style="background:#10b981; color:white; border:none; padding:8px 16px; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 3px 8px rgba(16,185,129,0.35);">
-                                📥 تصدير تقرير إكسيل (CSV)
-                            </button>
-                        </div>
-                    `;
-
-                    groups.forEach((g, gIdx) => {
-                        const sortedStudents = [...g.students].sort((a, b) => {
-                            const d1 = new Date(a.created_at || 0).getTime();
-                            const d2 = new Date(b.created_at || 0).getTime();
-                            return (isNaN(d2) ? 0 : d2) - (isNaN(d1) ? 0 : d1);
-                        });
-
-                        outHtml += `
-                            <div style="background:#111827; border:1.5px solid #334155; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 18px rgba(0,0,0,0.4);" dir="rtl">
-                                <!-- Group Header -->
-                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1f2937; padding-bottom:10px; flex-wrap:wrap; gap:8px;">
-                                    <div style="display:flex; align-items:center; gap:10px;">
-                                        <span style="font-size:1.3rem;">${g.icon}</span>
-                                        <div>
-                                            <div style="display:flex; align-items:center; gap:8px;">
-                                                <strong style="color:#ffffff; font-size:1.0rem;">المجموعة #${gIdx + 1}: ${g.type}</strong>
-                                                <span style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; border-radius:12px; padding:1px 8px; font-size:0.75rem; font-weight:800;">${g.students.length} حسابات</span>
-                                            </div>
-                                            <div style="color:#38bdf8; font-size:0.85rem; margin-top:2px; direction:ltr; text-align:right; font-family:monospace; font-weight:700;">
-                                                ${g.matchVal}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div style="font-size:0.75rem; color:#94a3b8; background:#1e293b; padding:4px 10px; border-radius:8px; border:1px solid #334155;">
-                                        💡 قارن البيانات في الأعمدة أدناه لاختيار الحساب المراد استبعاده
-                                    </div>
-                                </div>
-
-                                <!-- Side-by-Side Columns Container -->
-                                <div class="v2-compare-columns" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:14px; align-items:stretch;">
-                        `;
-
-                        sortedStudents.forEach((st, sIdx) => {
-                            const isNewest = (sIdx === 0);
-                            const isEx = (st.excluded == 1);
-                            const stName = `${st.first_name || 'طالب'} ${st.last_name || ''}`.trim();
-                            const cleanName = stName.replace(/['"]/g, '');
-                            const ps = String(st.payment_status || '').toUpperCase().trim();
-                            const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'PAYÉ' || ps === 'مسدد' || ps === 'مدفوع';
-                            
-                            // Full Telephone Number (Exact and Complete)
-                            const fullPhone = String(st.phone || st.telephone || st.mobile || '—').trim();
-                            const fullEmail = String(st.email || '—').trim();
-
-                            let dStr = '—';
-                            if (st.created_at) {
-                                try {
-                                    const d = new Date(st.created_at);
-                                    if (!isNaN(d.getTime())) dStr = d.toLocaleDateString('ar-MA');
-                                    else dStr = String(st.created_at).split('T')[0];
-                                } catch(e) {
-                                    dStr = String(st.created_at).split('T')[0];
-                                }
-                            }
-
-                            // Evaluate all suspicion reasons with the other students in this group
-                            const suspicionSet = new Set();
-                            sortedStudents.forEach((otherSt, oIdx) => {
-                                if (oIdx !== sIdx) {
-                                    const reasons = v2CompareStudents(st, otherSt);
-                                    reasons.forEach(r => suspicionSet.add(r));
+                    sourceList.forEach(st => {
+                        const flags = v2DetectAnomalies(st);
+                        if (flags.length > 0) {
+                            st.v2AnomalyFlags = flags;
+                            flags.forEach(f => {
+                                if (anomalyBuckets[f.category]) {
+                                    if (!anomalyBuckets[f.category].students.some(x => x.student_id === st.student_id)) {
+                                        anomalyBuckets[f.category].students.push(st);
+                                    }
                                 }
                             });
-
-                            let suspicionBadgesHtml = '';
-                            if (suspicionSet.size > 0) {
-                                suspicionBadgesHtml = Array.from(suspicionSet).map(r => `
-                                    <div style="font-size:0.76rem; color:#fed7aa; display:flex; align-items:center; gap:4px; line-height:1.3;">
-                                        <span>•</span> <span>${r}</span>
-                                    </div>
-                                `).join('');
-                            } else {
-                                suspicionBadgesHtml = `<div style="font-size:0.75rem; color:#94a3b8;">• تم الربط عبر بيانات المجموعة المشتركة</div>`;
-                            }
-
-                            const borderCol = isEx ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
-
-                            outHtml += `
-                                <div style="background:#1e293b; border:2px solid ${borderCol}; border-radius:14px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:12px; opacity:${isEx ? 0.65 : 1}; box-shadow:0 4px 12px rgba(0,0,0,0.25);">
-                                    <!-- Card Header Badge -->
-                                    <div>
-                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                            <span style="font-size:0.78rem; padding:3px 10px; border-radius:8px; font-weight:800; ${
-                                                isEx 
-                                                    ? 'background:#334155; color:#cbd5e1;' 
-                                                    : (isNewest ? 'background:rgba(16,185,129,0.2); color:#34d399; border:1px solid #10b981;' : 'background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid #f59e0b;')
-                                            }">
-                                                ${isEx ? '👻 حساب مُستبعَد' : (isNewest ? '⭐ الحساب الأحدث (مفضل)' : '📜 حساب أقدم / منافس')}
-                                            </span>
-                                            <span style="color:#94a3b8; font-size:0.75rem; font-family:monospace; background:#0f172a; padding:2px 8px; border-radius:6px;">معرف #${st.student_id}</span>
-                                        </div>
-
-                                        <!-- Student Name -->
-                                        <div style="margin-bottom:10px;">
-                                            <div style="font-weight:900; font-size:1.15rem; color:#ffffff; line-height:1.3;">
-                                                ${stName}
-                                            </div>
-                                            ${st.last_name && st.last_name !== st.first_name ? `<div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${st.last_name}</div>` : ''}
-                                        </div>
-
-                                        <!-- Field 1: Full Phone Number -->
-                                        <div style="background:#0f172a; border-radius:8px; padding:8px 10px; border:1px solid #334155; margin-bottom:8px;">
-                                            <span style="color:#94a3b8; font-size:0.72rem; display:block; margin-bottom:2px;">📞 رقم الهاتف الكامل:</span>
-                                            <span style="color:#38bdf8; font-weight:900; font-size:1.0rem; direction:ltr; display:inline-block; font-family:monospace; letter-spacing:0.5px;">${fullPhone}</span>
-                                        </div>
-
-                                        <!-- Field 2: Email -->
-                                        <div style="background:#0f172a; border-radius:8px; padding:8px 10px; border:1px solid #334155; margin-bottom:8px;">
-                                            <span style="color:#94a3b8; font-size:0.72rem; display:block; margin-bottom:2px;">✉️ البريد الإلكتروني:</span>
-                                            <span style="color:#60a5fa; font-weight:800; font-size:0.85rem; direction:ltr; display:inline-block; word-break:break-all;">${fullEmail}</span>
-                                        </div>
-
-                                        <!-- Field 3: Academic Meta Grid -->
-                                        <div style="background:#0f172a; border-radius:8px; padding:8px 10px; border:1px solid #334155; font-size:0.78rem; display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
-                                            <div>📅 التسجيل: <strong style="color:#cbd5e1;">${dStr}</strong></div>
-                                            <div>🎓 السنة: <strong style="color:#c084fc;">س${st.year || '—'}</strong></div>
-                                            <div>📌 مسار: <strong style="color:#cbd5e1;">${st.academic_id || '—'}</strong></div>
-                                            <div>
-                                                <span style="padding:1px 6px; border-radius:4px; ${isPaid ? 'background:#064e3b; color:#34d399;' : 'background:#7f1d1d; color:#fca5a5;'} font-weight:bold; font-size:0.72rem;">
-                                                    ${isPaid ? '🟢 مسدد' : '🔴 غير مسدد'}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Field 4: Suspicion & Duplicate Reasons Box -->
-                                        <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:8px 10px;">
-                                            <div style="font-size:0.74rem; color:#f87171; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
-                                                <span>🔍 أسباب ومؤشرات الشبهة:</span>
-                                            </div>
-                                            <div style="display:flex; flex-direction:column; gap:3px;">
-                                                ${suspicionBadgesHtml}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Column Action Footer -->
-                                    <div style="border-top:1px dashed #334155; padding-top:10px; margin-top:6px;">
-                                        ${isEx
-                                            ? `<button onclick="confirmDupAction('${st.student_id}', 0, '${cleanName}')" style="background:#334155; color:#cbd5e1; border:1px solid #64748b; padding:9px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:800; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;">🔄 استعادة وتفعيل الحساب</button>`
-                                            : `<button onclick="confirmDupAction('${st.student_id}', 1, '${cleanName}')" style="background:#ef4444; color:white; border:none; padding:9px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:800; width:100%; box-shadow:0 3px 8px rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; gap:6px;">👻 استبعاد هذا الحساب</button>`
-                                        }
-                                    </div>
-                                </div>
-                            `;
-                        });
-
-                        outHtml += `</div></div>`;
+                        }
                     });
 
-                    container.innerHTML = outHtml;
+                    Object.entries(anomalyBuckets).forEach(([catKey, b]) => {
+                        if (b.students.length > 0) {
+                            groups.push({
+                                type: b.type,
+                                icon: b.icon,
+                                matchVal: `${b.students.length} حساب مشبوه تم رصده`,
+                                category: catKey,
+                                isAnomalyGroup: true,
+                                students: b.students
+                            });
+                        }
+                    });
+
+                    window.v2DuplicateGroups = groups;
+                    window.v2ActiveFilter = 'all';
+
+                    v2RenderGroups();
 
                 } catch (err) {
                     console.error("V2 Scanner error:", err);
                     container.innerHTML = `
-                        <div style="background:#fee2e2; border:2px solid #ef4444; border-radius:10px; padding:15px; color:#991b1b;" dir="rtl">
+                        <div style="background:#fee2e2; border:1.5px solid #ef4444; border-radius:12px; padding:16px; color:#991b1b;" dir="rtl">
                             <strong>خطأ في فحص V2:</strong> ${err.message || err}
                         </div>
                     `;
                 }
-            }, 50);
+            }, 40);
+        }
+
+        function v2RenderGroups() {
+            const container = document.getElementById('duplicates-container-v2');
+            const pillsBar = document.getElementById('dup-v2-pills-bar');
+            if (!container) return;
+
+            const allGroups = window.v2DuplicateGroups || [];
+            if (allGroups.length === 0) {
+                if (pillsBar) pillsBar.innerHTML = '';
+                container.innerHTML = `
+                    <div style="text-align:center; padding:60px 20px; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0;" dir="rtl">
+                        <div style="font-size:3.5rem; margin-bottom:12px;">🎉</div>
+                        <h3 style="color:#10b981; font-size:1.35rem; margin:0 0 8px 0; font-weight:900;">لا توجد أي حسابات مكررة أو مشبوهة!</h3>
+                        <p style="color:#64748b; font-size:0.95rem; margin:0; line-height:1.6;">البيانات سليمة تماماً، ولم يُعثر على أي تطابق أو هواتف وهمية أو حسابات اختبار.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Counts for pills
+            let dupCount = 0;
+            let anomCount = 0;
+            let testCount = 0;
+            let phoneCount = 0;
+            let nameCount = 0;
+
+            allGroups.forEach(g => {
+                if (g.isAnomalyGroup) {
+                    anomCount += g.students.length;
+                    if (g.category === 'test_admin') testCount += g.students.length;
+                    if (g.category === 'bizarre_phone') phoneCount += g.students.length;
+                    if (g.category === 'non_arabic_name') nameCount += g.students.length;
+                } else {
+                    dupCount += g.students.length;
+                }
+            });
+
+            // Render Pills Bar
+            if (pillsBar) {
+                const pills = [
+                    { id: 'all', label: `📋 الكل (${allGroups.length} فئة)` },
+                    { id: 'duplicates', label: `👥 المكررين (${dupCount} طالب)` },
+                    { id: 'anomalies', label: `🚨 المشبوهة (${anomCount} طالب)` },
+                    { id: 'test_admin', label: `🧪 Test/Admin (${testCount})` },
+                    { id: 'bizarre_phone', label: `📞 هواتف غريبة (${phoneCount})` },
+                    { id: 'non_arabic_name', label: `👤 أسماء غير عربية (${nameCount})` }
+                ];
+
+                pillsBar.innerHTML = pills.map(p => {
+                    const isActive = (window.v2ActiveFilter === p.id);
+                    return `
+                        <button onclick="v2SetFilter('${p.id}')" style="flex-shrink:0; padding:6px 14px; border-radius:20px; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s; border:1.5px solid ${isActive ? '#2563eb' : '#e2e8f0'}; background:${isActive ? '#eff6ff' : '#ffffff'}; color:${isActive ? '#1d4ed8' : '#64748b'};">
+                            ${p.label}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            // Filter groups according to active pill
+            let filteredGroups = allGroups;
+            if (window.v2ActiveFilter === 'duplicates') {
+                filteredGroups = allGroups.filter(g => !g.isAnomalyGroup);
+            } else if (window.v2ActiveFilter === 'anomalies') {
+                filteredGroups = allGroups.filter(g => g.isAnomalyGroup);
+            } else if (window.v2ActiveFilter === 'test_admin') {
+                filteredGroups = allGroups.filter(g => g.category === 'test_admin');
+            } else if (window.v2ActiveFilter === 'bizarre_phone') {
+                filteredGroups = allGroups.filter(g => g.category === 'bizarre_phone');
+            } else if (window.v2ActiveFilter === 'non_arabic_name') {
+                filteredGroups = allGroups.filter(g => g.category === 'non_arabic_name');
+            }
+
+            let totalStudentsCount = 0;
+            filteredGroups.forEach(g => totalStudentsCount += g.students.length);
+
+            let outHtml = `
+                <!-- Light Stats Bar -->
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,0.03);" dir="rtl">
+                    <div>
+                        <div style="font-weight:900; font-size:1.05rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                            <span>⚠️ النتائج المعروضة:</span>
+                            <span style="background:#fee2e2; color:#dc2626; border:1px solid #fecaca; padding:2px 10px; border-radius:12px; font-size:0.88rem;">${filteredGroups.length} تصنيف ومجموعة</span>
+                        </div>
+                        <div style="font-size:0.82rem; color:#64748b; margin-top:4px;">
+                            إجمالي الحسابات: <strong style="color:#0284c7;">${totalStudentsCount}</strong> حساب طالب • تصميم فاتح بأعمدة متقابلة
+                        </div>
+                    </div>
+                    <button onclick="exportDuplicatesCSV()" style="background:#10b981; color:white; border:none; padding:8px 16px; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 3px 8px rgba(16,185,129,0.25);">
+                        📥 تصدير تقرير إكسيل (CSV)
+                    </button>
+                </div>
+            `;
+
+            filteredGroups.forEach((g, gIdx) => {
+                const sortedStudents = [...g.students].sort((a, b) => {
+                    const d1 = new Date(a.created_at || 0).getTime();
+                    const d2 = new Date(b.created_at || 0).getTime();
+                    return (isNaN(d2) ? 0 : d2) - (isNaN(d1) ? 0 : d1);
+                });
+
+                const isAnom = g.isAnomalyGroup;
+                const groupBorder = isAnom ? '#fecaca' : '#e2e8f0';
+                const groupBg = isAnom ? '#fffafb' : '#ffffff';
+
+                outHtml += `
+                    <div style="background:${groupBg}; border:1.5px solid ${groupBorder}; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 2px 10px rgba(0,0,0,0.03);" dir="rtl">
+                        <!-- Group Header -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:1.35rem;">${g.icon}</span>
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <strong style="color:#0f172a; font-size:1.02rem;">${g.type}</strong>
+                                        <span style="background:${isAnom ? '#fee2e2' : '#f1f5f9'}; color:${isAnom ? '#dc2626' : '#475569'}; border:1px solid ${isAnom ? '#fecaca' : '#cbd5e1'}; border-radius:12px; padding:1px 8px; font-size:0.75rem; font-weight:800;">${g.students.length} حسابات</span>
+                                    </div>
+                                    <div style="color:#0284c7; font-size:0.85rem; margin-top:2px; direction:ltr; text-align:right; font-family:monospace; font-weight:700;">
+                                        ${g.matchVal}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size:0.75rem; color:#64748b; background:#f8fafc; padding:4px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                                ${isAnom ? '🚨 حسابات مشبوهة تتطلب المراجعة أو الاستبعاد' : '💡 قارن البيانات في الأعمدة أدناه لاختيار الحساب المراد استبعاده'}
+                            </div>
+                        </div>
+
+                        <!-- Side-by-Side Columns Container -->
+                        <div class="v2-compare-columns" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:14px; align-items:stretch;">
+                `;
+
+                sortedStudents.forEach((st, sIdx) => {
+                    const isNewest = (sIdx === 0);
+                    const isEx = (st.excluded == 1);
+                    const stName = `${st.first_name || 'طالب'} ${st.last_name || ''}`.trim();
+                    const cleanName = stName.replace(/['"]/g, '');
+                    const ps = String(st.payment_status || '').toUpperCase().trim();
+                    const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'PAYÉ' || ps === 'مسدد' || ps === 'مدفوع';
+                    
+                    const fullPhone = String(st.phone || st.telephone || st.mobile || '—').trim();
+                    const fullEmail = String(st.email || '—').trim();
+
+                    let dStr = '—';
+                    if (st.created_at) {
+                        try {
+                            const d = new Date(st.created_at);
+                            if (!isNaN(d.getTime())) dStr = d.toLocaleDateString('ar-MA');
+                            else dStr = String(st.created_at).split('T')[0];
+                        } catch(e) {
+                            dStr = String(st.created_at).split('T')[0];
+                        }
+                    }
+
+                    // Gather reasons
+                    const suspicionSet = new Set();
+                    if (isAnom) {
+                        const anoms = v2DetectAnomalies(st);
+                        anoms.forEach(a => suspicionSet.add(a.label));
+                    } else {
+                        sortedStudents.forEach((otherSt, oIdx) => {
+                            if (oIdx !== sIdx) {
+                                const reasons = v2CompareStudents(st, otherSt);
+                                reasons.forEach(r => suspicionSet.add(r));
+                            }
+                        });
+                    }
+
+                    let suspicionBadgesHtml = '';
+                    if (suspicionSet.size > 0) {
+                        suspicionBadgesHtml = Array.from(suspicionSet).map(r => `
+                            <div style="font-size:0.76rem; color:#b91c1c; display:flex; align-items:flex-start; gap:4px; line-height:1.3;">
+                                <span>•</span> <span>${r}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        suspicionBadgesHtml = `<div style="font-size:0.75rem; color:#64748b;">• تم الربط عبر بيانات المجموعة المشتركة</div>`;
+                    }
+
+                    const cardBorder = isEx ? '#cbd5e1' : (isAnom ? '#fca5a5' : (isNewest ? '#10b981' : '#cbd5e1'));
+                    const cardBg = isEx ? '#f8fafc' : '#ffffff';
+
+                    outHtml += `
+                        <div style="background:${cardBg}; border:1.5px solid ${cardBorder}; border-radius:14px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:12px; opacity:${isEx ? 0.65 : 1}; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                            <!-- Card Header Badge -->
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                    <span style="font-size:0.78rem; padding:3px 10px; border-radius:8px; font-weight:800; ${
+                                        isEx 
+                                            ? 'background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1;' 
+                                            : (isAnom 
+                                                ? 'background:#fef2f2; color:#dc2626; border:1px solid #fecaca;' 
+                                                : (isNewest ? 'background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;' : 'background:#fefce8; color:#b45309; border:1px solid #fde68a;'))
+                                    }">
+                                        ${isEx ? '👻 حساب مُستبعَد' : (isAnom ? '🚨 حساب مشبوه' : (isNewest ? '⭐ الحساب الأحدث (مفضل)' : '📜 حساب أقدم / منافس'))}
+                                    </span>
+                                    <span style="color:#64748b; font-size:0.75rem; font-family:monospace; background:#f1f5f9; padding:2px 8px; border-radius:6px; border:1px solid #e2e8f0;">معرف #${st.student_id}</span>
+                                </div>
+
+                                <!-- Student Name -->
+                                <div style="margin-bottom:10px;">
+                                    <div style="font-weight:900; font-size:1.15rem; color:#0f172a; line-height:1.3;">
+                                        ${stName}
+                                    </div>
+                                    ${st.last_name && st.last_name !== st.first_name ? `<div style="font-size:0.8rem; color:#64748b; margin-top:2px;">${st.last_name}</div>` : ''}
+                                </div>
+
+                                <!-- Field 1: Full Phone Number -->
+                                <div style="background:#f0f9ff; border-radius:8px; padding:8px 10px; border:1px solid #bae6fd; margin-bottom:8px;">
+                                    <span style="color:#0369a1; font-size:0.72rem; display:block; margin-bottom:2px; font-weight:bold;">📞 رقم الهاتف الكامل:</span>
+                                    <span style="color:#0284c7; font-weight:900; font-size:1.02rem; direction:ltr; display:inline-block; font-family:monospace; letter-spacing:0.5px;">${fullPhone}</span>
+                                </div>
+
+                                <!-- Field 2: Email -->
+                                <div style="background:#f5f3ff; border-radius:8px; padding:8px 10px; border:1px solid #ddd6fe; margin-bottom:8px;">
+                                    <span style="color:#6d28d9; font-size:0.72rem; display:block; margin-bottom:2px; font-weight:bold;">✉️ البريد الإلكتروني:</span>
+                                    <span style="color:#4f46e5; font-weight:800; font-size:0.85rem; direction:ltr; display:inline-block; word-break:break-all;">${fullEmail}</span>
+                                </div>
+
+                                <!-- Field 3: Academic Meta Grid -->
+                                <div style="background:#f8fafc; border-radius:8px; padding:8px 10px; border:1px solid #e2e8f0; font-size:0.78rem; display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+                                    <div>📅 التسجيل: <strong style="color:#334155;">${dStr}</strong></div>
+                                    <div>🎓 السنة: <strong style="color:#7c3aed;">س${st.year || '—'}</strong></div>
+                                    <div>📌 مسار: <strong style="color:#334155;">${st.academic_id || '—'}</strong></div>
+                                    <div>
+                                        <span style="padding:1px 6px; border-radius:4px; ${isPaid ? 'background:#d1fae5; color:#065f46; border:1px solid #a7f3d0;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fecaca;'} font-weight:bold; font-size:0.72rem;">
+                                            ${isPaid ? '🟢 مسدد' : '🔴 غير مسدد'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Field 4: Suspicion & Anomaly Reasons Box -->
+                                <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:8px 10px;">
+                                    <div style="font-size:0.74rem; color:#be123c; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                                        <span>🔍 أسباب ومؤشرات الشبهة / الخلل:</span>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; gap:3px;">
+                                        ${suspicionBadgesHtml}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Column Action Footer -->
+                            <div style="border-top:1px dashed #e2e8f0; padding-top:10px; margin-top:6px;">
+                                ${isEx
+                                    ? `<button onclick="confirmDupAction('${st.student_id}', 0, '${cleanName}')" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:9px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:800; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;">🔄 استعادة وتفعيل الحساب</button>`
+                                    : `<button onclick="confirmDupAction('${st.student_id}', 1, '${cleanName}')" style="background:#ef4444; color:white; border:none; padding:9px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:800; width:100%; box-shadow:0 3px 8px rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:center; gap:6px;">👻 استبعاد هذا الحساب</button>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                });
+
+                outHtml += `</div></div>`;
+            });
+
+            container.innerHTML = outHtml;
         }
 
         function exportDuplicatesCSV() {
@@ -3651,8 +3829,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
             const headers = [
                 "رقم المجموعة",
-                "نوع التطابق الرئيسي",
-                "القيمة المشتركة",
+                "نوع الفحص والتصنيف",
+                "القيمة المشتركة أو الملاحظة",
                 "أسباب ومؤشرات الشبهة",
                 "المعرف ID",
                 "الاسم الكامل",
@@ -3677,19 +3855,23 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const date = String(st.created_at || '').split('T')[0];
                     const ex = st.excluded == 1 ? "نعم" : "لا";
 
-                    // Suspicion reasons with others
                     const reasonsSet = new Set();
-                    g.students.forEach((other, oIdx) => {
-                        if (oIdx !== sIdx) {
-                            v2CompareStudents(st, other).forEach(r => reasonsSet.add(r));
-                        }
-                    });
+                    if (g.isAnomalyGroup) {
+                        const anoms = v2DetectAnomalies(st);
+                        anoms.forEach(a => reasonsSet.add(a.label));
+                    } else {
+                        g.students.forEach((other, oIdx) => {
+                            if (oIdx !== sIdx) {
+                                v2CompareStudents(st, other).forEach(r => reasonsSet.add(r));
+                            }
+                        });
+                    }
                     const reasonsStr = Array.from(reasonsSet).join(" | ") || g.type;
 
                     rows.push([
                         `"${gIdx + 1}"`,
                         `"${g.type.replace(/"/g, '""')}"`,
-                        `"${g.matchVal.replace(/"/g, '""')}"`,
+                        `"${String(g.matchVal || '').replace(/"/g, '""')}"`,
                         `"${reasonsStr.replace(/"/g, '""')}"`,
                         `"${st.student_id}"`,
                         `"${stName.replace(/"/g, '""')}"`,
@@ -3709,7 +3891,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `moukararin_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute("download", `moukararin_wa_shobohate_export_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -5141,22 +5323,26 @@ function renderHomeAlerts(alerts) {
     </div>
 </div>
 
-    <!-- MODAL DOUBLONS V2 -->
-    <div id="modal-duplicates-v2" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2147483647; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; padding:10px; box-sizing:border-box;">
-        <div style="background:#1e293b; width:100%; max-width:940px; height:90vh; max-height:90vh; border-radius:20px; display:flex; flex-direction:column; overflow:hidden; border:1.5px solid #334155; box-shadow:0 15px 50px rgba(0,0,0,0.85);">
+    <!-- MODAL DOUBLONS V2 (LIGHT THEME) -->
+    <div id="modal-duplicates-v2" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2147483647; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:10px; box-sizing:border-box;">
+        <div style="background:#ffffff; width:100%; max-width:960px; height:90vh; max-height:90vh; border-radius:20px; display:flex; flex-direction:column; overflow:hidden; border:1px solid #e2e8f0; box-shadow:0 20px 50px rgba(0,0,0,0.18);">
             <!-- STICKY HEADER -->
-            <div style="flex-shrink:0; padding:14px 20px; background:#0f172a; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" dir="rtl">
+            <div style="flex-shrink:0; padding:14px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" dir="rtl">
                 <div>
-                    <h3 style="margin:0; font-size:1.22rem; color:#f8fafc; font-weight:900;">🔍 مقارنة وتدقيق الحسابات المشتبه بها (V2)</h3>
-                    <p style="margin:4px 0 0 0; font-size:0.78rem; color:#94a3b8;" id="dup-v2-info">جاري تحليل البيانات والمقارنة بالأعمدة...</p>
+                    <h3 style="margin:0; font-size:1.22rem; color:#0f172a; font-weight:900;">🔍 كاشف المكررين والحسابات المشبوهة (V2)</h3>
+                    <p style="margin:4px 0 0 0; font-size:0.78rem; color:#64748b;" id="dup-v2-info">جاري تحليل البيانات والمقارنة بالأعمدة...</p>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <button onclick="exportDuplicatesCSV()" style="background:#10b981; border:none; color:white; padding:7px 15px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.85rem; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(16,185,129,0.35);">📥 تصدير إكسيل (CSV)</button>
-                    <button onclick="document.getElementById('modal-duplicates-v2').style.display='none'" style="background:#ef4444; border:none; color:white; padding:7px 15px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.85rem;">✕ إغلاق النافذة</button>
+                    <button onclick="document.getElementById('modal-duplicates-v2').style.display='none'" style="background:#fee2e2; border:1px solid #fecaca; color:#dc2626; padding:7px 15px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.85rem;">✕ إغلاق النافذة</button>
                 </div>
             </div>
+            <!-- FILTER CHIPS BAR -->
+            <div id="dup-v2-pills-bar" style="flex-shrink:0; padding:10px 16px; background:#ffffff; border-bottom:1px solid #e2e8f0; display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch;" dir="rtl">
+                <!-- Injected via JS -->
+            </div>
             <!-- SCROLLABLE LIST -->
-            <div id="duplicates-container-v2" style="flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px; display:flex; flex-direction:column; gap:16px; background:#0f172a;" dir="rtl">
+            <div id="duplicates-container-v2" style="flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px; display:flex; flex-direction:column; gap:16px; background:#f8fafc;" dir="rtl">
                 <!-- V2 Column Comparison Results Injected Here -->
             </div>
         </div>
