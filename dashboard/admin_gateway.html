@@ -2167,12 +2167,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             thead.innerHTML = `
                 <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
                     <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                    <th style="padding:12px; cursor:pointer; color:var(--text2);" onclick="sortTable('date')">N° ${getSortIcon('date')}</th>
-                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">Nom & Prénom ${getSortIcon('name')}</th>
-                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">Année ${getSortIcon('level')}</th>
-                    <th style="padding:12px; direction:ltr; text-align:right;">Email</th>
-                    <th style="padding:12px;">Paiement</th>
-                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">Statut Bot ${getSortIcon('status')}</th>
+                    <th style="padding:12px; cursor:pointer; color:var(--text2);" onclick="sortTable('date')">رقم ${getSortIcon('date')}</th>
+                    <th style="padding:12px; cursor:pointer; text-align:center;" onclick="sortTable('status')">حالة البوت ${getSortIcon('status')}</th>
+                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
+                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
+                    <th style="padding:12px;">حالة الدفع</th>
+                    <th style="padding:12px; direction:ltr; text-align:right;">البريد الإلكتروني</th>
                 </tr>
             `;
             table.appendChild(thead);
@@ -2206,13 +2206,15 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 tr.onmouseout = () => tr.style.opacity = '1';
                 tr.onclick = () => openStudentCard(s);
                 
-                let dotColor, dotTitle;
-                if (s.excluded) { dotColor = '#111'; dotTitle = 'Exclu'; }
-                else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'Groupe rejoint'; }
-                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'En cours'; }
-                else { dotColor = '#ef4444'; dotTitle = 'Non démarré'; }
+                let botSticker = '🔴';
+                if (s.excluded) botSticker = '⚫';
+                else if (s.group_joined) botSticker = '🟢';
+                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) botSticker = '🟠';
                 
-                const name = (s.first_name || '') + ' ' + (s.last_name || '');
+                let fullName = (s.first_name || '') + ' ' + (s.last_name || '');
+                let arName = fullName.replace(/[a-zA-Z\(\)\[\]\.\-_0-9]/g, '').trim();
+                if (!arName) arName = fullName; // fallback
+                
                 const yrStr = String(s.year || '');
                 const yrMatch = yrStr.match(/\d+/);
                 const yrNum = yrMatch ? yrMatch[0] : '';
@@ -2220,17 +2222,17 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const paid = String(s.payment_status || '').toUpperCase().trim();
                 const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع'].includes(paid);
                 const payBadge = isPaid
-                    ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">Payé</span>`
-                    : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">Non Payé</span>`;
+                    ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
+                    : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
 
                 tr.innerHTML = `
                     <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
                     <td style="padding:12px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
-                    <td style="padding:12px; font-weight:bold;">${name}</td>
-                    <td style="padding:12px;">${yrNum ? 'Année '+yrNum : '-'}</td>
-                    <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
+                    <td style="padding:12px; text-align:center; font-size:1.1rem;">${botSticker}</td>
+                    <td style="padding:12px;">${yrNum ? yrNum : '-'}</td>
+                    <td style="padding:12px; font-weight:bold;">${arName}</td>
                     <td style="padding:12px;">${payBadge}</td>
-                    <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
+                    <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem;">${s.email || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             }
