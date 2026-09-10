@@ -921,7 +921,32 @@
         <div id="s-advanced" class="settings-pane" style="display:none; padding:15px;">
             
             <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">⬇️ Exports Globaux</h3>
+                <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 Format du Numéro Étudiant (Massar)</h3>
+                <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px;">Personnalisez l'affichage du numéro et attribuez une couleur aux deux derniers chiffres (Année d'inscription).</div>
+                
+                <div style="margin-bottom:15px;">
+                    <label style="font-size:0.85rem; font-weight:bold; margin-bottom:4px; display:block;">Séparateur</label>
+                    <select id="pref-id-separator" onchange="saveIdPrefs()" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1);">
+                        <option value="none">Collé (123426)</option>
+                        <option value="dash">Tiret (1234-26)</option>
+                        <option value="parentheses">Parenthèses 1234(26)</option>
+                        <option value="space">Espace (1234 26)</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:0.85rem; font-weight:bold; margin-bottom:4px; display:block;">Couleurs par Année (2 derniers chiffres)</label>
+                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <input type="text" id="pref-id-year" placeholder="ex: 26" style="width:70px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1);">
+                        <input type="color" id="pref-id-color" value="#8b0000" style="padding:0; border:none; width:40px; height:36px; border-radius:8px; cursor:pointer;">
+                        <button class="btn btn-primary" onclick="addYearColor()" style="padding:8px 15px; background:#0ea5e9;">Ajouter / Modifier</button>
+                    </div>
+                    <div id="pref-color-list" style="display:flex; flex-direction:column; gap:5px;"></div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">⬇️ Exports Globaux</h3>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <a href="/api/admin/gateway/export_template" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #059669; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <span>📥 Télécharger Modèle (Excel)</span>
@@ -1991,6 +2016,54 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             input.value = '';
         }
         
+        
+        let idFormatPrefs = JSON.parse(localStorage.getItem('idFormatPrefs') || '{"separator":"dash", "yearColors":{}}');
+
+        function saveIdPrefs() {
+            const sep = document.getElementById('pref-id-separator').value;
+            idFormatPrefs.separator = sep;
+            localStorage.setItem('idFormatPrefs', JSON.stringify(idFormatPrefs));
+            renderYearColors();
+            if(typeof filterStudents === 'function') filterStudents();
+        }
+
+        function addYearColor() {
+            const yr = document.getElementById('pref-id-year').value.trim();
+            const col = document.getElementById('pref-id-color').value;
+            if (yr.length === 2 && !isNaN(yr)) {
+                idFormatPrefs.yearColors[yr] = col;
+                saveIdPrefs();
+            } else {
+                alert("Veuillez entrer exactement 2 chiffres pour l'année (ex: 26).");
+            }
+        }
+
+        function removeYearColor(yr) {
+            delete idFormatPrefs.yearColors[yr];
+            saveIdPrefs();
+        }
+
+        function renderYearColors() {
+            const list = document.getElementById('pref-color-list');
+            if (!list) return;
+            const sel = document.getElementById('pref-id-separator');
+            if (sel) sel.value = idFormatPrefs.separator;
+            
+            list.innerHTML = Object.keys(idFormatPrefs.yearColors).map(yr => `
+                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); padding:6px 12px; border-radius:6px; border:1px solid var(--border);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="display:inline-block; width:15px; height:15px; border-radius:50%; background:${idFormatPrefs.yearColors[yr]}; border:1px solid rgba(0,0,0,0.1);"></span>
+                        <span style="font-weight:bold;">Année se terminant par ${yr}</span>
+                    </div>
+                    <button onclick="removeYearColor('${yr}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.1rem;">×</button>
+                </div>
+            `).join('');
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderYearColors();
+        });
+        
         function switchSettingsTab(tabId) {
             document.querySelectorAll('.settings-pane').forEach(p => p.style.display = 'none');
             document.querySelectorAll('.settings-tab-btn').forEach(b => {
@@ -2331,13 +2404,40 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     if (yrVal === '3') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#f59e0b; padding:3px 8px; background:#fef3c7; border-radius:12px;">الثالثة</span>`;
                     if (yrVal === '4') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#8b5cf6; padding:3px 8px; background:#ede9fe; border-radius:12px;">الرابعة</span>`;
 
-                    let studentMassarId = s.academic_id || s.student_id || '-';
+
+                    let rawId = s.academic_id || s.student_id || '';
+                    let studentMassarId = '-';
+                    
+                    if (rawId) {
+                        let idStr = String(rawId).trim();
+                        if (idStr.length > 2) {
+                            let base = idStr.slice(0, -2);
+                            let yr = idStr.slice(-2);
+                            let sep = '';
+                            
+                            let prefs = window.idFormatPrefs || {separator:'dash', yearColors:{}};
+                            if (prefs.separator === 'dash') sep = '-';
+                            else if (prefs.separator === 'space') sep = '&nbsp;';
+                            
+                            let displayYr = yr;
+                            if (prefs.separator === 'parentheses') displayYr = `(${yr})`;
+                            
+                            let color = prefs.yearColors[yr] || 'inherit';
+                            let isColored = !!prefs.yearColors[yr];
+                            let fw = (isColored || prefs.separator !== 'none') ? '900' : 'normal';
+                            
+                            let yrSpan = `<span style="color:${color}; font-weight:${fw};">${displayYr}</span>`;
+                            studentMassarId = `<span style="color:var(--text1); font-weight:normal;">${base}</span><span style="color:var(--text2); font-weight:bold;">${sep}</span>${yrSpan}`;
+                        } else {
+                            studentMassarId = `<span style="color:var(--text1);">${idStr}</span>`;
+                        }
+                    }
 
                     tr.innerHTML = `
                         <td style="padding:12px 8px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
                         <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
-                        <td style="padding:12px; font-family:monospace; color:var(--accent2); font-weight:bold; font-size:0.9rem;">${studentMassarId}</td>
+                        <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
                         <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}</td>
                         <td style="padding:12px; text-align:center;">${yrBadge}</td>
                         <td style="padding:12px;">${payBadge}</td>
