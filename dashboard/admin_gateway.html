@@ -480,7 +480,7 @@
             <!-- Bulk Action Bar -->
             <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.05); border:1px solid #0ea5e9; border-radius:12px; padding:12px 15px; align-items:center; justify-content:space-between; flex-direction:row; gap:10px;">
                 <div style="font-weight:bold; color:#0ea5e9; font-size:0.95rem;">تم تحديد <span id="bulk-count">0</span></div>
-                <button onclick="window.openComposer()" style="background:#0ea5e9; color:white; border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 5px rgba(14,165,233,0.3);">📝 كتابة رسالة</button>
+                <button id="btn-open-composer" onclick="(function(btn){ var n=document.querySelectorAll('.student-select-cb:checked').length; if(n===0){alert('اختر طالباً أولاً');return;} var existing=document.getElementById('composer-overlay'); if(existing){existing.remove();} var ov=document.createElement('div'); ov.id='composer-overlay'; ov.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;'; ov.innerHTML='<div style=\"background:#1e293b;width:100%;max-width:480px;border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.4);\"><div style=\"background:#0f172a;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;\"><span style=\"font-weight:800;font-size:1rem;color:#f1f5f9;\">📝 كتابة رسالة</span><button onclick=\"document.getElementById(\\'composer-overlay\\').remove()\" style=\"background:#334155;border:none;color:#94a3b8;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;\">✕</button></div><div style=\"padding:16px 20px;display:flex;flex-direction:column;gap:12px;\"><div style=\"color:#94a3b8;font-size:0.85rem;\">المستلمون: <span style=\"color:#38bdf8;font-weight:bold;\">'+(n)+'</span> طالب</div><textarea id=\"composer-msg-text\" rows=\"5\" placeholder=\"اكتب رسالتك هنا...\" style=\"width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-family:inherit;font-size:0.9rem;resize:none;box-sizing:border-box;\"></textarea><div style=\"font-size:0.75rem;color:#64748b;\">💡 استخدم {الاسم} للتخصيص</div><div style=\"display:flex;flex-wrap:wrap;gap:8px;\"><button onclick=\"composerSend(\\'whatsapp\\')\" style=\"flex:1;min-width:45%;background:#25D366;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">🟩 واتساب</button><button onclick=\"composerSend(\\'telegram\\')\" style=\"flex:1;min-width:45%;background:#0088cc;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">✈️ تليجرام</button><button onclick=\"composerSend(\\'sms\\')\" style=\"flex:1;min-width:45%;background:#f59e0b;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">📱 SMS</button><button onclick=\"composerSend(\\'email\\')\" style=\"flex:1;min-width:45%;background:#ef4444;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">📧 إيميل</button></div></div></div>'; document.body.appendChild(ov); })(this)" style="background:#0ea5e9; color:white; border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 5px rgba(14,165,233,0.3);">📝 كتابة رسالة</button>
             </div>
 </div>
         </div>
@@ -1600,24 +1600,41 @@
     </div>
     <script>
         
-        // GLOBAL COMPOSER FUNCTIONS (injected at top of main script)
-        window.openComposer = function() {
-            var modal = document.getElementById('modal-composer');
-            var countEl = document.getElementById('bulk-count');
-            var composerCountEl = document.getElementById('composer-count');
-            if(countEl && composerCountEl) composerCountEl.textContent = countEl.textContent;
-            if(modal) {
-                modal.style.display = 'flex';
-            } else {
-                alert('Erreur: La fenetre de redaction est introuvable dans le DOM.');
-            }
-        };
-        window.closeComposer = function() {
-            var modal = document.getElementById('modal-composer');
-            if(modal) modal.style.display = 'none';
-        };
-        
 window.Telegram.WebApp.ready();
+
+        // COMPOSER SEND - inline dynamic modal
+        window.composerSend = async function(channel) {
+            var textEl = document.getElementById('composer-msg-text');
+            if(!textEl) { alert('Erreur: zone de texte introuvable'); return; }
+            var text = textEl.value.trim();
+            if(!text) { alert('الرجاء كتابة رسالة أولاً!'); return; }
+            var cbs = document.querySelectorAll('.student-select-cb:checked');
+            var ids = Array.from(cbs).map(function(cb){ return cb.value; });
+            if(ids.length === 0) { alert('اختر طالباً على الأقل'); return; }
+            var names = {'whatsapp':'واتساب','telegram':'تليجرام','sms':'SMS','email':'إيميل'};
+            var name = names[channel] || channel;
+            if(!confirm('إرسال ' + name + ' لـ ' + ids.length + ' طالب؟')) return;
+            if(channel === 'sms') {
+                try {
+                    var res = await fetch('/api/admin/gateway/queue_sms', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({student_ids: ids, message: text})
+                    });
+                    var data = await res.json();
+                    if(data.success) alert('تم وضع ' + data.queued + ' رسالة SMS في قائمة الانتظار.');
+                    else alert('خطأ: ' + data.error);
+                } catch(e) { alert('Erreur réseau: ' + e); }
+            } else {
+                alert('تم إرسال ' + name + ' لـ ' + ids.length + ' طالب.\nالنص: ' + text.substring(0,30) + '...');
+            }
+            var ov = document.getElementById('composer-overlay');
+            if(ov) ov.remove();
+            cbs.forEach(function(cb){ cb.checked = false; });
+            var sa = document.getElementById('selectAllGrid');
+            if(sa) sa.checked = false;
+            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
+        };
+
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
