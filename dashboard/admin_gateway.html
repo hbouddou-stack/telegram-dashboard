@@ -2436,6 +2436,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 return 0;
             });
 
+            window.currentFilteredStudents = filtered;
             const linkedCount = filtered.filter(s => s.telegram_id).length;
             const elTotal = document.getElementById('stat-total');
             const elLinked = document.getElementById('stat-linked');
@@ -2801,44 +2802,34 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         function openDuplicateScanner() {
             const modal = document.getElementById('modal-duplicates');
             const container = document.getElementById('duplicates-container');
+            const infoEl = document.getElementById('dup-scan-info');
             
-            if (!modal || !container) { alert('خطأ: العنصر غير موجود'); return; }
+            if (!modal || !container) { alert('خطأ: نافذة التكرارات غير موجودة'); return; }
             
-            // Move to body to escape any overflow:hidden parent (Telegram WebView fix)
+            // Move to body to escape any overflow:hidden parent
             document.body.appendChild(modal);
-            
             modal.style.cssText = 'display:flex !important; position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; width:100% !important; height:100% !important; z-index:2147483647 !important; background:rgba(0,0,0,0.88) !important; align-items:flex-end !important; justify-content:center !important; margin:0 !important; padding:0 !important;';
             
-            // Determine which students to scan: currently filtered subset
-            // We use the same filtering logic applied on screen
-            const q = (document.getElementById('search-input') ? document.getElementById('search-input').value.toLowerCase() : '');
-            const payFilter = typeof currentPayFilter !== 'undefined' ? currentPayFilter : 'all';
-            const linkFilter = typeof currentLinkFilter !== 'undefined' ? currentLinkFilter : 'all';
+            container.innerHTML = '<div style="text-align:center; padding:40px; font-size:1.1rem; color:var(--text2);" dir="rtl">⏳ جارٍ فحص التكرارات...</div>';
             
-            let sourceList = allStudents.filter(s => s.excluded != 1); // exclude already-excluded
+            // 1. Determine the EXACT source list to scan
+            let sourceList = [];
+            let scanContextLabel = '';
             
-            // Apply pay filter
-            if (payFilter === 'paid') sourceList = sourceList.filter(s => s.payment_status === 'PAID' || s.payment_status === 'مدفوع');
-            else if (payFilter === 'unpaid') sourceList = sourceList.filter(s => s.payment_status !== 'PAID' && s.payment_status !== 'مدفوع');
-            
-            // Apply link filter
-            if (linkFilter === 'linked') sourceList = sourceList.filter(s => s.telegram_id);
-            else if (linkFilter === 'unlinked') sourceList = sourceList.filter(s => !s.telegram_id);
-            
-            // Apply search query
-            if (q) {
-                sourceList = sourceList.filter(s => {
-                    const name = ((s.first_name || '') + ' ' + (s.last_name || '')).toLowerCase();
-                    const email = (s.email || '').toLowerCase();
-                    const phone = (s.phone || '').toLowerCase();
-                    return name.includes(q) || email.includes(q) || phone.includes(q);
-                });
+            const checkedBoxes = document.querySelectorAll('.student-select-cb:checked');
+            if (checkedBoxes.length > 0) {
+                const selectedIds = new Set(Array.from(checkedBoxes).map(cb => String(cb.value)));
+                sourceList = allStudents.filter(s => selectedIds.has(String(s.student_id)) && s.excluded != 1);
+                scanContextLabel = `تم الفحص على ${sourceList.length} طالب محددين بالصناديق`;
+            } else if (window.currentFilteredStudents && window.currentFilteredStudents.length > 0) {
+                sourceList = window.currentFilteredStudents.filter(s => s.excluded != 1);
+                scanContextLabel = `تم الفحص على ${sourceList.length} طالب من النتائج المعروضة حالياً`;
+            } else {
+                sourceList = allStudents.filter(s => s.excluded != 1);
+                scanContextLabel = `تم الفحص على ${sourceList.length} طالب`;
             }
             
-            container.innerHTML = '<div style="text-align:center; padding:40px; font-size:1.1rem; color:var(--text2);" dir="rtl">⏳ جارٍ التحليل...</div>';
-            
-            const infoEl = document.getElementById('dup-scan-info');
-            if (infoEl) infoEl.textContent = `يتم الفحص على ${sourceList.length} طالب من إجمالي ${allStudents.filter(s => s.excluded != 1).length}`;
+            if (infoEl) infoEl.textContent = scanContextLabel;
             
             setTimeout(() => {
                 try {
@@ -2847,25 +2838,36 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const byName = {};
                     
                     sourceList.forEach(s => {
-                        // By Email
-                        if (s.email && s.email.includes('@')) {
-                            const k = s.email.toLowerCase().trim();
-                            if (!byEmail[k]) byEmail[k] = [];
-                            byEmail[k].push(s);
+                        // A. By Email (valid, non-placeholder)
+                        const email = (s.email || '').toLowerCase().trim();
+                        if (email && email.includes('@')) {
+                            const domain = email.split('@')[1] || '';
+                            const isPlaceholder = email.startsWith('noemail') || email.startsWith('test@') || email.startsWith('none@') || email.startsWith('0@') || !domain.includes('.');
+                            if (!isPlaceholder) {
+                                if (!byEmail[email]) byEmail[email] = [];
+                                byEmail[email].push(s);
+                            }
                         }
-                        // By Phone
-                        const rawPhone = (s.phone || s.telephone || s.mobile || '').replace(/\D/g, '');
+                        
+                        // B. By Phone (clean digits, ignore dummies like 00000000)
+                        const rawPhone = String(s.phone || s.telephone || s.mobile || '').replace(/\D/g, '');
                         if (rawPhone.length >= 8) {
-                            const kp = rawPhone.slice(-9); // last 9 digits for matching
-                            if (!byPhone[kp]) byPhone[kp] = [];
-                            byPhone[kp].push(s);
+                            const kp = rawPhone.slice(-9);
+                            const isDummy = /^0+$/.test(kp) || /^(\d)\1+$/.test(kp) || kp === '123456789' || kp === '600000000';
+                            if (!isDummy) {
+                                if (!byPhone[kp]) byPhone[kp] = [];
+                                byPhone[kp].push(s);
+                            }
                         }
-                        // By Name (supports Arabic and Latin)
-                        let n = ((s.first_name || '') + ' ' + (s.last_name || '')).trim().toLowerCase();
-                        n = n.replace(/\s+/g, ' ').trim();
-                        if (n.length >= 3 && n !== ' ') {
-                            if (!byName[n]) byName[n] = [];
-                            byName[n].push(s);
+                        
+                        // C. By Name (Requires at least 2 distinct words of at least 2 chars each)
+                        const fn = (s.first_name || '').trim();
+                        const ln = (s.last_name || '').trim();
+                        const fullName = `${fn} ${ln}`.trim().toLowerCase().replace(/\s+/g, ' ');
+                        const parts = fullName.split(' ').filter(p => p.length >= 2);
+                        if (parts.length >= 2 && fullName.length >= 6) {
+                            if (!byName[fullName]) byName[fullName] = [];
+                            byName[fullName].push(s);
                         }
                     });
 
@@ -2874,133 +2876,107 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     
                     const addGroup = (g, type, icon) => {
                         if (g.length > 1) {
-                            const unhandled = g.filter(st => !processedIds.has(st.student_id));
+                            const unhandled = g.filter(st => !processedIds.has(String(st.student_id)));
                             if (unhandled.length > 1) {
                                 finalGroups.push({ type, icon, students: unhandled });
-                                unhandled.forEach(st => processedIds.add(st.student_id));
+                                unhandled.forEach(st => processedIds.add(String(st.student_id)));
                             }
                         }
                     };
                     
                     Object.values(byEmail).forEach(g => addGroup(g, 'بريد إلكتروني مكرر', '📧'));
-                    Object.values(byPhone).forEach(g => addGroup(g, 'هاتف مكرر', '📞'));
-                    Object.values(byName).forEach(g => addGroup(g, 'اسم مكرر', '👤'));
+                    Object.values(byPhone).forEach(g => addGroup(g, 'رقم هاتف مكرر', '📞'));
+                    Object.values(byName).forEach(g => addGroup(g, 'اسم كامل مكرر', '👤'));
                     
                     dupLastGroups = finalGroups;
-                    renderDuplicateGroups(finalGroups);
+                    renderDuplicateGroups(finalGroups, sourceList.length);
                     renderExcludedList();
                     
                 } catch(err) {
-                    container.innerHTML = `<div style="color:red; padding:20px; direction:rtl;">خطأ: ${err.message}</div>`;
+                    container.innerHTML = `<div style="color:red; padding:20px; direction:rtl;">خطأ أثناء التحليل: ${err.message}</div>`;
                     console.error(err);
                 }
-            }, 80);
+            }, 60);
         }
 
-        function renderDuplicateGroups(finalGroups) {
+        function renderDuplicateGroups(finalGroups, totalScanned) {
             const container = document.getElementById('duplicates-container');
             if (!container) return;
 
-            if (finalGroups.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:60px; color:#10b981; font-weight:bold; font-size:1.3rem;" dir="rtl">✅ لا توجد تكرارات!</div>';
+            if (!finalGroups || finalGroups.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:50px 20px;" dir="rtl">
+                    <div style="font-size:2.5rem; margin-bottom:12px;">✅</div>
+                    <div style="color:#10b981; font-weight:800; font-size:1.15rem; margin-bottom:6px;">لا توجد تكرارات!</div>
+                    <div style="color:var(--text2); font-size:0.85rem;">تم فحص ${totalScanned || 0} طالب، ولم يتم العثور على أي بيانات مكررة.</div>
+                </div>`;
                 return;
             }
 
-            let html = `<div dir="rtl" style="font-size:0.85rem; color:var(--text2); margin-bottom:8px;">وُجِد <strong style="color:var(--accent2);">${finalGroups.length}</strong> مجموعة مكررة</div>`;
+            const MAX_DISPLAY = 35;
+            const displayed = finalGroups.slice(0, MAX_DISPLAY);
+
+            let html = `<div dir="rtl" style="font-size:0.85rem; color:var(--text2); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>وُجد <strong style="color:var(--accent2);">${finalGroups.length}</strong> مجموعة مكررة${finalGroups.length > MAX_DISPLAY ? ` (عُرضت أول ${MAX_DISPLAY} مجموعة لتفادي البطء)` : ''}</div>
+            </div>`;
             
-            finalGroups.forEach((groupObj, gi) => {
+            displayed.forEach((groupObj, gi) => {
                 const group = [...groupObj.students].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
                 
-                if (dupCurrentView === 'table') {
-                    // TABLE VIEW: side-by-side columns
-                    html += `<div style="border:2px solid var(--border); border-radius:14px; overflow:hidden; background:var(--bg);">
-                        <div style="padding:10px 14px; background:rgba(139,92,246,0.1); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px;" dir="rtl">
-                            <span style="font-size:1rem;">${groupObj.icon}</span>
+                html += `<div style="border:1px solid var(--border); border-radius:16px; overflow:hidden; background:var(--bg); margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="padding:10px 14px; background:rgba(139,92,246,0.08); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;" dir="rtl">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:1.1rem;">${groupObj.icon}</span>
                             <strong style="color:var(--text1); font-size:0.9rem;">${groupObj.type}</strong>
-                            <span style="font-size:0.75rem; color:var(--text2); margin-right:auto;">${group.length} حسابات</span>
                         </div>
-                        <div style="display:grid; display:flex; overflow-x:auto; gap:0; padding-bottom:8px; scroll-snap-type:x mandatory;">`;
+                        <span style="font-size:0.75rem; background:rgba(139,92,246,0.2); color:var(--accent2); padding:2px 8px; border-radius:12px; font-weight:bold;">${group.length} حسابات</span>
+                    </div>
+                    <div style="padding:12px; display:flex; flex-direction:column; gap:10px;">`;
+                
+                group.forEach((s, idx) => {
+                    const isNewest = idx === 0;
+                    const isExcluded = s.excluded == 1;
+                    const borderColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
+                    const badgeAr = isExcluded ? 'مُستبعَد 👻' : (isNewest ? '⭐ الأحدث' : 'حساب قديم');
+                    const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('ar-MA') : '-';
+                    const phone = s.phone || s.telephone || s.mobile || '-';
+                    const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === 'مسدد';
+                    const payBadge = isPaid ? '<span style="color:#10b981; font-weight:bold;">🟢 مسدَّد</span>' : '<span style="color:#ef4444; font-weight:bold;">🔴 غير مسدَّد</span>';
+                    const yearBadge = s.year ? `<span style="background:rgba(139,92,246,0.15); color:var(--accent2); padding:1px 6px; border-radius:6px; font-size:0.72rem; font-weight:bold;">س${s.year}</span>` : '';
                     
-                    group.forEach((s, idx) => {
-                        const isNewest = idx === 0;
-                        const isExcluded = s.excluded == 1;
-                        const borderColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
-                        const badgeAr = isExcluded ? 'مُستبعَد 👻' : (isNewest ? '⭐ الأحدث' : 'القديم');
-                        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('ar-MA') : '-';
-                        const phone = s.phone || s.telephone || s.mobile || '-';
-                        
-                        html += `<div style="flex:0 0 250px; scroll-snap-align:start; padding:12px; border-left:${idx > 0 ? '1px solid var(--border)' : 'none'}; opacity:${isExcluded ? 0.5 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'transparent'}; border-top:3px solid ${borderColor};">
-                            <div style="font-size:0.7rem; background:${borderColor}20; color:${borderColor}; padding:2px 8px; border-radius:10px; font-weight:bold; display:inline-block; margin-bottom:8px;" dir="rtl">${badgeAr}</div>
-                            <div style="font-weight:900; font-size:1rem; color:var(--text1); margin-bottom:4px;" dir="rtl">${s.first_name || ''}</div>
-                            <div style="font-size:0.85rem; color:var(--text2); margin-bottom:4px;" dir="ltr">${s.last_name || ''}</div>
-                            <div style="font-size:0.78rem; color:#0a84ff; word-break:break-all; margin-bottom:4px;" dir="ltr">${s.email || '-'}</div>
-                            <div style="font-size:0.78rem; color:var(--text2); margin-bottom:4px;" dir="ltr">📞 ${phone}</div>
-                            <div style="font-size:0.72rem; color:var(--text2);" dir="rtl">📂 ${s.source_file || s.source || '-'}</div>
-                            <div style="font-size:0.72rem; color:var(--text2); margin-bottom:8px;" dir="rtl">📅 تاريخ الإضافة: ${dateStr}</div>
-                            <div style="font-size:0.72rem; font-weight:bold; color:${s.payment_status === 'PAID' ? '#10b981' : '#ef4444'};" dir="rtl">${s.payment_status === 'PAID' ? '✅ مسدَّد' : '❌ غير مسدَّد'}</div>
-                            <div style="margin-top:10px;">
+                    if (idx > 0) {
+                        html += `<div style="text-align:center; color:var(--text2); font-size:0.8rem; font-weight:bold; margin:-4px 0;" dir="rtl">⬇️ مكرر مع ⬇️</div>`;
+                    }
+                    
+                    html += `<div id="dup-row-${s.student_id}" style="border:1.5px solid ${borderColor}; border-radius:12px; padding:12px; opacity:${isExcluded ? 0.55 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'var(--surface)'};">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="font-size:0.72rem; background:${borderColor}20; color:${borderColor}; padding:2px 8px; border-radius:8px; font-weight:bold;" dir="rtl">${badgeAr}</div>
+                            <div>
                                 ${isExcluded
-                                    ? `<button onclick="confirmDupAction('${s.student_id}', 0, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:5px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; width:100%;" dir="rtl">🔄 إعادة تفعيل</button>`
-                                    : `<button onclick="confirmDupAction('${s.student_id}', 1, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:#ef4444; border:none; color:white; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; font-weight:bold; width:100%;" dir="rtl">👻 استبعاد</button>`
+                                    ? `<button onclick="confirmDupAction('${s.student_id}', 0)" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:4px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; font-family:inherit;" dir="rtl">🔄 إلغاء الاستبعاد</button>`
+                                    : `<button onclick="confirmDupAction('${s.student_id}', 1)" style="background:#ef4444; border:none; color:white; padding:4px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; font-weight:bold; font-family:inherit;" dir="rtl">👻 استبعاد هذا الحساب</button>`
                                 }
                             </div>
-                        </div>`;
-                    });
-                    
-                    html += `</div></div>`;
-                    
-                } else {
-                    // CARDS VIEW: stacked with arrow
-                    html += `<div style="border:2px solid var(--border); border-radius:14px; overflow:hidden; background:var(--bg);">
-                        <div style="padding:10px 14px; background:rgba(139,92,246,0.1); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px;" dir="rtl">
-                            <span style="font-size:1rem;">${groupObj.icon}</span>
-                            <strong style="color:var(--text1); font-size:0.9rem;">${groupObj.type}</strong>
-                            <span style="font-size:0.75rem; color:var(--text2); margin-right:auto;">${group.length} حسابات</span>
                         </div>
-                        <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">`;
-                    
-                    group.forEach((s, idx) => {
-                        const isNewest = idx === 0;
-                        const isExcluded = s.excluded == 1;
-                        const borderColor = isExcluded ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
-                        const badgeAr = isExcluded ? 'مُستبعَد 👻' : (isNewest ? '⭐ الأحدث' : 'القديم');
-                        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('ar-MA') : '-';
-                        const phone = s.phone || s.telephone || s.mobile || '-';
-                        
-                        if (idx > 0) {
-                            html += `<div style="text-align:center; color:var(--text2); font-size:1.2rem; padding:2px 0;">⬇️ مقارنة مع ⬇️</div>`;
-                        }
-                        
-                        html += `<div id="dup-row-${s.student_id}" style="border:2px solid ${borderColor}; border-radius:12px; padding:12px; opacity:${isExcluded ? 0.5 : 1}; background:${isExcluded ? 'rgba(100,116,139,0.05)' : 'var(--surface)'};">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                                <div style="font-size:0.7rem; background:${borderColor}20; color:${borderColor}; padding:2px 8px; border-radius:10px; font-weight:bold;" dir="rtl">${badgeAr}</div>
-                                <div>
-                                    ${isExcluded
-                                        ? `<button onclick="confirmDupAction('${s.student_id}', 0, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:4px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem;" dir="rtl">🔄 إعادة تفعيل</button>`
-                                        : `<button onclick="confirmDupAction('${s.student_id}', 1, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:#ef4444; border:none; color:white; padding:4px 10px; border-radius:8px; cursor:pointer; font-size:0.78rem; font-weight:bold;" dir="rtl">👻 استبعاد</button>`
-                                    }
-                                </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.82rem; margin-bottom:6px;">
+                            <div>
+                                <div style="font-weight:800; font-size:0.95rem; color:var(--text1);" dir="rtl">${s.first_name || '—'} ${s.last_name || ''}</div>
+                                <div style="color:var(--text2); font-size:0.75rem; margin-top:2px;" dir="ltr">📞 ${phone}</div>
                             </div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.82rem;">
-                                <div>
-                                    <div style="font-weight:900; font-size:1rem; color:var(--text1);" dir="rtl">${s.first_name || '—'}</div>
-                                    <div style="color:var(--text2);" dir="ltr">${s.last_name || '—'}</div>
-                                </div>
-                                <div style="text-align:left;">
-                                    <div style="color:#0a84ff; word-break:break-all;" dir="ltr">${s.email || '-'}</div>
-                                    <div style="color:var(--text2);" dir="ltr">📞 ${phone}</div>
-                                </div>
+                            <div style="text-align:left;">
+                                <div style="color:#0a84ff; font-size:0.78rem; word-break:break-all;" dir="ltr">${s.email || '-'}</div>
+                                <div style="font-size:0.72rem; color:var(--text2); margin-top:2px;" dir="rtl">📅 ${dateStr}</div>
                             </div>
-                            <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; font-size:0.72rem;" dir="rtl">
-                                <span style="color:${s.payment_status === 'PAID' ? '#10b981' : '#ef4444'}; font-weight:bold;">${s.payment_status === 'PAID' ? '✅ مسدَّد' : '❌ غير مسدَّد'}</span>
-                                <span style="color:var(--text2);">📅 تاريخ الإضافة: ${dateStr}</span>
-                                <span style="color:var(--text2);">📂 ${s.source_file || s.source || '-'}</span>
-                            </div>
-                        </div>`;
-                    });
-                    
-                    html += `</div></div>`;
-                }
+                        </div>
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:0.72rem; border-top:1px dashed var(--border); padding-top:6px; margin-top:4px;" dir="rtl">
+                            ${payBadge}
+                            ${yearBadge}
+                            ${s.academic_id ? `<span style="color:var(--text2);">رقم: <strong>${s.academic_id}</strong></span>` : ''}
+                            ${s.source ? `<span style="color:var(--text2);">📂 ${s.source}</span>` : ''}
+                        </div>
+                    </div>`;
+                });
+                
+                html += `</div></div>`;
             });
             
             container.innerHTML = html;
@@ -3026,14 +3002,20 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         <span style="font-weight:bold; color:var(--text1); font-size:0.85rem;">${s.first_name || ''} ${s.last_name || ''}</span>
                         <span style="font-size:0.75rem; color:var(--text2); margin-right:8px;">${s.email || '-'}</span>
                     </div>
-                    <button onclick="confirmDupAction('${s.student_id}', 0, '${(s.first_name||'').replace(/'/g,'')} ${(s.last_name||'').replace(/'/g,'')}')" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem; flex-shrink:0;">🔄 إعادة تفعيل</button>
+                    <button onclick="confirmDupAction('${s.student_id}', 0)" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem; flex-shrink:0;">🔄 إلغاء الاستبعاد</button>
                 </div>
             `).join('');
         }
 
-        function confirmDupAction(studentId, excludedState, name) {
+        function confirmDupAction(studentId, excludedState, customName) {
+            let name = customName;
+            if (!name && typeof allStudents !== 'undefined') {
+                const found = allStudents.find(s => String(s.student_id) === String(studentId));
+                if (found) name = `${found.first_name || ''} ${found.last_name || ''}`.trim();
+            }
+            name = name || ('طالب #' + studentId);
             const msg = excludedState === 1
-                ? `هل أنت متأكد أنك تريد استبعاد حساب "${name}"؟\n\nسيُصبح هذا الحساب غير مرئي في الإحصائيات ولكن يمكنك إعادة تفعيله لاحقًا.`
+                ? `هل أنت متأكد من استبعاد حساب "${name}"؟\n\nسيُصبح هذا الحساب غير مرئي في الإحصائيات ولكن يمكنك إعادة تفعيله لاحقًا.`
                 : `هل تريد إعادة تفعيل حساب "${name}"؟`;
             
             if (confirm(msg)) {
@@ -4471,9 +4453,6 @@ function renderHomeAlerts(alerts) {
                 <p style="margin:4px 0 0 0; font-size:0.78rem; color:var(--text2);" id="dup-scan-info" dir="rtl">يتم الفحص على الطلاب المعروضين حاليًا فقط</p>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-                <!-- View toggle -->
-                <button id="dup-view-cards" onclick="setDupView('cards')" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:5px 10px; font-size:0.75rem; cursor:pointer;">🃏 بطاقات</button>
-                <button id="dup-view-table" onclick="setDupView('table')" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); border-radius:8px; padding:5px 10px; font-size:0.75rem; cursor:pointer;">📋 جدول</button>
                 <button onclick="closeDuplicateScanner()" style="background:#ef4444; border:none; color:white; padding:6px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.9rem;">✕ إغلاق</button>
             </div>
         </div>
