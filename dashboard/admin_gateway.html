@@ -2135,112 +2135,129 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if (elLinked) elLinked.textContent = linkedCount;
             if (elPct) elPct.textContent = filtered.length ? Math.round(linkedCount / filtered.length * 100) + '%' : '—';
             const countDisplay = document.getElementById('students-count-display');
+            let themeColor = '#a855f7'; // Mauve default
+            let themeBg = 'rgba(168, 85, 247, 0.1)';
+            if (filters.gender === 'homme') {
+                themeColor = '#0ea5e9'; // Blue
+                themeBg = 'rgba(14, 165, 233, 0.1)';
+            } else if (filters.gender === 'femme') {
+                themeColor = '#ec4899'; // Pink
+                themeBg = 'rgba(236, 72, 153, 0.1)';
+            }
+
             if (countDisplay) {
-                countDisplay.innerHTML = `📊 <span>العدد الإجمالي: <span style="color:#0084ff;">${filtered.length}</span> طالب</span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(منهم ${linkedCount} مربوط)</span>`;
+                countDisplay.style.color = themeColor;
+                countDisplay.style.background = themeBg;
+                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">إجمالي: <span style="color:${themeColor}; font-weight:900;">${filtered.length}</span></span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(منهم ${linkedCount} بوت)</span>`;
             }
 
             const list = document.getElementById('students-list');
             list.innerHTML = '';
             if(filtered.length === 0) {
-                list.innerHTML = '<div class="no-items">لم يتم العثور على أي طالب.</div>';
+                list.innerHTML = '<div class="no-items">لا يوجد أي تلميذ يطابق هذه الفلاتر</div>';
                 return;
             }
             
             if (currentViewMode === 'table') {
-            const tableWrapper = document.createElement('div');
-            tableWrapper.style.overflowX = 'auto';
-            tableWrapper.style.width = '100%';
-            
-            const table = document.createElement('table');
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
-            table.style.fontSize = '0.85rem';
-            table.style.background = 'var(--surface)';
-            table.style.borderRadius = '8px';
-            table.style.overflow = 'hidden';
-            table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-            table.style.whiteSpace = 'nowrap';
-            
-            const getSortIcon = (k) => currentSort.key === k ? (currentSort.order === 'asc' ? ' 🔼' : ' 🔽') : '';
+                const tableWrapper = document.createElement('div');
+                tableWrapper.style.overflowX = 'auto';
+                tableWrapper.style.width = '100%';
+                
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.style.fontSize = '0.85rem';
+                table.style.background = 'var(--surface)';
+                table.style.borderRadius = '8px';
+                table.style.overflow = 'hidden';
+                table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                table.style.whiteSpace = 'nowrap';
+                
+                const getSortIcon = (k) => currentSort.key === k ? (currentSort.order === 'asc' ? ' 🔼' : ' 🔽') : '';
 
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                    <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                    <th style="padding:12px; cursor:pointer; color:var(--text2);" onclick="sortTable('date')">رقم ${getSortIcon('date')}</th>
-                    <th style="padding:12px; cursor:pointer; text-align:center;" onclick="sortTable('status')">حالة البوت ${getSortIcon('status')}</th>
-                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
-                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
-                    <th style="padding:12px;">حالة الدفع</th>
-                    <th style="padding:12px; direction:ltr; text-align:right;">البريد الإلكتروني</th>
-                </tr>
-            `;
-            table.appendChild(thead);
-            const tbody = document.createElement('tbody');
-            
-            const displayLimit = Math.min(filtered.length, 500);
-            for(let i=0; i<displayLimit; i++) {
-                const s = filtered[i];
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid var(--border)';
-                tr.style.cursor = 'pointer';
-                
-                let g = String(s.gender || '').toLowerCase();
-                let isMale = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذكر');
-                let isFemale = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنثى');
-                
-                let bg = 'transparent';
-                if (filters.gender === 'homme') {
-                    bg = (i % 2 === 0) ? '#e0f2fe' : '#ffffff';
-                } else if (filters.gender === 'femme') {
-                    bg = (i % 2 === 0) ? '#fce7f3' : '#ffffff';
-                } else {
-                    if (isMale) bg = '#e0f2fe';
-                    else if (isFemale) bg = '#fce7f3';
-                    else bg = (i % 2 === 0) ? '#f3f4f6' : '#ffffff';
-                }
-                tr.style.background = bg;
-                tr.style.color = '#111827';
-
-                tr.onmouseover = () => tr.style.opacity = '0.8';
-                tr.onmouseout = () => tr.style.opacity = '1';
-                tr.onclick = () => openStudentCard(s);
-                
-                let botSticker = '🔴';
-                if (s.excluded) botSticker = '⚫';
-                else if (s.group_joined) botSticker = '🟢';
-                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) botSticker = '🟠';
-                
-                let fullName = (s.first_name || '') + ' ' + (s.last_name || '');
-                let arName = fullName.replace(/[a-zA-Z\(\)\[\]\.\-_0-9]/g, '').trim();
-                if (!arName) arName = fullName; // fallback
-                
-                const yrStr = String(s.year || '');
-                const yrMatch = yrStr.match(/\d+/);
-                const yrNum = yrMatch ? yrMatch[0] : '';
-                
-                const paid = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع'].includes(paid);
-                const payBadge = isPaid
-                    ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
-                    : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
-
-                tr.innerHTML = `
-                    <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
-                    <td style="padding:12px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
-                    <td style="padding:12px; text-align:center; font-size:1.1rem;">${botSticker}</td>
-                    <td style="padding:12px;">${yrNum ? yrNum : '-'}</td>
-                    <td style="padding:12px; font-weight:bold;">${arName}</td>
-                    <td style="padding:12px;">${payBadge}</td>
-                    <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem;">${s.email || '-'}</td>
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
+                        <th style="padding:12px 8px; width:30px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
+                        <th style="padding:12px 8px; cursor:pointer; color:var(--text2); width:40px;" onclick="sortTable('date')">رقم ${getSortIcon('date')}</th>
+                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">حالة البوت ${getSortIcon('status')}</th>
+                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
+                        <th style="padding:12px; cursor:pointer; width:60px;" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
+                        <th style="padding:12px;">حالة الدفع</th>
+                        <th style="padding:12px; direction:ltr; text-align:right;">البريد الإلكتروني</th>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
+                table.appendChild(thead);
+                const tbody = document.createElement('tbody');
+                
+                const displayLimit = Math.min(filtered.length, 500);
+                for(let i=0; i<displayLimit; i++) {
+                    const s = filtered[i];
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border)';
+                    tr.style.cursor = 'pointer';
+                    
+                    let g = String(s.gender || '').toLowerCase();
+                    let isMale = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذكر');
+                    let isFemale = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنثى');
+                    
+                    let bg = 'transparent';
+                    if (filters.gender === 'homme') {
+                        bg = (i % 2 === 0) ? '#e0f2fe' : '#ffffff';
+                    } else if (filters.gender === 'femme') {
+                        bg = (i % 2 === 0) ? '#fce7f3' : '#ffffff';
+                    } else {
+                        if (isMale) bg = '#e0f2fe';
+                        else if (isFemale) bg = '#fce7f3';
+                        else bg = (i % 2 === 0) ? '#f3f4f6' : '#ffffff';
+                    }
+                    tr.style.background = bg;
+                    tr.style.color = '#111827';
+
+                    tr.onmouseover = () => tr.style.opacity = '0.8';
+                    tr.onmouseout = () => tr.style.opacity = '1';
+                    tr.onclick = () => openStudentCard(s);
+                    
+                    let botSticker = '🔴';
+                    let botTitle = 'Non démarré';
+                    if (s.excluded) { botSticker = '⚫'; botTitle = 'Exclu'; }
+                    else if (s.group_joined) { botSticker = '🟢'; botTitle = 'Groupe rejoint'; }
+                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { botSticker = '🟠'; botTitle = 'En cours'; }
+                    
+                    let fullName = (s.first_name || '') + ' ' + (s.last_name || '');
+                    let arName = fullName.replace(/[a-zA-Z\(\)\[\]\.\-_0-9]/g, '').trim();
+                    if (!arName) arName = fullName; // fallback
+                    
+                    let yrStr = String(s.year || '').toLowerCase();
+                    let yrVal = '-';
+                    if (yrStr.includes('1') || yrStr.includes('premi') || yrStr.includes('أولى')) yrVal = '1';
+                    else if (yrStr.includes('2') || yrStr.includes('deux') || yrStr.includes('ثاني')) yrVal = '2';
+                    else if (yrStr.includes('3') || yrStr.includes('trois') || yrStr.includes('ثالث')) yrVal = '3';
+                    else if (yrStr.includes('4') || yrStr.includes('quatre') || yrStr.includes('رابع')) yrVal = '4';
+                    else if (yrStr) yrVal = s.year;
+                    
+                    const paid = String(s.payment_status || '').toUpperCase().trim();
+                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'م.م'].includes(paid);
+                    const payBadge = isPaid
+                        ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
+                        : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
+
+                    tr.innerHTML = `
+                        <td style="padding:12px 8px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
+                        <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
+                        <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
+                        <td style="padding:12px; font-weight:bold;">${arName}</td>
+                        <td style="padding:12px; font-weight:bold; color:var(--text1);">${yrVal}</td>
+                        <td style="padding:12px;">${payBadge}</td>
+                        <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+                table.appendChild(tbody);
+                tableWrapper.appendChild(table);
+                list.appendChild(tableWrapper);
+                return; // skip the grid rendering
             }
-            table.appendChild(tbody);
-            tableWrapper.appendChild(table);
-            list.appendChild(tableWrapper);
-            return; // skip the grid rendering
-        }
 
             const fragment = document.createDocumentFragment();
             const displayLimit = Math.min(filtered.length, 500);
