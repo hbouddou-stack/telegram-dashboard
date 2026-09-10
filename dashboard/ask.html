@@ -433,106 +433,61 @@
 
         
         <!-- NEW TICKET TAB -->
-        <div class="tab-content" id="tab-new" style="padding-bottom:100px;">
-            
-            <div id="support-form">
-                <div class="header">
-                    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.3); border-radius:20px; padding:6px 14px; font-size:0.82rem; color:#2ecc71; margin-bottom:12px;">
-                        <span style="width:8px; height:8px; border-radius:50%; background:#2ecc71; box-shadow:0 0 8px #2ecc71; display:inline-block;"></span>
-                        فريق الدعم متصل حالياً — متوسط سرعة الرد: 15 دقيقة
-                    </div>
-                    <div class="header-icon">&#129302;</div>
-                    <h1>مركز الدعم الذكي</h1>
-                    <p class="subtitle" id="step-subtitle">ما هو نوع المشكلة التي تواجهها؟</p>
-                    <div class="step-indicator">
-                        <div class="dot active" id="dot-1"></div>
-                        <div class="dot" id="dot-2"></div>
-                        <div class="dot" id="dot-3"></div>
-                    </div>
-                </div>
-                <div class="step-container active" id="step-1">
-                    <div class="grid-cards" id="theme-grid"></div>
-                </div>
-                <div class="step-container" id="step-2">
-                    <div class="grid-cards" id="subtheme-grid"></div>
-                    <button class="btn-secondary" onclick="goToStep(1)">&#128281; رجوع</button>
-                </div>
-                <div class="step-container" id="step-3">
-                    <div class="input-group">
-                        <label>اشرح مشكلتك بالتفصيل:</label>
-                        <textarea id="message" placeholder="اكتب هنا كافة التفاصيل التي قد تساعدنا في حل مشكلتك..." oninput="livePredictiveFaqSearch(this.value)"></textarea>
-                    </div>
-                    <!-- Live Predictive FAQ Container -->
-                    <div id="predictive-faq-box" style="display:none; margin-top:12px; background:rgba(241,196,15,0.06); border:1px solid rgba(241,196,15,0.25); border-radius:14px; padding:14px;">
-                        <div style="font-size:0.88rem; font-weight:bold; color:var(--accent); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                            <span>💡</span> هل تجد إجابتك هنا مباشرة؟
-                        </div>
-                        <div id="predictive-faq-results"></div>
-                    </div>
-                    <div class="input-group" style="margin-top:10px;">
-                        <label for="attachment" style="display:flex; align-items:center; gap:8px; cursor:pointer; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); justify-content:center; color:var(--accent); font-weight:bold;">
-                            &#128206; إرفاق ملف أو صورة
-                        </label>
-                        <input type="file" id="attachment" style="display:none;" accept="image/*,.pdf">
-                        <div id="attachment-name" style="font-size:0.8rem; color:var(--text-2); text-align:center; margin-top:5px; display:none;"></div>
-                        <script>
-                            if (document.getElementById('attachment')) document.getElementById('attachment').addEventListener('change', function(e) {
-                                const nameEl = document.getElementById('attachment-name');
-                                if (this.files && this.files[0]) {
-                                    nameEl.innerText = "تم اختيار: " + this.files[0].name;
-                                    nameEl.style.display = 'block';
-                                } else {
-                                    nameEl.style.display = 'none';
-                                }
-                            });
-                        </script>
-                    </div>
-                    <button class="btn-primary" id="btn-submit" onclick="submitTicket()">&#128640; إرسال</button>
-                    <button class="btn-secondary" onclick="goToStep(2)">&#128281; رجوع</button>
-                </div>
-                <div class="step-container" id="step-4">
-                    <div class="rag-box">
-                        <div class="rag-title">&#128161; المساعد الذكي يقترح:</div>
-                        <div class="rag-answer" id="rag-answer-text"></div>
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-                        <p style="text-align: center; font-weight: 700;">هل حلت هذه الإجابة مشكلتك؟</p>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-success" onclick="resolveTicket()">&#9989; نعم، شكراً</button>
-                            <button class="btn-danger" onclick="escalateTicket()">&#10060; لا، أريد التحدث لمدير</button>
-                        </div>
-                    </div>
+        <div class="tab-content" id="tab-new" style="padding:0; display:flex; flex-direction:column; height:calc(100vh - 60px);">
+            <!-- HEADER -->
+            <div style="background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.1); padding:15px; display:flex; align-items:center; gap:10px;">
+                <div class="header-icon" style="font-size:1.5rem; margin:0;">🤖</div>
+                <div>
+                    <h1 style="font-size:1.1rem; margin:0; padding:0;">المساعد الذكي</h1>
+                    <p style="font-size:0.8rem; color:var(--text-2); margin:0;">دعم فني - أكاديمية الباجي</p>
                 </div>
             </div>
-            <div class="success-screen" id="success-screen">
-            <div class="icon">&#9989;</div>
-            <h2 id="success-msg">تم إرسال تذكرتك بنجاح!</h2>
-            <p style="color:var(--text-2); margin-top:8px;">سيتولى فريق الدعم مراجعة طلبك والرد عليك في أقرب وقت.</p>
-            <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
-                <button onclick="switchTab('inbox')" style="background:linear-gradient(135deg, #3b82f6, #8b5cf6); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; font-family:'Tajawal'; cursor:pointer; font-size:0.95rem;">
-                    📥 الانتقال لصندوق الرسائل وتتبع التذكرة
-                </button>
-            </div>
-                <div class="icon">&#9989;</div>
-                <h2 style="color:var(--accent);">تم الاستلام بنجاح</h2>
-                <p style="color:var(--text-2); line-height: 1.6;" id="success-msg">تم إرسال طلبك بنجاح! فريق الدعم سيرد عليك في أقرب وقت ممكن عبر صندوق الرسائل.</p>
-                <button class="btn-primary" style="margin-top:20px;" onclick="document.getElementById('success-screen').style.display='none'; switchTab('faq');">
-                    📖 تصفح الأسئلة الشائعة
-                </button>
-            </div>
-        </div>
-        <!-- FAQ TAB -->
-        <div class="tab-content" id="tab-faq">
-            <div class="header" style="margin-bottom:15px;">
-                <h1 style="font-size:1.5rem;">&#128218; الأسئلة الشائعة</h1>
-                <p class="subtitle">ابحث عن إجابة قبل فتح تذكرة دعم</p>
-            </div>
-            <input type="text" class="faq-search-box" id="faq-student-search" placeholder="&#128269; ابحث في الأسئلة..." oninput="studentFaqSearch(this.value)" />
-            <div class="faq-cats" id="student-faq-cats"></div>
-            <div id="student-faq-list">
-                <div style="text-align:center; padding:40px; color:var(--text-2);">جاري التحميل...</div>
-            </div>
-        </div>
 
+            <!-- CHAT HISTORY -->
+            <div id="new-chat-history" style="flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:15px; scrollbar-width:none;">
+                <!-- Initial Bot Greeting -->
+                <div class="message-bubble msg-ai" style="margin:0; align-self:flex-start;">
+                    أهلاً بك 👋! كيف يمكنني مساعدتك اليوم؟ يرجى اختيار نوع المشكلة من الخيارات أدناه:
+                </div>
+                
+                <!-- Quick Reply Chips for Themes -->
+                <div id="chat-quick-replies" style="display:flex; flex-wrap:wrap; gap:8px; align-self:flex-start;">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- RAG SUCCESS SCREEN (Hidden by default) -->
+            <div id="rag-success-screen" style="display:none; padding:15px; background:rgba(46,204,113,0.1); border-top:1px solid rgba(46,204,113,0.2); text-align:center;">
+                <div style="font-size:1.5rem; margin-bottom:5px;">✅</div>
+                <div style="color:#2ecc71; font-weight:bold; font-size:1rem; margin-bottom:5px;">تم حل المشكلة وتوثيقها</div>
+                <div style="font-size:0.8rem; color:var(--text-2); margin-bottom:10px;">تم حفظ التذكرة في السجل الذكي.</div>
+                <button class="btn-secondary" onclick="resetNewChat()" style="padding:8px 16px; font-size:0.85rem;">محادثة جديدة</button>
+            </div>
+
+            <!-- CHAT INPUT AREA -->
+            <div id="chat-input-area" style="background:var(--surface); border-top:1px solid rgba(255,255,255,0.1); padding:10px 15px; display:flex; flex-direction:column; gap:10px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; margin-bottom: 70px;">
+                
+                <!-- Attachment preview -->
+                <div id="chat-attachment-preview" style="display:none; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); font-size:0.8rem;">
+                    <span id="chat-attachment-name" style="color:var(--accent);">ملف مرفق</span>
+                    <span onclick="removeChatAttachment()" style="cursor:pointer; color:#ff4d4d;">❌</span>
+                </div>
+
+                <div style="display:flex; gap:10px; align-items:flex-end;">
+                    <label for="chat-attachment" style="cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.2rem; flex-shrink:0;">
+                        📎
+                    </label>
+                    <input type="file" id="chat-attachment" style="display:none;" accept="image/*,.pdf" onchange="handleChatAttachment(this)">
+                    
+                    <textarea id="chat-textarea" placeholder="يرجى اختيار القسم أولاً..." style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:20px; color:white; padding:10px 15px; font-family:'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif; resize:none; overflow-y:auto; height:40px; max-height:100px; box-sizing:border-box;" disabled oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    
+                    <button id="chat-send-btn" onclick="submitHybridChat()" style="background:linear-gradient(135deg, var(--accent), #8b5cf6); border:none; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; flex-shrink:0; cursor:pointer; opacity:0.5;" disabled>
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <!-- INBOX TAB -->
         <div class="tab-content" id="tab-inbox" style="padding-bottom:100px;">
             <div class="header" style="margin-bottom:15px;">
@@ -651,208 +606,296 @@
         let selectedSubtheme = "";
         const BOT_BASE = window.BOT_API_BASE || '';
 
+        
+        // --- HYBRID CHAT LOGIC ---
         const themesData = [
-            { text: "تقني", icon: "&#128736;", desc: "مشاكل في الدخول، المنصة، أو التطبيق" },
-            { text: "مالي", icon: "&#128179;", desc: "استفسارات حول الدفع والأقساط" },
-            { text: "دعم دراسي", icon: "&#128218;", desc: "أسئلة حول الدروس والمناهج" },
-            { text: "امتحانات", icon: "&#128221;", desc: "مشاكل في الامتحانات والنتائج" },
-            { text: "اقتراحات", icon: "&#128161;", desc: "أفكار لتطوير المنصة" },
-            { text: "خطأ", icon: "&#128027;", desc: "الإبلاغ عن خطأ أو خلل في النظام" }
+            {icon: "💳", text: "الدفع المالي"},
+            {icon: "🛠️", text: "مشكلة تقنية"},
+            {icon: "🎓", text: "الجانب العلمي والمنهجي"},
+            {icon: "🌐", text: "المنصة والموقع"},
+            {icon: "📦", text: "طلب تغيير باقة"}
         ];
 
         const subthemesData = {
-            "تقني": [
-                {icon: "&#128273;", text: "لا أستطيع تسجيل الدخول"},
-                {icon: "&#127916;", text: "الفيديو لا يعمل"},
-                {icon: "&#128264;", text: "مشكلة في الصوت"},
-                {icon: "&#128221;", text: "مشكلة أخرى"}
+            "الدفع المالي": [
+                {icon: "💳", text: "دفع بالبطاقة البنكية"},
+                {icon: "💵", text: "تأكيد الدفع الكاش"},
+                {icon: "🏦", text: "تحويل بنكي"},
+                {icon: "⏸️", text: "إيقاف الاشتراك"},
+                {icon: "📝", text: "مشكلة أخرى"}
             ],
-            "مالي": [
-                {icon: "&#128179;", text: "طرق الدفع المتاحة"},
-                {icon: "&#9203;", text: "تم خصم المبلغ ولم يتفعل الحساب"},
-                {icon: "&#129534;", text: "تأكيد وصل الدفع"},
-                {icon: "&#128221;", text: "مشكلة أخرى"}
+            "مشكلة تقنية": [
+                {icon: "🔑", text: "مشكلة في تسجيل الدخول"},
+                {icon: "📱", text: "التطبيق لا يعمل"},
+                {icon: "📺", text: "مشكلة في تشغيل الفيديو"},
+                {icon: "📝", text: "مشكلة أخرى"}
             ],
-            "دعم دراسي": [
-                {icon: "&#128193;", text: "أين أجد ملفات الدورة؟"},
-                {icon: "&#10067;", text: "سؤال علمي عن الدرس"},
-                {icon: "&#128221;", text: "مشكلة في تحميل المرفقات"},
-                {icon: "&#128221;", text: "مشكلة أخرى"}
+            "الجانب العلمي والمنهجي": [
+                {icon: "📚", text: "سؤال حول الدرس"},
+                {icon: "📝", text: "مشكلة في الاختبار"},
+                {icon: "👨‍🏫", text: "طلب مساعدة من الأستاذ"},
+                {icon: "📝", text: "مشكلة أخرى"}
             ],
-            "امتحانات": [
-                {icon: "&#128197;", text: "متى موعد الاختبار؟"},
-                {icon: "&#127891;", text: "متى أستلم شهادتي؟"},
-                {icon: "&#10067;", text: "كيف أقدم الاختبار؟"},
-                {icon: "&#128221;", text: "مشكلة أخرى"}
+            "المنصة والموقع": [
+                {icon: "🌐", text: "الموقع بطيء"},
+                {icon: "📝", text: "اقتراح تحسين"},
+                {icon: "📝", text: "مشكلة أخرى"}
+            ],
+            "طلب تغيير باقة": [
+                {icon: "📦", text: "تغيير الباقة الحالية"},
+                {icon: "📦", text: "تغيير الدفعة"},
+                {icon: "📝", text: "مشكلة أخرى"}
             ]
         };
 
-        // Render Themes
-        const themeGrid = document.getElementById('theme-grid');
-        themesData.forEach(t => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.onclick = () => selectTheme(t.text);
-            card.innerHTML = `<div class="card-icon">${t.icon}</div><div class="card-title">${t.text}</div>`;
-            themeGrid.appendChild(card);
-        });
+        let chatState = {
+            step: 0, // 0=Awaiting Theme, 1=Awaiting Subtheme, 2=Awaiting Text, 3=Processing/Done
+            theme: null,
+            subtheme: null,
+            message: "",
+            attachmentData: null,
+            attachmentName: null
+        };
 
-        function goToStep(step) {
-            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step-${step}`).classList.add('active');
-            document.querySelectorAll('.dot').forEach(el => el.classList.remove('active'));
-            for (let i = 1; i <= Math.min(step, 3); i++) {
-                const dot = document.getElementById(`dot-${i}`);
-                if (dot) dot.classList.add('active');
-            }
-            const subtitle = document.getElementById('step-subtitle');
-            if (step === 1) subtitle.innerText = "ما هو نوع المشكلة التي تواجهها؟";
-            if (step === 2) subtitle.innerText = "حدد التفاصيل الدقيقة للمشكلة:";
-            if (step === 3) subtitle.innerText = "الخطوة الأخيرة: اكتب رسالتك للإدارة.";
-            if (step === 4) subtitle.innerText = "اقتراح ذكي للمساعدة";
+        function addAiBubble(text) {
+            const hist = document.getElementById('new-chat-history');
+            const b = document.createElement('div');
+            b.className = 'message-bubble msg-ai';
+            b.style.margin = '0';
+            b.style.alignSelf = 'flex-start';
+            b.innerHTML = text;
+            hist.appendChild(b);
+            hist.scrollTop = hist.scrollHeight;
         }
 
-        function selectTheme(themeText) {
-            selectedTheme = themeText;
-            const grid = document.getElementById('subtheme-grid');
-            grid.innerHTML = '';
-            const subs = subthemesData[themeText] || [{icon:'&#128221;', text:'مشكلة أخرى'}];
-            subs.forEach(sub => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => selectSubtheme(sub.text);
-                card.innerHTML = `<div class="card-icon">${sub.icon}</div><div class="card-title">${sub.text}</div>`;
-                grid.appendChild(card);
+        function addUserBubble(text) {
+            const hist = document.getElementById('new-chat-history');
+            const b = document.createElement('div');
+            b.className = 'message-bubble msg-user';
+            b.style.margin = '0';
+            b.style.alignSelf = 'flex-end';
+            b.style.background = 'linear-gradient(135deg, var(--accent), #8b5cf6)';
+            b.innerText = text;
+            hist.appendChild(b);
+            hist.scrollTop = hist.scrollHeight;
+        }
+
+        function setQuickReplies(chips) {
+            const container = document.getElementById('chat-quick-replies');
+            container.innerHTML = '';
+            chips.forEach(chip => {
+                const btn = document.createElement('button');
+                btn.className = 'faq-cat-btn';
+                btn.style.margin = '4px';
+                btn.style.padding = '8px 12px';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.border = '1px solid rgba(255,255,255,0.1)';
+                btn.style.borderRadius = '20px';
+                btn.style.color = 'var(--text-1)';
+                btn.style.cursor = 'pointer';
+                btn.innerHTML = `${chip.icon} ${chip.text}`;
+                btn.onclick = () => handleQuickReply(chip.text);
+                container.appendChild(btn);
             });
-            goToStep(2);
+            container.style.display = 'flex';
+            document.getElementById('new-chat-history').appendChild(container);
+            document.getElementById('new-chat-history').scrollTop = document.getElementById('new-chat-history').scrollHeight;
         }
 
-        function selectSubtheme(subtheme) {
-            selectedSubtheme = subtheme;
-            const titleGroup = document.getElementById('custom-title-group');
-            const titleInput = document.getElementById('custom-ticket-title');
-            if (subtheme === 'مشكلة أخرى') {
-                if (titleGroup) titleGroup.style.display = 'block';
-                if (titleInput) { titleInput.value = ''; titleInput.focus(); }
-            } else {
-                if (titleGroup) titleGroup.style.display = 'none';
-                if (titleInput) titleInput.value = '';
-            }
-            goToStep(3);
+        function clearQuickReplies() {
+            document.getElementById('chat-quick-replies').style.display = 'none';
         }
 
-        async function submitTicket() {
-            if (typeof selectedTheme === 'undefined' || !selectedTheme) selectedTheme = 'عام';
-            if (typeof selectedSubtheme === 'undefined' || !selectedSubtheme) selectedSubtheme = 'سؤال';
-            if (typeof selectedTheme === 'undefined' || !selectedTheme) selectedTheme = 'عام';
-            if (typeof selectedSubtheme === 'undefined' || !selectedSubtheme) selectedSubtheme = 'سؤال';
-            const customTitleInput = document.getElementById('custom-ticket-title');
-            if (selectedSubtheme === 'مشكلة أخرى' && customTitleInput) {
-                const ct = customTitleInput.value.trim();
-                if (!ct) { alert("يرجى كتابة عنوان مختصر للموضوع."); return; }
-                selectedSubtheme = ct;
+        function handleQuickReply(choice) {
+            clearQuickReplies();
+            addUserBubble(choice);
+            
+            if (chatState.step === 0) {
+                chatState.theme = choice;
+                chatState.step = 1;
+                setTimeout(() => {
+                    addAiBubble("فهمت. يرجى تحديد نوع المشكلة بدقة أكثر:");
+                    const subs = subthemesData[choice] || [{icon: "📝", text: "مشكلة أخرى"}];
+                    setQuickReplies(subs);
+                }, 400);
+            } 
+            else if (chatState.step === 1) {
+                chatState.subtheme = choice;
+                chatState.step = 2;
+                setTimeout(() => {
+                    addAiBubble("ممتاز. الآن يرجى شرح تفاصيل المشكلة أسفله. يمكنك أيضاً إرفاق صورة توضيحية.");
+                    enableChatInput();
+                }, 400);
             }
-            const msg = document.getElementById('message').value.trim();
-            if (!msg) { alert("يرجى كتابة رسالتك بوضوح."); return; }
-            const btn = document.getElementById('btn-submit');
-            btn.textContent = "جاري الإرسال...";
+        }
+
+        function enableChatInput() {
+            const ta = document.getElementById('chat-textarea');
+            const btn = document.getElementById('chat-send-btn');
+            ta.disabled = false;
+            ta.placeholder = "اكتب تفاصيل مشكلتك هنا...";
+            ta.focus();
+            
+            ta.addEventListener('input', function() {
+                if (this.value.trim().length > 0) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                }
+            });
+        }
+
+        function disableChatInput() {
+            const ta = document.getElementById('chat-textarea');
+            const btn = document.getElementById('chat-send-btn');
+            ta.disabled = true;
             btn.disabled = true;
+            ta.value = "";
+        }
+
+        function handleChatAttachment(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                document.getElementById('chat-attachment-name').innerText = file.name;
+                document.getElementById('chat-attachment-preview').style.display = 'flex';
+                chatState.attachmentName = file.name;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => chatState.attachmentData = e.target.result;
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeChatAttachment() {
+            document.getElementById('chat-attachment').value = '';
+            document.getElementById('chat-attachment-preview').style.display = 'none';
+            chatState.attachmentName = null;
+            chatState.attachmentData = null;
+        }
+
+        async function submitHybridChat() {
+            const ta = document.getElementById('chat-textarea');
+            const msg = ta.value.trim();
+            if (!msg) return;
+
+            chatState.message = msg;
+            addUserBubble(msg);
+            disableChatInput();
+            document.getElementById('chat-attachment-preview').style.display = 'none';
+
+            addAiBubble("جاري البحث عن حل...");
+            
             let aiAnswer = null;
             let storyId = null;
             try {
                 const ragRes = await fetch(`${BOT_BASE}/api/support/rag_check`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ theme: selectedTheme, subtheme: selectedSubtheme, message: msg })
+                    body: JSON.stringify({ theme: chatState.theme, subtheme: chatState.subtheme, message: chatState.message })
                 });
                 const ragData = await ragRes.json();
                 if (ragData.found) {
                     aiAnswer = ragData.answer;
-                    if (ragData.story_id !== undefined) storyId = ragData.story_id;
+                    storyId = ragData.story_id;
                 }
             } catch (e) { console.error("RAG Error", e); }
             
-            await escalateTicket(aiAnswer === null, aiAnswer, storyId);
-            btn.textContent = "إرسال";
-            btn.disabled = false;
+            if (aiAnswer) {
+                // Auto resolved via AI
+                await escalateChatTicket(aiAnswer, storyId);
+                const hist = document.getElementById('new-chat-history');
+                const lastBubble = hist.lastElementChild;
+                if (lastBubble.innerText === "جاري البحث عن حل...") lastBubble.remove();
+                
+                let answerHtml = `💡 <b>وجدت هذا الحل:</b><br><br>${aiAnswer.replace(/
+/g, '<br>')}`;
+                if (storyId) {
+                    answerHtml += `<br><br><button onclick="openStoryViewer(${storyId})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">🎬 عرض التوضيح</button>`;
+                }
+                addAiBubble(answerHtml);
+                
+                setTimeout(() => {
+                    document.getElementById('rag-success-screen').style.display = 'block';
+                    document.getElementById('chat-input-area').style.display = 'none';
+                }, 1000);
+            } else {
+                // Forward to human
+                const hist = document.getElementById('new-chat-history');
+                const lastBubble = hist.lastElementChild;
+                if (lastBubble.innerText === "جاري البحث عن حل...") lastBubble.remove();
+                
+                addAiBubble("تم تحويل طلبك للإدارة. سيقوم فريق الدعم بالرد عليك في أقرب وقت.");
+                await escalateChatTicket(null, null);
+                setTimeout(() => {
+                    resetNewChat();
+                    switchTab('inbox');
+                    if (typeof loadStudentTickets === 'function') loadStudentTickets();
+                }, 2000);
+            }
         }
 
-        async function resolveTicket() {
-            const msg = document.getElementById('message').value.trim();
-            const tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || null;
-            const uname = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "") || "";
-            const fname = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "") || "";
+        async function escalateChatTicket(aiReply, storyId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || urlParams.get('telegram_id') || urlParams.get('tid') || null;
+            let username = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "") || urlParams.get('username') || "";
+            let first_name = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "") || urlParams.get('first_name') || "طالب";
+            
             try {
                 await fetch(`${BOT_BASE}/api/support`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ theme: selectedTheme, subtheme: selectedSubtheme, message: msg, telegram_id: tid, username: uname, first_name: fname, rag_failed: false, auto_resolved: true })
-                });
-            } catch(e) { console.error(e); }
-            document.getElementById('support-form').style.display = 'none';
-            document.getElementById('success-msg').innerText = "يسعدنا أن المشكلة حُلت! تم حفظ الاستفسار لغرض التحسين.";
-            document.getElementById('success-screen').style.display = 'block';
-        }
-
-        async function escalateTicket(ragFailed = true, aiReply = null, storyId = null) {
-            const msg = document.getElementById('message').value.trim();
-            const urlParams = new URLSearchParams(window.location.search);
-            let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null);
-            if (!tid) tid = urlParams.get('telegram_id') || urlParams.get('tid') || null;
-            
-            let username = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "");
-            if (!username) username = urlParams.get('username') || "";
-            
-            let first_name = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "");
-            if (!first_name) first_name = urlParams.get('first_name') || "الطالب";
-            
-            const fileInput = document.getElementById('attachment');
-            let initialFileData = null;
-            let initialFileName = null;
-            
-            if (fileInput && fileInput.files && fileInput.files[0]) {
-                const file = fileInput.files[0];
-                initialFileName = file.name;
-                initialFileData = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.onerror = () => resolve(null);
-                    reader.readAsDataURL(file);
-                });
-            }
-            
-            try {
-                const res = await fetch(`${BOT_BASE}/api/support`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        theme: selectedTheme, 
-                        subtheme: selectedSubtheme, 
-                        message: msg, 
+                        theme: chatState.theme, 
+                        subtheme: chatState.subtheme, 
+                        message: chatState.message, 
                         telegram_id: tid, 
                         username, 
                         first_name, 
                         auto_resolved: aiReply !== null,
                         ai_reply: aiReply,
                         story_id: storyId,
-                        file_data: initialFileData,
-                        file_name: initialFileName
+                        file_data: chatState.attachmentData,
+                        file_name: chatState.attachmentName
                     })
                 });
-                // Switch to inbox and open this ticket immediately
-                document.getElementById('message').value = '';
-                goToStep(1); // reset form
-                switchTab('inbox');
-                await loadStudentTickets();
             } catch (e) {
-                alert("حدث خطأ في الإرسال. يرجى المحاولة لاحقاً.");
-                const btn = document.getElementById('btn-submit');
-                if (btn) { btn.textContent = "&#128640; إرسال"; btn.disabled = false; }
-                goToStep(3);
+                console.error("Escalation failed", e);
             }
         }
 
+        function resetNewChat() {
+            chatState = { step: 0, theme: null, subtheme: null, message: "", attachmentData: null, attachmentName: null };
+            document.getElementById('new-chat-history').innerHTML = `
+                <div class="message-bubble msg-ai" style="margin:0; align-self:flex-start;">
+                    أهلاً بك 👋! كيف يمكنني مساعدتك اليوم؟ يرجى اختيار نوع المشكلة من الخيارات أدناه:
+                </div>
+                <div id="chat-quick-replies" style="display:flex; flex-wrap:wrap; gap:8px; align-self:flex-start;"></div>
+            `;
+            document.getElementById('rag-success-screen').style.display = 'none';
+            document.getElementById('chat-input-area').style.display = 'flex';
+            const ta = document.getElementById('chat-textarea');
+            ta.value = "";
+            ta.placeholder = "يرجى اختيار القسم أولاً...";
+            ta.style.height = "40px";
+            ta.disabled = true;
+            const btn = document.getElementById('chat-send-btn');
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            removeChatAttachment();
+            setQuickReplies(themesData);
+        }
+
+        // Initialize Chat on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if(document.getElementById('chat-quick-replies')) {
+                setQuickReplies(themesData);
+            }
+        });
+
         // Analytics Tracking
+
         async function trackAnalytics(event_type, keyword = '', has_results = false, tab_name = '') {
             const uid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || 0;
             try {
