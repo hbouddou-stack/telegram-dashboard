@@ -490,7 +490,7 @@
 
         <!-- SEARCH + SORT + VIEW CONTROLS -->
         <div style="padding:4px 12px; display:flex; justify-content:space-between; align-items:center;">
-            <label style="cursor:pointer; font-weight:bold; color:var(--text1); font-size:0.85rem;"><input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents()" style="margin-left:8px; transform:scale(1.2);"> Tout sélectionner</label>
+            <label style="cursor:pointer; font-weight:bold; color:var(--text1); font-size:0.85rem;"><input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents(this)" style="margin-left:8px; transform:scale(1.2);"> Tout sélectionner</label>
         </div>
         <div style="padding:8px 12px 6px;">
             <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -526,13 +526,17 @@
             let currentSort = { key: 'date', order: 'desc' };
             
             
-        function toggleAllStudents() {
+        function toggleAllStudents(sourceCheckbox) {
+            let isChecked = false;
+            if (sourceCheckbox && sourceCheckbox.type === 'checkbox') {
+                isChecked = sourceCheckbox.checked;
+            } else {
+                const cb1 = document.getElementById('selectAllCheckbox');
+                isChecked = cb1 ? cb1.checked : false;
+            }
+            
             const cb1 = document.getElementById('selectAllCheckbox');
             const cb2 = document.getElementById('selectAllGrid');
-            // Find which one triggered it, or just use whichever is checked
-            const isChecked = (cb1 && cb1.checked) || (cb2 && cb2.checked);
-            
-            // Sync them
             if (cb1) cb1.checked = isChecked;
             if (cb2) cb2.checked = isChecked;
             
@@ -2185,6 +2189,9 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 } else if (currentSort.key === 'status') {
                     valA = a.telegram_id ? 1 : 0;
                     valB = b.telegram_id ? 1 : 0;
+                } else if (currentSort.key === 'id') {
+                    valA = String(a.academic_id || a.student_id || '').toLowerCase();
+                    valB = String(b.academic_id || b.student_id || '').toLowerCase();
                 } else {
                     // Default: date
                     valA = new Date(a.created_at || 0).getTime();
@@ -2193,6 +2200,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 
                 if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
                 if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
+                
+                // Fallback secondary sort by ID if primary fields are equal (avoids no-op sorts)
+                let idA = String(a.academic_id || a.student_id || '').toLowerCase();
+                let idB = String(b.academic_id || b.student_id || '').toLowerCase();
+                if (idA < idB) return currentSort.order === 'asc' ? -1 : 1;
+                if (idA > idB) return currentSort.order === 'asc' ? 1 : -1;
                 return 0;
             });
 
@@ -2247,13 +2260,14 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                        <th style="padding:12px 8px; width:30px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                        <th style="padding:12px 8px; cursor:pointer; color:var(--text2); width:40px;" onclick="sortTable('date')">رقم ${getSortIcon('date')}</th>
-                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">حالة البوت ${getSortIcon('status')}</th>
+                        <th style="padding:12px 8px; width:30px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents(this)"></th>
+                        <th style="padding:12px 8px; cursor:pointer; color:var(--text2); width:40px;" onclick="sortTable('date')">م ${getSortIcon('date')}</th>
+                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
+                        <th style="padding:12px; cursor:pointer; width:90px;" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
                         <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
                         <th style="padding:12px; cursor:pointer; width:60px;" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
-                        <th style="padding:12px;">حالة الدفع</th>
-                        <th style="padding:12px; direction:ltr; text-align:right;">البريد الإلكتروني</th>
+                        <th style="padding:12px;">الدفع</th>
+                        <th style="padding:12px; direction:ltr; text-align:right;">الإيميل</th>
                     </tr>
                 `;
                 table.appendChild(thead);
@@ -2311,12 +2325,21 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
                         : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
 
+                    let yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:var(--text1); padding:3px 8px; background:var(--bg); border-radius:12px;">${yrVal}</span>`;
+                    if (yrVal === '1') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#0ea5e9; padding:3px 8px; background:#e0f2fe; border-radius:12px;">الأولى</span>`;
+                    if (yrVal === '2') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#10b981; padding:3px 8px; background:#d1fae5; border-radius:12px;">الثانية</span>`;
+                    if (yrVal === '3') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#f59e0b; padding:3px 8px; background:#fef3c7; border-radius:12px;">الثالثة</span>`;
+                    if (yrVal === '4') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#8b5cf6; padding:3px 8px; background:#ede9fe; border-radius:12px;">الرابعة</span>`;
+
+                    let studentMassarId = s.academic_id || s.student_id || '-';
+
                     tr.innerHTML = `
                         <td style="padding:12px 8px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
                         <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
-                        <td style="padding:12px; font-weight:bold;">${arName}</td>
-                        <td style="padding:12px; font-weight:bold; color:var(--text1);">${yrVal}</td>
+                        <td style="padding:12px; font-family:monospace; color:var(--accent2); font-weight:bold; font-size:0.9rem;">${studentMassarId}</td>
+                        <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}</td>
+                        <td style="padding:12px; text-align:center;">${yrBadge}</td>
                         <td style="padding:12px;">${payBadge}</td>
                         <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
                     `;
