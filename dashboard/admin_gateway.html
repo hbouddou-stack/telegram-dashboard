@@ -767,7 +767,75 @@
             
     
         </script>
-        <div id="students-list"></div>
+        <script>
+        window.openComposer = function() {
+    try {
+        const count = document.getElementById('bulk-count').textContent;
+        document.getElementById('composer-count').textContent = count;
+        document.getElementById('modal-composer').style.display = 'flex';
+    } catch(e) {
+        alert('Erreur: ' + e);
+    }
+}
+function openComposer() {
+    window.openComposer();
+}
+            const count = document.getElementById('bulk-count').textContent;
+            document.getElementById('composer-count').textContent = count;
+            document.getElementById('modal-composer').style.display = 'flex';
+        }
+        
+        function closeComposer() {
+            document.getElementById('modal-composer').style.display = 'none';
+        }
+        
+        async function sendBulkMessage(channel) {
+            const text = document.getElementById('composer-text').value.trim();
+            if(!text) {
+                alert('الرجاء كتابة رسالة أولاً!');
+                return;
+            }
+            
+            const cbs = document.querySelectorAll('.student-select-cb:checked');
+            const ids = Array.from(cbs).map(cb => cb.value);
+            if(ids.length === 0) return;
+            
+            let actionName = '';
+            if(channel === 'whatsapp') actionName = 'واتساب';
+            if(channel === 'telegram') actionName = 'تليجرام';
+            if(channel === 'sms') actionName = 'SMS';
+            if(channel === 'email') actionName = 'إيميل';
+            
+            if(!confirm(`هل أنت متأكد من إرسال رسالة ${actionName} لـ ${ids.length} طالب؟`)) return;
+            
+            if(channel === 'sms') {
+                try {
+                    const res = await fetch('/api/admin/gateway/queue_sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ student_ids: ids, message: text }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        alert(`تم وضع ${data.queued} رسالة SMS في قائمة الانتظار بنجاح.`);
+                    }
+                } catch (e) {
+                    alert('Erreur réseau.');
+                }
+            } else {
+                alert(`تم استلام رسالتك لـ ${ids.length} طالب عبر ${actionName}. (قيد التطوير في النظام)\nالنص: ${text.substring(0,20)}...`);
+            }
+            
+            closeComposer();
+            document.getElementById('composer-text').value = '';
+            
+            cbs.forEach(cb => cb.checked = false);
+            let sa = document.getElementById('selectAllGrid');
+            if(sa) sa.checked = false;
+            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
+        }
+    </script>
+<div id="students-list"></div>
 
     </div>
     
@@ -4494,48 +4562,6 @@ function renderHomeAlerts(alerts) {
 
 
 
-    <!-- BULK ACTION BAR -->
-    <div id="bulk-action-bar" style="display:none; position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--accent); box-shadow:0 10px 30px rgba(0,0,0,0.8); padding:12px 20px; border-radius:30px; z-index:1000; align-items:center; gap:15px; width:90%; max-width:500px; justify-content:space-between;">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="background:var(--accent); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900;" id="bulk-count">0</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button onclick="openBulkModal('email')" style="background:#3b82f6; color:white; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:0.85rem;">📧 Email</button>
-            <button onclick="openBulkModal('whatsapp')" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:0.85rem;">💬 WhatsApp</button>
-        </div>
-        <button onclick="unselectAll()" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:0.8rem;">❌</button>
-    </div>
-
-    <!-- BULK MODAL -->
-    <div id="modal-bulk" class="modal-overlay">
-        <div style="background:var(--surface); width:100%; max-width:650px; max-height:85vh; border-radius:20px 20px 0 0; padding:20px; overflow-y:auto; display:flex; flex-direction:column;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 id="bulk-modal-title" style="margin:0; font-size:1.2rem; color:var(--text1);">Envoyer Message</h3>
-                <button onclick="document.getElementById('modal-bulk').style.display='none'" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:5px 12px; border-radius:8px; cursor:pointer;">Annuler</button>
-            </div>
-            
-            <p style="font-size:0.85rem; color:var(--text2); margin-top:0;">Vous allez envoyer un message à <strong id="bulk-modal-count" style="color:var(--accent2);">0</strong> étudiants.</p>
-            
-            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
-                <div id="bulk-subject-container" style="display:flex; flex-direction:column; gap:5px;">
-                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text2);">Sujet (Email uniquement)</label>
-                    <input type="text" id="bulk-subject" placeholder="Bienvenue !" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1);">
-                </div>
-                
-                <div style="display:flex; flex-direction:column; gap:5px;">
-                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text2);">Message</label>
-                    <div style="font-size:0.75rem; color:var(--text2); margin-bottom:5px;">Variables : {prenom}, {nom}, {lien}</div>
-                    <textarea id="bulk-message" rows="6" placeholder="Bonjour {prenom}..." style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); resize:vertical; font-family:inherit;"></textarea>
-                </div>
-                
-                <input type="hidden" id="bulk-type" value="email">
-                
-                <button onclick="executeBulkAction()" style="background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:1rem; margin-top:10px;">🚀 Envoyer Maintenant</button>
-            </div>
-        </div>
-    </div>
-
-
     <!-- THE COMPOSER MODAL -->
     <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
         <div style="background:var(--bg); width:100%; max-width:500px; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.2); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column;">
@@ -4572,63 +4598,7 @@ function renderHomeAlerts(alerts) {
         </div>
     </div>
     
-    <script>
-        function openComposer() {
-            const count = document.getElementById('bulk-count').textContent;
-            document.getElementById('composer-count').textContent = count;
-            document.getElementById('modal-composer').style.display = 'flex';
-        }
-        
-        function closeComposer() {
-            document.getElementById('modal-composer').style.display = 'none';
-        }
-        
-        async function sendBulkMessage(channel) {
-            const text = document.getElementById('composer-text').value.trim();
-            if(!text) {
-                alert('الرجاء كتابة رسالة أولاً!');
-                return;
-            }
-            
-            const cbs = document.querySelectorAll('.student-select-cb:checked');
-            const ids = Array.from(cbs).map(cb => cb.value);
-            if(ids.length === 0) return;
-            
-            let actionName = '';
-            if(channel === 'whatsapp') actionName = 'واتساب';
-            if(channel === 'telegram') actionName = 'تليجرام';
-            if(channel === 'sms') actionName = 'SMS';
-            if(channel === 'email') actionName = 'إيميل';
-            
-            if(!confirm(`هل أنت متأكد من إرسال رسالة ${actionName} لـ ${ids.length} طالب؟`)) return;
-            
-            if(channel === 'sms') {
-                try {
-                    const res = await fetch('/api/admin/gateway/queue_sms', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ student_ids: ids, message: text }) 
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        alert(`تم وضع ${data.queued} رسالة SMS في قائمة الانتظار بنجاح.`);
-                    }
-                } catch (e) {
-                    alert('Erreur réseau.');
-                }
-            } else {
-                alert(`تم استلام رسالتك لـ ${ids.length} طالب عبر ${actionName}. (قيد التطوير في النظام)\nالنص: ${text.substring(0,20)}...`);
-            }
-            
-            closeComposer();
-            document.getElementById('composer-text').value = '';
-            
-            cbs.forEach(cb => cb.checked = false);
-            let sa = document.getElementById('selectAllGrid');
-            if(sa) sa.checked = false;
-            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
-        }
-    </script>
+    
     
 </body>
 </html>
