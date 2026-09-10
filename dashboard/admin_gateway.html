@@ -3206,6 +3206,116 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
         window.v2DuplicateGroups = [];
 
+        function v2Levenshtein(a, b) {
+            if (!a || !b) return (a || b || '').length;
+            if (a === b) return 0;
+            if (a.length < b.length) { const t = a; a = b; b = t; }
+            let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+            for (let i = 0; i < a.length; i++) {
+                let curr = [i + 1];
+                for (let j = 0; j < b.length; j++) {
+                    const cost = a[i] === b[j] ? 0 : 1;
+                    curr.push(Math.min(curr[j] + 1, prev[j + 1] + 1, prev[j] + cost));
+                }
+                prev = curr;
+            }
+            return prev[b.length];
+        }
+
+        function v2NormalizeArabic(str) {
+            if (!str) return '';
+            return String(str)
+                .trim()
+                .toLowerCase()
+                .replace(/[\u064B-\u065F\u0670]/g, '')
+                .replace(/[إأآا]/g, 'ا')
+                .replace(/ة/g, 'ه')
+                .replace(/ى/g, 'ي')
+                .replace(/[éèêë]/g, 'e')
+                .replace(/[àâä]/g, 'a')
+                .replace(/[ïî]/g, 'i')
+                .replace(/[ôö]/g, 'o')
+                .replace(/[ûüù]/g, 'u')
+                .replace(/[ç]/g, 'c')
+                .replace(/[^a-z0-9\u0621-\u064A\s]/g, '')
+                .replace(/\s+/g, ' ');
+        }
+
+        function v2CompareStudents(s1, s2) {
+            const reasons = [];
+
+            // 1. Phone match & similarity
+            const rawP1 = String(s1.phone || s1.telephone || s1.mobile || '').trim();
+            const rawP2 = String(s2.phone || s2.telephone || s2.mobile || '').trim();
+            const digitsP1 = rawP1.replace(/\D/g, '');
+            const digitsP2 = rawP2.replace(/\D/g, '');
+            if (digitsP1.length >= 8 && digitsP2.length >= 8) {
+                const kp1 = digitsP1.slice(-9);
+                const kp2 = digitsP2.slice(-9);
+                if (kp1 === kp2) {
+                    reasons.push('📞 تطابق تام في رقم الهاتف');
+                } else if (v2Levenshtein(kp1, kp2) === 1) {
+                    reasons.push('📞 تشابه كبير في رقم الهاتف (فارق رقم واحد فقط)');
+                }
+            }
+
+            // 2. Email match & similarity (dots, typos)
+            const e1 = (s1.email || '').toLowerCase().trim();
+            const e2 = (s2.email || '').toLowerCase().trim();
+            if (e1 && e2 && e1.includes('@') && e2.includes('@')) {
+                if (e1 === e2) {
+                    reasons.push('✉️ تطابق تام في البريد الإلكتروني');
+                } else {
+                    const parts1 = e1.split('@');
+                    const parts2 = e2.split('@');
+                    const u1 = parts1[0];
+                    const d1 = parts1[1] || '';
+                    const u2 = parts2[0];
+                    const d2 = parts2[1] || '';
+
+                    if (d1 === d2) {
+                        if (u1.replace(/\./g, '') === u2.replace(/\./g, '')) {
+                            reasons.push('✉️ نفس البريد الإلكتروني مع فارق النقط (Dots)');
+                        } else if (v2Levenshtein(u1, u2) <= 2) {
+                            reasons.push(`✉️ تشابه في عنوان البريد الإلكتروني (فارق بسيط على @${d1})`);
+                        }
+                    } else if (v2Levenshtein(e1, e2) <= 2) {
+                        reasons.push('✉️ تشابه كبير في عنوان البريد الإلكتروني');
+                    }
+                }
+            }
+
+            // 3. Name match & similarity
+            const n1 = v2NormalizeArabic(`${s1.first_name || ''} ${s1.last_name || ''}`);
+            const n2 = v2NormalizeArabic(`${s2.first_name || ''} ${s2.last_name || ''}`);
+            if (n1.length >= 4 && n2.length >= 4) {
+                if (n1 === n2) {
+                    reasons.push('👤 تطابق تام في الاسم الكامل');
+                } else {
+                    const dist = v2Levenshtein(n1, n2);
+                    if (dist <= 2) {
+                        reasons.push('👤 تشابه قوي في الاسم الكامل (فارق حرف أو حرفين)');
+                    } else {
+                        const words1 = n1.split(' ').filter(w => w.length >= 2);
+                        const words2 = n2.split(' ').filter(w => w.length >= 2);
+                        const commonWords = words1.filter(w => words2.includes(w));
+                        if (commonWords.length >= 2) {
+                            reasons.push(`👤 اشتراك في مقاطع الاسم (${commonWords.join(' + ')})`);
+                        }
+                    }
+                }
+            }
+
+            // 4. Academic Massar ID
+            const m1 = String(s1.academic_id || '').trim().toUpperCase();
+            const m2 = String(s2.academic_id || '').trim().toUpperCase();
+            if (m1 && m2 && m1.length >= 4 && m1 === m2) {
+                reasons.push('📌 تطابق تام في رقم مسار');
+            }
+
+            return reasons;
+        }
+
         function openDuplicateScannerV2() {
             const modal = document.getElementById('modal-duplicates-v2');
             const container = document.getElementById('duplicates-container-v2');
@@ -3218,7 +3328,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
             document.body.appendChild(modal);
             modal.style.display = 'flex';
-            container.innerHTML = '<div style="text-align:center; padding:40px 15px; color:#94a3b8; font-size:1.05rem;" dir="rtl">⏳ جارٍ فحص التكرارات وتحليل البيانات المباشرة...</div>';
+            container.innerHTML = '<div style="text-align:center; padding:50px 15px; color:#94a3b8; font-size:1.1rem;" dir="rtl">⏳ جارٍ فحص الحسابات وتحليل مؤشرات الشبهة والتكرار...</div>';
 
             let sourceList = [];
             let label = '';
@@ -3226,13 +3336,13 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if (checkedBoxes.length > 0) {
                 const selectedIds = new Set(Array.from(checkedBoxes).map(cb => String(cb.value)));
                 sourceList = (allStudents || []).filter(s => selectedIds.has(String(s.student_id)) && s.excluded != 1);
-                label = `فحص ${sourceList.length} طالب محددين بالصناديق`;
+                label = `تم فحص ${sourceList.length} طالب محددين في القائمة`;
             } else if (window.currentFilteredStudents && window.currentFilteredStudents.length > 0 && !window.filterOnlyDuplicates) {
                 sourceList = window.currentFilteredStudents.filter(s => s.excluded != 1);
-                label = `فحص ${sourceList.length} طالب من الفلترة الحالية`;
+                label = `تم فحص ${sourceList.length} طالب من نتائج الفلترة الحالية`;
             } else {
                 sourceList = (allStudents || []).filter(s => s.excluded != 1);
-                label = `فحص كافة الطلاب المسجلين (${sourceList.length} طالب)`;
+                label = `تم فحص إجمالي الطلاب المسجلين (${sourceList.length} طالب)`;
             }
 
             if (infoEl) infoEl.textContent = label;
@@ -3244,7 +3354,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const byName = {};
 
                     sourceList.forEach(s => {
-                        // 1. Phone
+                        // 1. Phone grouping
                         const rawPhone = String(s.phone || s.telephone || s.mobile || '').replace(/\D/g, '');
                         if (rawPhone.length >= 8) {
                             const kp = rawPhone.slice(-9);
@@ -3255,25 +3365,25 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                             }
                         }
 
-                        // 2. Email
+                        // 2. Email grouping
                         const email = (s.email || '').toLowerCase().trim();
                         if (email && email.includes('@')) {
                             const domain = email.split('@')[1] || '';
                             const isPlaceholder = email.startsWith('noemail') || email.startsWith('test@') || email.startsWith('none@') || email.startsWith('0@') || !domain.includes('.');
                             if (!isPlaceholder) {
-                                if (!byEmail[email]) byEmail[email] = [];
-                                byEmail[email].push(s);
+                                const parts = email.split('@');
+                                const cleanKey = parts[0].replace(/\./g, '') + '@' + parts[1];
+                                if (!byEmail[cleanKey]) byEmail[cleanKey] = [];
+                                byEmail[cleanKey].push(s);
                             }
                         }
 
-                        // 3. Name
-                        const fn = (s.first_name || '').trim();
-                        const ln = (s.last_name || '').trim();
-                        const fullName = `${fn} ${ln}`.trim().toLowerCase().replace(/\s+/g, ' ');
-                        const parts = fullName.split(' ').filter(p => p.length >= 2);
-                        if (parts.length >= 2 && fullName.length >= 6) {
-                            if (!byName[fullName]) byName[fullName] = [];
-                            byName[fullName].push(s);
+                        // 3. Name grouping
+                        const normName = v2NormalizeArabic(`${s.first_name || ''} ${s.last_name || ''}`);
+                        const parts = normName.split(' ').filter(p => p.length >= 2);
+                        if (parts.length >= 2 && normName.length >= 5) {
+                            if (!byName[normName]) byName[normName] = [];
+                            byName[normName].push(s);
                         }
                     });
 
@@ -3285,25 +3395,66 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                             if (list.length > 1) {
                                 const unhandled = list.filter(st => !processedIds.has(String(st.student_id)));
                                 if (unhandled.length > 1) {
-                                    groups.push({ type, icon, matchVal: key, students: unhandled });
+                                    let repVal = key;
+                                    if (icon === '📞') {
+                                        repVal = list[0].phone || list[0].telephone || list[0].mobile || key;
+                                    } else if (icon === '✉️') {
+                                        repVal = list[0].email || key;
+                                    } else if (icon === '👤') {
+                                        repVal = `${list[0].first_name || ''} ${list[0].last_name || ''}`.trim();
+                                    }
+                                    groups.push({ type, icon, matchVal: repVal, students: unhandled });
                                     unhandled.forEach(st => processedIds.add(String(st.student_id)));
                                 }
                             }
                         });
                     };
 
-                    pushGroup(byPhone, 'تطابق رقم الهاتف', '📞');
-                    pushGroup(byEmail, 'تطابق البريد الإلكتروني', '✉️');
-                    pushGroup(byName, 'تطابق الاسم الكامل', '👤');
+                    pushGroup(byPhone, 'تطابق في رقم الهاتف', '📞');
+                    pushGroup(byEmail, 'تطابق في البريد الإلكتروني', '✉️');
+                    pushGroup(byName, 'تطابق في الاسم الكامل', '👤');
+
+                    // Check for secondary fuzzy cross-matches
+                    const remainingStudents = sourceList.filter(st => !processedIds.has(String(st.student_id)));
+                    const nRem = remainingStudents.length;
+                    if (nRem <= 800) {
+                        for (let i = 0; i < nRem; i++) {
+                            const sA = remainingStudents[i];
+                            if (processedIds.has(String(sA.student_id))) continue;
+                            const fuzzyGroup = [sA];
+
+                            for (let j = i + 1; j < nRem; j++) {
+                                const sB = remainingStudents[j];
+                                if (processedIds.has(String(sB.student_id))) continue;
+
+                                const reasons = v2CompareStudents(sA, sB);
+                                if (reasons.length >= 2 || (reasons.length === 1 && reasons[0].includes('تشابه'))) {
+                                    fuzzyGroup.push(sB);
+                                    processedIds.add(String(sB.student_id));
+                                }
+                            }
+
+                            if (fuzzyGroup.length > 1) {
+                                processedIds.add(String(sA.student_id));
+                                const repVal = `${sA.first_name || ''} ${sA.last_name || ''}`.trim();
+                                groups.push({
+                                    type: 'اشتباه قوي (تشابه متعدد)',
+                                    icon: '⚠️',
+                                    matchVal: repVal,
+                                    students: fuzzyGroup
+                                });
+                            }
+                        }
+                    }
 
                     window.v2DuplicateGroups = groups;
 
                     if (groups.length === 0) {
                         container.innerHTML = `
-                            <div style="text-align:center; padding:50px 20px;" dir="rtl">
-                                <div style="font-size:3.5rem; margin-bottom:10px;">🎉</div>
-                                <h3 style="color:#10b981; font-size:1.3rem; margin:0 0 8px 0; font-weight:900;">لا توجد أي تكرارات!</h3>
-                                <p style="color:#94a3b8; font-size:0.9rem; margin:0;">تم فحص ${sourceList.length} طالب، ولم يتم العثور على أي هاتف أو إيميل أو اسم مكرر.</p>
+                            <div style="text-align:center; padding:60px 20px;" dir="rtl">
+                                <div style="font-size:3.5rem; margin-bottom:12px;">🎉</div>
+                                <h3 style="color:#10b981; font-size:1.35rem; margin:0 0 8px 0; font-weight:900;">لا توجد أي حسابات مكررة أو مشتبه بها!</h3>
+                                <p style="color:#94a3b8; font-size:0.95rem; margin:0; line-height:1.6;">تم فحص ${sourceList.length} طالب، ولم يُعثر على أي تطابق أو تشابه في الهواتف أو البريد أو الأسماء.</p>
                             </div>
                         `;
                         return;
@@ -3313,13 +3464,19 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     groups.forEach(g => totalDupCount += g.students.length);
 
                     let outHtml = `
-                        <div style="background:rgba(239,68,68,0.12); border:1.5px solid #ef4444; border-radius:12px; padding:12px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;" dir="rtl">
+                        <!-- Statistics Bar in Pure Arabic -->
+                        <div style="background:rgba(30,41,59,0.9); border:1.5px solid #334155; border-radius:14px; padding:14px 18px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" dir="rtl">
                             <div>
-                                <span style="font-weight:900; font-size:1.0rem; color:#f87171;">⚠️ تم اكتشاف ${groups.length} مجموعة مكررة</span>
-                                <div style="font-size:0.8rem; color:#cbd5e1; margin-top:2px;">إجمالي الحسابات المتكررة: <strong>${totalDupCount}</strong> حساب</div>
+                                <div style="font-weight:900; font-size:1.05rem; color:#ffffff; display:flex; align-items:center; gap:8px;">
+                                    <span>⚠️ تم العثور على</span>
+                                    <span style="background:#ef4444; color:white; padding:2px 10px; border-radius:12px; font-size:0.9rem;">${groups.length} مجموعة مشتبه بها</span>
+                                </div>
+                                <div style="font-size:0.82rem; color:#94a3b8; margin-top:4px;">
+                                    إجمالي الحسابات المقارنة: <strong style="color:#38bdf8;">${totalDupCount}</strong> طالب • عرض مقارنة بالأعمدة جنباً إلى جنب
+                                </div>
                             </div>
-                            <button onclick="exportDuplicatesCSV()" style="background:#10b981; color:white; border:none; padding:6px 14px; border-radius:8px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:5px;">
-                                📥 تصدير CSV
+                            <button onclick="exportDuplicatesCSV()" style="background:#10b981; color:white; border:none; padding:8px 16px; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 3px 8px rgba(16,185,129,0.35);">
+                                📥 تصدير تقرير إكسيل (CSV)
                             </button>
                         </div>
                     `;
@@ -3332,18 +3489,28 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         });
 
                         outHtml += `
-                            <div style="background:#1e293b; border:1px solid #334155; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;" dir="rtl">
-                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px;">
-                                    <div style="display:flex; align-items:center; gap:8px;">
-                                        <span style="font-size:1.2rem;">${g.icon}</span>
+                            <div style="background:#111827; border:1.5px solid #334155; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 18px rgba(0,0,0,0.4);" dir="rtl">
+                                <!-- Group Header -->
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1f2937; padding-bottom:10px; flex-wrap:wrap; gap:8px;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="font-size:1.3rem;">${g.icon}</span>
                                         <div>
-                                            <strong style="color:#ffffff; font-size:0.95rem;">${g.type}</strong>
-                                            <span style="color:#38bdf8; font-size:0.82rem; margin-right:6px; direction:ltr; display:inline-block; font-family:monospace;">${g.matchVal}</span>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <strong style="color:#ffffff; font-size:1.0rem;">المجموعة #${gIdx + 1}: ${g.type}</strong>
+                                                <span style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; border-radius:12px; padding:1px 8px; font-size:0.75rem; font-weight:800;">${g.students.length} حسابات</span>
+                                            </div>
+                                            <div style="color:#38bdf8; font-size:0.85rem; margin-top:2px; direction:ltr; text-align:right; font-family:monospace; font-weight:700;">
+                                                ${g.matchVal}
+                                            </div>
                                         </div>
                                     </div>
-                                    <span style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; border-radius:20px; padding:2px 10px; font-size:0.75rem; font-weight:900;">${g.students.length} مكرر</span>
+                                    <div style="font-size:0.75rem; color:#94a3b8; background:#1e293b; padding:4px 10px; border-radius:8px; border:1px solid #334155;">
+                                        💡 قارن البيانات في الأعمدة أدناه لاختيار الحساب المراد استبعاده
+                                    </div>
                                 </div>
-                                <div style="display:flex; flex-direction:column; gap:8px;">
+
+                                <!-- Side-by-Side Columns Container -->
+                                <div class="v2-compare-columns" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:14px; align-items:stretch;">
                         `;
 
                         sortedStudents.forEach((st, sIdx) => {
@@ -3354,6 +3521,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                             const ps = String(st.payment_status || '').toUpperCase().trim();
                             const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'PAYÉ' || ps === 'مسدد' || ps === 'مدفوع';
                             
+                            // Full Telephone Number (Exact and Complete)
+                            const fullPhone = String(st.phone || st.telephone || st.mobile || '—').trim();
+                            const fullEmail = String(st.email || '—').trim();
+
                             let dStr = '—';
                             if (st.created_at) {
                                 try {
@@ -3365,36 +3536,92 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                 }
                             }
 
+                            // Evaluate all suspicion reasons with the other students in this group
+                            const suspicionSet = new Set();
+                            sortedStudents.forEach((otherSt, oIdx) => {
+                                if (oIdx !== sIdx) {
+                                    const reasons = v2CompareStudents(st, otherSt);
+                                    reasons.forEach(r => suspicionSet.add(r));
+                                }
+                            });
+
+                            let suspicionBadgesHtml = '';
+                            if (suspicionSet.size > 0) {
+                                suspicionBadgesHtml = Array.from(suspicionSet).map(r => `
+                                    <div style="font-size:0.76rem; color:#fed7aa; display:flex; align-items:center; gap:4px; line-height:1.3;">
+                                        <span>•</span> <span>${r}</span>
+                                    </div>
+                                `).join('');
+                            } else {
+                                suspicionBadgesHtml = `<div style="font-size:0.75rem; color:#94a3b8;">• تم الربط عبر بيانات المجموعة المشتركة</div>`;
+                            }
+
+                            const borderCol = isEx ? '#64748b' : (isNewest ? '#10b981' : '#f59e0b');
+
                             outHtml += `
-                                <div style="background:#0f172a; border:1px solid ${isEx ? '#475569' : (isNewest ? '#10b981' : '#f59e0b')}; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:6px;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <div style="display:flex; align-items:center; gap:8px;">
-                                            <span style="font-size:0.75rem; padding:2px 8px; border-radius:6px; font-weight:800; ${isNewest ? 'background:rgba(16,185,129,0.2); color:#34d399;' : 'background:rgba(245,158,11,0.2); color:#fbbf24;'}">
-                                                ${isNewest ? '⭐ الأحدث' : 'قديم'}
+                                <div style="background:#1e293b; border:2px solid ${borderCol}; border-radius:14px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:12px; opacity:${isEx ? 0.65 : 1}; box-shadow:0 4px 12px rgba(0,0,0,0.25);">
+                                    <!-- Card Header Badge -->
+                                    <div>
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                            <span style="font-size:0.78rem; padding:3px 10px; border-radius:8px; font-weight:800; ${
+                                                isEx 
+                                                    ? 'background:#334155; color:#cbd5e1;' 
+                                                    : (isNewest ? 'background:rgba(16,185,129,0.2); color:#34d399; border:1px solid #10b981;' : 'background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid #f59e0b;')
+                                            }">
+                                                ${isEx ? '👻 حساب مُستبعَد' : (isNewest ? '⭐ الحساب الأحدث (مفضل)' : '📜 حساب أقدم / منافس')}
                                             </span>
-                                            <span style="font-weight:900; font-size:1.05rem; color:#ffffff;">${stName}</span>
-                                            <span style="color:#64748b; font-size:0.75rem; font-family:monospace;">ID: ${st.student_id}</span>
+                                            <span style="color:#94a3b8; font-size:0.75rem; font-family:monospace; background:#0f172a; padding:2px 8px; border-radius:6px;">معرف #${st.student_id}</span>
                                         </div>
-                                        <div>
-                                            ${isEx 
-                                                ? `<button onclick="confirmDupAction('${st.student_id}', 0, '${cleanName}')" style="background:#334155; color:#cbd5e1; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:bold;">🔄 إلغاء الاستبعاد</button>`
-                                                : `<button onclick="confirmDupAction('${st.student_id}', 1, '${cleanName}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:bold; box-shadow:0 2px 5px rgba(239,68,68,0.4);">👻 استبعاد</button>`
-                                            }
+
+                                        <!-- Student Name -->
+                                        <div style="margin-bottom:10px;">
+                                            <div style="font-weight:900; font-size:1.15rem; color:#ffffff; line-height:1.3;">
+                                                ${stName}
+                                            </div>
+                                            ${st.last_name && st.last_name !== st.first_name ? `<div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${st.last_name}</div>` : ''}
+                                        </div>
+
+                                        <!-- Field 1: Full Phone Number -->
+                                        <div style="background:#0f172a; border-radius:8px; padding:8px 10px; border:1px solid #334155; margin-bottom:8px;">
+                                            <span style="color:#94a3b8; font-size:0.72rem; display:block; margin-bottom:2px;">📞 رقم الهاتف الكامل:</span>
+                                            <span style="color:#38bdf8; font-weight:900; font-size:1.0rem; direction:ltr; display:inline-block; font-family:monospace; letter-spacing:0.5px;">${fullPhone}</span>
+                                        </div>
+
+                                        <!-- Field 2: Email -->
+                                        <div style="background:#0f172a; border-radius:8px; padding:8px 10px; border:1px solid #334155; margin-bottom:8px;">
+                                            <span style="color:#94a3b8; font-size:0.72rem; display:block; margin-bottom:2px;">✉️ البريد الإلكتروني:</span>
+                                            <span style="color:#60a5fa; font-weight:800; font-size:0.85rem; direction:ltr; display:inline-block; word-break:break-all;">${fullEmail}</span>
+                                        </div>
+
+                                        <!-- Field 3: Academic Meta Grid -->
+                                        <div style="background:#0f172a; border-radius:8px; padding:8px 10px; border:1px solid #334155; font-size:0.78rem; display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+                                            <div>📅 التسجيل: <strong style="color:#cbd5e1;">${dStr}</strong></div>
+                                            <div>🎓 السنة: <strong style="color:#c084fc;">س${st.year || '—'}</strong></div>
+                                            <div>📌 مسار: <strong style="color:#cbd5e1;">${st.academic_id || '—'}</strong></div>
+                                            <div>
+                                                <span style="padding:1px 6px; border-radius:4px; ${isPaid ? 'background:#064e3b; color:#34d399;' : 'background:#7f1d1d; color:#fca5a5;'} font-weight:bold; font-size:0.72rem;">
+                                                    ${isPaid ? '🟢 مسدد' : '🔴 غير مسدد'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Field 4: Suspicion & Duplicate Reasons Box -->
+                                        <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:8px 10px;">
+                                            <div style="font-size:0.74rem; color:#f87171; font-weight:bold; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                                                <span>🔍 أسباب ومؤشرات الشبهة:</span>
+                                            </div>
+                                            <div style="display:flex; flex-direction:column; gap:3px;">
+                                                ${suspicionBadgesHtml}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:0.82rem; color:#cbd5e1;">
-                                        <div>📞 هاتف: <span style="color:#38bdf8; font-weight:bold; direction:ltr; display:inline-block;">${st.phone || st.telephone || '—'}</span></div>
-                                        <div>✉️ بريد: <span style="color:#60a5fa; font-weight:bold; direction:ltr; display:inline-block;">${st.email || '—'}</span></div>
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; border-top:1px dashed #1e293b; padding-top:4px;">
-                                        <div>
-                                            <span style="padding:1px 6px; border-radius:4px; ${isPaid ? 'background:#064e3b; color:#34d399;' : 'background:#7f1d1d; color:#fca5a5;'} font-weight:bold;">
-                                                ${isPaid ? 'مسدد' : 'غير مسدد'}
-                                            </span>
-                                            ${st.year ? `<span style="margin-right:6px; color:#c084fc;">س${st.year}</span>` : ''}
-                                            ${st.academic_id ? `<span style="margin-right:6px; color:#cbd5e1;">مسار: ${st.academic_id}</span>` : ''}
-                                        </div>
-                                        <div>📅 ${dStr}</div>
+
+                                    <!-- Column Action Footer -->
+                                    <div style="border-top:1px dashed #334155; padding-top:10px; margin-top:6px;">
+                                        ${isEx
+                                            ? `<button onclick="confirmDupAction('${st.student_id}', 0, '${cleanName}')" style="background:#334155; color:#cbd5e1; border:1px solid #64748b; padding:9px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:800; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;">🔄 استعادة وتفعيل الحساب</button>`
+                                            : `<button onclick="confirmDupAction('${st.student_id}', 1, '${cleanName}')" style="background:#ef4444; color:white; border:none; padding:9px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:800; width:100%; box-shadow:0 3px 8px rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; gap:6px;">👻 استبعاد هذا الحساب</button>`
+                                        }
                                     </div>
                                 </div>
                             `;
@@ -3422,13 +3649,27 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 return;
             }
 
-            const headers = ["نوع التكرار", "قيمة التطابق", "المعرف ID", "الاسم", "رقم الهاتف", "البريد الإلكتروني", "السنة", "حالة الدفع", "رقم مسار", "تاريخ التسجيل", "مستبعد"];
+            const headers = [
+                "رقم المجموعة",
+                "نوع التطابق الرئيسي",
+                "القيمة المشتركة",
+                "أسباب ومؤشرات الشبهة",
+                "المعرف ID",
+                "الاسم الكامل",
+                "رقم الهاتف الكامل",
+                "البريد الإلكتروني",
+                "السنة الدراسية",
+                "حالة الدفع",
+                "رقم مسار",
+                "تاريخ التسجيل",
+                "الحساب مستبعد"
+            ];
             const rows = [];
 
-            window.v2DuplicateGroups.forEach(g => {
-                g.students.forEach(st => {
+            window.v2DuplicateGroups.forEach((g, gIdx) => {
+                g.students.forEach((st, sIdx) => {
                     const stName = `${st.first_name || ''} ${st.last_name || ''}`.trim();
-                    const phone = String(st.phone || st.telephone || st.mobile || '');
+                    const fullPhone = String(st.phone || st.telephone || st.mobile || '');
                     const email = String(st.email || '');
                     const year = String(st.year || '');
                     const pay = String(st.payment_status || '');
@@ -3436,12 +3677,23 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     const date = String(st.created_at || '').split('T')[0];
                     const ex = st.excluded == 1 ? "نعم" : "لا";
 
+                    // Suspicion reasons with others
+                    const reasonsSet = new Set();
+                    g.students.forEach((other, oIdx) => {
+                        if (oIdx !== sIdx) {
+                            v2CompareStudents(st, other).forEach(r => reasonsSet.add(r));
+                        }
+                    });
+                    const reasonsStr = Array.from(reasonsSet).join(" | ") || g.type;
+
                     rows.push([
+                        `"${gIdx + 1}"`,
                         `"${g.type.replace(/"/g, '""')}"`,
                         `"${g.matchVal.replace(/"/g, '""')}"`,
+                        `"${reasonsStr.replace(/"/g, '""')}"`,
                         `"${st.student_id}"`,
                         `"${stName.replace(/"/g, '""')}"`,
-                        `"'\t${phone.replace(/"/g, '""')}"`,
+                        `"'\t${fullPhone.replace(/"/g, '""')}"`,
                         `"${email.replace(/"/g, '""')}"`,
                         `"${year}"`,
                         `"${pay.replace(/"/g, '""')}"`,
@@ -4890,22 +5142,22 @@ function renderHomeAlerts(alerts) {
 </div>
 
     <!-- MODAL DOUBLONS V2 -->
-    <div id="modal-duplicates-v2" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2147483647; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:12px; box-sizing:border-box;">
-        <div style="background:#1e293b; width:100%; max-width:680px; height:88vh; max-height:88vh; border-radius:18px; display:flex; flex-direction:column; overflow:hidden; border:1px solid #334155; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+    <div id="modal-duplicates-v2" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2147483647; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; padding:10px; box-sizing:border-box;">
+        <div style="background:#1e293b; width:100%; max-width:940px; height:90vh; max-height:90vh; border-radius:20px; display:flex; flex-direction:column; overflow:hidden; border:1.5px solid #334155; box-shadow:0 15px 50px rgba(0,0,0,0.85);">
             <!-- STICKY HEADER -->
-            <div style="flex-shrink:0; padding:14px 18px; background:#0f172a; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;" dir="rtl">
+            <div style="flex-shrink:0; padding:14px 20px; background:#0f172a; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" dir="rtl">
                 <div>
-                    <h3 style="margin:0; font-size:1.15rem; color:#f8fafc; font-weight:900;">🔍 كاشف المكررين (V2 مباشر)</h3>
-                    <p style="margin:3px 0 0 0; font-size:0.75rem; color:#94a3b8;" id="dup-v2-info">جاري الفحص المباشر...</p>
+                    <h3 style="margin:0; font-size:1.22rem; color:#f8fafc; font-weight:900;">🔍 مقارنة وتدقيق الحسابات المشتبه بها (V2)</h3>
+                    <p style="margin:4px 0 0 0; font-size:0.78rem; color:#94a3b8;" id="dup-v2-info">جاري تحليل البيانات والمقارنة بالأعمدة...</p>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <button onclick="exportDuplicatesCSV()" style="background:#10b981; border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.8rem; display:flex; align-items:center; gap:4px;">📥 CSV</button>
-                    <button onclick="document.getElementById('modal-duplicates-v2').style.display='none'" style="background:#ef4444; border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.85rem;">✕ إغلاق</button>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button onclick="exportDuplicatesCSV()" style="background:#10b981; border:none; color:white; padding:7px 15px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.85rem; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(16,185,129,0.35);">📥 تصدير إكسيل (CSV)</button>
+                    <button onclick="document.getElementById('modal-duplicates-v2').style.display='none'" style="background:#ef4444; border:none; color:white; padding:7px 15px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.85rem;">✕ إغلاق النافذة</button>
                 </div>
             </div>
             <!-- SCROLLABLE LIST -->
-            <div id="duplicates-container-v2" style="flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:15px; display:flex; flex-direction:column; gap:12px; background:#0f172a;" dir="rtl">
-                <!-- V2 Results Injected Here -->
+            <div id="duplicates-container-v2" style="flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px; display:flex; flex-direction:column; gap:16px; background:#0f172a;" dir="rtl">
+                <!-- V2 Column Comparison Results Injected Here -->
             </div>
         </div>
     </div>
