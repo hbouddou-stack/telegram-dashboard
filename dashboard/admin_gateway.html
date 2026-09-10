@@ -855,96 +855,112 @@
         </div>
     </div>
 
-    <div id="tab-settings" class="tab-content">
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">📥 استيراد وتنزيل نماذج الطلاب</h3>
-            <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
-                يمكنك تنزيل النموذج المعتمد الجاهز أو تصدير قاعدة بيانات الطلاب الحالية:
+    <div id="tab-settings" class="tab-content" style="padding:0;">
+        <div style="display:flex; border-bottom:1px solid var(--border); margin-bottom:20px;">
+            <div class="settings-tab-btn active" onclick="switchSettingsTab('s-import')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid var(--accent); color:var(--text1);">📤 Importer</div>
+            <div class="settings-tab-btn" onclick="switchSettingsTab('s-history')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">🕒 Historique</div>
+            <div class="settings-tab-btn" onclick="switchSettingsTab('s-manual')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">➕ Ajout manuel</div>
+            <div class="settings-tab-btn" onclick="switchSettingsTab('s-advanced')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">⚙️ Avancé</div>
+        </div>
+
+        <div id="s-import" class="settings-pane" style="display:block; padding:15px;">
+            <div style="background: var(--surface); border: 2px dashed var(--border); padding: 40px 20px; border-radius: 12px; text-align: center; margin-bottom: 16px; transition: border-color 0.2s;" id="upload-drop-zone">
+                <div style="font-size: 3rem; margin-bottom: 15px;">📥</div>
+                <h3 style="font-size: 1.2rem; margin-bottom: 10px; color:var(--text1);">Importer un fichier (Excel ou CSV)</h3>
+                <div style="font-size: 0.9rem; color: var(--text2); margin-bottom: 25px;">Glissez-déposez votre fichier ici, ou cliquez pour le sélectionner depuis vos dossiers.</div>
+                
+                <label class="btn btn-primary" style="display: inline-flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 12px 24px; border-radius: 10px; font-size:1.05rem;">
+                    <span>Parcourir les fichiers...</span>
+                    <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
+                </label>
+            </div>
+        </div>
+
+        <div id="s-history" class="settings-pane" style="display:none; padding:15px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 15px;">Historique des Imports</h3>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:0.85rem; background:var(--bg); border-radius:8px; overflow:hidden;">
+                        <thead>
+                            <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
+                                <th style="padding:12px;">ID</th>
+                                <th style="padding:12px;">Date</th>
+                                <th style="padding:12px;">Fichier</th>
+                                <th style="padding:12px;">Élèves Importés</th>
+                                <th style="padding:12px;">Responsable (Admin)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="import-history-tbody">
+                            <tr><td colspan="5" style="text-align:center; padding:20px;">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="s-manual" class="settings-pane" style="display:none; padding:15px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">👤 Ajouter un élève manuellement</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (ex: h.bouddou@gmail.com)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (ex: 10/10/2000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <input type="text" id="manual-student-id" placeholder="رقم الطالب (مسار - ex: 123456)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="manual-student-fn" placeholder="الاسم" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                        <input type="text" id="manual-student-ln" placeholder="النسب" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    </div>
+                    <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px;">✅ Enregistrer l'élève</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="s-advanced" class="settings-pane" style="display:none; padding:15px;">
+            
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">⬇️ Exports Globaux</h3>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="/api/admin/gateway/export_template" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #059669; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <span>📥 Télécharger Modèle (Excel)</span>
+                    </a>
+                    <a href="/api/admin/gateway/export_all" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #0284c7; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <span>📥 Exporter toute la base</span>
+                    </a>
+                </div>
+            </div>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">📊 Google Sheets (Synchronisation)</h3>
+                <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
+                    Si vous utilisez une base connectée via l'API Google.
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-sync-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #0f9d58;" onclick="syncGoogleSheets()">
+                        <span>🔄 Forcer Synchro</span>
+                    </button>
+                    <button id="btn-export-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #1a73e8;" onclick="exportGoogleSheets()">
+                        <span>📤 Sauvegarder</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">🏷️ Affichage des Noms</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-size: 0.88rem;">Forcer le nom au lieu du prénom</span>
+                    <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;" onchange="toggleForceName(this)">
+                </div>
             </div>
             
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
-                <a href="/api/admin/gateway/export_template" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #059669; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                    <span>📥 تنزيل النموذج الفارغ (Excel/CSV)</span>
-                </a>
-                <a href="/api/admin/gateway/export_all" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #0284c7; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                    <span>📤 تصدير كل الطلاب الحاليين</span>
-                </a>
-            </div>
-
-            <label class="btn btn-primary" style="display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
-                <span>📁 اختر ملف الإكسيل لرفعه الآن (.xlsx / .csv)</span>
-                <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
-            </label>
-        </div>
-        
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">🔄 Google Sheets (مزامنة وتصدير)</h3>
-            <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
-                جلب أحدث التسجيلات أو تصدير إحصائيات التتبع (روابط الإيميل والمجموعات).
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <button id="btn-sync-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #0f9d58;" onclick="syncGoogleSheets()">
-                    <span>📥 جلب البيانات</span>
-                </button>
-                <button id="btn-export-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #1a73e8;" onclick="exportGoogleSheets()">
-                    <span>📤 تصدير الإحصائيات</span>
-                </button>
-            </div>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">➕ إضافة طالب يدوياً</h3>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (مثال: h.bouddou@gmail.com)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (مثال: 10/10/2000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                <input type="text" id="manual-student-id" placeholder="رقم الطالب (اختياري - مثلاً: 123456)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="manual-student-fn" placeholder="الاسم" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <input type="text" id="manual-student-ln" placeholder="النسب" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">🔐 Clé API Albaji (WhatsApp & SMS)</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <input type="password" id="albaji-api-key" placeholder="Entrez la clé secrète (••••••••)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                    <button class="btn btn-primary" onclick="saveAlbajiKey()" style="background:#0ea5e9;">💾 Enregistrer la clé</button>
                 </div>
-                <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px;">💾 حفظ الطالب</button>
-            </div>
-        </div>
-
-
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">⚙️ الإعدادات العامة</h3>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 0.88rem;">فرض مطابقة اسم تيليجرام</span>
-                <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;" onchange="toggleForceName(this)">
-            </div>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 مظهر واجهة الطالب</h3>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 0.88rem;">السمة (Theme):</label>
-                <select id="setting-student-theme" onchange="saveStudentTheme()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <option value="default">الافتراضي الأكاديمي (داكن)</option>
-                    <option value="theme-light">فاتح (Light)</option>
-                    <option value="theme-neon">نيون (Cyberpunk)</option>
-                    <option value="theme-desert">صحراوي (Warm)</option>
-                </select>
-
-                <label style="font-size: 0.88rem; margin-top: 8px;">الخط (Font):</label>
-                <select id="setting-student-font" onchange="saveStudentTheme()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <option value="font-tajawal">تجوال (Tajawal)</option>
-                    <option value="font-cairo">كايرو (Cairo)</option>
-                    <option value="font-amiri">أميري (Amiri)</option>
-                    <option value="font-readex">ريدكس (Readex Pro)</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px;">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 مظهر لوحة التحكم</h3>
-            <div class="filter-row">
-                <div class="chip active" id="theme-btn-cpi" onclick="changeTheme('cpi')">🔵 مظهر CPI</div>
-                <div class="chip" id="theme-btn-dark" onclick="changeTheme('dark')">⚫ مظهر داكن</div>
-                <div class="chip" id="theme-btn-light" onclick="changeTheme('light')">⚪ مظهر مضيء</div>
             </div>
         </div>
     </div>
+
 
     <!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
@@ -1970,6 +1986,50 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             }
             input.value = '';
         }
+        
+        function switchSettingsTab(tabId) {
+            document.querySelectorAll('.settings-pane').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.settings-tab-btn').forEach(b => {
+                b.style.borderBottom = '3px solid transparent';
+                b.style.color = 'var(--text2)';
+            });
+            
+            document.getElementById(tabId).style.display = 'block';
+            event.currentTarget.style.borderBottom = '3px solid var(--accent)';
+            event.currentTarget.style.color = 'var(--text1)';
+
+            if (tabId === 's-history') {
+                loadImportHistory();
+            }
+        }
+
+        async function loadImportHistory() {
+            try {
+                const res = await fetch('/api/admin/gateway/import_logs');
+                const data = await res.json();
+                const tbody = document.getElementById('import-history-tbody');
+                if (data.success && data.logs) {
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Aucun import enregistré.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.logs.map(log => `
+                        <tr style="border-bottom:1px solid var(--border); background:var(--surface);">
+                            <td style="padding:12px; font-weight:bold; color:var(--text2);">#${log.id}</td>
+                            <td style="padding:12px;">${log.created_at}</td>
+                            <td style="padding:12px; font-family:monospace; color:var(--accent2);">${log.filename || 'Inconnu'}</td>
+                            <td style="padding:12px; font-weight:bold;">${log.imported_count} <span style="font-weight:normal; font-size:0.8rem; color:var(--text2);">élèves</span></td>
+                            <td style="padding:12px; font-weight:bold;">${log.admin_name}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">Erreur de chargement.</td></tr>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
         async function addStudentManually() {
             const email = document.getElementById('manual-student-email').value.trim();
             const dob = document.getElementById('manual-student-dob').value.trim();
