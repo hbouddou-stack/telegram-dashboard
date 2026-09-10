@@ -768,21 +768,14 @@
     
         </script>
         <script>
-        window.openComposer = function() {
-    try {
-        const count = document.getElementById('bulk-count').textContent;
-        document.getElementById('composer-count').textContent = count;
-        document.getElementById('modal-composer').style.display = 'flex';
-    } catch(e) {
-        alert('Erreur: ' + e);
-    }
-}
-function openComposer() {
-    window.openComposer();
-}
-            const count = document.getElementById('bulk-count').textContent;
-            document.getElementById('composer-count').textContent = count;
-            document.getElementById('modal-composer').style.display = 'flex';
+        function openComposer() {
+            try {
+                const count = document.getElementById('bulk-count').textContent;
+                document.getElementById('composer-count').textContent = count;
+                document.getElementById('modal-composer').style.display = 'flex';
+            } catch(e) {
+                alert('Erreur openComposer: ' + e);
+            }
         }
         
         function closeComposer() {
