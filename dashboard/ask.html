@@ -809,8 +809,7 @@
                 const lastBubble = hist.lastElementChild;
                 if (lastBubble.innerText === "جاري البحث عن حل...") lastBubble.remove();
                 
-                let answerHtml = `💡 <b>وجدت هذا الحل:</b><br><br>${aiAnswer.replace(/
-/g, '<br>')}`;
+                let answerHtml = `💡 <b>وجدت هذا الحل:</b><br><br>${aiAnswer.replace(/\\n/g, '<br>')}`;
                 if (storyId) {
                     answerHtml += `<br><br><button onclick="openStoryViewer(${storyId})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">🎬 عرض التوضيح</button>`;
                 }

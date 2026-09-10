@@ -115,8 +115,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     if has_joined:
                         # DÉJÀ REJOINT : PAS DE BOUTON DOSSIER
                         kb = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic_v25_active"))],
-                            [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_v25_active"))]
+                            [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic_v26_active"))],
+                            [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_v26_active"))]
                         ])
                         magic_welcome = (
                             f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية الباجي</b> 🎓\n\n"
@@ -128,8 +128,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         # EN ATTENTE DE REJOINDRE : BOUTON DOSSIER PRÉSENT
                         kb = InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_v25"))],
-                            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic_v25"))]
+                            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_v26"))],
+                            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=magic_v26"))]
                         ])
                         magic_welcome = (
                             f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية الباجي</b> 🎓\n\n"
@@ -240,7 +240,7 @@ async def cmd_png(message: Message):
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🌐 فتح المخطط التفاعلي عالي الدقة (HD Zoom)", web_app=WebAppInfo(url=f"{base_url}/diagrams/customer_journey_5_cases.html"))],
-        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v25"))]
+        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v26"))]
     ])
     
     caption_text = (
@@ -303,7 +303,7 @@ async def cmd_federer(message: Message):
     base_url = get_webapp_base_url()
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين وإدارة الطلاب (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v25"))],
+        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين وإدارة الطلاب (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v26"))],
         [InlineKeyboardButton(text="📥 إرسال نموذج الإكسيل الفارغ هنا (Telegram)", callback_data="btn_send_excel_template")],
         [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=pro_new"))],
         [InlineKeyboardButton(text="🔗 منصة ربط الحساب والتحقق (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))]
