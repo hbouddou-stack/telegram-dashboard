@@ -478,15 +478,11 @@
             </div>
             
             <!-- Bulk Action Bar -->
-            <div id="bulk-action-bar" style="display:none; margin-top:10px; flex-direction:column; gap:8px; background:rgba(14,165,233,0.05); border:1px solid #0ea5e9; border-radius:12px; padding:10px 12px;">
-                <div style="font-weight:bold; color:#0ea5e9; text-align:center; font-size:0.9rem;">إجراء جماعي لـ <span id="bulk-count">0</span> طلاب:</div>
-                <div style="display:flex; gap:6px; justify-content:space-between;">
-                    <button onclick="executeBulkAction('whatsapp')" style="flex:1; background:#25D366; color:white; border:none; padding:8px 0; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟩 واتساب</button>
-                    <button onclick="executeBulkAction('telegram')" style="flex:1; background:#0088cc; color:white; border:none; padding:8px 0; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">✈️ تليجرام</button>
-                    <button onclick="executeBulkAction('sms')" style="flex:1; background:#f59e0b; color:white; border:none; padding:8px 0; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">📱 SMS</button>
-                    <button onclick="executeBulkAction('email')" style="flex:1; background:#ef4444; color:white; border:none; padding:8px 0; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">📧 إيميل</button>
-                </div>
+            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.05); border:1px solid #0ea5e9; border-radius:12px; padding:12px 15px; align-items:center; justify-content:space-between; flex-direction:row; gap:10px;">
+                <div style="font-weight:bold; color:#0ea5e9; font-size:0.95rem;">تم تحديد <span id="bulk-count">0</span></div>
+                <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 5px rgba(14,165,233,0.3);">📝 كتابة رسالة</button>
             </div>
+</div>
         </div>
 
         <!-- Scroll Hint Indicator -->
@@ -768,30 +764,7 @@
                 filterStudents();
             }
         
-            function executeBulkAction(action) {
-                const cbs = document.querySelectorAll('.student-select-cb:checked');
-                const ids = Array.from(cbs).map(cb => cb.value);
-                if(ids.length === 0) return;
-                
-                let actionName = '';
-                if(action === 'whatsapp') actionName = 'واتساب';
-                if(action === 'telegram') actionName = 'تليجرام';
-                if(action === 'sms') actionName = 'SMS';
-                if(action === 'email') actionName = 'إيميل';
-                
-                if(!confirm(`هل أنت متأكد من إرسال ${actionName} لـ ${ids.length} طالب؟`)) return;
-                
-                if(action === 'sms') {
-                    sendMassSms();
-                    return;
-                }
-                
-                alert(`تم استلام أمر إرسال ${actionName} لـ ${ids.length} طالب. (قيد التطوير في النظام)`);
-                cbs.forEach(cb => cb.checked = false);
-                let sa = document.getElementById('selectAllGrid');
-                if(sa) sa.checked = false;
-                updateMassSmsButton();
-            }
+            
     
         </script>
         <div id="students-list"></div>
@@ -4562,5 +4535,100 @@ function renderHomeAlerts(alerts) {
         </div>
     </div>
 
+
+    <!-- THE COMPOSER MODAL -->
+    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+        <div style="background:var(--bg); width:100%; max-width:500px; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.2); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column;">
+            <!-- Header -->
+            <div style="background:var(--surface); padding:15px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">📝 كتابة رسالة</h3>
+                <button onclick="closeComposer()" style="background:var(--surface); border:none; width:30px; height:30px; border-radius:50%; font-size:1.2rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding:20px; display:flex; flex-direction:column; gap:15px;">
+                <div style="font-size:0.9rem; font-weight:bold; color:var(--text1);">
+                    المستلمون: <span id="composer-count" style="color:#0ea5e9;">0</span> طلاب
+                </div>
+                
+                <div style="position:relative;">
+                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box;"></textarea>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-top:5px;">
+                        💡 يمكنك استخدام المتغيرات: <span style="background:var(--surface); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">&#123;الاسم&#125;</span>
+                    </div>
+                </div>
+                
+                <!-- Channels -->
+                <div>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">إرسال عبر:</label>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button onclick="sendBulkMessage('whatsapp')" style="flex:1; min-width:45%; background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(37,211,102,0.3);">🟩 واتساب</button>
+                        <button onclick="sendBulkMessage('telegram')" style="flex:1; min-width:45%; background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(0,136,204,0.3);">✈️ تليجرام</button>
+                        <button onclick="sendBulkMessage('sms')" style="flex:1; min-width:45%; background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(245,158,11,0.3);">📱 SMS</button>
+                        <button onclick="sendBulkMessage('email')" style="flex:1; min-width:45%; background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(239,68,68,0.3);">📧 إيميل</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openComposer() {
+            const count = document.getElementById('bulk-count').textContent;
+            document.getElementById('composer-count').textContent = count;
+            document.getElementById('modal-composer').style.display = 'flex';
+        }
+        
+        function closeComposer() {
+            document.getElementById('modal-composer').style.display = 'none';
+        }
+        
+        async function sendBulkMessage(channel) {
+            const text = document.getElementById('composer-text').value.trim();
+            if(!text) {
+                alert('الرجاء كتابة رسالة أولاً!');
+                return;
+            }
+            
+            const cbs = document.querySelectorAll('.student-select-cb:checked');
+            const ids = Array.from(cbs).map(cb => cb.value);
+            if(ids.length === 0) return;
+            
+            let actionName = '';
+            if(channel === 'whatsapp') actionName = 'واتساب';
+            if(channel === 'telegram') actionName = 'تليجرام';
+            if(channel === 'sms') actionName = 'SMS';
+            if(channel === 'email') actionName = 'إيميل';
+            
+            if(!confirm(`هل أنت متأكد من إرسال رسالة ${actionName} لـ ${ids.length} طالب؟`)) return;
+            
+            if(channel === 'sms') {
+                try {
+                    const res = await fetch('/api/admin/gateway/queue_sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ student_ids: ids, message: text }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        alert(`تم وضع ${data.queued} رسالة SMS في قائمة الانتظار بنجاح.`);
+                    }
+                } catch (e) {
+                    alert('Erreur réseau.');
+                }
+            } else {
+                alert(`تم استلام رسالتك لـ ${ids.length} طالب عبر ${actionName}. (قيد التطوير في النظام)\nالنص: ${text.substring(0,20)}...`);
+            }
+            
+            closeComposer();
+            document.getElementById('composer-text').value = '';
+            
+            cbs.forEach(cb => cb.checked = false);
+            let sa = document.getElementById('selectAllGrid');
+            if(sa) sa.checked = false;
+            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
+        }
+    </script>
+    
 </body>
 </html>
