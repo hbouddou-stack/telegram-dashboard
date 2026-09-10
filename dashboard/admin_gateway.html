@@ -4593,5 +4593,77 @@ function renderHomeAlerts(alerts) {
     
     
     
+
+<!-- DEBUG PANEL -->
+<div id="debug-panel" style="position:fixed;bottom:0;left:0;width:100%;background:#111;color:#0f0;font-size:11px;font-family:monospace;max-height:160px;overflow-y:auto;z-index:99999;padding:5px;">
+<div style="color:yellow;font-weight:bold;">DEBUG LOG (supprimer apres tests)</div>
+<div id="debug-log"></div>
+</div>
+<script>
+function dbg(msg) {
+    var el = document.getElementById("debug-log");
+    if(el) {
+        var line = document.createElement("div");
+        line.textContent = new Date().toLocaleTimeString() + " | " + msg;
+        el.prepend(line);
+    }
+    console.log("[DBG]", msg);
+}
+
+window.openComposer = function() {
+    dbg("openComposer() triggered");
+    var modal = document.getElementById("modal-composer");
+    dbg("modal-composer: " + (modal ? "FOUND" : "NOT FOUND"));
+    if(modal) {
+        modal.style.display = "flex";
+        var cnt = document.getElementById("bulk-count");
+        var cntComposer = document.getElementById("composer-count");
+        if(cnt && cntComposer) cntComposer.textContent = cnt.textContent;
+        dbg("modal opened OK");
+    } else {
+        alert("ERREUR: modal-composer introuvable dans le DOM. Voir debug log.");
+    }
+};
+
+window.updateMassSmsButton = function() {
+    var selected = document.querySelectorAll(".student-select-cb:checked").length;
+    dbg("updateMassSmsButton: " + selected + " selectionnes");
+    var bar = document.getElementById("bulk-action-bar");
+    if(bar) {
+        if(selected > 0) {
+            bar.style.display = "flex";
+            var bc = document.getElementById("bulk-count");
+            if(bc) bc.textContent = selected;
+            dbg("barre action affichee");
+        } else {
+            bar.style.display = "none";
+            dbg("barre action cachee");
+        }
+    } else {
+        dbg("ERREUR: bulk-action-bar NOT FOUND");
+    }
+};
+
+document.addEventListener("change", function(e) {
+    if(e.target && e.target.classList && e.target.classList.contains("student-select-cb")) {
+        window.updateMassSmsButton();
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    dbg("DOMContentLoaded fired");
+    dbg("modal-composer: " + (document.getElementById("modal-composer") ? "EXISTS" : "MISSING"));
+    dbg("bulk-action-bar: " + (document.getElementById("bulk-action-bar") ? "EXISTS" : "MISSING"));
+});
+
+setTimeout(function() {
+    dbg("500ms: modal=" + (document.getElementById("modal-composer") ? "OK" : "MISSING"));
+    dbg("500ms: bulk-bar=" + (document.getElementById("bulk-action-bar") ? "OK" : "MISSING"));
+    dbg("500ms: openComposer type=" + typeof window.openComposer);
+    dbg("500ms: updateMassSmsButton type=" + typeof window.updateMassSmsButton);
+}, 500);
+
+dbg("Debug script injected OK");
+</script>
 </body>
 </html>
