@@ -398,7 +398,7 @@
 </head>
 <body class="theme-cpi">
     <div class="header">
-        <h1>🛠️ Gateway Admin</h1>
+        
         <span id="sos-badge" style="background:var(--danger);color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;display:none;">0 طلبات</span>
     </div>
 
@@ -445,91 +445,103 @@
 
             <!-- THE SUPER STICKY BAR -->
         <div style="position:sticky; top:0; z-index:100; background:var(--bg); padding:10px 15px; border-bottom:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.05); margin-bottom:10px;">
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-                <input style="flex:1; margin-bottom:0; padding:10px 15px; border-radius:20px; border:1px solid var(--border); background:var(--surface); font-family:inherit; outline:none;" class="search-box" type="text" id="search-input" placeholder="🔍 Rechercher (nom, email...)" oninput="filterStudents()">
-                
-                <!-- Gender Segmented Control -->
-                <div style="display:flex; background:var(--surface); border:1px solid var(--border); border-radius:20px; overflow:hidden; font-size:1.1rem;">
-                    <div id="g-all" onclick="setGenderFilterUI('all', this)" style="padding:8px 12px; cursor:pointer; background:#a855f7; color:white; transition:all 0.2s;">👥</div>
-                    <div id="g-homme" onclick="setGenderFilterUI('homme', this)" style="padding:8px 12px; cursor:pointer; background:var(--surface); color:var(--text1); border-left:1px solid var(--border); transition:all 0.2s;">👨</div>
-                    <div id="g-femme" onclick="setGenderFilterUI('femme', this)" style="padding:8px 12px; cursor:pointer; background:var(--surface); color:var(--text1); border-left:1px solid var(--border); transition:all 0.2s;">👩</div>
+            <!-- Line 1: Search Bar -->
+            <input style="width:100%; margin-bottom:10px; padding:12px 18px; border-radius:12px; border:1px solid var(--accent); background:var(--surface); font-family:inherit; font-size:1.05rem; outline:none; box-shadow:0 2px 5px rgba(0,0,0,0.02);" class="search-box" type="text" id="search-input" placeholder="🔍 بحث (الاسم، الإيميل...)" oninput="filterStudents()">
+            
+            <!-- Line 2: Split Controls (Gender & View Mode) -->
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <!-- Gender Segmented Control (50%) -->
+                <div style="flex:1; display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:1.1rem;">
+                    <div id="g-all" onclick="setGenderFilterUI('all', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:#a855f7; color:white; transition:all 0.2s;">👥</div>
+                    <div id="g-homme" onclick="setGenderFilterUI('homme', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:var(--surface); color:var(--text1); border-right:1px solid var(--border); border-left:1px solid var(--border); transition:all 0.2s;">👨</div>
+                    <div id="g-femme" onclick="setGenderFilterUI('femme', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:var(--surface); color:var(--text1); transition:all 0.2s;">👩</div>
                 </div>
                 
-                <!-- Filter Drawer Trigger -->
-                <button onclick="document.getElementById('filter-drawer').style.display='block'" style="background:var(--surface); border:1px solid var(--border); padding:8px 12px; border-radius:20px; cursor:pointer; font-size:1.1rem; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); transition:all 0.2s;">🎛️</button>
+                <!-- View Toggle (50%) -->
+                <div style="flex:1; display:flex; border-radius:12px; border:1px solid var(--border); overflow:hidden; font-family:'Tajawal', inherit;">
+                    <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1);">بطاقات</div>
+                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--accent2); color:white; border-right:1px solid var(--border);">جدول</div>
+                </div>
             </div>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:2px 5px 0;">
-                <div id="students-count-display" style="font-weight:800; font-size:0.9rem; color:var(--accent2);"></div>
-                
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <label style="cursor:pointer; font-size:0.8rem; font-weight:bold; display:flex; align-items:center; gap:5px; color:var(--text1);">
-                        <input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents(this)" style="transform:scale(1.2);"> Tout cocher
-                    </label>
-                    <div style="display:flex; gap:4px; border-radius:8px; border:1px solid var(--border); overflow:hidden;">
-                        <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="padding:4px 8px; cursor:pointer; font-size:1rem; background:var(--surface); opacity:0.5;">📇</div>
-                        <div id="view-toggle-table" onclick="changeViewMode('table')" style="padding:4px 8px; cursor:pointer; font-size:1rem; background:var(--accent2); color:white;">📄</div>
-                    </div>
-                </div>
+            <!-- Line 3: Big Advanced Filters Button -->
+            <button onclick="document.getElementById('filter-drawer').style.display='block'" style="width:100%; background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:12px; cursor:pointer; font-size:1rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); transition:all 0.2s; font-family:'Tajawal', inherit; margin-bottom:10px;">
+                🎛️ فلاتر متقدمة
+            </button>
+            
+            <!-- Line 4: Meta & Select All -->
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0 2px;">
+                <div id="students-count-display" style="font-weight:800; font-size:0.95rem; color:var(--accent2);"></div>
+                <label style="cursor:pointer; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px; color:var(--text1);">
+                    <input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents(this)" style="transform:scale(1.2);"> تحديد الكل
+                </label>
             </div>
-            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.1); border:1px solid #0ea5e9; border-radius:12px; padding:8px 15px; align-items:center; justify-content:space-between;">
-                <div style="font-weight:bold; color:#0ea5e9;"><span id="bulk-count">0</span> sélectionnés</div>
-                <button id="btn-mass-sms" onclick="sendMassSms()" style="background:#0ea5e9; color:white; border:none; padding:6px 15px; border-radius:20px; font-weight:bold; cursor:pointer;">Envoyer SMS</button>
+            
+            <!-- Bulk Action Bar -->
+            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.05); border:1px solid #0ea5e9; border-radius:12px; padding:12px 15px; align-items:center; justify-content:space-between; flex-direction:row; gap:10px;">
+                <div style="font-weight:bold; color:#0ea5e9; font-size:0.95rem;">تم تحديد <span id="bulk-count">0</span></div>
+                <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 5px rgba(14,165,233,0.3);">📝 كتابة رسالة</button>
             </div>
+</div>
         </div>
 
-        <!-- THE DRAWER MODAL (Advanced Filters) -->
+        <!-- Scroll Hint Indicator -->
+        <div id="scroll-hint" style="text-align:center; font-size:0.8rem; color:var(--text2); margin-bottom:5px; display:none; animation:pulse 2s infinite;">
+            👉 اسحب لليسار لرؤية المزيد من الأعمدة
+        </div>
+
+        <!-- THE DRAWER MODAL (Advanced Filters - Arabic) -->
         <div id="filter-drawer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease;">
             <div style="position:absolute; bottom:0; left:0; width:100%; max-height:85vh; overflow-y:auto; background:var(--bg); border-top-left-radius:24px; border-top-right-radius:24px; padding:25px 20px; box-sizing:border-box; box-shadow:0 -10px 25px rgba(0,0,0,0.2); animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h3 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--text1);">🎛️ Filtres Avancés</h3>
+                    <h3 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--text1);">🎛️ فلاتر متقدمة</h3>
                     <button onclick="document.getElementById('filter-drawer').style.display='none'" style="background:var(--surface); border:none; width:36px; height:36px; border-radius:50%; font-size:1.2rem; color:var(--text1); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
                 </div>
                 
                 <div style="display:flex; flex-direction:column; gap:18px;">
                     <!-- Telegram Status -->
                     <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">🤖 Statut du Bot (Telegram)</label>
+                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">🤖 حالة البوت (تليجرام)</label>
                         <div style="display:flex; border:1px solid var(--border); border-radius:12px; overflow:hidden;">
-                            <div id="tg-all" onclick="setTelegramFilter('all', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.75rem; font-weight:700; cursor:pointer; background:var(--accent); color:white;">Tous</div>
-                            <div id="tg-bot" onclick="setTelegramFilter('bot', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.75rem; font-weight:700; cursor:pointer; background:var(--surface); border-left:1px solid var(--border);">Bot</div>
-                            <div id="tg-group" onclick="setTelegramFilter('group', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.75rem; font-weight:700; cursor:pointer; background:var(--surface); border-left:1px solid var(--border);">Groupe</div>
-                            <div id="tg-none" onclick="setTelegramFilter('none', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.75rem; font-weight:700; cursor:pointer; background:var(--surface); border-left:1px solid var(--border);">Aucun</div>
+                            <div id="tg-all" onclick="setTelegramFilter('all', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.8rem; font-weight:700; cursor:pointer; background:var(--accent); color:white;">الكل</div>
+                            <div id="tg-bot" onclick="setTelegramFilter('bot', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.8rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">✅ انضم</div>
+                            <div id="tg-group" onclick="setTelegramFilter('group', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.8rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">⚠️ معلق</div>
+                            <div id="tg-none" onclick="setTelegramFilter('none', this)" style="flex:1; text-align:center; padding:10px 4px; font-size:0.8rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">❌ لم ينضم</div>
                         </div>
                     </div>
                     
                     <!-- Paiement -->
                     <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">💰 Paiement</label>
+                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">💰 حالة الدفع</label>
                         <div style="display:flex; border:1px solid var(--border); border-radius:12px; overflow:hidden;">
-                            <div id="pay-all" onclick="setPayFilter('all', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--accent); color:white;">Tous</div>
-                            <div id="pay-paid" onclick="setPayFilter('paid', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); border-left:1px solid var(--border);">Payé</div>
-                            <div id="pay-unpaid" onclick="setPayFilter('unpaid', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); border-left:1px solid var(--border);">Non Payé</div>
+                            <div id="pay-all" onclick="setPayFilterUI('all', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); color:var(--text1); box-shadow:inset 0 0 0 2px var(--text2);">الكل</div>
+                            <div id="pay-paid" onclick="setPayFilterUI('paid', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">🟢 مدفوع</div>
+                            <div id="pay-unpaid" onclick="setPayFilterUI('unpaid', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">🔴 غير مدفوع</div>
                         </div>
                     </div>
                     
                     <!-- Niveau -->
                     <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">🎓 Niveau (Année)</label>
-                        <select id="level-select" onchange="setLevelFilter(this.value)" style="width:100%; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-size:0.9rem; font-weight:bold; outline:none;">
-                            <option value="all">Tous les niveaux</option>
-                            <option value="1">1ère Année</option>
-                            <option value="2">2ème Année</option>
-                            <option value="3">3ème Année</option>
-                            <option value="4">4ème Année</option>
-                        </select>
+                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">🎓 السنة الدراسية</label>
+                        <div style="display:flex; gap:8px;">
+                            <div id="lvl-all" onclick="setLevelFilterUI('all', this)" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; box-shadow:inset 0 0 0 2px var(--text2);">الكل</div>
+                            <div id="lvl-1" onclick="setLevelFilterUI('1', this)" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; background:var(--surface); font-weight:bold; cursor:pointer; border:1px solid var(--border);">س1</div>
+                            <div id="lvl-2" onclick="setLevelFilterUI('2', this)" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; background:var(--surface); font-weight:bold; cursor:pointer; border:1px solid var(--border);">س2</div>
+                            <div id="lvl-3" onclick="setLevelFilterUI('3', this)" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; background:var(--surface); font-weight:bold; cursor:pointer; border:1px solid var(--border);">س3</div>
+                            <div id="lvl-4" onclick="setLevelFilterUI('4', this)" style="flex:1; text-align:center; padding:10px 0; border-radius:10px; background:var(--surface); font-weight:bold; cursor:pointer; border:1px solid var(--border);">س4</div>
+                        </div>
                     </div>
 
                     <!-- Source -->
                     <div>
-                        <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">📂 Source d'import</label>
+                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">📂 المصدر</label>
                         <div style="display:flex; gap:8px;">
-                            <select id="source-select" onchange="setSourceFilter(this.value)" style="flex:1; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-size:0.9rem; font-weight:bold; outline:none;">
-                                <option value="all">Toutes les sources</option>
-                                <option value="excel">Fichiers Excel/CSV</option>
-                                <option value="sheet">Google Sheets</option>
-                                <option value="manuel">Ajout Manuel</option>
+                            <select id="source-select" onchange="setSourceFilter(this.value)" style="flex:1; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-size:0.9rem; font-weight:bold; outline:none; font-family:inherit;">
+                                <option value="all">الكل (جميع المصادر)</option>
+                                <option value="excel">ملف إكسل / CSV</option>
+                                <option value="sheet">جوجل شيت</option>
+                                <option value="manuel">إضافة يدوية</option>
                             </select>
                             <button id="btn-delete-source" onclick="deleteSelectedSource()" style="display:none; background:#ef4444; color:white; border:none; border-radius:12px; padding:10px; cursor:pointer; font-weight:bold;">🗑️</button>
                         </div>
@@ -537,19 +549,18 @@
                     
                     <hr style="border:none; border-top:1px solid var(--border); margin:10px 0;">
                     
-                    <button onclick="openDuplicateScanner(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--accent2); color:white; border:none; border-radius:12px; padding:15px; font-weight:bold; cursor:pointer; font-size:1rem; box-shadow:0 4px 10px rgba(0,0,0,0.15);">
-                        🔍 Lancer le Scanner de Doublons
+                    <button onclick="openDuplicateScanner(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--accent2); color:white; border:none; border-radius:12px; padding:15px; font-weight:bold; cursor:pointer; font-size:1rem; box-shadow:0 4px 10px rgba(0,0,0,0.15); font-family:inherit;">
+                        🔍 البحث عن المكررين
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Script helpers inside a fresh tag before the original script block -->
         <script>
+            // Helper for Gender UI
             function setGenderFilterUI(val, el) {
                 if(typeof filters !== 'undefined') filters.gender = val;
                 
-                // Reset all
                 document.getElementById('g-all').style.background = 'var(--surface)';
                 document.getElementById('g-homme').style.background = 'var(--surface)';
                 document.getElementById('g-femme').style.background = 'var(--surface)';
@@ -558,7 +569,6 @@
                 document.getElementById('g-homme').style.color = 'var(--text1)';
                 document.getElementById('g-femme').style.color = 'var(--text1)';
                 
-                // Set active
                 let color = '#a855f7'; // purple
                 if(val==='homme') color = '#0ea5e9'; // blue
                 else if(val==='femme') color = '#ec4899'; // pink
@@ -569,76 +579,142 @@
                 if(typeof filterStudents === 'function') filterStudents();
                 if(typeof updateDashboardView === 'function') updateDashboardView();
             }
+
+            // Helper for Pay UI (Colors + emojis)
+            function setPayFilterUI(val, el) {
+                if(typeof filters !== 'undefined') filters.payment = val;
+                
+                ['pay-all', 'pay-paid', 'pay-unpaid'].forEach(id => {
+                    let elem = document.getElementById(id);
+                    if(elem) {
+                        elem.style.background = 'var(--surface)';
+                        elem.style.color = 'var(--text1)';
+                        elem.style.boxShadow = 'none';
+                    }
+                });
+                
+                if(val === 'all') { el.style.boxShadow = 'inset 0 0 0 2px var(--text2)'; }
+                else if(val === 'paid') { el.style.background = '#dcfce7'; el.style.color = '#16a34a'; }
+                else if(val === 'unpaid') { el.style.background = '#fee2e2'; el.style.color = '#ef4444'; }
+                
+                if(typeof filterStudents === 'function') filterStudents();
+            }
+
+            // Helper for Level UI (Horizontal buttons)
+            function setLevelFilterUI(val, el) {
+                if(typeof filters !== 'undefined') filters.level = val;
+                
+                ['lvl-all', 'lvl-1', 'lvl-2', 'lvl-3', 'lvl-4'].forEach(id => {
+                    let elem = document.getElementById(id);
+                    if(elem) {
+                        elem.style.boxShadow = 'none';
+                        elem.style.borderColor = 'var(--border)';
+                        elem.style.color = 'var(--text1)';
+                    }
+                });
+                
+                el.style.boxShadow = 'inset 0 0 0 2px var(--accent)';
+                el.style.borderColor = 'transparent';
+                el.style.color = 'var(--accent)';
+                
+                if(typeof filterStudents === 'function') filterStudents();
+            }
+            
+            // Helper for View Toggle UI Fix
+            const originalChangeViewMode = window.changeViewMode;
+            window.changeViewMode = function(mode) {
+                if(originalChangeViewMode) originalChangeViewMode(mode);
+                
+                let vT = document.getElementById('view-toggle-table');
+                let vG = document.getElementById('view-toggle-grid');
+                let hint = document.getElementById('scroll-hint');
+                
+                if(vT && vG) {
+                    if(mode === 'table') {
+                        vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
+                        vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
+                        if(hint) hint.style.display = 'block';
+                    } else {
+                        vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
+                        vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
+                        if(hint) hint.style.display = 'none';
+                    }
+                }
+            };
         </script>
-<script>
-                        let currentCardStyle = localStorage.getItem('cardStyle') || '1';
+        
+        
+
+        <script>
+            let currentCardStyle = localStorage.getItem('cardStyle') || '1';
             let currentViewMode = localStorage.getItem('viewMode') || 'grid';
             let currentSort = { key: 'date', order: 'desc' };
             
-            
-        function toggleAllStudents(sourceCheckbox) {
-            let isChecked = false;
-            if (sourceCheckbox && sourceCheckbox.type === 'checkbox') {
-                isChecked = sourceCheckbox.checked;
-            } else {
+            function toggleAllStudents(sourceCheckbox) {
+                let isChecked = false;
+                if (sourceCheckbox && sourceCheckbox.type === 'checkbox') {
+                    isChecked = sourceCheckbox.checked;
+                } else {
+                    const cb1 = document.getElementById('selectAllCheckbox');
+                    isChecked = cb1 ? cb1.checked : false;
+                }
+                
                 const cb1 = document.getElementById('selectAllCheckbox');
-                isChecked = cb1 ? cb1.checked : false;
-            }
-            
-            const cb1 = document.getElementById('selectAllCheckbox');
-            const cb2 = document.getElementById('selectAllGrid');
-            if (cb1) cb1.checked = isChecked;
-            if (cb2) cb2.checked = isChecked;
-            
-            const checkboxes = document.querySelectorAll('.student-select-cb');
-            checkboxes.forEach(cb => cb.checked = isChecked);
-            updateMassSmsButton();
-        }
-        document.addEventListener('change', (e) => {
-            if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
+                const cb2 = document.getElementById('selectAllGrid');
+                if (cb1) cb1.checked = isChecked;
+                if (cb2) cb2.checked = isChecked;
+                
+                const checkboxes = document.querySelectorAll('.student-select-cb');
+                checkboxes.forEach(cb => cb.checked = isChecked);
                 updateMassSmsButton();
             }
-        });
-        function updateMassSmsButton() {
-    const selected = document.querySelectorAll('.student-select-cb:checked').length;
-    const bar = document.getElementById('bulk-action-bar');
-    if(bar) {
-        if(selected > 0) {
-            bar.style.display = 'flex';
-            document.getElementById('bulk-count').textContent = selected;
-        } else {
-            bar.style.display = 'none';
-        }
-    }
-}
-        async function sendMassSms() {
-            const cbs = document.querySelectorAll('.student-select-cb:checked');
-            const ids = Array.from(cbs).map(cb => cb.value);
-            if(ids.length === 0) return;
-            if(!confirm(`هل أنت متأكد من وضع ${ids.length} طالب في قائمة انتظار SMS ؟`)) return;
             
-            try {
-                const res = await fetch('/api/admin/gateway/queue_sms', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_ids: ids })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert(`✅ تم وضع ${data.queued} رسالة SMS في قائمة الانتظار للروبوت بنجاح.`);
-                    cbs.forEach(cb => cb.checked = false);
-                    document.getElementById('selectAllCheckbox').checked = false;
+            document.addEventListener('change', (e) => {
+                if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
                     updateMassSmsButton();
-                } else {
-                    alert('Erreur: ' + data.error);
                 }
-            } catch(e) {
-                console.error(e);
-                alert('Erreur réseau.');
+            });
+            
+            function updateMassSmsButton() {
+                const selected = document.querySelectorAll('.student-select-cb:checked').length;
+                const bar = document.getElementById('bulk-action-bar');
+                if(bar) {
+                    if(selected > 0) {
+                        bar.style.display = 'flex';
+                        document.getElementById('bulk-count').textContent = selected;
+                    } else {
+                        bar.style.display = 'none';
+                    }
+                }
             }
-        }
-
-        
+            
+            async function sendMassSms() {
+                const cbs = document.querySelectorAll('.student-select-cb:checked');
+                const ids = Array.from(cbs).map(cb => cb.value);
+                if(ids.length === 0) return;
+                if(!confirm(`هل أنت متأكد من إرسال رسالة لـ ${ids.length} طالب؟`)) return;
+                
+                try {
+                    const res = await fetch('/api/admin/gateway/queue_sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ student_ids: ids })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        alert(`تم وضع ${data.queued} رسالة في قائمة الانتظار بنجاح.`);
+                        cbs.forEach(cb => cb.checked = false);
+                        let sa = document.getElementById('selectAllGrid');
+                        if(sa) sa.checked = false;
+                        updateMassSmsButton();
+                    } else {
+                        alert('Erreur: ' + data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                    alert('Erreur réseau.');
+                }
+            }
             
             function sortTable(key) {
                 if(currentSort.key === key) {
@@ -647,7 +723,8 @@
                     currentSort.key = key;
                     currentSort.order = 'asc';
                 }
-                filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                filterStudents(); 
+                if(typeof updateDashboardView === 'function') updateDashboardView();
             }
 
             document.addEventListener("DOMContentLoaded", () => {
@@ -656,15 +733,42 @@
                 const vSel = document.getElementById('view-mode-selector');
                 if (vSel) vSel.value = currentViewMode;
             });
+            
             function changeCardStyle(style) {
                 currentCardStyle = style;
                 localStorage.setItem('cardStyle', style);
-                filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                filterStudents(); 
+                if(typeof updateDashboardView === 'function') updateDashboardView();
             }
+            
+            // Re-apply the view mode wrapper safely
+            function changeViewMode(mode) {
+                currentViewMode = mode;
+                localStorage.setItem('viewMode', mode);
+                
+                let vT = document.getElementById('view-toggle-table');
+                let vG = document.getElementById('view-toggle-grid');
+                let hint = document.getElementById('scroll-hint');
+                
+                if(vT && vG) {
+                    if(mode === 'table') {
+                        vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
+                        vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
+                        if(hint) hint.style.display = 'block';
+                    } else {
+                        vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
+                        vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
+                        if(hint) hint.style.display = 'none';
+                    }
+                }
+                filterStudents();
+            }
+        
+            
+    
         </script>
-        
-        
         <div id="students-list"></div>
+
     </div>
     
     <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
@@ -2353,7 +2457,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if (countDisplay) {
                 countDisplay.style.color = themeColor;
                 countDisplay.style.background = themeBg;
-                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">إجمالي: <span style="color:${themeColor}; font-weight:900;">${filtered.length}</span></span> <span style="color:var(--text2); font-size:0.8rem; margin-right:10px;">(منهم ${linkedCount} بوت)</span>`;
+                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">الإجمالي: <span style="color:${themeColor}; font-weight:900;">${filtered.length}</span> طالب</span>`;
             }
 
             const list = document.getElementById('students-list');
@@ -4431,5 +4535,100 @@ function renderHomeAlerts(alerts) {
         </div>
     </div>
 
+
+    <!-- THE COMPOSER MODAL -->
+    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+        <div style="background:var(--bg); width:100%; max-width:500px; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.2); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column;">
+            <!-- Header -->
+            <div style="background:var(--surface); padding:15px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">📝 كتابة رسالة</h3>
+                <button onclick="closeComposer()" style="background:var(--surface); border:none; width:30px; height:30px; border-radius:50%; font-size:1.2rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding:20px; display:flex; flex-direction:column; gap:15px;">
+                <div style="font-size:0.9rem; font-weight:bold; color:var(--text1);">
+                    المستلمون: <span id="composer-count" style="color:#0ea5e9;">0</span> طلاب
+                </div>
+                
+                <div style="position:relative;">
+                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box;"></textarea>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-top:5px;">
+                        💡 يمكنك استخدام المتغيرات: <span style="background:var(--surface); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">&#123;الاسم&#125;</span>
+                    </div>
+                </div>
+                
+                <!-- Channels -->
+                <div>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">إرسال عبر:</label>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button onclick="sendBulkMessage('whatsapp')" style="flex:1; min-width:45%; background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(37,211,102,0.3);">🟩 واتساب</button>
+                        <button onclick="sendBulkMessage('telegram')" style="flex:1; min-width:45%; background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(0,136,204,0.3);">✈️ تليجرام</button>
+                        <button onclick="sendBulkMessage('sms')" style="flex:1; min-width:45%; background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(245,158,11,0.3);">📱 SMS</button>
+                        <button onclick="sendBulkMessage('email')" style="flex:1; min-width:45%; background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(239,68,68,0.3);">📧 إيميل</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openComposer() {
+            const count = document.getElementById('bulk-count').textContent;
+            document.getElementById('composer-count').textContent = count;
+            document.getElementById('modal-composer').style.display = 'flex';
+        }
+        
+        function closeComposer() {
+            document.getElementById('modal-composer').style.display = 'none';
+        }
+        
+        async function sendBulkMessage(channel) {
+            const text = document.getElementById('composer-text').value.trim();
+            if(!text) {
+                alert('الرجاء كتابة رسالة أولاً!');
+                return;
+            }
+            
+            const cbs = document.querySelectorAll('.student-select-cb:checked');
+            const ids = Array.from(cbs).map(cb => cb.value);
+            if(ids.length === 0) return;
+            
+            let actionName = '';
+            if(channel === 'whatsapp') actionName = 'واتساب';
+            if(channel === 'telegram') actionName = 'تليجرام';
+            if(channel === 'sms') actionName = 'SMS';
+            if(channel === 'email') actionName = 'إيميل';
+            
+            if(!confirm(`هل أنت متأكد من إرسال رسالة ${actionName} لـ ${ids.length} طالب؟`)) return;
+            
+            if(channel === 'sms') {
+                try {
+                    const res = await fetch('/api/admin/gateway/queue_sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ student_ids: ids, message: text }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        alert(`تم وضع ${data.queued} رسالة SMS في قائمة الانتظار بنجاح.`);
+                    }
+                } catch (e) {
+                    alert('Erreur réseau.');
+                }
+            } else {
+                alert(`تم استلام رسالتك لـ ${ids.length} طالب عبر ${actionName}. (قيد التطوير في النظام)\nالنص: ${text.substring(0,20)}...`);
+            }
+            
+            closeComposer();
+            document.getElementById('composer-text').value = '';
+            
+            cbs.forEach(cb => cb.checked = false);
+            let sa = document.getElementById('selectAllGrid');
+            if(sa) sa.checked = false;
+            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
+        }
+    </script>
+    
 </body>
 </html>
