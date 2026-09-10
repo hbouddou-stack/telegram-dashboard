@@ -1944,20 +1944,29 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             const formData = new FormData();
             formData.append('file', file);
             
+            let adminName = 'Admin';
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                adminName = window.Telegram.WebApp.initDataUnsafe.user.first_name || 'Admin';
+            }
+            
             try {
-                const res = await fetch('/api/admin/gateway/import_students', {
+                const res = await fetch('/api/admin/gateway/import_students?admin=' + encodeURIComponent(adminName), {
                     method: 'POST',
                     body: formData
                 });
                 const data = await res.json();
                 if(data.success) {
-                    alert('تم استيراد أو تحديث ' + data.count + ' طالب بنجاح.');
-                    fetchStudents(); fetchKpiMetrics();
+                    alert('✅ Importation réussie : ' + data.count + ' élèves importés.');
+                    fetchStudents(); 
+                    fetchKpiMetrics();
+                    if (document.getElementById('s-history').style.display === 'block') {
+                        loadImportHistory();
+                    }
                 } else {
-                    alert('خطأ: ' + data.error);
+                    alert('❌ Erreur : ' + data.error);
                 }
             } catch(e) {
-                alert('خطأ في الاتصال: ' + e.message);
+                alert('Erreur réseau : ' + e.message);
             }
             input.value = '';
         }

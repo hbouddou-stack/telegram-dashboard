@@ -1515,12 +1515,48 @@ async def api_admin_gateway_import_students(request: web.Request):
                     """, (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, original_file_name, secrets.token_urlsafe(8), created_at_val))
                     
                 imported += 1
+            
+            # Log the import
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS import_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    admin_name TEXT,
+                    filename TEXT,
+                    imported_count INTEGER,
+                    created_at TEXT DEFAULT (datetime('now', 'localtime'))
+                )
+            """)
+            admin_name = request.query.get('admin', 'Admin inconnu')
+            await db.execute("INSERT INTO import_logs (admin_name, filename, imported_count) VALUES (?, ?, ?)", (admin_name, filename, imported))
+            
             await db.commit()
             
         return web.json_response({'success': True, 'count': imported})
     except Exception as e:
         import traceback
         traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_gateway_import_logs(request: web.Request):
+    try:
+        import aiosqlite
+        from config import DATABASE_PATH
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS import_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    admin_name TEXT,
+                    filename TEXT,
+                    imported_count INTEGER,
+                    created_at TEXT DEFAULT (datetime('now', 'localtime'))
+                )
+            """)
+            async with db.execute("SELECT * FROM import_logs ORDER BY id DESC LIMIT 100") as cur:
+                logs = [dict(row) for row in await cur.fetchall()]
+        return web.json_response({'success': True, 'logs': logs})
+    except Exception as e:
+        import traceback; traceback.print_exc()
         return web.json_response({'success': False, 'error': str(e)})
 
 async def api_admin_gateway_sync_sheets(request: web.Request):
@@ -6297,6 +6333,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/admin/gateway/add_student', api_admin_gateway_add_student)
     app.router.add_post('/api/admin/gateway/archive_student', api_admin_gateway_archive_student)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
+    app.router.add_get('/api/admin/gateway/import_logs', api_admin_gateway_import_logs)
     app.router.add_post('/api/admin/gateway/sync_sheets', api_admin_gateway_sync_sheets)
     app.router.add_post('/api/admin/gateway/export_sheets', api_admin_gateway_export_sheets)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
