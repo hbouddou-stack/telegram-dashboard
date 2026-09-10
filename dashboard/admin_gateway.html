@@ -448,29 +448,29 @@
             <!-- Line 1: Search Bar -->
             <input style="width:100%; margin-bottom:10px; padding:12px 18px; border-radius:12px; border:1px solid var(--accent); background:var(--surface); font-family:inherit; font-size:1.05rem; outline:none; box-shadow:0 2px 5px rgba(0,0,0,0.02);" class="search-box" type="text" id="search-input" placeholder="🔍 بحث (الاسم، الإيميل...)" oninput="filterStudents()">
             
-            <!-- Line 2: Split Controls (Gender & View Mode) -->
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <!-- Gender Segmented Control (50%) -->
-                <div style="flex:1; display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:1.1rem;">
-                    <div id="g-all" onclick="setGenderFilterUI('all', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:#a855f7; color:white; transition:all 0.2s;">👥</div>
-                    <div id="g-homme" onclick="setGenderFilterUI('homme', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:var(--surface); color:var(--text1); border-right:1px solid var(--border); border-left:1px solid var(--border); transition:all 0.2s;">👨</div>
-                    <div id="g-femme" onclick="setGenderFilterUI('femme', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:var(--surface); color:var(--text1); transition:all 0.2s;">👩</div>
+            <!-- Line 2: Controls -->
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:8px;">
+                    <!-- Gender Segmented Control -->
+                    <div style="display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:1.1rem;">
+                        <div id="g-all" onclick="setGenderFilterUI('all', this)" style="padding:6px 12px; cursor:pointer; background:#a855f7; color:white; transition:all 0.2s;">👥</div>
+                        <div id="g-homme" onclick="setGenderFilterUI('homme', this)" style="padding:6px 12px; cursor:pointer; background:var(--surface); color:var(--text1); border-left:1px solid var(--border); transition:all 0.2s;">👨</div>
+                        <div id="g-femme" onclick="setGenderFilterUI('femme', this)" style="padding:6px 12px; cursor:pointer; background:var(--surface); color:var(--text1); border-left:1px solid var(--border); transition:all 0.2s;">👩</div>
+                    </div>
+                    
+                    <!-- Filter Drawer Trigger -->
+                    <button onclick="document.getElementById('filter-drawer').style.display='block'" style="background:var(--surface); border:1px solid var(--border); padding:6px 15px; border-radius:12px; cursor:pointer; font-size:0.9rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); transition:all 0.2s; font-family:'Tajawal', inherit;">🎛️ فلاتر</button>
                 </div>
                 
-                <!-- View Toggle (50%) -->
-                <div style="flex:1; display:flex; border-radius:12px; border:1px solid var(--border); overflow:hidden; font-family:'Tajawal', inherit;">
-                    <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1);">بطاقات</div>
-                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--accent2); color:white; border-right:1px solid var(--border);">جدول</div>
+                <!-- View Toggle (Text instead of Emojis) -->
+                <div style="display:flex; border-radius:8px; border:1px solid var(--border); overflow:hidden; font-family:'Tajawal', inherit;">
+                    <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="padding:6px 15px; cursor:pointer; font-size:0.85rem; font-weight:bold; background:var(--surface); color:var(--text1);">بطاقات</div>
+                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="padding:6px 15px; cursor:pointer; font-size:0.85rem; font-weight:bold; background:var(--accent2); color:white; border-right:1px solid var(--border);">جدول</div>
                 </div>
             </div>
             
-            <!-- Line 3: Big Advanced Filters Button -->
-            <button onclick="document.getElementById('filter-drawer').style.display='block'" style="width:100%; background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:12px; cursor:pointer; font-size:1rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); transition:all 0.2s; font-family:'Tajawal', inherit; margin-bottom:10px;">
-                🎛️ فلاتر متقدمة
-            </button>
-            
-            <!-- Line 4: Meta & Select All -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:0 2px;">
+            <!-- Line 3: Meta & Select All -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding:0 2px;">
                 <div id="students-count-display" style="font-weight:800; font-size:0.95rem; color:var(--accent2);"></div>
                 <label style="cursor:pointer; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px; color:var(--text1);">
                     <input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents(this)" style="transform:scale(1.2);"> تحديد الكل
@@ -478,11 +478,10 @@
             </div>
             
             <!-- Bulk Action Bar -->
-            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.05); border:1px solid #0ea5e9; border-radius:12px; padding:12px 15px; align-items:center; justify-content:space-between; flex-direction:row; gap:10px;">
-                <div style="font-weight:bold; color:#0ea5e9; font-size:0.95rem;">تم تحديد <span id="bulk-count">0</span></div>
-                <button id="btn-open-composer" onclick="(function(btn){ var n=document.querySelectorAll('.student-select-cb:checked').length; if(n===0){alert('اختر طالباً أولاً');return;} var existing=document.getElementById('composer-overlay'); if(existing){existing.remove();} var ov=document.createElement('div'); ov.id='composer-overlay'; ov.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;'; ov.innerHTML='<div style=\"background:#1e293b;width:100%;max-width:480px;border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.4);\"><div style=\"background:#0f172a;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;\"><span style=\"font-weight:800;font-size:1rem;color:#f1f5f9;\">📝 كتابة رسالة</span><button onclick=\"document.getElementById(\\'composer-overlay\\').remove()\" style=\"background:#334155;border:none;color:#94a3b8;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;\">✕</button></div><div style=\"padding:16px 20px;display:flex;flex-direction:column;gap:12px;\"><div style=\"color:#94a3b8;font-size:0.85rem;\">المستلمون: <span style=\"color:#38bdf8;font-weight:bold;\">'+(n)+'</span> طالب</div><textarea id=\"composer-msg-text\" rows=\"5\" placeholder=\"اكتب رسالتك هنا...\" style=\"width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-family:inherit;font-size:0.9rem;resize:none;box-sizing:border-box;\"></textarea><div style=\"font-size:0.75rem;color:#64748b;\">💡 استخدم {الاسم} للتخصيص</div><div style=\"display:flex;flex-wrap:wrap;gap:8px;\"><button onclick=\"composerSend(\\'whatsapp\\')\" style=\"flex:1;min-width:45%;background:#25D366;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">🟩 واتساب</button><button onclick=\"composerSend(\\'telegram\\')\" style=\"flex:1;min-width:45%;background:#0088cc;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">✈️ تليجرام</button><button onclick=\"composerSend(\\'sms\\')\" style=\"flex:1;min-width:45%;background:#f59e0b;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">📱 SMS</button><button onclick=\"composerSend(\\'email\\')\" style=\"flex:1;min-width:45%;background:#ef4444;color:white;border:none;padding:11px 8px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:0.85rem;\">📧 إيميل</button></div></div></div>'; document.body.appendChild(ov); })(this)" style="background:#0ea5e9; color:white; border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 5px rgba(14,165,233,0.3);">📝 كتابة رسالة</button>
+            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.1); border:1px solid #0ea5e9; border-radius:12px; padding:8px 15px; align-items:center; justify-content:space-between;">
+                <div style="font-weight:bold; color:#0ea5e9;">تم تحديد <span id="bulk-count">0</span></div>
+                <button id="btn-mass-sms" onclick="sendMassSms()" style="background:#0ea5e9; color:white; border:none; padding:6px 15px; border-radius:20px; font-weight:bold; cursor:pointer; font-family:inherit;">إرسال رسالة</button>
             </div>
-</div>
         </div>
 
         <!-- Scroll Hint Indicator -->
@@ -644,192 +643,7 @@
         </script>
         
         
-
-        <script>
-            let currentCardStyle = localStorage.getItem('cardStyle') || '1';
-            let currentViewMode = localStorage.getItem('viewMode') || 'grid';
-            let currentSort = { key: 'date', order: 'desc' };
-            
-            function toggleAllStudents(sourceCheckbox) {
-                let isChecked = false;
-                if (sourceCheckbox && sourceCheckbox.type === 'checkbox') {
-                    isChecked = sourceCheckbox.checked;
-                } else {
-                    const cb1 = document.getElementById('selectAllCheckbox');
-                    isChecked = cb1 ? cb1.checked : false;
-                }
-                
-                const cb1 = document.getElementById('selectAllCheckbox');
-                const cb2 = document.getElementById('selectAllGrid');
-                if (cb1) cb1.checked = isChecked;
-                if (cb2) cb2.checked = isChecked;
-                
-                const checkboxes = document.querySelectorAll('.student-select-cb');
-                checkboxes.forEach(cb => cb.checked = isChecked);
-                updateMassSmsButton();
-            }
-            
-            document.addEventListener('change', (e) => {
-                if(e.target && e.target.classList && e.target.classList.contains('student-select-cb')) {
-                    updateMassSmsButton();
-                }
-            });
-            
-            function updateMassSmsButton() {
-                const selected = document.querySelectorAll('.student-select-cb:checked').length;
-                const bar = document.getElementById('bulk-action-bar');
-                if(bar) {
-                    if(selected > 0) {
-                        bar.style.display = 'flex';
-                        document.getElementById('bulk-count').textContent = selected;
-                    } else {
-                        bar.style.display = 'none';
-                    }
-                }
-            }
-            
-            async function sendMassSms() {
-                const cbs = document.querySelectorAll('.student-select-cb:checked');
-                const ids = Array.from(cbs).map(cb => cb.value);
-                if(ids.length === 0) return;
-                if(!confirm(`هل أنت متأكد من إرسال رسالة لـ ${ids.length} طالب؟`)) return;
-                
-                try {
-                    const res = await fetch('/api/admin/gateway/queue_sms', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ student_ids: ids })
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        alert(`تم وضع ${data.queued} رسالة في قائمة الانتظار بنجاح.`);
-                        cbs.forEach(cb => cb.checked = false);
-                        let sa = document.getElementById('selectAllGrid');
-                        if(sa) sa.checked = false;
-                        updateMassSmsButton();
-                    } else {
-                        alert('Erreur: ' + data.error);
-                    }
-                } catch(e) {
-                    console.error(e);
-                    alert('Erreur réseau.');
-                }
-            }
-            
-            function sortTable(key) {
-                if(currentSort.key === key) {
-                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort.key = key;
-                    currentSort.order = 'asc';
-                }
-                filterStudents(); 
-                if(typeof updateDashboardView === 'function') updateDashboardView();
-            }
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const sel = document.getElementById('card-style-selector');
-                if (sel) sel.value = currentCardStyle;
-                const vSel = document.getElementById('view-mode-selector');
-                if (vSel) vSel.value = currentViewMode;
-            });
-            
-            function changeCardStyle(style) {
-                currentCardStyle = style;
-                localStorage.setItem('cardStyle', style);
-                filterStudents(); 
-                if(typeof updateDashboardView === 'function') updateDashboardView();
-            }
-            
-            // Re-apply the view mode wrapper safely
-            function changeViewMode(mode) {
-                currentViewMode = mode;
-                localStorage.setItem('viewMode', mode);
-                
-                let vT = document.getElementById('view-toggle-table');
-                let vG = document.getElementById('view-toggle-grid');
-                let hint = document.getElementById('scroll-hint');
-                
-                if(vT && vG) {
-                    if(mode === 'table') {
-                        vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
-                        vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
-                        if(hint) hint.style.display = 'block';
-                    } else {
-                        vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
-                        vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
-                        if(hint) hint.style.display = 'none';
-                    }
-                }
-                filterStudents();
-            }
-        
-            
-    
-        </script>
-        <script>
-        function openComposer() {
-            try {
-                const count = document.getElementById('bulk-count').textContent;
-                document.getElementById('composer-count').textContent = count;
-                document.getElementById('modal-composer').style.display = 'flex';
-            } catch(e) {
-                alert('Erreur openComposer: ' + e);
-            }
-        }
-        
-        function closeComposer() {
-            document.getElementById('modal-composer').style.display = 'none';
-        }
-        
-        async function sendBulkMessage(channel) {
-            const text = document.getElementById('composer-text').value.trim();
-            if(!text) {
-                alert('الرجاء كتابة رسالة أولاً!');
-                return;
-            }
-            
-            const cbs = document.querySelectorAll('.student-select-cb:checked');
-            const ids = Array.from(cbs).map(cb => cb.value);
-            if(ids.length === 0) return;
-            
-            let actionName = '';
-            if(channel === 'whatsapp') actionName = 'واتساب';
-            if(channel === 'telegram') actionName = 'تليجرام';
-            if(channel === 'sms') actionName = 'SMS';
-            if(channel === 'email') actionName = 'إيميل';
-            
-            if(!confirm(`هل أنت متأكد من إرسال رسالة ${actionName} لـ ${ids.length} طالب؟`)) return;
-            
-            if(channel === 'sms') {
-                try {
-                    const res = await fetch('/api/admin/gateway/queue_sms', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ student_ids: ids, message: text }) 
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        alert(`تم وضع ${data.queued} رسالة SMS في قائمة الانتظار بنجاح.`);
-                    }
-                } catch (e) {
-                    alert('Erreur réseau.');
-                }
-            } else {
-                alert(`تم استلام رسالتك لـ ${ids.length} طالب عبر ${actionName}. (قيد التطوير في النظام)\nالنص: ${text.substring(0,20)}...`);
-            }
-            
-            closeComposer();
-            document.getElementById('composer-text').value = '';
-            
-            cbs.forEach(cb => cb.checked = false);
-            let sa = document.getElementById('selectAllGrid');
-            if(sa) sa.checked = false;
-            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
-        }
-    </script>
 <div id="students-list"></div>
-
     </div>
     
     <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
@@ -1599,42 +1413,7 @@
         <div id="links-container"><div class="no-items">جاري التحميل...</div>
     </div>
     <script>
-        
-window.Telegram.WebApp.ready();
-
-        // COMPOSER SEND - inline dynamic modal
-        window.composerSend = async function(channel) {
-            var textEl = document.getElementById('composer-msg-text');
-            if(!textEl) { alert('Erreur: zone de texte introuvable'); return; }
-            var text = textEl.value.trim();
-            if(!text) { alert('الرجاء كتابة رسالة أولاً!'); return; }
-            var cbs = document.querySelectorAll('.student-select-cb:checked');
-            var ids = Array.from(cbs).map(function(cb){ return cb.value; });
-            if(ids.length === 0) { alert('اختر طالباً على الأقل'); return; }
-            var names = {'whatsapp':'واتساب','telegram':'تليجرام','sms':'SMS','email':'إيميل'};
-            var name = names[channel] || channel;
-            if(!confirm('إرسال ' + name + ' لـ ' + ids.length + ' طالب؟')) return;
-            if(channel === 'sms') {
-                try {
-                    var res = await fetch('/api/admin/gateway/queue_sms', {
-                        method:'POST', headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify({student_ids: ids, message: text})
-                    });
-                    var data = await res.json();
-                    if(data.success) alert('تم وضع ' + data.queued + ' رسالة SMS في قائمة الانتظار.');
-                    else alert('خطأ: ' + data.error);
-                } catch(e) { alert('Erreur réseau: ' + e); }
-            } else {
-                alert('تم إرسال ' + name + ' لـ ' + ids.length + ' طالب.\nالنص: ' + text.substring(0,30) + '...');
-            }
-            var ov = document.getElementById('composer-overlay');
-            if(ov) ov.remove();
-            cbs.forEach(function(cb){ cb.checked = false; });
-            var sa = document.getElementById('selectAllGrid');
-            if(sa) sa.checked = false;
-            if(typeof updateMassSmsButton === 'function') updateMassSmsButton();
-        };
-
+        window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
@@ -4590,43 +4369,46 @@ function renderHomeAlerts(alerts) {
 
 
 
-    <!-- THE COMPOSER MODAL -->
-    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
-        <div style="background:var(--bg); width:100%; max-width:500px; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.2); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column;">
-            <!-- Header -->
-            <div style="background:var(--surface); padding:15px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">📝 كتابة رسالة</h3>
-                <button onclick="window.closeComposer()" style="background:var(--surface); border:none; width:30px; height:30px; border-radius:50%; font-size:1.2rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+    <!-- BULK ACTION BAR -->
+    <div id="bulk-action-bar" style="display:none; position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--accent); box-shadow:0 10px 30px rgba(0,0,0,0.8); padding:12px 20px; border-radius:30px; z-index:1000; align-items:center; gap:15px; width:90%; max-width:500px; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background:var(--accent); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900;" id="bulk-count">0</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="openBulkModal('email')" style="background:#3b82f6; color:white; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:0.85rem;">📧 Email</button>
+            <button onclick="openBulkModal('whatsapp')" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:0.85rem;">💬 WhatsApp</button>
+        </div>
+        <button onclick="unselectAll()" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:0.8rem;">❌</button>
+    </div>
+
+    <!-- BULK MODAL -->
+    <div id="modal-bulk" class="modal-overlay">
+        <div style="background:var(--surface); width:100%; max-width:650px; max-height:85vh; border-radius:20px 20px 0 0; padding:20px; overflow-y:auto; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 id="bulk-modal-title" style="margin:0; font-size:1.2rem; color:var(--text1);">Envoyer Message</h3>
+                <button onclick="document.getElementById('modal-bulk').style.display='none'" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:5px 12px; border-radius:8px; cursor:pointer;">Annuler</button>
             </div>
             
-            <!-- Body -->
-            <div style="padding:20px; display:flex; flex-direction:column; gap:15px;">
-                <div style="font-size:0.9rem; font-weight:bold; color:var(--text1);">
-                    المستلمون: <span id="composer-count" style="color:#0ea5e9;">0</span> طلاب
+            <p style="font-size:0.85rem; color:var(--text2); margin-top:0;">Vous allez envoyer un message à <strong id="bulk-modal-count" style="color:var(--accent2);">0</strong> étudiants.</p>
+            
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                <div id="bulk-subject-container" style="display:flex; flex-direction:column; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text2);">Sujet (Email uniquement)</label>
+                    <input type="text" id="bulk-subject" placeholder="Bienvenue !" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1);">
                 </div>
                 
-                <div style="position:relative;">
-                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box;"></textarea>
-                    <div style="font-size:0.75rem; color:var(--text2); margin-top:5px;">
-                        💡 يمكنك استخدام المتغيرات: <span style="background:var(--surface); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">&#123;الاسم&#125;</span>
-                    </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text2);">Message</label>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-bottom:5px;">Variables : {prenom}, {nom}, {lien}</div>
+                    <textarea id="bulk-message" rows="6" placeholder="Bonjour {prenom}..." style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); resize:vertical; font-family:inherit;"></textarea>
                 </div>
                 
-                <!-- Channels -->
-                <div>
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">إرسال عبر:</label>
-                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <button onclick="sendBulkMessage('whatsapp')" style="flex:1; min-width:45%; background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(37,211,102,0.3);">🟩 واتساب</button>
-                        <button onclick="sendBulkMessage('telegram')" style="flex:1; min-width:45%; background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(0,136,204,0.3);">✈️ تليجرام</button>
-                        <button onclick="sendBulkMessage('sms')" style="flex:1; min-width:45%; background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(245,158,11,0.3);">📱 SMS</button>
-                        <button onclick="sendBulkMessage('email')" style="flex:1; min-width:45%; background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 2px 5px rgba(239,68,68,0.3);">📧 إيميل</button>
-                    </div>
-                </div>
+                <input type="hidden" id="bulk-type" value="email">
+                
+                <button onclick="executeBulkAction()" style="background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:1rem; margin-top:10px;">🚀 Envoyer Maintenant</button>
             </div>
         </div>
     </div>
-    
-    
-    
 
 </body>
+</html>
