@@ -587,14 +587,9 @@
         
             
             function sortTable(key) {
-            if(currentSort.key === key) {
-                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort.key = key;
-                currentSort.order = 'asc';
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        } else {
+                if(currentSort.key === key) {
+                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
                     currentSort.key = key;
                     currentSort.order = 'asc';
                 }
@@ -644,71 +639,32 @@
         
         
         <!-- Dashboard Filters -->
-        <div style="background:var(--surface); border-radius:12px; border:1px solid var(--border); padding:15px; margin-bottom:20px;">
-            <div style="margin-bottom:12px;">
-                <input type="text" id="dash-search-input" placeholder="🔍 Rechercher (nom, email, numéro...)" oninput="updateDashboardView()" style="width:100%; padding:10px 15px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
-            </div>
-            
-            <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                <!-- Genre -->
-                <div style="display:flex; border-radius:8px; overflow:hidden; border:1px solid var(--border); flex:1; min-width:200px;">
-                    <div class="dash-pill pill-active" id="d-g-all" onclick="setDashGender('all', this)" style="flex:1; text-align:center; padding:8px 4px; font-size:0.8rem; cursor:pointer; font-weight:bold; border-left:1px solid var(--border);">Tous (الكل)</div>
-                    <div class="dash-pill" id="d-g-homme" onclick="setDashGender('HOMME', this)" style="flex:1; text-align:center; padding:8px 4px; font-size:0.8rem; cursor:pointer; border-left:1px solid var(--border);">Garçons</div>
-                    <div class="dash-pill" id="d-g-femme" onclick="setDashGender('FEMME', this)" style="flex:1; text-align:center; padding:8px 4px; font-size:0.8rem; cursor:pointer;">Filles</div>
-                </div>
-
-                <!-- Paiement -->
-                <div style="display:flex; border-radius:8px; overflow:hidden; border:1px solid var(--border); flex:1; min-width:200px;">
-                    <div class="dash-pill pill-active" id="d-p-all" onclick="setDashPay('all', this)" style="flex:1; text-align:center; padding:8px 4px; font-size:0.8rem; cursor:pointer; font-weight:bold; border-left:1px solid var(--border);">Tous</div>
-                    <div class="dash-pill" id="d-p-paid" onclick="setDashPay('PAID', this)" style="flex:1; text-align:center; padding:8px 4px; font-size:0.8rem; cursor:pointer; border-left:1px solid var(--border);">Payé</div>
-                    <div class="dash-pill" id="d-p-unpaid" onclick="setDashPay('UNPAID', this)" style="flex:1; text-align:center; padding:8px 4px; font-size:0.8rem; cursor:pointer;">Non Payé</div>
-                </div>
-            </div>
-
-            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
-                <!-- Niveau -->
-                <select id="dash-filter-year" onchange="updateDashboardView()" style="flex:1; min-width:120px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; font-size:0.8rem; font-weight:bold;">
-                    <option value="all">Toutes les années (الكل)</option>
-                    <option value="1">1ère Année</option>
-                    <option value="2">2ème Année</option>
-                    <option value="3">3ème Année</option>
-                    <option value="4">4ème Année</option>
-                </select>
-
-                <!-- Source -->
-                <select id="dash-filter-source" onchange="updateDashboardView()" style="flex:1; min-width:120px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; font-size:0.8rem; font-weight:bold;">
-                    <option value="all">Toutes les sources (الكل)</option>
-                    <option value="excel">Fichier Excel</option>
-                    <option value="sheet">Google Sheet</option>
-                    <option value="manuel">Manuel</option>
-                </select>
-            </div>
-            <input type="hidden" id="dash-filter-gender-val" value="all">
-            <input type="hidden" id="dash-filter-pay-val" value="all">
+        <div style="display:flex; gap:10px; margin-bottom: 20px; padding:15px; background:var(--surface); border-radius:12px; border:1px solid var(--border); align-items:center;">
+            <span style="font-weight:700; color:var(--text2); font-size:0.9rem;">🔎 فلاتر (Filtres) :</span>
+            <select id="dash-filter-year" onchange="updateDashboardView()" style="padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
+                <option value="all">Toutes les années (الكل)</option>
+                <option value="1">1ère Année</option>
+                <option value="2">2ème Année</option>
+                <option value="3">3ème Année</option>
+                <option value="4">4ème Année</option>
+            </select>
+            <select id="dash-filter-gender" onchange="updateDashboardView()" style="padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
+                <option value="all">Tous (الكل)</option>
+                <option value="HOMME">Garçons (ذكور)</option>
+                <option value="FEMME">Filles (إناث)</option>
+            </select>
+            <select id="dash-filter-pay" onchange="updateDashboardView()" style="padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
+                <option value="all">Tous (الكل)</option>
+                <option value="PAID">Payé (مسدد)</option>
+                <option value="UNPAID">Non Payé (غير مسدد)</option>
+            </select>
         </div>
-        
-        <script>
-            function setDashGender(val, el) {
-                document.getElementById('dash-filter-gender-val').value = val;
-                document.querySelectorAll('.dash-pill[id^="d-g-"]').forEach(b => {
-                    b.classList.remove('pill-active');
-                    b.style.fontWeight = 'normal';
-                });
-                el.classList.add('pill-active');
-                el.style.fontWeight = 'bold';
-                updateDashboardView();
-            }
-            function setDashPay(val, el) {
-                document.getElementById('dash-filter-pay-val').value = val;
-                document.querySelectorAll('.dash-pill[id^="d-p-"]').forEach(b => {
-                    b.classList.remove('pill-active');
-                    b.style.fontWeight = 'normal';
-                });
-                el.classList.add('pill-active');
-                el.style.fontWeight = 'bold';
-                updateDashboardView();
-            }
-        </script>
+
+        <!-- Overview Sub-tabs -->
+        <div style="display:flex; gap:0; margin-bottom:20px; border-radius:12px; overflow:hidden; border:1px solid var(--border);">
+            <div class="pill-btn pill-active" id="subtab-funnel-btn" onclick="switchOverviewSubtab('funnel')" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">🚀 مسار التحويل</div>
+            <div class="pill-btn" id="subtab-finances-btn" onclick="switchOverviewSubtab('finances')" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">💰 المالية</div>
+            <div class="pill-btn" id="subtab-demo-btn" onclick="switchOverviewSubtab('demo')" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer;">🌍 الديموغرافيا</div>
         </div>
 
         <!-- SUBTAB 1: Funnel (Entonnoir & Conversion) -->
@@ -1784,33 +1740,23 @@
         }
         
         function setSort(key, defaultOrder, el) {
-            // Toggle order if clicking the same key
             if(currentSort.key === key) {
                 currentSort.order = (currentSort.order === 'asc') ? 'desc' : 'asc';
             } else {
                 currentSort.key = key;
                 currentSort.order = defaultOrder || 'asc';
             }
-            
-            // Update visual active state
             document.querySelectorAll('.sort-btn').forEach(b => {
                 b.style.background = 'var(--bg)';
                 b.style.color = 'var(--text1)';
+                b.innerText = b.innerText.replace(/[🔼🔽]/g, '').trim();
             });
             if (el) { 
                 el.style.background = 'var(--accent2)'; 
                 el.style.color = 'white'; 
-                // Optionally update text to show direction
                 const text = el.innerText.replace(/[🔼🔽]/g, '').trim();
                 el.innerText = text + (currentSort.order === 'asc' ? ' 🔼' : ' 🔽');
             }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        };
-            document.querySelectorAll('.sort-btn').forEach(b => {
-                b.style.background = 'var(--bg)';
-                b.style.color = 'var(--text1)';
-            });
-            if (el) { el.style.background = 'var(--accent2)'; el.style.color = 'white'; }
             filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
         }
         
@@ -2201,107 +2147,98 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             }
             
             if (currentViewMode === 'table') {
-                const tableWrapper = document.createElement('div');
-                tableWrapper.style.overflowX = 'auto'; // Horizontal scroll
-                tableWrapper.style.width = '100%';
+            const tableWrapper = document.createElement('div');
+            tableWrapper.style.overflowX = 'auto';
+            tableWrapper.style.width = '100%';
+            
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.fontSize = '0.85rem';
+            table.style.background = 'var(--surface)';
+            table.style.borderRadius = '8px';
+            table.style.overflow = 'hidden';
+            table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+            table.style.whiteSpace = 'nowrap';
+            
+            const getSortIcon = (k) => currentSort.key === k ? (currentSort.order === 'asc' ? ' 🔼' : ' 🔽') : '';
+
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
+                    <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
+                    <th style="padding:12px; cursor:pointer; color:var(--text2);" onclick="sortTable('date')">N° ${getSortIcon('date')}</th>
+                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">Nom & Prénom ${getSortIcon('name')}</th>
+                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">Année ${getSortIcon('level')}</th>
+                    <th style="padding:12px; direction:ltr; text-align:right;">Email</th>
+                    <th style="padding:12px;">Paiement</th>
+                    <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">Statut Bot ${getSortIcon('status')}</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            
+            const displayLimit = Math.min(filtered.length, 500);
+            for(let i=0; i<displayLimit; i++) {
+                const s = filtered[i];
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--border)';
+                tr.style.cursor = 'pointer';
                 
-                const table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '0.85rem';
-                table.style.background = 'var(--surface)';
-                table.style.borderRadius = '8px';
-                table.style.overflow = 'hidden';
-                table.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-                table.style.whiteSpace = 'nowrap';
+                let g = String(s.gender || '').toLowerCase();
+                let isMale = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذكر');
+                let isFemale = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنثى');
                 
-                const getSortIcon = (k) => currentSort.key === k ? (currentSort.order === 'asc' ? ' 🔼' : ' 🔽') : '';
-
-                const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                        <th style="padding:12px; width:40px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents()"></th>
-                        <th style="padding:12px; cursor:pointer; color:var(--text2);" onclick="sortTable('date')">N° ${getSortIcon('date')}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">Nom & Prénom ${getSortIcon('name')}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('level')">Année ${getSortIcon('level')}</th>
-                        <th style="padding:12px; direction:ltr; text-align:right;">Email</th>
-                        <th style="padding:12px;">Paiement</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('status')">Statut Bot ${getSortIcon('status')}</th>
-                    </tr>
-                `;
-                table.appendChild(thead);
-                const tbody = document.createElement('tbody');
-                
-                const displayLimit = Math.min(filtered.length, 500);
-                for(let i=0; i<displayLimit; i++) {
-                    const s = filtered[i];
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid var(--border)';
-                    tr.style.cursor = 'pointer';
-                    
-                    // --- ZEBRA STRIPING BY GENDER ---
-                    let g = String(s.gender || '').toLowerCase();
-                    let isMale = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذكر');
-                    let isFemale = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنثى');
-                    
-                    let bg = 'transparent';
-                    
-                    // If filter is specific to one gender, alternate pastel and white
-                    if (filters.gender === 'homme') {
-                        bg = (i % 2 === 0) ? '#e0f2fe' : '#ffffff'; // Light Blue / White
-                    } else if (filters.gender === 'femme') {
-                        bg = (i % 2 === 0) ? '#fce7f3' : '#ffffff'; // Light Pink / White
-                    } else {
-                        // If "All" or other filter, use solid pastel per gender
-                        if (isMale) bg = '#e0f2fe';
-                        else if (isFemale) bg = '#fce7f3';
-                        else bg = (i % 2 === 0) ? '#f3f4f6' : '#ffffff'; // Gray/White fallback
-                    }
-
-                    tr.style.background = bg;
-                    tr.style.color = '#111827'; // Force dark text for readability on pastel bg
-
-                    tr.onmouseover = () => tr.style.opacity = '0.8';
-                    tr.onmouseout = () => tr.style.opacity = '1';
-                    tr.onclick = () => openStudentCard(s);
-                    
-                    // Status dot
-                    let dotColor, dotTitle;
-                    if (s.excluded) { dotColor = '#111'; dotTitle = 'Exclu'; }
-                    else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'Groupe rejoint'; }
-                    else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'En cours'; }
-                    else { dotColor = '#ef4444'; dotTitle = 'Non démarré'; }
-                    
-                    const name = (s.first_name || '') + ' ' + (s.last_name || '');
-                    
-                    // Year format
-                    const yrStr = String(s.year || '');
-                    const yrMatch = yrStr.match(/\d+/);
-                    const yrNum = yrMatch ? yrMatch[0] : '';
-                    
-                    // Payment badge
-                    const paid = String(s.payment_status || '').toUpperCase().trim();
-                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع'].includes(paid);
-                    const payBadge = isPaid
-                        ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">Payé</span>`
-                        : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">Non Payé</span>`;
-
-                    tr.innerHTML = `
-                        <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
-                        <td style="padding:12px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
-                        <td style="padding:12px; font-weight:bold;">${name}</td>
-                        <td style="padding:12px;">${yrNum ? 'Année '+yrNum : '-'}</td>
-                        <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
-                        <td style="padding:12px;">${payBadge}</td>
-                        <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
-                    `;
-                    tbody.appendChild(tr);
+                let bg = 'transparent';
+                if (filters.gender === 'homme') {
+                    bg = (i % 2 === 0) ? '#e0f2fe' : '#ffffff';
+                } else if (filters.gender === 'femme') {
+                    bg = (i % 2 === 0) ? '#fce7f3' : '#ffffff';
+                } else {
+                    if (isMale) bg = '#e0f2fe';
+                    else if (isFemale) bg = '#fce7f3';
+                    else bg = (i % 2 === 0) ? '#f3f4f6' : '#ffffff';
                 }
-                table.appendChild(tbody);
-                tableWrapper.appendChild(table);
-                list.appendChild(tableWrapper);
-                return; // skip the grid rendering
+                tr.style.background = bg;
+                tr.style.color = '#111827';
+
+                tr.onmouseover = () => tr.style.opacity = '0.8';
+                tr.onmouseout = () => tr.style.opacity = '1';
+                tr.onclick = () => openStudentCard(s);
+                
+                let dotColor, dotTitle;
+                if (s.excluded) { dotColor = '#111'; dotTitle = 'Exclu'; }
+                else if (s.group_joined) { dotColor = '#16a34a'; dotTitle = 'Groupe rejoint'; }
+                else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) { dotColor = '#f97316'; dotTitle = 'En cours'; }
+                else { dotColor = '#ef4444'; dotTitle = 'Non démarré'; }
+                
+                const name = (s.first_name || '') + ' ' + (s.last_name || '');
+                const yrStr = String(s.year || '');
+                const yrMatch = yrStr.match(/\d+/);
+                const yrNum = yrMatch ? yrMatch[0] : '';
+                
+                const paid = String(s.payment_status || '').toUpperCase().trim();
+                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع'].includes(paid);
+                const payBadge = isPaid
+                    ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">Payé</span>`
+                    : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">Non Payé</span>`;
+
+                tr.innerHTML = `
+                    <td style="padding:12px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
+                    <td style="padding:12px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
+                    <td style="padding:12px; font-weight:bold;">${name}</td>
+                    <td style="padding:12px;">${yrNum ? 'Année '+yrNum : '-'}</td>
+                    <td style="padding:12px; direction:ltr; text-align:right;">${s.email || '-'}</td>
+                    <td style="padding:12px;">${payBadge}</td>
+                    <td style="padding:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-left:5px;"></span>${dotTitle}</td>
+                `;
+                tbody.appendChild(tr);
             }
+            table.appendChild(tbody);
+            tableWrapper.appendChild(table);
+            list.appendChild(tableWrapper);
+            return; // skip the grid rendering
+        }
 
             const fragment = document.createDocumentFragment();
             const displayLimit = Math.min(filtered.length, 500);
@@ -3847,55 +3784,55 @@ let genderChartInstance = null;
 
 // ===== DASHBOARD DYNAMIC UPDATE =====
 function updateDashboardView() {
-    if (!allStudents || allStudents.length === 0) return;
+        if (!allStudents || allStudents.length === 0) return;
 
-    const fYear = document.getElementById('dash-filter-year') ? document.getElementById('dash-filter-year').value : 'all';
-    const fGender = document.getElementById('dash-filter-gender-val') ? document.getElementById('dash-filter-gender-val').value : 'all';
-    const fPay = document.getElementById('dash-filter-pay-val') ? document.getElementById('dash-filter-pay-val').value : 'all';
-    const fSource = document.getElementById('dash-filter-source') ? document.getElementById('dash-filter-source').value : 'all';
-    const q = document.getElementById('dash-search-input') ? document.getElementById('dash-search-input').value.toLowerCase() : '';
+        const fYear = document.getElementById('dash-filter-year') ? document.getElementById('dash-filter-year').value : 'all';
+        const fGender = document.getElementById('dash-filter-gender-val') ? document.getElementById('dash-filter-gender-val').value : 'all';
+        const fPay = document.getElementById('dash-filter-pay-val') ? document.getElementById('dash-filter-pay-val').value : 'all';
+        const fSource = document.getElementById('dash-filter-source') ? document.getElementById('dash-filter-source').value : 'all';
+        const q = document.getElementById('dash-search-input') ? document.getElementById('dash-search-input').value.toLowerCase() : '';
 
-    // Filter Students
-    const subset = allStudents.filter(s => {
-        if (s.excluded == 1) return false; // Ignore excluded students in KPIs
-        
-        const name = String(s.first_name || '').toLowerCase();
-        const lname = String(s.last_name || '').toLowerCase();
-        const email = String(s.email || '').toLowerCase();
-        const tel = String(s.telegram_id || '');
-        const matchSearch = q === '' || name.includes(q) || lname.includes(q) || email.includes(q) || tel.includes(q);
-        if(!matchSearch) return false;
+        // Filter Students
+        const subset = allStudents.filter(s => {
+            if (s.excluded == 1) return false;
+            
+            const name = String(s.first_name || '').toLowerCase();
+            const lname = String(s.last_name || '').toLowerCase();
+            const email = String(s.email || '').toLowerCase();
+            const tel = String(s.telegram_id || '');
+            const matchSearch = q === '' || name.includes(q) || lname.includes(q) || email.includes(q) || tel.includes(q);
+            if(!matchSearch) return false;
 
-        let match = true;
-        if (fYear !== 'all' && String(s.year) !== fYear) match = false;
-        
-        let gen = (s.gender || '').toUpperCase().trim();
-        if (gen === 'M' || gen.startsWith('H') || gen.includes('ذكر')) gen = 'HOMME';
-        if (gen === 'F' || gen.includes('أنثى')) gen = 'FEMME';
-        if (fGender !== 'all' && gen !== fGender) match = false;
-        
-        let pay = (s.payment_status || '').toUpperCase().trim();
-        let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع'].includes(pay);
-        if (fPay === 'PAID' && !isPaid) match = false;
-        if (fPay === 'UNPAID' && isPaid) match = false;
+            let match = true;
+            if (fYear !== 'all' && String(s.year) !== fYear) match = false;
+            
+            let gen = (s.gender || '').toUpperCase().trim();
+            if (gen === 'M' || gen.startsWith('H') || gen.includes('ذكر')) gen = 'HOMME';
+            if (gen === 'F' || gen.includes('أنثى')) gen = 'FEMME';
+            if (fGender !== 'all' && gen !== fGender) match = false;
+            
+            let pay = (s.payment_status || '').toUpperCase().trim();
+            let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع'].includes(pay);
+            if (fPay === 'PAID' && !isPaid) match = false;
+            if (fPay === 'UNPAID' && isPaid) match = false;
 
-        const srcLower = String(s.source || '').toLowerCase();
-        let derivedSource = 'manuel';
-        if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-        else if (srcLower.includes('excel')) derivedSource = 'excel';
-        if (fSource !== 'all' && fSource !== derivedSource) match = false;
-        
-        return match;
-    });
+            const srcLower = String(s.source || '').toLowerCase();
+            let derivedSource = 'manuel';
+            if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
+            else if (srcLower.includes('excel')) derivedSource = 'excel';
+            if (fSource !== 'all' && fSource !== derivedSource) match = false;
+            
+            return match;
+        });
 
-    // Compute Metrics
-    const total = subset.length;
-    const contacted = subset.filter(s => s.email_sent > 0 || s.whatsapp_sent > 0 || s.sms_sent > 0).length;
-    const started = subset.filter(s => s.bot_started_at).length;
-    const linked = subset.filter(s => s.telegram_id).length;
-    const joined = subset.filter(s => s.folder_clicked_at || s.group_joined).length;
+        // Compute Metrics
+        const total = subset.length;
+        const contacted = subset.filter(s => s.email_sent > 0 || s.whatsapp_sent > 0 || s.sms_sent > 0).length;
+        const started = subset.filter(s => s.bot_started_at).length;
+        const linked = subset.filter(s => s.telegram_id).length;
+        const joined = subset.filter(s => s.folder_clicked_at || s.group_joined).length;
 
-    // Finances
+        // Finances
     let paid = 0;
     let unpaid = 0;
     subset.forEach(s => {
