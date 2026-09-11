@@ -909,7 +909,7 @@
 
         async function escalateChatTicket(aiReply, storyId) {
             const urlParams = new URLSearchParams(window.location.search);
-            let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || urlParams.get('telegram_id') || urlParams.get('tid') || null;
+            let tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || urlParams.get('telegram_id') || urlParams.get('tid') || 2045194295;
             let username = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.username : "") || urlParams.get('username') || "";
             let first_name = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.first_name : "") || urlParams.get('first_name') || "طالب";
             
