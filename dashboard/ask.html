@@ -855,18 +855,55 @@
 
             const match = window.currentAiMatches[index];
             if (match) {
+                // Store the selected match for the next step
+                window.selectedAiMatch = match;
+                
                 let answerHtml = `✅ <b>الجواب:</b><br><br>${match.answer.replace(/\\n/g, '<br>')}`;
                 if (match.story_id) {
                     answerHtml += `<br><br><button onclick="openStoryViewer(${match.story_id})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">🎬 عرض التوضيح</button>`;
                 }
                 addAiBubble(answerHtml);
                 
+                // Add the Yes/No confirmation bubble
+                let confirmHtml = `هل أفادتك هذه الإجابة وحلت مشكلتك؟<br><br>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button onclick="confirmAiAnswer(true)" style="flex:1; padding:8px; border-radius:8px; background:var(--accent); color:white; border:none; cursor:pointer;">نعم، شكراً ✅</button>
+                    <button onclick="confirmAiAnswer(false)" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.1); color:var(--text-1); border:1px solid rgba(255,255,255,0.2); cursor:pointer;">لا، أحتاج مساعدة ❌</button>
+                </div>`;
+                addAiBubble(confirmHtml);
+            }
+        };
+        
+        window.confirmAiAnswer = async function(isResolved) {
+            // Disable the Yes/No buttons
+            const hist = document.getElementById('new-chat-history');
+            const lastBubble = hist.lastElementChild;
+            if (lastBubble) {
+                const buttons = lastBubble.querySelectorAll('button');
+                buttons.forEach(b => {
+                    b.disabled = true;
+                    b.style.opacity = '0.5';
+                    b.style.cursor = 'default';
+                });
+            }
+
+            const match = window.selectedAiMatch;
+            
+            if (isResolved) {
+                addAiBubble("يسعدني أنني تمكنت من مساعدتك! تم إغلاق التذكرة بنجاح. 😊");
                 await escalateChatTicket(match.answer, match.story_id);
-                
                 setTimeout(() => {
                     document.getElementById('rag-success-screen').style.display = 'block';
                     document.getElementById('chat-input-area').style.display = 'none';
                 }, 1000);
+            } else {
+                addAiBubble("عذراً على ذلك. جاري تحويل طلبك لفريق الدعم البشري. سيقومون بالرد عليك في أقرب وقت.");
+                await escalateChatTicket(null, null); // sending null means it's not auto-resolved
+                setTimeout(() => {
+                    resetNewChat();
+                    switchTab('inbox');
+                    if (typeof loadStudentTickets === 'function') loadStudentTickets();
+                }, 2000);
             }
         };
 
