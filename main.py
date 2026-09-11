@@ -5944,19 +5944,27 @@ async def api_support_rag_check(request):
             with open(faq_path, 'r', encoding='utf-8') as f:
                 faq_data = json.load(f)
                 
-            # Search globally across all themes if no theme specified or just global search anyway
+            matches = []
             for t, questions in faq_data.items():
                 for question, answer_obj in questions.items():
-                    # Check if msg matches question or vice-versa
                     if msg and (question.lower() in msg or msg in question.lower() or any(word in question.lower() for word in msg.split() if len(word) > 4)):
-                        if isinstance(answer_obj, dict):
-                            ans_text = answer_obj.get('text', '')
-                            story_id = answer_obj.get('story_id')
-                            return web.json_response({'found': True, 'answer': ans_text, 'story_id': story_id})
-                        else:
-                            return web.json_response({'found': True, 'answer': answer_obj})
+                        ans_text = answer_obj.get('text', '') if isinstance(answer_obj, dict) else answer_obj
+                        story_id = answer_obj.get('story_id') if isinstance(answer_obj, dict) else None
+                        
+                        matches.append({
+                            'question': question,
+                            'answer': ans_text,
+                            'story_id': story_id
+                        })
+                        if len(matches) >= 3:
+                            break
+                if len(matches) >= 3:
+                    break
             
-            return web.json_response({'found': False})
+            if matches:
+                return web.json_response({'found': True, 'matches': matches})
+            else:
+                return web.json_response({'found': False})
         
         return web.json_response({'found': False})
     except Exception as e:

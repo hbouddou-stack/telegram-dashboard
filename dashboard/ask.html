@@ -787,8 +787,7 @@
 
             addAiBubble("جاري البحث عن حل...");
             
-            let aiAnswer = null;
-            let storyId = null;
+            let aiMatches = null;
             try {
                 const ragRes = await fetch(`${BOT_BASE}/api/support/rag_check`, {
                     method: 'POST',
@@ -796,35 +795,31 @@
                     body: JSON.stringify({ theme: chatState.theme, subtheme: chatState.subtheme, message: chatState.message })
                 });
                 const ragData = await ragRes.json();
-                if (ragData.found) {
-                    aiAnswer = ragData.answer;
-                    storyId = ragData.story_id;
+                if (ragData.found && ragData.matches && ragData.matches.length > 0) {
+                    aiMatches = ragData.matches;
+                } else if (ragData.found && ragData.answer) {
+                    aiMatches = [{question: "الحل المقترح", answer: ragData.answer, story_id: ragData.story_id}];
                 }
             } catch (e) { console.error("RAG Error", e); }
             
-            if (aiAnswer) {
-                // Auto resolved via AI
-                await escalateChatTicket(aiAnswer, storyId);
-                const hist = document.getElementById('new-chat-history');
-                const lastBubble = hist.lastElementChild;
-                if (lastBubble.innerText === "جاري البحث عن حل...") lastBubble.remove();
+            const hist = document.getElementById('new-chat-history');
+            const lastBubble = hist.lastElementChild;
+            if (lastBubble && lastBubble.innerText === "جاري البحث عن حل...") lastBubble.remove();
+
+            if (aiMatches && aiMatches.length > 0) {
+                let html = `💡 <b>هل تقصد أحد هذه الأسئلة؟</b><br><br><div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">`;
                 
-                let answerHtml = `💡 <b>وجدت هذا الحل:</b><br><br>${aiAnswer.replace(/\\n/g, '<br>')}`;
-                if (storyId) {
-                    answerHtml += `<br><br><button onclick="openStoryViewer(${storyId})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">🎬 عرض التوضيح</button>`;
-                }
-                addAiBubble(answerHtml);
+                window.currentAiMatches = aiMatches;
                 
-                setTimeout(() => {
-                    document.getElementById('rag-success-screen').style.display = 'block';
-                    document.getElementById('chat-input-area').style.display = 'none';
-                }, 1000);
+                aiMatches.forEach((match, index) => {
+                    html += `<button onclick="handleAiMatchSelection(${index})" style="padding:10px; border-radius:8px; background:rgba(255,255,255,0.08); color:var(--text-1); border:1px solid rgba(255,255,255,0.2); cursor:pointer; text-align:right;">❓ ${match.question}</button>`;
+                });
+                
+                html += `<button onclick="handleAiMatchSelection(-1)" style="padding:10px; border-radius:8px; background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid rgba(255,77,77,0.3); cursor:pointer; text-align:right; margin-top:5px;">👤 لا، أريد التحدث مع الدعم البشري</button>`;
+                html += `</div>`;
+                
+                addAiBubble(html);
             } else {
-                // Forward to human
-                const hist = document.getElementById('new-chat-history');
-                const lastBubble = hist.lastElementChild;
-                if (lastBubble.innerText === "جاري البحث عن حل...") lastBubble.remove();
-                
                 addAiBubble("تم تحويل طلبك للإدارة. سيقوم فريق الدعم بالرد عليك في أقرب وقت.");
                 await escalateChatTicket(null, null);
                 setTimeout(() => {
@@ -834,6 +829,46 @@
                 }, 2000);
             }
         }
+
+        window.handleAiMatchSelection = async function(index) {
+            const hist = document.getElementById('new-chat-history');
+            const lastBubble = hist.lastElementChild;
+            if (lastBubble) {
+                const buttons = lastBubble.querySelectorAll('button');
+                buttons.forEach(b => {
+                    b.disabled = true;
+                    b.style.opacity = '0.5';
+                    b.style.cursor = 'default';
+                });
+            }
+
+            if (index === -1) {
+                addAiBubble("جاري تحويل طلبك لفريق الدعم البشري. سيقومون بالرد عليك في أقرب وقت.");
+                await escalateChatTicket(null, null);
+                setTimeout(() => {
+                    resetNewChat();
+                    switchTab('inbox');
+                    if (typeof loadStudentTickets === 'function') loadStudentTickets();
+                }, 2000);
+                return;
+            }
+
+            const match = window.currentAiMatches[index];
+            if (match) {
+                let answerHtml = `✅ <b>الجواب:</b><br><br>${match.answer.replace(/\\n/g, '<br>')}`;
+                if (match.story_id) {
+                    answerHtml += `<br><br><button onclick="openStoryViewer(${match.story_id})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">🎬 عرض التوضيح</button>`;
+                }
+                addAiBubble(answerHtml);
+                
+                await escalateChatTicket(match.answer, match.story_id);
+                
+                setTimeout(() => {
+                    document.getElementById('rag-success-screen').style.display = 'block';
+                    document.getElementById('chat-input-area').style.display = 'none';
+                }, 1000);
+            }
+        };
 
         async function escalateChatTicket(aiReply, storyId) {
             const urlParams = new URLSearchParams(window.location.search);
