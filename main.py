@@ -6540,8 +6540,8 @@ async def auto_sync_sheets_task():
                 logger.info(f"[AUTO-SYNC] Successfully synchronized {imported} rows from Google Sheets.")
             except Exception as e:
                 logger.error(f"[AUTO-SYNC] Error during synchronization: {e}")
-        # Synchronize every 3 hours
-        await asyncio.sleep(3600 * 3)
+        # Synchronize every 10 minutes
+        await asyncio.sleep(600)
 
 async def night_patrol_task(bot):
     import asyncio
