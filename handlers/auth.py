@@ -240,7 +240,7 @@ async def cmd_png(message: Message):
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🌐 فتح المخطط التفاعلي عالي الدقة (HD Zoom)", web_app=WebAppInfo(url=f"{base_url}/diagrams/customer_journey_5_cases.html"))],
-        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v56"))]
+        [InlineKeyboardButton(text="🔐 فتح لوحة الإدارة (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v57"))]
     ])
     
     caption_text = (
@@ -303,8 +303,8 @@ async def cmd_federer(message: Message):
     base_url = get_webapp_base_url()
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📊 لوحة تحكم المشرفين وإدارة الطلاب (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v56"))],
-        [InlineKeyboardButton(text="📥 إرسال نموذج الإكسيل الفارغ هنا (Telegram)", callback_data="btn_send_excel_template")],
+        [InlineKeyboardButton(text="🔐 فتح لوحة الإدارة لإدارة الطلاب (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v57"))],
+        [InlineKeyboardButton(text="📥 تحميل نموذج الإكسيل لإضافة طلاب (Telegram)", callback_data="btn_send_excel_template")],
         [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))],
         [InlineKeyboardButton(text="🔗 منصة ربط الحساب والتحقق (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))]
     ])
