@@ -31,8 +31,8 @@ async def run_google_sheets_sync(sheet_id: str):
     
     async with aiosqlite.connect(DATABASE_PATH) as db:
         for sheet in worksheets:
-            # Ne synchroniser QUE la feuille 'New Accounts'
-            if sheet.title.lower() != "new accounts":
+            # Ne synchroniser QUE la feuille 'Database'
+            if sheet.title.lower() != "database":
                 continue
                 
             all_values = sheet.get_all_values()
