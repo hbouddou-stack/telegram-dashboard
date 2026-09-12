@@ -26,6 +26,9 @@ async def run_google_sheets_sync(sheet_id: str):
         raise Exception(f"Erreur d'accès Google Sheets: {e}")
     
     imported = 0
+    new_count = 0
+    last_new = None
+    
     async with aiosqlite.connect(DATABASE_PATH) as db:
         for sheet in worksheets:
             # Ne synchroniser QUE la feuille 'New Accounts'
@@ -96,9 +99,12 @@ async def run_google_sheets_sync(sheet_id: str):
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, COALESCE(NULLIF(?, ''), datetime('now')))
                     """, (academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val))
                     
+                    new_count += 1
+                    last_new = {"name": f"{first_name} {last_name}".strip(), "id": academic_id}
+                    
                 imported += 1
         await db.commit()
-    return imported
+    return imported, new_count, last_new
 
 
 async def export_students_to_sheets(sheet_id: str):

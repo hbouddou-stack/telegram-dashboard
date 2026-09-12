@@ -1642,7 +1642,7 @@ async def api_admin_gateway_sync_sheets(request: web.Request):
         if not sheet_id:
             return web.json_response({'success': False, 'error': "L'ID de la Google Sheet n'a pas été fourni ou configuré."})
             
-        imported = await run_google_sheets_sync(sheet_id)
+        imported, new_count, last_new = await run_google_sheets_sync(sheet_id)
         return web.json_response({'success': True, 'count': imported})
     except Exception as e:
         import traceback
@@ -6527,17 +6527,31 @@ async def start_web_server(bot: Bot):
         await asyncio.sleep(3600)
 
 
-async def auto_sync_sheets_task():
+async def auto_sync_sheets_task(bot):
     import asyncio
     from sync_sheets import run_google_sheets_sync
-    from config import GOOGLE_SHEET_ID
+    from config import GOOGLE_SHEET_ID, TELEGRAM_ADMIN_IDS
     # Wait a bit before starting the first sync to allow the bot to initialize
     await asyncio.sleep(60)
     while True:
         if GOOGLE_SHEET_ID:
             try:
-                imported = await run_google_sheets_sync(GOOGLE_SHEET_ID)
+                imported, new_count, last_new = await run_google_sheets_sync(GOOGLE_SHEET_ID)
                 logger.info(f"[AUTO-SYNC] Successfully synchronized {imported} rows from Google Sheets.")
+                
+                if new_count > 0 and last_new:
+                    message = (
+                        f"✅ <b>Nouvelle Inscription !</b>\n\n"
+                        f"<b>Nouveaux élèves détectés :</b> {new_count}\n"
+                        f"<b>Dernier inscrit :</b> {last_new['name']}\n"
+                        f"<b>Numéro étudiant :</b> {last_new['id']}"
+                    )
+                    for admin_id in TELEGRAM_ADMIN_IDS:
+                        try:
+                            await bot.send_message(admin_id, message, parse_mode='HTML')
+                        except Exception as e:
+                            logger.error(f"[AUTO-SYNC] Failed to send notification to {admin_id}: {e}")
+                            
             except Exception as e:
                 logger.error(f"[AUTO-SYNC] Error during synchronization: {e}")
         # Synchronize every 10 minutes
@@ -6579,7 +6593,7 @@ async def night_patrol_task(bot):
 async def on_startup(bot: Bot):
     logger.info("Initializing database on startup...")
     asyncio.create_task(night_patrol_task(bot))
-    asyncio.create_task(auto_sync_sheets_task())
+    asyncio.create_task(auto_sync_sheets_task(bot))
     await db.init_db()
     logger.info("Database initialized.")
     try:
