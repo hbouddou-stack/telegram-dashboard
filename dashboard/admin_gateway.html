@@ -1308,14 +1308,31 @@
                 <!-- Timeline View -->
                 <div id="crm-view-timeline" style="flex:1; display:flex; flex-direction:column; padding:15px; overflow:hidden;">
                     
-                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:15px;">
-                        <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: var(--accent);">📊 Données Google Sheets (appels 2026)</h4>
-                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">👥 Team: <span id="profile-team-text" style="font-weight:bold;">-</span></div>
-                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📝 Commentaire: <span id="profile-comments-text" style="color:#ff9f0a; font-weight:bold;">-</span></div>
-                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📞 Appel 1: <span id="profile-appel1-text">-</span></div>
-                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📞 Appel 2: <span id="profile-appel2-text">-</span></div>
-                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📞 Appel 3: <span id="profile-appel3-text">-</span></div>
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px; direction:rtl; text-align:right;">
+                        <h4 style="margin: 0 0 15px 0; font-size: 1.05rem; color: var(--accent); display:flex; align-items:center; gap:8px;">
+                            📊 متابعة المكالمات (Google Sheets)
+                        </h4>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">👥 الفريق</div>
+                                <div id="profile-team-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; grid-column: 1 / -1;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📝 الملاحظات</div>
+                                <div id="profile-comments-text" style="font-weight:bold; color:#ff9f0a; white-space:pre-wrap;">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 1</div>
+                                <div id="profile-appel1-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 2</div>
+                                <div id="profile-appel2-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 3</div>
+                                <div id="profile-appel3-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
                         </div>
                     </div>
                     <div style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px; flex-shrink:0;">
