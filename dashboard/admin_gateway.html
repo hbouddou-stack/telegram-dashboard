@@ -563,6 +563,9 @@
                     <button onclick="toggleDuplicatesOnlyFilter(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--surface); color:var(--text1); border:1px solid var(--border); border-radius:12px; padding:11px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; margin-bottom:8px;">
                         👥 عرض المكررين فقط في القائمة
                     </button>
+                    <button onclick="resetAllFilters(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--surface); color:var(--text1); border:1.5px solid var(--border); border-radius:12px; padding:11px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; margin-bottom:8px;">
+                        🔄 إعادة ضبط جميع الفلاتر (إظهار كل الطلاب)
+                    </button>
                     <button onclick="openDuplicateScanner(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:transparent; color:var(--text2); border:1px dashed var(--border); border-radius:12px; padding:8px; font-weight:normal; cursor:pointer; font-size:0.8rem; font-family:inherit;">
                         🔍 النافذة السابقة (V1)
                     </button>
@@ -2007,6 +2010,43 @@
             filters.status = val;
             filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
         }
+        function resetAllFilters() {
+            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all' };
+            window.filterOnlyDuplicates = false;
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            
+            const btnDup = document.getElementById('btn-toggle-duplicates-filter');
+            if (btnDup) {
+                btnDup.style.background = 'var(--surface)';
+                btnDup.style.color = 'var(--text1)';
+                btnDup.style.borderColor = 'var(--border)';
+                btnDup.innerHTML = '👥 المكررين فقط';
+            }
+
+            const s1 = document.getElementById('source-select');
+            const s2 = document.getElementById('source-select-2');
+            if (s1) s1.value = 'all';
+            if (s2) s2.value = 'all';
+
+            const delBtn = document.getElementById('btn-delete-source');
+            if (delBtn) delBtn.style.display = 'none';
+
+            const gAll = document.getElementById('g-all');
+            if (gAll && typeof setGenderFilterUI === 'function') setGenderFilterUI('all', gAll);
+
+            const lvlAll = document.getElementById('lvl-all');
+            if (lvlAll && typeof setLevelFilterUI === 'function') setLevelFilterUI('all', lvlAll);
+
+            const payAll = document.getElementById('pay-all');
+            if (payAll && typeof setPayFilterUI === 'function') setPayFilterUI('all', payAll);
+
+            const tgAll = document.getElementById('tg-all');
+            if (tgAll && typeof setTelegramFilter === 'function') setTelegramFilter('all', tgAll);
+
+            filterStudents();
+            if(typeof updateDashboardView === 'function') updateDashboardView();
+        }
         function setSourceFilter(val) {
             filters.source = val;
             const s1 = document.getElementById('source-select');
@@ -2333,24 +2373,19 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                 <option value="sheet">من Sheet</option>
                                 <option value="manuel">تم يدوياً</option>`;
                     
-                    const excelFiles = [...new Set(allStudents.filter(s => s.source === 'excel' && s.source_file).map(s => s.source_file))];
+                    const excelFiles = [...new Set(allStudents.filter(s => s.source_file && String(s.source_file).trim()).map(s => String(s.source_file).trim()))];
                     excelFiles.forEach(f => {
                         opts += `<option value="file:${f}">📄 ${f}</option>`;
                     });
 
-                    let currentVal = '';
+                    const targetVal = filters.source || 'all';
                     if (sourceSelect) {
-                        currentVal = sourceSelect.value;
                         sourceSelect.innerHTML = opts;
-                        sourceSelect.value = currentVal;
+                        if (opts.includes(`value="${targetVal}"`)) sourceSelect.value = targetVal;
                     }
                     if (sourceSelect2) {
-                        const currentVal2 = sourceSelect2.value;
                         sourceSelect2.innerHTML = opts;
-                        sourceSelect2.value = currentVal2;
-                    }
-                    if (sourceSelect && opts.includes(`value="${currentVal}"`)) {
-                        sourceSelect.value = currentVal;
+                        if (opts.includes(`value="${targetVal}"`)) sourceSelect2.value = targetVal;
                     }
 
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
@@ -2465,36 +2500,37 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     || (filters.level === '4' && (yrLower.includes('رابع') || yrLower.includes('4')));
 
                 
-                const srcLower = String(s.source || '').toLowerCase();
-                const srcFileLower = String(s.source_file || '').toLowerCase();
+                const srcLower = String(s.source || '').toLowerCase().trim();
+                const srcFileLower = String(s.source_file || '').toLowerCase().trim();
                 let matchSource = false;
-                if (filters.source === 'all') {
+                if (!filters.source || filters.source === 'all') {
                     matchSource = true;
                 } else if (filters.source.startsWith('file:')) {
-                    const expectedFile = filters.source.substring(5).toLowerCase();
-                    matchSource = (srcFileLower === expectedFile);
+                    const expectedFile = filters.source.substring(5).toLowerCase().trim();
+                    matchSource = (srcFileLower === expectedFile || srcLower === expectedFile || srcFileLower.includes(expectedFile));
                 } else {
                     let derivedSource = 'manuel';
                     if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                    else if (srcLower.includes('excel')) derivedSource = 'excel';
-                    matchSource = (filters.source === derivedSource);
+                    else if (srcLower.includes('excel') || srcLower.includes('csv') || srcFileLower.length > 0) derivedSource = 'excel';
+                    matchSource = (filters.source === derivedSource || srcLower === filters.source.toLowerCase());
                 }
 
                 const linked = !!s.telegram_id;
                 const botStarted = !!s.telegram_id;
                 const groupJoined = !!s.group_joined || !!s.joined_at;
-                const isPaid = String(s.payment_status || '').toUpperCase().trim() === 'PAID' || String(s.payment_status || '').toUpperCase().trim() === 'PAYE' || String(s.payment_status || '').toUpperCase().trim() === 'مسدد';
+                const paidVal = String(s.payment_status || '').toUpperCase().trim();
+                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'م.م', 'مسدد', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME'].includes(paidVal);
                 
-                const matchTelegram = filters.telegram === 'all'
+                const matchTelegram = !filters.telegram || filters.telegram === 'all'
                     || (filters.telegram === 'bot' && botStarted)
                     || (filters.telegram === 'group' && groupJoined)
                     || (filters.telegram === 'none' && !botStarted);
                 
-                const matchPayment = filters.payment === 'all'
+                const matchPayment = !filters.payment || filters.payment === 'all'
                     || (filters.payment === 'paid' && isPaid)
                     || (filters.payment === 'unpaid' && !isPaid);
 
-                const matchStatus = filters.status === 'all'
+                const matchStatus = !filters.status || filters.status === 'all'
                     || (filters.status === 'linked' && linked)
                     || (filters.status === 'unlinked' && !linked);
 
@@ -2503,7 +2539,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 else if (s.group_joined) studentColor = 'green';
                 else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) studentColor = 'orange';
 
-                const matchColor = filters.color === 'all' || filters.color === studentColor;
+                const matchColor = !filters.color || filters.color === 'all' || filters.color === studentColor;
 
                 return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment;
             
