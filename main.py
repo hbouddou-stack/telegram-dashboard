@@ -5990,14 +5990,37 @@ async def api_chat(request):
             
         import importlib
         import config as cfg_module
+        import database as db
+        
         importlib.reload(cfg_module)
         api_keys = getattr(cfg_module, "GEMINI_API_KEYS", [])
         if not api_keys and getattr(cfg_module, "GEMINI_API_KEY", ""):
             api_keys = [cfg_module.GEMINI_API_KEY]
             
         if not api_keys:
-            return web.json_response({"success": False, "reply": "عذراً، لم يتم إعداد مفتاح الذكاء الاصطناعي (API Key) في الخادم."})
+            return web.json_response({"success": False, "reply": "عذرا، لم يتم تكوين مفتاح API."})
             
+        # Retrieve relevant FAQs to ground the AI
+        entries = await db.search_faq(message)
+        faq_context = ""
+        
+        if not entries:
+            # Fallback in-memory search
+            all_faqs = await db.get_faq_entries()
+            matches = []
+            for faq in all_faqs:
+                q = faq.get('question', '').lower()
+                a = faq.get('answer', '')
+                if message.lower() in q or q in message.lower() or any(w in q for w in message.lower().split() if len(w) > 4):
+                    matches.append(f"س: {faq['question']}\nج: {a}")
+                    if len(matches) >= 5:
+                        break
+            if matches:
+                faq_context = "\n\nمعلومات رسمية من الأكاديمية قد تساعدك في الإجابة:\n" + "\n---\n".join(matches)
+        else:
+            matches = [f"س: {faq['question']}\nج: {faq['answer']}" for faq in entries[:5]]
+            faq_context = "\n\nمعلومات رسمية من الأكاديمية قد تساعدك في الإجابة:\n" + "\n---\n".join(matches)
+
         import google.generativeai as genai
         import random
         api_key = random.choice(api_keys)
@@ -6005,8 +6028,15 @@ async def api_chat(request):
         
         model = genai.GenerativeModel('gemini-1.5-flash')
         
-        # System prompt to ensure it answers in Arabic
-        prompt = f"أنت مساعد افتراضي في منصة أكاديمية. أجب دائمًا باللغة العربية بأسلوب ودود ومختصر.\n\nسؤال الطالب: {message}"
+        # Enriched prompt
+        prompt = f"""أنت "المساعد الذكي"، مساعد لطيف وخدوم في "أكاديمية الإمام الباجي".
+مهمتك إجابة أسئلة الطلاب باختصار وبشكل مهذب وباللغة العربية.
+{faq_context}
+
+إذا كانت المعلومات الرسمية أعلاه تحتوي على الإجابة، فاستخدمها حصرياً ولا تخترع معلومات من عندك.
+إذا لم تكن الإجابة موجودة، أجب بشكل عام ووجه الطالب لفتح "تذكرة دعم" (Support Ticket) للتواصل مع الإدارة.
+
+سؤال الطالب: {message}"""
         
         response = model.generate_content(prompt)
         
