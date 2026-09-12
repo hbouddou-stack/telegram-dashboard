@@ -1270,16 +1270,9 @@
                 <div class="chip" style="background:rgba(255,159,10,0.1); border-color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏅 المستوى : <span id="profile-level-badge" style="font-weight:bold; color:#ff9f0a;">-</span></div>
             </div>
 
-            <!-- Tab 2: Academy & CRM -->
+            <!-- Tab 2: Academy -->
             <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="chip" id="profile-arabiclevel" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 Niveau Arabe : <span id="profile-arabiclevel-text">-</span></div>
-                
-                <h4 style="margin: 20px 0 10px 0; font-size: 0.95rem; color: var(--accent);">📞 Suivi CRM (Appels)</h4>
-                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👥 Équipe (Team) : <span id="profile-team-text" style="font-weight:bold;">-</span></div>
-                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📝 Commentaire : <span id="profile-comments-text" style="color:#ff9f0a; font-weight:bold;">-</span></div>
-                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Appel 1 : <span id="profile-appel1-text">-</span></div>
-                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Appel 2 : <span id="profile-appel2-text">-</span></div>
-                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Appel 3 : <span id="profile-appel3-text">-</span></div>
                 <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 السنة الدراسية : <span id="profile-year-text" style="font-weight:bold;">-</span></div>
                 <div class="chip" id="profile-school-level" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏫 المستوى الدراسي : <span id="profile-school-level-text" style="font-weight:bold;">-</span></div>
                 <div class="chip" id="profile-studentid" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
@@ -1314,6 +1307,17 @@
 
                 <!-- Timeline View -->
                 <div id="crm-view-timeline" style="flex:1; display:flex; flex-direction:column; padding:15px; overflow:hidden;">
+                    
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: var(--accent);">📊 Données Google Sheets (appels 2026)</h4>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">👥 Team: <span id="profile-team-text" style="font-weight:bold;">-</span></div>
+                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📝 Commentaire: <span id="profile-comments-text" style="color:#ff9f0a; font-weight:bold;">-</span></div>
+                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📞 Appel 1: <span id="profile-appel1-text">-</span></div>
+                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📞 Appel 2: <span id="profile-appel2-text">-</span></div>
+                            <div class="chip" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px;">📞 Appel 3: <span id="profile-appel3-text">-</span></div>
+                        </div>
+                    </div>
                     <div style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px; flex-shrink:0;">
                         <div class="chip crm-filter active" onclick="filterCrm('all')" id="crm-flt-all" style="cursor:pointer; background:rgba(10,132,255,0.15); color:#0a84ff; border-color:#0a84ff;">🔘 عرض الكل</div>
                         <div class="chip crm-filter" onclick="filterCrm('notes')" id="crm-flt-notes" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🗣️ الملاحظات</div>
