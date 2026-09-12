@@ -6023,37 +6023,42 @@ async def api_support_rag_check(request):
         subtheme = data.get('subtheme', '')
         msg = data.get('message', '').lower()
         
-        # Load FAQ DB
-        import json
-        import os
-        faq_path = os.path.join(os.path.dirname(__file__), 'faq_db.json')
-        if os.path.exists(faq_path):
-            with open(faq_path, 'r', encoding='utf-8') as f:
-                faq_data = json.load(f)
-                
-            matches = []
-            for t, questions in faq_data.items():
-                for question, answer_obj in questions.items():
-                    if msg and (question.lower() in msg or msg in question.lower() or any(word in question.lower() for word in msg.split() if len(word) > 4)):
-                        ans_text = answer_obj.get('text', '') if isinstance(answer_obj, dict) else answer_obj
-                        story_id = answer_obj.get('story_id') if isinstance(answer_obj, dict) else None
-                        
-                        matches.append({
-                            'question': question,
-                            'answer': ans_text,
-                            'story_id': story_id
-                        })
-                        if len(matches) >= 3:
-                            break
-                if len(matches) >= 3:
-                    break
+        if not msg:
+            return web.json_response({'found': False})
             
-            if matches:
-                return web.json_response({'found': True, 'matches': matches})
-            else:
-                return web.json_response({'found': False})
+        import database as db
         
-        return web.json_response({'found': False})
+        # We will search the SQLite faq_entries table
+        entries = await db.search_faq(msg)
+        
+        if not entries:
+            # Try a broader search by just fetching all and filtering in memory
+            all_faqs = await db.get_faq_entries()
+            matches = []
+            for faq in all_faqs:
+                q = faq.get('question', '').lower()
+                a = faq.get('answer', '')
+                if msg in q or q in msg or any(word in q for word in msg.split() if len(word) > 4):
+                    matches.append({
+                        'question': faq['question'],
+                        'answer': a,
+                        'story_id': None
+                    })
+                    if len(matches) >= 3:
+                        break
+        else:
+            matches = []
+            for faq in entries[:3]:
+                matches.append({
+                    'question': faq['question'],
+                    'answer': faq['answer'],
+                    'story_id': None
+                })
+        
+        if matches:
+            return web.json_response({'found': True, 'matches': matches})
+        else:
+            return web.json_response({'found': False})
     except Exception as e:
         logger.error(f"Error in rag_check: {e}")
         return web.json_response({'found': False})
