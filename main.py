@@ -6512,6 +6512,22 @@ async def start_web_server(bot: Bot):
         await asyncio.sleep(3600)
 
 
+async def auto_sync_sheets_task():
+    import asyncio
+    from sync_sheets import run_google_sheets_sync
+    from config import GOOGLE_SHEET_ID
+    # Wait a bit before starting the first sync to allow the bot to initialize
+    await asyncio.sleep(60)
+    while True:
+        if GOOGLE_SHEET_ID:
+            try:
+                imported = await run_google_sheets_sync(GOOGLE_SHEET_ID)
+                logger.info(f"[AUTO-SYNC] Successfully synchronized {imported} rows from Google Sheets.")
+            except Exception as e:
+                logger.error(f"[AUTO-SYNC] Error during synchronization: {e}")
+        # Synchronize every 3 hours
+        await asyncio.sleep(3600 * 3)
+
 async def night_patrol_task(bot):
     import asyncio
     import aiosqlite
@@ -6548,6 +6564,7 @@ async def night_patrol_task(bot):
 async def on_startup(bot: Bot):
     logger.info("Initializing database on startup...")
     asyncio.create_task(night_patrol_task(bot))
+    asyncio.create_task(auto_sync_sheets_task())
     await db.init_db()
     logger.info("Database initialized.")
     try:
