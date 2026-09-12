@@ -2447,12 +2447,17 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
                 
                 const srcLower = String(s.source || '').toLowerCase();
-                let derivedSource = 'manuel';
-                if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                else if (srcLower.includes('excel')) derivedSource = 'excel';
-                
-                const matchSource = filters.source === 'all'
-                    || filters.source === derivedSource;
+                let matchSource = false;
+                if (filters.source === 'all') {
+                    matchSource = true;
+                } else if (filters.source.startsWith('file:')) {
+                    matchSource = (srcLower === filters.source.toLowerCase());
+                } else {
+                    let derivedSource = 'manuel';
+                    if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
+                    else if (srcLower.includes('excel')) derivedSource = 'excel';
+                    matchSource = (filters.source === derivedSource);
+                }
 
                 const linked = !!s.telegram_id;
                 const botStarted = !!s.telegram_id;
