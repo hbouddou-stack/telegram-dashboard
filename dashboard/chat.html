@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المساعد الذكي</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="bot-config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            --accent: #f1c40f;
+            --text-1: #ffffff;
+            --text-2: #cbd5e1;
+        }
+        body {
+            background-color: #000b29;
+            background-image: var(--bg);
+            color: var(--text-1);
+            font-family: 'Tajawal', sans-serif;
+            margin: 0; padding: 0;
+            height: 100vh; display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .header { text-align: center; padding: 20px; flex-shrink: 0; }
+        .header h1 { margin: 0; font-size: 1.5rem; color: var(--accent); }
+        .header p { margin: 5px 0 0; color: var(--text-2); font-size: 0.9rem; }
+        
+        .chat-container {
+            flex: 1; display: flex; flex-direction: column; overflow: hidden;
+            background: rgba(0,0,0,0.2); border-radius: 20px 20px 0 0;
+        }
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .message-bubble {
+            max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+        .msg-ai { background: rgba(255,255,255,0.1); border-bottom-right-radius: 4px; align-self: flex-start; }
+        .msg-user { background: var(--accent); color: #000; border-bottom-left-radius: 4px; align-self: flex-end; }
+        
+        .chat-input-bar {
+            display: flex; gap: 10px; padding: 15px; background: rgba(0,0,0,0.5); flex-shrink: 0;
+        }
+        .chat-input-bar input {
+            flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: white; padding: 12px 18px; border-radius: 25px; outline: none; font-family: 'Tajawal', sans-serif;
+        }
+        .chat-input-bar button {
+            background: var(--accent); color: #000; border: none; width: 46px; height: 46px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 1.2rem; transform: rotate(180deg);
+        }
+        .chips-container {
+            display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px; scrollbar-width: none;
+            background: rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+        .chip {
+            white-space: nowrap; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: white; padding: 8px 14px; border-radius: 20px; font-family: 'Tajawal'; font-size: 0.85rem; cursor: pointer;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 المساعد الذكي</h1>
+        <p>اسألني أي شيء عن الأكاديمية</p>
+    </div>
+    
+    <div class="chips-container">
+        <button class="chip" onclick="sendAiQuickMessage('كم رسوم التسجيل؟')">💰 رسوم التسجيل</button>
+        <button class="chip" onclick="sendAiQuickMessage('كيف يتم التدريس في الأكاديمية؟')">📚 نظام التدريس</button>
+        <button class="chip" onclick="sendAiQuickMessage('من هم الأساتذة؟')">👨‍🏫 الأساتذة</button>
+        <button class="chip" onclick="sendAiQuickMessage('هل يوجد إجازات؟')">📜 الإجازات</button>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="ai-messages">
+            <div class="message-bubble msg-ai">أهلاً بك! 👋 أنا المساعد الذكي لأكاديمية الإمام الباجي. كيف يمكنني مساعدتك اليوم؟</div>
+        </div>
+        <div class="chat-input-bar">
+            <input type="text" id="ai-input" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key === 'Enter') sendAiMessage()" />
+            <button onclick="sendAiMessage()">&#10148;</button>
+        </div>
+    </div>
+
+    <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.expand();
+        }
+
+        async function sendAiQuickMessage(msg) {
+            const input = document.getElementById('ai-input');
+            input.value = msg;
+            await sendAiMessage();
+        }
+
+        async function sendAiMessage() {
+            const input = document.getElementById('ai-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            
+            const container = document.getElementById('ai-messages');
+            container.innerHTML += `<div class="message-bubble msg-user">${msg}</div>`;
+            input.value = '';
+            
+            const loadingId = 'loading-' + Date.now();
+            container.innerHTML += `<div class="message-bubble msg-ai" id="${loadingId}">... جاري التفكير ...</div>`;
+            container.scrollTop = container.scrollHeight;
+            
+            try {
+                const tid = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? window.Telegram.WebApp.initDataUnsafe.user.id : null) || null;
+                const res = await fetch(`${BOT_BASE}/api/chat`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: msg, user_id: tid, context: "standalone_chat" })
+                });
+                document.getElementById(loadingId).remove();
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    container.innerHTML += `<div class="message-bubble msg-ai">${data.reply || "عذراً، حدث خطأ"}</div>`;
+                } else {
+                    container.innerHTML += `<div class="message-bubble msg-ai">خطأ في الاتصال بالخادم</div>`;
+                }
+            } catch(e) {
+                document.getElementById(loadingId).remove();
+                container.innerHTML += `<div class="message-bubble msg-ai">تعذر الاتصال</div>`;
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>
