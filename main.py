@@ -6597,6 +6597,39 @@ async def on_startup(bot: Bot):
     asyncio.create_task(auto_sync_sheets_task(bot))
     await db.init_db()
     logger.info("Database initialized.")
+    
+    # Inject Default FAQs from website
+    try:
+        import aiosqlite
+        from config import DATABASE_PATH
+        faq_data = [
+            ("التسجيل والأسعار", "عام", "كم تبلغ رسوم الاشتراك في الأكاديمية؟", "رسوم الاشتراك الكامل تبلغ 500 درهم أو 600 درهم حسب الباقة. يمكنك إيقاف التجديد في أي وقت."),
+            ("التسجيل والأسعار", "عام", "كيف يتم الدفع؟", "يتم الدفع عبر البطاقة البنكية أو التحويل البنكي، والوصول للبرنامج يتم فور تأكيد الدفع."),
+            ("التسجيل والأسعار", "عام", "هل يمكنني إلغاء الاشتراك متى شئت؟", "نعم، يمكنك إيقاف التجديد في أي وقت بسهولة من لوحة التحكم الخاصة بك."),
+            ("المنهج والدراسة", "عام", "لا أملك إلا 3 ساعات أسبوعياً، هل هذا يكفي؟", "نعم، بتخصيص حوالي نصف ساعة يومياً أو 3 ساعات أسبوعياً يمكنك متابعة الدروس والمراجعة دون أن تتأخر عن زملائك."),
+            ("المنهج والدراسة", "عام", "أبدأ من الصفر، هل سأفهم الدروس؟", "بالتأكيد، المنهج مصمم بشكل متدرج يبدأ من المستوى الأساسي (التأسيس) ويبني معك المعرفة خطوة بخطوة."),
+            ("المنهج والدراسة", "عام", "كم عدد المستويات أو الفصول الدراسية؟", "البرنامج مقسم إلى أربعة مستويات متدرجة: التأسيس، البناء، التمكّن، والإتقان."),
+            ("المنهج والدراسة", "عام", "هل هناك شهادة تخرج واختبارات؟", "نعم، هناك اختبارات دورية في نهاية كل مستوى، ويحصل الطالب على شهادة تخرج بعد إتمام البرنامج."),
+            ("المنهج والدراسة", "عام", "ما هي المواد التي تُدرس في الأكاديمية؟", "نُدرس 20 مادة منها: السيرة النبوية، التجويد، العقيدة، النحو، الفقه (مذهب مالكي)، مصطلح الحديث، أصول الفقه، وغيرها."),
+            ("الدروس والمنصة", "عام", "هل الدروس مباشرة أم مسجلة؟", "النظام يجمع بين المرونة والتفاعل، فهناك دروس مسجلة بجودة عالية لتتابعها وقتما تشاء، ولقاءات مباشرة مع المشايخ لطرح الأسئلة."),
+            ("الدروس والمنصة", "عام", "كيف أصل إلى الدروس بعد الاشتراك؟", "عبر منصة إلكترونية مخصصة (فضاء الطالب) يمكنك الدخول إليها ومتابعة تقدمك وجدولك الأسبوعي."),
+            ("تواصل ودعم", "عام", "كيف يمكنني التواصل مع إدارة الأكاديمية؟", "يمكنك التواصل عبر البريد الإلكتروني info@albajiacademy.com أو عبر الهاتف/واتساب على الرقم +212708788878. ونرد خلال 24 ساعة عمل.")
+        ]
+        async with aiosqlite.connect(DATABASE_PATH) as conn:
+            async with conn.execute("SELECT COUNT(*) FROM faq_entries") as cur:
+                count = (await cur.fetchone())[0]
+            if count == 0:
+                now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                for cat, subcat, q, a in faq_data:
+                    await conn.execute("""
+                        INSERT INTO faq_entries 
+                        (category, subcategory, question, answer, views, helpful_votes, not_helpful_votes, is_pinned, created_at, updated_at) 
+                        VALUES (?, ?, ?, ?, 0, 0, 0, 0, ?, ?)
+                    """, (cat, subcat, q, a, now, now))
+                await conn.commit()
+                logger.info("Injected 11 default FAQs from albajiacademy.com.")
+    except Exception as e:
+        logger.error(f"Failed to inject default FAQs: {e}")
     try:
         await db.set_setting("current_instance_id", INSTANCE_ID)
         logger.info(f"Registered instance ID in database settings: {INSTANCE_ID}")
