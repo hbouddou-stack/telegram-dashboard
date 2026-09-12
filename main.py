@@ -1099,33 +1099,105 @@ async def api_admin_gateway_toggle_exclude(request: web.Request):
 
 async def api_admin_gateway_bulk_action(request: web.Request):
     import aiosqlite
+    import datetime
+    import logging
+    import re
     from config import DATABASE_PATH
+    _log = logging.getLogger('main')
     try:
         data = await request.json()
         action = data.get('action')
         student_ids = data.get('student_ids', [])
-        subject = data.get('subject', '')
-        message = data.get('message', '')
+        subject = data.get('subject') or "رسالة من أكاديمية الباجي"
+        message_template = data.get('message', '').strip()
         
         if not student_ids:
             return web.json_response({"success": False, "error": "Aucun étudiant sélectionné"})
+        if not message_template:
+            return web.json_response({"success": False, "error": "Le message est vide"})
             
-        import logging
-        _log = logging.getLogger('main')
-        _log.info(f"Bulk action '{action}' triggered for {len(student_ids)} students.")
+        bot = request.app.get('bot')
+        now_str = datetime.datetime.utcnow().isoformat()
         
-        # Here we could loop and send emails or whatsapp
-        # For now, just mark success to validate the UI workflow
-        # A real implementation would push to a background queue or use aiocron
+        sent_count = 0
+        not_linked_count = 0
+        errors = []
         
-        # Example of updating stats if it was email:
-        # if action == 'email':
-        #    async with aiosqlite.connect(DATABASE_PATH) as db:
-        #        for sid in student_ids:
-        #            await db.execute("UPDATE academy_students SET email_sent = email_sent + 1 WHERE student_id = ?", (sid,))
-        #        await db.commit()
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            for sid in student_ids:
+                async with db.execute("SELECT * FROM academy_students WHERE student_id = ?", (sid,)) as cur:
+                    student = await cur.fetchone()
+                if not student:
+                    continue
+                    
+                fname = student['first_name'] or ''
+                lname = student['last_name'] or ''
+                name = f"{fname} {lname}".strip() or "طالب العلم"
                 
-        return web.json_response({"success": True, "count": len(student_ids)})
+                # Replace variables in message
+                msg_text = message_template.replace('{الاسم}', name).replace('{prenom}', fname).replace('{nom}', lname).replace('{name}', name)
+                
+                if action == 'telegram':
+                    tid = student['telegram_id']
+                    if tid and bot:
+                        try:
+                            await bot.send_message(chat_id=int(tid), text=msg_text)
+                            sent_count += 1
+                        except Exception as ex:
+                            _log.error(f"Error sending bulk TG message to {tid}: {ex}")
+                            errors.append(str(ex))
+                    else:
+                        not_linked_count += 1
+                elif action == 'sms':
+                    phone_raw = student['phone'] or ''
+                    phone = re.sub(r'\D', '', phone_raw)
+                    if phone.startswith('0'): phone = '212' + phone[1:]
+                    if phone:
+                        await db.execute(
+                            "INSERT INTO sms_queue (student_id, phone, message, status, created_at) VALUES (?, ?, ?, 'PENDING', ?)",
+                            (sid, phone, msg_text, now_str)
+                        )
+                        sent_count += 1
+                    else:
+                        errors.append(f"Student {sid} has no phone")
+                elif action == 'email':
+                    em = student['email']
+                    if em:
+                        try:
+                            import config as cfg
+                            if cfg.SMTP_USER and cfg.SMTP_PASSWORD:
+                                import smtplib
+                                from email.mime.multipart import MIMEMultipart
+                                from email.mime.text import MIMEText
+                                msg_root = MIMEMultipart('alternative')
+                                msg_root['Subject'] = subject
+                                msg_root['From'] = f"{getattr(cfg, 'SMTP_SENDER_NAME', 'Académie')} <{cfg.SMTP_USER}>"
+                                msg_root['To'] = em
+                                msg_root.attach(MIMEText(msg_text, 'plain', 'utf-8'))
+                                server = smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=10)
+                                server.starttls()
+                                server.login(cfg.SMTP_USER, cfg.SMTP_PASSWORD)
+                                server.send_message(msg_root)
+                                server.quit()
+                            sent_count += 1
+                            await db.execute("UPDATE academy_students SET email_sent = COALESCE(email_sent, 0) + 1, email_sent_at = ? WHERE student_id = ?", (now_str, sid))
+                        except Exception as em_err:
+                            _log.error(f"Error sending bulk email to {em}: {em_err}")
+                            errors.append(str(em_err))
+                elif action == 'whatsapp':
+                    sent_count += 1
+                    await db.execute("UPDATE academy_students SET whatsapp_sent = COALESCE(whatsapp_sent, 0) + 1, whatsapp_sent_at = ? WHERE student_id = ?", (now_str, sid))
+            
+            await db.commit()
+            
+        return web.json_response({
+            "success": True,
+            "sent": sent_count,
+            "not_linked": not_linked_count,
+            "count": len(student_ids),
+            "errors": errors[:5]
+        })
     except Exception as e:
         import logging
         logging.getLogger('main').error(f"Error in bulk_action: {e}")
