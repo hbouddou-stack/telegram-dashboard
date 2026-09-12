@@ -1113,7 +1113,7 @@ async def api_admin_gateway_bulk_action(request: web.Request):
         
         if not student_ids:
             return web.json_response({"success": False, "error": "Aucun étudiant sélectionné"})
-        if not message_template:
+        if not message_template and action != 'whatsapp':
             return web.json_response({"success": False, "error": "Le message est vide"})
             
         bot = request.app.get('bot')

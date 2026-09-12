@@ -486,9 +486,16 @@
             </div>
             
             <!-- Bulk Action Bar -->
-            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(14,165,233,0.05); border:1px solid #0ea5e9; border-radius:12px; padding:12px 15px; align-items:center; justify-content:space-between; flex-direction:row; gap:10px;">
-                <div style="font-weight:bold; color:#0ea5e9; font-size:0.95rem;">تم تحديد <span id="bulk-count">0</span></div>
-                <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 5px rgba(14,165,233,0.3);">📝 كتابة رسالة</button>
+            <div id="bulk-action-bar" style="display:none; margin-top:10px; background:rgba(16,185,129,0.08); border:1.5px solid #10b981; border-radius:14px; padding:12px 16px; align-items:center; justify-content:space-between; flex-direction:row; gap:10px; flex-wrap:wrap;">
+                <div style="font-weight:900; color:#047857; font-size:0.98rem; display:flex; align-items:center; gap:6px;">
+                    <span>👥 تم تحديد</span>
+                    <span id="bulk-count" style="background:#10b981; color:white; padding:2px 10px; border-radius:12px; font-size:0.9rem;">0</span>
+                    <span>طالب</span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <button onclick="openComposerV2()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:9px 18px; border-radius:12px; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 3px 10px rgba(16,185,129,0.4); display:flex; align-items:center; gap:6px;">🚀 إرسال رسالة V2</button>
+                    <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.88rem; font-family:inherit;">📝 كتابة رسالة</button>
+                </div>
             </div>
 </div>
         </div>
@@ -693,15 +700,23 @@
             });
             
             function updateMassSmsButton() {
-                const selected = document.querySelectorAll('.student-select-cb:checked').length;
-                const bar = document.getElementById('bulk-action-bar');
-                if(bar) {
-                    if(selected > 0) {
-                        bar.style.display = 'flex';
-                        document.getElementById('bulk-count').textContent = selected;
-                    } else {
-                        bar.style.display = 'none';
-                    }
+                const cbs = document.querySelectorAll('.student-select-cb:checked');
+                const selected = cbs.length;
+                
+                // Top bar
+                const barTop = document.getElementById('bulk-action-bar');
+                const countTop = document.getElementById('bulk-count');
+                if (barTop) {
+                    barTop.style.display = selected > 0 ? 'flex' : 'none';
+                    if (countTop) countTop.textContent = selected;
+                }
+                
+                // Floating bottom bar (always on top of viewport)
+                const barFloat = document.getElementById('bulk-floating-bar');
+                const countFloat = document.getElementById('bulk-float-count');
+                if (barFloat) {
+                    barFloat.style.display = selected > 0 ? 'flex' : 'none';
+                    if (countFloat) countFloat.textContent = selected;
                 }
             }
             
@@ -964,9 +979,14 @@
                 </ul>
             </div>
             
-            <button id="btn-execute-mass" class="btn btn-primary" onclick="executeMassAction()" style="width:100%; padding:15px; font-size:1.1rem; border-radius:8px; opacity:0.5; pointer-events:none;">
-                إرسال الآن (Envoyer)
-            </button>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button id="btn-execute-mass-v2" onclick="executeMassActionV2()" style="width:100%; padding:15px; font-size:1.1rem; border-radius:12px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; font-weight:900; cursor:pointer; box-shadow:0 4px 14px rgba(16,185,129,0.4); font-family:inherit;">
+                    🚀 إرسال الآن V2 (Envoyer Message)
+                </button>
+                <button id="btn-execute-mass" class="btn btn-primary" onclick="executeMassAction()" style="width:100%; padding:12px; font-size:1.0rem; border-radius:10px; cursor:pointer;">
+                    إرسال الآن (Envoyer)
+                </button>
+            </div>
             
             <!-- Dispatch Status -->
             <div id="dispatch-status-container" style="display:none; margin-top:20px; padding:15px; background:var(--bg); border:1px solid var(--border); border-radius:8px;">
@@ -1165,8 +1185,13 @@
     <!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
         <div class="modal" id="fiche-eleve-modal" style="width: 95%; max-width: 1200px; height: 90vh; display: flex; flex-direction: column;">
-            <div class="modal-header">
-                <h2>📋 بطاقة الطالب التفصيلية</h2>
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <h2 style="margin:0;">📋 بطاقة الطالب التفصيلية</h2>
+                    <button onclick="openComposerForActiveStudent()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:7px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit; display:flex; align-items:center; gap:5px; box-shadow:0 2px 8px rgba(16,185,129,0.35);">
+                        🚀 إرسال رسالة V2
+                    </button>
+                </div>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
             </div>
             
@@ -1211,6 +1236,18 @@
 
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
+                <!-- Quick Contact V2 Banner -->
+                <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(14,165,233,0.08)); border:1.5px solid #10b981; border-radius:14px; padding:12px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <div style="font-weight:900; color:#047857; font-size:0.95rem;">✉️ تواصل مباشر مع هذا الطالب (V2)</div>
+                        <div style="font-size:0.78rem; color:var(--text2);">مراسلة فورية عبر واتساب، تليجرام، أو رسالة مخصصة</div>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button onclick="directWhatsAppActiveStudent()" style="background:#25D366; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(37,211,102,0.3);">💬 واتساب</button>
+                        <button onclick="directTelegramActiveStudent()" style="background:#0088cc; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,136,204,0.3);">✈️ تليجرام</button>
+                        <button onclick="openComposerForActiveStudent()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:900; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(16,185,129,0.35);">🚀 إرسال رسالة V2</button>
+                    </div>
+                </div>
                 <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">
                     👤 الاسم الكامل : <span id="profile-name-text" style="font-size:1.1rem; font-weight:bold;">-</span>
                 </div>
@@ -1919,6 +1956,7 @@
             }
             // Trigger data loading
             if(id === 'overview') loadHomeDashboard();
+            if(id === 'actions') calculateMassTarget();
             if(id === 'students') filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
@@ -2738,7 +2776,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         : '';
 
                     tr.innerHTML = `
-                        <td style="padding:12px 8px; text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="student-select-cb" value="${s.student_id}"></td>
+                        <td style="padding:12px 6px; text-align:center;" onclick="event.stopPropagation()">
+                            <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                                <input type="checkbox" class="student-select-cb" value="${s.student_id}">
+                                <button onclick="event.stopPropagation(); openComposerForSingleStudent('${s.student_id}')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:4px 8px; border-radius:8px; font-size:0.72rem; font-weight:900; cursor:pointer; white-space:nowrap; box-shadow:0 2px 4px rgba(16,185,129,0.3);" title="إرسال رسالة V2">✉️ V2</button>
+                            </div>
+                        </td>
                         <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
                         <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
@@ -2903,7 +2946,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                 </div>
                                 ${frNameHTML}
                             </div>
-                            ${payBadge}
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                                ${payBadge}
+                                <button onclick="event.stopPropagation(); openComposerForSingleStudent('${s.student_id}')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:3px; box-shadow:0 2px 5px rgba(16,185,129,0.3);">🚀 رسالة V2</button>
+                            </div>
                         </div>
                         <div style="margin-top:8px;">${coloredEmail}</div>
                         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:10px;">
@@ -5679,14 +5725,15 @@ function renderHomeAlerts(alerts) {
 
 
     <!-- FLOATING BOTTOM BULK ACTION BAR -->
-    <div id="bulk-floating-bar" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--surface); border:1.5px solid #0ea5e9; box-shadow:0 8px 30px rgba(0,0,0,0.3); padding:10px 18px; border-radius:20px; z-index:9999; align-items:center; gap:12px; width:90%; max-width:480px; justify-content:space-between; box-sizing:border-box;">
+    <div id="bulk-floating-bar" style="display:none; position:fixed; bottom:25px; left:50%; transform:translateX(-50%); background:var(--surface); border:2px solid #10b981; box-shadow:0 12px 35px rgba(0,0,0,0.45); padding:10px 18px; border-radius:22px; z-index:99999; align-items:center; gap:10px; width:94%; max-width:520px; justify-content:space-between; box-sizing:border-box; backdrop-filter:blur(8px);">
         <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:#0ea5e9; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.85rem;" id="bulk-float-count">0</span>
-            <span style="font-weight:bold; color:var(--text1); font-size:0.9rem;">طالب محدد</span>
+            <span style="background:#10b981; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.9rem;" id="bulk-float-count">0</span>
+            <span style="font-weight:bold; color:var(--text1); font-size:0.92rem;">طالب</span>
         </div>
-        <div style="display:flex; gap:8px;">
-            <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 18px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; box-shadow:0 2px 6px rgba(14,165,233,0.4); display:flex; align-items:center; gap:6px;">📝 كتابة رسالة</button>
-            <button onclick="unselectAll()" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center;" title="إلغاء التحديد">✕</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <button id="btn-float-v2" onclick="openComposerV2()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 4px 14px rgba(16,185,129,0.45); display:flex; align-items:center; gap:6px;">🚀 إرسال رسالة V2</button>
+            <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">📝 رسالة</button>
+            <button onclick="unselectAll()" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center;" title="إلغاء التحديد">✕</button>
         </div>
     </div>
 
@@ -5716,10 +5763,21 @@ function renderHomeAlerts(alerts) {
                 <div>
                     <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">💬 نص الرسالة :</label>
                     <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
-                    <div style="font-size:0.75rem; color:var(--text2); margin-top:5px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                        <span>💡 المتغيرات المتاحة:</span>
+                    <!-- Quick Templates -->
+                    <div style="margin-top:8px;">
+                        <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <span onclick="setComposerTemplate('welcome')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.78rem; font-weight:bold; color:var(--text1);">👋 رسالة ترحيب</span>
+                            <span onclick="setComposerTemplate('reminder')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.78rem; font-weight:bold; color:var(--text1);">⏰ تذكير بالانضمام</span>
+                            <span onclick="setComposerTemplate('payment')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.78rem; font-weight:bold; color:var(--text1);">💳 تأكيد الاشتراك</span>
+                        </div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                        <span>💡 المتغيرات:</span>
                         <span onclick="insertVar('{الاسم}')" style="cursor:pointer; background:var(--surface); padding:2px 8px; border-radius:6px; border:1px solid var(--border); font-weight:bold; color:#0ea5e9;">{الاسم}</span>
                     </div>
+                    <!-- Fallback WhatsApp Direct Link -->
+                    <div id="composer-wa-fallback" style="display:none; margin-top:10px; padding:10px; background:rgba(37,211,102,0.1); border:1px solid #25D366; border-radius:10px; text-align:center;"></div>
                 </div>
                 
                 <!-- Sending Buttons -->
@@ -5745,11 +5803,43 @@ function renderHomeAlerts(alerts) {
     </div>
     
     <script>
+        // Safe URL Opener for Telegram WebApp (iOS / Android / Desktop)
+        function safeOpenUrl(url) {
+            if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openLink === 'function') {
+                try {
+                    window.Telegram.WebApp.openLink(url);
+                    return true;
+                } catch(e) {
+                    console.warn('Telegram.WebApp.openLink error:', e);
+                }
+            }
+            try {
+                const win = window.open(url, '_blank');
+                if (!win) window.location.href = url;
+                return true;
+            } catch(e) {
+                window.location.href = url;
+                return true;
+            }
+        }
+
         function insertVar(v) {
             const ta = document.getElementById('composer-text');
             if (ta) {
                 ta.value = ta.value + ' ' + v + ' ';
                 ta.focus();
+            }
+        }
+
+        function setComposerTemplate(type) {
+            const ta = document.getElementById('composer-text');
+            if (!ta) return;
+            if (type === 'welcome') {
+                ta.value = "السلام عليكم ورحمة الله وبركاته أخي {الاسم}،\nمرحباً بك في أكاديمية الباجي. نود التأكد من وصولك للمنصة بنجاح.";
+            } else if (type === 'reminder') {
+                ta.value = "السلام عليكم ورحمة الله أخي {الاسم}،\nنذكركم بضرورة إكمال ربط حسابكم في أكاديمية الباجي للاستفادة من الدروس والأنشطة.";
+            } else if (type === 'payment') {
+                ta.value = "السلام عليكم ورحمة الله أخي {الاسم}،\nنرجو منكم تأكيد استكمال الاشتراك في أكاديمية الباجي لتفعيل عضويتكم في المجموعة.";
             }
         }
 
@@ -5763,11 +5853,108 @@ function renderHomeAlerts(alerts) {
         }
 
         function openBulkModal(channel) {
-            openComposer(channel);
+            openComposerV2(channel);
         }
 
         function executeBulkAction() {
             sendBulkMessage('email');
+        }
+
+        // ================= V2 COMPOSER & ACTIONS =================
+        function openComposerV2(prefChannel) {
+            let cbs = document.querySelectorAll('.student-select-cb:checked');
+            if (cbs.length === 0 && typeof activeStudentId !== 'undefined' && activeStudentId) {
+                openComposerForSingleStudent(activeStudentId);
+                return;
+            }
+            if (cbs.length === 0) {
+                alert('⚠️ يرجى تحديد طالب واحد على الأقل أولاً بوضع علامة (✓) بجانب اسمه.');
+                return;
+            }
+
+            const textEl = document.getElementById('composer-text');
+            if (textEl && !textEl.value.trim()) {
+                textEl.value = "السلام عليكم ورحمة الله وبركاته أخي {الاسم}،\nتحية طيبة من إدارة أكاديمية الباجي.";
+            }
+
+            const fbEl = document.getElementById('composer-wa-fallback');
+            if (fbEl) fbEl.style.display = 'none';
+
+            openComposer(prefChannel);
+        }
+
+        function openComposerForSingleStudent(sid) {
+            document.querySelectorAll('.student-select-cb').forEach(cb => {
+                cb.checked = (String(cb.value) === String(sid));
+            });
+            updateMassSmsButton();
+            openComposer();
+        }
+
+        function openComposerForActiveStudent() {
+            if (typeof activeStudentId !== 'undefined' && activeStudentId) {
+                openComposerForSingleStudent(activeStudentId);
+            } else {
+                alert('⚠️ يرجى اختيار طالب أولاً.');
+            }
+        }
+
+        function directWhatsAppActiveStudent() {
+            const student = (typeof activeStudentObj !== 'undefined' && activeStudentObj) 
+                || (typeof allStudents !== 'undefined' && allStudents.find(s => String(s.student_id) === String(activeStudentId)));
+            if (!student) {
+                alert('⚠️ لم يتم العثور على بيانات الطالب.');
+                return;
+            }
+            if (!student.phone) {
+                alert('⚠️ هذا الطالب ليس لديه رقم هاتف مسجل.');
+                return;
+            }
+            let cleanPhone = String(student.phone).replace(/\D/g, '');
+            if (cleanPhone.startsWith('0')) cleanPhone = '212' + cleanPhone.substring(1);
+            const sName = student.first_name || '';
+            const text = `السلام عليكم ورحمة الله أخي ${sName}، معكم إدارة أكاديمية الباجي.`;
+            const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`;
+            safeOpenUrl(waUrl);
+
+            // Log
+            fetch('/api/admin/gateway/bulk_action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'whatsapp', student_ids: [student.student_id], message: text })
+            }).catch(() => {});
+        }
+
+        async function directTelegramActiveStudent() {
+            const student = (typeof activeStudentObj !== 'undefined' && activeStudentObj) 
+                || (typeof allStudents !== 'undefined' && allStudents.find(s => String(s.student_id) === String(activeStudentId)));
+            if (!student) {
+                alert('⚠️ لم يتم العثور على بيانات الطالب.');
+                return;
+            }
+            if (!student.telegram_id) {
+                alert('⚠️ هذا الطالب لم يقم بربط حسابه بتليجرام بعد (يجب أن يبدأ محادثة مع البوت).');
+                return;
+            }
+            const sName = student.first_name || '';
+            const msg = prompt(`أدخل نص الرسالة المباشرة للطالب (${sName}):`, `السلام عليكم ورحمة الله أخي ${sName}، رسالة من إدارة أكاديمية الباجي.`);
+            if (!msg) return;
+
+            try {
+                const res = await fetch('/api/admin/gateway/bulk_action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'telegram', student_ids: [student.student_id], message: msg })
+                });
+                const data = await res.json();
+                if (data.success && data.sent > 0) {
+                    alert(`✅ تم إرسال رسالة التليجرام للطالب (${sName}) بنجاح.`);
+                } else {
+                    alert('❌ فشل الإرسال: ' + (data.error || 'تأكد من أن الطالب مشترك ومفعل للبوت'));
+                }
+            } catch(e) {
+                alert('❌ خطأ في الاتصال بالخادم.');
+            }
         }
 
         function openComposer(prefChannel) {
@@ -5839,7 +6026,19 @@ function renderHomeAlerts(alerts) {
                     const sName = st.first_name || '';
                     const personalized = text.replace(/{الاسم}/g, sName).replace(/{prenom}/g, sName);
                     const waUrl = 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(personalized);
-                    window.open(waUrl, '_blank');
+                    
+                    // Safe open URL
+                    safeOpenUrl(waUrl);
+
+                    // Show fallback link in modal
+                    const fbEl = document.getElementById('composer-wa-fallback');
+                    if (fbEl) {
+                        fbEl.style.display = 'block';
+                        fbEl.innerHTML = `
+                            <div style="font-weight:bold; color:#16a34a; margin-bottom:6px;">✅ تم تجهيز رابط المحادثة:</div>
+                            <a href="${waUrl}" target="_blank" style="display:inline-block; background:#25D366; color:white; padding:8px 16px; border-radius:10px; font-weight:bold; text-decoration:none;">👉 اضغط هنا لفتح واتساب مباشرة</a>
+                        `;
+                    }
                     
                     // Log in background
                     fetch('/api/admin/gateway/bulk_action', {
@@ -5849,9 +6048,6 @@ function renderHomeAlerts(alerts) {
                     }).catch(() => {});
 
                     alert(`✅ جاري فتح واتساب مع الطالب (${st.first_name || ''}).`);
-                    closeComposer();
-                    textEl.value = '';
-                    unselectAll();
                     return;
                 } else if (st && !st.phone) {
                     alert('⚠️ هذا الطالب لا يملك رقم هاتف مسجل للواتساب.');
@@ -5889,6 +6085,113 @@ function renderHomeAlerts(alerts) {
                 }
             } catch (e) {
                 alert('❌ خطأ في الاتصال بالخادم.');
+            }
+        }
+
+        // ================= MASS ACTIONS IN TAB-ACTIONS =================
+        function calculateMassTarget() {
+            if (typeof allStudents === 'undefined' || !allStudents || allStudents.length === 0) return;
+            const actionType = document.getElementById('mass-action-type')?.value || 'email_1';
+            const year = document.getElementById('mass-action-year')?.value || 'all';
+            const gender = document.getElementById('mass-action-gender')?.value || 'all';
+            
+            let filtered = allStudents.filter(s => {
+                if (s.excluded == 1) return false;
+                if (year !== 'all' && String(s.year || '') !== String(year)) return false;
+                if (gender !== 'all') {
+                    const g = String(s.gender || '').toLowerCase();
+                    const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
+                    if (gender === 'male' && !isM) return false;
+                    if (gender === 'female' && isM) return false;
+                }
+                return true;
+            });
+
+            const total = filtered.length;
+            let targetList = [];
+            if (actionType === 'email_1') {
+                targetList = filtered.filter(s => !s.email_sent && !s.telegram_id);
+            } else if (actionType === 'email_2') {
+                targetList = filtered.filter(s => s.email_sent && !s.telegram_id);
+            } else {
+                targetList = filtered;
+            }
+
+            const excluded = total - targetList.length;
+
+            const totalEl = document.getElementById('mass-total');
+            if (totalEl) totalEl.textContent = total;
+            const exclEl = document.getElementById('mass-excluded');
+            if (exclEl) exclEl.textContent = excluded;
+            const targEl = document.getElementById('mass-target');
+            if (targEl) targEl.textContent = targetList.length;
+
+            const btn = document.getElementById('btn-execute-mass');
+            const btnV2 = document.getElementById('btn-execute-mass-v2');
+            if (btn) {
+                btn.style.opacity = targetList.length > 0 ? '1' : '0.5';
+                btn.style.pointerEvents = targetList.length > 0 ? 'auto' : 'none';
+            }
+            if (btnV2) {
+                btnV2.style.opacity = targetList.length > 0 ? '1' : '0.5';
+                btnV2.style.pointerEvents = targetList.length > 0 ? 'auto' : 'none';
+            }
+        }
+
+        async function executeMassAction() {
+            return executeMassActionV2();
+        }
+
+        async function executeMassActionV2() {
+            if (typeof allStudents === 'undefined' || !allStudents) return;
+            const actionType = document.getElementById('mass-action-type')?.value || 'email_1';
+            const year = document.getElementById('mass-action-year')?.value || 'all';
+            const gender = document.getElementById('mass-action-gender')?.value || 'all';
+            
+            let filtered = allStudents.filter(s => {
+                if (s.excluded == 1) return false;
+                if (year !== 'all' && String(s.year || '') !== String(year)) return false;
+                if (gender !== 'all') {
+                    const g = String(s.gender || '').toLowerCase();
+                    const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
+                    if (gender === 'male' && !isM) return false;
+                    if (gender === 'female' && isM) return false;
+                }
+                return true;
+            });
+
+            let targetList = (actionType === 'email_1')
+                ? filtered.filter(s => !s.email_sent && !s.telegram_id)
+                : filtered.filter(s => s.email_sent && !s.telegram_id);
+                
+            if (targetList.length === 0) {
+                alert('⚠️ لا يوجد طلاب مطابقين للشروط المحددة للإرسال.');
+                return;
+            }
+            
+            if (!confirm(`هل أنت متأكد من تنفيذ الإرسال لـ ${targetList.length} طالب؟`)) return;
+            
+            const ids = targetList.map(s => s.student_id);
+            const btn = document.getElementById('btn-execute-mass-v2');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...'; }
+            
+            try {
+                const res = await fetch('/api/admin/gateway/bulk_action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'email', student_ids: ids, subject: 'رسالة من أكاديمية الباجي', message: 'مرحبا بكم في أكاديمية الباجي' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`✅ تم إرسال الرسائل بنجاح إلى ${data.sent || ids.length} طالب.`);
+                    loadStudents();
+                } else {
+                    alert('❌ خطأ أثناء الإرسال: ' + (data.error || 'حدث خطأ غير معروف'));
+                }
+            } catch(e) {
+                alert('❌ خطأ في الاتصال بالخادم.');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🚀 إرسال الآن V2 (Envoyer Message)'; }
             }
         }
     </script>
