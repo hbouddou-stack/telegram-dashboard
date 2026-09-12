@@ -2447,11 +2447,13 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
                 
                 const srcLower = String(s.source || '').toLowerCase();
+                const srcFileLower = String(s.source_file || '').toLowerCase();
                 let matchSource = false;
                 if (filters.source === 'all') {
                     matchSource = true;
                 } else if (filters.source.startsWith('file:')) {
-                    matchSource = (srcLower === filters.source.toLowerCase());
+                    const expectedFile = filters.source.substring(5).toLowerCase();
+                    matchSource = (srcFileLower === expectedFile);
                 } else {
                     let derivedSource = 'manuel';
                     if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
