@@ -1649,6 +1649,20 @@ async def api_admin_gateway_sync_sheets(request: web.Request):
         traceback.print_exc()
         return web.json_response({'success': False, 'error': str(e)})
 
+async def api_admin_gateway_purge_sheets(request: web.Request):
+    try:
+        import aiosqlite
+        from config import DATABASE_PATH
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("DELETE FROM academy_students WHERE source='google_sheets'")
+            deleted = db.total_changes
+            await db.commit()
+        return web.json_response({'success': True, 'count': deleted})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_export_sheets(request: web.Request):
     try:
         from sync_sheets import export_students_to_sheets
@@ -6415,6 +6429,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_get('/api/admin/gateway/import_logs', api_admin_gateway_import_logs)
     app.router.add_post('/api/admin/gateway/sync_sheets', api_admin_gateway_sync_sheets)
+    app.router.add_post('/api/admin/gateway/purge_sheets', api_admin_gateway_purge_sheets)
     app.router.add_post('/api/admin/gateway/export_sheets', api_admin_gateway_export_sheets)
     app.router.add_post('/api/admin/gateway/settings', api_admin_gateway_settings)
     app.router.add_get('/api/admin/gateway/settings', api_admin_gateway_settings_get)

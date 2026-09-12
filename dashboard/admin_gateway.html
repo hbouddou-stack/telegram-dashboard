@@ -1153,12 +1153,15 @@
                 <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
                     Si vous utilisez une base connectée via l'API Google.
                 </div>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button id="btn-sync-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #0f9d58;" onclick="syncGoogleSheets()">
                         <span>🔄 Forcer Synchro</span>
                     </button>
                     <button id="btn-export-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #1a73e8;" onclick="exportGoogleSheets()">
-                        <span>📤 Sauvegarder</span>
+                        <span>💾 Sauvegarder</span>
+                    </button>
+                    <button id="btn-purge-sheets" class="btn btn-primary" style="flex: 1 1 100%; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #dc2626;" onclick="purgeGoogleSheets()">
+                        <span>🗑️ Purger tous les élèves Google Sheets</span>
                     </button>
                 </div>
             </div>
@@ -2163,6 +2166,33 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         }
         
         // ============ GOOGLE SHEETS SYNC ============
+        async function purgeGoogleSheets() {
+            if(!confirm('⚠️ ATTENTION : Voulez-vous vraiment supprimer TOUS les élèves importés depuis Google Sheets ? (Cette action est irréversible)')) return;
+            const btn = document.getElementById('btn-purge-sheets');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ Suppression en cours...</span>';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/admin/gateway/purge_sheets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('✅ Purge terminée ! ' + data.count + ' élèves ont été supprimés.');
+                    fetchStudents(); fetchKpiMetrics();
+                } else {
+                    alert('❌ Erreur: ' + data.error);
+                }
+            } catch(e) {
+                alert('Erreur: ' + e.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
         async function syncGoogleSheets() {
             const btn = document.getElementById('btn-sync-sheets');
             const originalText = btn.innerHTML;
