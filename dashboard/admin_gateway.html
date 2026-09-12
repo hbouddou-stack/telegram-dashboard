@@ -943,7 +943,7 @@
                 </div>
                 <div>
                     <div class="filter-title">المصدر (Source)</div>
-                    <select id="source-select" onchange="setSourceFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
+                    <select id="source-select-2" onchange="setSourceFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
                         <option value="all">كل المصادر</option>
                         <option value="sheet">📊 Sheet</option>
                         <option value="excel">📗 Excel</option>
@@ -2009,11 +2009,16 @@
         }
         function setSourceFilter(val) {
             filters.source = val;
+            const s1 = document.getElementById('source-select');
+            const s2 = document.getElementById('source-select-2');
+            if (s1 && s1.value !== val) s1.value = val;
+            if (s2 && s2.value !== val) s2.value = val;
+
             const delBtn = document.getElementById('btn-delete-source');
             if (val && val.startsWith('file:')) {
-                delBtn.style.display = 'block';
+                if (delBtn) delBtn.style.display = 'block';
             } else {
-                delBtn.style.display = 'none';
+                if (delBtn) delBtn.style.display = 'none';
             }
             filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
         }
@@ -2321,18 +2326,32 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     
                     // Build dynamic Excel files dropdown
                     const sourceSelect = document.getElementById('source-select');
-                    const currentVal = sourceSelect.value;
-                    let opts = `<option value="all">📁 كل المصادر</option>
-                                <option value="excel">📗 Excel (الكل)</option>
-                                <option value="sheet">📊 Sheet</option>
-                                <option value="manuel">✍️ يدوي</option>`;
+                    const sourceSelect2 = document.getElementById('source-select-2');
+                    
+                    let opts = `<option value="all">كل المصادر</option>
+                                <option value="excel">ملف Excel / CSV</option>
+                                <option value="sheet">من Sheet</option>
+                                <option value="manuel">تم يدوياً</option>`;
                     
                     const excelFiles = [...new Set(allStudents.filter(s => s.source === 'excel' && s.source_file).map(s => s.source_file))];
                     excelFiles.forEach(f => {
                         opts += `<option value="file:${f}">📄 ${f}</option>`;
                     });
-                    sourceSelect.innerHTML = opts;
-                    if (opts.includes(`value="${currentVal}"`)) sourceSelect.value = currentVal;
+
+                    let currentVal = '';
+                    if (sourceSelect) {
+                        currentVal = sourceSelect.value;
+                        sourceSelect.innerHTML = opts;
+                        sourceSelect.value = currentVal;
+                    }
+                    if (sourceSelect2) {
+                        const currentVal2 = sourceSelect2.value;
+                        sourceSelect2.innerHTML = opts;
+                        sourceSelect2.value = currentVal2;
+                    }
+                    if (sourceSelect && opts.includes(`value="${currentVal}"`)) {
+                        sourceSelect.value = currentVal;
+                    }
 
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
                     filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
