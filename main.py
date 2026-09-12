@@ -1213,6 +1213,7 @@ async def api_admin_gateway_students(request: web.Request):
                 SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
                        s.year, s.gender, s.dob, s.source, s.source_file, s.phone, s.created_at, s.payment_status,
                        s.profession, s.country, s.nationality, s.arabic_level, s.school_level,
+                       s.team, s.comments, s.appel_1, s.appel_2, s.appel_3,
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.sms_sent, s.sms_sent_at, s.last_click_source,
                        s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,

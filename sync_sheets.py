@@ -31,8 +31,8 @@ async def run_google_sheets_sync(sheet_id: str):
     
     async with aiosqlite.connect(DATABASE_PATH) as db:
         for sheet in worksheets:
-            # Ne synchroniser QUE la feuille 'Database'
-            if sheet.title.lower() != "database":
+            # Ne synchroniser QUE la feuille 'appels 2026'
+            if sheet.title.lower() != "appels 2026":
                 continue
                 
             all_values = sheet.get_all_values()
@@ -69,7 +69,6 @@ async def run_google_sheets_sync(sheet_id: str):
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''
                 school_level = str(row[12]).strip() if len(row) > 12 else ''
-                # Si le niveau n'est pas renseigné, on utilise le nom de la feuille
                 if not school_level:
                     school_level = sheet_title_level
 
@@ -78,6 +77,13 @@ async def run_google_sheets_sync(sheet_id: str):
                 last_name = str(row[15]).strip() if len(row) > 15 else ''
                 nationality = str(row[16]).strip() if len(row) > 16 else ''
                 arabic_level = str(row[17]).strip() if len(row) > 17 else ''
+                
+                # CRM Columns from 'appels 2026'
+                team = str(row[18]).strip() if len(row) > 18 else ''
+                comments = str(row[19]).strip() if len(row) > 19 else ''
+                appel_1 = str(row[20]).strip() if len(row) > 20 else ''
+                appel_2 = str(row[21]).strip() if len(row) > 21 else ''
+                appel_3 = str(row[22]).strip() if len(row) > 22 else ''
                 
                 if not academic_id:
                     import hashlib
@@ -90,14 +96,14 @@ async def run_google_sheets_sync(sheet_id: str):
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
-                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), source = 'google_sheets'
+                        SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), team = ?, comments = ?, appel_1 = ?, appel_2 = ?, appel_3 = ?, source = 'google_sheets'
                         WHERE LOWER(email) = ? OR student_id = ?
-                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, email, academic_id))
+                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, team, comments, appel_1, appel_2, appel_3, email, academic_id))
                 else:
                     await db.execute("""
-                        INSERT INTO academy_students (academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, is_active, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, COALESCE(NULLIF(?, ''), datetime('now')))
-                    """, (academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val))
+                        INSERT INTO academy_students (academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, team, comments, appel_1, appel_2, appel_3, source, is_active, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'google_sheets', 1, COALESCE(NULLIF(?, ''), datetime('now')))
+                    """, (academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, team, comments, appel_1, appel_2, appel_3, created_at_val))
                     
                     new_count += 1
                     last_new = {"name": f"{first_name} {last_name}".strip(), "id": academic_id}

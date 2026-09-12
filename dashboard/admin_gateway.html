@@ -1270,9 +1270,16 @@
                 <div class="chip" style="background:rgba(255,159,10,0.1); border-color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏅 المستوى : <span id="profile-level-badge" style="font-weight:bold; color:#ff9f0a;">-</span></div>
             </div>
 
-            <!-- Tab 2: Academy -->
+            <!-- Tab 2: Academy & CRM -->
             <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <div class="chip" id="profile-arabiclevel" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🗣️ مستوى اللغة العربية : <span id="profile-arabiclevel-text">-</span></div>
+                <div class="chip" id="profile-arabiclevel" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 Niveau Arabe : <span id="profile-arabiclevel-text">-</span></div>
+                
+                <h4 style="margin: 20px 0 10px 0; font-size: 0.95rem; color: var(--accent);">📞 Suivi CRM (Appels)</h4>
+                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👥 Équipe (Team) : <span id="profile-team-text" style="font-weight:bold;">-</span></div>
+                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📝 Commentaire : <span id="profile-comments-text" style="color:#ff9f0a; font-weight:bold;">-</span></div>
+                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Appel 1 : <span id="profile-appel1-text">-</span></div>
+                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Appel 2 : <span id="profile-appel2-text">-</span></div>
+                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📞 Appel 3 : <span id="profile-appel3-text">-</span></div>
                 <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 السنة الدراسية : <span id="profile-year-text" style="font-weight:bold;">-</span></div>
                 <div class="chip" id="profile-school-level" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏫 المستوى الدراسي : <span id="profile-school-level-text" style="font-weight:bold;">-</span></div>
                 <div class="chip" id="profile-studentid" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
@@ -4779,6 +4786,21 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if(natEl) natEl.textContent = tr(student.nationality, trNat);
             const arEl = document.getElementById('profile-arabiclevel-text');
             if(arEl) arEl.textContent = tr(student.arabic_level, trAr);
+            
+            const teamEl = document.getElementById('profile-team-text');
+            if(teamEl) teamEl.textContent = student.team || '-';
+            
+            const commEl = document.getElementById('profile-comments-text');
+            if(commEl) commEl.textContent = student.comments || 'Aucun commentaire';
+            
+            const appel1El = document.getElementById('profile-appel1-text');
+            if(appel1El) appel1El.textContent = student.appel_1 || '-';
+            
+            const appel2El = document.getElementById('profile-appel2-text');
+            if(appel2El) appel2El.textContent = student.appel_2 || '-';
+            
+            const appel3El = document.getElementById('profile-appel3-text');
+            if(appel3El) appel3El.textContent = student.appel_3 || '-';
             
             const slEl = document.getElementById('profile-school-level-text');
             if(slEl) slEl.textContent = student.school_level || '-';

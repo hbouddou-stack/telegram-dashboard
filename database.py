@@ -116,7 +116,12 @@ async def init_db():
             ('nationality', 'TEXT'),
             ('arabic_level', 'TEXT'),
             ('email_sent', 'INTEGER DEFAULT 0'),
-            ('email_sent_at', 'TEXT')
+            ('email_sent_at', 'TEXT'),
+            ('comments', 'TEXT'),
+            ('appel_1', 'TEXT'),
+            ('appel_2', 'TEXT'),
+            ('appel_3', 'TEXT'),
+            ('team', 'TEXT')
         ]:
             try:
                 await db.execute(f'ALTER TABLE academy_students ADD COLUMN {col} {col_def}')
