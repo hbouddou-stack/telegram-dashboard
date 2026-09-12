@@ -6716,6 +6716,15 @@ async def main():
                 print("Added excluded column to academy_students")
             except Exception:
                 pass
+            try:
+                await db_conn.execute("ALTER TABLE crm_tickets ADD COLUMN conversation TEXT")
+                await db_conn.execute("ALTER TABLE crm_tickets ADD COLUMN has_attachment INTEGER DEFAULT 0")
+                await db_conn.execute("ALTER TABLE crm_tickets ADD COLUMN file_data TEXT")
+                await db_conn.execute("ALTER TABLE crm_tickets ADD COLUMN file_name TEXT")
+            except Exception:
+                pass
+            except Exception:
+                pass
             await db_conn.commit()
         # -------------------------------
 
