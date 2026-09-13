@@ -6026,17 +6026,26 @@ async def api_chat(request):
         genai.configure(api_key=api_key)
         
         model = genai.GenerativeModel('gemini-flash-latest')
-        
-        # Enriched prompt
-        prompt = f"""أنت "المساعد الذكي"، مساعد لطيف وخدوم في "أكاديمية الإمام الباجي".
-مهمتك إجابة أسئلة الطلاب باختصار وبشكل مهذب وباللغة العربية.
+
+        # Strict RAG Prompt to prevent abuse and improve UI formatting
+        prompt = f"""أنت "المساعد الذكي" لأكاديمية الباجي. مهمتك الوحيدة هي الإجابة عن أسئلة الطلاب بخصوص الأكاديمية.
+التعليمات الصارمة:
+1. لا تقم بالترحيب ولا تقدم نفسك، أجب عن السؤال مباشرة لكي تكون المحادثة سريعة.
+2. استخدم HTML للتنسيق بدلاً من Markdown. (مثلاً استخدم <b>نص</b> بدلاً من **نص**).
+3. إليك سياق المعلومات المسموح لك باستخدامها:
 {faq_context}
 
-إذا كانت المعلومات الرسمية أعلاه تحتوي على الإجابة، فاستخدمها حصرياً ولا تخترع معلومات من عندك.
-إذا لم تكن الإجابة موجودة، أجب بشكل عام ووجه الطالب لفتح "تذكرة دعم" (Support Ticket) للتواصل مع الإدارة.
+4. إذا كان السؤال عن معلومات متوفرة في السياق أعلاه، أجب بوضوح وإيجاز.
+5. إذا كان السؤال خارج سياق الأكاديمية (مثل حل الواجبات، أسئلة عامة، الخ)، ارفض الإجابة وقل: "عذراً، أنا مبرمج فقط للإجابة عن الاستفسارات الإدارية والتسجيل في أكاديمية الباجي."
+6. إذا كان السؤال يخص الأكاديمية لكنك لا تعرف الإجابة من السياق، قل: "هذا الاستفسار يتطلب تدخل الإدارة، يرجى فتح <b>تذكرة دعم</b> (Support Ticket)."
+
+7. في نهاية إجابتك، اقترح سؤالين أو ثلاثة كأزرار تفاعلية (Action Buttons) يمكن للطالب الضغط عليها بناءً على إجابتك. استخدم هذا التنسيق بالضبط للأزرار في سطر جديد:
+<br><br>
+<button class="chip" style="background:var(--accent); color:#000; margin-top:5px; padding:5px 10px; border:none; border-radius:12px;" onclick="sendAiQuickMessage('السؤال الأول')">السؤال الأول</button>
+<button class="chip" style="background:var(--accent); color:#000; margin-top:5px; padding:5px 10px; border:none; border-radius:12px;" onclick="sendAiQuickMessage('السؤال الثاني')">السؤال الثاني</button>
 
 سؤال الطالب: {message}"""
-        
+
         response = model.generate_content(prompt)
         
         return web.json_response({"success": True, "reply": response.text})
