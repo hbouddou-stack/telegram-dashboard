@@ -1114,9 +1114,10 @@
                     <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (ex: 10/10/2000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
                     <input type="text" id="manual-student-id" placeholder="رقم الطالب (مسار - ex: 123456)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" id="manual-student-fn" placeholder="الاسم" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                        <input type="text" id="manual-student-ln" placeholder="النسب" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                        <input type="text" id="manual-student-fn" placeholder="الاسم الشخصي" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+                        <input type="text" id="manual-student-ln" placeholder="النسب (العائلي)" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
                     </div>
+                    <input type="text" id="manual-student-phone" placeholder="رقم الهاتف (اختياري - ex: 212600000000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
                     <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px;">✅ Enregistrer l'élève</button>
                 </div>
             </div>
@@ -2475,6 +2476,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             const first_name = document.getElementById('manual-student-fn').value.trim();
             const last_name = document.getElementById('manual-student-ln').value.trim();
             const student_id = document.getElementById('manual-student-id').value.trim();
+            const phone = document.getElementById('manual-student-phone').value.trim();
             
             if(!email || !dob) {
                 alert("يرجى إدخال البريد الإلكتروني وتاريخ الميلاد على الأقل.");
@@ -2485,7 +2487,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const res = await fetch('/api/admin/gateway/add_student', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, dob, first_name, last_name, student_id })
+                    body: JSON.stringify({ email, dob, first_name, last_name, student_id, phone })
                 });
                 const data = await res.json();
                 if(data.success) {
@@ -2495,6 +2497,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     document.getElementById('manual-student-fn').value = '';
                     document.getElementById('manual-student-ln').value = '';
                     document.getElementById('manual-student-id').value = '';
+                    document.getElementById('manual-student-phone').value = '';
                     fetchStudents(); fetchKpiMetrics();
                 } else {
                     alert('خطأ: ' + data.error);

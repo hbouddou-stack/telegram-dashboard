@@ -1379,36 +1379,40 @@ async def api_admin_gateway_add_student(request: web.Request):
     try:
         import aiosqlite
         from config import DATABASE_PATH
+        from datetime import datetime
         data = await request.json()
         email = data.get('email', '').strip().lower()
         dob = data.get('dob', '').strip()
         first_name = data.get('first_name', '').strip()
         last_name = data.get('last_name', '').strip()
         student_id = data.get('student_id', '').strip()
-        
+        phone = data.get('phone', '').strip()
+
         if not email or not dob:
             return web.json_response({'success': False, 'error': 'L\'email et la date de naissance sont requis.'})
-            
+
+        now_str = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
         async with aiosqlite.connect(DATABASE_PATH) as db:
             async with db.execute("SELECT student_id FROM academy_students WHERE email = ?", (email,)) as cur:
                 exists = await cur.fetchone()
-                if exists:
+            if exists:
+                await db.execute("""
+                    UPDATE academy_students
+                    SET dob = ?, first_name = ?, last_name = ?, phone = ?, source = ?
+                    WHERE email = ?
+                """, (dob, first_name, last_name, phone, 'manuel', email))
+            else:
+                if student_id:
                     await db.execute("""
-                        UPDATE academy_students 
-                        SET dob = ?, first_name = ?, last_name = ?, source = ?
-                        WHERE email = ?
-                    """, (dob, first_name, last_name, 'manual', email))
+                        INSERT INTO academy_students (student_id, email, dob, first_name, last_name, phone, year, gender, source, magic_token, created_at, payment_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (student_id, email, dob, first_name, last_name, phone, '1', 'homme', 'manuel', secrets.token_urlsafe(8), now_str, 'PAID'))
                 else:
-                    if student_id:
-                        await db.execute("""
-                            INSERT INTO academy_students (student_id, email, dob, first_name, last_name, year, gender, source, magic_token)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (student_id, email, dob, first_name, last_name, '1', 'homme', 'manual', secrets.token_urlsafe(8)))
-                    else:
-                        await db.execute("""
-                            INSERT INTO academy_students (email, dob, first_name, last_name, year, gender, source, magic_token)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (email, dob, first_name, last_name, '1', 'homme', 'manual', secrets.token_urlsafe(8)))
+                    await db.execute("""
+                        INSERT INTO academy_students (email, dob, first_name, last_name, phone, year, gender, source, magic_token, created_at, payment_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (email, dob, first_name, last_name, phone, '1', 'homme', 'manuel', secrets.token_urlsafe(8), now_str, 'PAID'))
             await db.commit()
         return web.json_response({'success': True})
     except Exception as e:
