@@ -1533,23 +1533,22 @@ async def api_admin_gateway_import_students(request: web.Request):
                 _cells  = [_clean(c) for c in row]
 
                 payment_status = 'UNPAID'  # defaut = non paye
-                # 1) Chercher UNPAID en premier (prioritaire)
-                _found = False
-                for _cell in _cells:
+                # On cherche uniquement dans la colonne H (index 7)
+                if len(_cells) > 7:
+                    cell_h = _cells[7]
+                    _found_unpaid = False
                     for _w in _UNPAID:
-                        if _w in _cell:
+                        if _w in cell_h:
                             payment_status = 'UNPAID'
-                            _found = True
+                            _found_unpaid = True
                             break
-                    if _found: break
-                 # 2) Seulement si aucun mot UNPAID trouve, chercher PAID
-                if not _found:
-                    for _cell in _cells:
+                    if not _found_unpaid:
                         for _w in _PAID:
-                            if _w in _cell:
+                            # Attention: 'مسدد' est dans 'غير مسدد', mais vu qu'on a check _UNPAID avant,
+                            # on est sûr que si 'مسدد' est trouvé, ce n'est pas 'غير مسدد'
+                            if _w in cell_h:
                                 payment_status = 'PAID'
                                 break
-                        if payment_status == 'PAID': break
                 
                 # DEBUG TEMPORAIRE - voir dans les logs Railway exactement ce que contient col H
                 _cell_h_raw = row[7] if len(row) > 7 else 'COLONNE_H_MANQUANTE'
