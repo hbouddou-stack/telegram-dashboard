@@ -561,6 +561,21 @@
                             <button id="btn-delete-source" onclick="deleteSelectedSource()" style="display:none; background:#ef4444; color:white; border:none; border-radius:12px; padding:10px; cursor:pointer; font-weight:bold;">🗑️</button>
                         </div>
                     </div>
+                    <!-- Remarque Marketing -->
+                    <div style="margin-top: 15px;">
+                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">📌 ملاحظات التسويق (Marketing)</label>
+                        <select id="remark-select" onchange="setRemarkFilter(this.value)" style="width:100%; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-size:0.9rem; font-weight:bold; outline:none; font-family:inherit;">
+                            <option value="all">الكل (Toutes)</option>
+                            <option value="no_answer">🔴 لا يجيب (Pas de réponse)</option>
+                            <option value="will_pay">🟡 سيدفع قريبا (Paiement prévu)</option>
+                            <option value="invalid_number">🔵 رقم مكرر/خاطئ (Invalide)</option>
+                            <option value="foreign_sent">🟣 أجنبي/تم الإرسال (Contacté)</option>
+                            <option value="technical">🟠 مشكل تقني (Problème Tech)</option>
+                            <option value="not_interested">⚫ غير مهتم (Pas intéressé)</option>
+                            <option value="other">⚪ ملاحظة أخرى (Autre)</option>
+                        </select>
+                    </div>
+
                     
                     <hr style="border:none; border-top:1px solid var(--border); margin:10px 0;">
                     
@@ -1633,7 +1648,7 @@
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all' };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all' };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -2086,7 +2101,7 @@
             filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
         }
         function resetAllFilters() {
-            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all' };
+            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all' };
             window.filterOnlyDuplicates = false;
             const searchInput = document.getElementById('search-input');
             if (searchInput) searchInput.value = '';
@@ -2119,6 +2134,14 @@
             const tgAll = document.getElementById('tg-all');
             if (tgAll && typeof setTelegramFilter === 'function') setTelegramFilter('all', tgAll);
 
+            filterStudents();
+            if(typeof updateDashboardView === 'function') updateDashboardView();
+        }
+        
+        function setRemarkFilter(val) {
+            filters.remark = val;
+            const selects = document.querySelectorAll('select[id^="remark-select"]');
+            selects.forEach(s => { if (s.value !== val) s.value = val; });
             filterStudents();
             if(typeof updateDashboardView === 'function') updateDashboardView();
         }
@@ -2628,9 +2651,35 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     || (filters.telegram === 'group' && groupJoined)
                     || (filters.telegram === 'none' && !botStarted);
                 
+                
                 const matchPayment = !filters.payment || filters.payment === 'all'
                     || (filters.payment === 'paid' && isPaid)
                     || (filters.payment === 'unpaid' && !isPaid);
+                    
+                // Marketing Remarks Filtering
+                let matchRemark = true;
+                if (filters.remark && filters.remark !== 'all') {
+                    const c = String(s.comments || '').toLowerCase();
+                    let cat = null;
+                    if (!c) {
+                        cat = null;
+                    } else if (c.includes('لا يجيب') || c.includes('لايجيب') || c.includes('لاتجيب') || c.includes('العلبة الصوتية')) {
+                        cat = 'no_answer';
+                    } else if (c.includes('ستدفع') || c.includes('سيسدد') || c.includes('ستسدد') || c.includes('قريبا') || c.includes('غدا')) {
+                        cat = 'will_pay';
+                    } else if (c.includes('مكرر') || c.includes('غير صحيح') || c.includes('خاطئ')) {
+                        cat = 'invalid_number';
+                    } else if (c.includes('أجنبي') || c.includes('اجنبي') || c.includes('ارسال') || c.includes('إرسال') || c.includes('واتساب')) {
+                        cat = 'foreign_sent';
+                    } else if (c.includes('مشكل') || c.includes('موقع') || c.includes('إيميل') || c.includes('تسجيل')) {
+                        cat = 'technical';
+                    } else if (c.includes('مهتم')) {
+                        cat = 'not_interested';
+                    } else {
+                        cat = 'other';
+                    }
+                    matchRemark = (filters.remark === cat);
+                }
 
                 const matchStatus = !filters.status || filters.status === 'all'
                     || (filters.status === 'linked' && linked)
@@ -2643,7 +2692,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
                 const matchColor = !filters.color || filters.color === 'all' || filters.color === studentColor;
 
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment;
+                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchRemark;
             
             }); // End of filtering
 
@@ -2835,9 +2884,25 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         }
                     }
 
+                    
                     let dupBadge = (window.duplicateReasonsMap && window.duplicateReasonsMap.has(String(s.student_id)))
                         ? `<br><span style="display:inline-block; font-size:0.68rem; background:#fee2e2; color:#dc2626; border:1px solid #ef4444; padding:1px 6px; border-radius:6px; font-weight:bold; margin-top:2px;">⚠️ مكرر (${window.duplicateReasonsMap.get(String(s.student_id))})</span>`
                         : '';
+                        
+                    let remarkBadge = '';
+                    if (s.comments) {
+                        const c = String(s.comments).toLowerCase();
+                        let badgeColor = '#f3f4f6'; let badgeText = '#374151'; let icon = '⚪';
+                        if (c.includes('لا يجيب') || c.includes('لايجيب') || c.includes('لاتجيب') || c.includes('العلبة الصوتية')) { badgeColor = '#fee2e2'; badgeText = '#991b1b'; icon = '🔴'; }
+                        else if (c.includes('ستدفع') || c.includes('سيسدد') || c.includes('ستسدد') || c.includes('قريبا') || c.includes('غدا')) { badgeColor = '#fef3c7'; badgeText = '#92400e'; icon = '🟡'; }
+                        else if (c.includes('مكرر') || c.includes('غير صحيح') || c.includes('خاطئ')) { badgeColor = '#e0f2fe'; badgeText = '#0369a1'; icon = '🔵'; }
+                        else if (c.includes('أجنبي') || c.includes('اجنبي') || c.includes('ارسال') || c.includes('إرسال') || c.includes('واتساب')) { badgeColor = '#f3e8ff'; badgeText = '#6b21a8'; icon = '🟣'; }
+                        else if (c.includes('مشكل') || c.includes('موقع') || c.includes('إيميل') || c.includes('تسجيل')) { badgeColor = '#ffedd5'; badgeText = '#9a3412'; icon = '🟠'; }
+                        else if (c.includes('مهتم')) { badgeColor = '#f3f4f6'; badgeText = '#1f2937'; icon = '⚫'; }
+                        
+                        remarkBadge = `<br><span style="display:inline-block; font-size:0.7rem; background:${badgeColor}; color:${badgeText}; padding:2px 6px; border-radius:6px; font-weight:bold; margin-top:4px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${s.comments.replace(/"/g, '&quot;')}">${icon} ${s.comments}</span>`;
+                    }
+
 
                     tr.innerHTML = `
                         <td style="padding:12px 6px; text-align:center;" onclick="event.stopPropagation()">

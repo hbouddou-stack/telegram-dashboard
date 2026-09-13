@@ -68,7 +68,7 @@ async def run_google_sheets_sync(sheet_id: str):
                 # Handling Arabic "مسدد" and "غير مسدد"
                 # Check for "UNPAID" patterns first
                 _UNPAID = ['غير مسدد', 'UNPAID', 'NON PAYE', 'NON PAYÉ', 'غير مدفوع']
-                _PAID   = ['مسدد', 'مدفوع', 'PAID', 'PAYÉ', 'PAYE', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1']
+                _PAID   = ['مسدد', 'مسددة', 'معفي', 'مدفوع', 'PAID', 'PAYÉ', 'PAYE', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1']
                 
                 _found_unpaid = False
                 for _w in _UNPAID:
