@@ -62,9 +62,26 @@ async def run_google_sheets_sync(sheet_id: str):
                 if gender_raw in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]: gender = 'FEMME'
                 elif gender_raw in ["HOMME", "MALE", "GARCON", "M", "ذكر"]: gender = 'HOMME'
                 
-                pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
+                                pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
                 payment_status = 'UNPAID'
-                if pay_raw in ["PAID", "PAYE", "VALIDE", "CONFIRME", "مدفوع", "نعم"]: payment_status = 'PAID'
+                
+                # Handling Arabic "مسدد" and "غير مسدد"
+                # Check for "UNPAID" patterns first
+                _UNPAID = ['غير مسدد', 'UNPAID', 'NON PAYE', 'NON PAYÉ', 'غير مدفوع']
+                _PAID   = ['مسدد', 'مدفوع', 'PAID', 'PAYÉ', 'PAYE', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1']
+                
+                _found_unpaid = False
+                for _w in _UNPAID:
+                    if _w in pay_raw:
+                        payment_status = 'UNPAID'
+                        _found_unpaid = True
+                        break
+                        
+                if not _found_unpaid:
+                    for _w in _PAID:
+                        if _w in pay_raw:
+                            payment_status = 'PAID'
+                            break
                 
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''
