@@ -554,8 +554,7 @@
                         <div style="display:flex; gap:8px;">
                             <select id="source-select" onchange="setSourceFilter(this.value)" style="flex:1; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text1); font-size:0.9rem; font-weight:bold; outline:none; font-family:inherit;">
                                 <option value="all">الكل (جميع المصادر)</option>
-                                <option value="excel">ملف إكسل / CSV</option>
-                                <option value="sheet">جوجل شيت</option>
+                                <option value="excel" selected>ملف إكسل / CSV</option>
                                 <option value="manuel">إضافة يدوية</option>
                             </select>
                             <button id="btn-delete-source" onclick="deleteSelectedSource()" style="display:none; background:#ef4444; color:white; border:none; border-radius:12px; padding:10px; cursor:pointer; font-weight:bold;">🗑️</button>
@@ -978,8 +977,7 @@
                     <div class="filter-title">المصدر (Source)</div>
                     <select id="source-select-2" onchange="setSourceFilter(this.value)" style="width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text1); font-family:'Tajawal'; outline:none; font-size:0.82rem; cursor:pointer;">
                         <option value="all">كل المصادر</option>
-                        <option value="sheet">📊 Sheet</option>
-                        <option value="excel">📗 Excel</option>
+                        <option value="excel" selected>📗 Excel</option>
                         <option value="manuel">✍️ يدوي (Manuel)</option>
                     </select>
                 </div>
@@ -2495,7 +2493,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     
                     let opts = `<option value="all">كل المصادر</option>
                                 <option value="excel">ملف Excel / CSV</option>
-                                <option value="sheet">من Sheet</option>
                                 <option value="manuel">تم يدوياً</option>`;
                     
                     const excelFiles = [...new Set(allStudents.filter(s => s.source_file && String(s.source_file).trim()).map(s => String(s.source_file).trim()))];
@@ -2503,7 +2500,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         opts += `<option value="file:${f}">📄 ${f}</option>`;
                     });
 
-                    const targetVal = filters.source || 'all';
+                    const targetVal = filters.source || 'excel';
                     if (sourceSelect) {
                         sourceSelect.innerHTML = opts;
                         if (opts.includes(`value="${targetVal}"`)) sourceSelect.value = targetVal;
