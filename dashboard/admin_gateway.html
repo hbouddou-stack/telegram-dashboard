@@ -1230,27 +1230,32 @@
 </style>
 
             <div class="mtab-container" style="flex-wrap:wrap; display:flex;">
-                <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عامة</div>
+                <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عام</div>
+                <div class="mtab" onclick="switchModalTab('actions')" id="mtab-actions">🚀 إجراءات (Actions)</div>
                 <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy">الأكاديمية</div>
                 <div class="mtab" onclick="switchModalTab('telegram')" id="mtab-telegram">تيليجرام</div>
                 <div class="mtab" onclick="switchModalTab('funnel')" id="mtab-funnel">مسار الانضمام</div>
-                <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm">📝 CRM</div>
+                <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm">متابعة CRM</div>
+            </div>
+
+            <!-- Tab 0: Actions -->
+            <div id="mcontent-actions" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
+                <!-- Quick Contact V2 Banner -->
+                <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(14,165,233,0.08)); border:1.5px solid #10b981; border-radius:14px; padding:12px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <div style="font-weight:900; color:#047857; font-size:0.95rem;">⚡ تواصل سريع (V2)</div>
+                        <div style="font-size:0.78rem; color:var(--text2);">مراسلة الطالب أو إضافة إلى حملة</div>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button onclick="directWhatsAppActiveStudent()" style="background:#25D366; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(37,211,102,0.3);">🟢 واتساب</button>
+                        <button onclick="directTelegramActiveStudent()" style="background:#0088cc; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,136,204,0.3);">✈️ تليجرام</button>
+                        <button onclick="openComposerForActiveStudent()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:900; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(16,185,129,0.35);">✉️ رسالة V2</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <!-- Quick Contact V2 Banner -->
-                <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(14,165,233,0.08)); border:1.5px solid #10b981; border-radius:14px; padding:12px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                    <div>
-                        <div style="font-weight:900; color:#047857; font-size:0.95rem;">✉️ تواصل مباشر مع هذا الطالب (V2)</div>
-                        <div style="font-size:0.78rem; color:var(--text2);">مراسلة فورية عبر واتساب، تليجرام، أو رسالة مخصصة</div>
-                    </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button onclick="directWhatsAppActiveStudent()" style="background:#25D366; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(37,211,102,0.3);">💬 واتساب</button>
-                        <button onclick="directTelegramActiveStudent()" style="background:#0088cc; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,136,204,0.3);">✈️ تليجرام</button>
-                        <button onclick="openComposerForActiveStudent()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:900; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(16,185,129,0.35);">🚀 إرسال رسالة V2</button>
-                    </div>
-                </div>
                 <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">
                     👤 الاسم الكامل : <span id="profile-name-text" style="font-size:1.1rem; font-weight:bold;">-</span>
                 </div>
@@ -4537,7 +4542,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
 
         function switchModalTab(tabId) {
-            ['general', 'academy', 'telegram', 'funnel', 'crm'].forEach(t => {
+            ['general', 'actions', 'academy', 'telegram', 'funnel', 'crm'].forEach(t => {
                 const mt = document.getElementById('mtab-' + t);
                 const mc = document.getElementById('mcontent-' + t);
                 if(mt) mt.classList.remove('active');
