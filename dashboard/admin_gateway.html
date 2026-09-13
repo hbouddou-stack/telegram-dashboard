@@ -5921,10 +5921,10 @@ function renderHomeAlerts(alerts) {
                     <!-- Quick Templates -->
                     <div style="margin-top:8px;">
                         <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                            <span onclick="setComposerTemplate('welcome')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.78rem; font-weight:bold; color:var(--text1);">👋 رسالة ترحيب</span>
-                            <span onclick="setComposerTemplate('reminder')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.78rem; font-weight:bold; color:var(--text1);">⏰ تذكير بالانضمام</span>
-                            <span onclick="setComposerTemplate('payment')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.78rem; font-weight:bold; color:var(--text1);">💳 تأكيد الاشتراك</span>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                            <span onclick="setComposerTemplate('telegram')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
+                            <span onclick="setComposerTemplate('relance')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
+                            <span onclick="setComposerTemplate('support')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
                         </div>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text2); margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
@@ -5988,13 +5988,17 @@ function renderHomeAlerts(alerts) {
 
         function setComposerTemplate(type) {
             const ta = document.getElementById('composer-text');
+            const subj = document.getElementById('composer-subject');
             if (!ta) return;
-            if (type === 'welcome') {
-                ta.value = "السلام عليكم ورحمة الله وبركاته أخي {الاسم}،\nمرحباً بك في أكاديمية الباجي. نود التأكد من وصولك للمنصة بنجاح.";
-            } else if (type === 'reminder') {
-                ta.value = "السلام عليكم ورحمة الله أخي {الاسم}،\nنذكركم بضرورة إكمال ربط حسابكم في أكاديمية الباجي للاستفادة من الدروس والأنشطة.";
-            } else if (type === 'payment') {
-                ta.value = "السلام عليكم ورحمة الله أخي {الاسم}،\nنرجو منكم تأكيد استكمال الاشتراك في أكاديمية الباجي لتفعيل عضويتكم في المجموعة.";
+            if (type === 'telegram') {
+                if(subj) subj.value = "دعوة للانضمام إلى مجموعة الدراسة - الأكاديمية";
+                ta.value = "السلام عليكم ورحمة الله وبركاته {الاسم}،\n\nلاحظنا أنك لم تنضم حتى الآن إلى مجموعة الدراسة الخاصة بك على التليجرام. المجموعة ضرورية جداً لمتابعة الدروس والتواصل مع الإدارة.\n\nيرجى الانضمام في أقرب وقت عبر الرابط الخاص بك.\n\nإذا واجهتك أي صعوبة، نحن هنا لمساعدتك!";
+            } else if (type === 'relance') {
+                if(subj) subj.value = "تذكير هام - الأكاديمية";
+                ta.value = "السلام عليكم ورحمة الله {الاسم}،\n\nنود تذكيركم بضرورة استكمال الخطوات المطلوبة لتأكيد تسجيلكم في الأكاديمية.\n\nنرجو منكم إتمام الأمر في أقرب فرصة لتجنب أي تأخير في مساركم الدراسي.";
+            } else if (type === 'support') {
+                if(subj) subj.value = "افتقدناك في الأكاديمية!";
+                ta.value = "السلام عليكم ورحمة الله {الاسم}،\n\nلاحظنا غيابك عن متابعة الدروس مؤخراً، وافتقدنا تواجدك معنا في الأكاديمية.\n\nهل تواجه أي مشكلة تقنية أو صعوبة تمنعك من المتابعة؟ لا تتردد في الرد على هذه الرسالة، فنحن هنا لمساعدتك وتسهيل مسارك الدراسي.";
             }
         }
 
