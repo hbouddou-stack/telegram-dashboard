@@ -1404,6 +1404,32 @@
 
             <!-- Tab 4: Funnel -->
             <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom:15px;">
+
+    <!-- UNIFIED COMPOSER V2 -->
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:20px; text-align:right;" dir="rtl">
+        <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1.05rem;">✉️ رسالة مخصصة (V2)</h4>
+        
+        <!-- Quick Templates -->
+        <div style="margin-bottom:10px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
+                <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
+                <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
+            </div>
+        </div>
+        
+        <!-- Textarea -->
+        <textarea id="single-composer-text" rows="4" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.9rem; resize:vertical; box-sizing:border-box; margin-bottom:12px;"></textarea>
+        
+        <!-- Send Buttons -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button onclick="sendSingleMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">🟩 واتساب</button>
+            <button onclick="sendSingleMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">✈️ تليجرام</button>
+            <button onclick="sendSingleMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">📱 SMS</button>
+            <button onclick="sendSingleMessage('email')" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">📧 إيميل</button>
+        </div>
+    </div>
+    <!-- END UNIFIED COMPOSER V2 -->
     
     <div id="funnel-victory-banner" class="success-banner" style="display:none;">
         🎉 الهدف تحقق : الطالب مسجل في المنصة ولا يحتاج إلى متابعة إضافية !
@@ -4634,6 +4660,66 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         }
 
         
+        // ================= V2 SINGLE COMPOSER LOGIC =================
+        function setSingleComposerTemplate(type) {
+            const ta = document.getElementById('single-composer-text');
+            if (!ta) return;
+            const sName = (activeStudentObj && activeStudentObj.first_name) ? activeStudentObj.first_name : '{الاسم}';
+            
+            if (type === 'telegram') {
+                ta.value = `السلام عليكم ورحمة الله وبركاته ${sName}،\n\nلاحظنا أنك لم تنضم حتى الآن إلى مجموعة الدراسة الخاصة بك على التليجرام. المجموعة ضرورية جداً لمتابعة الدروس والتواصل مع الإدارة.\n\nيرجى الانضمام في أقرب وقت عبر الرابط الخاص بك.\n\nإذا واجهتك أي صعوبة، نحن هنا لمساعدتك!`;
+            } else if (type === 'relance') {
+                ta.value = `السلام عليكم ورحمة الله ${sName}،\n\nنود تذكيركم بضرورة استكمال الخطوات المطلوبة لتأكيد تسجيلكم في الأكاديمية.\n\nنرجو منكم إتمام الأمر في أقرب فرصة لتجنب أي تأخير في مساركم الدراسي.`;
+            } else if (type === 'support') {
+                ta.value = `السلام عليكم ورحمة الله ${sName}،\n\nلاحظنا غيابك عن متابعة الدروس مؤخراً، وافتقدنا تواجدك معنا في الأكاديمية.\n\nهل تواجه أي مشكلة تقنية أو صعوبة تمنعك من المتابعة؟ لا تتردد في الرد على هذه الرسالة، فنحن هنا لمساعدتك وتسهيل مسارك الدراسي.`;
+            }
+        }
+
+        async function sendSingleMessage(channel) {
+            if (!activeStudentObj) return;
+            const text = document.getElementById('single-composer-text').value.trim();
+            if (!text) {
+                alert('⚠️ الرجاء كتابة رسالة');
+                return;
+            }
+            
+            if (channel === 'whatsapp') {
+                let phone = String(activeStudentObj.phone || '').replace(/\D/g, '');
+                if (!phone) { alert('⚠️ هذا الطالب ليس لديه رقم هاتف مسجل.'); return; }
+                if (phone.startsWith('0')) phone = '212' + phone.substring(1);
+                const url = 'https://api.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(text);
+                
+                try {
+                    if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openLink === 'function') {
+                        window.Telegram.WebApp.openLink(url);
+                    } else {
+                        window.open(url, '_blank');
+                    }
+                } catch(e) {
+                    window.open(url, '_blank');
+                }
+                return;
+            }
+            
+            // For Telegram, Email, SMS
+            try {
+                const res = await fetch('/api/admin/gateway/bulk_action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: channel, student_ids: [activeStudentObj.student_id], subject: 'رسالة من الأكاديمية', message: text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ تم الإرسال بنجاح');
+                    document.getElementById('single-composer-text').value = '';
+                } else {
+                    alert('❌ خطأ: ' + (data.error || 'حدث خطأ غير معروف'));
+                }
+            } catch(e) {
+                alert('❌ خطأ في الاتصال');
+            }
+        }
+
         async function sendFunnelAction(actionType) {
             if (!activeStudentId) return;
             if (!confirm('Voulez-vous vraiment effectuer cette action ?')) return;
