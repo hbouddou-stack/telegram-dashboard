@@ -2632,8 +2632,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     matchSource = (srcFileLower === expectedFile || srcLower === expectedFile || srcFileLower.includes(expectedFile));
                 } else {
                     let derivedSource = 'manuel';
-                    if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-                    else if (srcLower.includes('excel') || srcLower.includes('csv') || srcFileLower.length > 0) derivedSource = 'excel';
+                    if (srcFileLower.length > 0) derivedSource = 'excel';
+                    else if (srcLower.includes('excel') || srcLower.includes('csv')) derivedSource = 'excel';
+                    else if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
+                    
                     matchSource = (filters.source === derivedSource || srcLower === filters.source.toLowerCase());
                 }
 
@@ -5502,7 +5504,7 @@ function updateDashboardView() {
         const fYear = document.getElementById('dash-filter-year') ? document.getElementById('dash-filter-year').value : 'all';
         const fGender = document.getElementById('dash-filter-gender-val') ? document.getElementById('dash-filter-gender-val').value : 'all';
         const fPay = document.getElementById('dash-filter-pay-val') ? document.getElementById('dash-filter-pay-val').value : 'all';
-        const fSource = document.getElementById('dash-filter-source') ? document.getElementById('dash-filter-source').value : 'all';
+        const fSource = document.getElementById('source-select') ? document.getElementById('source-select').value : 'all';
         const q = document.getElementById('dash-search-input') ? document.getElementById('dash-search-input').value.toLowerCase() : '';
 
         // Filter Students
@@ -5530,11 +5532,23 @@ function updateDashboardView() {
             if (fPay === 'UNPAID' && isPaid) match = false;
 
             const srcLower = String(s.source || '').toLowerCase();
-            let derivedSource = 'manuel';
-            if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
-            else if (srcLower.includes('excel')) derivedSource = 'excel';
-            if (fSource !== 'all' && fSource !== derivedSource) match = false;
+            const srcFileLower = String(s.source_file || '').toLowerCase().trim();
             
+            let derivedSource = 'manuel';
+            if (srcFileLower.length > 0) derivedSource = 'excel';
+            else if (srcLower.includes('excel') || srcLower.includes('csv')) derivedSource = 'excel';
+            else if (srcLower.includes('sheet') || srcLower.includes('google')) derivedSource = 'sheet';
+            
+            // Check if user is filtering by a specific file
+            if (fSource.startsWith('file:')) {
+                const expectedFile = fSource.substring(5).toLowerCase().trim();
+                if (srcFileLower !== expectedFile && srcLower !== expectedFile && !srcFileLower.includes(expectedFile)) {
+                    match = false;
+                }
+            } else {
+                if (fSource !== 'all' && fSource !== derivedSource) match = false;
+            }
+
             return match;
         });
 

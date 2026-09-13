@@ -6638,7 +6638,7 @@ async def night_patrol_task(bot):
 async def on_startup(bot: Bot):
     logger.info("Initializing database on startup...")
     asyncio.create_task(night_patrol_task(bot))
-    asyncio.create_task(auto_sync_sheets_task(bot))
+    # asyncio.create_task(auto_sync_sheets_task(bot)) # Désactivé car le client n'utilise que Excel maintenant
     await db.init_db()
     logger.info("Database initialized.")
     
