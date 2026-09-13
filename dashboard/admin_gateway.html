@@ -464,25 +464,24 @@
                 </div>
             </div>
             
-            <!-- Line 3: Quick Action Buttons (Advanced Filters, Duplicates Only Toggle, Scanner V2) -->
+            <!-- Line 3: Quick Action Buttons (Paid/Unpaid & Advanced Filters) -->
             <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <button onclick="document.getElementById('filter-drawer').style.display='block'" style="flex:1; background:var(--surface); border:1px solid var(--border); padding:10px 8px; border-radius:12px; cursor:pointer; font-size:0.92rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); color:var(--text1); font-family:'Tajawal', inherit;">
-                    🎛️ فلاتر
-                </button>
-                <button id="btn-toggle-duplicates-filter" onclick="toggleDuplicatesOnlyFilter()" style="flex:1.4; background:var(--surface); border:1.5px solid var(--border); padding:10px 8px; border-radius:12px; cursor:pointer; font-size:0.88rem; font-weight:bold; color:var(--text1); font-family:'Tajawal', inherit; transition:all 0.2s; white-space:nowrap;">
-                    👥 المكررين فقط
-                </button>
-                <button onclick="openDuplicateScannerV2()" style="background:#dc2626; color:white; border:none; padding:10px 14px; border-radius:12px; cursor:pointer; font-size:0.92rem; font-weight:bold; box-shadow:0 2px 8px rgba(220,38,38,0.35); font-family:'Tajawal', inherit; white-space:nowrap;">
-                    🔍 كشف V2
+                <!-- Paid / Unpaid Filter -->
+                <div style="flex:1; display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:0.95rem;">
+                    <div id="pay-all" onclick="setPayFilterUI('all', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--accent); color:white; font-weight:bold; transition:all 0.2s;">الكل</div>
+                    <div id="pay-paid" onclick="setPayFilterUI('paid', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); border-right:1px solid var(--border); border-left:1px solid var(--border); font-weight:bold; transition:all 0.2s;">🟢 مسدد</div>
+                    <div id="pay-unpaid" onclick="setPayFilterUI('unpaid', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); font-weight:bold; transition:all 0.2s;">🔴 غير مسدد</div>
+                </div>
+
+                <!-- Advanced Filters Button -->
+                <button onclick="document.getElementById('filter-drawer').style.display='block'" style="flex:0.25; background:var(--surface); border:1px solid var(--border); border-radius:12px; cursor:pointer; font-size:1.2rem; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center;">
+                    🎛️
                 </button>
             </div>
             
-            <!-- Line 4: Meta & Select All -->
+            <!-- Line 4: Meta -->
             <div style="display:flex; justify-content:space-between; align-items:center; padding:0 2px;">
                 <div id="students-count-display" style="font-weight:800; font-size:0.95rem; color:var(--accent2);"></div>
-                <label style="cursor:pointer; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px; color:var(--text1);">
-                    <input type="checkbox" id="selectAllGrid" onclick="toggleAllStudents(this)" style="transform:scale(1.2);"> تحديد الكل
-                </label>
             </div>
             
             <!-- Bulk Action Bar -->
@@ -526,14 +525,12 @@
                         </div>
                     </div>
                     
-                    <!-- Paiement -->
+                    <!-- Kachf V2 -->
                     <div>
-                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">💰 حالة الدفع</label>
-                        <div style="display:flex; border:1px solid var(--border); border-radius:12px; overflow:hidden;">
-                            <div id="pay-all" onclick="setPayFilterUI('all', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); color:var(--text1); box-shadow:inset 0 0 0 2px var(--text2);">الكل</div>
-                            <div id="pay-paid" onclick="setPayFilterUI('paid', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">🟢 مدفوع</div>
-                            <div id="pay-unpaid" onclick="setPayFilterUI('unpaid', this)" style="flex:1; text-align:center; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer; background:var(--surface); border-right:1px solid var(--border);">🔴 غير مدفوع</div>
-                        </div>
+                        <label style="font-size:0.9rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">🔍 كشف المكررين V2</label>
+                        <button onclick="openDuplicateScannerV2(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:#dc2626; color:white; border:none; padding:12px; border-radius:12px; cursor:pointer; font-size:0.95rem; font-weight:bold; font-family:'Tajawal', inherit; box-shadow:0 4px 10px rgba(220,38,38,0.3);">
+                            تشغيل كشف V2
+                        </button>
                     </div>
                     
                     <!-- Niveau -->
@@ -2783,7 +2780,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                        <th style="padding:12px 8px; width:30px; text-align:center;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllStudents(this)"></th>
+                        <th style="padding:12px 8px; width:30px; text-align:center;"></th>
                         <th style="padding:12px 8px; cursor:pointer; color:var(--text2); width:40px;" onclick="sortTable('date')">م ${getSortIcon('date')}</th>
                         <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
                         <th style="padding:12px; cursor:pointer; width:90px;" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
@@ -2907,7 +2904,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         <td style="padding:12px 6px; text-align:center;" onclick="event.stopPropagation()">
                             <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
                                 <input type="checkbox" class="student-select-cb" value="${s.student_id}">
-                                <button onclick="event.stopPropagation(); openComposerForSingleStudent('${s.student_id}')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:4px 8px; border-radius:8px; font-size:0.72rem; font-weight:900; cursor:pointer; white-space:nowrap; box-shadow:0 2px 4px rgba(16,185,129,0.3);" title="إرسال رسالة V2">✉️ V2</button>
                             </div>
                         </td>
                         <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
@@ -3076,7 +3072,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                             </div>
                             <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
                                 ${payBadge}
-                                <button onclick="event.stopPropagation(); openComposerForSingleStudent('${s.student_id}')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:3px; box-shadow:0 2px 5px rgba(16,185,129,0.3);">🚀 رسالة V2</button>
                             </div>
                         </div>
                         <div style="margin-top:8px;">${coloredEmail}</div>
