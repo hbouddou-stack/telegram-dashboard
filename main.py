@@ -1581,6 +1581,7 @@ async def api_admin_gateway_import_students(request: web.Request):
                         WHERE LOWER(email) = ? OR student_id = ?
                     """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, original_file_name, email, student_id))
                 else:
+                    original_file_name = field.filename if field.filename else 'Fichier Excel'
                     await db.execute("""
                         INSERT INTO academy_students (student_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, source, source_file, magic_token, is_active, created_at)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?, ?, 1, COALESCE(NULLIF(?, ''), datetime('now')))
