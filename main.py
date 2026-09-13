@@ -3207,7 +3207,7 @@ async def generate_questions_ia(request):
         import google.generativeai as genai
 
         # Valid model names for old SDK
-        valid_models = ['gemini-flash-lite-latest', 'gemini-1.5-flash', 'gemini-1.5-flash-latest',
+        valid_models = ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-1.5-flash-latest',
                         'gemini-1.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite',
                         'gemini-2.5-flash-preview-05-20', 'gemini-2.5-flash']
         if model_name not in valid_models:
@@ -6025,7 +6025,7 @@ async def api_chat(request):
         api_key = random.choice(api_keys)
         genai.configure(api_key=api_key)
         
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-flash-latest')
         
         # Enriched prompt
         prompt = f"""أنت "المساعد الذكي"، مساعد لطيف وخدوم في "أكاديمية الإمام الباجي".
