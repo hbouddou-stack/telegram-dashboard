@@ -1273,3 +1273,15 @@ async def handle_prof_diff_callback(callback: CallbackQuery, state: FSMContext):
         await callback.answer("✅ تم حفظ التعديلات.")
         await state.clear()
         await handle_main_settings(callback)
+
+
+@router.message(Command("png"))
+async def cmd_png(message: Message, bot: Bot):
+    from aiogram.types import FSInputFile
+    import os
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'parcours.png')
+    if os.path.exists(file_path):
+        photo = FSInputFile(file_path)
+        await message.answer_photo(photo, caption="📊 مسار تسجيل الطالب (Parcours d'inscription)")
+    else:
+        await message.answer("⚠️ الصورة غير موجودة.")
