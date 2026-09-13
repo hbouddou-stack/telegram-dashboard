@@ -1248,7 +1248,8 @@
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button onclick="directWhatsAppActiveStudent()" style="background:#25D366; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(37,211,102,0.3);">🟢 واتساب</button>
-                        <button onclick="directTelegramActiveStudent()" style="background:#0088cc; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,136,204,0.3);">✈️ تليجرام</button>
+                                                  <button onclick="directSmsActiveStudent()" style="background:#f59e0b; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(245,158,11,0.3);">💬 رسالة SMS</button>
+                          <button onclick="directTelegramActiveStudent()" style="background:#0088cc; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,136,204,0.3);">✈️ تليجرام</button>
                         <button onclick="openComposerForActiveStudent()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:900; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(16,185,129,0.35);">✉️ رسالة V2</button>
                     </div>
                 </div>
@@ -5975,6 +5976,43 @@ function renderHomeAlerts(alerts) {
             } else {
                 alert('⚠️ يرجى اختيار طالب أولاً.');
             }
+        }
+
+
+        function directSmsActiveStudent() {
+            const student = (typeof activeStudentObj !== 'undefined' && activeStudentObj) 
+                || (typeof allStudents !== 'undefined' && allStudents.find(s => String(s.student_id) === String(activeStudentId)));
+            if (!student) {
+                alert('⚠️ لم يتم تحديد أي طالب بالنشاط الحالي.');
+                return;
+            }
+            if (!student.phone) {
+                alert('⚠️ هذا الطالب ليس لديه رقم هاتف مسجل.');
+                return;
+            }
+            let cleanPhone = String(student.phone).replace(/\D/g, '');
+            if (cleanPhone.startsWith('0')) cleanPhone = '+212' + cleanPhone.substring(1);
+            else if (!cleanPhone.startsWith('+')) cleanPhone = '+' + cleanPhone;
+            
+            const sName = student.first_name || '';
+            const token = student.magic_token || student.student_id;
+            const botUser = window.BOT_USERNAME || 'minassatalbajibot';
+            const text = `السلام عليكم ورحمة الله وبركاته ${sName}، معك أكاديمية الباجي.\nللدخول إلى منصة الأكاديمية وبدء رحلتك التعليمية، يرجى الضغط على الرابط التالي (صالح لمرة واحدة):\nhttps://t.me/${botUser}?start=wa_${token}`;
+            
+            // For SMS, we usually use sms:PHONE?body=MSG
+            // On some devices, it's &body= instead of ?body=
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const separator = isIOS ? '&' : '?';
+            const smsUrl = `sms:${cleanPhone}${separator}body=${encodeURIComponent(text)}`;
+            
+            safeOpenUrl(smsUrl);
+
+            // Log
+            fetch('/api/admin/gateway/bulk_action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'sms', student_ids: [student.student_id], message: text })
+            }).catch(() => {});
         }
 
         function directWhatsAppActiveStudent() {
