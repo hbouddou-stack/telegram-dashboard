@@ -2620,7 +2620,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const botStarted = !!s.telegram_id;
                 const groupJoined = !!s.group_joined || !!s.joined_at;
                 const paidVal = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE'].includes(paidVal);
+                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد'].includes(paidVal) || (paidVal.includes('مسدد') && !paidVal.includes('غير مسدد'));
                 
                 const matchTelegram = !filters.telegram || filters.telegram === 'all'
                     || (filters.telegram === 'bot' && botStarted)
@@ -2794,7 +2794,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     else if (yrStr) yrVal = s.year;
                     
                     const paid = String(s.payment_status || '').toUpperCase().trim();
-                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(paid);
+                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(paid) || (paid.includes('مسدد') && !paid.includes('غير مسدد'));
                     const payBadge = isPaid
                         ? `<span style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
                         : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
@@ -2912,7 +2912,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
                 // Payment badge
                 const paid = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(paid);
+                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(paid) || (paid.includes('مسدد') && !paid.includes('غير مسدد'));
                 const payBadge = isPaid
                     ? `<span style="font-size:0.72rem;background:rgba(22,163,74,0.15);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:700;">مدفوع</span>`
                     : `<span style="font-size:0.72rem;background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
@@ -3241,7 +3241,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         
                         const phone = s.phone || s.telephone || s.mobile || '—';
                         const ps = String(s.payment_status || '').toUpperCase().trim();
-                        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(ps);
+                        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
                         const payBadge = isPaid 
                             ? `<span style="background:rgba(34,197,94,0.15); border:1px solid #10b981; color:#34d399; padding:2px 8px; border-radius:8px; font-weight:800; font-size:0.72rem;">🟢 مسدَّد</span>` 
                             : `<span style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:2px 8px; border-radius:8px; font-weight:800; font-size:0.72rem;">🔴 غير مسدَّد</span>`;
@@ -3962,7 +3962,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                 <div style="flex:0 0 24%; font-weight:800; color:#334155; font-size:0.75rem; padding-right:4px;">💳 الدفع</div>
                                 ${sortedStudents.map((st, sIdx) => {
                                     const ps = String(st.payment_status || '').toUpperCase().trim();
-                                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(ps);
+                                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
                                     return `
                                         <div style="flex:1; padding:0 6px; ${sIdx > 0 ? 'border-right:1px solid #e2e8f0;' : ''}">
                                             <span style="display:inline-block; padding:2px 7px; border-radius:6px; font-weight:800; font-size:0.72rem; ${isPaid ? 'background:#d1fae5; color:#065f46; border:1px solid #a7f3d0;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fecaca;'}">
@@ -4071,7 +4071,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                                     const cleanName = stName.replace(/['"]/g, '');
                                     const fullPhone = String(st.phone || st.telephone || st.mobile || '—').trim();
                                     const ps = String(st.payment_status || '').toUpperCase().trim();
-                                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(ps);
+                                    const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
                                     const anoms = v2DetectAnomalies(st);
                                     const anomText = anoms.map(a => a.label).join('، ') || 'بيانات مشبوهة';
                                     return `
@@ -4136,7 +4136,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                         const stName = `${st.first_name || 'طالب'} ${st.last_name || ''}`.trim();
                         const cleanName = stName.replace(/['"]/g, '');
                         const ps = String(st.payment_status || '').toUpperCase().trim();
-                        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(ps);
+                        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
                         
                         const fullPhone = String(st.phone || st.telephone || st.mobile || '—').trim();
                         const fullEmail = String(st.email || '—').trim();
@@ -5462,7 +5462,7 @@ function updateDashboardView() {
             if (fGender !== 'all' && gen !== fGender) match = false;
             
             let pay = (s.payment_status || '').toUpperCase().trim();
-            let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل'].includes(pay);
+            let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد'].includes(pay) || (pay.includes('مسدد') && !pay.includes('غير مسدد'));
             if (fPay === 'PAID' && !isPaid) match = false;
             if (fPay === 'UNPAID' && isPaid) match = false;
 
