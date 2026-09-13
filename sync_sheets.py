@@ -62,7 +62,7 @@ async def run_google_sheets_sync(sheet_id: str):
                 if gender_raw in ["FEMME", "FEMALE", "FILLE", "F", "أنثى"]: gender = 'FEMME'
                 elif gender_raw in ["HOMME", "MALE", "GARCON", "M", "ذكر"]: gender = 'HOMME'
                 
-                                pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
+                pay_raw = str(row[7]).upper().strip() if len(row) > 7 else ''
                 payment_status = 'UNPAID'
                 
                 # Handling Arabic "مسدد" and "غير مسدد"
