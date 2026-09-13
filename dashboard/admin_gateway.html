@@ -469,8 +469,9 @@
                 <!-- Paid / Unpaid Filter -->
                 <div style="flex:1; display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:0.95rem;">
                     <div id="pay-all" onclick="setPayFilterUI('all', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--accent); color:white; font-weight:bold; transition:all 0.2s;">الكل</div>
-                    <div id="pay-paid" onclick="setPayFilterUI('paid', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); border-right:1px solid var(--border); border-left:1px solid var(--border); font-weight:bold; transition:all 0.2s;">🟢 مسدد</div>
-                    <div id="pay-unpaid" onclick="setPayFilterUI('unpaid', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); font-weight:bold; transition:all 0.2s;">🔴 غير مسدد</div>
+                    <div id="pay-paid" onclick="setPayFilterUI('paid', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); border-right:1px solid var(--border); font-weight:bold; transition:all 0.2s;">🟢 مسدد</div>
+                    <div id="pay-unpaid" onclick="setPayFilterUI('unpaid', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); border-right:1px solid var(--border); font-weight:bold; transition:all 0.2s;">🔴 غير مسدد</div>
+                    <div id="pay-exempt" onclick="setPayFilterUI('exempt', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--surface); color:var(--text1); font-weight:bold; transition:all 0.2s;">⚪ معفي</div>
                 </div>
 
                 <!-- Advanced Filters Button -->
@@ -619,7 +620,7 @@
             function setPayFilterUI(val, el) {
                 if(typeof filters !== 'undefined') filters.payment = val;
                 
-                ['pay-all', 'pay-paid', 'pay-unpaid'].forEach(id => {
+                ['pay-all', 'pay-paid', 'pay-unpaid', 'pay-exempt'].forEach(id => {
                     let elem = document.getElementById(id);
                     if(elem) {
                         elem.style.background = 'var(--surface)';
@@ -631,6 +632,7 @@
                 if(val === 'all') { el.style.boxShadow = 'inset 0 0 0 2px var(--text2)'; }
                 else if(val === 'paid') { el.style.background = '#dcfce7'; el.style.color = '#16a34a'; }
                 else if(val === 'unpaid') { el.style.background = '#fee2e2'; el.style.color = '#ef4444'; }
+                else if(val === 'exempt') { el.style.background = '#f3f4f6'; el.style.color = '#4b5563'; }
                 
                 if(typeof filterStudents === 'function') filterStudents();
             }
@@ -858,6 +860,7 @@
                 <option value="all">Tous (الكل)</option>
                 <option value="PAID">Payé (مسدد)</option>
                 <option value="UNPAID">Non Payé (غير مسدد)</option>
+                <option value="EXEMPT">Exonéré (معفي)</option>
             </select>
         </div>
 
@@ -2648,9 +2651,10 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     || (filters.telegram === 'none' && !botStarted);
                 
                 
-                const matchPayment = !filters.payment || filters.payment === 'all'
-                    || (filters.payment === 'paid' && isPaid)
-                    || (filters.payment === 'unpaid' && !isPaid);
+                    const matchPayment = !filters.payment || filters.payment === 'all'
+                        || (filters.payment === 'paid' && isPaid)
+                        || (filters.payment === 'exempt' && paidVal.includes('معفي'))
+                        || (filters.payment === 'unpaid' && !isPaid);
                     
                 // Marketing Remarks Filtering
                 let matchRemark = true;
@@ -5498,7 +5502,7 @@ function updateDashboardView() {
 
         const fYear = document.getElementById('dash-filter-year') ? document.getElementById('dash-filter-year').value : 'all';
         const fGender = document.getElementById('dash-filter-gender-val') ? document.getElementById('dash-filter-gender-val').value : 'all';
-        const fPay = document.getElementById('dash-filter-pay-val') ? document.getElementById('dash-filter-pay-val').value : 'all';
+        const fPay = document.getElementById('dash-filter-pay') ? document.getElementById('dash-filter-pay').value : 'all';
         const fSource = document.getElementById('source-select') ? document.getElementById('source-select').value : 'all';
         const q = document.getElementById('dash-search-input') ? document.getElementById('dash-search-input').value.toLowerCase() : '';
 
@@ -5525,6 +5529,7 @@ function updateDashboardView() {
             let isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'مسدد', 'معفي'].includes(pay) || (pay.includes('مسدد') && !pay.includes('غير مسدد'));
             if (fPay === 'PAID' && !isPaid) match = false;
             if (fPay === 'UNPAID' && isPaid) match = false;
+            if (fPay === 'EXEMPT' && !pay.includes('معفي')) match = false;
 
             const srcLower = String(s.source || '').toLowerCase();
             const srcFileLower = String(s.source_file || '').toLowerCase().trim();
