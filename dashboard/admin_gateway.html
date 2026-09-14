@@ -5074,7 +5074,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 yBadge.style.display = 'none';
             }
             
-            document.getElementById('profile-dob-text').innerHTML = ageText === '-' ? valOrEmpty('') : ageText;
+            document.getElementById('profile-dob-text').innerHTML = valOrEmpty(student.dob);
             document.getElementById('profile-tgid-text').textContent = student.telegram_id || 'غير مرتبط';
             
             // Source
@@ -5246,8 +5246,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 } catch(e) {}
             }
             const dobEl = document.getElementById('profile-dob-text');
-            if(dobEl) dobEl.textContent = ageText;
-
+            if(dobEl) dobEl.innerHTML = (ageText === '-' || ageText === 'غير متوفر') ? valOrEmpty('') : ageText;
+            
             document.getElementById('logs-overlay').style.display = 'flex';
             // Pre-fill Actions composer banner
             setTimeout(updateActionsBanner, 50);
