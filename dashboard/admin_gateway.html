@@ -1242,10 +1242,9 @@
 </style>
 
 <div style="padding: 15px 15px 0 15px; margin-bottom: 10px;">
-<button onclick="debugAndOpenComposer()" style="width: 100%; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px; border-radius:14px; font-weight:900; cursor:pointer; font-size:1.15rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(16,185,129,0.4); transition: transform 0.2s;">
+<button onclick="openComposerFromCard()" style="width: 100%; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px; border-radius:14px; font-weight:900; cursor:pointer; font-size:1.15rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(16,185,129,0.4); transition: transform 0.2s;">
 💬 فتح مركز التواصل (Contacter l'élève)
 </button>
-<div id="contact-debug-box" style="display:none; background:#1e293b; color:#94a3b8; font-size:0.78rem; padding:8px 12px; border-radius:8px; margin-top:8px; font-family:monospace; line-height:1.6;"></div>
 </div>
             <div class="mtab-container" style="flex-wrap:wrap; display:flex;">
                 <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عام</div>
@@ -5972,7 +5971,70 @@ function renderHomeAlerts(alerts) {
         </div>
     </div>
 
-    
+    <!-- THE COMPOSER MODAL -->
+    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999999; background:rgba(0,0,0,0.75); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+        <div style="background:var(--bg); width:100%; width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
+            <!-- Header -->
+            <div style="background:var(--surface); padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:8px;">📝 إرسال رسالة للطالب</h3>
+                <button onclick="closeComposer()" style="background:var(--bg); border:1px solid var(--border); width:32px; height:32px; border-radius:50%; font-size:1.1rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding:20px; display:flex; flex-direction:column; gap:14px; flex: 1; overflow-y:auto;">
+                <!-- Recipient Info Box -->
+                <div id="composer-target-info" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:0.88rem; color:var(--text1); line-height:1.5;">
+                    المستلمون: <span id="composer-count" style="color:#0ea5e9; font-weight:bold;">0</span> طلاب
+                </div>
+
+                <!-- Subject (for Email) -->
+                <div>
+                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">📌 الموضوع (للإيميل) :</label>
+                    <input type="text" id="composer-subject" value="رسالة من أكاديمية الباجي" placeholder="موضوع الرسالة..." style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.9rem; outline:none; box-sizing:border-box;">
+                </div>
+                
+                <!-- Message Textarea -->
+                <div>
+                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">💬 نص الرسالة :</label>
+                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
+                    <!-- Quick Templates -->
+                    <div style="margin-top:8px;">
+                        <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                            <span onclick="setComposerTemplate('telegram')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
+                            <span onclick="setComposerTemplate('relance')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
+                            <span onclick="setComposerTemplate('support')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
+                        </div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                        <span>💡 المتغيرات:</span>
+                        <span onclick="insertVar('{الاسم}')" style="cursor:pointer; background:var(--surface); padding:2px 8px; border-radius:6px; border:1px solid var(--border); font-weight:bold; color:#0ea5e9;">{الاسم}</span>
+                    </div>
+                    <!-- Fallback WhatsApp Direct Link -->
+                    <div id="composer-wa-fallback" style="display:none; margin-top:10px; padding:10px; background:rgba(37,211,102,0.1); border:1px solid #25D366; border-radius:10px; text-align:center;"></div>
+                </div>
+                
+                <!-- Sending Buttons -->
+                <div>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">اختر قناة الإرسال :</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button id="btn-send-tg" onclick="sendBulkMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(0,136,204,0.35);">
+                            ✈️ تليجرام
+                        </button>
+                        <button id="btn-send-wa" onclick="sendBulkMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(37,211,102,0.35);">
+                            🟩 واتساب
+                        </button>
+                        <button id="btn-send-email" onclick="sendBulkMessage('email')" style="background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(239,68,68,0.35);">
+                            📧 إيميل
+                        </button>
+                        <button id="btn-send-sms" onclick="sendBulkMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(245,158,11,0.35);">
+                            📱 SMS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script>
         // Safe URL Opener for Telegram WebApp (iOS / Android / Desktop)
@@ -6059,45 +6121,13 @@ function renderHomeAlerts(alerts) {
             openComposer(prefChannel);
         }
 
-                function openComposerForSingleStudent(sid) {
-            // Pass the student ID directly — bypass the checkbox system entirely
-            openComposerWithStudentId(sid);
+        function openComposerForSingleStudent(sid) {
+            document.querySelectorAll('.student-select-cb').forEach(cb => {
+                cb.checked = (String(cb.value) === String(sid));
+            });
+            updateMassSmsButton();
+            openComposer();
         }
-        function openComposerWithStudentId(sid) {
-            // Find the student object
-            const st = (typeof allStudents !== 'undefined')
-                ? allStudents.find(s => String(s.student_id) === String(sid))
-                : null;
-
-            const countEl = document.getElementById('composer-count');
-            if (countEl) countEl.textContent = 1;
-
-            const targetInfo = document.getElementById('composer-target-info');
-            if (targetInfo) {
-                if (st) {
-                    const sName = `${st.first_name || ''} ${st.last_name || ''}`.trim() || 'طالب مجهول';
-                    const sPhone = st.phone || 'بدون هاتف';
-                    const sEmail = st.email || 'بدون بريد';
-                    const tgStatus = st.telegram_id ? '✅ مرتبط بتيليجرام' : '❌ غير مرتبط بتيليجرام';
-                    targetInfo.innerHTML = `
-                        <div style="font-weight:bold; font-size:0.95rem; margin-bottom:4px; color:#0ea5e9;">👤 ${sName}</div>
-                        <div style="display:flex; flex-wrap:wrap; gap:10px; font-size:0.82rem; color:var(--text2);">
-                            <span>📱 ${sPhone}</span>
-                            <span>📧 ${sEmail}</span>
-                            <span style="font-weight:bold; color:${st.telegram_id ? '#16a34a' : '#ef4444'};">${tgStatus}</span>
-                        </div>
-                    `;
-                } else {
-                    targetInfo.innerHTML = `المستهدف: <b>طالب واحد محدد</b>`;
-                }
-            }
-
-            // Store the target sid for sending
-            window._composerTargetSid = sid;
-
-            document.getElementById('modal-composer').style.display = 'flex';
-        }
-
 
         function openComposerForActiveStudent() {
             if (typeof activeStudentId !== 'undefined' && activeStudentId) {
@@ -6205,14 +6235,9 @@ function renderHomeAlerts(alerts) {
         }
 
         function openComposer(prefChannel) {
-            // Allow calling directly from a student card (bypasses checkbox requirement)
-            if (window._composerTargetSid) {
-                openComposerWithStudentId(window._composerTargetSid);
-                return;
-            }
             const cbs = document.querySelectorAll('.student-select-cb:checked');
             if (cbs.length === 0) {
-                alert('يجب عليك أولاً اختيار طالب أو أكثر من خلال تحديد مربع الاختيار (V) أمام اسمه.');
+                alert('⚠️ يرجى تحديد طالب واحد على الأقل أولاً بوضع علامة (✓) بجانب اسمه.');
                 return;
             }
             
@@ -6248,6 +6273,39 @@ function renderHomeAlerts(alerts) {
             document.getElementById('modal-composer').style.display = 'flex';
         }
         
+        function openComposerFromCard() {
+            // Exactly like openStudentCard opens logs-overlay
+            if (!activeStudentId) { alert('يرجى اختيار طالب أولاً.'); return; }
+            const sid = activeStudentId;
+            const st = activeStudentObj || (typeof allStudents !== 'undefined' ? allStudents.find(function(s){ return String(s.student_id) === String(sid); }) : null);
+
+            var countEl = document.getElementById('composer-count');
+            if (countEl) countEl.textContent = 1;
+
+            var targetInfo = document.getElementById('composer-target-info');
+            if (targetInfo && st) {
+                var sName = ((st.first_name || '') + ' ' + (st.last_name || '')).trim() || 'طالب مجهول';
+                var sPhone = st.phone || 'بدون هاتف';
+                var tgOk = st.telegram_id;
+                targetInfo.innerHTML = '<div style="font-weight:bold;font-size:0.95rem;color:#0ea5e9;">👤 ' + sName + '</div>'
+                    + '<div style="font-size:0.82rem;color:var(--text2);">📱 ' + sPhone
+                    + ' &nbsp;|&nbsp; ' + (tgOk ? '✅ تيليجرام' : '❌ تيليجرام') + '</div>';
+            } else if (targetInfo) {
+                targetInfo.innerHTML = 'المستهدف: <b>طالب واحد</b>';
+            }
+
+            var textEl = document.getElementById('composer-text');
+            if (textEl && !textEl.value.trim()) {
+                textEl.value = 'السلام عليكم،
+نذكركم بأن...';
+            }
+
+            window._composerTargetSid = String(sid);
+
+            // Open EXACTLY like logs-overlay opens
+            document.getElementById('modal-composer').style.display = 'flex';
+        }
+
         function closeComposer() {
             window._composerTargetSid = null;
             document.getElementById('modal-composer').style.display = 'none';
@@ -6261,7 +6319,7 @@ function renderHomeAlerts(alerts) {
                 return;
             }
             
-            // Build list of targets: checkbox-selected OR direct from student card
+            // Get targets: from checkbox selection OR from direct card button
             let ids = [];
             const cbs = document.querySelectorAll('.student-select-cb:checked');
             if (cbs.length > 0) {
@@ -6473,114 +6531,6 @@ async function deleteActiveStudent() {
         alert('❌ Erreur réseau : ' + e);
     }
 }
-
-        function debugAndOpenComposer() {
-            const box = document.getElementById('contact-debug-box');
-            const log = (msg, color) => {
-                if (box) {
-                    box.style.display = 'block';
-                    box.innerHTML += `<div style="color:${color||'#94a3b8'}">→ ${msg}</div>`;
-                }
-                console.log('[COMPOSER DEBUG]', msg);
-            };
-
-            log('Bouton cliqué', '#60a5fa');
-            log('activeStudentId = ' + JSON.stringify(activeStudentId), activeStudentId ? '#4ade80' : '#f87171');
-            log('activeStudentObj = ' + (activeStudentObj ? activeStudentObj.first_name : 'null'), activeStudentObj ? '#4ade80' : '#f87171');
-
-            const modal = document.getElementById('modal-composer');
-            log('modal-composer existe: ' + (modal ? 'OUI' : 'NON'), modal ? '#4ade80' : '#f87171');
-            if (modal) {
-                log('modal display actuel: ' + modal.style.display, '#60a5fa');
-                log('modal z-index: ' + modal.style.zIndex, '#60a5fa');
-            }
-
-            if (!activeStudentId) {
-                log('ERREUR: activeStudentId est vide! Impossible douvrir.', '#f87171');
-                return;
-            }
-
-            log('Appel de openComposerWithStudentId(' + activeStudentId + ')...', '#fbbf24');
-            openComposerWithStudentId(activeStudentId);
-
-            setTimeout(() => {
-                const m2 = document.getElementById('modal-composer');
-                log('Après ouverture - display: ' + (m2 ? m2.style.display : 'N/A'), '#4ade80');
-            }, 200);
-        }
 </script>
-
-
-<!-- COMPOSER MODAL - moved to top-level to escape stacking context -->
-
-
-
-
-<!-- === COMPOSER MODAL (top-level, outside all stacking contexts) === -->
-<!-- THE COMPOSER MODAL -->
-    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999999; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
-        <div style="background:var(--bg); width:100%; width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
-            <!-- Header -->
-            <div style="background:var(--surface); padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:8px;">📝 إرسال رسالة للطالب</h3>
-                <button onclick="closeComposer()" style="background:var(--bg); border:1px solid var(--border); width:32px; height:32px; border-radius:50%; font-size:1.1rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
-            </div>
-            
-            <!-- Body -->
-            <div style="padding:20px; display:flex; flex-direction:column; gap:14px; flex: 1; overflow-y:auto;">
-                <!-- Recipient Info Box -->
-                <div id="composer-target-info" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:0.88rem; color:var(--text1); line-height:1.5;">
-                    المستلمون: <span id="composer-count" style="color:#0ea5e9; font-weight:bold;">0</span> طلاب
-                </div>
-
-                <!-- Subject (for Email) -->
-                <div>
-                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">📌 الموضوع (للإيميل) :</label>
-                    <input type="text" id="composer-subject" value="رسالة من أكاديمية الباجي" placeholder="موضوع الرسالة..." style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.9rem; outline:none; box-sizing:border-box;">
-                </div>
-                
-                <!-- Message Textarea -->
-                <div>
-                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">💬 نص الرسالة :</label>
-                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
-                    <!-- Quick Templates -->
-                    <div style="margin-top:8px;">
-                        <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
-                            <span onclick="setComposerTemplate('telegram')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
-                            <span onclick="setComposerTemplate('relance')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
-                            <span onclick="setComposerTemplate('support')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
-                        </div>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text2); margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                        <span>💡 المتغيرات:</span>
-                        <span onclick="insertVar('{الاسم}')" style="cursor:pointer; background:var(--surface); padding:2px 8px; border-radius:6px; border:1px solid var(--border); font-weight:bold; color:#0ea5e9;">{الاسم}</span>
-                    </div>
-                    <!-- Fallback WhatsApp Direct Link -->
-                    <div id="composer-wa-fallback" style="display:none; margin-top:10px; padding:10px; background:rgba(37,211,102,0.1); border:1px solid #25D366; border-radius:10px; text-align:center;"></div>
-                </div>
-                
-                <!-- Sending Buttons -->
-                <div>
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">اختر قناة الإرسال :</label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <button id="btn-send-tg" onclick="sendBulkMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(0,136,204,0.35);">
-                            ✈️ تليجرام
-                        </button>
-                        <button id="btn-send-wa" onclick="sendBulkMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(37,211,102,0.35);">
-                            🟩 واتساب
-                        </button>
-                        <button id="btn-send-email" onclick="sendBulkMessage('email')" style="background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(239,68,68,0.35);">
-                            📧 إيميل
-                        </button>
-                        <button id="btn-send-sms" onclick="sendBulkMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(245,158,11,0.35);">
-                            📱 SMS
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </body>
 </html>
