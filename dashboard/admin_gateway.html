@@ -5034,8 +5034,21 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             
             document.getElementById('profile-email-text').innerHTML = valOrEmpty(student.email);
             
-            const studentIdEl = document.getElementById('profile-studentid-text');
-            if(studentIdEl) studentIdEl.textContent = student.academic_id || 'غير متوفر';
+            // Format student ID with dash like the table
+            let rawId = student.student_id || student.academic_id || '';
+            let formattedId = valOrEmpty('');
+            if (rawId) {
+                let idStr = String(rawId).trim();
+                if (idStr.length > 2) {
+                    let base = idStr.slice(0, -2);
+                    let yr = idStr.slice(-2);
+                    formattedId = base + '-' + yr;
+                } else {
+                    formattedId = idStr;
+                }
+            }
+            const cardStId = document.getElementById('card-studentid-text');
+            if (cardStId) cardStId.innerHTML = formattedId;
             
             // Payment status in Arabic
             const paymentEl = document.getElementById('profile-payment-text');
