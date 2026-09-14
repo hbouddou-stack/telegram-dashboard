@@ -1200,17 +1200,17 @@
 
 
     <!-- Modal: Fiche Étudiant (Card) -->
-    <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';">
-        <div class="modal" id="fiche-eleve-modal" style="width: 98%; max-width: 1200px; height: 97vh; display: flex; flex-direction: column; margin: 1vh auto;">
-            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:7px 14px; min-height:0; flex-shrink:0;">
-                <span id="header-student-name" style="font-weight:800; font-size:0.95rem; color:var(--text1);">📋 بطاقة الطالب</span>
+    <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';" style="padding:0; align-items:stretch; justify-content:stretch;">
+        <div class="modal" id="fiche-eleve-modal" style="width: 100%; max-width: none; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; margin: 0; border-radius: 0; padding: 0; overflow: hidden;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:6px 14px; min-height:0; flex-shrink:0;">
+                <span id="header-student-name" style="font-weight:800; font-size:0.9rem; color:white; background:#0a84ff; padding:4px 14px; border-radius:20px; letter-spacing:0.01em;">📋 بطاقة الطالب</span>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">✕</button>
             </div>
             
             
             <style>
                 .modal-header { padding: 7px 14px !important; } .mtab-container { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 5px; overflow-x: auto;}
-                .mtab { flex: 1; text-align: center; padding: 6px 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold; color: var(--text2); transition: 0.2s; white-space: nowrap; }
+                .mtab { flex: 1; text-align: center; padding: 8px 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: var(--text2); transition: 0.2s; white-space: nowrap; }
                 .mtab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: rgba(10,132,255,0.05); }
                 .mcontent { display: none; flex-direction: column; gap: 10px; }
                 .mcontent.active { display: flex; }
@@ -1312,7 +1312,7 @@
                     🌍 الاسم باللغة الأجنبية : <span id="profile-foreign-name-text" dir="ltr">-</span>
                 </div>
                 <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 البريد الإلكتروني : <span id="profile-email-text" dir="ltr">-</span></div>
-                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📱 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left;">-</span></div>
+                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px; direction:rtl;">📱 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left; unicode-bidi:isolate;">-</span></div>
                 <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 تاريخ الميلاد : <span id="profile-dob-text">-</span></div>
     
     
@@ -4882,9 +4882,15 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if (g.startsWith('h') || g === 'm' || g.includes('ذكر')) {
                 displayGender = 'رجل';
                 if (profileNameChip) { profileNameChip.style.background = 'rgba(10,132,255,0.15)'; profileNameChip.style.borderColor = '#0a84ff'; profileNameChip.style.color = '#0a84ff'; }
+                // Badge header: bleu pour homme
+                var hBadge = document.getElementById('header-student-name');
+                if (hBadge) { hBadge.style.background = '#0a84ff'; }
             } else if (g.startsWith('f') || g === 'fille' || g.includes('أنثى')) {
                 displayGender = 'امرأة';
                 if (profileNameChip) { profileNameChip.style.background = 'rgba(255,45,85,0.15)'; profileNameChip.style.borderColor = '#ff2d55'; profileNameChip.style.color = '#ff2d55'; }
+                // Badge header: rose pour femme
+                var hBadgeF = document.getElementById('header-student-name');
+                if (hBadgeF) { hBadgeF.style.background = '#ff2d55'; }
             } else {
                 if (profileNameChip) { profileNameChip.style.background = 'rgba(10,132,255,0.15)'; profileNameChip.style.borderColor = '#0a84ff'; profileNameChip.style.color = '#0a84ff'; }
             }
