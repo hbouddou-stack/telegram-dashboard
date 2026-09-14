@@ -2969,8 +2969,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                        <th style="padding:12px 8px; width:30px; text-align:center;"></th>
-                        <th style="padding:12px 8px; cursor:pointer; color:var(--text2); width:40px;" onclick="sortTable('date')">م ${getSortIcon('date')}</th>
+                                                <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default;" title="رقم السطر">رقم N°</th>
                         <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
                         <th style="padding:12px; cursor:pointer; width:90px;" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
                         <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
@@ -3090,12 +3089,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
 
 
                     tr.innerHTML = `
-                        <td style="padding:12px 6px; text-align:center;" onclick="event.stopPropagation()">
-                            <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
-                                <input type="checkbox" class="student-select-cb" value="${s.student_id}">
-                            </div>
-                        </td>
-                        <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
+                                                <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
                         <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
                         <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
@@ -3209,7 +3203,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     // Template 2: Status Kanban Style
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
+                            
                             <div style="font-weight:900;font-size:1.15rem;color:var(--text1);">
                                 ${arName} ${cardDupBadge}
                             </div>
@@ -3234,7 +3228,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     div.style.padding = '8px 12px'; // tighter padding
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
+                            
                             <div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.95rem;color:var(--text1);flex-wrap:wrap;">
                                 ${dot} ${arName} ${cardDupBadge} ${s.last_name ? `<span style="font-size:0.8rem;color:var(--text2);font-weight:normal;">(${String(s.last_name)})</span>` : ''}
                             </div>
@@ -3252,7 +3246,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     // Template 1: Classic Enhanced (Default)
                     div.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                            <input type="checkbox" class="student-select-cb" value="${s.student_id}" onclick="event.stopPropagation()" style="margin-left:10px; transform:scale(1.2); cursor:pointer;">
+                            
                             <div style="display:flex;flex-direction:column;gap:2px;">
                                 <div style="display:flex;align-items:center;gap:6px;font-weight:900;font-size:1.15rem;color:var(--text1);flex-wrap:wrap;">
                                     ${dot} ${arName} ${cardDupBadge}
