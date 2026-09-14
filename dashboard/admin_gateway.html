@@ -5972,7 +5972,7 @@ function renderHomeAlerts(alerts) {
     </div>
 
     <!-- THE COMPOSER MODAL -->
-    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999999; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
         <div style="background:var(--bg); width:100%; width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
             <!-- Header -->
             <div style="background:var(--surface); padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
@@ -6121,11 +6121,27 @@ function renderHomeAlerts(alerts) {
             openComposer(prefChannel);
         }
 
-        function openComposerForSingleStudent(sid) {
+                function openComposerForSingleStudent(sid) {
+            let found = false;
             document.querySelectorAll('.student-select-cb').forEach(cb => {
-                cb.checked = (String(cb.value) === String(sid));
+                if (String(cb.value) === String(sid)) {
+                    cb.checked = true;
+                    found = true;
+                } else {
+                    cb.checked = false;
+                }
             });
-            updateMassSmsButton();
+            if (!found) {
+                const hiddenCb = document.createElement('input');
+                hiddenCb.type = 'checkbox';
+                hiddenCb.className = 'student-select-cb';
+                hiddenCb.value = sid;
+                hiddenCb.checked = true;
+                hiddenCb.style.display = 'none';
+                hiddenCb.id = 'temp-hidden-cb';
+                document.body.appendChild(hiddenCb);
+            }
+            if (typeof updateMassSmsButton === 'function') updateMassSmsButton();
             openComposer();
         }
 
