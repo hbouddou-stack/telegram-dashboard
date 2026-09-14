@@ -1321,44 +1321,116 @@
 
             </div>
 
+            
+            <style>
+                .pg-row { display:flex; align-items:center; padding:10px 12px; border-bottom:1px solid var(--border); background:var(--surface); }
+                .pg-row:last-child { border-bottom:none; }
+                .pg-label { display:flex; align-items:center; gap:8px; color:var(--text2); font-size:0.85rem; width:130px; flex-shrink:0; }
+                .pg-val { flex:1; text-align:left; font-weight:700; color:var(--text1); font-size:0.95rem; }
+                .pg-empty { color:#9ca3af; font-size:0.8rem; font-weight:normal; }
+                
+                .ac-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+                .ac-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+                .ac-card-title { font-size:0.8rem; color:var(--text2); margin-bottom:6px; }
+                .ac-card-val { font-size:1.1rem; font-weight:900; }
+            </style>
+
             <!-- Tab 1: General -->
-            <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <div class="chip" id="profile-name" style="background:rgba(10,132,255,0.15); border-color:#0a84ff; color:#0a84ff; display:flex; justify-content:flex-start; align-items:center; gap:8px;">
-                    👤 الاسم الكامل : <span id="profile-name-text" style="font-size:1.1rem; font-weight:bold;">-</span>
+            <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding:0; background:var(--bg);">
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
+                    <div class="pg-row" id="profile-name">
+                        <div class="pg-label">👤 الاسم الكامل</div>
+                        <div class="pg-val" id="profile-name-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🌍 باللغة الأجنبية</div>
+                        <div class="pg-val" id="profile-foreign-name-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📧 البريد الإلكتروني</div>
+                        <div class="pg-val" id="profile-email-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row" style="direction:rtl;">
+                        <div class="pg-label">📱 الهاتف</div>
+                        <div class="pg-val" id="profile-phone-text" dir="ltr" style="unicode-bidi:isolate;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🎂 تاريخ الميلاد</div>
+                        <div class="pg-val" id="profile-dob-text">-</div>
+                    </div>
+                    <div class="pg-row" id="profile-gender">
+                        <div class="pg-label">⚧ الجنس</div>
+                        <div class="pg-val" id="profile-gender-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">💼 المهنة</div>
+                        <div class="pg-val" id="profile-profession-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📍 بلد الإقامة</div>
+                        <div class="pg-val" id="profile-country-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🌍 الجنسية</div>
+                        <div class="pg-val" id="profile-nationality-text">-</div>
+                    </div>
                 </div>
-                <div class="chip" id="profile-foreign-name" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">
-                    🌍 الاسم باللغة الأجنبية : <span id="profile-foreign-name-text" dir="ltr">-</span>
+                
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
+                    <div class="pg-row">
+                        <div class="pg-label">📥 تاريخ الاستيراد</div>
+                        <div class="pg-val" id="profile-import-text" dir="ltr" style="font-size:0.85rem;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📄 المصدر</div>
+                        <div class="pg-val" id="profile-source-text">-</div>
+                    </div>
                 </div>
-                <div class="chip" id="profile-email" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📧 البريد الإلكتروني : <span id="profile-email-text" dir="ltr">-</span></div>
-                <div class="chip" id="profile-phone" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px; direction:rtl;">📱 الهاتف : <span id="profile-phone-text" dir="ltr" style="text-align:left; unicode-bidi:isolate;">-</span></div>
-                <div class="chip" id="profile-dob" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎂 تاريخ الميلاد : <span id="profile-dob-text">-</span></div>
-    
-    
-                <div class="chip" id="profile-gender" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">⚧ الجنس : <span id="profile-gender-text">-</span></div>
-                <div class="chip" id="profile-profession" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💼 المهنة : <span id="profile-profession-text">-</span></div>
-                <div class="chip" id="profile-country" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📍 بلد الإقامة : <span id="profile-country-text">-</span></div>
-                <div class="chip" id="profile-nationality" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🌍 الجنسية : <span id="profile-nationality-text">-</span></div>
-                <div class="chip" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 تاريخ الاستيراد : <span id="profile-import-text" style="font-size:0.85rem; color:var(--text2);">-</span></div>
-<!-- level badge moved to academy tab -->
             </div>
-
+            
             <!-- Tab 2: Academy -->
-            <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <div class="chip" id="profile-arabiclevel" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 Niveau Arabe : <span id="profile-arabiclevel-text">-</span></div>
-                <div class="chip" id="profile-year" style="background:rgba(255,159,10,0.15); border-color:#ff9f0a; color:#ff9f0a; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 السنة الدراسية : <span id="profile-year-text" style="font-weight:bold;">-</span></div>
-                <div class="chip" id="profile-school-level" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🏫 المستوى الدراسي : <span id="profile-school-level-text" style="font-weight:bold;">-</span></div>
-                <div class="chip" id="profile-studentid" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; display:flex; justify-content:flex-start; align-items:center; gap:8px;">🎓 رقم الطالب : <span id="profile-studentid-text">-</span></div>
+            <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding:0 5px 10px 0; background:var(--bg);">
                 
-                 
-                <div class="chip" id="profile-payment" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">💳 حالة الدفع : <span id="profile-payment-text">-</span></div>
-                <div class="chip" id="profile-inscription" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📅 تاريخ التسجيل : <span id="profile-inscription-text">-</span></div>
-                <div class="chip" id="profile-source" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📥 المصدر : <span id="profile-source-text">-</span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span> <span id="profile-phone-text" style="margin-left:10px; font-weight:bold; color:var(--text1);" dir="ltr"></span></div>
+                <!-- Highlight Cards -->
+                <div class="ac-grid">
+                    <div class="ac-card" style="border-color:#ff9f0a; background:rgba(255,159,10,0.05);">
+                        <div class="ac-card-title">🎓 السنة الدراسية</div>
+                        <div class="ac-card-val" id="profile-year-text" style="color:#ff9f0a;">-</div>
+                    </div>
+                    <div class="ac-card" id="card-payment" style="border-color:var(--border);">
+                        <div class="ac-card-title">💳 حالة الدفع</div>
+                        <div class="ac-card-val" id="profile-payment-text">-</div>
+                    </div>
+                </div>
                 
-                <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:5px; font-size:0.85rem; color:var(--text1);">
-                    <strong>حالة العضوية:</strong> <span id="profile-membership">جاري التحميل...</span>
+                <div class="ac-grid">
+                    <div class="ac-card">
+                        <div class="ac-card-title">🏅 مستوى اللغة العربية</div>
+                        <div class="ac-card-val" id="profile-arabiclevel-text" style="font-size:0.95rem;">-</div>
+                    </div>
+                    <div class="ac-card">
+                        <div class="ac-card-title">🏫 المستوى المدرسي</div>
+                        <div class="ac-card-val" id="profile-school-level-text" style="font-size:0.95rem;">-</div>
+                    </div>
+                </div>
+
+                <!-- Info List -->
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
+                    <div class="pg-row">
+                        <div class="pg-label">🎓 رقم الطالب</div>
+                        <div class="pg-val" id="profile-studentid-text" style="color:#34c759;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📅 تاريخ التسجيل</div>
+                        <div class="pg-val" id="profile-inscription-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">👥 حالة العضوية</div>
+                        <div class="pg-val" id="profile-membership" style="font-size:0.8rem;">-</div>
+                    </div>
                 </div>
             </div>
-
+            
             <!-- Tab 3: Telegram -->
             <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
                 <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✅ حالة الربط : <span id="profile-tg-display">-</span></div>
@@ -4886,6 +4958,14 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             } catch(e) {}
         }
 
+        
+            function valOrEmpty(val) {
+                if (!val || String(val).trim() === '' || String(val).trim() === 'null') {
+                    return '<span class="pg-empty">غير متوفر</span>';
+                }
+                return val;
+            }
+
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             activeStudentObj = student;
@@ -4952,17 +5032,27 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 tgUsernameContainer.style.display = 'none';
             }
             
-            document.getElementById('profile-email-text').textContent = student.email || 'غير متوفر';
+            document.getElementById('profile-email-text').innerHTML = valOrEmpty(student.email);
             
             const studentIdEl = document.getElementById('profile-studentid-text');
             if(studentIdEl) studentIdEl.textContent = student.academic_id || 'غير متوفر';
             
             // Payment status in Arabic
             const paymentEl = document.getElementById('profile-payment-text');
-            if(paymentEl) {
+            const cardPayment = document.getElementById('card-payment');
+            if(paymentEl && cardPayment) {
                 const ps = String(student.payment_status || '').toUpperCase().trim();
-                if (ps === 'PAID' || ps === 'PAYE' || ps === 'مدفوع' || ps === 'مسدد') paymentEl.textContent = '✅ مدفوع';
-                else paymentEl.textContent = '❌ غير مدفوع';
+                if (ps === 'PAID' || ps === 'PAYE' || ps === 'مدفوع' || ps === 'مسدد') {
+                    paymentEl.textContent = '✅ مدفوع';
+                    paymentEl.style.color = '#34c759';
+                    cardPayment.style.background = 'rgba(52,199,89,0.05)';
+                    cardPayment.style.borderColor = 'rgba(52,199,89,0.3)';
+                } else {
+                    paymentEl.textContent = '❌ غير مدفوع';
+                    paymentEl.style.color = '#ef4444';
+                    cardPayment.style.background = 'rgba(239,68,68,0.05)';
+                    cardPayment.style.borderColor = 'rgba(239,68,68,0.3)';
+                }
             }
             
             const inscriptionEl = document.getElementById('profile-inscription-text');
@@ -4984,7 +5074,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 yBadge.style.display = 'none';
             }
             
-            document.getElementById('profile-dob-text').textContent = student.dob || 'غير متوفر';
+            document.getElementById('profile-dob-text').innerHTML = ageText === '-' ? valOrEmpty('') : ageText;
             document.getElementById('profile-tgid-text').textContent = student.telegram_id || 'غير مرتبط';
             
             // Source
@@ -5002,7 +5092,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             
             // Profession (if available)
             const profEl = document.getElementById('profile-profession-text');
-            if(profEl) profEl.textContent = student.profession || student.job || 'غير متوفر';
+            if(profEl) profEl.innerHTML = valOrEmpty(student.profession || student.job);
 
             const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (unlinkBtn) {
@@ -5077,11 +5167,11 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             }
 
             const cEl = document.getElementById('profile-country-text');
-            if(cEl) cEl.textContent = tr(student.country, trPays);
+            if(cEl) cEl.innerHTML = valOrEmpty(tr(student.country, trPays) !== '-' ? tr(student.country, trPays) : '');
             const natEl = document.getElementById('profile-nationality-text');
-            if(natEl) natEl.textContent = tr(student.nationality, trNat);
+            if(natEl) natEl.innerHTML = valOrEmpty(tr(student.nationality, trNat) !== '-' ? tr(student.nationality, trNat) : '');
             const arEl = document.getElementById('profile-arabiclevel-text');
-            if(arEl) arEl.textContent = tr(student.arabic_level, trAr);
+            if(arEl) arEl.innerHTML = valOrEmpty(tr(student.arabic_level, trAr) !== '-' ? tr(student.arabic_level, trAr) : '');
             
             const teamEl = document.getElementById('profile-team-text');
             if(teamEl) teamEl.textContent = student.team || '-';
@@ -5099,7 +5189,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if(appel3El) appel3El.textContent = student.appel_3 || '-';
             
             const slEl = document.getElementById('profile-school-level-text');
-            if(slEl) slEl.textContent = student.school_level || '-';
+            if(slEl) slEl.innerHTML = valOrEmpty(student.school_level);
 
             const tgFEl = document.getElementById('profile-tg-firstname-text');
             if(tgFEl) tgFEl.textContent = student.tg_first_name || '-';
