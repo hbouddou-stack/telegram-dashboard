@@ -441,10 +441,10 @@
     <!-- TAB: الطلاب -->
         <div id="tab-students" class="tab-content active" style="padding-top:0;">
         <!-- ===== REFONTE FILTRES ===== -->
-        <div class="filter-section" style="padding:0;">
+        <div class="filter-section" style="padding:0; margin:0; border:none; background:transparent;">
 
             <!-- THE SUPER STICKY BAR -->
-        <div style="position:sticky; top:0; z-index:100; background:var(--bg); padding:10px 15px; border-bottom:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.05); margin-bottom:10px;">
+        <div style="position:sticky; top:0; z-index:100; background:var(--bg); padding:0 15px 10px; border-bottom:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.05); margin-bottom:10px;">
             <!-- Line 1: Search Bar -->
             <input style="width:100%; margin-bottom:10px; padding:12px 18px; border-radius:12px; border:1px solid var(--accent); background:var(--surface); font-family:inherit; font-size:1.05rem; outline:none; box-shadow:0 2px 5px rgba(0,0,0,0.02);" class="search-box" type="text" id="search-input" placeholder="🔍 بحث (الاسم، الإيميل...)" oninput="filterStudents()">
             
@@ -2926,10 +2926,21 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             }
 
             if (countDisplay) {
+                let studentWord = 'طالب(ة)';
+                if (filters.gender === 'homme') studentWord = 'طالب';
+                else if (filters.gender === 'femme') studentWord = 'طالبة';
+
                 countDisplay.style.color = window.filterOnlyDuplicates ? '#dc2626' : themeColor;
                 countDisplay.style.background = window.filterOnlyDuplicates ? 'rgba(220, 38, 38, 0.12)' : themeBg;
+                countDisplay.style.padding = '8px 20px';
+                countDisplay.style.borderRadius = '30px';
+                countDisplay.style.display = 'inline-block';
+                countDisplay.style.textAlign = 'center';
+                countDisplay.style.fontSize = '1.15rem';
+                
                 const countPrefix = window.filterOnlyDuplicates ? '⚠️ مكررين: ' : 'الإجمالي: ';
-                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">${countPrefix}<span style="color:${window.filterOnlyDuplicates ? '#dc2626' : themeColor}; font-weight:900;">${filtered.length}</span> طالب</span>`;
+                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">${countPrefix}<span style="color:${window.filterOnlyDuplicates ? '#dc2626' : themeColor}; font-weight:900; font-size:1.35rem;">${filtered.length}</span> ${studentWord}</span>`;
+            }
             }
 
             const list = document.getElementById('students-list');
