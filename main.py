@@ -6036,18 +6036,19 @@ async def api_chat(request):
         model = genai.GenerativeModel('gemini-flash-latest')
 
         # Strict RAG Prompt to prevent abuse and improve UI formatting
-        prompt = f"""أنت "المساعد الذكي" لأكاديمية الباجي. مهمتك الوحيدة هي الإجابة عن أسئلة الطلاب بخصوص الأكاديمية.
-التعليمات الصارمة:
-1. لا تقم بالترحيب ولا تقدم نفسك، أجب عن السؤال مباشرة لكي تكون المحادثة سريعة.
-2. استخدم HTML للتنسيق بدلاً من Markdown. (مثلاً استخدم <b>نص</b> بدلاً من **نص**).
-3. إليك سياق المعلومات المسموح لك باستخدامها:
+        prompt = f"""أنت "المساعد الذكي" لأكاديمية الباجي. مهمتك مساعدة الطلاب بذكاء وود.
+التعليمات:
+1. لا تقم بالترحيب الطويل، أجب عن السؤال مباشرة لكي تكون المحادثة سريعة وعملية.
+2. استخدم HTML للتنسيق بدلاً من Markdown. (مثلاً استخدم <b>نص</b>).
+3. إليك سياق المعلومات الأساسية المسموح لك باستخدامها كمرجع:
 {faq_context}
 
-4. إذا كان السؤال عن معلومات متوفرة في السياق أعلاه، أجب بوضوح وإيجاز.
-5. إذا كان السؤال خارج سياق الأكاديمية (مثل حل الواجبات، أسئلة عامة، الخ)، ارفض الإجابة وقل: "عذراً، أنا مبرمج فقط للإجابة عن الاستفسارات الإدارية والتسجيل في أكاديمية الباجي."
-6. إذا كان السؤال يخص الأكاديمية لكنك لا تعرف الإجابة من السياق، قل: "هذا الاستفسار يتطلب تدخل الإدارة، يرجى فتح <b>تذكرة دعم</b> (Support Ticket)."
+4. إذا كان السؤال متوفراً في السياق، أجب بوضوح وإيجاز.
+5. إذا كان السؤال يخص الأكاديمية لكنك لا تعرف الإجابة الدقيقة، حاول مساعدته بشكل عام أو اطلب منه توضيح سؤاله أكثر. لا تخبره بفتح تذكرة إلا إذا كان يطلب مساعدة تقنية معقدة جداً أو مالية لا تستطيع حلها.
+6. إذا قررت أن المشكلة تتطلب حقاً تدخل الإدارة (تذكرة دعم)، يجب عليك إضافة هذا الزر في نهاية رسالتك لكي يتمكن من فتح التذكرة فعلياً:
+<br><br><button class="chip" style="background:#e74c3c; color:#fff; padding:8px 15px; border:none; border-radius:12px; font-weight:bold; cursor:pointer;" onclick="window.location.href='ask.html'">🎫 فتح تذكرة دعم (Créer un ticket)</button>
 
-7. في نهاية إجابتك، اقترح سؤالين أو ثلاثة كأزرار تفاعلية (Action Buttons) يمكن للطالب الضغط عليها بناءً على إجابتك. استخدم هذا التنسيق بالضبط للأزرار في سطر جديد:
+7. في نهاية إجابتك العادية (إذا لم يفتح تذكرة)، اقترح سؤالين كأزرار تفاعلية لاستكمال المحادثة، بهذا التنسيق:
 <br><br>
 <button class="chip" style="background:var(--accent); color:#000; margin-top:5px; padding:5px 10px; border:none; border-radius:12px;" onclick="sendAiQuickMessage('السؤال الأول')">السؤال الأول</button>
 <button class="chip" style="background:var(--accent); color:#000; margin-top:5px; padding:5px 10px; border:none; border-radius:12px;" onclick="sendAiQuickMessage('السؤال الثاني')">السؤال الثاني</button>
@@ -6120,6 +6121,18 @@ async def api_admin_get_tickets(request):
         traceback.print_exc()
         from aiohttp import web
         return web.json_response({'success': False, 'error': str(e)}, status=500)
+
+async def api_admin_delete_student(request):
+    try:
+        user_id = request.match_info.get('id')
+        if not user_id:
+            return web.json_response({"success": False, "error": "Missing ID"}, status=400)
+        import database as db
+        await db.delete_user_data(int(user_id))
+        return web.json_response({"success": True})
+    except Exception as e:
+        logger.error(f"Delete student error: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
 
 async def api_admin_get_students(request):
     import os, json
@@ -6436,6 +6449,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/tickets', api_admin_get_tickets)
     register_crm_routes(app)
     app.router.add_get('/api/admin/students', api_admin_get_students)
+    app.router.add_delete('/api/admin/students/{id}', api_admin_delete_student)
     app.router.add_post('/api/support', api_support)
     app.router.add_get('/ask.html', handle_support)
     app.router.add_get('/app.html', handle_app)
