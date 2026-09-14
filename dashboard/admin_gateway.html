@@ -1205,9 +1205,7 @@
             <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <h2 style="margin:0;">📋 بطاقة الطالب التفصيلية</h2>
-                    <button onclick="openComposerForActiveStudent()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:7px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit; display:flex; align-items:center; gap:5px; box-shadow:0 2px 8px rgba(16,185,129,0.35);">
-                        🚀 إرسال رسالة V2
-                    </button>
+<button onclick="deleteActiveStudent()" style="background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border:none; padding:7px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit; display:flex; align-items:center; gap:5px; box-shadow:0 2px 8px rgba(239,68,68,0.35);">🗑️ حذف (Supprimer)</button>
                 </div>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'">✕</button>
             </div>
@@ -1243,6 +1241,11 @@
 
 </style>
 
+<div style="padding: 15px 15px 0 15px; margin-bottom: 10px;">
+<button onclick="openComposerForActiveStudent()" style="width: 100%; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px; border-radius:14px; font-weight:900; cursor:pointer; font-size:1.15rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(16,185,129,0.4); transition: transform 0.2s;">
+💬 فتح مركز التواصل (Contacter l'élève)
+</button>
+</div>
             <div class="mtab-container" style="flex-wrap:wrap; display:flex;">
                 <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عام</div>
                 <div class="mtab" onclick="switchModalTab('actions')" id="mtab-actions">🚀 إجراءات (Actions)</div>
@@ -1254,7 +1257,7 @@
 
             <!-- Tab 0: Actions -->
             <div id="mcontent-actions" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
-                
+            </div>
 
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding-right:5px;">
@@ -5970,7 +5973,7 @@ function renderHomeAlerts(alerts) {
 
     <!-- THE COMPOSER MODAL -->
     <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
-        <div style="background:var(--bg); width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
+        <div style="background:var(--bg); width:100%; width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
             <!-- Header -->
             <div style="background:var(--surface); padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:8px;">📝 إرسال رسالة للطالب</h3>
@@ -5993,7 +5996,7 @@ function renderHomeAlerts(alerts) {
                 <!-- Message Textarea -->
                 <div>
                     <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">💬 نص الرسالة :</label>
-                    <textarea id="composer-text" placeholder="اكتب رسالتك هنا... (Le message sera formaté automatiquement)" style="width:100%; flex: 1; min-height: 200px; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:1.1rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
+                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
                     <!-- Quick Templates -->
                     <div style="margin-top:8px;">
                         <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
