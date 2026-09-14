@@ -1203,7 +1203,10 @@
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';" style="padding:0; align-items:stretch; justify-content:stretch;">
         <div class="modal" id="fiche-eleve-modal" style="width: 100%; max-width: none; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; margin: 0; border-radius: 0; padding: 0; overflow: hidden;">
             <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:6px 14px; min-height:0; flex-shrink:0; position:relative;">
-                <span id="header-student-name" style="position:absolute; left:50%; transform:translateX(-50%); font-weight:800; font-size:0.9rem; color:white; background:#0a84ff; padding:4px 18px; border-radius:20px; letter-spacing:0.01em; white-space:nowrap; pointer-events:none;">📋 بطاقة الطالب</span>
+                <div style="position:absolute; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; pointer-events:none;">
+                    <span id="header-student-name" style="font-weight:900; font-size:1.05rem; color:white; background:#0a84ff; padding:5px 20px; border-radius:20px; white-space:nowrap;">📋 بطاقة الطالب</span>
+                    <span id="header-year-badge" style="font-weight:800; font-size:0.9rem; color:white; background:#ff9f0a; padding:5px 12px; border-radius:20px; white-space:nowrap; display:none;">🎓 -</span>
+                </div>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">✕</button>
             </div>
             
@@ -1239,7 +1242,7 @@
 </style>
 
 
-            <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:4px; padding:6px 10px;">
+            <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:2px; padding:5px 8px;">
                 <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
                     <span style="font-size:1rem;">👤</span><span style="font-size:0.7rem;">عام</span>
                 </div>
@@ -1366,11 +1369,29 @@
             <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📁 تاريخ الانضمام للملف : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
             </div>
 
-            <!-- Tab Logs/Historique -->
-            <div id="mcontent-logs" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; padding:0;">
-                <div style="flex:1; overflow-y:auto; padding:12px;" id="logs-tab-inner">
-                    <div style="text-align:center; padding:20px; color:var(--text2); font-size:0.9rem;">اضغط لتحميل السجل...</div>
+            <!-- Tab Logs/Historique — mirror exact du student-logs-modal -->
+            <div id="mcontent-logs" class="mcontent" style="flex-direction:column; flex:1; overflow-y:auto; padding:12px; gap:10px;">
+
+                <!-- Identites DB + TG -->
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:220px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
+                        <div id="logs-tab-db-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
+                    </div>
+                    <div style="flex:1; min-width:220px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
+                        <div id="logs-tab-tg-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
+                    </div>
                 </div>
+
+                <!-- Logs -->
+                <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; flex:1; min-height:200px;">
+                    <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--text1);">📜 سجل النشاطات</h3>
+                    <div id="logs-tab-body" style="overflow-y:auto; flex:1;">
+                        <div class="no-items">جاري التحميل...</div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Tab CRM -->
@@ -1627,10 +1648,7 @@
     </div>
 </div>
 
-            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px; width: 100%; box-sizing:border-box;">
-                  <button class="btn btn-primary" onclick="document.getElementById('student-logs-modal').style.display='flex'" style="padding:12px; font-size:0.95rem; width:100%; box-sizing:border-box;">📜 عرض السجل (Historique)</button>
-                  <button class="btn btn-danger" id="profile-unlink-btn" onclick="manualUnlink()" style="padding:12px; font-size:0.95rem; width:100%; box-sizing:border-box;">فك ربط تيليجرام (Unlink)</button>
-              </div>
+<!-- Historique button removed — now in السجل tab -->
         </div>
     </div>
 
@@ -4690,37 +4708,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
         }
 
 
-        function loadLogsInTab(studentId) {
-            var inner = document.getElementById('logs-tab-inner');
-            if (!inner) return;
-            inner.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">جاري التحميل... ⏳</div>';
-            fetch('/api/admin/students/' + studentId + '/logs')
-                .then(function(r){ return r.json(); })
-                .then(function(data){
-                    var logs = data.logs || [];
-                    if (logs.length === 0) {
-                        inner.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">لا يوجد سجل لهذا الطالب</div>';
-                        return;
-                    }
-                    var html2 = '<div style="display:flex;flex-direction:column;gap:8px;">';
-                    logs.forEach(function(log) {
-                        var d = log.date ? new Date(log.date).toLocaleString('fr-FR') : '-';
-                        html2 += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">' +
-                            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
-                            '<span style="font-weight:700;font-size:0.85rem;color:var(--text1);">' + (log.action || log.type || 'action') + '</span>' +
-                            '<span style="font-size:0.72rem;color:var(--text2);" dir="ltr">' + d + '</span>' +
-                            '</div>' +
-                            '<div style="font-size:0.8rem;color:var(--text2);">' + (log.details || log.message || '') + '</div>' +
-                            '</div>';
-                    });
-                    html2 += '</div>';
-                    inner.innerHTML = html2;
-                })
-                .catch(function(e){
-                    inner.innerHTML = '<div style="text-align:center;padding:30px;color:#ef4444;">خطأ في تحميل السجل</div>';
-                });
-        }
-
         function updateActionsBanner() {
             if (!activeStudentObj) return;
             var st = activeStudentObj;
@@ -4758,9 +4745,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if (tabId === 'actions' && typeof updateActionsBanner === 'function') {
                 updateActionsBanner();
             }
-            if (tabId === 'logs' && activeStudentId) {
-                loadLogsInTab(activeStudentId);
-            }
+
         }
         
         function setFunnelStep(stepId, dateVal) {
@@ -4990,6 +4975,14 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             const yrMatch = yrStr.match(/\d+/);
             const yrArabic = yrMatch ? 'السنة ' + yrMatch[0] : yrStr;
             document.getElementById('profile-year-text').textContent = yrArabic || 'غير محدد';
+            // Year badge in header
+            var yBadge = document.getElementById('header-year-badge');
+            if (yBadge && yrMatch) {
+                yBadge.textContent = '🎓 ' + yrArabic;
+                yBadge.style.display = 'inline-block';
+            } else if (yBadge) {
+                yBadge.style.display = 'none';
+            }
             
             document.getElementById('profile-dob-text').textContent = student.dob || 'غير متوفر';
             document.getElementById('profile-tgid-text').textContent = student.telegram_id || 'غير مرتبط';
@@ -5179,6 +5172,8 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     if (student.tg_last_name) tgFullName += ' ' + student.tg_last_name;
                     document.getElementById('profile-tg-display').textContent = tgFullName.trim() || 'غير معروف (لم يسجل دخول مؤخراً)';
                     
+                    var logsTabTg = document.getElementById('logs-tab-tg-identity');
+                    if (logsTabTg) logsTabTg.innerHTML = `<strong>ID:</strong> ${student.telegram_id}<br><strong>الاسم:</strong> ${student.tg_first_name || '-'} ${student.tg_last_name || ''}`;
                     document.getElementById('modal-tg-identity').innerHTML = `
                         <strong>ID:</strong> ${student.telegram_id}<br>
                         <strong>المعرّف:</strong> ${student.telegram_id}<br>
@@ -5189,6 +5184,9 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">غير مرتبط</span>`;
                 }
                 
+                // Also populate logs tab
+                var logsTabDb = document.getElementById('logs-tab-db-identity');
+                if (logsTabDb) logsTabDb.innerHTML = `<strong>المعرّف:</strong> ${student.student_id || '-'}<br><strong>الاسم:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br><strong>البريد:</strong> ${student.email || '-'}<br><strong>الجنس:</strong> ${student.gender || '-'}`;
                 document.getElementById('modal-db-identity').innerHTML = `
                     <strong>المعرّف:</strong> ${student.student_id || '-'}<br>
                     <strong>الاسم:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
@@ -5200,8 +5198,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                     let grouped = groupLogs(data.logs);
                     let html = grouped.map(l => renderLogCard(l, false)).join('');
                     document.getElementById('logs-body').innerHTML = html;
+                    var ltb = document.getElementById('logs-tab-body');
+                    if (ltb) ltb.innerHTML = html;
                 } else {
                     document.getElementById('logs-body').innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
+                    var ltb2 = document.getElementById('logs-tab-body');
+                    if (ltb2) ltb2.innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>'';
                 }
             } catch(e) {
                 document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل.</div>';
