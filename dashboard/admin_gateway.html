@@ -5972,70 +5972,7 @@ function renderHomeAlerts(alerts) {
         </div>
     </div>
 
-    <!-- THE COMPOSER MODAL -->
-    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999999; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
-        <div style="background:var(--bg); width:100%; width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
-            <!-- Header -->
-            <div style="background:var(--surface); padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:8px;">📝 إرسال رسالة للطالب</h3>
-                <button onclick="closeComposer()" style="background:var(--bg); border:1px solid var(--border); width:32px; height:32px; border-radius:50%; font-size:1.1rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
-            </div>
-            
-            <!-- Body -->
-            <div style="padding:20px; display:flex; flex-direction:column; gap:14px; flex: 1; overflow-y:auto;">
-                <!-- Recipient Info Box -->
-                <div id="composer-target-info" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:0.88rem; color:var(--text1); line-height:1.5;">
-                    المستلمون: <span id="composer-count" style="color:#0ea5e9; font-weight:bold;">0</span> طلاب
-                </div>
-
-                <!-- Subject (for Email) -->
-                <div>
-                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">📌 الموضوع (للإيميل) :</label>
-                    <input type="text" id="composer-subject" value="رسالة من أكاديمية الباجي" placeholder="موضوع الرسالة..." style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.9rem; outline:none; box-sizing:border-box;">
-                </div>
-                
-                <!-- Message Textarea -->
-                <div>
-                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">💬 نص الرسالة :</label>
-                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
-                    <!-- Quick Templates -->
-                    <div style="margin-top:8px;">
-                        <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
-                            <span onclick="setComposerTemplate('telegram')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
-                            <span onclick="setComposerTemplate('relance')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
-                            <span onclick="setComposerTemplate('support')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
-                        </div>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text2); margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                        <span>💡 المتغيرات:</span>
-                        <span onclick="insertVar('{الاسم}')" style="cursor:pointer; background:var(--surface); padding:2px 8px; border-radius:6px; border:1px solid var(--border); font-weight:bold; color:#0ea5e9;">{الاسم}</span>
-                    </div>
-                    <!-- Fallback WhatsApp Direct Link -->
-                    <div id="composer-wa-fallback" style="display:none; margin-top:10px; padding:10px; background:rgba(37,211,102,0.1); border:1px solid #25D366; border-radius:10px; text-align:center;"></div>
-                </div>
-                
-                <!-- Sending Buttons -->
-                <div>
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">اختر قناة الإرسال :</label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <button id="btn-send-tg" onclick="sendBulkMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(0,136,204,0.35);">
-                            ✈️ تليجرام
-                        </button>
-                        <button id="btn-send-wa" onclick="sendBulkMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(37,211,102,0.35);">
-                            🟩 واتساب
-                        </button>
-                        <button id="btn-send-email" onclick="sendBulkMessage('email')" style="background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(239,68,68,0.35);">
-                            📧 إيميل
-                        </button>
-                        <button id="btn-send-sms" onclick="sendBulkMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(245,158,11,0.35);">
-                            📱 SMS
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     
     <script>
         // Safe URL Opener for Telegram WebApp (iOS / Android / Desktop)
@@ -6572,5 +6509,78 @@ async function deleteActiveStudent() {
             }, 200);
         }
 </script>
+
+
+<!-- COMPOSER MODAL - moved to top-level to escape stacking context -->
+
+
+
+
+<!-- === COMPOSER MODAL (top-level, outside all stacking contexts) === -->
+<!-- THE COMPOSER MODAL -->
+    <div id="modal-composer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999999; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:fadeIn 0.2s ease; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+        <div style="background:var(--bg); width:100%; width:95%; max-width:1200px; height:90vh; border-radius:24px; overflow:hidden; box-shadow:0 15px 35px rgba(0,0,0,0.5); animation:scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; border:1px solid var(--border);" dir="rtl">
+            <!-- Header -->
+            <div style="background:var(--surface); padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:8px;">📝 إرسال رسالة للطالب</h3>
+                <button onclick="closeComposer()" style="background:var(--bg); border:1px solid var(--border); width:32px; height:32px; border-radius:50%; font-size:1.1rem; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding:20px; display:flex; flex-direction:column; gap:14px; flex: 1; overflow-y:auto;">
+                <!-- Recipient Info Box -->
+                <div id="composer-target-info" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:0.88rem; color:var(--text1); line-height:1.5;">
+                    المستلمون: <span id="composer-count" style="color:#0ea5e9; font-weight:bold;">0</span> طلاب
+                </div>
+
+                <!-- Subject (for Email) -->
+                <div>
+                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">📌 الموضوع (للإيميل) :</label>
+                    <input type="text" id="composer-subject" value="رسالة من أكاديمية الباجي" placeholder="موضوع الرسالة..." style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.9rem; outline:none; box-sizing:border-box;">
+                </div>
+                
+                <!-- Message Textarea -->
+                <div>
+                    <label style="font-size:0.82rem; font-weight:bold; color:var(--text2); display:block; margin-bottom:5px;">💬 نص الرسالة :</label>
+                    <textarea id="composer-text" rows="5" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; line-height:1.5;"></textarea>
+                    <!-- Quick Templates -->
+                    <div style="margin-top:8px;">
+                        <div style="font-size:0.78rem; font-weight:bold; color:var(--text2); margin-bottom:5px;">📋 نماذج رسائل سريعة (V2):</div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                            <span onclick="setComposerTemplate('telegram')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
+                            <span onclick="setComposerTemplate('relance')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
+                            <span onclick="setComposerTemplate('support')" style="cursor:pointer; background:var(--surface); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
+                        </div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                        <span>💡 المتغيرات:</span>
+                        <span onclick="insertVar('{الاسم}')" style="cursor:pointer; background:var(--surface); padding:2px 8px; border-radius:6px; border:1px solid var(--border); font-weight:bold; color:#0ea5e9;">{الاسم}</span>
+                    </div>
+                    <!-- Fallback WhatsApp Direct Link -->
+                    <div id="composer-wa-fallback" style="display:none; margin-top:10px; padding:10px; background:rgba(37,211,102,0.1); border:1px solid #25D366; border-radius:10px; text-align:center;"></div>
+                </div>
+                
+                <!-- Sending Buttons -->
+                <div>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:8px;">اختر قناة الإرسال :</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button id="btn-send-tg" onclick="sendBulkMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(0,136,204,0.35);">
+                            ✈️ تليجرام
+                        </button>
+                        <button id="btn-send-wa" onclick="sendBulkMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(37,211,102,0.35);">
+                            🟩 واتساب
+                        </button>
+                        <button id="btn-send-email" onclick="sendBulkMessage('email')" style="background:#ef4444; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(239,68,68,0.35);">
+                            📧 إيميل
+                        </button>
+                        <button id="btn-send-sms" onclick="sendBulkMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:12px 10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(245,158,11,0.35);">
+                            📱 SMS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
