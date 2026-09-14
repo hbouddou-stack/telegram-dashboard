@@ -1326,7 +1326,7 @@
                 .pg-row { display:flex; align-items:center; padding:10px 12px; border-bottom:1px solid var(--border); background:var(--surface); }
                 .pg-row:last-child { border-bottom:none; }
                 .pg-label { display:flex; align-items:center; gap:8px; color:var(--text2); font-size:0.85rem; width:130px; flex-shrink:0; }
-                .pg-val { flex:1; text-align:left; font-weight:700; color:var(--text1); font-size:0.95rem; }
+                .pg-val { flex:1; text-align:center; font-weight:700; color:var(--text1); font-size:0.95rem; }
                 .pg-empty { color:#9ca3af; font-size:0.8rem; font-weight:normal; }
                 
                 .ac-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
@@ -1404,25 +1404,25 @@
                 </div>
                 
                 <div class="ac-grid">
-                    <div class="ac-card">
-                        <div class="ac-card-title">🏅 مستوى اللغة العربية</div>
-                        <div class="ac-card-val" id="profile-arabiclevel-text" style="font-size:0.95rem;">-</div>
+                    <div class="ac-card" style="border-color:#34c759; background:rgba(52,199,89,0.05);">
+                        <div class="ac-card-title">🎓 رقم الطالب</div>
+                        <div class="ac-card-val" id="card-studentid-text" style="color:#34c759; font-size:1.05rem;">-</div>
                     </div>
-                    <div class="ac-card">
-                        <div class="ac-card-title">🏫 المستوى المدرسي</div>
-                        <div class="ac-card-val" id="profile-school-level-text" style="font-size:0.95rem;">-</div>
+                    <div class="ac-card" style="border-color:var(--border);">
+                        <div class="ac-card-title">📅 تاريخ التسجيل</div>
+                        <div class="ac-card-val" id="card-inscription-text" dir="ltr" style="font-size:0.95rem;">-</div>
                     </div>
                 </div>
 
                 <!-- Info List -->
                 <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
                     <div class="pg-row">
-                        <div class="pg-label">🎓 رقم الطالب</div>
-                        <div class="pg-val" id="profile-studentid-text" style="color:#34c759;">-</div>
+                        <div class="pg-label">🏅 مستوى العربية</div>
+                        <div class="pg-val" id="profile-arabiclevel-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">📅 تاريخ التسجيل</div>
-                        <div class="pg-val" id="profile-inscription-text" dir="ltr">-</div>
+                        <div class="pg-label">🏫 المستوى المدرسي</div>
+                        <div class="pg-val" id="profile-school-level-text">-</div>
                     </div>
                     <div class="pg-row">
                         <div class="pg-label">👥 حالة العضوية</div>
@@ -5055,7 +5055,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 }
             }
             
-            const inscriptionEl = document.getElementById('profile-inscription-text');
+            const inscriptionEl = document.getElementById('card-inscription-text');
             if(inscriptionEl) inscriptionEl.textContent = student.created_at ? formatDateArabic(student.created_at) : 'غير متوفر';
             
             
@@ -5063,12 +5063,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             // Year in Arabic
             const yrStr = String(student.year || '').trim();
             const yrMatch = yrStr.match(/\d+/);
-            const yrArabic = yrMatch ? 'السنة ' + yrMatch[0] : yrStr;
+            const yrArabic = yrMatch ? 'المستوى ' + yrMatch[0] : yrStr;
             document.getElementById('profile-year-text').textContent = yrArabic || 'غير محدد';
             // Year badge in header
             var yBadge = document.getElementById('header-year-badge');
             if (yBadge && yrMatch) {
-                yBadge.textContent = '🎓 ' + yrArabic;
+                yBadge.textContent = '🏅 ' + yrArabic;
                 yBadge.style.display = 'inline-block';
             } else if (yBadge) {
                 yBadge.style.display = 'none';
