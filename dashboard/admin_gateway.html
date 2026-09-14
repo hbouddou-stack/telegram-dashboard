@@ -2775,9 +2775,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const telegramId = String(s.telegram_id || '');
                 const tgFirstName = String(s.tg_first_name || '').toLowerCase();
                 
-                const matchSearch = name.includes(q) || lname.includes(q) || email.includes(q) || 
+                const trCountry = typeof tr === 'function' ? tr(s.country, typeof trPays !== 'undefined' ? trPays : {}).toLowerCase() : '';
+                const matchSearch = name.includes(q) || lname.includes(q) || email.includes(q) ||
                                   source.includes(q) || dob.includes(q) || year.includes(q) ||
-                                  telegramId.includes(q) || tgFirstName.includes(q);
+                                  telegramId.includes(q) || tgFirstName.includes(q) ||
+                                  String(s.country || '').toLowerCase().includes(q) ||
+                                  trCountry.includes(q);
 
                 const g = String(s.gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
@@ -2969,7 +2972,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                                                <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default;" title="رقم السطر">رقم N°</th>
+                                                <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default;" title="رقم السطر">رقم</th>
                         <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
                         <th style="padding:12px; cursor:pointer; width:90px;" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
                         <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
@@ -5081,7 +5084,7 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             const yrStr = String(student.year || '').trim();
             const yrMatch = yrStr.match(/\d+/);
             const yrArabic = yrMatch ? 'المستوى ' + yrMatch[0] : yrStr;
-            document.getElementById('profile-year-text').textContent = yrArabic || 'غير محدد';
+            document.getElementById('profile-year-text').textContent = (yrMatch ? yrMatch[0] : yrStr) || 'غير محدد';
             // Year badge in header
             var yBadge = document.getElementById('header-year-badge');
             if (yBadge && yrMatch) {
