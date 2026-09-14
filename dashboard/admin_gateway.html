@@ -2941,7 +2941,6 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 const countPrefix = window.filterOnlyDuplicates ? '⚠️ مكررين: ' : 'الإجمالي: ';
                 countDisplay.innerHTML = `👥 <span style="margin-right:5px;">${countPrefix}<span style="color:${window.filterOnlyDuplicates ? '#dc2626' : themeColor}; font-weight:900; font-size:1.35rem;">${filtered.length}</span> ${studentWord}</span>`;
             }
-            }
 
             const list = document.getElementById('students-list');
             list.innerHTML = '';
