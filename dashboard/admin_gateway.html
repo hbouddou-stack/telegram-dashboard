@@ -1242,9 +1242,10 @@
 </style>
 
 <div style="padding: 15px 15px 0 15px; margin-bottom: 10px;">
-<button onclick="openComposerForActiveStudent()" style="width: 100%; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px; border-radius:14px; font-weight:900; cursor:pointer; font-size:1.15rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(16,185,129,0.4); transition: transform 0.2s;">
+<button onclick="debugAndOpenComposer()" style="width: 100%; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px; border-radius:14px; font-weight:900; cursor:pointer; font-size:1.15rem; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(16,185,129,0.4); transition: transform 0.2s;">
 💬 فتح مركز التواصل (Contacter l'élève)
 </button>
+<div id="contact-debug-box" style="display:none; background:#1e293b; color:#94a3b8; font-size:0.78rem; padding:8px 12px; border-radius:8px; margin-top:8px; font-family:monospace; line-height:1.6;"></div>
 </div>
             <div class="mtab-container" style="flex-wrap:wrap; display:flex;">
                 <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general">عام</div>
@@ -6535,6 +6536,41 @@ async function deleteActiveStudent() {
         alert('❌ Erreur réseau : ' + e);
     }
 }
+
+        function debugAndOpenComposer() {
+            const box = document.getElementById('contact-debug-box');
+            const log = (msg, color) => {
+                if (box) {
+                    box.style.display = 'block';
+                    box.innerHTML += `<div style="color:${color||'#94a3b8'}">→ ${msg}</div>`;
+                }
+                console.log('[COMPOSER DEBUG]', msg);
+            };
+
+            log('Bouton cliqué', '#60a5fa');
+            log('activeStudentId = ' + JSON.stringify(activeStudentId), activeStudentId ? '#4ade80' : '#f87171');
+            log('activeStudentObj = ' + (activeStudentObj ? activeStudentObj.first_name : 'null'), activeStudentObj ? '#4ade80' : '#f87171');
+
+            const modal = document.getElementById('modal-composer');
+            log('modal-composer existe: ' + (modal ? 'OUI' : 'NON'), modal ? '#4ade80' : '#f87171');
+            if (modal) {
+                log('modal display actuel: ' + modal.style.display, '#60a5fa');
+                log('modal z-index: ' + modal.style.zIndex, '#60a5fa');
+            }
+
+            if (!activeStudentId) {
+                log('ERREUR: activeStudentId est vide! Impossible douvrir.', '#f87171');
+                return;
+            }
+
+            log('Appel de openComposerWithStudentId(' + activeStudentId + ')...', '#fbbf24');
+            openComposerWithStudentId(activeStudentId);
+
+            setTimeout(() => {
+                const m2 = document.getElementById('modal-composer');
+                log('Après ouverture - display: ' + (m2 ? m2.style.display : 'N/A'), '#4ade80');
+            }, 200);
+        }
 </script>
 </body>
 </html>
