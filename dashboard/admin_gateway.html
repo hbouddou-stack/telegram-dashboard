@@ -5005,10 +5005,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             if(profEl) profEl.textContent = student.profession || student.job || 'غير متوفر';
 
             const unlinkBtn = document.getElementById('profile-unlink-btn');
-            if (student.telegram_id) {
-                unlinkBtn.style.display = 'block';
-            } else {
-                unlinkBtn.style.display = 'none';
+            if (unlinkBtn) {
+                if (student.telegram_id) {
+                    unlinkBtn.style.display = 'block';
+                } else {
+                    unlinkBtn.style.display = 'none';
+                }
             }
 
             // Membership check and Telegram Name display
