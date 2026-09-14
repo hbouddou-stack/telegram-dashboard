@@ -6122,28 +6122,44 @@ function renderHomeAlerts(alerts) {
         }
 
                 function openComposerForSingleStudent(sid) {
-            let found = false;
-            document.querySelectorAll('.student-select-cb').forEach(cb => {
-                if (String(cb.value) === String(sid)) {
-                    cb.checked = true;
-                    found = true;
-                } else {
-                    cb.checked = false;
-                }
-            });
-            if (!found) {
-                const hiddenCb = document.createElement('input');
-                hiddenCb.type = 'checkbox';
-                hiddenCb.className = 'student-select-cb';
-                hiddenCb.value = sid;
-                hiddenCb.checked = true;
-                hiddenCb.style.display = 'none';
-                hiddenCb.id = 'temp-hidden-cb';
-                document.body.appendChild(hiddenCb);
-            }
-            if (typeof updateMassSmsButton === 'function') updateMassSmsButton();
-            openComposer();
+            // Pass the student ID directly — bypass the checkbox system entirely
+            openComposerWithStudentId(sid);
         }
+        function openComposerWithStudentId(sid) {
+            // Find the student object
+            const st = (typeof allStudents !== 'undefined')
+                ? allStudents.find(s => String(s.student_id) === String(sid))
+                : null;
+
+            const countEl = document.getElementById('composer-count');
+            if (countEl) countEl.textContent = 1;
+
+            const targetInfo = document.getElementById('composer-target-info');
+            if (targetInfo) {
+                if (st) {
+                    const sName = `${st.first_name || ''} ${st.last_name || ''}`.trim() || 'طالب مجهول';
+                    const sPhone = st.phone || 'بدون هاتف';
+                    const sEmail = st.email || 'بدون بريد';
+                    const tgStatus = st.telegram_id ? '✅ مرتبط بتيليجرام' : '❌ غير مرتبط بتيليجرام';
+                    targetInfo.innerHTML = `
+                        <div style="font-weight:bold; font-size:0.95rem; margin-bottom:4px; color:#0ea5e9;">👤 ${sName}</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; font-size:0.82rem; color:var(--text2);">
+                            <span>📱 ${sPhone}</span>
+                            <span>📧 ${sEmail}</span>
+                            <span style="font-weight:bold; color:${st.telegram_id ? '#16a34a' : '#ef4444'};">${tgStatus}</span>
+                        </div>
+                    `;
+                } else {
+                    targetInfo.innerHTML = `المستهدف: <b>طالب واحد محدد</b>`;
+                }
+            }
+
+            // Store the target sid for sending
+            window._composerTargetSid = sid;
+
+            document.getElementById('modal-composer').style.display = 'flex';
+        }
+
 
         function openComposerForActiveStudent() {
             if (typeof activeStudentId !== 'undefined' && activeStudentId) {
@@ -6251,9 +6267,14 @@ function renderHomeAlerts(alerts) {
         }
 
         function openComposer(prefChannel) {
+            // Allow calling directly from a student card (bypasses checkbox requirement)
+            if (window._composerTargetSid) {
+                openComposerWithStudentId(window._composerTargetSid);
+                return;
+            }
             const cbs = document.querySelectorAll('.student-select-cb:checked');
             if (cbs.length === 0) {
-                alert('⚠️ يرجى تحديد طالب واحد على الأقل أولاً بوضع علامة (✓) بجانب اسمه.');
+                alert('يجب عليك أولاً اختيار طالب أو أكثر من خلال تحديد مربع الاختيار (V) أمام اسمه.');
                 return;
             }
             
@@ -6290,6 +6311,7 @@ function renderHomeAlerts(alerts) {
         }
         
         function closeComposer() {
+            window._composerTargetSid = null;
             document.getElementById('modal-composer').style.display = 'none';
         }
         
@@ -6301,9 +6323,15 @@ function renderHomeAlerts(alerts) {
                 return;
             }
             
+            // Build list of targets: checkbox-selected OR direct from student card
+            let ids = [];
             const cbs = document.querySelectorAll('.student-select-cb:checked');
-            const ids = Array.from(cbs).map(cb => cb.value);
-            if(ids.length === 0) {
+            if (cbs.length > 0) {
+                ids = Array.from(cbs).map(cb => cb.value);
+            } else if (window._composerTargetSid) {
+                ids = [String(window._composerTargetSid)];
+            }
+            if (ids.length === 0) {
                 alert('⚠️ لم يتم تحديد أي طالب!');
                 return;
             }
