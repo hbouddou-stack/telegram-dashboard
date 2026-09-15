@@ -480,6 +480,16 @@
                     🎛️
                 </button>
             </div>
+
+            <!-- Line 4: Lead Type (Source) -->
+            <div style="display:flex; margin-bottom:10px;">
+                <select id="lead-type-filter" onchange="if(typeof filterStudents === 'function') filterStudents()" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-weight:bold; font-size:0.95rem; outline:none; box-shadow:0 2px 5px rgba(0,0,0,0.02); direction:rtl;">
+                    <option value="all">🔍 نوع التسجيل (الكل)</option>
+                    <option value="new">🆕 مسجلين جدد (السنة الحالية)</option>
+                    <option value="old">⏳ تسجيلات سابقة (Anciens Leads)</option>
+                    <option value="annexe">🏫 أكاديمية تابعة (Académie Annexe)</option>
+                </select>
+            </div>
             
             <!-- Line 4: Meta -->
             <div style="display:flex; justify-content:center; align-items:center; padding:0 2px; margin-top:5px;">
@@ -2820,6 +2830,7 @@ function renderKanbanView(listElement, filtered) {
 
 
 function filterStudents() {
+            const leadTypeFilter = document.getElementById('lead-type-filter') ? document.getElementById('lead-type-filter').value : 'all';
             const q = document.getElementById('search-input').value.toLowerCase();
             
             // Compute duplicate map when duplicates filter is active
@@ -2973,6 +2984,16 @@ function filterStudents() {
                 else if (s.email_clicked_at || s.folder_clicked_at || s.bot_started_at) studentColor = 'orange';
 
                 const matchColor = !filters.color || filters.color === 'all' || filters.color === studentColor;
+
+                                const combinedInfo = String(s.marketing_notes || '').toLowerCase() + " " + String(s.source || '').toLowerCase() + " " + String(s.source_file || '').toLowerCase();
+                const isOld = combinedInfo.includes('ancien') || combinedInfo.includes('قديم') || combinedInfo.includes('2023') || combinedInfo.includes('2022') || combinedInfo.includes('2021');
+                const isAnnexe = combinedInfo.includes('annexe') || combinedInfo.includes('أكاديمية') || combinedInfo.includes('تابع');
+                const isNew = !isOld && !isAnnexe;
+                
+                let matchLeadType = true;
+                if (leadTypeFilter === 'old') matchLeadType = isOld;
+                else if (leadTypeFilter === 'annexe') matchLeadType = isAnnexe;
+                else if (leadTypeFilter === 'new') matchLeadType = isNew;
 
                 return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchRemark && matchLeadType;
             
