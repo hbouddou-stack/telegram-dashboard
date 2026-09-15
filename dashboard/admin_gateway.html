@@ -2476,12 +2476,12 @@ function renderKanbanView(listElement, filtered) {
         ];
     } else if (window.currentKanbanBoard === 'integration') {
         cols = [
-            { id: 'col1', title: '١. مسجل (غير مدفوع)', color: '#ef4444', items: [] },
-            { id: 'col2', title: '٢. مدفوع (للتواصل)', color: '#f97316', items: [] },
-            { id: 'col3', title: '٣. تم إرسال الرابط', color: '#eab308', items: [] },
-            { id: 'col4', title: '٤. للمتابعة / تم التذكير', color: '#f43f5e', items: [] },
+            { id: 'col1', title: '١. مسجل (الكل)', color: '#94a3b8', items: [] },
+            { id: 'col2', title: '٢. مدفوع (إرسال إيميل)', color: '#f97316', items: [] },
+            { id: 'col3', title: '٣. تم الإرسال بالإيميل', color: '#eab308', items: [] },
+            { id: 'col4', title: '٤. تذكير واتساب (يدوي)', color: '#f43f5e', items: [] },
             { id: 'col5', title: '٥. بدأ البوت', color: '#8b5cf6', items: [] },
-            { id: 'col6', title: '٦. مكتمل (انضم)', color: '#22c55e', items: [] }
+            { id: 'col6', title: '٦. مكتمل الإدماج', color: '#22c55e', items: [] }
         ];
     } else if (window.currentKanbanBoard === 'pedagogy') {
         cols = [
@@ -2500,8 +2500,8 @@ function renderKanbanView(listElement, filtered) {
         const groupsJoined = (s.channel_joined == 1 || String(s.channel_joined).toLowerCase() === 'true') && (s.group_joined == 1 || String(s.group_joined).toLowerCase() === 'true');
         const note = String(s.marketing_notes || '').toLowerCase();
         
-        const isContacted = note.includes('contact') || note.includes('تواصل') || note.includes('mail') || note.includes('envoyé') || note.includes('رسالة') || note.includes('رابط');
-        const isRelance = note.includes('relance') || note.includes('تذكير') || note.includes('bloqué') || note.includes('urgent') || note.includes('متابعة');
+        const isContacted = note.includes('contact') || note.includes('تواصل') || note.includes('mail') || note.includes('envoyé') || note.includes('رسالة') || note.includes('رابط') || note.includes('إيميل');
+        const isRelance = note.includes('relance') || note.includes('تذكير') || note.includes('bloqué') || note.includes('urgent') || note.includes('متابعة') || note.includes('واتساب');
         const isPlatform = note.includes('منصة') || note.includes('plateforme');
         const isActive = note.includes('نشط') || note.includes('actif');
 
@@ -2520,23 +2520,23 @@ function renderKanbanView(listElement, filtered) {
                 } else if (note.trim() === '') {
                     cols[0].items.push(s);
                 } else {
-                    cols[3].items.push(s); // Any other note goes to "En discussion"
+                    cols[3].items.push(s);
                 }
             }
         } 
         else if (window.currentKanbanBoard === 'integration') {
             if (!isPaid) {
-                cols[0].items.push(s);
+                cols[0].items.push(s); // See all unpaid
             } else if (groupsJoined) {
                 cols[5].items.push(s);
             } else if (botStarted) {
                 cols[4].items.push(s);
             } else if (isRelance) {
-                cols[3].items.push(s);
+                cols[3].items.push(s); // Manual WhatsApp
             } else if (isContacted) {
-                cols[2].items.push(s);
+                cols[2].items.push(s); // Emailed
             } else {
-                cols[1].items.push(s);
+                cols[1].items.push(s); // Ready for Email
             }
         }
         else if (window.currentKanbanBoard === 'pedagogy') {
@@ -2571,13 +2571,14 @@ function renderKanbanView(listElement, filtered) {
         const btn = document.createElement('button');
         btn.textContent = b.name;
         btn.onclick = () => setKanbanBoard(b.id);
-        btn.style.padding = '10px 20px';
+        btn.style.padding = '8px 16px';
         btn.style.borderRadius = '30px';
         btn.style.border = 'none';
         btn.style.fontWeight = 'bold';
         btn.style.cursor = 'pointer';
         btn.style.fontFamily = 'inherit';
         btn.style.transition = 'all 0.2s';
+        btn.style.fontSize = '0.95rem';
         
         if (window.currentKanbanBoard === b.id) {
             btn.style.background = 'var(--accent2)';
@@ -2595,58 +2596,90 @@ function renderKanbanView(listElement, filtered) {
 
     const kanbanWrapper = document.createElement('div');
     kanbanWrapper.style.display = 'flex';
-    kanbanWrapper.style.gap = '15px';
+    kanbanWrapper.style.gap = '12px';
     kanbanWrapper.style.overflowX = 'auto';
-    kanbanWrapper.style.paddingBottom = '20px';
-    kanbanWrapper.style.minHeight = '70vh';
+    kanbanWrapper.style.paddingBottom = '15px';
+    kanbanWrapper.style.minHeight = '75vh';
     kanbanWrapper.style.alignItems = 'flex-start';
     kanbanWrapper.style.direction = 'rtl';
 
     cols.forEach(c => {
         const colDiv = document.createElement('div');
-        colDiv.style.flex = '0 0 320px';
-        colDiv.style.background = '#f1f5f9';
+        colDiv.style.flex = '0 0 280px'; // Slightly thinner columns
+        colDiv.style.background = '#f8fafc';
         colDiv.style.border = '1px solid var(--border)';
-        colDiv.style.borderRadius = '16px';
+        colDiv.style.borderRadius = '12px';
         colDiv.style.display = 'flex';
         colDiv.style.flexDirection = 'column';
-        colDiv.style.maxHeight = '75vh';
-        colDiv.style.boxShadow = '0 4px 6px rgba(0,0,0,0.02)';
+        colDiv.style.maxHeight = '78vh';
 
         const header = document.createElement('div');
-        header.style.padding = '14px 16px';
+        header.style.padding = '12px 14px';
         header.style.borderBottom = `4px solid ${c.color}`;
         header.style.fontWeight = 'bold';
-        header.style.fontSize = '1.05rem';
+        header.style.fontSize = '0.95rem';
         header.style.display = 'flex';
-        header.style.justifyContent = 'space-between';
+        header.style.flexDirection = 'column';
+        header.style.gap = '8px';
         header.style.background = 'white';
-        header.style.borderRadius = '16px 16px 0 0';
+        header.style.borderRadius = '12px 12px 0 0';
         header.style.position = 'sticky';
         header.style.top = '0';
         header.style.zIndex = '10';
         
+        const headerTop = document.createElement('div');
+        headerTop.style.display = 'flex';
+        headerTop.style.justifyContent = 'space-between';
+        headerTop.style.alignItems = 'center';
+
         const tSpan = document.createElement('span');
         tSpan.textContent = c.title;
+        
         const countSpan = document.createElement('span');
         countSpan.style.background = `${c.color}20`;
         countSpan.style.color = c.color;
-        countSpan.style.padding = '2px 10px';
+        countSpan.style.padding = '2px 8px';
         countSpan.style.borderRadius = '20px';
-        countSpan.style.fontSize = '0.95rem';
-        countSpan.style.fontWeight = '900';
+        countSpan.style.fontSize = '0.85rem';
         countSpan.textContent = c.items.length;
         
-        header.appendChild(tSpan);
-        header.appendChild(countSpan);
+        headerTop.appendChild(tSpan);
+        headerTop.appendChild(countSpan);
+        header.appendChild(headerTop);
+
+        // Mass Action Button for Integration Col 2 (Email)
+        if (window.currentKanbanBoard === 'integration' && c.id === 'col2') {
+            const massBtn = document.createElement('button');
+            massBtn.innerHTML = '📧 نسخ الإيميلات (إرسال جماعي)';
+            massBtn.style.cssText = 'background:#f97316; color:white; border:none; padding:6px; border-radius:6px; font-size:0.8rem; cursor:pointer; font-weight:bold; width:100%; font-family:inherit; transition:background 0.2s;';
+            massBtn.onmouseover = () => massBtn.style.background = '#ea580c';
+            massBtn.onmouseout = () => massBtn.style.background = '#f97316';
+            massBtn.onclick = (e) => {
+                e.stopPropagation();
+                const emails = c.items.map(s => String(s.email||'').trim()).filter(e => e.includes('@'));
+                if (emails.length === 0) {
+                    alert('لا يوجد إيميلات صالحة في هذا العمود.');
+                    return;
+                }
+                navigator.clipboard.writeText(emails.join(', ')).then(() => {
+                    alert(`✅ تم نسخ ${emails.length} إيميل بنجاح!
+يمكنك لصقها في خانة Cci/Bcc في بريدك الإلكتروني.`);
+                    window.location.href = `mailto:?bcc=${emails.join(',')}`;
+                }).catch(err => {
+                    alert('خطأ في النسخ. حاول مرة أخرى.');
+                });
+            };
+            header.appendChild(massBtn);
+        }
+
         colDiv.appendChild(header);
 
         const itemsContainer = document.createElement('div');
-        itemsContainer.style.padding = '12px';
+        itemsContainer.style.padding = '8px';
         itemsContainer.style.overflowY = 'auto';
         itemsContainer.style.display = 'flex';
         itemsContainer.style.flexDirection = 'column';
-        itemsContainer.style.gap = '10px';
+        itemsContainer.style.gap = '6px'; // Very tight gap like table rows
         itemsContainer.style.flex = '1';
 
         c.items.forEach((s, index) => {
@@ -2662,51 +2695,40 @@ function renderKanbanView(listElement, filtered) {
             const card = document.createElement('div');
             card.onclick = () => openStudentCard(s.student_id);
             card.style.background = cardBg;
-            card.style.padding = '14px';
-            card.style.borderRadius = '12px';
+            card.style.padding = '8px 10px';
+            card.style.borderRadius = '8px';
             card.style.border = `1px solid ${cardBorder}`;
-            card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.04)';
             card.style.cursor = 'pointer';
-            card.style.transition = 'transform 0.15s, box-shadow 0.15s';
-            card.onmouseover = () => { card.style.transform = 'translateY(-3px)'; card.style.boxShadow = '0 8px 16px rgba(0,0,0,0.08)'; };
-            card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.04)'; };
+            card.style.display = 'flex';
+            card.style.justifyContent = 'space-between';
+            card.style.alignItems = 'center';
+            card.style.transition = 'background 0.1s';
+            card.onmouseover = () => { card.style.background = isFemale ? '#fbcfe8' : '#bae6fd'; };
+            card.onmouseout = () => { card.style.background = cardBg; };
 
             let stId = String(s.student_id || '');
             if (stId.length === 6 && !stId.includes('-')) {
                 stId = stId.substring(0,4) + '-' + stId.substring(4);
             }
 
-            let cardHtml = `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                                <div style="font-weight:900; color:var(--text1); font-size:1.1rem; line-height:1.4;">
-                                    <span style="color:var(--text2); font-size:0.85rem; margin-left:6px; font-weight:normal;">#${index + 1}</span>
-                                    ${arName}
-                                </div>
-                                ${stId ? `<span style="background:white; color:var(--text1); border:1px solid ${cardBorder}; padding:4px 10px; border-radius:30px; font-size:0.8rem; font-weight:900; letter-spacing:1px; direction:ltr; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-right:8px; flex-shrink:0;">${stId}</span>` : ''}
+            // Left side: #Index + Name
+            let leftDiv = `<div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                                <span style="color:var(--text2); font-size:0.75rem; font-weight:bold;">#${index + 1}</span>
+                                <span style="font-weight:bold; color:var(--text1); font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${arName}">${arName}</span>
                             </div>`;
-            cardHtml += `<div style="font-size:0.95rem; color:var(--text2); margin-bottom:8px; display:flex; justify-content:flex-start; align-items:center;">
-                            <span style="direction:ltr; unicode-bidi:embed; display:inline-block; font-weight:bold; letter-spacing:0.5px; background:rgba(255,255,255,0.6); padding:2px 6px; border-radius:6px;">${s.phone || ''}</span>
-                         </div>`;
             
+            // Right side: ID + Phone + Optional Note Icon
+            let rightHtml = `<div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">`;
             if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
-                cardHtml += `<div style="font-size:0.8rem; background:rgba(255,255,255,0.7); padding:8px 10px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); color:#475569; line-height:1.5;">📝 ${s.marketing_notes}</div>`;
-            } 
-            
-            // Helpful hints for specific columns
-            if (window.currentKanbanBoard === 'integration' && c.id === 'col2') {
-                cardHtml += `<div style="font-size:0.75rem; color:#ea580c; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ea580c;">⚠️ أضف "تواصل" بعد الإرسال</div>`;
-            } else if (window.currentKanbanBoard === 'marketing') {
-                if (c.id === 'm1') {
-                    cardHtml += `<div style="font-size:0.75rem; color:#3b82f6; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #3b82f6;">⚠️ اتصل به الآن</div>`;
-                } else if (c.id === 'm2') {
-                    cardHtml += `<div style="font-size:0.75rem; color:#f59e0b; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #f59e0b;">⚠️ اكتب "لا يرد 2" بالملاحظات للمحاولة القادمة</div>`;
-                } else if (c.id === 'm3') {
-                    cardHtml += `<div style="font-size:0.75rem; color:#ef4444; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ef4444;">⚠️ أرسل إيميل لطلب الرقم الصحيح</div>`;
-                } else if (c.id === 'm5') {
-                    cardHtml += `<div style="font-size:0.75rem; color:#ec4899; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ec4899;">⚠️ اقترح تخفيض أو منحة</div>`;
-                }
+                rightHtml += `<span title="${s.marketing_notes}" style="font-size:0.8rem; cursor:help;">📝</span>`;
             }
+            rightHtml += `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                            ${stId ? `<span style="background:rgba(255,255,255,0.7); color:var(--text1); border:1px solid ${cardBorder}; padding:1px 6px; border-radius:12px; font-size:0.7rem; font-weight:bold; direction:ltr;">${stId}</span>` : ''}
+                            <span style="direction:ltr; font-size:0.75rem; font-weight:bold; color:var(--text2);">${s.phone || ''}</span>
+                          </div>
+                          </div>`;
             
-            card.innerHTML = cardHtml;
+            card.innerHTML = leftDiv + rightHtml;
             itemsContainer.appendChild(card);
         });
 
