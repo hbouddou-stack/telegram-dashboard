@@ -2466,10 +2466,13 @@ function renderKanbanView(listElement, filtered) {
     let cols = [];
     if (window.currentKanbanBoard === 'marketing') {
         cols = [
-            { id: 'm1', title: '١. مسجل جديد', color: '#64748b', items: [] },
-            { id: 'm2', title: '٢. تم التواصل', color: '#3b82f6', items: [] },
-            { id: 'm3', title: '٣. للمتابعة (تذكير)', color: '#f43f5e', items: [] },
-            { id: 'm4', title: '٤. اكتملت البيعة (مدفوع 🎉)', color: '#10b981', items: [] }
+            { id: 'm1', title: '١. مسجل جديد (للاتصال)', color: '#3b82f6', items: [] },
+            { id: 'm2', title: '٢. لا يرد (محاولات)', color: '#f59e0b', items: [] },
+            { id: 'm3', title: '٣. رقم خاطئ (إيميل)', color: '#ef4444', items: [] },
+            { id: 'm4', title: '٤. في قيد التفكير / تواصل', color: '#8b5cf6', items: [] },
+            { id: 'm5', title: '٥. إنقاذ (سعر/منحة)', color: '#ec4899', items: [] },
+            { id: 'm6', title: '٦. اكتملت البيعة 🎉', color: '#10b981', items: [] },
+            { id: 'm7', title: '٧. أرشيف (مرفوض)', color: '#94a3b8', items: [] }
         ];
     } else if (window.currentKanbanBoard === 'integration') {
         cols = [
@@ -2490,7 +2493,6 @@ function renderKanbanView(listElement, filtered) {
 
     // 2. Sort Students
     filtered.forEach(s => {
-        // Correct Payment Logic from Admin Gateway
         const paidVal = String(s.payment_status || '').toUpperCase().trim();
         const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(paidVal) || (paidVal.includes('مسدد') && !paidVal.includes('غير مسدد')) || paidVal.includes('✅');
         
@@ -2505,17 +2507,24 @@ function renderKanbanView(listElement, filtered) {
 
         if (window.currentKanbanBoard === 'marketing') {
             if (isPaid) {
-                cols[3].items.push(s);
-            } else if (isRelance) {
-                cols[2].items.push(s);
-            } else if (isContacted) {
-                cols[1].items.push(s);
+                cols[5].items.push(s);
             } else {
-                cols[0].items.push(s);
+                if (note.includes('perdu') || note.includes('مرفوض') || note.includes('refus') || note.includes('archive') || note.includes('أرشيف') || note.includes('annulé') || note.includes('إلغاء')) {
+                    cols[6].items.push(s);
+                } else if (note.includes('faux') || note.includes('خطأ') || note.includes('invalide') || note.includes('غلط')) {
+                    cols[2].items.push(s);
+                } else if (note.includes('injoignable') || note.includes('لا يرد') || note.includes('répondeur') || note.includes('مغلق')) {
+                    cols[1].items.push(s);
+                } else if (note.includes('cher') || note.includes('غالي') || note.includes('promo') || note.includes('bourse') || note.includes('منحة') || note.includes('sauvetage') || note.includes('مساعدة') || note.includes('تخفيض')) {
+                    cols[4].items.push(s);
+                } else if (note.trim() === '') {
+                    cols[0].items.push(s);
+                } else {
+                    cols[3].items.push(s); // Any other note goes to "En discussion"
+                }
             }
         } 
         else if (window.currentKanbanBoard === 'integration') {
-            // Integration Logic (The user's board)
             if (!isPaid) {
                 cols[0].items.push(s);
             } else if (groupsJoined) {
@@ -2531,7 +2540,6 @@ function renderKanbanView(listElement, filtered) {
             }
         }
         else if (window.currentKanbanBoard === 'pedagogy') {
-            // Pedagogy Logic (Only integrated students)
             if (groupsJoined) {
                 if (isActive) cols[2].items.push(s);
                 else if (isPlatform || isRelance) cols[1].items.push(s);
@@ -2546,7 +2554,6 @@ function renderKanbanView(listElement, filtered) {
     container.style.flexDirection = 'column';
     container.style.gap = '15px';
 
-    // Tabs Header
     const tabsDiv = document.createElement('div');
     tabsDiv.style.display = 'flex';
     tabsDiv.style.justifyContent = 'center';
@@ -2586,7 +2593,6 @@ function renderKanbanView(listElement, filtered) {
     
     container.appendChild(tabsDiv);
 
-    // Kanban Columns Wrapper
     const kanbanWrapper = document.createElement('div');
     kanbanWrapper.style.display = 'flex';
     kanbanWrapper.style.gap = '15px';
@@ -2594,7 +2600,7 @@ function renderKanbanView(listElement, filtered) {
     kanbanWrapper.style.paddingBottom = '20px';
     kanbanWrapper.style.minHeight = '70vh';
     kanbanWrapper.style.alignItems = 'flex-start';
-    kanbanWrapper.style.direction = 'rtl'; // RTL scrolling
+    kanbanWrapper.style.direction = 'rtl';
 
     cols.forEach(c => {
         const colDiv = document.createElement('div');
@@ -2683,8 +2689,21 @@ function renderKanbanView(listElement, filtered) {
             
             if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
                 cardHtml += `<div style="font-size:0.8rem; background:rgba(255,255,255,0.7); padding:8px 10px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); color:#475569; line-height:1.5;">📝 ${s.marketing_notes}</div>`;
-            } else if (c.id === 'col2' && window.currentKanbanBoard === 'integration') {
-                cardHtml += `<div style="font-size:0.75rem; color:#ea580c; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ea580c;">⚠️ أضف "تواصل" في الملاحظات بعد الإرسال</div>`;
+            } 
+            
+            // Helpful hints for specific columns
+            if (window.currentKanbanBoard === 'integration' && c.id === 'col2') {
+                cardHtml += `<div style="font-size:0.75rem; color:#ea580c; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ea580c;">⚠️ أضف "تواصل" بعد الإرسال</div>`;
+            } else if (window.currentKanbanBoard === 'marketing') {
+                if (c.id === 'm1') {
+                    cardHtml += `<div style="font-size:0.75rem; color:#3b82f6; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #3b82f6;">⚠️ اتصل به الآن</div>`;
+                } else if (c.id === 'm2') {
+                    cardHtml += `<div style="font-size:0.75rem; color:#f59e0b; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #f59e0b;">⚠️ اكتب "لا يرد 2" بالملاحظات للمحاولة القادمة</div>`;
+                } else if (c.id === 'm3') {
+                    cardHtml += `<div style="font-size:0.75rem; color:#ef4444; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ef4444;">⚠️ أرسل إيميل لطلب الرقم الصحيح</div>`;
+                } else if (c.id === 'm5') {
+                    cardHtml += `<div style="font-size:0.75rem; color:#ec4899; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ec4899;">⚠️ اقترح تخفيض أو منحة</div>`;
+                }
             }
             
             card.innerHTML = cardHtml;
