@@ -460,7 +460,8 @@
                 <!-- View Toggle (50%) -->
                 <div style="flex:1; display:flex; border-radius:12px; border:1px solid var(--border); overflow:hidden; font-family:'Tajawal', inherit;">
                     <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1);">بطاقات</div>
-                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--accent2); color:white; border-right:1px solid var(--border);">جدول</div>
+                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);">جدول</div>
+                    <div id="view-toggle-kanban" onclick="changeViewMode('kanban')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);">مسار (CRM)</div>
                 </div>
             </div>
             
@@ -790,19 +791,25 @@
             function changeViewMode(mode) {
                 currentViewMode = mode;
                 localStorage.setItem('viewMode', mode);
-                
+
                 let vT = document.getElementById('view-toggle-table');
                 let vG = document.getElementById('view-toggle-grid');
+                let vK = document.getElementById('view-toggle-kanban');
                 let hint = document.getElementById('scroll-hint');
-                
-                if(vT && vG) {
+
+                if(vT && vG && vK) {
+                    vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
+                    vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
+                    vK.style.background = 'var(--surface)'; vK.style.color = 'var(--text1)';
+
                     if(mode === 'table') {
                         vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
-                        vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
                         if(hint) hint.style.display = 'block';
+                    } else if(mode === 'kanban') {
+                        vK.style.background = 'var(--accent2)'; vK.style.color = 'white';
+                        if(hint) hint.style.display = 'none';
                     } else {
                         vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
-                        vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
                         if(hint) hint.style.display = 'none';
                     }
                 }
@@ -2238,303 +2245,32 @@
         }
         
         function changeViewMode(mode) {
-            currentViewMode = mode;
-            localStorage.setItem('viewMode', mode);
-            const gridBtn = document.getElementById('view-toggle-grid');
-            const tableBtn = document.getElementById('view-toggle-table');
-            if (gridBtn && tableBtn) {
-                if (mode === 'grid') {
-                    gridBtn.style.background = 'var(--accent2)'; gridBtn.style.color = 'white';
-                    tableBtn.style.background = 'var(--bg)'; tableBtn.style.color = 'var(--text1)';
-                } else {
-                    tableBtn.style.background = 'var(--accent2)'; tableBtn.style.color = 'white';
-                    gridBtn.style.background = 'var(--bg)'; gridBtn.style.color = 'var(--text1)';
-                }
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
+                currentViewMode = mode;
+                localStorage.setItem('viewMode', mode);
 
-        // Replaced old setGenderFilter
-        function oldSetGenderFilter(val, el) {
-            filters.gender = val;
-            if (el && el.parentElement) {
-                el.parentElement.querySelectorAll('.chip-gender').forEach(c => c.classList.remove('active'));
-                el.classList.add('active');
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setLevelFilter(val) {
-            filters.level = val;
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setStatusFilter(val) {
-            filters.status = val;
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function resetAllFilters() {
-            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all' };
-            window.filterOnlyDuplicates = false;
-            const searchInput = document.getElementById('search-input');
-            if (searchInput) searchInput.value = '';
-            
-            const btnDup = document.getElementById('btn-toggle-duplicates-filter');
-            if (btnDup) {
-                btnDup.style.background = 'var(--surface)';
-                btnDup.style.color = 'var(--text1)';
-                btnDup.style.borderColor = 'var(--border)';
-                btnDup.innerHTML = '👥 المكررين فقط';
-            }
+                let vT = document.getElementById('view-toggle-table');
+                let vG = document.getElementById('view-toggle-grid');
+                let vK = document.getElementById('view-toggle-kanban');
+                let hint = document.getElementById('scroll-hint');
 
-            const s1 = document.getElementById('source-select');
-            const s2 = document.getElementById('source-select-2');
-            if (s1) s1.value = 'all';
-            if (s2) s2.value = 'all';
+                if(vT && vG && vK) {
+                    vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
+                    vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
+                    vK.style.background = 'var(--surface)'; vK.style.color = 'var(--text1)';
 
-            const delBtn = document.getElementById('btn-delete-source');
-            if (delBtn) delBtn.style.display = 'none';
-
-            const gAll = document.getElementById('g-all');
-            if (gAll && typeof setGenderFilterUI === 'function') setGenderFilterUI('all', gAll);
-
-            const lvlAll = document.getElementById('lvl-all');
-            if (lvlAll && typeof setLevelFilterUI === 'function') setLevelFilterUI('all', lvlAll);
-
-            const payAll = document.getElementById('pay-all');
-            if (payAll && typeof setPayFilterUI === 'function') setPayFilterUI('all', payAll);
-
-            const tgAll = document.getElementById('tg-all');
-            if (tgAll && typeof setTelegramFilter === 'function') setTelegramFilter('all', tgAll);
-
-            filterStudents();
-            if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        
-        function setRemarkFilter(val) {
-            filters.remark = val;
-            const selects = document.querySelectorAll('select[id^="remark-select"]');
-            selects.forEach(s => { if (s.value !== val) s.value = val; });
-            filterStudents();
-            if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-        function setSourceFilter(val) {
-            filters.source = val;
-            const s1 = document.getElementById('source-select');
-            const s2 = document.getElementById('source-select-2');
-            if (s1 && s1.value !== val) s1.value = val;
-            if (s2 && s2.value !== val) s2.value = val;
-
-            const delBtn = document.getElementById('btn-delete-source');
-            if (val && val.startsWith('file:')) {
-                if (delBtn) delBtn.style.display = 'block';
-            } else {
-                if (delBtn) delBtn.style.display = 'none';
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-
-        async function deleteSelectedSource() {
-            const val = document.getElementById('source-select').value;
-            if (!val.startsWith('file:')) return;
-            const filename = val.replace('file:', '');
-            
-            if (!confirm(`⚠️ Attention !
-Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fichier :\n\n📄 ${filename}\n\nCette action est irréversible. Continuer ?`)) return;
-            
-            try {
-                const res = await fetch('/api/admin/gateway/delete_source', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source_file: filename })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert(`✅ Fichier supprimé avec succès !\n${data.deleted} étudiants ont été retirés.`);
-                    document.getElementById('source-select').value = 'all';
-                    setSourceFilter('all');
-                    fetchStudents();
-                } else {
-                    alert('Erreur: ' + (data.error || 'Inconnue'));
-                }
-            } catch(e) {
-                alert('Erreur réseau');
-            }
-        }
-        function setColorFilter(val, el) {
-            filters.color = val;
-            if (el && el.parentElement) {
-                el.parentElement.querySelectorAll('.chip-color').forEach(c => c.classList.remove('active'));
-                el.classList.add('active');
-            }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
-        }
-
-        // ============ SETTINGS API ============
-        async function loadGeneralSettings() {
-            try {
-                const res = await fetch('/api/admin/gateway/settings');
-                const data = await res.json();
-                if (data.success && data.settings) {
-                    const force = data.settings.force_telegram_name === 'true';
-                    document.getElementById('setting-force-name').checked = force;
-                    
-                    if(data.settings.student_theme) document.getElementById('setting-student-theme').value = data.settings.student_theme;
-                    if(data.settings.student_font) document.getElementById('setting-student-font').value = data.settings.student_font;
-                }
-            } catch(e) { console.error('Error loading settings', e); }
-        }
-
-        async function toggleForceName(checkbox) {
-            try {
-                await fetch('/api/admin/gateway/settings', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ key: 'force_telegram_name', value: checkbox.checked ? 'true' : 'false' })
-                });
-            } catch(e) { console.error(e); }
-        }
-        
-        // ============ GOOGLE SHEETS SYNC ============
-        async function purgeGoogleSheets() {
-            if(!confirm('⚠️ ATTENTION : Voulez-vous vraiment supprimer TOUS les élèves importés depuis Google Sheets ? (Cette action est irréversible)')) return;
-            const btn = document.getElementById('btn-purge-sheets');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>⏳ Suppression en cours...</span>';
-            btn.disabled = true;
-            try {
-                const res = await fetch('/api/admin/gateway/purge_sheets', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({})
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert('✅ Purge terminée ! ' + data.count + ' élèves ont été supprimés.');
-                    fetchStudents(); fetchKpiMetrics();
-                } else {
-                    alert('❌ Erreur: ' + data.error);
-                }
-            } catch(e) {
-                alert('Erreur: ' + e.message);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        async function syncGoogleSheets() {
-            const btn = document.getElementById('btn-sync-sheets');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>⏳ جاري المزامنة...</span>';
-            btn.disabled = true;
-            try {
-                const res = await fetch('/api/admin/gateway/sync_sheets', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({})
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert('✅ تمت المزامنة بنجاح! تم استيراد/تحديث ' + data.count + ' طالب.');
-                    fetchStudents(); fetchKpiMetrics();
-                } else {
-                    alert('❌ خطأ في المزامنة: ' + data.error);
-                }
-            } catch(e) { 
-                console.error(e); 
-                alert('حدث خطأ غير متوقع أثناء المزامنة.');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        async function exportGoogleSheets() {
-            const btn = document.getElementById('btn-export-sheets');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>⏳ جاري التصدير...</span>';
-            btn.disabled = true;
-            try {
-                const res = await fetch('/api/admin/gateway/export_sheets', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({})
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert('✅ تم التصدير بنجاح! تم تصدير بيانات ' + data.count + ' طالب إلى ورقة "Suivi Élèves".');
-                } else {
-                    alert('❌ خطأ في التصدير: ' + data.error);
-                }
-            } catch(e) { 
-                console.error(e); 
-                alert('حدث خطأ غير متوقع أثناء التصدير.');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        async function saveStudentTheme() {
-            try {
-                const theme = document.getElementById('setting-student-theme').value;
-                const font = document.getElementById('setting-student-font').value;
-                await fetch('/api/admin/gateway/settings', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ key: 'student_theme', value: theme })
-                });
-                await fetch('/api/admin/gateway/settings', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ key: 'student_font', value: font })
-                });
-            } catch(e) { console.error(e); }
-        }
-
-        // ============ EXCEL IMPORT ============
-        async function importExcel(input) {
-            if(!input.files || input.files.length === 0) return;
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            let adminName = 'Admin';
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                adminName = window.Telegram.WebApp.initDataUnsafe.user.first_name || 'Admin';
-            }
-            
-            try {
-                const res = await fetch('/api/admin/gateway/import_students?admin=' + encodeURIComponent(adminName), {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert('✅ Importation réussie : ' + data.count + ' élèves importés.');
-                    fetchStudents(); 
-                    fetchKpiMetrics();
-                    if (document.getElementById('s-history').style.display === 'block') {
-                        loadImportHistory();
+                    if(mode === 'table') {
+                        vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
+                        if(hint) hint.style.display = 'block';
+                    } else if(mode === 'kanban') {
+                        vK.style.background = 'var(--accent2)'; vK.style.color = 'white';
+                        if(hint) hint.style.display = 'none';
+                    } else {
+                        vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
+                        if(hint) hint.style.display = 'none';
                     }
-                } else {
-                    alert('❌ Erreur : ' + data.error);
                 }
-            } catch(e) {
-                alert('Erreur réseau : ' + e.message);
+                filterStudents();
             }
-            input.value = '';
-        }
-        
-        
-        let idFormatPrefs = JSON.parse(localStorage.getItem('idFormatPrefs') || '{"separator":"dash", "yearColors":{}}');
-
-        function saveIdPrefs() {
-            const sep = document.getElementById('pref-id-separator').value;
-            idFormatPrefs.separator = sep;
-            localStorage.setItem('idFormatPrefs', JSON.stringify(idFormatPrefs));
-            renderYearColors();
-            if(typeof filterStudents === 'function') filterStudents();
-        }
 
         function addYearColor() {
             const yr = document.getElementById('pref-id-year').value.trim();
@@ -2715,7 +2451,137 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
             filterStudents();
         }
 
-        function filterStudents() {
+        
+function renderKanbanView(listElement, filtered) {
+    const cols = [
+        { id: 'col1', title: '1. Inscrits (Non Payé)', color: '#ef4444', items: [] },
+        { id: 'col2', title: '2. Payé (À Contacter)', color: '#f97316', items: [] },
+        { id: 'col3', title: '3. 1er Contact', color: '#eab308', items: [] },
+        { id: 'col4', title: '4. À Relancer / Relancé', color: '#f43f5e', items: [] },
+        { id: 'col5', title: '5. Bot Démarré', color: '#8b5cf6', items: [] },
+        { id: 'col6', title: '6. Intégré (Terminé)', color: '#22c55e', items: [] }
+    ];
+
+    filtered.forEach(s => {
+        const isPaid = String(s.payment_status || '').toLowerCase().includes('pay') || String(s.payment_status || '').toLowerCase().includes('ok') || String(s.payment_status || '').includes('oui') || String(s.payment_status || '').includes('done');
+        const botStarted = s.bot_status == 1 || String(s.bot_status).toLowerCase() === 'true';
+        const groupsJoined = (s.channel_joined == 1 || String(s.channel_joined).toLowerCase() === 'true') && (s.group_joined == 1 || String(s.group_joined).toLowerCase() === 'true');
+        const note = String(s.marketing_notes || '').toLowerCase();
+
+        if (groupsJoined) {
+            cols[5].items.push(s);
+        } else if (botStarted) {
+            cols[4].items.push(s);
+        } else if (!isPaid) {
+            cols[0].items.push(s);
+        } else {
+            if (note.includes('relance') || note.includes('relancé') || note.includes('bloqué') || note.includes('urgent')) {
+                cols[3].items.push(s);
+            } else if (note.includes('contact') || note.includes('mail') || note.includes('envoyé') || note.includes('message')) {
+                cols[2].items.push(s);
+            } else {
+                cols[1].items.push(s);
+            }
+        }
+    });
+
+    const kanbanWrapper = document.createElement('div');
+    kanbanWrapper.style.display = 'flex';
+    kanbanWrapper.style.gap = '15px';
+    kanbanWrapper.style.overflowX = 'auto';
+    kanbanWrapper.style.paddingBottom = '20px';
+    kanbanWrapper.style.minHeight = '70vh';
+    kanbanWrapper.style.alignItems = 'flex-start';
+
+    cols.forEach(c => {
+        const colDiv = document.createElement('div');
+        colDiv.style.flex = '0 0 300px';
+        colDiv.style.background = 'var(--bg)';
+        colDiv.style.border = '1px solid var(--border)';
+        colDiv.style.borderRadius = '12px';
+        colDiv.style.display = 'flex';
+        colDiv.style.flexDirection = 'column';
+        colDiv.style.maxHeight = '75vh';
+
+        const header = document.createElement('div');
+        header.style.padding = '12px 15px';
+        header.style.borderBottom = `3px solid ${c.color}`;
+        header.style.fontWeight = 'bold';
+        header.style.fontSize = '1.05rem';
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.background = 'var(--surface)';
+        header.style.borderRadius = '12px 12px 0 0';
+        header.style.position = 'sticky';
+        header.style.top = '0';
+        header.style.zIndex = '10';
+        
+        const tSpan = document.createElement('span');
+        tSpan.textContent = c.title;
+        const countSpan = document.createElement('span');
+        countSpan.style.background = `${c.color}20`;
+        countSpan.style.color = c.color;
+        countSpan.style.padding = '2px 8px';
+        countSpan.style.borderRadius = '20px';
+        countSpan.style.fontSize = '0.85rem';
+        countSpan.textContent = c.items.length;
+        
+        header.appendChild(tSpan);
+        header.appendChild(countSpan);
+        colDiv.appendChild(header);
+
+        const itemsContainer = document.createElement('div');
+        itemsContainer.style.padding = '10px';
+        itemsContainer.style.overflowY = 'auto';
+        itemsContainer.style.display = 'flex';
+        itemsContainer.style.flexDirection = 'column';
+        itemsContainer.style.gap = '10px';
+        itemsContainer.style.flex = '1';
+
+        c.items.forEach(s => {
+            let arName = (s.first_name_ar || s.first_name || '') + ' ' + (s.last_name_ar || s.last_name || '');
+            if (!arName.trim()) arName = s.first_name || 'بدون اسم';
+            const card = document.createElement('div');
+            card.onclick = () => openStudentCard(s.student_id);
+            card.style.background = 'var(--surface)';
+            card.style.padding = '12px';
+            card.style.borderRadius = '8px';
+            card.style.border = '1px solid var(--border)';
+            card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.03)';
+            card.style.cursor = 'pointer';
+            card.style.transition = 'transform 0.1s';
+            card.onmouseover = () => card.style.transform = 'translateY(-2px)';
+            card.onmouseout = () => card.style.transform = 'translateY(0)';
+
+            let cardHtml = `<div style="font-weight:bold; color:var(--text1); margin-bottom:4px; font-size:1.05rem;">${arName}</div>`;
+            cardHtml += `<div style="font-size:0.8rem; color:var(--text2); margin-bottom:8px; display:flex; justify-content:space-between;">
+                            <span>${s.phone || ''}</span>
+                            <span>${s.student_id ? '#'+s.student_id : ''}</span>
+                         </div>`;
+            
+            // Add a small tag if there's a note
+            if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
+                cardHtml += `<div style="font-size:0.75rem; background:#fef08a20; padding:6px; border-radius:6px; border:1px solid #fef08a; color:#854d0e; line-height:1.4;">📝 ${s.marketing_notes}</div>`;
+            } else if (c.id === 'col2') {
+                // Hint to add a note
+                cardHtml += `<div style="font-size:0.7rem; color:#f97316; font-style:italic; margin-top:5px;">⚠️ Ajoutez "Contacté" dans les notes après l'envoi du mail.</div>`;
+            } else if (c.id === 'col3') {
+                cardHtml += `<div style="font-size:0.7rem; color:#eab308; font-style:italic; margin-top:5px;">⚠️ S'il ne clique pas, ajoutez "Relance" dans les notes.</div>`;
+            }
+            
+            card.innerHTML = cardHtml;
+            itemsContainer.appendChild(card);
+        });
+
+        colDiv.appendChild(itemsContainer);
+        kanbanWrapper.appendChild(colDiv);
+    });
+
+    listElement.innerHTML = '';
+    listElement.appendChild(kanbanWrapper);
+}
+
+function filterStudents() {
             const q = document.getElementById('search-input').value.toLowerCase();
             
             // Compute duplicate map when duplicates filter is active
@@ -2952,6 +2818,12 @@ Vous êtes sur le point de supprimer TOUS les étudiants importés depuis le fic
                 return;
             }
             
+            
+            if (currentViewMode === 'kanban') {
+                renderKanbanView(list, filtered);
+                return;
+            }
+
             if (currentViewMode === 'table') {
                 const tableWrapper = document.createElement('div');
                 tableWrapper.style.overflowX = 'auto';
