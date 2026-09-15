@@ -2594,6 +2594,83 @@ function renderKanbanView(listElement, filtered) {
     
     container.appendChild(tabsDiv);
 
+    // ---- KPI BAR ----
+    const kpiDiv = document.createElement('div');
+    kpiDiv.style.display = 'flex';
+    kpiDiv.style.justifyContent = 'space-around';
+    kpiDiv.style.background = 'white';
+    kpiDiv.style.padding = '15px';
+    kpiDiv.style.borderRadius = '12px';
+    kpiDiv.style.marginBottom = '15px';
+    kpiDiv.style.border = '1px solid var(--border)';
+    kpiDiv.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+    kpiDiv.style.direction = 'rtl';
+
+    let kpiHtml = '';
+    if (window.currentKanbanBoard === 'marketing') {
+        let total = cols.reduce((sum, c) => sum + c.items.length, 0);
+        let won = cols[5].items.length;
+        let lost = cols[6].items.length;
+        let activeLeads = total - lost; // Don't count lost in conversion rate
+        let rate = activeLeads > 0 ? Math.round((won/activeLeads)*100) : 0;
+        let pending = cols[0].items.length + cols[1].items.length + cols[2].items.length + cols[3].items.length + cols[4].items.length;
+        
+        kpiHtml = `
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">إجمالي المسجلين النشطين</div>
+                <div style="font-size:1.5rem; font-weight:900; color:var(--text1);">${activeLeads}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">معدل التحويل (Conversion)</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#10b981;">${rate}%</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">قيد المعالجة (Pending)</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#f59e0b;">${pending}</div>
+            </div>
+        `;
+    } else if (window.currentKanbanBoard === 'integration') {
+        let totalPaid = cols[1].items.length + cols[2].items.length + cols[3].items.length + cols[4].items.length + cols[5].items.length;
+        let integrated = cols[5].items.length;
+        let rate = totalPaid > 0 ? Math.round((integrated/totalPaid)*100) : 0;
+        let stuck = cols[3].items.length + cols[4].items.length;
+
+        kpiHtml = `
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">إجمالي المدفوعين (Clients)</div>
+                <div style="font-size:1.5rem; font-weight:900; color:var(--text1);">${totalPaid}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">معدل الإدماج (Integration)</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">${rate}%</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">عالقون / بحاجة لمتابعة</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#f43f5e;">${stuck}</div>
+            </div>
+        `;
+    } else if (window.currentKanbanBoard === 'pedagogy') {
+        let total = cols.reduce((sum, c) => sum + c.items.length, 0);
+        let active = cols[2].items.length;
+        let rate = total > 0 ? Math.round((active/total)*100) : 0;
+
+        kpiHtml = `
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">إجمالي المدمجين</div>
+                <div style="font-size:1.5rem; font-weight:900; color:var(--text1);">${total}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:bold;">معدل النشاط (Active Rate)</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">${rate}%</div>
+            </div>
+        `;
+    }
+    
+    kpiDiv.innerHTML = kpiHtml;
+    container.appendChild(kpiDiv);
+    // ---- END KPI BAR ----
+
+
     const kanbanWrapper = document.createElement('div');
     kanbanWrapper.style.display = 'flex';
     kanbanWrapper.style.gap = '12px';
