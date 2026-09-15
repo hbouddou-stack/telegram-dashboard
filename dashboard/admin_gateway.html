@@ -7060,6 +7060,18 @@ window.importExcel = async function(input) {
     input.value = '';
 };
 </script>
+
+<script>
+window.setSourceFilter = function(val) {
+    if (typeof filters !== 'undefined') filters.source = val;
+    const s1 = document.getElementById('source-select');
+    const s2 = document.getElementById('source-select-2');
+    if (s1 && s1.value !== val) s1.value = val;
+    if (s2 && s2.value !== val) s2.value = val;
+    if (typeof filterStudents === 'function') filterStudents();
+    if (typeof updateDashboardView === 'function') updateDashboardView();
+};
+</script>
 </body>
 
 </html>
