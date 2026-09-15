@@ -7025,6 +7025,41 @@ window.massUpdateSelection = function() {
     openQeModal(checked);
 };
 </script>
+
+<script>
+window.importExcel = async function(input) {
+    if(!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let adminName = localStorage.getItem('adminName') || 'Admin';
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        adminName = window.Telegram.WebApp.initDataUnsafe.user.first_name || 'Admin';
+    }
+
+    try {
+        const res = await fetch('/api/admin/gateway/import_students?admin=' + encodeURIComponent(adminName), {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if(data.success) {
+            alert('✅ Importation réussie : ' + data.count + ' élèves importés.');
+            if (typeof fetchStudents === 'function') fetchStudents();
+            if (typeof fetchKpiMetrics === 'function') fetchKpiMetrics();
+            if (document.getElementById('s-history') && document.getElementById('s-history').style.display === 'block') {
+                if (typeof loadImportHistory === 'function') loadImportHistory();
+            }
+        } else {
+            alert('❌ Erreur : ' + (data.error || 'Erreur inconnue.'));
+        }
+    } catch(e) {
+        alert('Erreur réseau : ' + e.message);
+    }
+    input.value = '';
+};
+</script>
 </body>
 
 </html>
