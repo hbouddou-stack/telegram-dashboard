@@ -2602,6 +2602,51 @@ function renderKanbanView(listElement, filtered) {
         tabsDiv.appendChild(btn);
     });
     
+    // MASS ACTION BUTTON
+    const massUpdateBtn = document.createElement('button');
+    massUpdateBtn.innerHTML = '⚡ تحديث المحددين';
+    massUpdateBtn.style.cssText = 'background:var(--accent); color:white; border:none; padding:8px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:0.95rem; margin-right:auto; margin-left:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1);';
+    massUpdateBtn.onclick = async () => {
+        const checked = Array.from(document.querySelectorAll('.kanban-checkbox:checked')).map(cb => cb.value);
+        if(checked.length === 0) { alert('الرجاء تحديد طالب واحد على الأقل.'); return; }
+        const newNote = prompt(`أدخل الملاحظة الجديدة لـ ${checked.length} طلاب:
+(ستنقلهم هذه الملاحظة إلى العمود المناسب تلقائياً)`);
+        if(newNote === null) return;
+        
+        massUpdateBtn.innerHTML = '⏳ جاري التحديث...';
+        massUpdateBtn.disabled = true;
+        const adminName = localStorage.getItem('adminName') || 'Admin';
+        
+        let successCount = 0;
+        for(let sid of checked) {
+            const s = window.allStudents.find(x => String(x.student_id) === String(sid));
+            if(!s) continue;
+            try {
+                const res = await fetch('/api/admin/gateway/add_crm_note', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        student_id: s.student_id,
+                        telegram_id: s.telegram_id || 0,
+                        type: 'Marketing',
+                        tag: 'MassUpdate',
+                        note: newNote.trim(),
+                        admin_name: adminName
+                    })
+                });
+                if(res.ok) {
+                    s.marketing_notes = newNote.trim();
+                    successCount++;
+                }
+            } catch(e) {}
+        }
+        alert(`تم تحديث ${successCount} من أصل ${checked.length} طالب بنجاح!`);
+        massUpdateBtn.innerHTML = '⚡ تحديث المحددين';
+        massUpdateBtn.disabled = false;
+        if(typeof filterStudents === 'function') filterStudents();
+    };
+    tabsDiv.appendChild(massUpdateBtn);
+    
     container.appendChild(tabsDiv);
 
     // ---- KPI BAR ----
@@ -2800,6 +2845,7 @@ function renderKanbanView(listElement, filtered) {
 
             // Left side: #Index + Name
             let leftDiv = `<div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                                <input type="checkbox" class="kanban-checkbox" value="${s.student_id}" onclick="event.stopPropagation();" style="transform:scale(1.1); margin-left:4px; cursor:pointer;">
                                 <span style="color:var(--text2); font-size:0.75rem; font-weight:bold;">#${index + 1}</span>
                                 <span style="font-weight:bold; color:var(--text1); font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${arName}">${arName}</span>
                             </div>`;
@@ -2809,6 +2855,7 @@ function renderKanbanView(listElement, filtered) {
             if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
                 rightHtml += `<span title="${s.marketing_notes}" style="font-size:0.8rem; cursor:help;">📝</span>`;
             }
+            rightHtml += `<span onclick="event.stopPropagation(); quickEditNote('${s.student_id}')" style="font-size:0.85rem; cursor:pointer; margin-left:4px; margin-right:2px;" title="تحديث الملاحظة (نقل البطاقة)">✏️</span>`;
             rightHtml += `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
                             ${stId ? `<span style="background:rgba(255,255,255,0.7); color:var(--text1); border:1px solid ${cardBorder}; padding:1px 6px; border-radius:12px; font-size:0.7rem; font-weight:bold; direction:ltr;">${stId}</span>` : ''}
                             <span style="direction:ltr; font-size:0.75rem; font-weight:bold; color:var(--text2);">${s.phone || ''}</span>
@@ -6913,6 +6960,40 @@ async function deleteActiveStudent() {
         alert('❌ Erreur réseau : ' + e);
     }
 }
+</script>
+
+<script>
+window.quickEditNote = async function(studentId) {
+    const s = window.allStudents.find(x => String(x.student_id) === String(studentId));
+    if(!s) return;
+    const oldNote = s.marketing_notes || '';
+    const newNote = prompt("الملاحظة التسويقية لـ " + (s.first_name || 'هذا الطالب') + " :\n(اكتب: لا يرد، رقم خاطئ، في قيد التفكير، تخفيض، مرفوض...)", oldNote);
+    if(newNote === null || newNote.trim() === oldNote.trim()) return;
+    
+    try {
+        const adminName = localStorage.getItem('adminName') || 'Admin';
+        const res = await fetch('/api/admin/gateway/add_crm_note', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                student_id: s.student_id,
+                telegram_id: s.telegram_id || 0,
+                type: 'Marketing',
+                tag: 'QuickEdit',
+                note: newNote.trim(),
+                admin_name: adminName
+            })
+        });
+        if(res.ok) {
+            s.marketing_notes = newNote.trim();
+            if(typeof filterStudents === 'function') filterStudents();
+        } else {
+            alert('حدث خطأ أثناء الحفظ.');
+        }
+    } catch(e) {
+        alert('خطأ في الاتصال.');
+    }
+};
 </script>
 </body>
 </html>
