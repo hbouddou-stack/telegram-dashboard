@@ -2452,47 +2452,147 @@
         }
 
         
-function renderKanbanView(listElement, filtered) {
-    const cols = [
-        { id: 'col1', title: '١. مسجل (غير مدفوع)', color: '#ef4444', items: [] },
-        { id: 'col2', title: '٢. مدفوع (للتواصل)', color: '#f97316', items: [] },
-        { id: 'col3', title: '٣. تم التواصل (بانتظار الطالب)', color: '#eab308', items: [] },
-        { id: 'col4', title: '٤. للمتابعة / تم التذكير', color: '#f43f5e', items: [] },
-        { id: 'col5', title: '٥. بدأ البوت', color: '#8b5cf6', items: [] },
-        { id: 'col6', title: '٦. مكتمل (انضم)', color: '#22c55e', items: [] }
-    ];
 
+// Global state for kanban board
+window.currentKanbanBoard = window.currentKanbanBoard || 'integration';
+
+function setKanbanBoard(board) {
+    window.currentKanbanBoard = board;
+    if (typeof filterStudents === 'function') filterStudents();
+}
+
+function renderKanbanView(listElement, filtered) {
+    // 1. Define Boards
+    let cols = [];
+    if (window.currentKanbanBoard === 'marketing') {
+        cols = [
+            { id: 'm1', title: '١. مسجل جديد', color: '#64748b', items: [] },
+            { id: 'm2', title: '٢. تم التواصل', color: '#3b82f6', items: [] },
+            { id: 'm3', title: '٣. للمتابعة (تذكير)', color: '#f43f5e', items: [] },
+            { id: 'm4', title: '٤. اكتملت البيعة (مدفوع 🎉)', color: '#10b981', items: [] }
+        ];
+    } else if (window.currentKanbanBoard === 'integration') {
+        cols = [
+            { id: 'col1', title: '١. مسجل (غير مدفوع)', color: '#ef4444', items: [] },
+            { id: 'col2', title: '٢. مدفوع (للتواصل)', color: '#f97316', items: [] },
+            { id: 'col3', title: '٣. تم إرسال الرابط', color: '#eab308', items: [] },
+            { id: 'col4', title: '٤. للمتابعة / تم التذكير', color: '#f43f5e', items: [] },
+            { id: 'col5', title: '٥. بدأ البوت', color: '#8b5cf6', items: [] },
+            { id: 'col6', title: '٦. مكتمل (انضم)', color: '#22c55e', items: [] }
+        ];
+    } else if (window.currentKanbanBoard === 'pedagogy') {
+        cols = [
+            { id: 'p1', title: '١. مكتمل الإدماج', color: '#14b8a6', items: [] },
+            { id: 'p2', title: '٢. تذكير (المنصة)', color: '#f59e0b', items: [] },
+            { id: 'p3', title: '٣. طالب نشط', color: '#3b82f6', items: [] }
+        ];
+    }
+
+    // 2. Sort Students
     filtered.forEach(s => {
-        const pStr = String(s.payment_status || '').toLowerCase().trim();
-        const isPaid = pStr.includes('pay') || pStr.includes('تم الدفع') || pStr.includes('oui') || pStr === '1' || pStr === 'true' || pStr.includes('ok') || pStr.includes('✅') || pStr.includes('done');
+        // Correct Payment Logic from Admin Gateway
+        const paidVal = String(s.payment_status || '').toUpperCase().trim();
+        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(paidVal) || (paidVal.includes('مسدد') && !paidVal.includes('غير مسدد')) || paidVal.includes('✅');
         
-        const botStarted = s.bot_status == 1 || String(s.bot_status).toLowerCase() === 'true' || String(s.bot_status).toLowerCase() === 'ok';
+        const botStarted = s.bot_status == 1 || String(s.bot_status).toLowerCase() === 'true' || String(s.bot_status).toLowerCase() === 'ok' || !!s.telegram_id;
         const groupsJoined = (s.channel_joined == 1 || String(s.channel_joined).toLowerCase() === 'true') && (s.group_joined == 1 || String(s.group_joined).toLowerCase() === 'true');
         const note = String(s.marketing_notes || '').toLowerCase();
+        
+        const isContacted = note.includes('contact') || note.includes('تواصل') || note.includes('mail') || note.includes('envoyé') || note.includes('رسالة') || note.includes('رابط');
+        const isRelance = note.includes('relance') || note.includes('تذكير') || note.includes('bloqué') || note.includes('urgent') || note.includes('متابعة');
+        const isPlatform = note.includes('منصة') || note.includes('plateforme');
+        const isActive = note.includes('نشط') || note.includes('actif');
 
-        if (groupsJoined) {
-            cols[5].items.push(s);
-        } else if (botStarted) {
-            cols[4].items.push(s);
-        } else if (!isPaid) {
-            cols[0].items.push(s);
-        } else {
-            if (note.includes('relance') || note.includes('تذكير') || note.includes('bloqué') || note.includes('urgent')) {
+        if (window.currentKanbanBoard === 'marketing') {
+            if (isPaid) {
                 cols[3].items.push(s);
-            } else if (note.includes('contact') || note.includes('تواصل') || note.includes('mail') || note.includes('envoyé') || note.includes('رسالة')) {
+            } else if (isRelance) {
+                cols[2].items.push(s);
+            } else if (isContacted) {
+                cols[1].items.push(s);
+            } else {
+                cols[0].items.push(s);
+            }
+        } 
+        else if (window.currentKanbanBoard === 'integration') {
+            // Integration Logic (The user's board)
+            if (!isPaid) {
+                cols[0].items.push(s);
+            } else if (groupsJoined) {
+                cols[5].items.push(s);
+            } else if (botStarted) {
+                cols[4].items.push(s);
+            } else if (isRelance) {
+                cols[3].items.push(s);
+            } else if (isContacted) {
                 cols[2].items.push(s);
             } else {
                 cols[1].items.push(s);
             }
         }
+        else if (window.currentKanbanBoard === 'pedagogy') {
+            // Pedagogy Logic (Only integrated students)
+            if (groupsJoined) {
+                if (isActive) cols[2].items.push(s);
+                else if (isPlatform || isRelance) cols[1].items.push(s);
+                else cols[0].items.push(s);
+            }
+        }
     });
 
+    // 3. Build UI
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '15px';
+
+    // Tabs Header
+    const tabsDiv = document.createElement('div');
+    tabsDiv.style.display = 'flex';
+    tabsDiv.style.justifyContent = 'center';
+    tabsDiv.style.gap = '15px';
+    tabsDiv.style.marginBottom = '10px';
+    tabsDiv.style.direction = 'rtl';
+    
+    const boards = [
+        { id: 'marketing', name: '🎯 فريق التسويق (المبيعات)' },
+        { id: 'integration', name: '⚙️ فريق الإدارة (الإدماج)' },
+        { id: 'pedagogy', name: '📚 الفريق البيداغوجي (المتابعة)' }
+    ];
+
+    boards.forEach(b => {
+        const btn = document.createElement('button');
+        btn.textContent = b.name;
+        btn.onclick = () => setKanbanBoard(b.id);
+        btn.style.padding = '10px 20px';
+        btn.style.borderRadius = '30px';
+        btn.style.border = 'none';
+        btn.style.fontWeight = 'bold';
+        btn.style.cursor = 'pointer';
+        btn.style.fontFamily = 'inherit';
+        btn.style.transition = 'all 0.2s';
+        
+        if (window.currentKanbanBoard === b.id) {
+            btn.style.background = 'var(--accent2)';
+            btn.style.color = 'white';
+            btn.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+        } else {
+            btn.style.background = 'var(--surface)';
+            btn.style.color = 'var(--text2)';
+            btn.style.border = '1px solid var(--border)';
+        }
+        tabsDiv.appendChild(btn);
+    });
+    
+    container.appendChild(tabsDiv);
+
+    // Kanban Columns Wrapper
     const kanbanWrapper = document.createElement('div');
     kanbanWrapper.style.display = 'flex';
     kanbanWrapper.style.gap = '15px';
     kanbanWrapper.style.overflowX = 'auto';
     kanbanWrapper.style.paddingBottom = '20px';
-    kanbanWrapper.style.minHeight = '75vh';
+    kanbanWrapper.style.minHeight = '70vh';
     kanbanWrapper.style.alignItems = 'flex-start';
     kanbanWrapper.style.direction = 'rtl'; // RTL scrolling
 
@@ -2504,7 +2604,7 @@ function renderKanbanView(listElement, filtered) {
         colDiv.style.borderRadius = '16px';
         colDiv.style.display = 'flex';
         colDiv.style.flexDirection = 'column';
-        colDiv.style.maxHeight = '78vh';
+        colDiv.style.maxHeight = '75vh';
         colDiv.style.boxShadow = '0 4px 6px rgba(0,0,0,0.02)';
 
         const header = document.createElement('div');
@@ -2583,10 +2683,8 @@ function renderKanbanView(listElement, filtered) {
             
             if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
                 cardHtml += `<div style="font-size:0.8rem; background:rgba(255,255,255,0.7); padding:8px 10px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); color:#475569; line-height:1.5;">📝 ${s.marketing_notes}</div>`;
-            } else if (c.id === 'col2') {
-                cardHtml += `<div style="font-size:0.75rem; color:#ea580c; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ea580c;">⚠️ أضف "تواصل" أو "contact" في الملاحظات بعد الإرسال</div>`;
-            } else if (c.id === 'col3') {
-                cardHtml += `<div style="font-size:0.75rem; color:#ca8a04; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ca8a04;">⚠️ إذا لم يستجب، أضف "تذكير" أو "relance"</div>`;
+            } else if (c.id === 'col2' && window.currentKanbanBoard === 'integration') {
+                cardHtml += `<div style="font-size:0.75rem; color:#ea580c; font-style:italic; margin-top:5px; background:rgba(255,255,255,0.5); padding:4px 8px; border-radius:6px; border-right:2px solid #ea580c;">⚠️ أضف "تواصل" في الملاحظات بعد الإرسال</div>`;
             }
             
             card.innerHTML = cardHtml;
@@ -2597,9 +2695,11 @@ function renderKanbanView(listElement, filtered) {
         kanbanWrapper.appendChild(colDiv);
     });
 
+    container.appendChild(kanbanWrapper);
     listElement.innerHTML = '';
-    listElement.appendChild(kanbanWrapper);
+    listElement.appendChild(container);
 }
+
 
 function filterStudents() {
             const q = document.getElementById('search-input').value.toLowerCase();
