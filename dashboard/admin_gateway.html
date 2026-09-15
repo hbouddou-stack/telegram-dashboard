@@ -424,6 +424,10 @@
             <span class="nav-icon">📋</span>
             <span>السجل</span>
         </div>
+        <div class="nav-item" onclick="toggleTheme()" id="nav-theme">
+            <span class="nav-icon" id="theme-icon">☀️</span>
+            <span>المظهر</span>
+        </div>
         <div class="nav-item" onclick="switchTab('settings')" id="nav-settings">
             <span class="nav-icon">⚙️</span>
             <span>الإعدادات</span>
@@ -912,7 +916,7 @@
 
             <!-- Funnel Chart -->
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
-                <h3 style="margin-bottom: 15px; font-size: 1.1rem;">مسار الرقمنة (Entonnoir)</h3>
+                <h3 style="margin-bottom: 15px; font-size: 1.1rem;">مسار الرقمنة (تصفية / مسار)</h3>
                 <div id="html-funnel-container" style="display:flex; flex-direction:column; gap:8px;"></div>
             </div>
             
@@ -2414,6 +2418,7 @@
                     
                     let opts = `<option value="all">كل المصادر</option>
                                 <option value="excel">ملف Excel / CSV</option>
+                                <option value="sheet">Google Sheets / القديم</option>
                                 <option value="manuel">تم يدوياً</option>`;
                     
                     const excelFiles = [...new Set(allStudents.filter(s => s.source_file && String(s.source_file).trim()).map(s => String(s.source_file).trim()))];
@@ -4765,7 +4770,7 @@ function filterStudents() {
                 div.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px; position:relative;';
                 
                 let icon = '🤖';
-                let title = 'Action Système';
+                let title = 'إجراء النظام';
                 let color = 'var(--text2)';
                 let content = item.description;
                 
@@ -6191,7 +6196,7 @@ function renderHomeAlerts(alerts) {
                     <strong style="color: #d97706;">⚠️ ${alerts.uncontacted} élèves importés non contactés</strong>
                     <div style="font-size:0.85rem; color:var(--text2);">Ils n'ont reçu ni email ni WhatsApp.</div>
                 </div>
-                <button class="btn btn-primary" onclick="switchTab('actions')" style="padding: 6px 12px; font-size:0.85rem;">Actions</button>
+                <button class="btn btn-primary" onclick="switchTab('actions')" style="padding: 6px 12px; font-size:0.85rem;">إجراءات</button>
             </div>
         `;
     }
@@ -7072,6 +7077,22 @@ window.setSourceFilter = function(val) {
     if (typeof updateDashboardView === 'function') updateDashboardView();
 };
 </script>
+
+<script>
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('theme-light');
+    localStorage.setItem('admin_theme', isLight ? 'light' : 'dark');
+    document.getElementById('theme-icon').textContent = isLight ? '🌙' : '☀️';
+}
+window.addEventListener('DOMContentLoaded', () => {
+    if(localStorage.getItem('admin_theme') === 'light') {
+        document.body.classList.add('theme-light');
+        const icon = document.getElementById('theme-icon');
+        if (icon) icon.textContent = '🌙';
+    }
+});
+</script>
 </body>
+
 
 </html>
