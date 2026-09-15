@@ -2606,45 +2606,7 @@ function renderKanbanView(listElement, filtered) {
     const massUpdateBtn = document.createElement('button');
     massUpdateBtn.innerHTML = '⚡ تحديث المحددين';
     massUpdateBtn.style.cssText = 'background:var(--accent); color:white; border:none; padding:8px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:0.95rem; margin-right:auto; margin-left:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1);';
-    massUpdateBtn.onclick = async () => {
-        const checked = Array.from(document.querySelectorAll('.kanban-checkbox:checked')).map(cb => cb.value);
-        if(checked.length === 0) { alert('الرجاء تحديد طالب واحد على الأقل.'); return; }
-        const newNote = prompt(`أدخل الملاحظة الجديدة لـ ${checked.length} طلاب:
-(ستنقلهم هذه الملاحظة إلى العمود المناسب تلقائياً)`);
-        if(newNote === null) return;
-        
-        massUpdateBtn.innerHTML = '⏳ جاري التحديث...';
-        massUpdateBtn.disabled = true;
-        const adminName = localStorage.getItem('adminName') || 'Admin';
-        
-        let successCount = 0;
-        for(let sid of checked) {
-            const s = window.allStudents.find(x => String(x.student_id) === String(sid));
-            if(!s) continue;
-            try {
-                const res = await fetch('/api/admin/gateway/add_crm_note', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        student_id: s.student_id,
-                        telegram_id: s.telegram_id || 0,
-                        type: 'Marketing',
-                        tag: 'MassUpdate',
-                        note: newNote.trim(),
-                        admin_name: adminName
-                    })
-                });
-                if(res.ok) {
-                    s.marketing_notes = newNote.trim();
-                    successCount++;
-                }
-            } catch(e) {}
-        }
-        alert(`تم تحديث ${successCount} من أصل ${checked.length} طالب بنجاح!`);
-        massUpdateBtn.innerHTML = '⚡ تحديث المحددين';
-        massUpdateBtn.disabled = false;
-        if(typeof filterStudents === 'function') filterStudents();
-    };
+    massUpdateBtn.onclick = (e) => { e.stopPropagation(); window.massUpdateSelection(); };
     tabsDiv.appendChild(massUpdateBtn);
     
     container.appendChild(tabsDiv);
@@ -6962,38 +6924,106 @@ async function deleteActiveStudent() {
 }
 </script>
 
+
+<!-- QUICK EDIT MODAL -->
+<div id="qe-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; direction:rtl;">
+    <div style="background:var(--bg); width:90%; max-width:400px; border-radius:16px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid var(--border);">
+        <h3 style="margin-top:0; color:var(--text1);">تحديث حالة الطالب</h3>
+        <p id="qe-modal-subtitle" style="font-size:0.85rem; color:var(--text2); margin-bottom:15px;"></p>
+        
+        <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">اختر الحالة الجديدة:</label>
+        <select id="qe-select" onchange="toggleQeCustom()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; margin-bottom:15px; outline:none;">
+            <option value="لا يرد">لا يرد (محاولات)</option>
+            <option value="رقم خاطئ">رقم خاطئ (إيميل)</option>
+            <option value="في قيد التفكير">في قيد التفكير (تواصل)</option>
+            <option value="تخفيض">إنقاذ (سعر/منحة)</option>
+            <option value="مرفوض">مرفوض (أرشيف)</option>
+            <option value="مسجل جديد">إعادة كمسجل جديد (حذف الملاحظة)</option>
+            <option value="CUSTOM">-- ملاحظة مخصصة (كتابة يدوية) --</option>
+        </select>
+        
+        <input type="text" id="qe-custom-input" placeholder="اكتب الملاحظة هنا..." style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; margin-bottom:15px; outline:none; box-sizing:border-box;">
+        
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button onclick="closeQeModal()" style="padding:8px 16px; border-radius:8px; border:none; background:var(--surface); color:var(--text1); cursor:pointer; font-weight:bold;">إلغاء</button>
+            <button id="qe-save-btn" onclick="saveQeModal()" style="padding:8px 16px; border-radius:8px; border:none; background:var(--accent); color:white; cursor:pointer; font-weight:bold;">حفظ التغييرات</button>
+        </div>
+    </div>
+</div>
+
 <script>
-window.quickEditNote = async function(studentId) {
-    const s = window.allStudents.find(x => String(x.student_id) === String(studentId));
-    if(!s) return;
-    const oldNote = s.marketing_notes || '';
-    const newNote = prompt("الملاحظة التسويقية لـ " + (s.first_name || 'هذا الطالب') + " :\n(اكتب: لا يرد، رقم خاطئ، في قيد التفكير، تخفيض، مرفوض...)", oldNote);
-    if(newNote === null || newNote.trim() === oldNote.trim()) return;
+window.qeTargetIds = [];
+
+window.openQeModal = function(ids) {
+    window.qeTargetIds = Array.isArray(ids) ? ids : [ids];
+    if(window.qeTargetIds.length === 0) return;
     
-    try {
-        const adminName = localStorage.getItem('adminName') || 'Admin';
-        const res = await fetch('/api/admin/gateway/add_crm_note', {
+    document.getElementById('qe-modal-subtitle').textContent = window.qeTargetIds.length === 1 ? 'جاري التحديث لطالب واحد' : 'جاري التحديث لـ ' + window.qeTargetIds.length + ' طلاب';
+    document.getElementById('qe-select').value = 'لا يرد';
+    document.getElementById('qe-custom-input').style.display = 'none';
+    document.getElementById('qe-custom-input').value = '';
+    
+    document.getElementById('qe-modal-overlay').style.display = 'flex';
+};
+
+window.toggleQeCustom = function() {
+    const sel = document.getElementById('qe-select').value;
+    document.getElementById('qe-custom-input').style.display = (sel === 'CUSTOM') ? 'block' : 'none';
+};
+
+window.closeQeModal = function() {
+    document.getElementById('qe-modal-overlay').style.display = 'none';
+};
+
+window.saveQeModal = function() {
+    const sel = document.getElementById('qe-select').value;
+    let finalNote = sel;
+    if(sel === 'CUSTOM') {
+        finalNote = document.getElementById('qe-custom-input').value.trim();
+        if(!finalNote) { alert('الرجاء كتابة الملاحظة'); return; }
+    } else if(sel === 'مسجل جديد') {
+        finalNote = ''; // clear note
+    }
+    
+    const btn = document.getElementById('qe-save-btn');
+    btn.innerHTML = '⏳ جاري الحفظ...';
+    btn.disabled = true;
+    
+    const adminName = localStorage.getItem('adminName') || 'Admin';
+    let promises = window.qeTargetIds.map(sid => {
+        const s = window.allStudents.find(x => String(x.student_id) === String(sid));
+        if(!s) return Promise.resolve();
+        
+        return fetch('/api/admin/gateway/add_crm_note', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 student_id: s.student_id,
                 telegram_id: s.telegram_id || 0,
                 type: 'Marketing',
-                tag: 'QuickEdit',
-                note: newNote.trim(),
+                tag: 'CRM_Update',
+                note: finalNote,
                 admin_name: adminName
             })
-        });
-        if(res.ok) {
-            s.marketing_notes = newNote.trim();
-            if(typeof filterStudents === 'function') filterStudents();
-        } else {
-            alert('حدث خطأ أثناء الحفظ.');
-        }
-    } catch(e) {
-        alert('خطأ في الاتصال.');
-    }
+        }).then(res => {
+            if(res.ok) s.marketing_notes = finalNote;
+        }).catch(e => {});
+    });
+    
+    Promise.all(promises).then(() => {
+        btn.innerHTML = 'حفظ التغييرات';
+        btn.disabled = false;
+        closeQeModal();
+        if(typeof filterStudents === 'function') filterStudents();
+    });
+};
+
+window.massUpdateSelection = function() {
+    const checked = Array.from(document.querySelectorAll('.kanban-checkbox:checked')).map(cb => cb.value);
+    if(checked.length === 0) { alert('الرجاء تحديد طالب واحد على الأقل من المربعات الصغيرة.'); return; }
+    openQeModal(checked);
 };
 </script>
 </body>
+
 </html>
