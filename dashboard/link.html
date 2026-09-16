@@ -587,13 +587,56 @@
         <h2 id="video-welcome-title" style="margin-top: 0; font-size: 1.4rem; font-weight: 800; color: var(--text-1); margin-bottom: 10px;">مرحباً بك</h2>
         <p style="color: var(--text-2); font-size: 0.95rem; margin-bottom: 20px;">يُرجى مشاهدة هذا الفيديو التعريفي القصير قبل المتابعة</p>
         
-        <div style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #000;">
+        <div style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; background: #000;">
             <iframe id="dynamic-video" src="" style="width: 100%; height: 220px; border: none; display: block;" allowfullscreen></iframe>
         </div>
-        
-        <button id="btn-understood" style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), #6222cc); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; font-family: inherit; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;">
-            فهمت، أريد المتابعة 🚀
+
+        <div id="video-checkboxes" style="text-align: right; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.15); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: var(--text-1); font-size: 0.9rem; line-height: 1.4; user-select: none;">
+                <input type="checkbox" class="video-rule-cb" style="margin-top: 2px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer;">
+                <span>أتعهد بالالتزام بالاحترام المتبادل مع فريق العمل والطلاب داخل المجموعة.</span>
+            </label>
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: var(--text-1); font-size: 0.9rem; line-height: 1.4; user-select: none;">
+                <input type="checkbox" class="video-rule-cb" style="margin-top: 2px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer;">
+                <span>أدرك أن إرسال رسائل سبام أو إعلانات سيؤدي إلى طردي النهائي.</span>
+            </label>
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: var(--text-1); font-size: 0.9rem; line-height: 1.4; user-select: none;">
+                <input type="checkbox" class="video-rule-cb" style="margin-top: 2px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer;">
+                <span>تفهمت أن الأساتذة يجيبون على الأسئلة خلال 24 إلى 48 ساعة.</span>
+            </label>
+        </div>
+
+        <button id="btn-understood" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; font-family: inherit; cursor: not-allowed; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>🔒</span> يرجى الموافقة على الشروط
         </button>
+
+        <script>
+            document.querySelectorAll('.video-rule-cb').forEach(function(cb) {
+                cb.addEventListener('change', function() {
+                    var allChecked = true;
+                    document.querySelectorAll('.video-rule-cb').forEach(function(c) {
+                        if (!c.checked) allChecked = false;
+                    });
+                    
+                    var btn = document.getElementById('btn-understood');
+                    if (allChecked) {
+                        btn.disabled = false;
+                        btn.style.background = 'linear-gradient(135deg, var(--accent), #6222cc)';
+                        btn.style.color = 'white';
+                        btn.style.cursor = 'pointer';
+                        btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                        btn.innerHTML = 'فهمت، أريد المتابعة 🚀';
+                    } else {
+                        btn.disabled = true;
+                        btn.style.background = '#334155';
+                        btn.style.color = 'rgba(255,255,255,0.5)';
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.boxShadow = 'none';
+                        btn.innerHTML = '<span>🔒</span> يرجى الموافقة على الشروط';
+                    }
+                });
+            });
+        </script>
     </div>
     <!-- END VIDEO COMPONENT -->
 
