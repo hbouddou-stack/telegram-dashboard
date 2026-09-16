@@ -602,54 +602,75 @@
             </div>
 
             <!-- STEP 2: THREE VIDEOS (STORY FORMAT) -->
-            <div id="wizard-step-2" style="display: none; animation: fadeIn 0.4s ease;">
+            <div id="wizard-step-2" style="display: none; animation: fadeIn 0.4s ease; margin: 0 -10px;">
                 
                 <!-- PROGRESS BAR -->
-                <div style="display: flex; gap: 6px; margin-bottom: 5px;">
+                <div style="display: flex; gap: 6px; margin-bottom: 5px; padding: 0 10px;">
                     <div id="story-progress-1" style="height: 4px; flex: 1; background: var(--accent); border-radius: 2px; transition: background 0.3s;"></div>
                     <div id="story-progress-2" style="height: 4px; flex: 1; background: rgba(255,255,255,0.2); border-radius: 2px; transition: background 0.3s;"></div>
                     <div id="story-progress-3" style="height: 4px; flex: 1; background: rgba(255,255,255,0.2); border-radius: 2px; transition: background 0.3s;"></div>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; color: rgba(255,255,255,0.4); margin-bottom: 20px;">
-                    <div style="flex: 1; text-align: center;">1</div>
-                    <div style="flex: 1; text-align: center;">2</div>
-                    <div style="flex: 1; text-align: center;">3</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; color: rgba(255,255,255,0.4); margin-bottom: 20px; padding: 0 10px;">
+                    <div style="flex: 1; text-align: center;">الخطوة 1</div>
+                    <div style="flex: 1; text-align: center;">الخطوة 2</div>
+                    <div style="flex: 1; text-align: center;">الخطوة 3</div>
                 </div>
                 
                 <!-- Video 1 -->
                 <div id="story-vid-1" style="width: 100%; display: block; animation: fadeIn 0.4s ease;">
-                    <video id="dynamic-video-1" src="/tuto.mp4" playsinline autoplay controls style="width: 100%; max-height: 60vh; object-fit: contain; border-radius: 14px; background: transparent; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <h3 style="margin-top: 0; font-size: 1.3rem; font-weight: bold; color: var(--text-1); margin-bottom: 10px;">1/3 تثبيت تليجرام</h3>
-                        <p style="color: var(--text-2); font-size: 1rem; margin: 0;">Installation de Telegram</p>
+                    <video id="dynamic-video-1" src="/tuto.mp4" playsinline autoplay controls style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; background: transparent; margin-bottom: 15px;"></video>
+                    <div style="text-align: center; margin-bottom: 15px; padding: 0 10px;">
+                        <div style="background: rgba(10, 132, 255, 0.15); border: 1px solid rgba(10, 132, 255, 0.3); padding: 10px 20px; border-radius: 12px; display: inline-block; color: #0a84ff; font-weight: 800; font-size: 1.15rem; margin-bottom: 10px;">
+                            الخطوة 1: تثبيت تليجرام
+                        </div>
+                        <br>
+                        <button onclick="document.getElementById('dynamic-video-1').currentTime = 0; document.getElementById('dynamic-video-1').play();" style="background: transparent; color: var(--text-2); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 16px; cursor: pointer; font-size: 0.9rem;">
+                            🔄 إعادة المقطع
+                        </button>
                     </div>
-                    <button id="btn-story-next-1" onclick="nextStory(2)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
-                        ⏳ يرجى مشاهدة المقطع...
-                    </button>
+                    <div style="padding: 0 10px;">
+                        <button id="btn-story-next-1" onclick="nextStory(2)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
+                            ⏳ يرجى مشاهدة المقطع...
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Video 2 -->
                 <div id="story-vid-2" style="width: 100%; display: none; animation: fadeIn 0.4s ease;">
-                    <video id="dynamic-video-2" src="/tuto.mp4" playsinline autoplay controls style="width: 100%; max-height: 60vh; object-fit: contain; border-radius: 14px; background: transparent; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <h3 style="margin-top: 0; font-size: 1.3rem; font-weight: bold; color: var(--text-1); margin-bottom: 10px;">2/3 كيفية إدخال بياناتك</h3>
-                        <p style="color: var(--text-2); font-size: 1rem; margin: 0;">Comment mettre ses infos</p>
+                    <video id="dynamic-video-2" src="/tuto.mp4" playsinline autoplay controls style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; background: transparent; margin-bottom: 15px;"></video>
+                    <div style="text-align: center; margin-bottom: 15px; padding: 0 10px;">
+                        <div style="background: rgba(10, 132, 255, 0.15); border: 1px solid rgba(10, 132, 255, 0.3); padding: 10px 20px; border-radius: 12px; display: inline-block; color: #0a84ff; font-weight: 800; font-size: 1.15rem; margin-bottom: 10px;">
+                            الخطوة 2: كيفية إدخال بياناتك
+                        </div>
+                        <br>
+                        <button onclick="document.getElementById('dynamic-video-2').currentTime = 0; document.getElementById('dynamic-video-2').play();" style="background: transparent; color: var(--text-2); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 16px; cursor: pointer; font-size: 0.9rem;">
+                            🔄 إعادة المقطع
+                        </button>
                     </div>
-                    <button id="btn-story-next-2" onclick="nextStory(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
-                        ⏳ يرجى مشاهدة المقطع...
-                    </button>
+                    <div style="padding: 0 10px;">
+                        <button id="btn-story-next-2" onclick="nextStory(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
+                            ⏳ يرجى مشاهدة المقطع...
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Video 3 -->
                 <div id="story-vid-3" style="width: 100%; display: none; animation: fadeIn 0.4s ease;">
-                    <video id="dynamic-video-3" src="/tuto.mp4" playsinline autoplay controls style="width: 100%; max-height: 60vh; object-fit: contain; border-radius: 14px; background: transparent; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <h3 style="margin-top: 0; font-size: 1.3rem; font-weight: bold; color: var(--text-1); margin-bottom: 10px;">3/3 كيفية استخدام المجموعات</h3>
-                        <p style="color: var(--text-2); font-size: 1rem; margin: 0;">Comment utiliser les groupes</p>
+                    <video id="dynamic-video-3" src="/tuto.mp4" playsinline autoplay controls style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; background: transparent; margin-bottom: 15px;"></video>
+                    <div style="text-align: center; margin-bottom: 15px; padding: 0 10px;">
+                        <div style="background: rgba(10, 132, 255, 0.15); border: 1px solid rgba(10, 132, 255, 0.3); padding: 10px 20px; border-radius: 12px; display: inline-block; color: #0a84ff; font-weight: 800; font-size: 1.15rem; margin-bottom: 10px;">
+                            الخطوة 3: استخدام المجموعات
+                        </div>
+                        <br>
+                        <button onclick="document.getElementById('dynamic-video-3').currentTime = 0; document.getElementById('dynamic-video-3').play();" style="background: transparent; color: var(--text-2); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 16px; cursor: pointer; font-size: 0.9rem;">
+                            🔄 إعادة المقطع
+                        </button>
                     </div>
-                    <button id="btn-story-next-3" onclick="goWizardStep(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
-                        ⏳ يرجى مشاهدة المقطع...
-                    </button>
+                    <div style="padding: 0 10px;">
+                        <button id="btn-story-next-3" onclick="goWizardStep(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
+                            ⏳ يرجى مشاهدة المقطع...
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -769,7 +790,7 @@
                             btn.style.color = 'white';
                             btn.style.cursor = 'pointer';
                             btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
-                            btn.innerHTML = 'موافق، الدخول للمنصة 🚀';
+                            btn.innerHTML = 'الإنضمام لمجموعات تليجرام 🚀';
                         } else {
                             btn.disabled = true;
                             btn.style.background = '#334155';
