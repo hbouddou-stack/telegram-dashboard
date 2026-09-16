@@ -605,17 +605,24 @@
             <div id="wizard-step-2" style="display: none; animation: fadeIn 0.4s ease;">
                 
                 <!-- PROGRESS BAR -->
-                <div style="display: flex; gap: 6px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 6px; margin-bottom: 5px;">
                     <div id="story-progress-1" style="height: 4px; flex: 1; background: var(--accent); border-radius: 2px; transition: background 0.3s;"></div>
                     <div id="story-progress-2" style="height: 4px; flex: 1; background: rgba(255,255,255,0.2); border-radius: 2px; transition: background 0.3s;"></div>
                     <div id="story-progress-3" style="height: 4px; flex: 1; background: rgba(255,255,255,0.2); border-radius: 2px; transition: background 0.3s;"></div>
                 </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; color: rgba(255,255,255,0.4); margin-bottom: 20px;">
+                    <div style="flex: 1; text-align: center;">1</div>
+                    <div style="flex: 1; text-align: center;">2</div>
+                    <div style="flex: 1; text-align: center;">3</div>
+                </div>
                 
                 <!-- Video 1 -->
                 <div id="story-vid-1" style="width: 100%; display: block; animation: fadeIn 0.4s ease;">
-                    <video id="dynamic-video-1" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline autoplay muted loop style="width: 100%; border-radius: 14px; background: #000; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
-                    <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: bold; color: var(--text-1); margin-bottom: 8px; text-align:right;">التعليمات - الجزء 1 من 3</h3>
-                    <p style="color: var(--text-2); font-size: 0.9rem; text-align:right; margin-bottom: 20px;">شرح مبسط لكيفية الدخول واستخدام النظام</p>
+                    <video id="dynamic-video-1" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline autoplay muted loop style="width: 100%; aspect-ratio: 9/16; max-height: 55vh; object-fit: cover; border-radius: 14px; background: #000; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h3 style="margin-top: 0; font-size: 1.3rem; font-weight: bold; color: var(--text-1); margin-bottom: 10px;">1/3 تثبيت تليجرام</h3>
+                        <p style="color: var(--text-2); font-size: 1rem; margin: 0;">Installation de Telegram</p>
+                    </div>
                     <button id="btn-story-next-1" onclick="nextStory(2)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
                         ⏳ يرجى مشاهدة المقطع...
                     </button>
@@ -623,9 +630,11 @@
                 
                 <!-- Video 2 -->
                 <div id="story-vid-2" style="width: 100%; display: none; animation: fadeIn 0.4s ease;">
-                    <video id="dynamic-video-2" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline muted loop style="width: 100%; border-radius: 14px; background: #000; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
-                    <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: bold; color: var(--text-1); margin-bottom: 8px; text-align:right;">التعليمات - الجزء 2 من 3</h3>
-                    <p style="color: var(--text-2); font-size: 0.9rem; text-align:right; margin-bottom: 20px;">كيفية الوصول إلى الدروس والملفات</p>
+                    <video id="dynamic-video-2" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline muted loop style="width: 100%; aspect-ratio: 9/16; max-height: 55vh; object-fit: cover; border-radius: 14px; background: #000; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h3 style="margin-top: 0; font-size: 1.3rem; font-weight: bold; color: var(--text-1); margin-bottom: 10px;">2/3 كيفية إدخال بياناتك</h3>
+                        <p style="color: var(--text-2); font-size: 1rem; margin: 0;">Comment mettre ses infos</p>
+                    </div>
                     <button id="btn-story-next-2" onclick="nextStory(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
                         ⏳ يرجى مشاهدة المقطع...
                     </button>
@@ -633,9 +642,11 @@
                 
                 <!-- Video 3 -->
                 <div id="story-vid-3" style="width: 100%; display: none; animation: fadeIn 0.4s ease;">
-                    <video id="dynamic-video-3" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline muted loop style="width: 100%; border-radius: 14px; background: #000; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
-                    <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: bold; color: var(--text-1); margin-bottom: 8px; text-align:right;">التعليمات - الجزء الأخير</h3>
-                    <p style="color: var(--text-2); font-size: 0.9rem; text-align:right; margin-bottom: 20px;">نصائح أخيرة قبل الانضمام للمجموعات</p>
+                    <video id="dynamic-video-3" src="https://www.w3schools.com/html/mov_bbb.mp4" playsinline muted loop style="width: 100%; aspect-ratio: 9/16; max-height: 55vh; object-fit: cover; border-radius: 14px; background: #000; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></video>
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h3 style="margin-top: 0; font-size: 1.3rem; font-weight: bold; color: var(--text-1); margin-bottom: 10px;">3/3 كيفية استخدام المجموعات</h3>
+                        <p style="color: var(--text-2); font-size: 1rem; margin: 0;">Comment utiliser les groupes</p>
+                    </div>
                     <button id="btn-story-next-3" onclick="goWizardStep(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
                         ⏳ يرجى مشاهدة المقطع...
                     </button>
@@ -668,7 +679,6 @@
             </div>
 
             <script>
-                // Logic for Step 1
                 document.getElementById('cb-step1').addEventListener('change', function(e) {
                     const btn = document.getElementById('btn-step1');
                     if (e.target.checked) {
@@ -688,7 +698,6 @@
                     }
                 });
 
-                // Logic for transitions
                 window.goWizardStep = function(step) {
                     document.getElementById('wizard-step-1').style.display = 'none';
                     document.getElementById('wizard-step-2').style.display = 'none';
@@ -696,7 +705,6 @@
                     document.getElementById('wizard-step-' + step).style.display = 'block';
                     
                     if(step === 2) {
-                        // Start step 2, auto-play first video and start 3s timer
                         setTimeout(() => {
                             const v1 = document.getElementById('dynamic-video-1');
                             if(v1 && v1.play) v1.play().catch(e => console.log('Autoplay prevented', e));
@@ -705,7 +713,6 @@
                     }
                 }
 
-                // Soft Lock Logic
                 function unlockButtonAfterDelay(step) {
                     const btn = document.getElementById('btn-story-next-' + step);
                     if(btn) {
@@ -723,17 +730,15 @@
                             btn.style.color = 'white';
                             btn.style.cursor = 'pointer';
                             btn.innerHTML = isLast ? 'المتابعة للميثاق 🚀' : 'التالي ➔';
-                        }, 3500); // 3.5 seconds soft lock
+                        }, 3500); 
                     }
                 }
 
                 window.nextStory = function(step) {
-                    // Hide all stories
                     document.getElementById('story-vid-1').style.display = 'none';
                     document.getElementById('story-vid-2').style.display = 'none';
                     document.getElementById('story-vid-3').style.display = 'none';
                     
-                    // Stop previous video, play next
                     const prevId = step - 1;
                     const prevVid = document.getElementById('dynamic-video-' + prevId);
                     if(prevVid && prevVid.pause) prevVid.pause(); 
@@ -741,19 +746,15 @@
                     const nextVid = document.getElementById('dynamic-video-' + step);
                     if(nextVid && nextVid.play) nextVid.play().catch(e => console.log('Autoplay prevented'));
 
-                    // Show requested story
                     document.getElementById('story-vid-' + step).style.display = 'block';
                     
-                    // Update Progress bar
                     document.getElementById('story-progress-1').style.background = step >= 1 ? 'var(--accent)' : 'rgba(255,255,255,0.2)';
                     document.getElementById('story-progress-2').style.background = step >= 2 ? 'var(--accent)' : 'rgba(255,255,255,0.2)';
                     document.getElementById('story-progress-3').style.background = step >= 3 ? 'var(--accent)' : 'rgba(255,255,255,0.2)';
                     
-                    // Start soft lock timer
                     unlockButtonAfterDelay(step);
                 }
 
-                // Logic for Step 3
                 document.querySelectorAll('.video-rule-cb').forEach(function(cb) {
                     cb.addEventListener('change', function() {
                         var allChecked = true;
@@ -938,8 +939,8 @@
                     <button class="close-btn" onclick="closeSOS()">&times;</button>
                 </div>
                 <p style="color:var(--text-2); font-size:0.95rem; margin:0 0 12px 0;">اشرح مشكلتك هنا وسيقوم احد المشرفين بالرد عليك عبر تيليجرام في اقرب وقت.</p>
-                <textarea id="sos_msg" placeholder="مثال: لا استطيع الدخول، نسيت البريد الالكتروني..." style="width:100%; resize:none; height:100px; background:rgba(0,0,0,0.4); border:1px solid var(--danger); color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none; box-sizing:border-box;"></textarea>
-                <button onclick="sendSOS()" id="btn-send-sos" style="width:100%; margin-top:10px; background:var(--danger); color:#fff; border:none; border-radius:10px; padding:14px; font-size:1rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer;">إرسال طلب المساعدة</button>
+                <textarea id="sos_msg" placeholder="مثال: لا استطيع الدخول، نسيت البريد الالكتروني..." style="width:100%; resize:none; height:100px; background:#1e293b; border:1px solid #475569; color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none; box-sizing:border-box;"></textarea>
+                <button onclick="sendSOS()" id="btn-send-sos" style="width:100%; margin-top:10px; background:#ef4444; color:#fff; border:none; border-radius:10px; padding:14px; font-size:1rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer;">إرسال طلب المساعدة</button>
                 <div id="sos-debug" style="margin-top:8px; font-size:11px; font-family:monospace; color:#888; min-height:16px;"></div>
             </div>
         </div>
@@ -991,7 +992,7 @@
             <button onclick="window.location.href='/ask.html'" style="flex:1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px; border-radius:12px; font-family:'Tajawal', sans-serif; cursor:pointer; font-weight:bold; font-size:0.85rem;">
                 💬 مركز الدعم والـ FAQ
             </button>
-            <button onclick="showSOS()" style="flex:1; background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.4); color:#ff6b6b; padding:12px; border-radius:12px; font-family:'Tajawal', sans-serif; cursor:pointer; font-weight:bold; font-size:0.85rem;">
+            <button onclick="showSOS()" style="flex:1; background:#1e293b; border:1px solid #334155; color:#f87171; padding:12px; border-radius:12px; font-family:'Tajawal', sans-serif; cursor:pointer; font-weight:bold; font-size:0.85rem;">
                 🆘 لدي استفسار عاجل
             </button>
         </div>
@@ -1058,9 +1059,13 @@
                         if(document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src='';
                         if(document.getElementById('dynamic-video-3')) document.getElementById('dynamic-video-3').src='';
                         if (mainForm) {
-                            mainForm.style.display = 'flex';
-                            mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-                        }
+                                mainForm.style.display = 'flex';
+                                mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                            }
+                            try {
+                                window.Telegram.WebApp.MainButton.show();
+                                if(window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
+                            } catch(e) {}
                     }, 250);
                 });
             }
@@ -1393,8 +1398,8 @@
         if (tg.SecondaryButton) {
             tg.SecondaryButton.setParams({
                 text: "لدي مشكلة 🆘",
-                color: "#2a1012", // Very dark subtle red (elegant danger background)
-                text_color: "#ff453a",
+                color: "#1e293b", // Slate 800
+                text_color: "#f87171",
                 is_visible: true,
                 position: "bottom"
             });
