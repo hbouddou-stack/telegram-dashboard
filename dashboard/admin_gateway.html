@@ -408,39 +408,65 @@
             .kanban-col-responsive {
                 flex: none !important;
                 width: 100% !important;
-                margin-bottom: 30px;
+                margin-bottom: 40px !important; /* More space for the arrow */
                 position: relative;
-                max-height: none !important; /* Allow it to grow */
+                max-height: none !important;
+                background: transparent !important;
+                border: none !important; /* Remove the old outer border */
             }
             /* Downward arrows */
             .kanban-col-responsive:not(:last-child)::after {
                 content: '⬇️';
                 position: absolute;
-                bottom: -30px;
+                bottom: -32px;
                 left: 50%;
                 transform: translateX(-50%);
                 font-size: 1.5rem;
                 z-index: 1;
             }
-            /* Hide the cards by default */
-            .kanban-items-container-responsive {
-                display: none !important;
+            /* Styling the Header to look like a solid interactive card */
+            .kanban-header-responsive {
+                background: #ffffff !important;
+                border: 2px solid var(--border) !important;
+                border-radius: 12px !important;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
+                position: relative; /* For the toggle arrow */
+                padding: 15px 15px 15px 45px !important; /* Extra left padding for arrow */
+                transition: all 0.2s ease;
             }
-            /* Show them when header is clicked */
-            .kanban-col-responsive.is-open .kanban-items-container-responsive {
-                display: flex !important;
+            /* When open, flatten the bottom to connect with items */
+            .kanban-col-responsive.is-open .kanban-header-responsive {
+                border-radius: 12px 12px 0 0 !important;
+                border-bottom: none !important;
+                background: #f8fafc !important;
             }
-            .kanban-header-responsive::after {
+            /* The toggle arrow safely positioned */
+            .kanban-header-responsive::before {
                 content: '▼';
                 position: absolute;
                 left: 15px;
-                top: 15px;
-                font-size: 0.8rem;
-                color: #aaa;
-                transition: transform 0.2s;
+                top: 50%;
+                transform: translateY(-50%) rotate(90deg); /* Points left in RTL */
+                font-size: 0.9rem;
+                color: #64748b;
+                transition: transform 0.3s ease;
             }
-            .kanban-col-responsive.is-open .kanban-header-responsive::after {
-                transform: rotate(180deg);
+            .kanban-col-responsive.is-open .kanban-header-responsive::before {
+                transform: translateY(-50%) rotate(0deg); /* Points down when open */
+            }
+            /* The items container inside the opened accordion */
+            .kanban-items-container-responsive {
+                display: none !important;
+                max-height: 50vh !important; /* SCROLL LIMIT: keeps other columns close! */
+                overflow-y: auto !important;
+                background: #f8fafc !important;
+                border: 2px solid var(--border) !important;
+                border-top: 1px solid #e2e8f0 !important;
+                border-radius: 0 0 12px 12px !important;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .kanban-col-responsive.is-open .kanban-items-container-responsive {
+                display: flex !important;
             }
         }
     </style>
