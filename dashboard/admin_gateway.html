@@ -7225,6 +7225,9 @@ async function deleteActiveStudent() {
         <h3 style="margin-top:0; color:var(--text1);">تحديث حالة الطالب</h3>
         <p id="qe-modal-subtitle" style="font-size:0.85rem; color:var(--text2); margin-bottom:15px;"></p>
         
+        <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">تاريخ الإجراء (Date):</label>
+        <input type="date" id="qe-date" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; margin-bottom:15px; outline:none;">
+        
         <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">اختر الحالة الجديدة:</label>
         <select id="qe-select" onchange="toggleQeCustom()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; margin-bottom:15px; outline:none;">
             <option value="لا يرد (يرن)">📞 لا يرد (الهاتف يرن)</option>
@@ -7260,6 +7263,9 @@ window.openQeModal = function(ids) {
     document.getElementById('qe-custom-input').style.display = 'none';
     document.getElementById('qe-custom-input').value = '';
     
+    // Set default date to today
+    document.getElementById('qe-date').value = new Date().toISOString().split('T')[0];
+    
     document.getElementById('qe-modal-overlay').style.display = 'flex';
 };
 
@@ -7274,12 +7280,19 @@ window.closeQeModal = function() {
 
 window.saveQeModal = function() {
     const sel = document.getElementById('qe-select').value;
+    const dateVal = document.getElementById('qe-date').value || new Date().toISOString().split('T')[0];
+    
     let finalNote = sel;
     if(sel === 'CUSTOM') {
         finalNote = document.getElementById('qe-custom-input').value.trim();
         if(!finalNote) { alert('الرجاء كتابة الملاحظة'); return; }
-    } else if(sel === 'مسجل جديد') {
-        finalNote = ''; // clear note
+    } 
+    
+    if (sel === 'مسجل جديد') {
+        finalNote = ''; // clear note completely
+    } else {
+        // Prepend date
+        finalNote = `[${dateVal}] ${finalNote}`;
     }
     
     const btn = document.getElementById('qe-save-btn');
