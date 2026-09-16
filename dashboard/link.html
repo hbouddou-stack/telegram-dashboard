@@ -581,6 +581,13 @@
             100% { transform: scale(0.95); filter: drop-shadow(0 0 5px rgba(135, 54, 255, 0.4)); }
         }
     </style>
+    
+    <!-- DYNAMIC VIDEO COMPONENT -->
+    <div class="video-container" id="dynamic-video-container" style="display: none; width: 100%; max-width: 400px; margin: 20px auto 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <iframe id="dynamic-video" src="" style="width: 100%; height: 200px; border: none;" allowfullscreen></iframe>
+    </div>
+    <!-- END VIDEO COMPONENT -->
+
     <div class="container" id="main-form">
         <div style="text-align: center; margin-bottom: 25px; position:relative;">
             <div id="logo-secret-trigger" onclick="handleSecretTesterClick()" style="width: 90px; height: 90px; background: rgba(255,255,255,0.05); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 2px solid var(--accent); margin-bottom: 10px; cursor: pointer; user-select: none; -webkit-user-select: none; overflow:hidden;" title="أكاديمية الباجي">
@@ -800,21 +807,37 @@
 
     <script>
 
-        // --- CHAMELEON UI LOGIC ---
+                // --- CHAMELEON UI LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const source = params.get('source');
             if (source) {
                 const headerText = document.querySelector('h1');
                 const pText = document.querySelector('.container p');
+                const videoContainer = document.getElementById('dynamic-video-container');
+                const videoFrame = document.getElementById('dynamic-video');
+                
                 if (source.startsWith('H')) {
                     document.body.className = 'theme-neon';
                     if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                    
+                    // Vidéo pour les frères
+                    if (videoContainer && videoFrame) {
+                        videoFrame.src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
+                        videoContainer.style.display = 'block';
+                    }
+                    
                 } else if (source.startsWith('F')) {
                     document.body.className = 'theme-desert';
                     if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
+                    
+                    // Vidéo pour les sœurs
+                    if (videoContainer && videoFrame) {
+                        videoFrame.src = 'https://www.youtube.com/embed/9bZkp7q19f0?showinfo=0&controls=1';
+                        videoContainer.style.display = 'block';
+                    }
                 }
             }
         });
