@@ -1320,6 +1320,14 @@ async def api_admin_gateway_add_crm_note(request: web.Request):
     import database as db
     try:
         await db.log_student_action(student_id, "CRM_NOTE", description, telegram_id=tid)
+        
+        # If it's a Marketing note, update the main marketing_notes column
+        if ctype == 'Marketing':
+            import aiosqlite
+            async with aiosqlite.connect(db.DATABASE_PATH) as conn:
+                await conn.execute("UPDATE academy_students SET marketing_notes = ? WHERE student_id = ?", (note, student_id))
+                await conn.commit()
+                
         return web.json_response({'success': True})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})

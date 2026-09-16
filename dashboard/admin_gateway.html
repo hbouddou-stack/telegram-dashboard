@@ -2940,7 +2940,11 @@ function renderKanbanView(listElement, filtered) {
             if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
                 rightHtml += `<span title="${s.marketing_notes}" style="font-size:0.8rem; cursor:help;">📝</span>`;
             }
-            rightHtml += `<span onclick="event.stopPropagation(); quickEditNote('${s.student_id}')" style="font-size:0.85rem; cursor:pointer; margin-left:4px; margin-right:2px;" title="تحديث الملاحظة (نقل البطاقة)">✏️</span>`;
+            if (window.currentKanbanBoard === 'marketing') {
+                rightHtml += `<button onclick="event.stopPropagation(); openQeModal('${s.student_id}')" style="background:#f59e0b; color:white; border:none; padding:4px 8px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:bold;" title="تحديث الحالة ونقل البطاقة">🔄 تحديث الحالة</button>`;
+            } else {
+                rightHtml += `<span onclick="event.stopPropagation(); openQeModal('${s.student_id}')" style="font-size:0.85rem; cursor:pointer; margin-left:4px; margin-right:2px;" title="تحديث الملاحظة (نقل البطاقة)">✏️</span>`;
+            }
             rightHtml += `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
                             ${stId ? `<span style="background:rgba(255,255,255,0.7); color:var(--text1); border:1px solid ${cardBorder}; padding:1px 6px; border-radius:12px; font-size:0.7rem; font-weight:bold; direction:ltr;">${stId}</span>` : ''}
                             <span style="direction:ltr; font-size:0.75rem; font-weight:bold; color:var(--text2);">${s.phone || ''}</span>
@@ -7223,13 +7227,15 @@ async function deleteActiveStudent() {
         
         <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">اختر الحالة الجديدة:</label>
         <select id="qe-select" onchange="toggleQeCustom()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; margin-bottom:15px; outline:none;">
-            <option value="لا يرد (يرن)">لا يرد (الهاتف يرن)</option>
-            <option value="لا يرد (مغلق)">لا يرد (مغلق / رسالة صوتية)</option>
-            <option value="رقم خاطئ">رقم خاطئ (إيميل)</option>
-            <option value="في قيد التفكير">في قيد التفكير (تواصل)</option>
-            <option value="تخفيض">إنقاذ (سعر/منحة)</option>
-            <option value="مرفوض">مرفوض (أرشيف)</option>
-            <option value="مسجل جديد">إعادة كمسجل جديد (حذف الملاحظة)</option>
+            <option value="لا يرد (يرن)">📞 لا يرد (الهاتف يرن)</option>
+            <option value="لا يرد (مغلق)">📱 لا يرد (مغلق / رسالة صوتية)</option>
+            <option value="رقم خاطئ">📧 رقم خاطئ / إيميل</option>
+            <option value="في قيد التفكير">⏳ في قيد التفكير (تواصل)</option>
+            <option value="تخفيض">💰 إنقاذ (سعر/منحة)</option>
+            <option value="غير مهتم (مرفوض)">⛔ غير مهتم (أرشيف)</option>
+            <option value="معارض (مرفوض)">⚠️ معارض / غاضب (أرشيف)</option>
+            <option value="إيميل وهاتف خاطئ (مرفوض)">❌ إيميل وهاتف خاطئ (أرشيف)</option>
+            <option value="مسجل جديد">🔄 إعادة كمسجل جديد (حذف الملاحظة)</option>
             <option value="CUSTOM">-- ملاحظة مخصصة (كتابة يدوية) --</option>
         </select>
         
