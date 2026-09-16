@@ -217,7 +217,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه لربط حسابك أو التواصل مع الدعم:"
             )
             kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?v=start"))],
+                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?source={start_arg}&v=start"))],
                 [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة المرئية", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))]
             ])
 

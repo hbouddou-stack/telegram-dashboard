@@ -800,6 +800,27 @@
 
     <script>
 
+        // --- CHAMELEON UI LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const source = params.get('source');
+            if (source) {
+                const headerText = document.querySelector('h1');
+                const pText = document.querySelector('.container p');
+                if (source.startsWith('H')) {
+                    document.body.className = 'theme-neon';
+                    if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
+                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                } else if (source.startsWith('F')) {
+                    document.body.className = 'theme-desert';
+                    if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
+                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
+                }
+            }
+        });
+        // --------------------------
+
+
         // ==========================================
         // AUTO-ADVANCING 6-DIGIT OTP ENGINE
         // ==========================================
