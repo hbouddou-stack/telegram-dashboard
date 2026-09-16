@@ -2785,8 +2785,6 @@ function renderKanbanView(listElement, filtered) {
     }
 
     const kanbanWrapper = document.createElement('div');
-
-    const kanbanWrapper = document.createElement('div');
     kanbanWrapper.className = 'kanban-wrapper-responsive';
     kanbanWrapper.style.display = 'flex';
     kanbanWrapper.style.gap = '12px';
@@ -2956,6 +2954,169 @@ function renderKanbanView(listElement, filtered) {
         colDiv.appendChild(itemsContainer);
         kanbanWrapper.appendChild(colDiv);
     });
+
+    // --- POST-PROCESS: MARKETING TABBED LAYOUT ---
+    if (window.currentKanbanBoard === 'marketing') {
+        const generatedCols = Array.from(kanbanWrapper.children);
+        if (generatedCols.length === 7) {
+            kanbanWrapper.innerHTML = '';
+            
+            // Stage 1: Nouveaux (Original m1)
+            kanbanWrapper.appendChild(generatedCols[0]);
+
+            // Stage 2: En cours (Tabs for m2, m3, m4, m5)
+            const stage2 = document.createElement('div');
+            stage2.className = 'kanban-col-responsive';
+            stage2.style.flex = '0 0 330px';
+            stage2.style.background = '#f8fafc';
+            stage2.style.border = '1px solid var(--border)';
+            stage2.style.borderRadius = '12px';
+            stage2.style.display = 'flex';
+            stage2.style.flexDirection = 'column';
+            stage2.style.maxHeight = '78vh';
+            stage2.style.overflow = 'hidden';
+
+            const header2 = document.createElement('div');
+            header2.style.padding = '12px';
+            header2.style.fontWeight = 'bold';
+            header2.style.fontSize = '0.95rem';
+            header2.style.background = 'white';
+            header2.style.borderRadius = '12px 12px 0 0';
+            header2.style.borderBottom = '2px solid #f59e0b';
+            
+            const h2Title = document.createElement('span');
+            h2Title.textContent = '٢. متابعة الحالات (En cours)';
+            header2.appendChild(h2Title);
+            
+            const tabs2 = document.createElement('div');
+            tabs2.style.display = 'flex';
+            tabs2.style.flexWrap = 'wrap';
+            tabs2.style.gap = '6px';
+            tabs2.style.padding = '10px';
+            tabs2.style.background = '#fffbeb';
+            
+            const content2 = document.createElement('div');
+            content2.style.flex = '1';
+            content2.style.overflow = 'hidden';
+            content2.style.position = 'relative';
+
+            const tabIds2 = [1, 2, 3, 4];
+            tabIds2.forEach((idx, i) => {
+                const btn = document.createElement('button');
+                const itemCount = cols[idx].items.length;
+                btn.innerHTML = `${cols[idx].title.replace(/^[٠-٩0-9\.]+\s*/, '')} <b>(${itemCount})</b>`;
+                btn.style.flex = '1 1 45%';
+                btn.style.padding = '6px';
+                btn.style.fontSize = '0.75rem';
+                btn.style.border = '1px solid #d97706';
+                btn.style.background = i === 0 ? '#f59e0b' : 'white';
+                btn.style.color = i === 0 ? 'white' : '#d97706';
+                btn.style.borderRadius = '6px';
+                btn.style.cursor = 'pointer';
+                
+                const colContent = generatedCols[idx];
+                colContent.querySelector('.kanban-header-responsive').style.display = 'none';
+                colContent.style.border = 'none';
+                colContent.style.width = '100%';
+                colContent.style.height = '100%';
+                colContent.style.display = i === 0 ? 'flex' : 'none';
+                colContent.style.flex = '1'; // Override flex
+                
+                btn.onclick = () => {
+                    Array.from(tabs2.children).forEach(b => { b.style.background = 'white'; b.style.color = '#d97706'; });
+                    Array.from(content2.children).forEach(c => c.style.display = 'none');
+                    btn.style.background = '#f59e0b'; btn.style.color = 'white';
+                    colContent.style.display = 'flex';
+                };
+                
+                tabs2.appendChild(btn);
+                content2.appendChild(colContent);
+            });
+            
+            stage2.appendChild(header2);
+            stage2.appendChild(tabs2);
+            stage2.appendChild(content2);
+            kanbanWrapper.appendChild(stage2);
+
+            // Stage 3: Résultat (Tabs for m6, m7)
+            const stage3 = document.createElement('div');
+            stage3.className = 'kanban-col-responsive';
+            stage3.style.flex = '0 0 300px';
+            stage3.style.background = '#f8fafc';
+            stage3.style.border = '1px solid var(--border)';
+            stage3.style.borderRadius = '12px';
+            stage3.style.display = 'flex';
+            stage3.style.flexDirection = 'column';
+            stage3.style.maxHeight = '78vh';
+            stage3.style.overflow = 'hidden';
+
+            const header3 = document.createElement('div');
+            header3.style.padding = '12px';
+            header3.style.fontWeight = 'bold';
+            header3.style.fontSize = '0.95rem';
+            header3.style.background = 'white';
+            header3.style.borderRadius = '12px 12px 0 0';
+            header3.style.borderBottom = '2px solid #10b981';
+            
+            const h3Title = document.createElement('span');
+            h3Title.textContent = '٣. النتيجة (Résultat)';
+            header3.appendChild(h3Title);
+            
+            const tabs3 = document.createElement('div');
+            tabs3.style.display = 'flex';
+            tabs3.style.gap = '6px';
+            tabs3.style.padding = '10px';
+            tabs3.style.background = '#ecfdf5';
+            
+            const content3 = document.createElement('div');
+            content3.style.flex = '1';
+            content3.style.overflow = 'hidden';
+            content3.style.position = 'relative';
+
+            const tabIds3 = [5, 6];
+            tabIds3.forEach((idx, i) => {
+                const btn = document.createElement('button');
+                const itemCount = cols[idx].items.length;
+                btn.innerHTML = `${cols[idx].title.replace(/^[٠-٩0-9\.]+\s*/, '')} <b>(${itemCount})</b>`;
+                btn.style.flex = '1';
+                btn.style.padding = '6px';
+                btn.style.fontSize = '0.8rem';
+                btn.style.border = i === 0 ? '1px solid #059669' : '1px solid #475569';
+                btn.style.background = i === 0 ? '#10b981' : 'white';
+                btn.style.color = i === 0 ? 'white' : (i === 1 ? '#475569' : '#059669');
+                btn.style.borderRadius = '6px';
+                btn.style.cursor = 'pointer';
+                
+                const colContent = generatedCols[idx];
+                colContent.querySelector('.kanban-header-responsive').style.display = 'none';
+                colContent.style.border = 'none';
+                colContent.style.width = '100%';
+                colContent.style.height = '100%';
+                colContent.style.display = i === 0 ? 'flex' : 'none';
+                colContent.style.flex = '1'; // Override flex
+                
+                btn.onclick = () => {
+                    Array.from(tabs3.children).forEach((b, j) => { 
+                        b.style.background = 'white'; 
+                        b.style.color = j === 0 ? '#059669' : '#475569'; 
+                    });
+                    Array.from(content3.children).forEach(c => c.style.display = 'none');
+                    btn.style.background = i === 0 ? '#10b981' : '#64748b'; 
+                    btn.style.color = 'white';
+                    colContent.style.display = 'flex';
+                };
+                
+                tabs3.appendChild(btn);
+                content3.appendChild(colContent);
+            });
+            
+            stage3.appendChild(header3);
+            stage3.appendChild(tabs3);
+            stage3.appendChild(content3);
+            kanbanWrapper.appendChild(stage3);
+        }
+    }
+    // --- END POST-PROCESS ---
 
     container.appendChild(kanbanWrapper);
     listElement.innerHTML = '';
