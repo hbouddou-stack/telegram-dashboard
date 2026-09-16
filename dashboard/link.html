@@ -583,8 +583,17 @@
     </style>
     
     <!-- DYNAMIC VIDEO COMPONENT -->
-    <div class="video-container" id="dynamic-video-container" style="display: none; width: 100%; max-width: 400px; margin: 20px auto 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <iframe id="dynamic-video" src="" style="width: 100%; height: 200px; border: none;" allowfullscreen></iframe>
+    <div id="dynamic-video-container" style="display: none; width: 100%; max-width: 500px; margin: 40px auto; padding: 20px; box-sizing: border-box; background: var(--surface); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; border: 1px solid rgba(255,255,255,0.1); z-index: 50; position: relative;">
+        <h2 id="video-welcome-title" style="margin-top: 0; font-size: 1.4rem; font-weight: 800; color: var(--text-1); margin-bottom: 10px;">مرحباً بك</h2>
+        <p style="color: var(--text-2); font-size: 0.95rem; margin-bottom: 20px;">يُرجى مشاهدة هذا الفيديو التعريفي القصير قبل المتابعة</p>
+        
+        <div style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #000;">
+            <iframe id="dynamic-video" src="" style="width: 100%; height: 220px; border: none; display: block;" allowfullscreen></iframe>
+        </div>
+        
+        <button id="btn-understood" style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), #6222cc); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; font-family: inherit; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;">
+            فهمت، أريد المتابعة 🚀
+        </button>
     </div>
     <!-- END VIDEO COMPONENT -->
 
@@ -807,36 +816,51 @@
 
     <script>
 
-                // --- CHAMELEON UI LOGIC ---
+                        // --- CHAMELEON UI LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const source = params.get('source');
             if (source) {
-                const headerText = document.querySelector('h1');
-                const pText = document.querySelector('.container p');
+                const mainForm = document.getElementById('main-form');
                 const videoContainer = document.getElementById('dynamic-video-container');
                 const videoFrame = document.getElementById('dynamic-video');
+                const btnUnderstood = document.getElementById('btn-understood');
+                const videoWelcomeTitle = document.getElementById('video-welcome-title');
                 
-                if (source.startsWith('H')) {
-                    document.body.className = 'theme-neon';
-                    if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
-                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                const headerText = document.querySelector('h1');
+                const pText = document.querySelector('#main-form p');
+                
+                if (source.startsWith('H') || source.startsWith('F')) {
+                    // Cacher le formulaire principal au début
+                    if (mainForm) mainForm.style.display = 'none';
+                    if (videoContainer) videoContainer.style.display = 'block';
                     
-                    // Vidéo pour les frères
-                    if (videoContainer && videoFrame) {
-                        videoFrame.src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
-                        videoContainer.style.display = 'block';
+                    if (source.startsWith('H')) {
+                        document.body.className = 'theme-neon';
+                        if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
+                        if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                        if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
+                        if (videoFrame) videoFrame.src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
+                        
+                    } else if (source.startsWith('F')) {
+                        document.body.className = 'theme-desert';
+                        if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
+                        if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
+                        if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
+                        if (videoFrame) videoFrame.src = 'https://www.youtube.com/embed/9bZkp7q19f0?showinfo=0&controls=1';
                     }
                     
-                } else if (source.startsWith('F')) {
-                    document.body.className = 'theme-desert';
-                    if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
-                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
-                    
-                    // Vidéo pour les sœurs
-                    if (videoContainer && videoFrame) {
-                        videoFrame.src = 'https://www.youtube.com/embed/9bZkp7q19f0?showinfo=0&controls=1';
-                        videoContainer.style.display = 'block';
+                    // Quand l'élève clique sur "J'ai compris"
+                    if (btnUnderstood) {
+                        btnUnderstood.addEventListener('click', () => {
+                            videoContainer.style.animation = 'scaleUp 0.3s reverse';
+                            setTimeout(() => {
+                                videoContainer.style.display = 'none';
+                                videoFrame.src = ''; // Arrêter la vidéo
+                                mainForm.style.display = 'flex'; // Afficher le formulaire (flex car c'est un container)
+                                mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                            }, 250);
+                        });
                     }
                 }
             }
