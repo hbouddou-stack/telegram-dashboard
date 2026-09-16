@@ -1030,22 +1030,11 @@
                     if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
-                    if (document.getElementById('dynamic-video-1')) document.getElementById('dynamic-video-1').src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
-                    if (document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
-                    if (document.getElementById('dynamic-video-3')) document.getElementById('dynamic-video-3').src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
                 } else if (source.startsWith('F')) {
                     document.body.className = 'theme-desert';
                     if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
-                    if (document.getElementById('dynamic-video-1')) document.getElementById('dynamic-video-1').src = 'https://www.youtube.com/embed/9bZkp7q19f0?showinfo=0&controls=1';
-                    if (document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src = 'https://www.youtube.com/embed/9bZkp7q19f0?showinfo=0&controls=1';
-                    if (document.getElementById('dynamic-video-3')) document.getElementById('dynamic-video-3').src = 'https://www.youtube.com/embed/9bZkp7q19f0?showinfo=0&controls=1';
-                } else {
-                    // Par défaut si c'est pas H ou F
-                    if (document.getElementById('dynamic-video-1')) document.getElementById('dynamic-video-1').src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
-                    if (document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
-                    if (document.getElementById('dynamic-video-3')) document.getElementById('dynamic-video-3').src = 'https://www.youtube.com/embed/2b9txcAt4e0?showinfo=0&controls=1';
                 }
             }
 
@@ -1421,10 +1410,9 @@
         }, 150);
 
         const htmlSosBtn = document.getElementById('btn-sos-trigger');
-            if (htmlSosBtn) {
-                htmlSosBtn.style.display = 'none';
-                htmlSosBtn.parentElement.style.marginTop = '0';
-            }
+        if (htmlSosBtn && window.Telegram.WebApp.SecondaryButton) {
+            htmlSosBtn.style.display = 'none';
+            htmlSosBtn.parentElement.style.marginTop = '0';
         }
         
         // Onboarding Tour Logic
