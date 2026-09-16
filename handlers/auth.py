@@ -77,9 +77,18 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 
                 clean_sid = re.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_|e1_|e2_|w1_|w2_|sms_)', '', start_arg)
                 
-                # --- CHAMELEON BYPASS ---
+                # --- CHAMELEON BYPASS & SOURCE TRACKING ---
                 import re as regex_mod
                 pass_to_normal_flow = False
+                source_tag = None
+                
+                # Check for suffix _e1, _wa1, etc.
+                if '_' in clean_sid:
+                    parts = clean_sid.split('_')
+                    if parts[-1].lower() in ['e1', 'e2', 'wa1', 'wa2', 'sms']:
+                        source_tag = parts[-1].upper()
+                        clean_sid = '_'.join(parts[:-1])
+
                 if regex_mod.match(r'^[HF][1-5]$', start_arg, regex_mod.IGNORECASE):
                     student = None
                     pass_to_normal_flow = True
@@ -105,6 +114,14 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     
                     # Association instantanée du Telegram ID
                     await db.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ?, bot_started_at = COALESCE(bot_started_at, datetime('now')) WHERE student_id = ?", (user_id, username, real_sid))
+                    
+                    # Track Marketing Source if present
+                    if source_tag:
+                        existing_notes = s_dict.get('marketing_notes') or ''
+                        if f'[Source: {source_tag}]' not in existing_notes:
+                            new_notes = f"{existing_notes} [Source: {source_tag}]".strip()
+                            await db.execute("UPDATE academy_students SET marketing_notes = ? WHERE student_id = ?", (new_notes, real_sid))
+                            
                     await db.commit()
                     
                     # Récupération du lien officiel du dossier

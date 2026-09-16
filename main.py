@@ -1137,6 +1137,9 @@ async def api_admin_gateway_bulk_action(request: web.Request):
                 
                 # Replace variables in message
                 msg_text = message_template.replace('{الاسم}', name).replace('{prenom}', fname).replace('{nom}', lname).replace('{name}', name)
+                if '{token}' in msg_text:
+                    token = student.get('magic_token') or student.get('student_id')
+                    msg_text = msg_text.replace('{token}', str(token))
                 
                 if action == 'telegram':
                     tid = student['telegram_id']

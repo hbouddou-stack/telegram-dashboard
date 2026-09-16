@@ -2081,7 +2081,7 @@
                         if (actionType === 'log_sms') {
                     if (phoneStr) {
                         let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=_sms${token}`);
                         finalUrl = `sms:+${phoneStr}?body=${smsText}`;
                     } else {
                         alert("Aucun numéro de téléphone"); return;
@@ -5183,7 +5183,7 @@ function filterStudents() {
                 if (actionType === 'log_sms') {
                     if (phoneStr) {
                         let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=_sms${token}`);
                         finalUrl = `sms:+${phoneStr}?body=${smsText}`;
                     } else {
                         alert("Aucun numéro de téléphone"); return;
@@ -5608,7 +5608,7 @@ function filterStudents() {
                         if (actionType === 'log_sms') {
                     if (phoneStr) {
                         let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=sms_${token}`);
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=_sms${token}`);
                         finalUrl = `sms:+${phoneStr}?body=${smsText}`;
                     } else {
                         alert("Aucun numéro de téléphone"); return;
@@ -6672,7 +6672,7 @@ function renderHomeAlerts(alerts) {
             const sName = student.first_name || '';
             const token = student.magic_token || student.student_id;
             const botUser = window.BOT_USERNAME || 'minassatalbajibot';
-            const text = `السلام عليكم ورحمة الله وبركاته ${sName}، معك أكاديمية الباجي.\nللدخول إلى منصة الأكاديمية وبدء رحلتك التعليمية، يرجى الضغط على الرابط التالي (صالح لمرة واحدة):\nhttps://t.me/${botUser}?start=wa_${token}`;
+            const text = `السلام عليكم ورحمة الله وبركاته ${sName}، معك أكاديمية الباجي.\nللدخول إلى منصة الأكاديمية وبدء رحلتك التعليمية، يرجى الضغط على الرابط التالي (صالح لمرة واحدة):\nhttps://t.me/${botUser}?start=_wa${token}`;
             
             // For SMS, we usually use sms:PHONE?body=MSG
             // On some devices, it's &body= instead of ?body=
@@ -6706,7 +6706,7 @@ function renderHomeAlerts(alerts) {
             const sName = student.first_name || '';
             const token = student.magic_token || student.student_id;
             const botUser = window.BOT_USERNAME || 'minassatalbajibot';
-            const text = `السلام عليكم ورحمة الله وبركاته ${sName}، معك أكاديمية الباجي.\nللدخول إلى منصة الأكاديمية وبدء رحلتك التعليمية، يرجى الضغط على الرابط التالي (صالح لمرة واحدة):\nhttps://t.me/${botUser}?start=wa_${token}`;
+            const text = `السلام عليكم ورحمة الله وبركاته ${sName}، معك أكاديمية الباجي.\nللدخول إلى منصة الأكاديمية وبدء رحلتك التعليمية، يرجى الضغط على الرابط التالي (صالح لمرة واحدة):\nhttps://t.me/${botUser}?start=_wa${token}`;
             const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`;
             safeOpenUrl(waUrl);
 
