@@ -2769,6 +2769,23 @@ function renderKanbanView(listElement, filtered) {
     // ---- END KPI BAR ----
 
 
+    // Calculate Integration Funnel Metrics
+    let intgStats = {};
+    if (window.currentKanbanBoard === 'integration' && cols.length >= 6) {
+        const c2 = cols.find(c => c.id === 'col2').items.length;
+        const c3 = cols.find(c => c.id === 'col3').items.length;
+        const c4 = cols.find(c => c.id === 'col4').items.length;
+        const c5 = cols.find(c => c.id === 'col5').items.length;
+        const c6 = cols.find(c => c.id === 'col6').items.length;
+        
+        intgStats.base = c2 + c3 + c4 + c5 + c6; // Total Paid
+        intgStats.emailed = c3 + c4 + c5 + c6;   // Received Email
+        intgStats.started = c5 + c6;             // Started Bot
+        intgStats.completed = c6;                // Fully Integrated
+    }
+
+    const kanbanWrapper = document.createElement('div');
+
     const kanbanWrapper = document.createElement('div');
     kanbanWrapper.className = 'kanban-wrapper-responsive';
     kanbanWrapper.style.display = 'flex';
@@ -2818,7 +2835,23 @@ function renderKanbanView(listElement, filtered) {
         headerTop.style.alignItems = 'center';
 
         const tSpan = document.createElement('span');
-        tSpan.textContent = c.title;
+        tSpan.innerHTML = c.title;
+        
+        // Add Integration Percentages
+        if (window.currentKanbanBoard === 'integration') {
+            let pct = '';
+            if (c.id === 'col3' && intgStats.base > 0) {
+                let v = Math.round((intgStats.emailed / intgStats.base) * 100);
+                pct = `<span style="font-size:0.75rem; background:#eab30820; color:#b45309; padding:2px 8px; border-radius:12px; margin-right:10px; font-weight:bold; display:inline-block;" title="Taux d'envoi par rapport aux payés">⤑ ${v}%</span>`;
+            } else if (c.id === 'col5' && intgStats.emailed > 0) {
+                let v = Math.round((intgStats.started / intgStats.emailed) * 100);
+                pct = `<span style="font-size:0.75rem; background:#8b5cf620; color:#6d28d9; padding:2px 8px; border-radius:12px; margin-right:10px; font-weight:bold; display:inline-block;" title="Taux de clic / démarrage du bot">⤑ ${v}%</span>`;
+            } else if (c.id === 'col6' && intgStats.started > 0) {
+                let v = Math.round((intgStats.completed / intgStats.started) * 100);
+                pct = `<span style="font-size:0.75rem; background:#22c55e20; color:#15803d; padding:2px 8px; border-radius:12px; margin-right:10px; font-weight:bold; display:inline-block;" title="Taux d'intégration réussie">⤑ ${v}%</span>`;
+            }
+            if (pct) tSpan.innerHTML += pct;
+        }
         
         const countSpan = document.createElement('span');
         countSpan.style.background = `${c.color}20`;
