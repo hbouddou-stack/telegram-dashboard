@@ -7002,7 +7002,11 @@ function renderHomeAlerts(alerts) {
                 return;
             }
             
-            if (!confirm(`هل أنت متأكد من تنفيذ الإرسال لـ ${targetList.length} طالب؟`)) return;
+            const warningMessage = `🚨 تحذير هام (Envoi en Production) 🚨\n\n` +
+                                   `أنت على وشك إرسال إيميلات/رسائل حقيقية إلى [ ${targetList.length} ] طالب.\n` +
+                                   `هذا الإجراء سيتم تنفيذه فوراً ولا يمكن التراجع عنه.\n\n` +
+                                   `هل أنت متأكد 100% أنك تريد الإرسال الآن؟`;
+            if (!confirm(warningMessage)) return;
             
             const ids = targetList.map(s => s.student_id);
             const btn = document.getElementById('btn-execute-mass-v2');
