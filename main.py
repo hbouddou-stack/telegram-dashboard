@@ -6432,6 +6432,7 @@ async def start_web_server(bot: Bot):
             p = os.path.join(DASHBOARD_DIR, 'tuto.jpg')
         return web.FileResponse(p, headers={'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'})
 
+    app.router.add_get('/tuto.mp4', lambda r: web.FileResponse(os.path.join(DASHBOARD_DIR, 'tuto.mp4')))
     app.router.add_get('/tuto.jpg', handle_tuto_jpg)
     app.router.add_get('/dossiertelegram.jpg', handle_dossiertelegram_jpg)
     app.router.add_get('/albaji_preview.jpg', handle_albaji_preview)
