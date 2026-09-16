@@ -77,8 +77,15 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 
                 clean_sid = re.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_|e1_|e2_|w1_|w2_|sms_)', '', start_arg)
                 
-                async with db.execute("SELECT * FROM academy_students WHERE magic_token = ? OR student_id = ? OR LOWER(email) = ?", (clean_sid, clean_sid, clean_sid.lower())) as cur:
-                    student = await cur.fetchone()
+                # --- CHAMELEON BYPASS ---
+                import re as regex_mod
+                pass_to_normal_flow = False
+                if regex_mod.match(r'^[HF][1-5]$', start_arg, regex_mod.IGNORECASE):
+                    student = None
+                    pass_to_normal_flow = True
+                else:
+                    async with db.execute("SELECT * FROM academy_students WHERE magic_token = ? OR student_id = ? OR LOWER(email) = ?", (clean_sid, clean_sid, clean_sid.lower())) as cur:
+                        student = await cur.fetchone()
                     
                 if student:
                     s_dict = dict(student)
@@ -143,7 +150,9 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     await log_student_action(real_sid, 'MAGIC_LINK_SUCCESS', f"تم الربط التلقائي بنقرة واحدة من الإيميل ({start_arg})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
                     return
                 
-                else:
+                elif not pass_to_normal_flow:
+
+                
                     # LIEN INVALIDE : numéro non trouvé en base → message d'erreur clair
                     await message.answer(
                         f"❌ <b>رابط غير صالح أو منتهي الصلاحية</b>\n\n"
@@ -413,7 +422,7 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             async with aiosqlite.connect(DATABASE_PATH) as db_conn:
                 db_conn.row_factory = aiosqlite.Row
                 async with db_conn.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
-                    student = await cur.fetchone()
+                        student = await cur.fetchone()
             
             if not student:
                 # ❌ INTRUS : pas dans la base → expulser immédiatement
