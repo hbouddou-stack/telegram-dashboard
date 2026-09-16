@@ -395,6 +395,56 @@
 </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Responsive Funnel View for Mobile */
+        @media (max-width: 768px) {
+            .kanban-wrapper-responsive {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                min-height: auto !important;
+                padding-bottom: 40px !important;
+            }
+            .kanban-col-responsive {
+                flex: none !important;
+                width: 100% !important;
+                margin-bottom: 30px;
+                position: relative;
+                max-height: none !important; /* Allow it to grow */
+            }
+            /* Downward arrows */
+            .kanban-col-responsive:not(:last-child)::after {
+                content: '⬇️';
+                position: absolute;
+                bottom: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 1.5rem;
+                z-index: 1;
+            }
+            /* Hide the cards by default */
+            .kanban-items-container-responsive {
+                display: none !important;
+            }
+            /* Show them when header is clicked */
+            .kanban-col-responsive.is-open .kanban-items-container-responsive {
+                display: flex !important;
+            }
+            .kanban-header-responsive::after {
+                content: '▼';
+                position: absolute;
+                left: 15px;
+                top: 15px;
+                font-size: 0.8rem;
+                color: #aaa;
+                transition: transform 0.2s;
+            }
+            .kanban-col-responsive.is-open .kanban-header-responsive::after {
+                transform: rotate(180deg);
+            }
+        }
+    </style>
+
 </head>
 <body class="theme-cpi">
     <div class="header">
@@ -2694,6 +2744,7 @@ function renderKanbanView(listElement, filtered) {
 
 
     const kanbanWrapper = document.createElement('div');
+    kanbanWrapper.className = 'kanban-wrapper-responsive';
     kanbanWrapper.style.display = 'flex';
     kanbanWrapper.style.gap = '12px';
     kanbanWrapper.style.overflowX = 'auto';
@@ -2704,6 +2755,7 @@ function renderKanbanView(listElement, filtered) {
 
     cols.forEach(c => {
         const colDiv = document.createElement('div');
+        colDiv.className = 'kanban-col-responsive';
         colDiv.style.flex = '0 0 280px'; // Slightly thinner columns
         colDiv.style.background = '#f8fafc';
         colDiv.style.border = '1px solid var(--border)';
@@ -2713,6 +2765,14 @@ function renderKanbanView(listElement, filtered) {
         colDiv.style.maxHeight = '78vh';
 
         const header = document.createElement('div');
+        header.className = 'kanban-header-responsive';
+        header.style.cursor = 'pointer';
+        header.onclick = (e) => {
+            if (window.innerWidth <= 768) {
+                // Toggle this one
+                colDiv.classList.toggle('is-open');
+            }
+        };
         header.style.padding = '12px 14px';
         header.style.borderBottom = `4px solid ${c.color}`;
         header.style.fontWeight = 'bold';
@@ -2774,6 +2834,7 @@ function renderKanbanView(listElement, filtered) {
         colDiv.appendChild(header);
 
         const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'kanban-items-container-responsive';
         itemsContainer.style.padding = '8px';
         itemsContainer.style.overflowY = 'auto';
         itemsContainer.style.display = 'flex';
