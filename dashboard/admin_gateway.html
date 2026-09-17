@@ -500,10 +500,7 @@
             <span class="nav-icon">📋</span>
             <span>السجل</span>
         </div>
-        <div class="nav-item" onclick="toggleTheme()" id="nav-theme">
-            <span class="nav-icon" id="theme-icon">☀️</span>
-            <span>المظهر</span>
-        </div>
+        
         <div class="nav-item" onclick="switchTab('settings')" id="nav-settings">
             <span class="nav-icon">⚙️</span>
             <span>الإعدادات</span>
@@ -1156,6 +1153,14 @@
     </div>
 
     <div id="tab-settings" class="tab-content" style="padding:0;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:bold; color:var(--text1);">المظهر (Thème)</div>
+                        <div style="font-size:0.85rem; color:var(--text2);">التبديل بين الوضع الليلي والنهاري</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="toggleTheme()" style="padding:8px 16px; border-radius:8px;">🌙 / ☀️ تبديل</button>
+                </div>
+
         <div style="display:flex; border-bottom:1px solid var(--border); margin-bottom:20px;">
             <div class="settings-tab-btn active" onclick="switchSettingsTab('s-import')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid var(--accent); color:var(--text1);">📤 Importer</div>
             <div class="settings-tab-btn" onclick="switchSettingsTab('s-history')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">🕒 Historique</div>
