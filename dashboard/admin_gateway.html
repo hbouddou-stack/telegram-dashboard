@@ -7335,9 +7335,16 @@ function renderHomeAlerts(alerts) {
                 // Block 2: 23:00 - 10:00 (Nuit & Réveil - 11 heures)
                 // Block 3: 10:00 - 19:00 (Journée Active - 9 heures)
 
-                const block1Hours = [19, 20, 21, 22];
-                const block2Hours = [23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-                const block3Hours = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+                // 4 Balanced Strategic Blocks across 24h:
+                // 1. Soirée Prime-Time : 18:00 - 00:00 (6 heures)
+                // 2. Nuit Profonde     : 00:00 - 06:00 (6 heures)
+                // 3. Matinée           : 06:00 - 12:00 (6 heures)
+                // 4. Après-Midi        : 12:00 - 18:00 (6 heures)
+
+                const block1Hours = [18, 19, 20, 21, 22, 23];
+                const block2Hours = [0, 1, 2, 3, 4, 5];
+                const block3Hours = [6, 7, 8, 9, 10, 11];
+                const block4Hours = [12, 13, 14, 15, 16, 17];
 
                 const calcBlock = (hours) => {
                     const res = { total: 0, paid: 0, unpaid: 0, women: 0, men: 0 };
@@ -7355,13 +7362,14 @@ function renderHomeAlerts(alerts) {
                 const b1 = calcBlock(block1Hours);
                 const b2 = calcBlock(block2Hours);
                 const b3 = calcBlock(block3Hours);
-                const grandTotal = Math.max(b1.total + b2.total + b3.total, 1);
+                const b4 = calcBlock(block4Hours);
+                const grandTotal = Math.max(b1.total + b2.total + b3.total + b4.total, 1);
 
                 const strategicBlocks = [
                     {
-                        name: 'فترة الذروة (المساء)',
-                        hours: '19:00 - 23:00',
-                        duration: '4 ساعات',
+                        name: 'فترة الذروة والمساء',
+                        hours: '18:00 - 00:00',
+                        duration: '6 ساعات',
                         icon: '🔥',
                         border: '#f59e0b',
                         badgeBg: 'rgba(245,158,11,0.15)',
@@ -7369,9 +7377,9 @@ function renderHomeAlerts(alerts) {
                         data: b1
                     },
                     {
-                        name: 'فترة الهدوء (الليل والصباح الباكر)',
-                        hours: '23:00 - 10:00',
-                        duration: '11 ساعة',
+                        name: 'فترة الهدوء والليل',
+                        hours: '00:00 - 06:00',
+                        duration: '6 ساعات',
                         icon: '🌙',
                         border: '#6366f1',
                         badgeBg: 'rgba(99,102,241,0.15)',
@@ -7379,14 +7387,24 @@ function renderHomeAlerts(alerts) {
                         data: b2
                     },
                     {
-                        name: 'فترة النهار والعمل',
-                        hours: '10:00 - 19:00',
-                        duration: '9 ساعات',
+                        name: 'فترة الصباح الباكر',
+                        hours: '06:00 - 12:00',
+                        duration: '6 ساعات',
+                        icon: '🌅',
+                        border: '#10b981',
+                        badgeBg: 'rgba(16,185,129,0.15)',
+                        badgeColor: '#10b981',
+                        data: b3
+                    },
+                    {
+                        name: 'فترة بعد الزوال والعمل',
+                        hours: '12:00 - 18:00',
+                        duration: '6 ساعات',
                         icon: '☀️',
                         border: '#0ea5e9',
                         badgeBg: 'rgba(14,165,233,0.15)',
                         badgeColor: '#0ea5e9',
-                        data: b3
+                        data: b4
                     }
                 ];
 
@@ -7529,7 +7547,21 @@ function renderHomeAlerts(alerts) {
             const col = window.hourlySort.col;
             const dir = window.hourlySort.dir === 'asc' ? 1 : -1;
 
-            rows.sort((a, b) => dir * ((a[col] || 0) - (b[col] || 0)));
+            rows.sort((a, b) => {
+                const valA = a[col] || 0;
+                const valB = b[col] || 0;
+                if (valA !== valB) {
+                    return dir * (valA - valB);
+                }
+                // Tie-breaker when values are equal:
+                // If sorting descending by total or payment: prioritize the slot with higher podium rank
+                // a.rank < b.rank means a has higher medal rank (e.g. rank 3 (4th place) vs rank 4 (5th place))
+                if (a.rank !== b.rank) {
+                    return dir * (b.rank - a.rank);
+                }
+                // Fallback: prefer evening hours
+                return dir * (a.hour - b.hour);
+            });
 
             const colors = ['#f59e0b', '#94a3b8', '#cd7f32', '#38bdf8'];
 
