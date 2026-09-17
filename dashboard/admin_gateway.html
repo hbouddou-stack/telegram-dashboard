@@ -1300,14 +1300,27 @@
     <!-- TAB: إحصاء -->
     <div id="tab-stats" class="tab-content">
         <div style="padding:12px 12px 100px;">
-            <!-- Period Selector -->
-            <div style="display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
-                <span style="font-size:0.78rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
-                <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border);">
-                    <div class="pill-btn" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">7 أيام</div>
-                    <div class="pill-btn pill-active" id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
-                    <div class="pill-btn"            id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
-                    <div class="pill-btn"            id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">الكل</div>
+            <!-- Stats Control Bar: Period + Sub-View Toggle -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                <!-- Period Selector -->
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:0.78rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
+                    <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border);">
+                        <div class="pill-btn" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">7 أيام</div>
+                        <div class="pill-btn pill-active" id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
+                        <div class="pill-btn"            id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
+                        <div class="pill-btn"            id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">الكل</div>
+                    </div>
+                </div>
+
+                <!-- Sub-View Toggle: Days vs Hours -->
+                <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:var(--surface);">
+                    <button type="button" id="stats-view-days-btn" onclick="switchStatsSubView('days')" style="background:var(--accent); color:white; border:none; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        📅 حسب الأيام
+                    </button>
+                    <button type="button" id="stats-view-hours-btn" onclick="switchStatsSubView('hours')" style="background:transparent; color:var(--text2); border:none; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-right:1px solid var(--border); display:flex; align-items:center; gap:5px;">
+                        ⏰ توزيع الساعات
+                    </button>
                 </div>
             </div>
 
@@ -1345,43 +1358,89 @@
                 </div>
             </div>
 
-            <!-- Stacked Bar Chart -->
-            <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                    <span>📊 تطور التسجيلات <span style="font-size:0.65rem; color:var(--text2); font-weight:500;">(انقر على يوم لتفاصيله)</span></span>
-                    <div style="display:flex; gap:10px; font-size:0.7rem; font-weight:600;">
-                        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#16a34a;display:inline-block;"></span> مسدد</span>
-                        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span> غير مسدد</span>
+            <!-- SUB-VIEW 1: DAYS (Default) -->
+            <div id="stats-subview-days">
+                <!-- Stacked Bar Chart -->
+                <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>📊 تطور التسجيلات <span style="font-size:0.65rem; color:var(--text2); font-weight:500;">(انقر على يوم لتفاصيله)</span></span>
+                        <div style="display:flex; gap:10px; font-size:0.7rem; font-weight:600;">
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#16a34a;display:inline-block;"></span> مسدد</span>
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span> غير مسدد</span>
+                        </div>
+                    </div>
+                    <div id="daily-chart-area" style="min-height:140px; display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:24px;">
+                        <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
                     </div>
                 </div>
-                <div id="daily-chart-area" style="min-height:140px; display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:24px;">
-                    <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+
+                <!-- Detailed Table (simplified) -->
+                <div style="background:var(--card); border-radius:16px; overflow:hidden; margin-bottom:12px;">
+                    <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
+                        📋 التفاصيل اليومية
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                            <thead>
+                                <tr style="background:rgba(10,132,255,0.07); text-align:center; color:var(--text2); font-weight:700;">
+                                    <th style="padding:10px 10px; text-align:right; white-space:nowrap;">📅 التاريخ</th>
+                                    <th style="padding:10px 8px;">👥 الكل</th>
+                                    <th style="padding:10px 8px; color:#16a34a;">✅ مسدد</th>
+                                    <th style="padding:10px 8px; color:#ef4444;">❌ غ.مسدد</th>
+                                    <th style="padding:10px 8px; color:#ec4899;">👩 نساء</th>
+                                    <th style="padding:10px 8px; color:#3b82f6;">👨 رجال</th>
+                                    <th style="padding:10px 10px;">📈 نسبة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-stats-body">
+                                <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                            </tbody>
+                            <tfoot id="daily-stats-foot" style="display:none;"></tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Detailed Table (simplified) -->
-            <div style="background:var(--card); border-radius:16px; overflow:hidden; margin-bottom:12px;">
-                <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
-                    📋 التفاصيل اليومية
+            <!-- SUB-VIEW 2: HOURLY AGGREGATE (Overall slots across chosen period) -->
+            <div id="stats-subview-hours" style="display:none;">
+                <!-- Top 3 Slots Summary Cards -->
+                <div id="hourly-top3-cards" style="margin-bottom:16px;"></div>
+
+                <!-- 24-Hour Distribution Chart -->
+                <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>⏰ الرسم البياني للتسجيلات حسب ساعات اليوم (00:00 - 23:00)</span>
+                        <span id="hourly-chart-period-badge" style="font-size:0.7rem; color:var(--accent); font-weight:700;"></span>
+                    </div>
+                    <div id="hourly-chart-area" style="min-height:140px; display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:24px;">
+                        <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+                    </div>
                 </div>
-                <div style="overflow-x:auto;">
-                    <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
-                        <thead>
-                            <tr style="background:rgba(10,132,255,0.07); text-align:center; color:var(--text2); font-weight:700;">
-                                <th style="padding:10px 10px; text-align:right; white-space:nowrap;">📅 التاريخ</th>
-                                <th style="padding:10px 8px;">👥 الكل</th>
-                                <th style="padding:10px 8px; color:#16a34a;">✅ مسدد</th>
-                                <th style="padding:10px 8px; color:#ef4444;">❌ غ.مسدد</th>
-                                <th style="padding:10px 8px; color:#ec4899;">👩 نساء</th>
-                                <th style="padding:10px 8px; color:#3b82f6;">👨 رجال</th>
-                                <th style="padding:10px 10px;">📈 نسبة</th>
-                            </tr>
-                        </thead>
-                        <tbody id="daily-stats-body">
-                            <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
-                        </tbody>
-                        <tfoot id="daily-stats-foot" style="display:none;"></tfoot>
-                    </table>
+
+                <!-- Detailed 24-Hour Table -->
+                <div style="background:var(--card); border-radius:16px; overflow:hidden; margin-bottom:12px;">
+                    <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
+                        📋 جدول الساعات الإجمالي (جميع أيام الفترة المختارة)
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                            <thead>
+                                <tr style="background:rgba(10,132,255,0.07); text-align:center; color:var(--text2); font-weight:700;">
+                                    <th style="padding:10px 12px; text-align:right;">🕐 الساعة</th>
+                                    <th style="padding:10px 8px;">👥 إجمالي المسجلين</th>
+                                    <th style="padding:10px 8px; color:#16a34a;">✅ مسدد</th>
+                                    <th style="padding:10px 8px; color:#ef4444;">❌ غ.مسدد</th>
+                                    <th style="padding:10px 8px; color:#ec4899;">👩 نساء</th>
+                                    <th style="padding:10px 8px; color:#3b82f6;">👨 رجال</th>
+                                    <th style="padding:10px 10px;">📊 الكثافة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hourly-stats-body">
+                                <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                            </tbody>
+                            <tfoot id="hourly-stats-foot" style="display:none;"></tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -6925,6 +6984,10 @@ function renderHomeAlerts(alerts) {
         }
 
         function _doLoadStats(days, el) {
+            window.currentStatsDays = days;
+            if (window.currentStatsSubView === 'hours') {
+                renderHourlyAggregateStats();
+            }
             try {
                 document.querySelectorAll('[id^="stats-"]').forEach(e => e.classList.remove('pill-active'));
                 if (el) el.classList.add('pill-active');
@@ -7087,6 +7150,209 @@ function renderHomeAlerts(alerts) {
                 const chartArea = document.getElementById('daily-chart-area');
                 if(chartArea) chartArea.innerHTML = '<div style="color:red; padding:20px;">Erreur: ' + e.message + '</div>';
                 console.error('loadStats error:', e);
+            }
+        }
+
+        
+        // ===== SUB-VIEW TOGGLE: DAYS vs HOURS =====
+        window.currentStatsSubView = 'days';
+        window.currentStatsDays = 30;
+
+        function switchStatsSubView(view) {
+            window.currentStatsSubView = view;
+            const daysDiv  = document.getElementById('stats-subview-days');
+            const hoursDiv = document.getElementById('stats-subview-hours');
+            const daysBtn  = document.getElementById('stats-view-days-btn');
+            const hoursBtn = document.getElementById('stats-view-hours-btn');
+
+            if (view === 'days') {
+                if (daysDiv) daysDiv.style.display = 'block';
+                if (hoursDiv) hoursDiv.style.display = 'none';
+                if (daysBtn) { daysBtn.style.background = 'var(--accent)'; daysBtn.style.color = 'white'; }
+                if (hoursBtn) { hoursBtn.style.background = 'transparent'; hoursBtn.style.color = 'var(--text2)'; }
+            } else {
+                if (daysDiv) daysDiv.style.display = 'none';
+                if (hoursDiv) hoursDiv.style.display = 'block';
+                if (hoursBtn) { hoursBtn.style.background = 'var(--accent)'; hoursBtn.style.color = 'white'; }
+                if (daysBtn) { daysBtn.style.background = 'transparent'; daysBtn.style.color = 'var(--text2)'; }
+                renderHourlyAggregateStats();
+            }
+        }
+
+        // ===== HOURLY AGGREGATE STATS (0h -> 23h across filtered period) =====
+        function renderHourlyAggregateStats() {
+            try {
+                const src = typeof allStudents !== 'undefined' ? allStudents : [];
+                const days = window.currentStatsDays !== undefined ? window.currentStatsDays : 30;
+                
+                let filtered;
+                if (days === 0) {
+                    filtered = src;
+                } else {
+                    const now = new Date();
+                    const cutoff = new Date(now);
+                    cutoff.setDate(cutoff.getDate() - (days - 1));
+                    cutoff.setHours(0, 0, 0, 0);
+                    filtered = src.filter(s => {
+                        const nd = normalizeDate(s.created_at);
+                        if (!nd) return false;
+                        const p = nd.split('-');
+                        const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+                        return d >= cutoff;
+                    });
+                }
+
+                const top3Container = document.getElementById('hourly-top3-cards');
+                const chartArea     = document.getElementById('hourly-chart-area');
+                const tbody         = document.getElementById('hourly-stats-body');
+                const tfoot         = document.getElementById('hourly-stats-foot');
+                const periodBadge   = document.getElementById('hourly-chart-period-badge');
+
+                const periodLabel = days === 0 ? 'كل الفترات' : `آخر ${days} يوم`;
+                if (periodBadge) periodBadge.textContent = `الفترة: ${periodLabel}`;
+
+                // Build 24h map
+                const hourMap = {};
+                for (let h = 0; h < 24; h++) {
+                    hourMap[h] = { total: 0, paid: 0, unpaid: 0, women: 0, men: 0 };
+                }
+
+                filtered.forEach(s => {
+                    const raw = String(s.created_at || '').replace('T', ' ');
+                    const timePart = raw.includes(' ') ? raw.split(' ')[1] : '';
+                    const hour = timePart ? parseInt(timePart.split(':')[0], 10) : -1;
+                    if (hour < 0 || hour > 23) return;
+
+                    hourMap[hour].total++;
+                    const ps = String(s.payment_status || '').toUpperCase().trim();
+                    const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
+                    if (isPaid) hourMap[hour].paid++; else hourMap[hour].unpaid++;
+
+                    const g = String(s.gender || '').toUpperCase().trim();
+                    const isFemme = g === 'FEMME' || g === 'F' || g === 'أنثى';
+                    if (isFemme) hourMap[hour].women++; else hourMap[hour].men++;
+                });
+
+                // Calculate Top 3 peak slots
+                const slotTotals = Object.entries(hourMap)
+                    .map(([h, v]) => ({ h: parseInt(h), ...v }))
+                    .filter(x => x.total > 0)
+                    .sort((a, b) => b.total - a.total);
+
+                const maxH = Math.max(...Object.values(hourMap).map(v => v.total), 1);
+                const medals = ['🥇', '🥈', '🥉'];
+                const colors = ['#f59e0b', '#94a3b8', '#cd7f32'];
+
+                // Render Top 3 Cards
+                if (top3Container) {
+                    if (slotTotals.length === 0) {
+                        top3Container.innerHTML = '';
+                    } else {
+                        let top3Html = '<div style="display:flex; gap:10px; flex-wrap:wrap;">';
+                        slotTotals.slice(0, 3).forEach((slot, idx) => {
+                            const hLabel = `${String(slot.h).padStart(2,'0')}:00 — ${String(slot.h+1).padStart(2,'0')}:00`;
+                            const paidPct = slot.total > 0 ? Math.round((slot.paid / slot.total) * 100) : 0;
+                            top3Html += `<div style="background:var(--card); border:1px solid ${colors[idx]}; border-radius:14px; padding:12px 14px; flex:1; min-width:130px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                                <div style="font-size:1.4rem;">${medals[idx]}</div>
+                                <div style="font-size:0.8rem; font-weight:800; color:${colors[idx]}; margin-top:2px;">${hLabel}</div>
+                                <div style="font-size:1.4rem; font-weight:900; color:var(--text1); margin-top:4px;">${slot.total} <span style="font-size:0.7rem; font-weight:600; color:var(--text2);">مسجل</span></div>
+                                <div style="font-size:0.7rem; color:var(--text2); margin-top:4px;">👩 ${slot.women} | 👨 ${slot.men}</div>
+                                <div style="font-size:0.68rem; font-weight:700; color:#16a34a; margin-top:2px;">✅ دفع: ${paidPct}%</div>
+                            </div>`;
+                        });
+                        top3Html += '</div>';
+                        top3Container.innerHTML = top3Html;
+                    }
+                }
+
+                // Render 24-Hour Bar Chart
+                if (chartArea) {
+                    if (filtered.length === 0) {
+                        chartArea.innerHTML = '<div style="color:var(--text2); font-size:0.85rem; margin:auto; text-align:center;">لا توجد بيانات مسجلة في هذه الفترة 📭</div>';
+                    } else {
+                        chartArea.innerHTML = Array.from({length: 24}, (_, h) => {
+                            const r = hourMap[h];
+                            const totalH  = Math.max(4, Math.round((r.total / maxH) * 120));
+                            const paidH   = Math.round(totalH * r.paid / Math.max(r.total, 1));
+                            const unpaidH = totalH - paidH;
+                            const isPeak  = slotTotals.length > 0 && slotTotals[0].h === h;
+                            const rank    = slotTotals.findIndex(x => x.h === h);
+                            const badge   = rank >= 0 && rank < 3 ? medals[rank] : '';
+
+                            return `<div style="display:flex; flex-direction:column; align-items:center; gap:2px; min-width:24px; flex:1;" title="${String(h).padStart(2,'0')}:00 - ${String(h+1).padStart(2,'0')}:00 : ${r.total} مسجل (${r.paid} مسدد)">
+                                <span style="font-size:0.55rem; font-weight:900; color:${isPeak ? '#f59e0b' : 'var(--text1)'};">${r.total > 0 ? r.total : ''}</span>
+                                <div style="width:100%; display:flex; flex-direction:column; border-radius:4px 4px 0 0; overflow:hidden; outline:${isPeak ? '2px solid #f59e0b' : 'none'}; outline-offset:1px;">
+                                    <div style="width:100%; background:#ef4444; height:${unpaidH}px; min-height:${r.unpaid>0?2:0}px;"></div>
+                                    <div style="width:100%; background:#16a34a; height:${paidH}px; min-height:${r.paid>0?2:0}px;"></div>
+                                </div>
+                                <span style="font-size:0.55rem; color:var(--text2); font-weight:${isPeak?'800':'400'}; white-space:nowrap; margin-top:2px;">${h}h</span>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+
+                // Render 24-Hour Table
+                if (tbody) {
+                    if (filtered.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">لا توجد بيانات 📭</td></tr>';
+                        if (tfoot) tfoot.style.display = 'none';
+                        return;
+                    }
+
+                    tbody.innerHTML = Array.from({length: 24}, (_, h) => {
+                        const r = hourMap[h];
+                        const rank = slotTotals.findIndex(x => x.h === h);
+                        const medal = rank >= 0 && rank < 3 ? medals[rank] : '';
+                        const barW  = r.total > 0 ? Math.round((r.total / maxH) * 100) : 0;
+                        const barColor = rank === 0 ? '#f59e0b' : rank === 1 ? '#94a3b8' : rank === 2 ? '#cd7f32' : 'var(--accent2)';
+                        const rowBg = rank === 0 ? 'background:rgba(245,158,11,0.09);'
+                                    : rank === 1 ? 'background:rgba(148,163,184,0.07);'
+                                    : rank === 2 ? 'background:rgba(205,127,50,0.07);' : (h % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02);');
+                        const hLabel = `${String(h).padStart(2,'0')}:00 — ${String(h+1).padStart(2,'0')}:00`;
+                        const dominantGender = r.women > r.men ? 'women' : r.men > r.women ? 'men' : 'tie';
+
+                        return `<tr style="border-bottom:1px solid var(--border); ${rowBg} ${r.total===0?'opacity:0.4;':''}">
+                            <td style="padding:10px 12px; font-weight:${r.total>0?'700':'400'}; white-space:nowrap; color:var(--text1); text-align:right;">
+                                ${medal} ${hLabel}
+                            </td>
+                            <td style="padding:10px 8px; text-align:center; font-weight:900; color:${rank===0?'#f59e0b':rank===1?'#94a3b8':rank===2?'#cd7f32':'var(--text1)'}; font-size:${rank===0?'1.05rem':'0.85rem'};">${r.total}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#16a34a; font-weight:700;">${r.paid}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#ef4444; font-weight:700;">${r.unpaid}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#ec4899; font-weight:${dominantGender==='women'?'900':'500'};">${r.women}${dominantGender==='women'?' 👑':''}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#3b82f6; font-weight:${dominantGender==='men'?'900':'500'};">${r.men}${dominantGender==='men'?' 👑':''}</td>
+                            <td style="padding:10px 12px; min-width:90px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <div style="flex:1; height:6px; background:var(--border); border-radius:4px; overflow:hidden;">
+                                        <div style="height:100%; width:${barW}%; background:${barColor}; border-radius:4px;"></div>
+                                    </div>
+                                    <span style="font-size:0.7rem; font-weight:700; color:${barColor}; min-width:16px;">${r.total}</span>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('');
+
+                    if (tfoot) {
+                        const totAll   = Object.values(hourMap).reduce((s, v) => s + v.total, 0);
+                        const totPaid  = Object.values(hourMap).reduce((s, v) => s + v.paid, 0);
+                        const totUnpaid= Object.values(hourMap).reduce((s, v) => s + v.unpaid, 0);
+                        const totW     = Object.values(hourMap).reduce((s, v) => s + v.women, 0);
+                        const totM     = Object.values(hourMap).reduce((s, v) => s + v.men, 0);
+
+                        tfoot.style.display = '';
+                        tfoot.innerHTML = `<tr style="background:rgba(10,132,255,0.1); border-top:2px solid var(--accent); font-weight:900; color:var(--text1);">
+                            <td style="padding:10px 12px; text-align:right; font-size:0.85rem;">Σ الإجمالي</td>
+                            <td style="padding:10px 8px; text-align:center; color:var(--accent2); font-size:0.95rem;">${totAll}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#16a34a;">${totPaid}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#ef4444;">${totUnpaid}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#ec4899;">${totW}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#3b82f6;">${totM}</td>
+                            <td style="padding:10px 12px; text-align:center; color:var(--text2); font-size:0.75rem;">100%</td>
+                        </tr>`;
+                    }
+                }
+
+            } catch (err) {
+                console.error("renderHourlyAggregateStats error:", err);
             }
         }
 
