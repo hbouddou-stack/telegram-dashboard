@@ -1296,7 +1296,37 @@
     </div>
 
 
-    <!-- Modal: Fiche Étudiant (Card) -->
+    
+    <!-- TAB: إحصاء -->
+    <div id="tab-stats" class="tab-content">
+        <div style="padding:16px 12px;">
+            <h2 style="margin:0 0 16px; font-size:1.1rem; font-weight:800; color:var(--text1);">📈 الإحصائيات اليومية</h2>
+            <div style="display:flex; gap:0; margin-bottom:16px; border-radius:12px; overflow:hidden; border:1px solid var(--border); width:fit-content;">
+                <div class="pill-btn pill-active" id="stats-7" onclick="loadDailyStats(7, this)" style="padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">7 أيام</div>
+                <div class="pill-btn" id="stats-30" onclick="loadDailyStats(30, this)" style="padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer;">30 يوم</div>
+            </div>
+            <div id="daily-chart-area" style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px; min-height:160px; display:flex; align-items:flex-end; gap:6px; overflow-x:auto;">
+                <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+            </div>
+            <div style="background:var(--card); border-radius:16px; overflow:hidden;">
+                <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+                    <thead>
+                        <tr style="background:rgba(10,132,255,0.08); text-align:right;">
+                            <th style="padding:10px 12px; color:var(--text2); font-weight:700;">📅 التاريخ</th>
+                            <th style="padding:10px 12px; color:var(--text2); font-weight:700;">👥 مسجلون</th>
+                            <th style="padding:10px 12px; color:#16a34a; font-weight:700;">🟢 مسددون</th>
+                            <th style="padding:10px 12px; color:#ef4444; font-weight:700;">🔴 غير مسددين</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-stats-body">
+                        <tr><td colspan="4" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';" style="padding:0; align-items:stretch; justify-content:stretch;">
         <div class="modal" id="fiche-eleve-modal" style="width: 100%; max-width: none; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; margin: 0; border-radius: 0; padding: 0; overflow: hidden;">
             <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:6px 14px; min-height:0; flex-shrink:0; position:relative;">
@@ -6603,34 +6633,7 @@ function renderHomeAlerts(alerts) {
 
 </script>
 
-    <!-- TAB: إحصاء -->
-    <div id="tab-stats" class="tab-content">
-        <div style="padding:16px 12px;">
-            <h2 style="margin:0 0 16px; font-size:1.1rem; font-weight:800; color:var(--text1);">📈 الإحصائيات اليومية</h2>
-            <div style="display:flex; gap:0; margin-bottom:16px; border-radius:12px; overflow:hidden; border:1px solid var(--border); width:fit-content;">
-                <div class="pill-btn pill-active" id="stats-7" onclick="loadDailyStats(7, this)" style="padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">7 أيام</div>
-                <div class="pill-btn" id="stats-30" onclick="loadDailyStats(30, this)" style="padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer;">30 يوم</div>
-            </div>
-            <div id="daily-chart-area" style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px; min-height:160px; display:flex; align-items:flex-end; gap:6px; overflow-x:auto;">
-                <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
-            </div>
-            <div style="background:var(--card); border-radius:16px; overflow:hidden;">
-                <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.82rem;">
-                    <thead>
-                        <tr style="background:rgba(10,132,255,0.08); text-align:right;">
-                            <th style="padding:10px 12px; color:var(--text2); font-weight:700;">📅 التاريخ</th>
-                            <th style="padding:10px 12px; color:var(--text2); font-weight:700;">👥 مسجلون</th>
-                            <th style="padding:10px 12px; color:#16a34a; font-weight:700;">🟢 مسددون</th>
-                            <th style="padding:10px 12px; color:#ef4444; font-weight:700;">🔴 غير مسددين</th>
-                        </tr>
-                    </thead>
-                    <tbody id="daily-stats-body">
-                        <tr><td colspan="4" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+
 
 <script>
 
