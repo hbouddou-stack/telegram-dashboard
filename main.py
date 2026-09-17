@@ -1236,7 +1236,7 @@ async def api_admin_gateway_students(request: web.Request):
 
 
 async def api_admin_gateway_ghost_visitors(request: web.Request):
-    """Returns users who started the bot but are not linked to any student record"""
+    """Returns users who started the bot but are not linked to any student record, along with their latest onboarding funnel progress"""
     import aiosqlite
     from config import DATABASE_PATH
     try:
@@ -1248,12 +1248,15 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     u.first_name,
                     u.last_name,
                     u.username,
-                    u.created_at
+                    u.created_at,
+                    (SELECT action_type FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1) as last_action,
+                    (SELECT description FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1) as last_desc,
+                    (SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1) as last_time
                 FROM users u
                 LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
                 WHERE s.telegram_id IS NULL
-                ORDER BY u.created_at DESC
-                LIMIT 200
+                ORDER BY COALESCE((SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1), u.created_at) DESC
+                LIMIT 300
             """) as cur:
                 rows = [dict(r) for r in await cur.fetchall()]
         return web.json_response({'success': True, 'visitors': rows, 'count': len(rows)})
@@ -2091,6 +2094,13 @@ async def api_admin_gateway_action(request: web.Request):
             if action == 'unlink':
                 await db.execute("UPDATE academy_students SET telegram_id = NULL WHERE student_id = ?", (student_id,))
                 await log_student_action(student_id, 'MANUAL_UNLINK', "L'administrateur a dissocié le compte manuellement.")
+                
+            elif action == 'manual_link':
+                telegram_id = data.get('telegram_id')
+                if not telegram_id:
+                    return web.json_response({'success': False, 'error': 'Missing telegram_id'})
+                await db.execute("UPDATE academy_students SET telegram_id = ? WHERE student_id = ?", (telegram_id, student_id))
+                await log_student_action(student_id, 'MANUAL_LINK', f"تم ربط الحساب يدويًا بواسطة المشرف مع تيليجرام ID: {telegram_id}", telegram_id=telegram_id)
                 
             elif action == 'send_email_1' or action == 'send_email_2':
                 # Pour l'instant on utilise le template d'onboarding par défaut (à faire évoluer plus tard si on veut 2 templates différents)
