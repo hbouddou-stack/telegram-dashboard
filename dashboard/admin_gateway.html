@@ -7330,26 +7330,120 @@ function renderHomeAlerts(alerts) {
                 const medals = ['🥇', '🥈', '🥉', '🎖️'];
                 const colors = ['#f59e0b', '#94a3b8', '#cd7f32', '#38bdf8'];
 
-                // Render Top 4 Cards
+                // Calculate the 3 Strategic Time Blocks:
+                // Block 1: 19:00 - 23:00 (Prime-Time / Soirée - 4 heures)
+                // Block 2: 23:00 - 10:00 (Nuit & Réveil - 11 heures)
+                // Block 3: 10:00 - 19:00 (Journée Active - 9 heures)
+
+                const block1Hours = [19, 20, 21, 22];
+                const block2Hours = [23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                const block3Hours = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+
+                const calcBlock = (hours) => {
+                    const res = { total: 0, paid: 0, unpaid: 0, women: 0, men: 0 };
+                    hours.forEach(h => {
+                        const v = hourMap[h] || { total: 0, paid: 0, unpaid: 0, women: 0, men: 0 };
+                        res.total += v.total;
+                        res.paid += v.paid;
+                        res.unpaid += v.unpaid;
+                        res.women += v.women;
+                        res.men += v.men;
+                    });
+                    return res;
+                };
+
+                const b1 = calcBlock(block1Hours);
+                const b2 = calcBlock(block2Hours);
+                const b3 = calcBlock(block3Hours);
+                const grandTotal = Math.max(b1.total + b2.total + b3.total, 1);
+
+                const strategicBlocks = [
+                    {
+                        name: 'فترة الذروة (المساء)',
+                        hours: '19:00 - 23:00',
+                        duration: '4 ساعات',
+                        icon: '🔥',
+                        border: '#f59e0b',
+                        badgeBg: 'rgba(245,158,11,0.15)',
+                        badgeColor: '#f59e0b',
+                        data: b1
+                    },
+                    {
+                        name: 'فترة الهدوء (الليل والصباح الباكر)',
+                        hours: '23:00 - 10:00',
+                        duration: '11 ساعة',
+                        icon: '🌙',
+                        border: '#6366f1',
+                        badgeBg: 'rgba(99,102,241,0.15)',
+                        badgeColor: '#6366f1',
+                        data: b2
+                    },
+                    {
+                        name: 'فترة النهار والعمل',
+                        hours: '10:00 - 19:00',
+                        duration: '9 ساعات',
+                        icon: '☀️',
+                        border: '#0ea5e9',
+                        badgeBg: 'rgba(14,165,233,0.15)',
+                        badgeColor: '#0ea5e9',
+                        data: b3
+                    }
+                ];
+
+                // Render the 3 Strategic Blocks
                 if (top3Container) {
-                    if (slotTotals.length === 0) {
+                    if (filtered.length === 0) {
                         top3Container.innerHTML = '';
                     } else {
-                        let top4Html = '<div style="display:flex; gap:10px; flex-wrap:wrap;">';
-                        slotTotals.slice(0, 4).forEach((slot, idx) => {
-                            // Display LTR hour: 08:00 - 09:00
-                            const hLabel = `${String(slot.h).padStart(2,'0')}:00 - ${String(slot.h+1).padStart(2,'0')}:00`;
-                            const paidPct = slot.total > 0 ? Math.round((slot.paid / slot.total) * 100) : 0;
-                            top4Html += `<div style="background:var(--card); border:1px solid ${colors[idx]}; border-radius:14px; padding:12px 14px; flex:1; min-width:130px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-                                <div style="font-size:1.4rem;">${medals[idx]}</div>
-                                <div style="font-size:0.8rem; font-weight:800; color:${colors[idx]}; margin-top:2px; direction:ltr;" dir="ltr">${hLabel}</div>
-                                <div style="font-size:1.4rem; font-weight:900; color:var(--text1); margin-top:4px;">${slot.total} <span style="font-size:0.7rem; font-weight:600; color:var(--text2);">مسجل</span></div>
-                                <div style="font-size:0.7rem; color:var(--text2); margin-top:4px;">👩 ${slot.women} | 👨 ${slot.men}</div>
-                                <div style="font-size:0.68rem; font-weight:700; color:#16a34a; margin-top:2px;">✅ دفع: ${paidPct}%</div>
+                        let blocksHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-bottom:6px;">';
+                        strategicBlocks.forEach(b => {
+                            const d = b.data;
+                            const sharePct = Math.round((d.total / grandTotal) * 100);
+                            const paidPct  = d.total > 0 ? Math.round((d.paid / d.total) * 100) : 0;
+                            const dominantGender = d.women > d.men ? 'women' : d.men > d.women ? 'men' : 'tie';
+
+                            blocksHtml += `<div style="background:var(--card); border:2px solid ${b.border}; border-radius:16px; padding:14px 16px; box-shadow:0 4px 14px rgba(0,0,0,0.06); display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;">
+                                <div style="position:absolute; top:0; left:0; height:4px; width:${sharePct}%; background:${b.border};"></div>
+                                
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                                    <div>
+                                        <div style="font-size:0.9rem; font-weight:900; color:var(--text1); display:flex; align-items:center; gap:6px;">
+                                            <span>${b.icon}</span> ${b.name}
+                                        </div>
+                                        <div style="font-size:0.75rem; color:${b.badgeColor}; font-weight:800; margin-top:3px; direction:ltr; text-align:right;" dir="ltr">
+                                            ⏰ ${b.hours} <span style="color:var(--text2); font-weight:500; font-size:0.68rem;">(${b.duration})</span>
+                                        </div>
+                                    </div>
+                                    <div style="background:${b.badgeBg}; color:${b.badgeColor}; padding:3px 8px; border-radius:8px; font-size:0.78rem; font-weight:900;">
+                                        ${sharePct}% من الإجمالي
+                                    </div>
+                                </div>
+
+                                <div style="display:flex; align-items:baseline; justify-content:space-between; margin:8px 0 6px;">
+                                    <div style="font-size:1.6rem; font-weight:900; color:var(--text1);">
+                                        ${d.total} <span style="font-size:0.72rem; font-weight:600; color:var(--text2);">مسجل</span>
+                                    </div>
+                                    <div style="text-align:left;">
+                                        <span style="font-size:0.9rem; font-weight:900; color:#16a34a;">✅ ${d.paid}</span>
+                                        <span style="font-size:0.75rem; color:var(--text2); margin:0 3px;">/</span>
+                                        <span style="font-size:0.9rem; font-weight:900; color:#ef4444;">❌ ${d.unpaid}</span>
+                                    </div>
+                                </div>
+
+                                <div style="border-top:1px solid var(--border); padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.72rem;">
+                                    <div style="color:var(--text2);">
+                                        <span style="color:#ec4899; font-weight:${dominantGender==='women'?'800':'500'};">👩 ${d.women}</span>
+                                        <span style="margin:0 4px;">|</span>
+                                        <span style="color:#3b82f6; font-weight:${dominantGender==='men'?'800':'500'};">👨 ${d.men}</span>
+                                    </div>
+                                    <div style="font-weight:800; color:${paidPct>=50?'#16a34a':paidPct>=25?'#f59e0b':'#ef4444'};">
+                                        نسبة الدفع: ${paidPct}%
+                                    </div>
+                                </div>
                             </div>`;
                         });
-                        top4Html += '</div>';
-                        top3Container.innerHTML = top4Html;
+                        blocksHtml += '</div>';
+                        top3Container.innerHTML = blocksHtml;
                     }
                 }
 
