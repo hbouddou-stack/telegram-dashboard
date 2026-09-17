@@ -6725,180 +6725,8 @@ function renderHomeAlerts(alerts) {
 
 </script>
 
-
-
 <script>
-
-        
-        
-        // ===== ARABIC DATE HELPERS =====
-        const _AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر'];
-        function toArabicDate(isoStr) {
-            // isoStr = "2026-09-17"
-            const parts = isoStr.split('-');
-            if (parts.length < 3) return isoStr;
-            const d = parseInt(parts[2], 10);
-            const m = parseInt(parts[1], 10) - 1;
-            const y = parts[0];
-            return `${d} ${_AR_MONTHS[m]} ${y}`;
-        }
-
-        // ===== NORMALIZE DATE TO YYYY-MM-DD =====
-        function normalizeDate(raw) {
-            if (!raw) return null;
-            const s = String(raw).replace('T', ' ').trim();
-            // Already YYYY-MM-DD or YYYY-MM-DD HH:MM
-            if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-                return s.slice(0, 10);
-            }
-            // DD/MM/YYYY or DD/MM/YYYY HH:MM
-            if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
-                const p = s.split(' ')[0].split('/');
-                const d = p[0].padStart(2,'0');
-                const m = p[1].padStart(2,'0');
-                const y = p[2];
-                return `${y}-${m}-${d}`;
-            }
-            // MM/DD/YYYY
-            if (/^\d{1,2}-\d{1,2}-\d{4}/.test(s)) {
-                const p = s.split(' ')[0].split('-');
-                return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
-            }
-            return null;
-        }
-
-        // ===== DAY VIEW STATE =====
-        window._dayViewDates = [];
-        window._dayViewIdx   = 0;
-        window._dayViewMap   = {};
-
-        function openDayView(dateStr) {
-            const panel = document.getElementById('day-view-panel');
-            if (!panel) return;
-            panel.style.display = 'flex';
-            const idx = window._dayViewDates.indexOf(dateStr);
-            window._dayViewIdx = idx >= 0 ? idx : 0;
-            renderDayView();
-        }
-
-        function closeDayView() {
-            const panel = document.getElementById('day-view-panel');
-            if (panel) panel.style.display = 'none';
-        }
-
-        function navigateDay(dir) {
-            window._dayViewIdx = Math.max(0, Math.min(window._dayViewDates.length - 1, window._dayViewIdx + dir));
-            renderDayView();
-        }
-
-        function renderDayView() {
-            const dateStr = window._dayViewDates[window._dayViewIdx];
-            if (!dateStr) return;
-            const titleEl   = document.getElementById('day-view-title');
-            const summaryEl = document.getElementById('day-view-summary');
-            const bodyEl    = document.getElementById('day-view-body');
-            if (!titleEl || !bodyEl) return;
-
-            titleEl.textContent = toArabicDate(dateStr);
-
-            // Get all students for this day
-            const src = typeof allStudents !== 'undefined' ? allStudents : [];
-            const dayStudents = src.filter(s => normalizeDate(s.created_at) === dateStr);
-
-            // Build hour map
-            const hourMap = {};
-            for (let h = 0; h < 24; h++) hourMap[h] = { women: 0, womenPaid: 0, men: 0, menPaid: 0 };
-
-            dayStudents.forEach(s => {
-                const raw = String(s.created_at || '').replace('T', ' ');
-                const timePart = raw.includes(' ') ? raw.split(' ')[1] : '';
-                const hour = timePart ? parseInt(timePart.split(':')[0], 10) : -1;
-                if (hour < 0 || hour > 23) return;
-                const g  = String(s.gender || '').toUpperCase().trim();
-                const ps = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-                const isFemme = g === 'FEMME' || g === 'F';
-                if (isFemme) { hourMap[hour].women++; if(isPaid) hourMap[hour].womenPaid++; }
-                else         { hourMap[hour].men++;   if(isPaid) hourMap[hour].menPaid++;   }
-            });
-
-            const totalDay = dayStudents.length;
-            const paidDay  = dayStudents.filter(s => {
-                const ps = String(s.payment_status||'').toUpperCase().trim();
-                return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-            }).length;
-            summaryEl.textContent = `${totalDay} مسجل — ${paidDay} مسدد — ${totalDay - paidDay} غير مسدد`;
-
-            // Find peak hour
-            const maxH = Math.max(...Object.values(hourMap).map(h => h.women + h.men), 1);
-            const peakHour = Object.entries(hourMap).reduce((best, [h, v]) => {
-                return (v.women + v.men) > (best[1].women + best[1].men) ? [h, v] : best;
-            }, [0, hourMap[0]])[0];
-
-            // Render hour rows - only show hours with activity + 1 buffer around them
-            const activeHours = new Set();
-            for (let h = 0; h < 24; h++) {
-                if (hourMap[h].women + hourMap[h].men > 0) {
-                    activeHours.add(h - 1); activeHours.add(h); activeHours.add(h + 1);
-                }
-            }
-
-            if (totalDay === 0) {
-                bodyEl.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);">لا توجد تسجيلات في هذا اليوم 📭</div>';
-                return;
-            }
-
-            let html = '';
-            // Peak badge
-            html += `<div style="background:linear-gradient(135deg,#f59e0b22,#ef444422); border:1px solid #f59e0b; border-radius:12px; padding:10px 14px; margin-bottom:12px; font-size:0.78rem; font-weight:700; color:var(--text1);">
-                🔥 أكثر فترة نشاطاً: ${String(peakHour).padStart(2,'0')}:00 — ${String(parseInt(peakHour)+1).padStart(2,'0')}:00 (${hourMap[peakHour].women + hourMap[peakHour].men} مسجل)
-            </div>`;
-
-            html += `<table style="width:100%; border-collapse:collapse; font-size:0.78rem;">
-                <thead>
-                    <tr style="background:rgba(10,132,255,0.07); color:var(--text2); font-weight:700; text-align:center;">
-                        <th style="padding:8px 6px; text-align:right;">🕐 الساعة</th>
-                        <th style="padding:8px 4px; color:#ec4899;">♀ كل</th>
-                        <th style="padding:8px 4px; color:#16a34a; font-size:0.65rem;">♀✅</th>
-                        <th style="padding:8px 4px; color:#3b82f6;">♂ كل</th>
-                        <th style="padding:8px 4px; color:#16a34a; font-size:0.65rem;">♂✅</th>
-                        <th style="padding:8px 8px;">📊</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-            for (let h = 0; h < 24; h++) {
-                const hv = hourMap[h];
-                const tot = hv.women + hv.men;
-                if (tot === 0 && !activeHours.has(h)) continue;
-                const isPeak = parseInt(peakHour) === h;
-                const barW   = tot > 0 ? Math.round((tot / maxH) * 100) : 0;
-                const rowBg  = isPeak ? 'background:rgba(245,158,11,0.12);' : (tot === 0 ? 'opacity:0.35;' : '');
-                const hLabel = `${String(h).padStart(2,'0')}:00 — ${String(h+1).padStart(2,'0')}:00`;
-                html += `<tr style="border-bottom:1px solid var(--border); ${rowBg}">
-                    <td style="padding:8px 8px; font-weight:${tot>0?'700':'400'}; white-space:nowrap; color:var(--text1);">${isPeak?'🔥':''} ${hLabel}</td>
-                    <td style="padding:8px 4px; text-align:center; color:#ec4899; font-weight:${hv.women>0?'700':'400'};">${hv.women||'—'}</td>
-                    <td style="padding:8px 4px; text-align:center; color:#16a34a; font-size:0.7rem;">${hv.womenPaid||''}</td>
-                    <td style="padding:8px 4px; text-align:center; color:#3b82f6; font-weight:${hv.men>0?'700':'400'};">${hv.men||'—'}</td>
-                    <td style="padding:8px 4px; text-align:center; color:#16a34a; font-size:0.7rem;">${hv.menPaid||''}</td>
-                    <td style="padding:8px 8px; min-width:80px;">
-                        <div style="display:flex; align-items:center; gap:4px;">
-                            <div style="flex:1; height:5px; background:var(--border); border-radius:3px; overflow:hidden;">
-                                <div style="height:100%; width:${barW}%; background:${isPeak?'#f59e0b':tot>0?'var(--accent2)':'transparent'}; border-radius:3px;"></div>
-                            </div>
-                            <span style="font-size:0.68rem; font-weight:700; color:var(--text1); min-width:14px;">${tot||''}</span>
-                        </div>
-                    </td>
-                </tr>`;
-            }
-
-            html += '</tbody></table>';
-            bodyEl.innerHTML = html;
-        }
-
-
-        
-        // ===== ARABIC HELPERS =====
+// ===== ARABIC HELPERS =====
         const _AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر'];
         const _AR_DAYS   = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 
@@ -7074,6 +6902,29 @@ function renderHomeAlerts(alerts) {
 
         // ===== STATS DASHBOARD =====
         function loadStats(days, el) {
+            // If data not loaded yet, fetch then retry
+            const src = typeof allStudents !== 'undefined' ? allStudents : [];
+            if (src.length === 0) {
+                const chartArea = document.getElementById('daily-chart-area');
+                const tbody = document.getElementById('daily-stats-body');
+                if (chartArea) chartArea.innerHTML = '<div style="color:var(--text2); font-size:0.85rem; margin:auto;">⏳ جاري جلب البيانات...</div>';
+                fetch('/api/admin/gateway/students?t=' + Date.now())
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.students) {
+                            allStudents = data.students;
+                        }
+                        _doLoadStats(days, el);
+                    })
+                    .catch(err => {
+                        if (chartArea) chartArea.innerHTML = '<div style="color:red; padding:20px;">خطأ في جلب البيانات: ' + err.message + '</div>';
+                    });
+                return;
+            }
+            _doLoadStats(days, el);
+        }
+
+        function _doLoadStats(days, el) {
             try {
                 document.querySelectorAll('[id^="stats-"]').forEach(e => e.classList.remove('pill-active'));
                 if (el) el.classList.add('pill-active');
@@ -7088,6 +6939,7 @@ function renderHomeAlerts(alerts) {
                 if (days === 0) {
                     filtered = src;
                 } else {
+
                     const now = new Date();
                     const cutoff = new Date(now);
                     cutoff.setDate(cutoff.getDate() - (days - 1));
