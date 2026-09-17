@@ -1311,9 +1311,6 @@
                 </div>
             </div>
 
-            <!-- DEBUG - remove after fix -->
-            <div id="stats-debug" style="background:#1e293b; color:#94a3b8; font-family:monospace; font-size:0.65rem; padding:10px; border-radius:8px; margin-bottom:12px; word-break:break-all;"></div>
-            <!-- END DEBUG -->
             <!-- KPI Cards -->
             <div id="stats-kpi-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
                 <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
@@ -2385,7 +2382,15 @@
             if(id === 'logs') fetchGlobalLogs();
             if(id === 'settings') loadGeneralSettings();
             if(id === 'ghosts') loadGhostVisitors();
-            if(id === 'stats') loadStats(30, document.getElementById('stats-30'));
+            if(id === 'stats') {
+                const _doLoadStats = () => loadStats(30, document.getElementById('stats-30'));
+                if (typeof allStudents === 'undefined' || allStudents.length === 0) {
+                    // Data not loaded yet - fetch first
+                    fetchStudents().then(_doLoadStats).catch(_doLoadStats);
+                } else {
+                    _doLoadStats();
+                }
+            }
         }
 
         // ============ FILTER TRIGGERS ============
@@ -6708,16 +6713,10 @@ function renderHomeAlerts(alerts) {
                 document.querySelectorAll('[id^="stats-"]').forEach(e => e.classList.remove('pill-active'));
                 if (el) el.classList.add('pill-active');
 
-                const students = window.allStudents || [];
+                const students = (typeof allStudents !== 'undefined' ? allStudents : []);
                 const chartArea = document.getElementById('daily-chart-area');
                 
-                // === DEBUG BLOCK - show raw created_at ===
-                const debugEl = document.getElementById('stats-debug');
-                if (debugEl) {
-                    const sample = students.slice(0, 5).map(s => JSON.stringify({ca: s.created_at, ps: s.payment_status, g: s.gender}));
-                    debugEl.innerHTML = '<b>Total allStudents: ' + students.length + '</b><br>' + sample.join('<br>');
-                }
-                // === END DEBUG ===
+
                 const tbody    = document.getElementById('daily-stats-body');
                 if (!chartArea || !tbody) return;
 
@@ -7588,7 +7587,7 @@ window.saveQeModal = function() {
     
     const adminName = localStorage.getItem('adminName') || 'Admin';
     let promises = window.qeTargetIds.map(sid => {
-        const s = window.allStudents.find(x => String(x.student_id) === String(sid));
+        const s = (typeof allStudents !== 'undefined' ? allStudents : []).find(x => String(x.student_id) === String(sid));
         if(!s) return Promise.resolve();
         
         return fetch('/api/admin/gateway/add_crm_note', {
