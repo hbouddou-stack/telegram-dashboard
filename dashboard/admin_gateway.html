@@ -1299,29 +1299,89 @@
     
     <!-- TAB: إحصاء -->
     <div id="tab-stats" class="tab-content">
-        <div style="padding:16px 12px;">
-            <h2 style="margin:0 0 16px; font-size:1.1rem; font-weight:800; color:var(--text1);">📈 الإحصائيات اليومية</h2>
-            <div style="display:flex; gap:0; margin-bottom:16px; border-radius:12px; overflow:hidden; border:1px solid var(--border); width:fit-content;">
-                <div class="pill-btn pill-active" id="stats-7" onclick="loadDailyStats(7, this)" style="padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">7 أيام</div>
-                <div class="pill-btn" id="stats-30" onclick="loadDailyStats(30, this)" style="padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer;">30 يوم</div>
+        <div style="padding:12px 12px 80px;">
+            <!-- Period Selector -->
+            <div style="display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+                <span style="font-size:0.8rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
+                <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border);">
+                    <div class="pill-btn pill-active" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">7 أيام</div>
+                    <div class="pill-btn"            id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
+                    <div class="pill-btn"            id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
+                    <div class="pill-btn"            id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">الكل</div>
+                </div>
             </div>
-            <div id="daily-chart-area" style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px; min-height:160px; display:flex; align-items:flex-end; gap:6px; overflow-x:auto;">
-                <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+
+            <!-- KPI Cards -->
+            <div id="stats-kpi-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">👥 إجمالي المسجلين</div>
+                    <div id="kpi-total" style="font-size:1.6rem; font-weight:900; color:var(--text1);">—</div>
+                </div>
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">✅ معدل الدفع</div>
+                    <div id="kpi-paid-pct" style="font-size:1.6rem; font-weight:900; color:#16a34a;">—</div>
+                    <div style="height:4px; border-radius:4px; background:var(--border); margin-top:6px; overflow:hidden;">
+                        <div id="kpi-paid-bar" style="height:100%; background:#16a34a; width:0%; border-radius:4px; transition:width 0.6s;"></div>
+                    </div>
+                </div>
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">👩 نساء / 👨 رجال</div>
+                    <div style="display:flex; align-items:baseline; gap:6px; margin-top:4px;">
+                        <span id="kpi-women" style="font-size:1.4rem; font-weight:900; color:#ec4899;">—</span>
+                        <span style="font-size:0.7rem; color:var(--text2);">vs</span>
+                        <span id="kpi-men" style="font-size:1.4rem; font-weight:900; color:#3b82f6;">—</span>
+                    </div>
+                    <div style="height:4px; border-radius:4px; background:var(--border); margin-top:6px; overflow:hidden; display:flex;">
+                        <div id="kpi-women-bar" style="height:100%; background:#ec4899; width:50%; transition:width 0.6s;"></div>
+                        <div id="kpi-men-bar"   style="height:100%; background:#3b82f6; width:50%; transition:width 0.6s;"></div>
+                    </div>
+                </div>
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">🔴 غير مسددين</div>
+                    <div style="display:flex; align-items:baseline; gap:6px;">
+                        <span id="kpi-unpaid" style="font-size:1.6rem; font-weight:900; color:#ef4444;">—</span>
+                        <span id="kpi-unpaid-pct" style="font-size:0.8rem; color:var(--text2);"></span>
+                    </div>
+                </div>
             </div>
+
+            <!-- Stacked Bar Chart -->
+            <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
+                <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>📊 تطور التسجيلات</span>
+                    <div style="display:flex; gap:10px; font-size:0.7rem; font-weight:600;">
+                        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#16a34a;display:inline-block;"></span> مسدد</span>
+                        <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span> غير مسدد</span>
+                    </div>
+                </div>
+                <div id="daily-chart-area" style="min-height:130px; display:flex; align-items:flex-end; gap:4px; overflow-x:auto; padding-bottom:4px;">
+                    <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+                </div>
+            </div>
+
+            <!-- Detailed Table -->
             <div style="background:var(--card); border-radius:16px; overflow:hidden;">
-                <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.82rem;">
-                    <thead>
-                        <tr style="background:rgba(10,132,255,0.08); text-align:right;">
-                            <th style="padding:10px 12px; color:var(--text2); font-weight:700;">📅 التاريخ</th>
-                            <th style="padding:10px 12px; color:var(--text2); font-weight:700;">👥 مسجلون</th>
-                            <th style="padding:10px 12px; color:#16a34a; font-weight:700;">🟢 مسددون</th>
-                            <th style="padding:10px 12px; color:#ef4444; font-weight:700;">🔴 غير مسددين</th>
-                        </tr>
-                    </thead>
-                    <tbody id="daily-stats-body">
-                        <tr><td colspan="4" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
+                <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
+                    📋 التفاصيل اليومية
+                </div>
+                <div style="overflow-x:auto;">
+                    <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                        <thead>
+                            <tr style="background:rgba(10,132,255,0.06); text-align:center; color:var(--text2); font-weight:700;">
+                                <th style="padding:10px 8px; text-align:right;">📅 التاريخ</th>
+                                <th style="padding:10px 8px;">👥 المجموع</th>
+                                <th style="padding:10px 8px; color:#16a34a;">✅ مسدد</th>
+                                <th style="padding:10px 8px; color:#ef4444;">❌ غير مسدد</th>
+                                <th style="padding:10px 8px; color:#ec4899;">👩 نساء</th>
+                                <th style="padding:10px 8px; color:#3b82f6;">👨 رجال</th>
+                                <th style="padding:10px 8px;">📈 نسبة الدفع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daily-stats-body">
+                            <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -2322,7 +2382,7 @@
             if(id === 'logs') fetchGlobalLogs();
             if(id === 'settings') loadGeneralSettings();
             if(id === 'ghosts') loadGhostVisitors();
-            if(id === 'stats') loadDailyStats(7, document.getElementById('stats-7'));
+            if(id === 'stats') loadStats(30, document.getElementById('stats-30'));
         }
 
         // ============ FILTER TRIGGERS ============
@@ -6637,66 +6697,164 @@ function renderHomeAlerts(alerts) {
 
 <script>
 
-        // ===== DAILY STATS =====
         
-        
-        function loadDailyStats(days, el) {
+        // ===== STATS DASHBOARD =====
+        function loadStats(days, el) {
             try {
-                if(typeof _activatePill === 'function') _activatePill('stats-', el);
+                // Activate pill
+                document.querySelectorAll('[id^="stats-"]').forEach(e => e.classList.remove('pill-active'));
+                if (el) el.classList.add('pill-active');
+
+                const students = window.allStudents || [];
                 const chartArea = document.getElementById('daily-chart-area');
-                const tbody = document.getElementById('daily-stats-body');
+                const tbody    = document.getElementById('daily-stats-body');
                 if (!chartArea || !tbody) return;
 
-                const now = new Date();
-                const rows = [];
-                for (let i = days - 1; i >= 0; i--) {
-                    const d = new Date(now);
-                    d.setDate(d.getDate() - i);
+                // ---- Build date range ----
+                // Use LOCAL date (not UTC) to avoid 1-day shift
+                function localDateStr(d) {
                     const y = d.getFullYear();
                     const m = String(d.getMonth() + 1).padStart(2, '0');
                     const day = String(d.getDate()).padStart(2, '0');
-                    const dISO = `${y}-${m}-${day}`; // 2026-09-17
-                    const dFR = `${day}/${m}/${y}`; // 17/09/2026
-
-                    const dayStudents = (window.allStudents || []).filter(s => {
-                        if(!s.created_at) return false;
-                        const c = String(s.created_at);
-                        return c.startsWith(dISO) || c.startsWith(dFR);
-                    });
-                    
-                    const paidCount = dayStudents.filter(s => {
-                        const ps = String(s.payment_status||'').toUpperCase().trim();
-                        return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-                    }).length;
-                    rows.push({ date: dISO, total: dayStudents.length, paid: paidCount, unpaid: dayStudents.length - paidCount });
+                    return `${y}-${m}-${day}`;
                 }
 
-                const maxVal = Math.max(...rows.map(r => r.total), 1);
-                chartArea.innerHTML = rows.map(r => {
-                    const h = Math.max(4, Math.round((r.total / maxVal) * 120));
-                    const dateLabel = r.date.slice(5);
-                    const paidPct = r.total > 0 ? Math.round((r.paid/r.total)*100) : 0;
-                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:3px; min-width:36px; flex:1;">
-                        <span style="font-size:0.65rem; font-weight:800; color:var(--accent2);">${r.total > 0 ? r.total : ''}</span>
-                        <div style="width:100%; background:linear-gradient(180deg, var(--accent2), #60a5fa); border-radius:6px 6px 0 0; height:${h}px; position:relative; min-height:4px;" title="${r.date}: ${r.total} inscrits (${paidPct}% payés)">
-                            <div style="position:absolute; bottom:0; width:100%; background:#16a34a; border-radius:0 0 6px 6px; height:${Math.round(h * r.paid / Math.max(r.total,1))}px;"></div>
-                        </div>
-                        <span style="font-size:0.6rem; color:var(--text2); white-space:nowrap;">${dateLabel}</span>
-                    </div>`;
-                }).join('');
+                const now = new Date();
+                let filtered;
 
-                tbody.innerHTML = rows.slice().reverse().map(r => {
-                    return `<tr style="border-bottom:1px solid var(--border);">
-                        <td style="padding:12px; font-weight:700;">${r.date}</td>
-                        <td style="padding:12px; font-weight:bold;">${r.total}</td>
-                        <td style="padding:12px; color:#16a34a; font-weight:bold;">${r.paid}</td>
-                        <td style="padding:12px; color:#ef4444; font-weight:bold;">${r.unpaid}</td>
-                    </tr>`;
-                }).join('');
+                if (days === 0) {
+                    // ALL: group all students by date
+                    filtered = students;
+                } else {
+                    const cutoff = new Date(now);
+                    cutoff.setDate(cutoff.getDate() - (days - 1));
+                    cutoff.setHours(0, 0, 0, 0);
+                    filtered = students.filter(s => {
+                        if (!s.created_at) return false;
+                        // Parse: "2026-09-12 9:56" or "2026-09-12T09:56"
+                        const raw = String(s.created_at).replace('T', ' ');
+                        // Build date from parts to stay in local time
+                        const parts = raw.split(' ')[0].split('-');
+                        if (parts.length < 3) return false;
+                        const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+                        return d >= cutoff;
+                    });
+                }
+
+                // ---- Group by date ----
+                const dayMap = {};
+                filtered.forEach(s => {
+                    if (!s.created_at) return;
+                    const raw = String(s.created_at).replace('T', ' ');
+                    const dateKey = raw.split(' ')[0]; // "2026-09-12"
+                    if (!dayMap[dateKey]) dayMap[dateKey] = { total:0, paid:0, unpaid:0, women:0, men:0 };
+                    dayMap[dateKey].total++;
+                    const ps = String(s.payment_status || '').toUpperCase().trim();
+                    if (ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد') {
+                        dayMap[dateKey].paid++;
+                    } else {
+                        dayMap[dateKey].unpaid++;
+                    }
+                    const g = String(s.gender || '').toUpperCase().trim();
+                    if (g === 'FEMME' || g === 'F' || g === 'أنثى') {
+                        dayMap[dateKey].women++;
+                    } else if (g === 'HOMME' || g === 'M' || g === 'ذكر') {
+                        dayMap[dateKey].men++;
+                    }
+                });
+
+                // Sort dates descending for table, ascending for chart
+                const sortedDates = Object.keys(dayMap).sort();
+
+                // ---- KPI Cards ----
+                const totalCount  = filtered.length;
+                const paidCount   = filtered.filter(s => {
+                    const ps = String(s.payment_status||'').toUpperCase().trim();
+                    return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
+                }).length;
+                const unpaidCount = totalCount - paidCount;
+                const womenCount  = filtered.filter(s => {
+                    const g = String(s.gender||'').toUpperCase().trim();
+                    return g === 'FEMME' || g === 'F' || g === 'أنثى';
+                }).length;
+                const menCount    = filtered.filter(s => {
+                    const g = String(s.gender||'').toUpperCase().trim();
+                    return g === 'HOMME' || g === 'M' || g === 'ذكر';
+                }).length;
+                const paidPct = totalCount > 0 ? Math.round((paidCount/totalCount)*100) : 0;
+                const womenPct= (womenCount + menCount) > 0 ? Math.round((womenCount/(womenCount+menCount))*100) : 50;
+
+                document.getElementById('kpi-total').textContent = totalCount;
+                document.getElementById('kpi-paid-pct').textContent = paidPct + '%';
+                document.getElementById('kpi-paid-bar').style.width = paidPct + '%';
+                document.getElementById('kpi-women').textContent = womenCount + ' ♀';
+                document.getElementById('kpi-men').textContent   = menCount + ' ♂';
+                document.getElementById('kpi-women-bar').style.width = womenPct + '%';
+                document.getElementById('kpi-men-bar').style.width   = (100 - womenPct) + '%';
+                document.getElementById('kpi-unpaid').textContent = unpaidCount;
+                document.getElementById('kpi-unpaid-pct').textContent = totalCount > 0 ? '(' + Math.round((unpaidCount/totalCount)*100) + '%)' : '';
+
+                // ---- Stacked Bar Chart ----
+                const maxVal = Math.max(...sortedDates.map(d => dayMap[d].total), 1);
+                if (sortedDates.length === 0) {
+                    chartArea.innerHTML = '<div style="color:var(--text2); font-size:0.85rem; margin:auto; text-align:center;">لا توجد بيانات في هذه الفترة 📭</div>';
+                } else {
+                    chartArea.innerHTML = sortedDates.map(dateKey => {
+                        const r = dayMap[dateKey];
+                        const totalH = Math.max(6, Math.round((r.total / maxVal) * 120));
+                        const paidH  = Math.round(totalH * r.paid  / Math.max(r.total, 1));
+                        const unpaidH= totalH - paidH;
+                        const label  = dateKey.slice(5); // "09-12"
+                        return `<div style="display:flex; flex-direction:column; align-items:center; gap:2px; min-width:32px; flex:1; cursor:pointer;" title="${dateKey}: ${r.total} inscrits | ${r.paid} payés | ${r.unpaid} non payés">
+                            <span style="font-size:0.6rem; font-weight:800; color:var(--accent2);">${r.total > 0 ? r.total : ''}</span>
+                            <div style="width:100%; display:flex; flex-direction:column; border-radius:5px 5px 0 0; overflow:hidden;">
+                                <div style="width:100%; background:#ef4444; height:${unpaidH}px; min-height:${r.unpaid > 0 ? 2 : 0}px;"></div>
+                                <div style="width:100%; background:#16a34a; height:${paidH}px;   min-height:${r.paid   > 0 ? 2 : 0}px;"></div>
+                            </div>
+                            <span style="font-size:0.55rem; color:var(--text2); white-space:nowrap; transform:rotate(-45deg); display:block; margin-top:2px;">${label}</span>
+                        </div>`;
+                    }).join('');
+                }
+
+                // ---- Detailed Table ----
+                if (sortedDates.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">لا توجد بيانات 📭</td></tr>';
+                } else {
+                    tbody.innerHTML = [...sortedDates].reverse().map((dateKey, idx) => {
+                        const r = dayMap[dateKey];
+                        const pct = r.total > 0 ? Math.round((r.paid/r.total)*100) : 0;
+                        const bg = idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)';
+                        const barColor = pct >= 50 ? '#16a34a' : pct >= 20 ? '#f59e0b' : '#ef4444';
+                        return `<tr style="border-bottom:1px solid var(--border); background:${bg};">
+                            <td style="padding:10px 12px; font-weight:700; white-space:nowrap; text-align:right;">${dateKey}</td>
+                            <td style="padding:10px 8px; text-align:center; font-weight:800; color:var(--accent2);">${r.total}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#16a34a; font-weight:700;">${r.paid}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#ef4444; font-weight:700;">${r.unpaid}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#ec4899;">${r.women}</td>
+                            <td style="padding:10px 8px; text-align:center; color:#3b82f6;">${r.men}</td>
+                            <td style="padding:10px 14px; min-width:90px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <div style="flex:1; height:5px; border-radius:4px; background:var(--border); overflow:hidden;">
+                                        <div style="height:100%; width:${pct}%; background:${barColor}; border-radius:4px;"></div>
+                                    </div>
+                                    <span style="font-size:0.7rem; font-weight:700; color:${barColor}; min-width:28px;">${pct}%</span>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                }
             } catch(e) {
                 const chartArea = document.getElementById('daily-chart-area');
-                if(chartArea) chartArea.innerHTML = '<div style="color:red;font-size:1rem;padding:20px;">Erreur JS: ' + e.message + '</div>';
+                if(chartArea) chartArea.innerHTML = '<div style="color:red; padding:20px;">Erreur: ' + e.message + '</div>';
+                console.error('loadStats error:', e);
             }
+        }
+
+        // Backward compat alias
+        function loadDailyStats(days, el) {
+            // Map old pill ids to new function
+            const newEl = document.getElementById('stats-' + days) || el;
+            loadStats(days === 7 ? 7 : days, newEl);
         }
 
 </script>
