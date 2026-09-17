@@ -2672,6 +2672,10 @@
 
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
                     filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                    // Auto-refresh stats tab if it's currently active
+                    if (document.getElementById('tab-stats') && document.getElementById('tab-stats').classList.contains('active')) {
+                        loadStats(30, document.getElementById('stats-30'));
+                    }
                 }
             } catch(e) { console.error(e); }
         }
