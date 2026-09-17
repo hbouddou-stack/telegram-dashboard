@@ -6838,6 +6838,34 @@ function renderHomeAlerts(alerts) {
             renderDayView();
         }
 
+        
+        // ===== HELPER: RANK SLOTS WITH PROXIMITY TIE-BREAKER =====
+        function rankSlotsWithProximity(hourMap, maxSlots = 4) {
+            const items = Object.entries(hourMap)
+                .map(([h, v]) => ({ h: parseInt(h), ...v }))
+                .filter(x => x.total > 0);
+            
+            const picked = [];
+            while (items.length > 0) {
+                items.sort((a, b) => {
+                    // 1. Primary: higher total
+                    if (b.total !== a.total) {
+                        return b.total - a.total;
+                    }
+                    // 2. Secondary (Tie-breaker): closeness to already picked top slots (clustering)
+                    if (picked.length > 0) {
+                        const distA = Math.min(...picked.map(p => Math.min(Math.abs(a.h - p.h), 24 - Math.abs(a.h - p.h))));
+                        const distB = Math.min(...picked.map(p => Math.min(Math.abs(b.h - p.h), 24 - Math.abs(b.h - p.h))));
+                        if (distA !== distB) return distA - distB; // smaller distance is closer
+                    }
+                    // 3. Tertiary: prefer evening / later hours over morning in case of full tie
+                    return b.h - a.h;
+                });
+                picked.push(items.shift());
+            }
+            return picked;
+        }
+
         function renderDayView() {
             const dateStr   = window._dayViewDates[window._dayViewIdx];
             if (!dateStr) return;
@@ -6880,11 +6908,8 @@ function renderHomeAlerts(alerts) {
                 return;
             }
 
-            // Find TOP 3 slots
-            const slotTotals = Object.entries(hourMap)
-                .map(([h, v]) => ({ h: parseInt(h), total: v.women + v.men }))
-                .filter(x => x.total > 0)
-                .sort((a, b) => b.total - a.total);
+            // Rank slots with intelligent clustering tie-breaker
+            const slotTotals = rankSlotsWithProximity(hourMap, 4);
             const top3Hours = new Set(slotTotals.slice(0, 4).map(x => x.h));
             const top1Hour  = slotTotals[0]?.h;
 
@@ -7298,11 +7323,8 @@ function renderHomeAlerts(alerts) {
                     if (isFemme) hourMap[hour].women++; else hourMap[hour].men++;
                 });
 
-                // Calculate Top 4 peak slots
-                const slotTotals = Object.entries(hourMap)
-                    .map(([h, v]) => ({ h: parseInt(h), ...v }))
-                    .filter(x => x.total > 0)
-                    .sort((a, b) => b.total - a.total);
+                // Rank slots with intelligent clustering tie-breaker
+                const slotTotals = rankSlotsWithProximity(hourMap, 4);
 
                 const maxH = Math.max(...Object.values(hourMap).map(v => v.total), 1);
                 const medals = ['🥇', '🥈', '🥉', '🎖️'];
