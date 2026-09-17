@@ -1299,13 +1299,13 @@
     
     <!-- TAB: إحصاء -->
     <div id="tab-stats" class="tab-content">
-        <div style="padding:12px 12px 80px;">
+        <div style="padding:12px 12px 100px;">
             <!-- Period Selector -->
             <div style="display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
-                <span style="font-size:0.8rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
+                <span style="font-size:0.78rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
                 <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border);">
-                    <div class="pill-btn pill-active" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">7 أيام</div>
-                    <div class="pill-btn"            id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
+                    <div class="pill-btn" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">7 أيام</div>
+                    <div class="pill-btn pill-active" id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
                     <div class="pill-btn"            id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
                     <div class="pill-btn"            id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">الكل</div>
                 </div>
@@ -1347,42 +1347,67 @@
 
             <!-- Stacked Bar Chart -->
             <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>📊 تطور التسجيلات</span>
+                <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <span>📊 تطور التسجيلات <span style="font-size:0.65rem; color:var(--text2); font-weight:500;">(انقر على يوم للتفاصيل)</span></span>
                     <div style="display:flex; gap:10px; font-size:0.7rem; font-weight:600;">
                         <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#16a34a;display:inline-block;"></span> مسدد</span>
                         <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span> غير مسدد</span>
                     </div>
                 </div>
-                <div id="daily-chart-area" style="min-height:130px; display:flex; align-items:flex-end; gap:4px; overflow-x:auto; padding-bottom:4px;">
+                <div id="daily-chart-area" style="min-height:140px; display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:24px;">
                     <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
                 </div>
             </div>
 
             <!-- Detailed Table -->
-            <div style="background:var(--card); border-radius:16px; overflow:hidden;">
-                <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
-                    📋 التفاصيل اليومية
+            <div style="background:var(--card); border-radius:16px; overflow:hidden; margin-bottom:12px;">
+                <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                    <span>📋 التفاصيل اليومية</span>
+                    <span style="font-size:0.65rem; color:var(--text2); font-weight:400;">اسحب يساراً لرؤية كل الأعمدة</span>
                 </div>
                 <div style="overflow-x:auto;">
-                    <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                    <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.75rem; min-width:620px;">
                         <thead>
-                            <tr style="background:rgba(10,132,255,0.06); text-align:center; color:var(--text2); font-weight:700;">
-                                <th style="padding:10px 8px; text-align:right;">📅 التاريخ</th>
-                                <th style="padding:10px 8px;">👥 المجموع</th>
-                                <th style="padding:10px 8px; color:#16a34a;">✅ مسدد</th>
-                                <th style="padding:10px 8px; color:#ef4444;">❌ غير مسدد</th>
-                                <th style="padding:10px 8px; color:#ec4899;">👩 نساء</th>
-                                <th style="padding:10px 8px; color:#3b82f6;">👨 رجال</th>
-                                <th style="padding:10px 8px;">📈 نسبة الدفع</th>
+                            <tr style="background:rgba(10,132,255,0.07); text-align:center; color:var(--text2); font-weight:700; position:sticky; top:0;">
+                                <th style="padding:9px 10px; text-align:right; white-space:nowrap;">📅 التاريخ</th>
+                                <th style="padding:9px 6px;">👥 الكل</th>
+                                <th style="padding:9px 6px; color:#16a34a; border-left:1px solid var(--border);">✅ م</th>
+                                <th style="padding:9px 6px; color:#ef4444;">❌ غ.م</th>
+                                <th style="padding:9px 6px; color:#ec4899; border-left:1px solid var(--border);">♀ كل</th>
+                                <th style="padding:9px 6px; color:#16a34a; font-size:0.65rem;">♀✅</th>
+                                <th style="padding:9px 6px; color:#ef4444; font-size:0.65rem;">♀❌</th>
+                                <th style="padding:9px 6px; color:#3b82f6; border-left:1px solid var(--border);">♂ كل</th>
+                                <th style="padding:9px 6px; color:#16a34a; font-size:0.65rem;">♂✅</th>
+                                <th style="padding:9px 6px; color:#ef4444; font-size:0.65rem;">♂❌</th>
+                                <th style="padding:9px 10px; border-left:1px solid var(--border);">📈 نسبة</th>
                             </tr>
                         </thead>
                         <tbody id="daily-stats-body">
-                            <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                            <tr><td colspan="11" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
                         </tbody>
+                        <tfoot id="daily-stats-foot" style="display:none;">
+                        </tfoot>
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- DAY VIEW PANEL (slides up from bottom) -->
+        <div id="day-view-panel" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:500; background:var(--bg); border-top:2px solid var(--accent); border-radius:20px 20px 0 0; max-height:80vh; overflow:hidden; box-shadow:0 -8px 30px rgba(0,0,0,0.3); flex-direction:column;">
+            <!-- Header -->
+            <div style="flex-shrink:0; background:var(--card); padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border);">
+                <button onclick="navigateDay(-1)" style="background:var(--surface); border:1px solid var(--border); color:var(--text1); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:1rem; font-weight:700;">◀</button>
+                <div style="text-align:center;">
+                    <div id="day-view-title" style="font-size:1rem; font-weight:900; color:var(--text1);"></div>
+                    <div id="day-view-summary" style="font-size:0.72rem; color:var(--text2); margin-top:2px;"></div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button onclick="navigateDay(1)" style="background:var(--surface); border:1px solid var(--border); color:var(--text1); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:1rem; font-weight:700;">▶</button>
+                    <button onclick="closeDayView()" style="background:#ef4444; border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:700;">✕</button>
+                </div>
+            </div>
+            <!-- Scrollable body -->
+            <div id="day-view-body" style="flex:1; overflow-y:auto; padding:12px;"></div>
         </div>
     </div>
 
@@ -6706,93 +6731,237 @@ function renderHomeAlerts(alerts) {
 <script>
 
         
-        // ===== STATS DASHBOARD =====
+        
+        // ===== ARABIC DATE HELPERS =====
+        const _AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر'];
+        function toArabicDate(isoStr) {
+            // isoStr = "2026-09-17"
+            const parts = isoStr.split('-');
+            if (parts.length < 3) return isoStr;
+            const d = parseInt(parts[2], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const y = parts[0];
+            return `${d} ${_AR_MONTHS[m]} ${y}`;
+        }
+
+        // ===== NORMALIZE DATE TO YYYY-MM-DD =====
+        function normalizeDate(raw) {
+            if (!raw) return null;
+            const s = String(raw).replace('T', ' ').trim();
+            // Already YYYY-MM-DD or YYYY-MM-DD HH:MM
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+                return s.slice(0, 10);
+            }
+            // DD/MM/YYYY or DD/MM/YYYY HH:MM
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
+                const p = s.split(' ')[0].split('/');
+                const d = p[0].padStart(2,'0');
+                const m = p[1].padStart(2,'0');
+                const y = p[2];
+                return `${y}-${m}-${d}`;
+            }
+            // MM/DD/YYYY
+            if (/^\d{1,2}-\d{1,2}-\d{4}/.test(s)) {
+                const p = s.split(' ')[0].split('-');
+                return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
+            }
+            return null;
+        }
+
+        // ===== DAY VIEW STATE =====
+        window._dayViewDates = [];
+        window._dayViewIdx   = 0;
+        window._dayViewMap   = {};
+
+        function openDayView(dateStr) {
+            const panel = document.getElementById('day-view-panel');
+            if (!panel) return;
+            panel.style.display = 'flex';
+            const idx = window._dayViewDates.indexOf(dateStr);
+            window._dayViewIdx = idx >= 0 ? idx : 0;
+            renderDayView();
+        }
+
+        function closeDayView() {
+            const panel = document.getElementById('day-view-panel');
+            if (panel) panel.style.display = 'none';
+        }
+
+        function navigateDay(dir) {
+            window._dayViewIdx = Math.max(0, Math.min(window._dayViewDates.length - 1, window._dayViewIdx + dir));
+            renderDayView();
+        }
+
+        function renderDayView() {
+            const dateStr = window._dayViewDates[window._dayViewIdx];
+            if (!dateStr) return;
+            const titleEl   = document.getElementById('day-view-title');
+            const summaryEl = document.getElementById('day-view-summary');
+            const bodyEl    = document.getElementById('day-view-body');
+            if (!titleEl || !bodyEl) return;
+
+            titleEl.textContent = toArabicDate(dateStr);
+
+            // Get all students for this day
+            const src = typeof allStudents !== 'undefined' ? allStudents : [];
+            const dayStudents = src.filter(s => normalizeDate(s.created_at) === dateStr);
+
+            // Build hour map
+            const hourMap = {};
+            for (let h = 0; h < 24; h++) hourMap[h] = { women: 0, womenPaid: 0, men: 0, menPaid: 0 };
+
+            dayStudents.forEach(s => {
+                const raw = String(s.created_at || '').replace('T', ' ');
+                const timePart = raw.includes(' ') ? raw.split(' ')[1] : '';
+                const hour = timePart ? parseInt(timePart.split(':')[0], 10) : -1;
+                if (hour < 0 || hour > 23) return;
+                const g  = String(s.gender || '').toUpperCase().trim();
+                const ps = String(s.payment_status || '').toUpperCase().trim();
+                const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
+                const isFemme = g === 'FEMME' || g === 'F';
+                if (isFemme) { hourMap[hour].women++; if(isPaid) hourMap[hour].womenPaid++; }
+                else         { hourMap[hour].men++;   if(isPaid) hourMap[hour].menPaid++;   }
+            });
+
+            const totalDay = dayStudents.length;
+            const paidDay  = dayStudents.filter(s => {
+                const ps = String(s.payment_status||'').toUpperCase().trim();
+                return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
+            }).length;
+            summaryEl.textContent = `${totalDay} مسجل — ${paidDay} مسدد — ${totalDay - paidDay} غير مسدد`;
+
+            // Find peak hour
+            const maxH = Math.max(...Object.values(hourMap).map(h => h.women + h.men), 1);
+            const peakHour = Object.entries(hourMap).reduce((best, [h, v]) => {
+                return (v.women + v.men) > (best[1].women + best[1].men) ? [h, v] : best;
+            }, [0, hourMap[0]])[0];
+
+            // Render hour rows - only show hours with activity + 1 buffer around them
+            const activeHours = new Set();
+            for (let h = 0; h < 24; h++) {
+                if (hourMap[h].women + hourMap[h].men > 0) {
+                    activeHours.add(h - 1); activeHours.add(h); activeHours.add(h + 1);
+                }
+            }
+
+            if (totalDay === 0) {
+                bodyEl.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);">لا توجد تسجيلات في هذا اليوم 📭</div>';
+                return;
+            }
+
+            let html = '';
+            // Peak badge
+            html += `<div style="background:linear-gradient(135deg,#f59e0b22,#ef444422); border:1px solid #f59e0b; border-radius:12px; padding:10px 14px; margin-bottom:12px; font-size:0.78rem; font-weight:700; color:var(--text1);">
+                🔥 أكثر فترة نشاطاً: ${String(peakHour).padStart(2,'0')}:00 — ${String(parseInt(peakHour)+1).padStart(2,'0')}:00 (${hourMap[peakHour].women + hourMap[peakHour].men} مسجل)
+            </div>`;
+
+            html += `<table style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                <thead>
+                    <tr style="background:rgba(10,132,255,0.07); color:var(--text2); font-weight:700; text-align:center;">
+                        <th style="padding:8px 6px; text-align:right;">🕐 الساعة</th>
+                        <th style="padding:8px 4px; color:#ec4899;">♀ كل</th>
+                        <th style="padding:8px 4px; color:#16a34a; font-size:0.65rem;">♀✅</th>
+                        <th style="padding:8px 4px; color:#3b82f6;">♂ كل</th>
+                        <th style="padding:8px 4px; color:#16a34a; font-size:0.65rem;">♂✅</th>
+                        <th style="padding:8px 8px;">📊</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            for (let h = 0; h < 24; h++) {
+                const hv = hourMap[h];
+                const tot = hv.women + hv.men;
+                if (tot === 0 && !activeHours.has(h)) continue;
+                const isPeak = parseInt(peakHour) === h;
+                const barW   = tot > 0 ? Math.round((tot / maxH) * 100) : 0;
+                const rowBg  = isPeak ? 'background:rgba(245,158,11,0.12);' : (tot === 0 ? 'opacity:0.35;' : '');
+                const hLabel = `${String(h).padStart(2,'0')}:00 — ${String(h+1).padStart(2,'0')}:00`;
+                html += `<tr style="border-bottom:1px solid var(--border); ${rowBg}">
+                    <td style="padding:8px 8px; font-weight:${tot>0?'700':'400'}; white-space:nowrap; color:var(--text1);">${isPeak?'🔥':''} ${hLabel}</td>
+                    <td style="padding:8px 4px; text-align:center; color:#ec4899; font-weight:${hv.women>0?'700':'400'};">${hv.women||'—'}</td>
+                    <td style="padding:8px 4px; text-align:center; color:#16a34a; font-size:0.7rem;">${hv.womenPaid||''}</td>
+                    <td style="padding:8px 4px; text-align:center; color:#3b82f6; font-weight:${hv.men>0?'700':'400'};">${hv.men||'—'}</td>
+                    <td style="padding:8px 4px; text-align:center; color:#16a34a; font-size:0.7rem;">${hv.menPaid||''}</td>
+                    <td style="padding:8px 8px; min-width:80px;">
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <div style="flex:1; height:5px; background:var(--border); border-radius:3px; overflow:hidden;">
+                                <div style="height:100%; width:${barW}%; background:${isPeak?'#f59e0b':tot>0?'var(--accent2)':'transparent'}; border-radius:3px;"></div>
+                            </div>
+                            <span style="font-size:0.68rem; font-weight:700; color:var(--text1); min-width:14px;">${tot||''}</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }
+
+            html += '</tbody></table>';
+            bodyEl.innerHTML = html;
+        }
+
+
+        // ===== STATS DASHBOARD v2 =====
         function loadStats(days, el) {
             try {
-                // Activate pill
                 document.querySelectorAll('[id^="stats-"]').forEach(e => e.classList.remove('pill-active'));
                 if (el) el.classList.add('pill-active');
 
-                const students = (typeof allStudents !== 'undefined' ? allStudents : []);
+                const src = typeof allStudents !== 'undefined' ? allStudents : [];
                 const chartArea = document.getElementById('daily-chart-area');
-                
-
-                const tbody    = document.getElementById('daily-stats-body');
+                const tbody     = document.getElementById('daily-stats-body');
+                const tfoot     = document.getElementById('daily-stats-foot');
                 if (!chartArea || !tbody) return;
 
-                // ---- Build date range ----
-                // Use LOCAL date (not UTC) to avoid 1-day shift
-                function localDateStr(d) {
-                    const y = d.getFullYear();
-                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${day}`;
-                }
-
-                const now = new Date();
+                // ---- Build date range cutoff ----
                 let filtered;
-
                 if (days === 0) {
-                    // ALL: group all students by date
-                    filtered = students;
+                    filtered = src;
                 } else {
+                    const now = new Date();
                     const cutoff = new Date(now);
                     cutoff.setDate(cutoff.getDate() - (days - 1));
                     cutoff.setHours(0, 0, 0, 0);
-                    filtered = students.filter(s => {
-                        if (!s.created_at) return false;
-                        // Parse: "2026-09-12 9:56" or "2026-09-12T09:56"
-                        const raw = String(s.created_at).replace('T', ' ');
-                        // Build date from parts to stay in local time
-                        const parts = raw.split(' ')[0].split('-');
-                        if (parts.length < 3) return false;
-                        const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+                    filtered = src.filter(s => {
+                        const nd = normalizeDate(s.created_at);
+                        if (!nd) return false;
+                        const p = nd.split('-');
+                        const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
                         return d >= cutoff;
                     });
                 }
 
-                // ---- Group by date ----
+                // ---- Group by NORMALIZED date ----
                 const dayMap = {};
                 filtered.forEach(s => {
-                    if (!s.created_at) return;
-                    const raw = String(s.created_at).replace('T', ' ');
-                    const dateKey = raw.split(' ')[0]; // "2026-09-12"
-                    if (!dayMap[dateKey]) dayMap[dateKey] = { total:0, paid:0, unpaid:0, women:0, men:0 };
-                    dayMap[dateKey].total++;
+                    const nd = normalizeDate(s.created_at);
+                    if (!nd) return;
+                    if (!dayMap[nd]) dayMap[nd] = { total:0, paid:0, unpaid:0, women:0, womenPaid:0, womenUnpaid:0, men:0, menPaid:0, menUnpaid:0 };
+                    dayMap[nd].total++;
                     const ps = String(s.payment_status || '').toUpperCase().trim();
-                    if (ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد') {
-                        dayMap[dateKey].paid++;
-                    } else {
-                        dayMap[dateKey].unpaid++;
-                    }
+                    const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
                     const g = String(s.gender || '').toUpperCase().trim();
-                    if (g === 'FEMME' || g === 'F' || g === 'أنثى') {
-                        dayMap[dateKey].women++;
-                    } else if (g === 'HOMME' || g === 'M' || g === 'ذكر') {
-                        dayMap[dateKey].men++;
+                    const isFemme = g === 'FEMME' || g === 'F' || g === 'أنثى';
+                    if (isPaid)  dayMap[nd].paid++;
+                    else         dayMap[nd].unpaid++;
+                    if (isFemme) {
+                        dayMap[nd].women++;
+                        if (isPaid) dayMap[nd].womenPaid++; else dayMap[nd].womenUnpaid++;
+                    } else {
+                        dayMap[nd].men++;
+                        if (isPaid) dayMap[nd].menPaid++; else dayMap[nd].menUnpaid++;
                     }
                 });
 
-                // Sort dates descending for table, ascending for chart
                 const sortedDates = Object.keys(dayMap).sort();
+                window._dayViewDates = sortedDates;
+                window._dayViewMap   = dayMap;
 
                 // ---- KPI Cards ----
                 const totalCount  = filtered.length;
-                const paidCount   = filtered.filter(s => {
-                    const ps = String(s.payment_status||'').toUpperCase().trim();
-                    return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-                }).length;
+                const paidCount   = filtered.filter(s => { const ps=String(s.payment_status||'').toUpperCase().trim(); return ps==='PAID'||ps==='PAYE'||ps==='مسدد'; }).length;
                 const unpaidCount = totalCount - paidCount;
-                const womenCount  = filtered.filter(s => {
-                    const g = String(s.gender||'').toUpperCase().trim();
-                    return g === 'FEMME' || g === 'F' || g === 'أنثى';
-                }).length;
-                const menCount    = filtered.filter(s => {
-                    const g = String(s.gender||'').toUpperCase().trim();
-                    return g === 'HOMME' || g === 'M' || g === 'ذكر';
-                }).length;
-                const paidPct = totalCount > 0 ? Math.round((paidCount/totalCount)*100) : 0;
-                const womenPct= (womenCount + menCount) > 0 ? Math.round((womenCount/(womenCount+menCount))*100) : 50;
+                const womenCount  = filtered.filter(s => { const g=String(s.gender||'').toUpperCase().trim(); return g==='FEMME'||g==='F'||g==='أنثى'; }).length;
+                const menCount    = filtered.filter(s => { const g=String(s.gender||'').toUpperCase().trim(); return g==='HOMME'||g==='M'||g==='ذكر'; }).length;
+                const paidPct  = totalCount > 0 ? Math.round((paidCount/totalCount)*100) : 0;
+                const womenPct = (womenCount+menCount) > 0 ? Math.round((womenCount/(womenCount+menCount))*100) : 50;
 
                 document.getElementById('kpi-total').textContent = totalCount;
                 document.getElementById('kpi-paid-pct').textContent = paidPct + '%';
@@ -6800,59 +6969,119 @@ function renderHomeAlerts(alerts) {
                 document.getElementById('kpi-women').textContent = womenCount + ' ♀';
                 document.getElementById('kpi-men').textContent   = menCount + ' ♂';
                 document.getElementById('kpi-women-bar').style.width = womenPct + '%';
-                document.getElementById('kpi-men-bar').style.width   = (100 - womenPct) + '%';
+                document.getElementById('kpi-men-bar').style.width   = (100-womenPct) + '%';
                 document.getElementById('kpi-unpaid').textContent = unpaidCount;
                 document.getElementById('kpi-unpaid-pct').textContent = totalCount > 0 ? '(' + Math.round((unpaidCount/totalCount)*100) + '%)' : '';
 
                 // ---- Stacked Bar Chart ----
                 const maxVal = Math.max(...sortedDates.map(d => dayMap[d].total), 1);
+                const peakDate = sortedDates.reduce((a,b) => dayMap[a].total >= dayMap[b].total ? a : b, sortedDates[0]);
+
                 if (sortedDates.length === 0) {
                     chartArea.innerHTML = '<div style="color:var(--text2); font-size:0.85rem; margin:auto; text-align:center;">لا توجد بيانات في هذه الفترة 📭</div>';
                 } else {
                     chartArea.innerHTML = sortedDates.map(dateKey => {
                         const r = dayMap[dateKey];
-                        const totalH = Math.max(6, Math.round((r.total / maxVal) * 120));
-                        const paidH  = Math.round(totalH * r.paid  / Math.max(r.total, 1));
-                        const unpaidH= totalH - paidH;
-                        const label  = dateKey.slice(5); // "09-12"
-                        return `<div style="display:flex; flex-direction:column; align-items:center; gap:2px; min-width:32px; flex:1; cursor:pointer;" title="${dateKey}: ${r.total} inscrits | ${r.paid} payés | ${r.unpaid} non payés">
-                            <span style="font-size:0.6rem; font-weight:800; color:var(--accent2);">${r.total > 0 ? r.total : ''}</span>
-                            <div style="width:100%; display:flex; flex-direction:column; border-radius:5px 5px 0 0; overflow:hidden;">
-                                <div style="width:100%; background:#ef4444; height:${unpaidH}px; min-height:${r.unpaid > 0 ? 2 : 0}px;"></div>
-                                <div style="width:100%; background:#16a34a; height:${paidH}px;   min-height:${r.paid   > 0 ? 2 : 0}px;"></div>
+                        const totalH  = Math.max(6, Math.round((r.total / maxVal) * 120));
+                        const paidH   = Math.round(totalH * r.paid   / Math.max(r.total, 1));
+                        const unpaidH = totalH - paidH;
+                        const label   = dateKey.slice(5); // "09-17"
+                        const isPeak  = dateKey === peakDate;
+                        return `<div onclick="openDayView('${dateKey}')" style="display:flex; flex-direction:column; align-items:center; gap:2px; min-width:28px; flex:1; cursor:pointer; ${isPeak?'filter:drop-shadow(0 0 4px #f59e0b);':''}" title="${toArabicDate(dateKey)}: ${r.total} مسجل | ${r.paid} مسدد">
+                            <span style="font-size:0.58rem; font-weight:900; color:${isPeak?'#f59e0b':'var(--accent2)'};">${r.total > 0 ? r.total : ''}</span>
+                            <div style="width:100%; display:flex; flex-direction:column; border-radius:4px 4px 0 0; overflow:hidden; border-bottom:2px solid ${isPeak?'#f59e0b':'transparent'};">
+                                <div style="width:100%; background:#ef4444; height:${unpaidH}px; min-height:${r.unpaid>0?2:0}px;"></div>
+                                <div style="width:100%; background:#16a34a; height:${paidH}px; min-height:${r.paid>0?2:0}px;"></div>
                             </div>
-                            <span style="font-size:0.55rem; color:var(--text2); white-space:nowrap; transform:rotate(-45deg); display:block; margin-top:2px;">${label}</span>
+                            <span style="font-size:0.5rem; color:var(--text2); white-space:nowrap; writing-mode:vertical-lr; transform:rotate(180deg); height:22px; overflow:hidden;">${label}</span>
                         </div>`;
                     }).join('');
                 }
 
                 // ---- Detailed Table ----
                 if (sortedDates.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">لا توجد بيانات 📭</td></tr>';
-                } else {
-                    tbody.innerHTML = [...sortedDates].reverse().map((dateKey, idx) => {
-                        const r = dayMap[dateKey];
-                        const pct = r.total > 0 ? Math.round((r.paid/r.total)*100) : 0;
-                        const bg = idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)';
-                        const barColor = pct >= 50 ? '#16a34a' : pct >= 20 ? '#f59e0b' : '#ef4444';
-                        return `<tr style="border-bottom:1px solid var(--border); background:${bg};">
-                            <td style="padding:10px 12px; font-weight:700; white-space:nowrap; text-align:right;">${dateKey}</td>
-                            <td style="padding:10px 8px; text-align:center; font-weight:800; color:var(--accent2);">${r.total}</td>
-                            <td style="padding:10px 8px; text-align:center; color:#16a34a; font-weight:700;">${r.paid}</td>
-                            <td style="padding:10px 8px; text-align:center; color:#ef4444; font-weight:700;">${r.unpaid}</td>
-                            <td style="padding:10px 8px; text-align:center; color:#ec4899;">${r.women}</td>
-                            <td style="padding:10px 8px; text-align:center; color:#3b82f6;">${r.men}</td>
-                            <td style="padding:10px 14px; min-width:90px;">
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <div style="flex:1; height:5px; border-radius:4px; background:var(--border); overflow:hidden;">
-                                        <div style="height:100%; width:${pct}%; background:${barColor}; border-radius:4px;"></div>
-                                    </div>
-                                    <span style="font-size:0.7rem; font-weight:700; color:${barColor}; min-width:28px;">${pct}%</span>
-                                </div>
-                            </td>
-                        </tr>`;
-                    }).join('');
+                    tbody.innerHTML = '<tr><td colspan="11" style="padding:20px; text-align:center; color:var(--text2);">لا توجد بيانات 📭</td></tr>';
+                    if (tfoot) tfoot.style.display = 'none';
+                    return;
                 }
+
+                const maxTotalDay = Math.max(...sortedDates.map(d => dayMap[d].total));
+
+                tbody.innerHTML = [...sortedDates].reverse().map((dateKey, idx) => {
+                    const r   = dayMap[dateKey];
+                    const pct = r.total > 0 ? Math.round((r.paid/r.total)*100) : 0;
+                    const barColor = pct >= 60 ? '#16a34a' : pct >= 30 ? '#f59e0b' : '#ef4444';
+                    const isPeak   = r.total === maxTotalDay;
+                    const dominantGender = r.women > r.men ? 'women' : r.men > r.women ? 'men' : 'tie';
+                    const rowBg = isPeak
+                        ? 'background:rgba(245,158,11,0.09);'
+                        : (idx % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02);');
+
+                    const wCell = `<td style="padding:8px 5px; text-align:center; color:#ec4899; font-weight:${dominantGender==='women'?'900':'500'}; ${dominantGender==='women'?'text-decoration:underline;':''}">
+                        ${r.women}${dominantGender==='women'?' 👑':''}
+                    </td>`;
+                    const mCell = `<td style="padding:8px 5px; text-align:center; color:#3b82f6; font-weight:${dominantGender==='men'?'900':'500'}; ${dominantGender==='men'?'text-decoration:underline;':''}">
+                        ${r.men}${dominantGender==='men'?' 👑':''}
+                    </td>`;
+
+                    return `<tr style="border-bottom:1px solid var(--border); ${rowBg} cursor:pointer;" onclick="openDayView('${dateKey}')" title="انقر لعرض تفاصيل اليوم">
+                        <td style="padding:8px 10px; font-weight:${isPeak?'900':'600'}; white-space:nowrap; color:${isPeak?'#f59e0b':'var(--text1)'}; text-align:right;">
+                            ${isPeak?'🏆 ':''}${toArabicDate(dateKey)}
+                        </td>
+                        <td style="padding:8px 5px; text-align:center; font-weight:900; color:${isPeak?'#f59e0b':'var(--accent2)'}; font-size:${isPeak?'1rem':'0.82rem'};">${r.total}</td>
+                        <td style="padding:8px 5px; text-align:center; color:#16a34a; font-weight:700; border-left:1px solid var(--border);">${r.paid}</td>
+                        <td style="padding:8px 5px; text-align:center; color:#ef4444; font-weight:700;">${r.unpaid}</td>
+                        ${wCell}
+                        <td style="padding:8px 4px; text-align:center; color:#16a34a; font-size:0.7rem;">${r.womenPaid||'—'}</td>
+                        <td style="padding:8px 4px; text-align:center; color:#ef4444; font-size:0.7rem;">${r.womenUnpaid||'—'}</td>
+                        ${mCell}
+                        <td style="padding:8px 4px; text-align:center; color:#16a34a; font-size:0.7rem;">${r.menPaid||'—'}</td>
+                        <td style="padding:8px 4px; text-align:center; color:#ef4444; font-size:0.7rem;">${r.menUnpaid||'—'}</td>
+                        <td style="padding:8px 10px; min-width:80px; border-left:1px solid var(--border);">
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <div style="flex:1; height:5px; border-radius:4px; background:var(--border); overflow:hidden;">
+                                    <div style="height:100%; width:${pct}%; background:${barColor}; border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.7rem; font-weight:800; color:${barColor}; min-width:28px;">${pct}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                // ---- Total Footer Row ----
+                const totW  = Object.values(dayMap).reduce((s,r)=>s+r.women,0);
+                const totM  = Object.values(dayMap).reduce((s,r)=>s+r.men,0);
+                const totWP = Object.values(dayMap).reduce((s,r)=>s+r.womenPaid,0);
+                const totWU = Object.values(dayMap).reduce((s,r)=>s+r.womenUnpaid,0);
+                const totMP = Object.values(dayMap).reduce((s,r)=>s+r.menPaid,0);
+                const totMU = Object.values(dayMap).reduce((s,r)=>s+r.menUnpaid,0);
+                const totPct= totalCount > 0 ? Math.round((paidCount/totalCount)*100) : 0;
+                const totBarColor = totPct>=60?'#16a34a':totPct>=30?'#f59e0b':'#ef4444';
+
+                if (tfoot) {
+                    tfoot.style.display = '';
+                    tfoot.innerHTML = `<tr style="background:rgba(10,132,255,0.1); border-top:2px solid var(--accent); font-weight:900; color:var(--text1);">
+                        <td style="padding:10px 10px; text-align:right; font-size:0.82rem;">Σ الإجمالي</td>
+                        <td style="padding:10px 5px; text-align:center; color:var(--accent2); font-size:0.95rem;">${totalCount}</td>
+                        <td style="padding:10px 5px; text-align:center; color:#16a34a; border-left:1px solid var(--border);">${paidCount}</td>
+                        <td style="padding:10px 5px; text-align:center; color:#ef4444;">${unpaidCount}</td>
+                        <td style="padding:10px 5px; text-align:center; color:#ec4899;">${totW}</td>
+                        <td style="padding:10px 4px; text-align:center; color:#16a34a; font-size:0.75rem;">${totWP}</td>
+                        <td style="padding:10px 4px; text-align:center; color:#ef4444; font-size:0.75rem;">${totWU}</td>
+                        <td style="padding:10px 5px; text-align:center; color:#3b82f6;">${totM}</td>
+                        <td style="padding:10px 4px; text-align:center; color:#16a34a; font-size:0.75rem;">${totMP}</td>
+                        <td style="padding:10px 4px; text-align:center; color:#ef4444; font-size:0.75rem;">${totMU}</td>
+                        <td style="padding:10px 10px; border-left:1px solid var(--border);">
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <div style="flex:1; height:6px; border-radius:4px; background:var(--border); overflow:hidden;">
+                                    <div style="height:100%; width:${totPct}%; background:${totBarColor}; border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.78rem; font-weight:900; color:${totBarColor};">${totPct}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }
+
             } catch(e) {
                 const chartArea = document.getElementById('daily-chart-area');
                 if(chartArea) chartArea.innerHTML = '<div style="color:red; padding:20px;">Erreur: ' + e.message + '</div>';
@@ -6862,10 +7091,9 @@ function renderHomeAlerts(alerts) {
 
         // Backward compat alias
         function loadDailyStats(days, el) {
-            // Map old pill ids to new function
-            const newEl = document.getElementById('stats-' + days) || el;
-            loadStats(days === 7 ? 7 : days, newEl);
+            loadStats(days === 7 ? 7 : days, document.getElementById('stats-' + days) || el);
         }
+
 
 </script>
 
