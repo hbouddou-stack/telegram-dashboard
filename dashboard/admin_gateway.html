@@ -1311,6 +1311,9 @@
                 </div>
             </div>
 
+            <!-- DEBUG - remove after fix -->
+            <div id="stats-debug" style="background:#1e293b; color:#94a3b8; font-family:monospace; font-size:0.65rem; padding:10px; border-radius:8px; margin-bottom:12px; word-break:break-all;"></div>
+            <!-- END DEBUG -->
             <!-- KPI Cards -->
             <div id="stats-kpi-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
                 <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
@@ -6707,6 +6710,14 @@ function renderHomeAlerts(alerts) {
 
                 const students = window.allStudents || [];
                 const chartArea = document.getElementById('daily-chart-area');
+                
+                // === DEBUG BLOCK - show raw created_at ===
+                const debugEl = document.getElementById('stats-debug');
+                if (debugEl) {
+                    const sample = students.slice(0, 5).map(s => JSON.stringify({ca: s.created_at, ps: s.payment_status, g: s.gender}));
+                    debugEl.innerHTML = '<b>Total allStudents: ' + students.length + '</b><br>' + sample.join('<br>');
+                }
+                // === END DEBUG ===
                 const tbody    = document.getElementById('daily-stats-body');
                 if (!chartArea || !tbody) return;
 
