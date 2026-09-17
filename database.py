@@ -179,7 +179,10 @@ async def init_db():
             "country TEXT",
             "nationality TEXT",
             "arabic_level TEXT",
-            "school_level TEXT"
+            "school_level TEXT",
+            "last_onboarding_step TEXT",
+            "last_onboarding_at TEXT",
+            "last_onboarding_detail TEXT"
         ]:
             try:
                 await db.execute(f"ALTER TABLE academy_students ADD COLUMN {_col_def}")

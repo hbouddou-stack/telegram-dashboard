@@ -700,6 +700,48 @@
             </div>
 
             <script>
+                // Telemetry Helper for Onboarding Funnel Tracking
+                window.trackFunnelStep = function(actionType, description, stepCode) {
+                    try {
+                        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+                        const tgId = tgUser.id || 0;
+                        const fName = tgUser.first_name || '';
+                        const uName = tgUser.username || '';
+                        
+                        const p = new URLSearchParams(window.location.search);
+                        const source = p.get('source') || '';
+                        const token = p.get('token') || '';
+                        
+                        const otpInputs = document.querySelectorAll('.otp-input');
+                        let currentStudentId = '';
+                        if (otpInputs && otpInputs.length) {
+                            currentStudentId = Array.from(otpInputs).map(i => i.value).join('');
+                        }
+                        if (!currentStudentId) {
+                            const sidField = document.getElementById('student_id');
+                            if (sidField && sidField.value) currentStudentId = sidField.value.trim();
+                        }
+                        
+                        fetch('/api/gateway/log_action', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                telegram_id: tgId,
+                                first_name: fName,
+                                username: uName,
+                                source: source,
+                                student_token: token,
+                                student_id: currentStudentId || null,
+                                action_type: actionType,
+                                step_code: stepCode || actionType,
+                                description: description
+                            })
+                        }).catch(e => console.log('Funnel tracking error:', e));
+                    } catch(e) {
+                        console.log('Funnel track err:', e);
+                    }
+                };
+
                 document.getElementById('cb-step1').addEventListener('change', function(e) {
                     const btn = document.getElementById('btn-step1');
                     if (e.target.checked) {
@@ -709,6 +751,7 @@
                         btn.style.cursor = 'pointer';
                         btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
                         btn.innerHTML = 'موافق، انتقل للتعليمات ➔';
+                        window.trackFunnelStep('ONBOARDING_COMMITMENT_CHECKED', 'قام الطالب بتأكيد التعهد الأولي (الخطوة 1)', 'STEP_1_COMMITMENT');
                     } else {
                         btn.disabled = true;
                         btn.style.background = '#334155';
@@ -731,6 +774,9 @@
                             if(v1 && v1.play) v1.play().catch(e => console.log('Autoplay prevented', e));
                         }, 100);
                         unlockButtonAfterDelay(1);
+                        window.trackFunnelStep('ONBOARDING_VID1_STARTED', 'بدأ الطالب مشاهدة الفيديو 1 (تثبيت تليجرام)', 'STEP_2_VID_1');
+                    } else if(step === 3) {
+                        window.trackFunnelStep('ONBOARDING_CHARTER_VIEWED', 'أنهى الطالب الفيديوهات ووصل إلى ميثاق الأكاديمية', 'STEP_3_CHARTER');
                     }
                 }
 
@@ -774,6 +820,12 @@
                     document.getElementById('story-progress-3').style.background = step >= 3 ? 'var(--accent)' : 'rgba(255,255,255,0.2)';
                     
                     unlockButtonAfterDelay(step);
+
+                    if(step === 2) {
+                        window.trackFunnelStep('ONBOARDING_VID2_STARTED', 'أكمل الفيديو 1 وانتقل إلى الفيديو 2 (إدخال البيانات)', 'STEP_2_VID_2');
+                    } else if(step === 3) {
+                        window.trackFunnelStep('ONBOARDING_VID3_STARTED', 'أكمل الفيديو 2 وانتقل إلى الفيديو 3 (استخدام المجموعات)', 'STEP_2_VID_3');
+                    }
                 }
 
                 document.querySelectorAll('.video-rule-cb').forEach(function(cb) {
@@ -791,6 +843,7 @@
                             btn.style.cursor = 'pointer';
                             btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
                             btn.innerHTML = 'الإنضمام لمجموعات تليجرام 🚀';
+                            window.trackFunnelStep('ONBOARDING_CHARTER_SIGNED', 'وافق الطالب على جميع بنود ميثاق الأكاديمية الثلاثة', 'STEP_3_CHARTER_APPROVED');
                         } else {
                             btn.disabled = true;
                             btn.style.background = '#334155';
@@ -1071,6 +1124,9 @@
                         if (mainForm) {
                                 mainForm.style.display = 'flex';
                                 mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                                if (window.trackFunnelStep) {
+                                    window.trackFunnelStep('ONBOARDING_FORM_REACHED', 'وصل الطالب إلى نموذج إدخال رقم الطالب والبريد الإلكتروني', 'STEP_4_FORM');
+                                }
                             }
                             try {
                                 window.Telegram.WebApp.MainButton.show();
@@ -1332,6 +1388,10 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ telegram_id: tid, first_name: name })
                 });
+                if (window.trackFunnelStep) {
+                    const src = new URLSearchParams(window.location.search).get('source') || 'direct';
+                    window.trackFunnelStep('ONBOARDING_PAGE_OPENED', `فتح صفحة التأهيل والربط (المصدر: ${src})`, 'STEP_0_OPEN');
+                }
             } catch(e) { console.error('Error logging open:', e); }
         })();
         function openGrid(type) {
@@ -1707,8 +1767,15 @@
                         // Pending
                         document.getElementById('pending-msg').style.display = 'flex';
                     }
+                    if (window.trackFunnelStep) {
+                        window.trackFunnelStep('ONBOARDING_LINK_SUCCESS', `تم تفعيل وربط الحساب بنجاح (${student_id})`, 'STEP_5_COMPLETED');
+                    }
                 } else {
                     failCount++;
+                    let errReason = data.error || (data.errors ? JSON.stringify(data.errors) : 'بيانات غير مطابقة');
+                    if (window.trackFunnelStep) {
+                        window.trackFunnelStep('ONBOARDING_INPUT_ERROR', `خطأ في إدخال البيانات (${student_id} / ${email}): ${errReason}`, 'STEP_4_ERROR');
+                    }
                     
                     if (data.errors) {
                         // Multiple errors simultaneously
@@ -1731,6 +1798,9 @@
                     }
                 }
             } catch(e) {
+                if (window.trackFunnelStep) {
+                    window.trackFunnelStep('ONBOARDING_NETWORK_ERROR', `خطأ في الشبكة أثناء محاولة الربط (${student_id}): ${e.message}`, 'STEP_4_ERROR');
+                }
                 document.getElementById('global-error').textContent = "خطأ في الاتصال";
                 document.getElementById('global-error').style.display = 'block';
             }

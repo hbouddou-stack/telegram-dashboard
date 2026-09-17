@@ -1663,6 +1663,19 @@
                         <div class="pg-val" id="profile-source-text">-</div>
                     </div>
                 </div>
+
+                <!-- Onboarding Funnel Summary in General Tab -->
+                <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="انقر لعرض المسار بالتفصيل">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-weight:bold; font-size:0.88rem; color:var(--accent);">🎥 حالة مسار التأهيل (Onboarding)</span>
+                        <span id="profile-onb-badge" style="font-size:0.75rem; font-weight:bold; padding:2px 8px; border-radius:10px; background:#334155; color:white;">-</span>
+                    </div>
+                    <div id="profile-onb-desc" style="font-size:0.8rem; color:var(--text1); margin-bottom:4px;">-</div>
+                    <div style="font-size:0.72rem; color:var(--text2); display:flex; justify-content:space-between;">
+                        <span id="profile-onb-time">-</span>
+                        <span style="color:var(--accent); text-decoration:underline; cursor:pointer;">عرض المسار والمراحل ➔</span>
+                    </div>
+                </div>
             </div>
             
             <!-- Tab 2: Academy -->
@@ -1968,6 +1981,67 @@
             </div>
         </div>
 
+        <!-- ÉTAPE ONBOARDING (VIDÉOS & CHARTE) -->
+        <div class="timeline-block" id="funnel-step-onboarding">
+            <div class="timeline-dot" style="background:#f59e0b;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🎥 مسار التأهيل وتجربة الطالب (Onboarding Funnel)</span>
+                    <span id="f-onboarding-badge" style="font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:12px; background:#334155; color:white;">لم يبدأ</span>
+                </div>
+                
+                <!-- Live Pipeline Visual Steps -->
+                <div style="margin: 12px 0 16px 0; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px;">
+                    <div style="font-size:0.75rem; font-weight:bold; color:var(--text2); margin-bottom:8px;">مراحل التقدم في رابط التأهيل (link.html) :</div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:6px;" id="onboarding-steps-grid">
+                        <div class="onb-chip" id="onb-chip-1" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-1">⚪</div>
+                            <div style="font-weight:bold;">1. التعهد الأولي</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-1">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-2" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-2">⚪</div>
+                            <div style="font-weight:bold;">2. فيديو تليجرام</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-2">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-3" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-3">⚪</div>
+                            <div style="font-weight:bold;">3. فيديو البيانات</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-3">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-4" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-4">⚪</div>
+                            <div style="font-weight:bold;">4. فيديو المجموعات</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-4">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-5" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-5">⚪</div>
+                            <div style="font-weight:bold;">5. ميثاق الشرف</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-5">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-6" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-6">⚪</div>
+                            <div style="font-weight:bold;">6. شاشة الربط</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-6">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-onboarding-status">🔍</span>
+                        <span>آخر نشاط مسجل في المسار :</span>
+                        <span id="f-desc-onboarding-status" style="font-weight:bold; color:var(--text1); font-size:0.82rem;">-</span>
+                    </div>
+                    <div class="timeline-sub-item" id="f-row-onboarding-error" style="display:none; background:rgba(239,68,68,0.1); padding:6px 10px; border-radius:8px; border:1px solid rgba(239,68,68,0.3);">
+                        <span>⚠️</span>
+                        <span style="color:#ef4444; font-weight:bold;">سبب الخطأ / التعثر :</span>
+                        <span id="f-desc-onboarding-error" style="color:#ef4444; font-size:0.82rem; font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ÉTAPE FINALE -->
         <div class="timeline-block" id="funnel-step-final">
             <div class="timeline-dot" style="background:#8b5cf6;"></div>
@@ -2126,6 +2200,18 @@
             'FOLDER_CLICKED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📁', label: 'فتح مجلد الدروس' },
             'QUIZ_STARTED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📝', label: 'بدأ اختبار' },
             'TUTO_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📖', label: 'فتح الشرح' },
+
+            // Onboarding Funnel Steps
+            'ONBOARDING_PAGE_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '🚪', label: '1. فتح صفحة التأهيل' },
+            'ONBOARDING_COMMITMENT_CHECKED': { bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.4)', text: '#6366f1', icon: '✍️', label: '2. تأكيد التعهد' },
+            'ONBOARDING_VID1_STARTED': { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.4)', text: '#a855f7', icon: '▶️', label: '3. فيديو 1 (تثبيت تليجرام)' },
+            'ONBOARDING_VID2_STARTED': { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.4)', text: '#a855f7', icon: '▶️', label: '4. فيديو 2 (إدخال البيانات)' },
+            'ONBOARDING_VID3_STARTED': { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.4)', text: '#a855f7', icon: '▶️', label: '5. فيديو 3 (المجموعات)' },
+            'ONBOARDING_CHARTER_VIEWED': { bg: 'rgba(234,179,8,0.1)', border: 'rgba(234,179,8,0.4)', text: '#ca8a04', icon: '📜', label: '6. قراءة الميثاق' },
+            'ONBOARDING_CHARTER_SIGNED': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '✅', label: '7. قبول بنود الميثاق' },
+            'ONBOARDING_FORM_REACHED': { bg: 'rgba(14,165,233,0.1)', border: 'rgba(14,165,233,0.4)', text: '#0ea5e9', icon: '📝', label: '8. شاشة إدخال المعرف' },
+            'ONBOARDING_INPUT_ERROR': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⚠️', label: 'خطأ في إدخال المعرف' },
+            'ONBOARDING_LINK_SUCCESS': { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.6)', text: '#15803d', icon: '🎉', label: '9. اكتمل التأهيل والربط' },
 
             'EMAIL_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '📨', label: 'إرسال إيميل' },
             'WHATSAPP_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '💬', label: 'إرسال واتساب' },
@@ -3413,11 +3499,14 @@ function filterStudents() {
                 const tgFirstName = String(s.tg_first_name || '').toLowerCase();
                 
                 const trCountry = typeof tr === 'function' ? tr(s.country, typeof trPays !== 'undefined' ? trPays : {}).toLowerCase() : '';
+                const onbStep = String(s.last_onboarding_step || '').toLowerCase();
+                const onbDetail = String(s.last_onboarding_detail || '').toLowerCase();
                 const matchSearch = name.includes(q) || lname.includes(q) || email.includes(q) ||
                                   source.includes(q) || dob.includes(q) || year.includes(q) ||
                                   telegramId.includes(q) || tgFirstName.includes(q) ||
                                   String(s.country || '').toLowerCase().includes(q) ||
-                                  trCountry.includes(q);
+                                  trCountry.includes(q) ||
+                                  onbStep.includes(q) || onbDetail.includes(q);
 
                 const g = String(s.gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
@@ -3628,13 +3717,14 @@ function filterStudents() {
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                                                <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" title="رقم السطر">رقم</th>
-                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
-                        <th style="padding:12px; cursor:pointer; width:90px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
-                        <th style="padding:12px; cursor:pointer;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
-                        <th style="padding:12px; cursor:pointer; width:60px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
-                        <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الدفع</th>
-                        <th style="padding:12px; direction:ltr; text-align:right;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الإيميل</th>
+                        <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" title="رقم السطر">رقم</th>
+                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
+                        <th style="padding:12px; cursor:pointer; width:90px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
+                        <th style="padding:12px; cursor:pointer; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
+                        <th style="padding:12px; cursor:pointer; width:60px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
+                        <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الدفع</th>
+                        <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">🎥 مسار التأهيل</th>
+                        <th style="padding:12px; direction:ltr; text-align:right; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الإيميل</th>
                     </tr>
                 `;
                 table.appendChild(thead);
@@ -3700,7 +3790,6 @@ function filterStudents() {
                     if (yrVal === '3') yrBadge = `<span style="font-size:0.9rem; font-weight:bold; color:#f59e0b; padding:3px 8px; background:#fef3c7; border-radius:12px;">3</span>`;
                     if (yrVal === '4') yrBadge = `<span style="font-size:0.9rem; font-weight:bold; color:#8b5cf6; padding:3px 8px; background:#ede9fe; border-radius:12px;">4</span>`;
 
-
                     let rawId = s.academic_id || s.student_id || '';
                     let studentMassarId = '-';
                     
@@ -3729,7 +3818,6 @@ function filterStudents() {
                         }
                     }
 
-                    
                     let dupBadge = (window.duplicateReasonsMap && window.duplicateReasonsMap.has(String(s.student_id)))
                         ? `<br><span style="display:inline-block; font-size:0.68rem; background:#fee2e2; color:#dc2626; border:1px solid #ef4444; padding:1px 6px; border-radius:6px; font-weight:bold; margin-top:2px;">⚠️ مكرر (${window.duplicateReasonsMap.get(String(s.student_id))})</span>`
                         : '';
@@ -3748,14 +3836,39 @@ function filterStudents() {
                         remarkBadge = `<br><span style="display:inline-block; font-size:0.7rem; background:${badgeColor}; color:${badgeText}; padding:2px 6px; border-radius:6px; font-weight:bold; margin-top:4px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${s.comments.replace(/"/g, '&quot;')}">${icon} ${s.comments}</span>`;
                     }
 
+                    // Format Onboarding Funnel Status Badge
+                    let onbBadge = '<span style="font-size:0.72rem; color:var(--text2); background:var(--bg); border:1px solid var(--border); padding:2px 6px; border-radius:6px;">لم يبدأ</span>';
+                    if (s.telegram_id || s.group_joined) {
+                        onbBadge = '<span style="font-size:0.72rem; color:#16a34a; background:#dcfce7; font-weight:bold; padding:2px 6px; border-radius:6px;">✅ مربوط ومكتمل</span>';
+                    } else if (s.last_onboarding_step) {
+                        const step = s.last_onboarding_step;
+                        if (step.includes('ERROR') || step.includes('FAIL')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#dc2626; background:#fee2e2; font-weight:bold; padding:2px 6px; border-radius:6px;">⚠️ خطأ في المعرف</span>';
+                        } else if (step.includes('FORM')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#0284c7; background:#e0f2fe; font-weight:bold; padding:2px 6px; border-radius:6px;">📝 في شاشة الربط</span>';
+                        } else if (step.includes('CHARTER')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#ca8a04; background:#fef08a; font-weight:bold; padding:2px 6px; border-radius:6px;">📜 في الميثاق</span>';
+                        } else if (step.includes('VID_3') || step.includes('VID3')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#7c3aed; background:#ede9fe; font-weight:bold; padding:2px 6px; border-radius:6px;">🎥 فيديو 3</span>';
+                        } else if (step.includes('VID_2') || step.includes('VID2')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#7c3aed; background:#ede9fe; font-weight:bold; padding:2px 6px; border-radius:6px;">🎥 فيديو 2</span>';
+                        } else if (step.includes('VID_1') || step.includes('VID1')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#7c3aed; background:#ede9fe; font-weight:bold; padding:2px 6px; border-radius:6px;">🎥 فيديو 1</span>';
+                        } else if (step.includes('COMMITMENT')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#4f46e5; background:#e0e7ff; font-weight:bold; padding:2px 6px; border-radius:6px;">✍️ التعهد</span>';
+                        } else if (step.includes('OPEN')) {
+                            onbBadge = '<span style="font-size:0.72rem; color:#2563eb; background:#dbeafe; font-weight:bold; padding:2px 6px; border-radius:6px;">🚪 فتح الصفحة</span>';
+                        }
+                    }
 
                     tr.innerHTML = `
-                                                <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button></td>
+                        <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button></td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
                         <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
                         <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
                         <td style="padding:12px; text-align:center;">${yrBadge}</td>
                         <td style="padding:12px;">${payBadge}</td>
+                        <td style="padding:12px; text-align:center;">${onbBadge}</td>
                         <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
                     `;
                     tbody.appendChild(tr);
@@ -5500,6 +5613,169 @@ function filterStudents() {
             }
         }
 
+        // ================= ONBOARDING FUNNEL VISUALIZER =================
+        function populateOnboardingFunnel(student, logsArr) {
+            logsArr = logsArr || [];
+            
+            // Step map: 1 -> Commitment, 2 -> Vid1, 3 -> Vid2, 4 -> Vid3, 5 -> Charter, 6 -> Form
+            let stepStatus = {
+                1: { done: false, time: null },
+                2: { done: false, time: null },
+                3: { done: false, time: null },
+                4: { done: false, time: null },
+                5: { done: false, time: null },
+                6: { done: false, time: null }
+            };
+
+            let lastActivityDesc = '-';
+            let lastErrorDesc = '';
+            let latestStepReached = 0;
+
+            // Scan student logs from oldest to newest to find timestamps
+            const reversedLogs = [...logsArr].reverse();
+            reversedLogs.forEach(l => {
+                const at = l.action_type || '';
+                const ts = l.timestamp ? String(l.timestamp).substring(11, 16) : '';
+                
+                if (at === 'ONBOARDING_PAGE_OPENED') {
+                    lastActivityDesc = `فتح صفحة التأهيل (${ts})`;
+                }
+                if (at === 'ONBOARDING_COMMITMENT_CHECKED' || at === 'STEP_1_COMMITMENT') {
+                    stepStatus[1] = { done: true, time: ts };
+                    latestStepReached = Math.max(latestStepReached, 1);
+                    lastActivityDesc = `تأكيد التعهد الأولي (${ts})`;
+                }
+                if (at === 'ONBOARDING_VID1_STARTED' || at === 'STEP_2_VID_1') {
+                    stepStatus[1].done = true;
+                    stepStatus[2] = { done: true, time: ts };
+                    latestStepReached = Math.max(latestStepReached, 2);
+                    lastActivityDesc = `مشاهدة فيديو تليجرام (${ts})`;
+                }
+                if (at === 'ONBOARDING_VID2_STARTED' || at === 'STEP_2_VID_2') {
+                    stepStatus[1].done = true; stepStatus[2].done = true;
+                    stepStatus[3] = { done: true, time: ts };
+                    latestStepReached = Math.max(latestStepReached, 3);
+                    lastActivityDesc = `مشاهدة فيديو البيانات (${ts})`;
+                }
+                if (at === 'ONBOARDING_VID3_STARTED' || at === 'STEP_2_VID_3') {
+                    stepStatus[1].done = true; stepStatus[2].done = true; stepStatus[3].done = true;
+                    stepStatus[4] = { done: true, time: ts };
+                    latestStepReached = Math.max(latestStepReached, 4);
+                    lastActivityDesc = `مشاهدة فيديو المجموعات (${ts})`;
+                }
+                if (at === 'ONBOARDING_CHARTER_VIEWED' || at === 'STEP_3_CHARTER') {
+                    stepStatus[1].done = true; stepStatus[2].done = true; stepStatus[3].done = true; stepStatus[4].done = true;
+                    latestStepReached = Math.max(latestStepReached, 4.5);
+                    lastActivityDesc = `قراءة ميثاق الأكاديمية (${ts})`;
+                }
+                if (at === 'ONBOARDING_CHARTER_SIGNED' || at === 'STEP_3_CHARTER_APPROVED') {
+                    stepStatus[1].done = true; stepStatus[2].done = true; stepStatus[3].done = true; stepStatus[4].done = true;
+                    stepStatus[5] = { done: true, time: ts };
+                    latestStepReached = Math.max(latestStepReached, 5);
+                    lastActivityDesc = `الموافقة على ميثاق الشرف (${ts})`;
+                }
+                if (at === 'ONBOARDING_FORM_REACHED' || at === 'STEP_4_FORM') {
+                    stepStatus[1].done = true; stepStatus[2].done = true; stepStatus[3].done = true; stepStatus[4].done = true; stepStatus[5].done = true;
+                    stepStatus[6] = { done: true, time: ts };
+                    latestStepReached = Math.max(latestStepReached, 6);
+                    lastActivityDesc = `الوصول لشاشة إدخال المعرف (${ts})`;
+                }
+                if (at === 'ONBOARDING_INPUT_ERROR' || at === 'STEP_4_ERROR' || at === 'LINK_FAILED') {
+                    lastErrorDesc = l.description || 'تعذر الربط أو خطأ في البيانات';
+                }
+                if (at === 'ONBOARDING_LINK_SUCCESS' || at === 'STEP_5_COMPLETED' || at === 'LINK_SUCCESS' || at === 'ACCOUNT_LINKED') {
+                    for(let i=1; i<=6; i++) stepStatus[i].done = true;
+                    latestStepReached = 7;
+                    lastActivityDesc = `اكتمل التأهيل والربط بنجاح (${ts})`;
+                    lastErrorDesc = '';
+                }
+            });
+
+            // Fallback from student columns if logs empty
+            if (student && (student.telegram_id || student.group_joined)) {
+                for(let i=1; i<=6; i++) stepStatus[i].done = true;
+                latestStepReached = 7;
+                lastActivityDesc = 'الحساب مربوط في المنصة ومكتمل التأهيل ✅';
+            } else if (student && student.last_onboarding_step) {
+                lastActivityDesc = student.last_onboarding_detail || student.last_onboarding_step;
+            }
+
+            // Update UI Chips
+            for(let i=1; i<=6; i++) {
+                const chip = document.getElementById('onb-chip-' + i);
+                const icon = document.getElementById('onb-icon-' + i);
+                const time = document.getElementById('onb-time-' + i);
+                if (!chip) continue;
+
+                if (stepStatus[i].done) {
+                    chip.style.borderColor = 'rgba(34,197,94,0.5)';
+                    chip.style.background = 'rgba(34,197,94,0.1)';
+                    chip.style.color = '#16a34a';
+                    if (icon) icon.textContent = '✅';
+                    if (time) time.textContent = stepStatus[i].time ? `تم ${stepStatus[i].time}` : 'مكتمل';
+                } else if (latestStepReached === i - 1 && latestStepReached > 0 && !student.telegram_id) {
+                    // Current stuck step
+                    chip.style.borderColor = '#f59e0b';
+                    chip.style.background = 'rgba(245,158,11,0.15)';
+                    chip.style.color = '#d97706';
+                    if (icon) icon.textContent = '🟠';
+                    if (time) time.textContent = 'متوقف هنا';
+                } else {
+                    chip.style.borderColor = 'var(--border)';
+                    chip.style.background = 'var(--surface)';
+                    chip.style.color = 'var(--text2)';
+                    if (icon) icon.textContent = '⚪';
+                    if (time) time.textContent = '-';
+                }
+            }
+
+            // Update Summary Badge & Labels
+            const badge = document.getElementById('f-onboarding-badge');
+            if (badge) {
+                if (latestStepReached >= 7 || student.telegram_id) {
+                    badge.style.background = '#16a34a';
+                    badge.textContent = '✅ مكتمل (مرتبط)';
+                } else if (lastErrorDesc) {
+                    badge.style.background = '#dc2626';
+                    badge.textContent = '⚠️ متعثر (خطأ)';
+                } else if (latestStepReached > 0) {
+                    badge.style.background = '#f59e0b';
+                    badge.textContent = `⏳ خطوة ${Math.floor(latestStepReached)} / 6`;
+                } else {
+                    badge.style.background = '#334155';
+                    badge.textContent = 'لم يبدأ بعد';
+                }
+            }
+
+            const descEl = document.getElementById('f-desc-onboarding-status');
+            if (descEl) descEl.textContent = lastActivityDesc;
+
+            const errRow = document.getElementById('f-row-onboarding-error');
+            const errDesc = document.getElementById('f-desc-onboarding-error');
+            if (errRow && errDesc) {
+                if (lastErrorDesc && !student.telegram_id) {
+                    errRow.style.display = 'flex';
+                    errDesc.textContent = lastErrorDesc;
+                } else {
+                    errRow.style.display = 'none';
+                }
+            }
+
+            // Also update General tab banner
+            const genBadge = document.getElementById('profile-onb-badge');
+            const genDesc = document.getElementById('profile-onb-desc');
+            const genTime = document.getElementById('profile-onb-time');
+            if (genBadge && badge) {
+                genBadge.style.background = badge.style.background;
+                genBadge.textContent = badge.textContent;
+            }
+            if (genDesc) genDesc.textContent = lastActivityDesc;
+            if (genTime) {
+                let timeStr = student.last_onboarding_at ? `آخر نشاط: ${student.last_onboarding_at}` : (latestStepReached > 0 ? 'نشاط مسجل في السجل' : 'لم يسجل دخول بعد');
+                genTime.textContent = timeStr;
+            }
+        }
+
         
         // ================= V2 SINGLE COMPOSER LOGIC =================
         function setSingleComposerTemplate(type) {
@@ -6023,13 +6299,22 @@ async function toggleStudentValidity() {
                     document.getElementById('logs-body').innerHTML = html;
                     var ltb = document.getElementById('logs-tab-body');
                     if (ltb) ltb.innerHTML = html;
+                    if(typeof populateOnboardingFunnel === 'function') {
+                        populateOnboardingFunnel(student, data.logs);
+                    }
                 } else {
                     document.getElementById('logs-body').innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
                     var ltb2 = document.getElementById('logs-tab-body');
                     if (ltb2) ltb2.innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
+                    if(typeof populateOnboardingFunnel === 'function') {
+                        populateOnboardingFunnel(student, []);
+                    }
                 }
             } catch(e) {
                 document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل.</div>';
+                if(typeof populateOnboardingFunnel === 'function') {
+                    populateOnboardingFunnel(student, []);
+                }
             }
         }
 
@@ -6149,7 +6434,17 @@ async function toggleStudentValidity() {
                 'APP_OPENED': 'فتح التطبيق',
                 'start_bot': 'بدء البوت',
                 'finish_quiz': 'إنهاء اختبار',
-                'JOIN_GROUP_CLICK': 'ضغط الانضمام للمجموعة'
+                'JOIN_GROUP_CLICK': 'ضغط الانضمام للمجموعة',
+                'ONBOARDING_PAGE_OPENED': '1. فتح صفحة التأهيل',
+                'ONBOARDING_COMMITMENT_CHECKED': '2. تأكيد التعهد',
+                'ONBOARDING_VID1_STARTED': '3. فيديو 1 (تثبيت تليجرام)',
+                'ONBOARDING_VID2_STARTED': '4. فيديو 2 (إدخال البيانات)',
+                'ONBOARDING_VID3_STARTED': '5. فيديو 3 (المجموعات)',
+                'ONBOARDING_CHARTER_VIEWED': '6. قراءة الميثاق',
+                'ONBOARDING_CHARTER_SIGNED': '7. قبول بنود الميثاق',
+                'ONBOARDING_FORM_REACHED': '8. شاشة إدخال المعرف',
+                'ONBOARDING_INPUT_ERROR': 'خطأ في إدخال المعرف',
+                'ONBOARDING_LINK_SUCCESS': '9. اكتمل التأهيل والربط'
             };
 
             rawLogs.forEach(log => {

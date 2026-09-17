@@ -1220,6 +1220,7 @@ async def api_admin_gateway_students(request: web.Request):
                        s.email_sent, s.email_sent_at, s.email_opened_at, s.email_clicked_at,
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.sms_sent, s.sms_sent_at, s.last_click_source,
                        s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,
+                       s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
                        u.first_name as tg_first_name, u.last_name as tg_last_name, s.magic_token
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
@@ -1764,31 +1765,76 @@ async def api_gateway_log_open(request: web.Request):
 async def api_gateway_log_action(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
+    import datetime
     try:
         data = await request.json()
         telegram_id = data.get('telegram_id')
+        student_id_in = data.get('student_id')
+        student_token = data.get('student_token') or data.get('token')
+        source_in = data.get('source', '')
         action_type = data.get('action_type', 'TUTO_OPENED')
         first_name = data.get('first_name', '')
         username = data.get('username', '')
-        
         description = data.get('description')
+        step_code = data.get('step_code') or action_type
         
+        now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Clean student_id_in if provided
+        matched_student_id = 0
+        if student_id_in:
+            try:
+                matched_student_id = int(student_id_in)
+            except Exception:
+                matched_student_id = 0
+
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            if telegram_id:
-                async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
-                    row = await cur.fetchone()
-                    if row:
-                        desc = description or f"فتح الطالب {row[1]} دليل معرف الطالب"
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
-                                         (row[0], telegram_id, first_name, username, action_type, desc))
-                    else:
-                        desc = description or f"فتح مستخدم غير مرتبط دليل معرف الطالب (الاسم في تيليجرام: {first_name})"
-                        await db.execute("INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
-                                         (0, telegram_id, first_name, username, action_type, desc))
+            # 1. Resolve student if not directly identified
+            student_row = None
+            if matched_student_id > 0:
+                async with db.execute("SELECT student_id, first_name, email FROM academy_students WHERE student_id = ?", (matched_student_id,)) as cur:
+                    student_row = await cur.fetchone()
+            
+            if not student_row and student_token:
+                async with db.execute("SELECT student_id, first_name, email FROM academy_students WHERE magic_token = ?", (str(student_token).strip(),)) as cur:
+                    student_row = await cur.fetchone()
+
+            if not student_row and source_in:
+                # e.g., source could be e1_TOKEN, w1_TOKEN, or H123456 / F123456
+                src_token = source_in
+                if '_' in source_in:
+                    src_token = source_in.split('_', 1)[1]
+                async with db.execute("SELECT student_id, first_name, email FROM academy_students WHERE magic_token = ? OR student_id = ?", (src_token, src_token)) as cur:
+                    student_row = await cur.fetchone()
+
+            if not student_row and telegram_id:
+                async with db.execute("SELECT student_id, first_name, email FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
+                    student_row = await cur.fetchone()
+
+            if student_row:
+                resolved_id = student_row[0]
+                st_name = student_row[1] or first_name
+                desc = description or f"نشاط في مسار التأهيل للطالب {st_name} ({action_type})"
+                await db.execute(
+                    "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
+                    (resolved_id, telegram_id or 0, first_name, username, action_type, desc)
+                )
+                # Update last onboarding step in academy_students
+                try:
+                    await db.execute("""
+                        UPDATE academy_students 
+                        SET last_onboarding_step = ?, last_onboarding_at = ?, last_onboarding_detail = ?
+                        WHERE student_id = ?
+                    """, (step_code, now_str, desc, resolved_id))
+                except Exception:
+                    pass
             else:
-                desc = description or "فتح مستخدم مجهول دليل معرف الطالب"
-                await db.execute("INSERT INTO student_logs (student_id, action_type, description) VALUES (?, ?, ?)", 
-                                 (0, action_type, desc))
+                desc = description or f"نشاط مسار لمستخدم غير مسجل بعد ({first_name or telegram_id or 'مجهول'})"
+                await db.execute(
+                    "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
+                    (0, telegram_id or 0, first_name, username, action_type, desc)
+                )
+
             await db.commit()
         return web.json_response({'success': True})
     except Exception as e:
