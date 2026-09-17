@@ -1188,11 +1188,11 @@
                     <table style="width:100%; border-collapse:collapse; font-size:0.85rem; background:var(--bg); border-radius:8px; overflow:hidden;">
                         <thead>
                             <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                                <th style="padding:12px;">ID</th>
-                                <th style="padding:12px;">Date</th>
-                                <th style="padding:12px;">Fichier</th>
-                                <th style="padding:12px;">Élèves Importés</th>
-                                <th style="padding:12px;">Responsable (Admin)</th>
+                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">ID</th>
+                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Date</th>
+                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Fichier</th>
+                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Élèves Importés</th>
+                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Responsable (Admin)</th>
                             </tr>
                         </thead>
                         <tbody id="import-history-tbody">
@@ -2415,6 +2415,20 @@
             }
         }
 
+        
+        function formatLocalTime(utcDateStr) {
+            try {
+                if (!utcDateStr) return '-';
+                let dateToParse = utcDateStr;
+                if (!dateToParse.includes('Z') && !dateToParse.includes('+')) dateToParse += 'Z';
+                const d = new Date(dateToParse);
+                if (isNaN(d.getTime())) return utcDateStr;
+                return new Intl.DateTimeFormat('fr-FR', { 
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                }).format(d).replace(',', ' à');
+            } catch (e) { return utcDateStr; }
+        }
         async function loadImportHistory() {
             try {
                 const res = await fetch('/api/admin/gateway/import_logs');
@@ -2428,7 +2442,7 @@
                     tbody.innerHTML = data.logs.map(log => `
                         <tr style="border-bottom:1px solid var(--border); background:var(--surface);">
                             <td style="padding:12px; font-weight:bold; color:var(--text2);">#${log.id}</td>
-                            <td style="padding:12px;">${log.created_at}</td>
+                            <td style="padding:12px;" title="${log.created_at} UTC">${formatLocalTime(log.created_at)}</td>
                             <td style="padding:12px; font-family:monospace; color:var(--accent2);">${log.filename || 'Inconnu'}</td>
                             <td style="padding:12px; font-weight:bold;">${log.imported_count} <span style="font-weight:normal; font-size:0.8rem; color:var(--text2);">élèves</span></td>
                             <td style="padding:12px; font-weight:bold;">${log.admin_name}</td>
@@ -3385,7 +3399,10 @@ function filterStudents() {
             if (currentViewMode === 'table') {
                 const tableWrapper = document.createElement('div');
                 tableWrapper.style.overflowX = 'auto';
+                tableWrapper.style.overflowY = 'auto';
+                tableWrapper.style.maxHeight = '65vh';
                 tableWrapper.style.width = '100%';
+                tableWrapper.style.position = 'relative';
                 
                 const table = document.createElement('table');
                 table.style.width = '100%';
@@ -3402,13 +3419,13 @@ function filterStudents() {
                 const thead = document.createElement('thead');
                 thead.innerHTML = `
                     <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                                                <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default;" title="رقم السطر">رقم</th>
-                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
-                        <th style="padding:12px; cursor:pointer; width:90px;" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
-                        <th style="padding:12px; cursor:pointer;" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
-                        <th style="padding:12px; cursor:pointer; width:60px;" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
-                        <th style="padding:12px;">الدفع</th>
-                        <th style="padding:12px; direction:ltr; text-align:right;">الإيميل</th>
+                                                <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" title="رقم السطر">رقم</th>
+                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
+                        <th style="padding:12px; cursor:pointer; width:90px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
+                        <th style="padding:12px; cursor:pointer;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
+                        <th style="padding:12px; cursor:pointer; width:60px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
+                        <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الدفع</th>
+                        <th style="padding:12px; direction:ltr; text-align:right;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الإيميل</th>
                     </tr>
                 `;
                 table.appendChild(thead);
@@ -3467,10 +3484,10 @@ function filterStudents() {
                         : `<span style="font-size:0.72rem;background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:10px;font-weight:700;">غير مدفوع</span>`;
 
                     let yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:var(--text1); padding:3px 8px; background:var(--bg); border-radius:12px;">${yrVal}</span>`;
-                    if (yrVal === '1') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#0ea5e9; padding:3px 8px; background:#e0f2fe; border-radius:12px;">الأولى</span>`;
-                    if (yrVal === '2') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#10b981; padding:3px 8px; background:#d1fae5; border-radius:12px;">الثانية</span>`;
-                    if (yrVal === '3') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#f59e0b; padding:3px 8px; background:#fef3c7; border-radius:12px;">الثالثة</span>`;
-                    if (yrVal === '4') yrBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#8b5cf6; padding:3px 8px; background:#ede9fe; border-radius:12px;">الرابعة</span>`;
+                    if (yrVal === '1') yrBadge = `<span style="font-size:0.9rem; font-weight:bold; color:#0ea5e9; padding:3px 8px; background:#e0f2fe; border-radius:12px;">1</span>`;
+                    if (yrVal === '2') yrBadge = `<span style="font-size:0.9rem; font-weight:bold; color:#10b981; padding:3px 8px; background:#d1fae5; border-radius:12px;">2</span>`;
+                    if (yrVal === '3') yrBadge = `<span style="font-size:0.9rem; font-weight:bold; color:#f59e0b; padding:3px 8px; background:#fef3c7; border-radius:12px;">3</span>`;
+                    if (yrVal === '4') yrBadge = `<span style="font-size:0.9rem; font-weight:bold; color:#8b5cf6; padding:3px 8px; background:#ede9fe; border-radius:12px;">4</span>`;
 
 
                     let rawId = s.academic_id || s.student_id || '';
@@ -3522,7 +3539,7 @@ function filterStudents() {
 
 
                     tr.innerHTML = `
-                                                <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1}</td>
+                                                <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button></td>
                         <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
                         <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
                         <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
