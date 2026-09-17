@@ -1439,6 +1439,11 @@
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding:0; background:var(--bg);">
                 <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
+                    <div class="pg-row" style="background:var(--surface); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-weight:bold; color:var(--text1);">🚨 Qualité du lead (Validité)</div>
+                        <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; border:none;"></button>
+                    </div>
+
                     <div class="pg-row" id="profile-name">
                         <div class="pg-label">👤 الاسم الكامل</div>
                         <div class="pg-val" id="profile-name-text">-</div>
@@ -5443,9 +5448,62 @@ function filterStudents() {
                 return val;
             }
 
+        
+async function toggleStudentValidity() {
+    if(!activeStudentId) return;
+    const currentState = activeStudentObj.excluded == 1 ? 1 : 0;
+    const newState = currentState === 1 ? 0 : 1;
+    
+    try {
+        const r = await fetch('/api/admin/gateway/duplicates/exclude', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ student_id: activeStudentId, excluded: newState })
+        });
+        const res = await r.json();
+        if(res.success) {
+            activeStudentObj.excluded = newState;
+            
+            const valBtn = document.getElementById('toggle-validity-btn');
+            if(valBtn) {
+                if(activeStudentObj.excluded == 1) {
+                    valBtn.innerHTML = '✅ إعادة تفعيل (Rétablir)';
+                    valBtn.style.background = '#28a745';
+                    valBtn.style.color = '#fff';
+                } else {
+                    valBtn.innerHTML = '🚫 علامة كغير صالح (Test/Invalide)';
+                    valBtn.style.background = '#dc3545';
+                    valBtn.style.color = '#fff';
+                }
+            }
+            
+            renderStudents();
+            updateDashboardView();
+        } else {
+            alert('Erreur : ' + res.error);
+        }
+    } catch(e) {
+        alert('Erreur serveur : ' + e.message);
+    }
+}
+
         async function openStudentCard(student) {
             activeStudentId = student.student_id;
             activeStudentObj = student;
+
+            const valBtn = document.getElementById('toggle-validity-btn');
+            if(valBtn) {
+                if(student.excluded == 1) {
+                    valBtn.innerHTML = '✅ إعادة تفعيل (Rétablir)';
+                    valBtn.style.background = '#28a745';
+                    valBtn.style.color = '#fff';
+                } else {
+                    valBtn.innerHTML = '🚫 علامة كغير صالح (Test/Invalide)';
+                    valBtn.style.background = '#dc3545';
+                    valBtn.style.color = '#fff';
+                }
+            }
+
             
             // Name - ONLY first + last name
             const arabicName = String(student.first_name || '').trim();
