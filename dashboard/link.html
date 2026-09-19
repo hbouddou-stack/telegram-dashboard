@@ -1078,53 +1078,68 @@
 
     <script>
 
-                        // --- CHAMELEON UI LOGIC ---
+        // --- CHAMELEON UI LOGIC ---
+        // Store chameleon state globally so loadPreferences() can respect it
+        window._chameleonTheme = null;
+
         function initChameleon() {
             const params = new URLSearchParams(window.location.search);
             const rawSource = (params.get('source') || '').trim();
             const source = rawSource.toUpperCase();
             const vParam = (params.get('v') || '').trim().toLowerCase();
-            
+
             const mainForm = document.getElementById('main-form');
             const videoContainer = document.getElementById('dynamic-video-container');
             const btnUnderstood = document.getElementById('btn-understood');
             const videoWelcomeTitle = document.getElementById('video-welcome-title');
-            
+
             const headerText = document.querySelector('h1');
             const pText = document.querySelector('#main-form p');
-            
-            const isCompleted = localStorage.getItem('student_auth_status');
-            
-            const isChameleon = source.startsWith('H') || source.startsWith('F') || source.includes('H1') || source.includes('F1') || source.includes('HOMME') || source.includes('FEMME');
 
-            // Toujours afficher le Wizard pour les NOUVEAUX ou ceux qui utilisent v=start ou ceux arrivant d'un lien H/F/Chameleon
-            if (!isCompleted || vParam === 'start' || isChameleon) {
+            const isChameleon = source.startsWith('H') || source.startsWith('F') ||
+                                 source.includes('H1') || source.includes('F1') ||
+                                 source.includes('HOMME') || source.includes('FEMME');
+            const isOnboarding = isChameleon || vParam === 'start';
+
+            // --- CRITICAL: Clear stale localStorage so wizard always shows ---
+            if (isOnboarding) {
+                try { localStorage.removeItem('student_auth_status'); } catch(e) {}
+                try { localStorage.removeItem('student_auth_data'); } catch(e) {}
+            }
+
+            const isCompleted = isOnboarding ? null : localStorage.getItem('student_auth_status');
+
+            if (!isCompleted || isOnboarding) {
+                // Hide form, show wizard
                 if (mainForm) mainForm.style.display = 'none';
-                if (videoContainer) { 
-                    videoContainer.style.display = 'flex'; 
-                    document.body.style.overflow = 'hidden'; 
+                if (videoContainer) {
+                    videoContainer.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
                 }
-                
-                // Masquer tout ancien écran de succès/attente en cache pour jouer le parcours complet
-                if (isChameleon || vParam === 'start') {
+
+                // Always hide success/pending screens for fresh onboarding
+                if (isOnboarding) {
                     const successMsg = document.getElementById('success-msg');
                     const pendingMsg = document.getElementById('pending-msg');
                     if (successMsg) successMsg.style.display = 'none';
                     if (pendingMsg) pendingMsg.style.display = 'none';
                 }
-                
+
+                // Apply gender theme + text
                 if (source === 'H1F1' || source === 'F1H1' || (source.includes('H') && source.includes('F'))) {
-                    // Mixte / Neutre
+                    // Mixed/Neutral
                     if (headerText) headerText.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
                 } else if (source.startsWith('H') || source.includes('HOMME')) {
-                    document.body.className = 'theme-neon';
+                    window._chameleonTheme = 'theme-neon';
+                    document.body.className = 'theme-neon font-tajawal';
                     if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
                 } else if (source.startsWith('F') || source.includes('FEMME')) {
-                    document.body.className = 'theme-desert';
+                    window._chameleonTheme = 'theme-desert';
+                    document.body.className = 'theme-desert font-tajawal';
                     if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
@@ -1132,7 +1147,8 @@
             }
 
             // Bouton de validation (Fin du Wizard)
-            if (btnUnderstood) {
+            if (btnUnderstood && !btnUnderstood._chameleonBound) {
+                btnUnderstood._chameleonBound = true;
                 btnUnderstood.addEventListener('click', () => {
                     if (videoContainer) videoContainer.style.animation = 'scaleUp 0.3s reverse';
                     setTimeout(() => {
@@ -1156,11 +1172,10 @@
             }
         }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initChameleon);
-        } else {
-            initChameleon();
-        }
+        // Run immediately (DOM is already parsed at this point since script is at end of body)
+        initChameleon();
+        // Safety net: run again after 80ms in case any async code interfered
+        setTimeout(initChameleon, 80);
         // --------------------------
 
 
@@ -1424,9 +1439,14 @@
         function loadPreferences() {
             const savedTheme = window.SERVER_STUDENT_THEME || 'default';
             const savedFont = window.SERVER_STUDENT_FONT || 'font-tajawal';
-            
-            document.body.className = `${savedTheme !== 'default' ? savedTheme : ''} ${savedFont}`;
+            // If chameleon already set a theme, don't override it — just add the font class
+            if (window._chameleonTheme) {
+                document.body.className = `${window._chameleonTheme} ${savedFont}`;
+            } else {
+                document.body.className = `${savedTheme !== 'default' ? savedTheme : ''} ${savedFont}`;
+            }
         }
+
 
 
 

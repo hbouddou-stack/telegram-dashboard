@@ -282,9 +282,12 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 f"هذا البوت هو بوابتك الرسمية لتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
                 f"👇 <b>أنت على بُعد خطوة واحدة:</b> اضغط على الزر أدناه لربط حسابك أو التواصل مع الدعم:"
             )
+            import time as _time
+            _ts = int(_time.time())
             kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?source={start_arg}&v=start"))]
+                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?source={start_arg}&v=start&_t={_ts}"))]
             ])
+
 
         await send_welcome_with_banner(message, welcome_text, kb)
         await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"فتح البوت ({'مفعل' if student else 'جديد'})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
