@@ -1854,10 +1854,13 @@ async def api_gateway_log_action(request: web.Request):
 
             folder_link = ""
             group_desc = ""
+            source_tag = f" [رابط: {source_in}]" if source_in else ""
             if student_row:
                 resolved_id = student_row[0]
                 st_name = student_row[1] or first_name
                 desc = description or f"نشاط في مسار التأهيل للطالب {st_name} ({action_type})"
+                if source_tag and source_tag not in desc:
+                    desc += source_tag
                 await db.execute(
                     "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
                     (resolved_id, telegram_id or 0, first_name, username, action_type, desc)
@@ -1885,6 +1888,8 @@ async def api_gateway_log_action(request: web.Request):
             else:
                 target_sid = matched_student_id if matched_student_id > 0 else 0
                 desc = description or f"نشاط مسار لمستخدم (المعرف: {matched_student_id or 'غير محدد'} | {first_name or telegram_id or 'مجهول'})"
+                if source_tag and source_tag not in desc:
+                    desc += source_tag
                 await db.execute(
                     "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
                     (target_sid, telegram_id or 0, first_name, username, action_type, desc)
@@ -1955,6 +1960,7 @@ async def api_gateway_sos(request: web.Request):
         telegram_id = data.get('telegram_id')
         dob = data.get('dob', '')
         student_id = data.get('student_id', '')
+        source = (data.get('source') or '').strip()
         
         # Parse numeric student id if present
         numeric_sid = 0
@@ -1964,10 +1970,16 @@ async def api_gateway_sos(request: web.Request):
             except Exception:
                 numeric_sid = 0
 
-        desc_sos = f"🆘 طلب مساعدة SOS: '{message}' (الرقم المدخل: {student_id or 'غير محدد'} | البريد: {email or 'غير محدد'})"
+        source_label = f" [رابط: {source}]" if source else ""
+        desc_sos = f"🆘 طلب مساعدة SOS: '{message}' (الرقم المدخل: {student_id or 'غير محدد'} | البريد: {email or 'غير محدد'}){source_label}"
 
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative) VALUES (?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id))
+            try:
+                await db.execute("ALTER TABLE gateway_sos ADD COLUMN source TEXT")
+                await db.commit()
+            except Exception:
+                pass
+            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id, source))
             await db.execute(
                 "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
                 (numeric_sid, telegram_id or 0, '', '', 'SOS_REQUESTED', desc_sos)
@@ -1986,6 +1998,7 @@ async def api_gateway_sos(request: web.Request):
                 f"🆘 <b>Nouveau SOS Liaison !</b>\n\n"
                 f"📧 <b>Email saisi :</b> {email or 'N/A'}\n"
                 f"🪪 <b>Matricule :</b> {student_id or 'N/A'}\n"
+                f"🔗 <b>Lien / Source :</b> <code>{source or 'N/A'}</code>\n"
                 f"💬 <b>Message :</b>\n{message}\n\n"
                 f"👉 Répondez depuis le Dashboard Admin (/federer)"
             )
@@ -2004,7 +2017,9 @@ async def api_gateway_sos(request: web.Request):
                 bot = request.app['bot']
                 confirm_msg = (
                     f"⚠️ <b>تم استلام طلب المساعدة الخاص بك بنجاح</b>\n\n"
-                    f"<b>محتوى الرسالة:</b>\n<i>{message}</i>\n\n"
+                    f"<blockquote>"
+                    f"<b>محتوى رسالتك:</b>\n<i>{message}</i>"
+                    f"</blockquote>\n\n"
                     f"سيقوم أحد المشرفين بمراجعة طلبك والرد عليك في أقرب وقت ممكن عبر هذه المحادثة."
                 )
                 await bot.send_message(int(telegram_id), confirm_msg, parse_mode="HTML")
@@ -2047,20 +2062,90 @@ async def api_admin_sos_list(request: web.Request):
 async def api_admin_sos_reply(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+    from keyboards import get_webapp_base_url
     try:
         data = await request.json()
         sos_id = data.get('sos_id')
-        reply_message = data.get('reply_message')
+        reply_message = (data.get('reply_message') or '').strip()
         telegram_id = data.get('telegram_id') # To send back if available, otherwise just mark closed
         
-        if telegram_id:
-            try:
-                bot = request.app['bot']
-                await bot.send_message(int(telegram_id), f"<b>🛠️ Réponse du Support Académie</b>\n\n{reply_message}", parse_mode="HTML")
-            except Exception as e:
-                print(f"Error sending SOS reply to student {telegram_id}: {e}")
-                
+        email = ""
+        student_id_entered = ""
+        student_msg = ""
+        source = ""
+
         async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            if sos_id:
+                async with db.execute("SELECT * FROM gateway_sos WHERE id = ?", (sos_id,)) as cur:
+                    sos_row = await cur.fetchone()
+                    if sos_row:
+                        sos_dict = dict(sos_row)
+                        email = sos_dict.get('email_tentative') or ""
+                        student_id_entered = sos_dict.get('student_id_tentative') or ""
+                        student_msg = sos_dict.get('message') or ""
+                        source = sos_dict.get('source') or ""
+                        if not telegram_id:
+                            telegram_id = sos_dict.get('telegram_id')
+
+            if not source and telegram_id:
+                # Find source from recent student_logs
+                async with db.execute("SELECT description FROM student_logs WHERE telegram_id = ? AND description LIKE '%[رابط:%' ORDER BY id DESC LIMIT 1", (telegram_id,)) as cur_src:
+                    r_src = await cur_src.fetchone()
+                    if r_src:
+                        import re
+                        m = re.search(r'\[رابط:\s*([^\]]+)\]', r_src[0])
+                        if m:
+                            source = m.group(1).strip()
+
+            if not source and telegram_id:
+                async with db.execute("SELECT gender FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur_g:
+                    rg = await cur_g.fetchone()
+                    if rg and rg[0] == 'FEMME':
+                        source = 'F1'
+                    elif rg and rg[0] == 'HOMME':
+                        source = 'H1'
+
+            if not source:
+                source = 'F1'
+
+            if telegram_id:
+                try:
+                    bot = request.app['bot']
+                    base_url = get_webapp_base_url()
+                    reply_url = f"{base_url}/link.html?source={source}&v=start"
+                    
+                    response_text = (
+                        "<blockquote>"
+                        "🛠️ <b>رد إدارة أكاديمية الباجي:</b>\n\n"
+                        f"{reply_message}"
+                        "</blockquote>\n\n"
+                        "<blockquote>"
+                        "📋 <b>تفاصيل طلبك المسجلة لدينا:</b>\n"
+                        f"• <b>رسالتك:</b> {student_msg or 'طلب مساعدة'}\n"
+                        f"• <b>رقم الطالب المدخل:</b> <code>{student_id_entered or 'غير محدد'}</code>\n"
+                        f"• <b>البريد الإلكتروني:</b> <code>{email or 'غير محدد'}</code>"
+                        "</blockquote>\n\n"
+                        "👇 <b>يمكنك إعادة المحاولة وتأكيد بياناتك مباشرة عبر الزر أدناه:</b>"
+                    )
+                    
+                    reply_kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(text="🔄 إعادة محاولة تأكيد وربط الحساب", web_app=WebAppInfo(url=reply_url))]
+                    ])
+                    
+                    await bot.send_message(int(telegram_id), response_text, reply_markup=reply_kb, parse_mode="HTML")
+                    
+                    # Log in student_logs
+                    desc_reply = f"تم إرسال رد الإدارة على استغاثة SOS مع زر إعادة المحاولة [رابط: {source}]"
+                    numeric_sid = int(student_id_entered) if student_id_entered and str(student_id_entered).isdigit() else 0
+                    await db.execute(
+                        "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
+                        (numeric_sid, int(telegram_id), '', '', 'SOS_REPLIED', desc_reply)
+                    )
+                except Exception as e:
+                    print(f"Error sending SOS reply to student {telegram_id}: {e}")
+
             await db.execute("UPDATE gateway_sos SET status = 'closed' WHERE id = ?", (sos_id,))
             await db.commit()
         return web.json_response({'success': True})
@@ -5642,6 +5727,8 @@ async def api_link_account(request: web.Request):
         email = data.get('email', '').strip().lower()
         phone = data.get('phone', '').strip()
         student_id_input = data.get('student_id', '').strip()
+        source = (data.get('source') or '').strip().upper()
+        source_suffix = f" [رابط: {source}]" if source else ""
         
         telegram_id = data.get('telegram_id')
         telegram_first_name = data.get('telegram_first_name', '')
@@ -5700,7 +5787,7 @@ async def api_link_account(request: web.Request):
                     await db_conn.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (telegram_id, telegram_username, student['student_id']))
                     await db_conn.commit()
                     
-                    await log_student_action(student['student_id'], 'LINK_SUCCESS_APPROVED', f"تم تفعيل الحساب وتأكيد الدفع ({student.get('gender')})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    await log_student_action(student['student_id'], 'LINK_SUCCESS_APPROVED', f"تم تفعيل الحساب وتأكيد الدفع ({student.get('gender')}){source_suffix}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
                     
                     bot = request.app.get('bot')
                     links = await generate_and_send_student_links(bot, telegram_id, student, request.app)
@@ -5728,7 +5815,7 @@ async def api_link_account(request: web.Request):
                 else:
                     # Trouvé mais statut non payé -> En attente
                     await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
-                    await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في صالة الانتظار لتأكيد التحويل - رقم الطالب: {student['student_id']} - البريد: {email}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في صالة الانتظار لتأكيد التحويل - رقم الطالب: {student['student_id']} - البريد: {email}{source_suffix}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
                 # 3. Webhook Admin Alert: Send Instant Notification with 1-Click Approval Buttons to Support Group
                 from config import TELEGRAM_SUPPORT_GROUP_ID
                 if bot and TELEGRAM_SUPPORT_GROUP_ID:
@@ -5748,7 +5835,8 @@ async def api_link_account(request: web.Request):
                             f"👤 <b>الاسم:</b> {telegram_name} (@{telegram_username or 'بدون معرف'})\n"
                             f"📧 <b>البريد:</b> <code>{email or 'غير محدد'}</code>\n"
                             f"🆔 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
-                            f"🔢 <b>رقم الطالب:</b> <code>{student_id_input or 'غير محدد'}</code>\n\n"
+                            f"🔢 <b>رقم الطالب:</b> <code>{student_id_input or 'غير محدد'}</code>\n"
+                            f"🔗 <b>الرابط / المصدر:</b> <code>{source or 'غير محدد'}</code>\n\n"
                             f"🔍 <i>يمكنك التحقق والضغط مباشرة على زر التفعيل لإرسال روابط المجموعات للطالب فوراً:</i>"
                         )
                         await bot.send_message(
@@ -5788,7 +5876,7 @@ async def api_link_account(request: web.Request):
                     except Exception:
                         numeric_sid = 0
                 await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
-                await log_student_action(numeric_sid, 'LINK_WAITING_EXCEL', f"تسجيل جديد في صالة الانتظار لمطابقة الإكسيل - رقم الطالب المدخل: {student_id_input or 'غير محدد'} - البريد: {email}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                await log_student_action(numeric_sid, 'LINK_WAITING_EXCEL', f"تسجيل جديد في صالة الانتظار لمطابقة الإكسيل - رقم الطالب المدخل: {student_id_input or 'غير محدد'} - البريد: {email}{source_suffix}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
                 # 3. Webhook Admin Alert: Send Instant Notification with 1-Click Approval Buttons to Support Group
                 from config import TELEGRAM_SUPPORT_GROUP_ID
                 if bot and TELEGRAM_SUPPORT_GROUP_ID:
@@ -5808,7 +5896,8 @@ async def api_link_account(request: web.Request):
                             f"👤 <b>الاسم:</b> {telegram_name} (@{telegram_username or 'بدون معرف'})\n"
                             f"📧 <b>البريد:</b> <code>{email or 'غير محدد'}</code>\n"
                             f"🆔 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
-                            f"🔢 <b>رقم الطالب:</b> <code>{student_id_input or 'غير محدد'}</code>\n\n"
+                            f"🔢 <b>رقم الطالب:</b> <code>{student_id_input or 'غير محدد'}</code>\n"
+                            f"🔗 <b>الرابط / المصدر:</b> <code>{source or 'غير محدد'}</code>\n\n"
                             f"🔍 <i>يمكنك التحقق والضغط مباشرة على زر التفعيل لإرسال روابط المجموعات للطالب فوراً:</i>"
                         )
                         await bot.send_message(

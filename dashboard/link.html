@@ -1897,10 +1897,11 @@
             }
 
             try {
+                const srcParam = window._onboardingSource || new URLSearchParams(window.location.search).get('source') || '';
                 const response = await fetch('/api/link_account', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, student_id, initData })
+                    body: JSON.stringify({ email, student_id, initData, source: srcParam })
                 });
                 const data = await response.json();
                 
@@ -2063,18 +2064,19 @@
                     const sp = new URLSearchParams(window.location.search);
                     tid = sp.get('telegram_id') || sp.get('tg_id') || sp.get('user_id');
                 }
+                const srcParam = window._onboardingSource || new URLSearchParams(window.location.search).get('source') || '';
                 let response;
                 try {
                     response = await fetch('/api/gateway/sos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
+                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id, source: srcParam })
                     });
                 } catch(netErr) {
                     response = await fetch('/api/sos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
+                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id, source: srcParam })
                     });
                 }
                 slog('HTTP ' + response.status, response.ok ? '#22c55e' : '#ef4444');

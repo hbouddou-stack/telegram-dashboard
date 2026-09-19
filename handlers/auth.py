@@ -290,7 +290,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
 
 
         await send_welcome_with_banner(message, welcome_text, kb)
-        await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"فتح البوت ({'مفعل' if student else 'جديد'})", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
+        source_label = f" [رابط: {start_arg}]" if start_arg else ""
+        await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"فتح البوت ({'مفعل' if student else 'جديد'}){source_label}", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
 
     except Exception as e:
         logger.error(f"[START] Error: {e}")
