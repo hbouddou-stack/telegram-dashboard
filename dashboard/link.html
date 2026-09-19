@@ -2139,8 +2139,21 @@
                 if (!tid) {
                     tid = sp.get('telegram_id') || sp.get('tg_id') || sp.get('user_id');
                 }
-                if (!tgFirstName) tgFirstName = sp.get('tg_name') || sp.get('first_name') || '';
-                if (!tgUsername) tgUsername = sp.get('tg_user') || sp.get('username') || '';
+                if (!tid) {
+                    try { tid = sessionStorage.getItem('tg_id'); } catch(e) {}
+                }
+                if (!tgFirstName) {
+                    tgFirstName = sp.get('tg_name') || sp.get('first_name') || '';
+                    if (!tgFirstName) {
+                        try { tgFirstName = sessionStorage.getItem('tg_name') || ''; } catch(e) {}
+                    }
+                }
+                if (!tgUsername) {
+                    tgUsername = sp.get('tg_user') || sp.get('username') || '';
+                    if (!tgUsername) {
+                        try { tgUsername = sessionStorage.getItem('tg_user') || ''; } catch(e) {}
+                    }
+                }
 
                 const srcParam = window._onboardingSource || sp.get('source') || '';
                 const rawInit = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) ? window.Telegram.WebApp.initData : '';
@@ -2175,14 +2188,10 @@
                     closeSOS();
                     document.getElementById('sos_msg').value = '';
                     slog('Envoye avec succes !', '#22c55e');
-                    if (window.trackFunnelStep) {
-                        const desc = `أرسل الطالب رسالة استغاثة SOS: "${msg}" (الرقم المدخل: ${student_id || 'غير محدد'} | البريد: ${email || 'غير محدد'})`;
-                        window.trackFunnelStep('ONBOARDING_SOS_SENT', desc, 'STEP_SOS_SENT');
-                    }
                     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
                         window.Telegram.WebApp.showAlert("تم ارسال طلبك بنجاح. سيتم الرد عليك قريبا في رسالة خاصة.");
                     } else {
-                        alert("Envoye avec succes !");
+                        alert("تم إرسال طلب المساعدة بنجاح!");
                     }
                 } else {
                     slog('Erreur HTTP ' + response.status, '#ef4444');

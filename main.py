@@ -1985,16 +1985,46 @@ async def api_gateway_sos(request: web.Request):
             except Exception:
                 numeric_sid = 0
 
-        source_label = f" [رابط: {source}]" if source else ""
-        desc_sos = f"🆘 طلب مساعدة SOS: '{message}' (الرقم المدخل: {student_id or 'غير محدد'} | البريد: {email or 'غير محدد'}){source_label}"
-        tg_display = f"{first_name} {last_name}".strip()
-
         async with aiosqlite.connect(DATABASE_PATH) as db:
             try:
                 await db.execute("ALTER TABLE gateway_sos ADD COLUMN source TEXT")
                 await db.commit()
             except Exception:
                 pass
+
+            # Auto-resolve student if numeric_sid is 0
+            if numeric_sid == 0 and telegram_id:
+                try:
+                    async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur_s:
+                        row_s = await cur_s.fetchone()
+                        if row_s:
+                            numeric_sid = row_s[0]
+                except Exception:
+                    pass
+            if numeric_sid == 0 and email:
+                try:
+                    async with db.execute("SELECT student_id, first_name FROM academy_students WHERE LOWER(email) = ?", (email.strip().lower(),)) as cur_e:
+                        row_e = await cur_e.fetchone()
+                        if row_e:
+                            numeric_sid = row_e[0]
+                except Exception:
+                    pass
+
+            # Auto-resolve Telegram names from bot_visitors if missing
+            if telegram_id and (not first_name or not username):
+                try:
+                    async with db.execute("SELECT first_name, username FROM bot_visitors WHERE telegram_id = ?", (telegram_id,)) as cur_v:
+                        v_row = await cur_v.fetchone()
+                        if v_row:
+                            if not first_name: first_name = v_row[0] or ''
+                            if not username: username = v_row[1] or ''
+                except Exception:
+                    pass
+
+            tg_display = f"{first_name} {last_name}".strip()
+            source_label = f" [رابط: {source}]" if source else ""
+            desc_sos = f"🆘 طلب مساعدة SOS: '{message}' (الرقم: {numeric_sid or student_id or 'غير محدد'} | البريد: {email or 'غير محدد'}){source_label}"
+
             if telegram_id:
                 try:
                     await db.execute("""
@@ -2008,7 +2038,7 @@ async def api_gateway_sos(request: web.Request):
                 except Exception:
                     pass
 
-            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id, source))
+            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source))
             await db.execute(
                 "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
                 (numeric_sid, telegram_id or 0, tg_display, username, 'SOS_REQUESTED', desc_sos)
