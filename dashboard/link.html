@@ -10,10 +10,13 @@
             var p = new URLSearchParams(window.location.search);
             var src = (p.get('source') || '').toUpperCase();
             var v   = (p.get('v')      || '').toLowerCase();
-            var isOnboarding = v === 'start'
+            var step = (p.get('step')  || '').toLowerCase();
+            var isDirect = p.get('direct') === '1' || p.get('direct') === 'true' || step === 'form' || v === 'form' || v === 'retry' || p.has('retry');
+            
+            var isOnboarding = !isDirect && (v === 'start'
                 || src.startsWith('H') || src.startsWith('F')
                 || src.indexOf('H1') !== -1 || src.indexOf('F1') !== -1
-                || src.indexOf('HOMME') !== -1 || src.indexOf('FEMME') !== -1;
+                || src.indexOf('HOMME') !== -1 || src.indexOf('FEMME') !== -1);
             if (isOnboarding) {
                 document.documentElement.classList.add('onboarding-mode');
                 // Also wipe stale localStorage immediately
@@ -22,6 +25,7 @@
             }
             // Store for use later by chameleon logic
             window._isOnboardingMode = isOnboarding;
+            window._isDirectForm = isDirect;
             window._onboardingSource = src;
 
             // Apply theme immediately to document root so there is zero flicker
@@ -1163,6 +1167,8 @@
             const params = new URLSearchParams(window.location.search);
             const source = (window._onboardingSource || (params.get('source') || '').toUpperCase());
             const vParam = (params.get('v') || '').toLowerCase();
+            const stepParam = (params.get('step') || '').toLowerCase();
+            const isDirectForm = window._isDirectForm || params.get('direct') === '1' || params.get('direct') === 'true' || stepParam === 'form' || vParam === 'form' || vParam === 'retry' || params.has('retry');
 
             const mainForm = document.getElementById('main-form');
             const videoContainer = document.getElementById('dynamic-video-container');
@@ -1171,11 +1177,32 @@
             const headerText = document.querySelector('h1');
             const pText = document.querySelector('#main-form p');
 
-            const isOnboarding = window._isOnboardingMode !== undefined
+            const isOnboarding = !isDirectForm && (window._isOnboardingMode !== undefined
                 ? window._isOnboardingMode
-                : (vParam === 'start' || source.startsWith('H') || source.startsWith('F'));
+                : (vParam === 'start' || source.startsWith('H') || source.startsWith('F')));
 
-            if (isOnboarding) {
+            if (isDirectForm) {
+                // Direct form mode: skip onboarding videos completely
+                document.documentElement.classList.remove('onboarding-mode');
+                document.body.classList.remove('onboarding-mode');
+                window._isOnboardingMode = false;
+                if (videoContainer) {
+                    videoContainer.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+                if (mainForm) {
+                    mainForm.setAttribute('style', 'display: flex !important; flex-direction: column; gap: 20px;');
+                }
+                try {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        if (window.Telegram.WebApp.MainButton) window.Telegram.WebApp.MainButton.hide();
+                        if (window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.hide();
+                    }
+                } catch(e) {}
+                if (window.trackFunnelStep) {
+                    window.trackFunnelStep('ONBOARDING_DIRECT_FORM', 'دخول مباشر إلى نموذج الربط عبر زر الدعم أو الرابط المباشر', 'STEP_4_FORM');
+                }
+            } else if (isOnboarding) {
                 // CSS already handles display — just ensure body scroll and inline styles are set
                 if (mainForm) mainForm.style.display = 'none';
                 if (videoContainer) {
@@ -1186,25 +1213,25 @@
                 const pendingMsg = document.getElementById('pending-msg');
                 if (successMsg) successMsg.style.display = 'none';
                 if (pendingMsg) pendingMsg.style.display = 'none';
+            }
 
-                // Apply gender theme + personalized text
-                if (source === 'H1F1' || source === 'F1H1' || (source.includes('H') && source.includes('F'))) {
-                    if (headerText) headerText.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
-                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
-                    if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
-                } else if (source.startsWith('H') || source.includes('HOMME')) {
-                    window._chameleonTheme = 'theme-neon';
-                    document.body.className = 'theme-neon font-tajawal';
-                    if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
-                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
-                    if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
-                } else if (source.startsWith('F') || source.includes('FEMME')) {
-                    window._chameleonTheme = 'theme-desert';
-                    document.body.className = 'theme-desert font-tajawal';
-                    if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
-                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
-                    if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
-                }
+            // Apply gender theme + personalized text (always, in both modes)
+            if (source === 'H1F1' || source === 'F1H1' || (source.includes('H') && source.includes('F'))) {
+                if (headerText) headerText.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
+                if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
+            } else if (source.startsWith('H') || source.includes('HOMME')) {
+                window._chameleonTheme = 'theme-neon';
+                document.body.className = 'theme-neon font-tajawal';
+                if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
+                if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
+            } else if (source.startsWith('F') || source.includes('FEMME')) {
+                window._chameleonTheme = 'theme-desert';
+                document.body.className = 'theme-desert font-tajawal';
+                if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
+                if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
+                if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
             }
 
             // Wizard finish button (Bulletproof version)
@@ -2057,26 +2084,44 @@
             
             try {
                 let tid = null;
+                let tgFirstName = '';
+                let tgLastName = '';
+                let tgUsername = '';
                 if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                    tid = window.Telegram.WebApp.initDataUnsafe.user.id;
+                    const u = window.Telegram.WebApp.initDataUnsafe.user;
+                    tid = u.id;
+                    tgFirstName = u.first_name || '';
+                    tgLastName = u.last_name || '';
+                    tgUsername = u.username || '';
                 }
                 if (!tid) {
                     const sp = new URLSearchParams(window.location.search);
                     tid = sp.get('telegram_id') || sp.get('tg_id') || sp.get('user_id');
                 }
                 const srcParam = window._onboardingSource || new URLSearchParams(window.location.search).get('source') || '';
+                const sosPayload = {
+                    email,
+                    message: msg,
+                    telegram_id: tid,
+                    dob: dob,
+                    student_id: student_id,
+                    source: srcParam,
+                    first_name: tgFirstName,
+                    last_name: tgLastName,
+                    username: tgUsername
+                };
                 let response;
                 try {
                     response = await fetch('/api/gateway/sos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id, source: srcParam })
+                        body: JSON.stringify(sosPayload)
                     });
                 } catch(netErr) {
                     response = await fetch('/api/sos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id, source: srcParam })
+                        body: JSON.stringify(sosPayload)
                     });
                 }
                 slog('HTTP ' + response.status, response.ok ? '#22c55e' : '#ef4444');

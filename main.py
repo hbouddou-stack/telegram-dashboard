@@ -1961,6 +1961,9 @@ async def api_gateway_sos(request: web.Request):
         dob = data.get('dob', '')
         student_id = data.get('student_id', '')
         source = (data.get('source') or '').strip()
+        first_name = (data.get('first_name') or '').strip()
+        last_name = (data.get('last_name') or '').strip()
+        username = (data.get('username') or '').strip()
         
         # Parse numeric student id if present
         numeric_sid = 0
@@ -1972,6 +1975,7 @@ async def api_gateway_sos(request: web.Request):
 
         source_label = f" [رابط: {source}]" if source else ""
         desc_sos = f"🆘 طلب مساعدة SOS: '{message}' (الرقم المدخل: {student_id or 'غير محدد'} | البريد: {email or 'غير محدد'}){source_label}"
+        tg_display = f"{first_name} {last_name}".strip()
 
         async with aiosqlite.connect(DATABASE_PATH) as db:
             try:
@@ -1979,10 +1983,23 @@ async def api_gateway_sos(request: web.Request):
                 await db.commit()
             except Exception:
                 pass
+            if telegram_id:
+                try:
+                    await db.execute("""
+                        INSERT INTO users (telegram_id, first_name, last_name, username) 
+                        VALUES (?, ?, ?, ?) 
+                        ON CONFLICT(telegram_id) DO UPDATE SET 
+                            first_name = COALESCE(NULLIF(excluded.first_name, ''), users.first_name),
+                            last_name = COALESCE(NULLIF(excluded.last_name, ''), users.last_name),
+                            username = COALESCE(NULLIF(excluded.username, ''), users.username)
+                    """, (telegram_id, first_name, last_name, username))
+                except Exception:
+                    pass
+
             await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id, source))
             await db.execute(
                 "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
-                (numeric_sid, telegram_id or 0, '', '', 'SOS_REQUESTED', desc_sos)
+                (numeric_sid, telegram_id or 0, tg_display, username, 'SOS_REQUESTED', desc_sos)
             )
             if numeric_sid > 0:
                 try:
@@ -1994,12 +2011,19 @@ async def api_gateway_sos(request: web.Request):
         # Notify admins via Telegram
         try:
             from config import TELEGRAM_ADMIN_IDS
+            user_info_str = f"✈️ <b>Compte Telegram :</b> {tg_display or 'N/A'}"
+            if username:
+                user_info_str += f" (@{username})"
+            if telegram_id:
+                user_info_str += f" [ID: <code>{telegram_id}</code>]"
+
             admin_notif = (
                 f"🆘 <b>Nouveau SOS Liaison !</b>\n\n"
-                f"📧 <b>Email saisi :</b> {email or 'N/A'}\n"
-                f"🪪 <b>Matricule :</b> {student_id or 'N/A'}\n"
+                f"{user_info_str}\n"
+                f"📧 <b>Email saisi :</b> <code>{email or 'N/A'}</code>\n"
+                f"🪪 <b>Matricule :</b> <code>{student_id or 'N/A'}</code>\n"
                 f"🔗 <b>Lien / Source :</b> <code>{source or 'N/A'}</code>\n"
-                f"💬 <b>Message :</b>\n{message}\n\n"
+                f"💬 <b>Message :</b>\n<blockquote>{message}</blockquote>\n\n"
                 f"👉 Répondez depuis le Dashboard Admin (/federer)"
             )
             bot = request.app['bot']
@@ -2049,12 +2073,41 @@ async def api_admin_sos_list(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("""
-                SELECT g.*, s.gender, s.first_name, s.last_name 
+                SELECT g.*, 
+                       s.gender AS student_gender, s.first_name AS student_first_name, s.last_name AS student_last_name,
+                       u.first_name AS tg_first_name, u.last_name AS tg_last_name, u.username AS tg_username
                 FROM gateway_sos g
-                LEFT JOIN academy_students s ON g.email_tentative = s.email OR g.student_id_tentative = s.student_id
+                LEFT JOIN academy_students s ON (
+                    (g.email_tentative IS NOT NULL AND g.email_tentative != '' AND LOWER(TRIM(g.email_tentative)) = LOWER(TRIM(s.email))) 
+                    OR (g.student_id_tentative IS NOT NULL AND g.student_id_tentative != '' AND g.student_id_tentative = s.student_id)
+                )
+                LEFT JOIN users u ON g.telegram_id = u.telegram_id
                 ORDER BY g.id DESC LIMIT 100
             """) as cur:
-                sos_list = [dict(row) for row in await cur.fetchall()]
+                rows = [dict(row) for row in await cur.fetchall()]
+            
+            sos_list = []
+            for r in rows:
+                item = dict(r)
+                if item.get('student_first_name') or item.get('student_last_name'):
+                    item['first_name'] = item.get('student_first_name')
+                    item['last_name'] = item.get('student_last_name')
+                    item['gender'] = item.get('student_gender')
+                if (not item.get('tg_first_name') or not item.get('tg_username')) and item.get('telegram_id'):
+                    async with db.execute("""
+                        SELECT telegram_name, telegram_username 
+                        FROM student_logs 
+                        WHERE telegram_id = ? AND (telegram_name != '' OR telegram_username != '')
+                        ORDER BY id DESC LIMIT 1
+                    """, (item['telegram_id'],)) as cur_l:
+                        row_l = await cur_l.fetchone()
+                        if row_l:
+                            if not item.get('tg_first_name') and row_l[0]:
+                                item['tg_first_name'] = row_l[0]
+                            if not item.get('tg_username') and row_l[1]:
+                                item['tg_username'] = row_l[1]
+                sos_list.append(item)
+
         return web.json_response({'success': True, 'sos_list': sos_list})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
@@ -2114,7 +2167,7 @@ async def api_admin_sos_reply(request: web.Request):
                 try:
                     bot = request.app['bot']
                     base_url = get_webapp_base_url()
-                    reply_url = f"{base_url}/link.html?source={source}&v=start"
+                    reply_url = f"{base_url}/link.html?source={source}&step=form&direct=1"
                     
                     response_text = (
                         "<blockquote>"

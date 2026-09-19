@@ -9628,7 +9628,10 @@ async function toggleStudentValidity() {
                         || (s.student_id_tentative || '').toLowerCase().includes(q)
                         || String(s.telegram_id || '').toLowerCase().includes(q)
                         || (s.first_name || '').toLowerCase().includes(q)
-                        || (s.last_name || '').toLowerCase().includes(q);
+                        || (s.last_name || '').toLowerCase().includes(q)
+                        || (s.tg_first_name || '').toLowerCase().includes(q)
+                        || (s.tg_username || '').toLowerCase().includes(q)
+                        || (s.source || '').toLowerCase().includes(q);
                     if (!matchSearch) return false;
                 }
                 
@@ -9651,9 +9654,50 @@ async function toggleStudentValidity() {
                     ? '<span class="badge badge-linked">تم حلها</span>'
                     : '<span class="badge badge-open">قيد المعالجة</span>';
                 
-                const matchedStudent = allStudents.find(st => st.telegram_id && String(st.telegram_id) === String(sos.telegram_id));
-                const dbName = (sos.first_name || sos.last_name) ? ((sos.first_name || '') + ' ' + (sos.last_name || '')).trim() : 'غير معروف';
-                const tgName = matchedStudent && matchedStudent.first_name ? matchedStudent.first_name : dbName;
+                const matchedStudent = allStudents.find(st => 
+                    (st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
+                    (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
+                    (sos.student_id_tentative && String(st.student_id) === String(sos.student_id_tentative))
+                );
+
+                const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
+                const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
+                const hasDbName = !!(dbFirstName || dbLastName);
+                const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
+
+                // Telegram info
+                let tgFirst = sos.tg_first_name || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
+                let tgLast = sos.tg_last_name || (matchedStudent ? matchedStudent.tg_last_name : '');
+                let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
+                let tgUsername = (sos.tg_username || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
+
+                let nameBadgeHtml = '';
+                if (hasDbName) {
+                    nameBadgeHtml = `
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-weight:800; color:var(--accent); font-size:1.02rem;">👤 ${dbFullName}</span>
+                            ${tgUsername ? `<span dir="ltr" style="font-size:0.8rem; font-weight:700; color:#0a84ff; background:rgba(10,132,255,0.12); padding:1px 6px; border-radius:6px;">@${tgUsername}</span>` : ''}
+                        </div>
+                    `;
+                } else if (tgFullName || tgUsername) {
+                    nameBadgeHtml = `
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-weight:800; color:#0088cc; font-size:1.02rem; display:flex; align-items:center; gap:4px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0088cc" style="vertical-align:middle;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                                <span>${tgFullName || 'مستخدم تيليجرام'}</span>
+                            </span>
+                            ${tgUsername ? `<span dir="ltr" style="font-size:0.82rem; font-weight:800; color:#0088cc; background:rgba(0,136,204,0.15); border:1px solid rgba(0,136,204,0.3); padding:1px 7px; border-radius:6px;">@${tgUsername}</span>` : ''}
+                            <span style="font-size:0.75rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:1px 6px; border-radius:6px;">(تيليجرام - غير مسجل بالقاعدة)</span>
+                        </div>
+                    `;
+                } else {
+                    nameBadgeHtml = `
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-weight:700; color:var(--text2); font-size:0.95rem;">👤 غير معروف</span>
+                            ${sos.telegram_id ? `<span dir="ltr" style="font-size:0.78rem; font-family:monospace; color:var(--text2);">ID: ${sos.telegram_id}</span>` : ''}
+                        </div>
+                    `;
+                }
                 
                 const g = (sos.gender || '').toLowerCase();
                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
@@ -9666,12 +9710,16 @@ async function toggleStudentValidity() {
                 
                 div.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <div style="font-weight:800; color:var(--accent);">👤 ${tgName}</div>
+                        ${nameBadgeHtml}
                         ${statusBadge}
                     </div>
-                    <div style="font-weight:700; font-size:0.9rem; color:var(--text1); margin-bottom:4px;">📧 ${sos.email_tentative || 'غير معروف'}</div>
-                    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:8px;">🕒 <span dir="ltr">${formatDateArabic(sos.timestamp)}</span></div>
-                    <div style="font-size:0.9rem;color:var(--text1); background:rgba(0,0,0,0.2); padding:8px; border-radius:8px;">${sos.message || ''}</div>
+                    <div style="font-weight:700; font-size:0.9rem; color:var(--text1); margin-bottom:4px;">📧 ${sos.email_tentative || 'غير محدد'}</div>
+                    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:8px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                        <span>🕒 <span dir="ltr">${formatDateArabic(sos.timestamp)}</span></span>
+                        ${sos.student_id_tentative ? `<span>🔢 الرقم المدخل: <code style="color:#ff9f0a; font-weight:800;">${sos.student_id_tentative}</code></span>` : ''}
+                        ${sos.source ? `<span>🔗 المصدر: <code style="color:#a855f7; font-weight:800;">${sos.source}</code></span>` : ''}
+                    </div>
+                    <div style="font-size:0.9rem;color:var(--text1); background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; border-right:3px solid var(--accent);">${sos.message || ''}</div>
                 `;
 
                 list.appendChild(div);
@@ -9683,10 +9731,38 @@ async function toggleStudentValidity() {
             activeSosTid = sos.telegram_id;
             activeSosEmail = sos.email_tentative;
             activeSosStudentId = sos.student_id_tentative;
+            
+            const matchedStudent = allStudents.find(st => 
+                (st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
+                (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
+                (sos.student_id_tentative && String(st.student_id) === String(sos.student_id_tentative))
+            );
+            const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
+            const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
+            const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
+            let tgFirst = sos.tg_first_name || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
+            let tgLast = sos.tg_last_name || (matchedStudent ? matchedStudent.tg_last_name : '');
+            let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
+            let tgUsername = (sos.tg_username || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
+
+            let whoHtml = '';
+            if (dbFullName) {
+                whoHtml = `<strong>الاسم بالقاعدة:</strong> ${dbFullName}`;
+                if (tgFullName || tgUsername) {
+                    whoHtml += `<br><strong>حساب تيليجرام:</strong> ✈️ ${tgFullName || ''} ${tgUsername ? `(@${tgUsername})` : ''}`;
+                }
+            } else if (tgFullName || tgUsername) {
+                whoHtml = `<strong>حساب تيليجرام:</strong> <span style="color:#0088cc; font-weight:800;">✈️ ${tgFullName || 'مجهول'} ${tgUsername ? `(@${tgUsername})` : ''}</span> <em style="color:#f59e0b;">(غير مسجل بالقاعدة)</em>`;
+            } else {
+                whoHtml = `<strong>الحساب:</strong> غير مسجل بالقاعدة`;
+            }
+
             document.getElementById('sos-modal-meta').innerHTML =
-                '<strong>البريد:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
-                '<strong>المطابقة:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
+                whoHtml + '<br>' +
+                '<strong>البريد المدخل:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
+                '<strong>رقم الطالب المدخل:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
                 '<strong>TG ID:</strong> ' + (sos.telegram_id || 'غير معروف') + '<br>' +
+                (sos.source ? ('<strong>الرابط / المصدر:</strong> <code>' + sos.source + '</code><br>') : '') +
                 '<strong>الوقت:</strong> ' + formatDateArabic(sos.timestamp);
             document.getElementById('sos-modal-message').textContent = sos.message || '';
             document.getElementById('sos-reply-text').value = '';
