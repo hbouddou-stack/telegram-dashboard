@@ -20,7 +20,7 @@ def get_webapp_base_url() -> str:
             if not v.startswith("http://") and not v.startswith("https://"):
                 v = f"https://{v}"
             return v
-    return "https://web-production-64c9ab.up.railway.app"
+    return "https://web-production-58dfa.up.railway.app"
 
 async def send_welcome_with_banner(message: Message, text: str, reply_markup: InlineKeyboardMarkup):
     logo_path = os.path.join(os.path.dirname(__file__), "..", "dashboard", "logo_albaji.png")

@@ -813,7 +813,7 @@ def get_webapp_base_url() -> str:
             if not v.startswith("http://") and not v.startswith("https://"):
                 v = f"https://{v}"
             return v
-    return "https://web-production-64c9ab.up.railway.app"
+    return "https://web-production-58dfa.up.railway.app"
 
 def get_admin_panel_keyboard(pending_reports: int = 0, pending_proposals: int = 0, show_settings: bool = False, role: str = None) -> InlineKeyboardMarkup:
     """Keyboard for the Admin Panel with inbox first, stats, settings, and student mode switcher."""

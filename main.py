@@ -2255,7 +2255,7 @@ async def handle_link(request):
                 
         # Inject script
         script = f"<script>window.SERVER_STUDENT_THEME = '{student_theme}'; window.SERVER_STUDENT_FONT = '{student_font}';</script>"
-        content = content.replace('<head>', '<head>' + script)
+        content = content.replace('<head>', '<head>' + script, 1)
         
         resp = web.Response(body=content, content_type='text/html')
         resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'

@@ -20,9 +20,20 @@
                 try { localStorage.removeItem('student_auth_status'); } catch(e) {}
                 try { localStorage.removeItem('student_auth_data'); } catch(e) {}
             }
-            // Store for use later by initChameleon
+            // Store for use later by chameleon logic
             window._isOnboardingMode = isOnboarding;
             window._onboardingSource = src;
+
+            // Apply theme immediately to document root so there is zero flicker
+            if (src === 'H1F1' || src === 'F1H1' || (src.indexOf('H') !== -1 && src.indexOf('F') !== -1)) {
+                // Neutral
+            } else if (src.startsWith('F') || src.indexOf('FEMME') !== -1) {
+                window._chameleonTheme = 'theme-desert';
+                document.documentElement.classList.add('theme-desert');
+            } else if (src.startsWith('H') || src.indexOf('HOMME') !== -1) {
+                window._chameleonTheme = 'theme-neon';
+                document.documentElement.classList.add('theme-neon');
+            }
         })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -30,12 +41,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Cairo:wght@400;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* === ONBOARDING MODE: controlled by early <head> script === */
+        /* === ONBOARDING MODE: controlled by early script === */
         html.onboarding-mode #main-form               { display: none !important; }
         html.onboarding-mode #success-msg             { display: none !important; }
         html.onboarding-mode #pending-msg             { display: none !important; }
         html.onboarding-mode #dynamic-video-container { display: flex !important; }
-        /* =========================================================== */
+        /* =================================================== */
 
         @keyframes pulse-glow {
             0% { box-shadow: 0 0 5px rgba(10,132,255,0.2); transform: scale(1); }
@@ -68,7 +79,7 @@
             --modal-bg: #f0f4f8;
         }
 
-        body.theme-neon {
+        html.theme-neon, body.theme-neon {
             --bg: linear-gradient(135deg, #090a0f 0%, #020205 100%);
             --surface: rgba(10, 25, 47, 0.75);
             --primary: #00ffcc;
@@ -81,7 +92,7 @@
             --modal-bg: #0a192f;
         }
 
-        body.theme-desert {
+        html.theme-desert, body.theme-desert {
             --bg: linear-gradient(135deg, #dfc2a5 0%, #b8875e 100%);
             --surface: rgba(255, 245, 235, 0.65);
             --primary: #4a3424;
@@ -618,6 +629,19 @@
             <!-- STEP 1: WELCOME & COMMITMENT -->
             <div id="wizard-step-1" style="display: block; animation: fadeIn 0.4s ease; text-align: center; margin-top: 20px;">
                 <h2 id="video-welcome-title" style="margin-top: 0; font-size: 1.6rem; font-weight: 800; color: var(--text-1); margin-bottom: 15px;">مرحباً بك</h2>
+                <script>
+                    (function() {
+                        var src = window._onboardingSource || (new URLSearchParams(window.location.search).get('source') || '').toUpperCase();
+                        var el = document.getElementById('video-welcome-title');
+                        if (el) {
+                            if (src.startsWith('F') || src.indexOf('FEMME') !== -1) {
+                                el.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
+                            } else if (src.startsWith('H') || src.indexOf('HOMME') !== -1) {
+                                el.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
+                            }
+                        }
+                    })();
+                </script>
                 <p style="color: var(--text-2); font-size: 1rem; margin-bottom: 30px; line-height:1.6;">لقد اقتربت من الانضمام إلى مجموعاتنا الدراسية.<br>لضمان بيئة تعليمية ممتازة للجميع، نرجو منك تخصيص وقت قصير للاطلاع على التوجيهات.</p>
                 
                 <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; color: var(--text-1); font-size: 1rem; line-height: 1.5; user-select: none; text-align: right; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 14px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08);">
@@ -723,7 +747,7 @@
                     </label>
                 </div>
 
-                <button id="btn-understood" disabled style="width: 100%; padding: 18px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: not-allowed; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <button id="btn-understood" disabled onclick="finishOnboardingWizard()" style="width: 100%; padding: 18px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: not-allowed; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <span>🔒</span> يرجى الموافقة على الميثاق
                 </button>
             </div>
@@ -883,6 +907,46 @@
                         }
                     });
                 });
+
+                window.finishOnboardingWizard = function() {
+                    var videoContainer = document.getElementById('dynamic-video-container');
+                    var mainForm = document.getElementById('main-form');
+                    
+                    if (videoContainer) videoContainer.style.animation = 'scaleUp 0.3s reverse';
+                    
+                    setTimeout(function() {
+                        document.documentElement.classList.remove('onboarding-mode');
+                        document.body.classList.remove('onboarding-mode');
+                        window._isOnboardingMode = false;
+                        
+                        if (videoContainer) {
+                            videoContainer.style.display = 'none';
+                            document.body.style.overflow = '';
+                        }
+                        
+                        ['dynamic-video-1', 'dynamic-video-2', 'dynamic-video-3'].forEach(function(id) {
+                            var vid = document.getElementById(id);
+                            if (vid) {
+                                try { vid.pause(); vid.src = ''; } catch(e) {}
+                            }
+                        });
+                        
+                        if (mainForm) {
+                            mainForm.setAttribute('style', 'display: flex !important; flex-direction: column; gap: 20px; animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);');
+                        }
+                        
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_FORM_REACHED', 'وصل الطالب إلى نموذج إدخال رقم الطالب والبريد الإلكتروني', 'STEP_4_FORM');
+                        }
+                        
+                        try {
+                            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.MainButton) {
+                                window.Telegram.WebApp.MainButton.show();
+                                if (window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
+                            }
+                        } catch(e) {}
+                    }, 200);
+                };
             </script>
         </div>
     </div>
@@ -1108,12 +1172,11 @@
     <script>
 
         // --- CHAMELEON UI LOGIC ---
-        // Note: window._isOnboardingMode and CSS class 'onboarding-mode' were already set
-        // in <head> script — the wizard is ALREADY visible via CSS before JS runs.
+        // Chameleon theme state for loadPreferences()
         window._chameleonTheme = null;
 
         function initChameleon() {
-            // Use flag set in <head> (fallback: re-detect from URL)
+            // Read source and parameters
             const params = new URLSearchParams(window.location.search);
             const source = (window._onboardingSource || (params.get('source') || '').toUpperCase());
             const vParam = (params.get('v') || '').toLowerCase();
