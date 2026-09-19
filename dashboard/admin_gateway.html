@@ -9666,17 +9666,15 @@ async function toggleStudentValidity() {
                     (sos.student_id_tentative && st.student_id && String(st.student_id).trim() === String(sos.student_id_tentative).trim())
                 );
 
-                // If ghost not found by telegram_id, match by logs / message / email / student ID in rawGhostList
+                // If ghost not found by telegram_id, match by logs / message / email in rawGhostList
                 if (!matchedGhost && rawGhostList && rawGhostList.length > 0) {
                     const sMsg = (sos.message || '').trim().toLowerCase();
-                    const sId = (sos.student_id_tentative || '').trim();
                     const sEm = (sos.email_tentative || '').trim().toLowerCase();
 
                     matchedGhost = rawGhostList.find(v => {
                         const vDesc = (v.last_desc || '').toLowerCase();
-                        if (sMsg && sMsg.length > 5 && vDesc.includes(sMsg)) return true;
-                        if (sId && sId.length >= 2 && vDesc.includes(sId)) return true;
-                        if (sEm && sEm.length >= 4 && vDesc.includes(sEm)) return true;
+                        if (sMsg && sMsg.length >= 3 && vDesc.includes(sMsg)) return true;
+                        if (sEm && sEm.length >= 6 && sEm.includes('@') && !sEm.startsWith('@') && vDesc.includes(sEm)) return true;
                         return false;
                     });
                 }
@@ -9782,17 +9780,15 @@ async function toggleStudentValidity() {
                 (sos.student_id_tentative && st.student_id && String(st.student_id).trim() === String(sos.student_id_tentative).trim())
             );
 
-            // Match against rawGhostList by logs / message / student ID / email if not matched by ID
+            // Match against rawGhostList by logs / message / email if not matched by ID
             if (!matchedGhost && rawGhostList && rawGhostList.length > 0) {
                 const sMsg = (sos.message || '').trim().toLowerCase();
-                const sId = (sos.student_id_tentative || '').trim();
                 const sEm = (sos.email_tentative || '').trim().toLowerCase();
 
                 matchedGhost = rawGhostList.find(v => {
                     const vDesc = (v.last_desc || '').toLowerCase();
-                    if (sMsg && sMsg.length > 5 && vDesc.includes(sMsg)) return true;
-                    if (sId && sId.length >= 2 && vDesc.includes(sId)) return true;
-                    if (sEm && sEm.length >= 4 && vDesc.includes(sEm)) return true;
+                    if (sMsg && sMsg.length >= 3 && vDesc.includes(sMsg)) return true;
+                    if (sEm && sEm.length >= 6 && sEm.includes('@') && !sEm.startsWith('@') && vDesc.includes(sEm)) return true;
                     return false;
                 });
             }

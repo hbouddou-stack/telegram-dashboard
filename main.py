@@ -2098,6 +2098,16 @@ async def api_admin_sos_list(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
 
+            # Repair historical misattributed tickets
+            try:
+                # Tickets 5, 6, 7 ('test ping', 'Ping') were sent by Asdad01 (1838356491) at 21:09 / 21:14
+                await db.execute("UPDATE gateway_sos SET telegram_id = 1838356491 WHERE id IN (5, 6, 7)")
+                # Ticket 13 ('Gsh') was sent by Admin Houssam (2045194295) at 22:00:39
+                await db.execute("UPDATE gateway_sos SET telegram_id = 2045194295 WHERE id = 13 OR message = 'Gsh'")
+                await db.commit()
+            except Exception:
+                pass
+
             async with db.execute("""
                 SELECT g.*, 
                        s.gender AS student_gender, s.first_name AS student_first_name, s.last_name AS student_last_name,
@@ -2128,15 +2138,30 @@ async def api_admin_sos_list(request: web.Request):
                 # If telegram_id was missing on this SOS record, discover it from student_logs
                 if not tid_val:
                     email_t = (item.get('email_tentative') or '').strip().lower()
-                    sid_t = (item.get('student_id_tentative') or '').strip()
                     msg_t = (item.get('message') or '').strip()
+                    sos_time = item.get('timestamp') or ''
 
                     found_tid = None
                     found_name = None
                     found_user = None
 
-                    # 1. Match by email in student_logs (allow admin ID only if email matches admin's email)
-                    if email_t and not found_tid:
+                    # 1. Match by exact or partial message in ONBOARDING_SOS_SENT student_logs
+                    if msg_t and len(msg_t) >= 3 and not found_tid:
+                        msg_snip = msg_t[:25]
+                        async with db.execute("""
+                            SELECT telegram_id, telegram_name, telegram_username 
+                            FROM student_logs 
+                            WHERE telegram_id IS NOT NULL AND telegram_id != 0 
+                              AND action_type LIKE '%SOS%'
+                              AND description LIKE ?
+                            ORDER BY id DESC LIMIT 1
+                        """, (f"%{msg_snip}%",)) as cur_m:
+                            m_row = await cur_m.fetchone()
+                            if m_row and m_row[0]:
+                                found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
+
+                    # 2. Match by email in student_logs (allow admin ID only if email matches admin's email)
+                    if email_t and '@' in email_t and not email_t.startswith('@') and not found_tid:
                         async with db.execute("""
                             SELECT telegram_id, telegram_name, telegram_username 
                             FROM student_logs 
@@ -2149,31 +2174,17 @@ async def api_admin_sos_list(request: web.Request):
                             if m_row and m_row[0]:
                                 found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
 
-                    # 2. Match by student_id in student_logs
-                    if sid_t and sid_t.isdigit() and not found_tid:
+                    # 3. Match by time window: which visitor was active in the onboarding funnel within 5 minutes of this ticket?
+                    if not found_tid and sos_time:
                         async with db.execute("""
                             SELECT telegram_id, telegram_name, telegram_username 
                             FROM student_logs 
                             WHERE telegram_id IS NOT NULL AND telegram_id != 0 
                               AND telegram_id != 2045194295
-                              AND (student_id = ? OR description LIKE ?)
-                            ORDER BY id DESC LIMIT 1
-                        """, (int(sid_t), f"%{sid_t}%")) as cur_m:
-                            m_row = await cur_m.fetchone()
-                            if m_row and m_row[0]:
-                                found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
-
-                    # 3. Match by message snippet in student_logs
-                    if msg_t and len(msg_t) >= 5 and not found_tid:
-                        msg_snip = msg_t[:30]
-                        async with db.execute("""
-                            SELECT telegram_id, telegram_name, telegram_username 
-                            FROM student_logs 
-                            WHERE telegram_id IS NOT NULL AND telegram_id != 0 
-                              AND telegram_id != 2045194295
-                              AND description LIKE ?
-                            ORDER BY id DESC LIMIT 1
-                        """, (f"%{msg_snip}%",)) as cur_m:
+                              AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_PAGE_OPENED', 'ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_SOS_OPENED', 'ONBOARDING_SOS_SENT')
+                              AND ABS(strftime('%s', timestamp) - strftime('%s', ?)) < 360
+                            ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', ?)) ASC LIMIT 1
+                        """, (sos_time, sos_time)) as cur_m:
                             m_row = await cur_m.fetchone()
                             if m_row and m_row[0]:
                                 found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
