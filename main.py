@@ -1852,6 +1852,8 @@ async def api_gateway_log_action(request: web.Request):
                 async with db.execute("SELECT student_id, first_name, email FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
                     student_row = await cur.fetchone()
 
+            folder_link = ""
+            group_desc = ""
             if student_row:
                 resolved_id = student_row[0]
                 st_name = student_row[1] or first_name
@@ -1869,6 +1871,17 @@ async def api_gateway_log_action(request: web.Request):
                     """, (step_code, now_str, desc, resolved_id))
                 except Exception:
                     pass
+                
+                try:
+                    async with db.execute("SELECT * FROM academy_students WHERE student_id = ?", (resolved_id,)) as cur_full:
+                        st_full = await cur_full.fetchone()
+                        if st_full:
+                            from handlers.auth import resolve_student_folder_link
+                            # Convert to dict if row_factory is not set
+                            st_dict = dict(zip([col[0] for col in cur_full.description], st_full))
+                            folder_link, group_desc = await resolve_student_folder_link(db, st_dict)
+                except Exception as e_fl:
+                    logger.warning(f"Failed to resolve folder link in log_action: {e_fl}")
             else:
                 desc = description or f"نشاط مسار لمستخدم غير مسجل بعد ({first_name or telegram_id or 'مجهول'})"
                 await db.execute(
@@ -1877,9 +1890,59 @@ async def api_gateway_log_action(request: web.Request):
                 )
 
             await db.commit()
-        return web.json_response({'success': True})
+        return web.json_response({'success': True, 'folder_link': folder_link, 'group_desc': group_desc})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
+
+async def api_student_folder_link(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        tg_id = request.query.get('telegram_id')
+        sid = request.query.get('student_id')
+        token = request.query.get('token')
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            student = None
+            if tg_id and str(tg_id).strip() not in ('', '0'):
+                async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (str(tg_id).strip(),)) as cur:
+                    student = await cur.fetchone()
+            if not student and sid and str(sid).strip() not in ('', '0'):
+                async with db.execute("SELECT * FROM academy_students WHERE student_id = ?", (str(sid).strip(),)) as cur:
+                    student = await cur.fetchone()
+            if not student and token and str(token).strip():
+                clean_tok = str(token).strip()
+                import re as _re_tok
+                clean_tok = _re_tok.sub(r'^(auth_|src_email_|src_wa_|src_web_|token_|e1_|e2_|w1_|w2_|sms_)', '', clean_tok)
+                async with db.execute("SELECT * FROM academy_students WHERE magic_token = ? OR student_id = ?", (clean_tok, clean_tok)) as cur:
+                    student = await cur.fetchone()
+                    
+            if student:
+                s_dict = dict(student)
+                from handlers.auth import resolve_student_folder_link
+                folder_link, group_desc = await resolve_student_folder_link(db, s_dict)
+                return web.json_response({
+                    'success': True,
+                    'found': True,
+                    'folder_link': folder_link,
+                    'group_desc': group_desc,
+                    'first_name': s_dict.get('first_name', ''),
+                    'gender': s_dict.get('gender', 'HOMME'),
+                    'year': s_dict.get('year', 1)
+                })
+            else:
+                async with db.execute("SELECT folder_link FROM group_settings LIMIT 1") as cur:
+                    grow = await cur.fetchone()
+                    default_link = grow[0] if (grow and grow[0]) else "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
+                return web.json_response({
+                    'success': True,
+                    'found': False,
+                    'folder_link': default_link,
+                    'group_desc': 'مجموعة الأكاديمية'
+                })
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 async def api_gateway_sos(request: web.Request):
     import aiosqlite
@@ -5622,13 +5685,24 @@ async def api_link_account(request: web.Request):
                     bot = request.app.get('bot')
                     links = await generate_and_send_student_links(bot, telegram_id, student, request.app)
                     
+                    folder_link = ""
+                    group_desc = ""
+                    try:
+                        from handlers.auth import resolve_student_folder_link
+                        folder_link, group_desc = await resolve_student_folder_link(db_conn, student)
+                    except Exception as e_fl:
+                        _log.warning(f"Error resolving student folder in api_link_account: {e_fl}")
+
                     return web.json_response({
                         'success': True,
                         'status': 'approved',
                         'student_id': student['student_id'],
                         'first_name': real_first_name,
                         'gender': student.get('gender') or 'HOMME',
+                        'year': student.get('year') or 1,
                         'links': links,
+                        'folder_link': folder_link,
+                        'group_desc': group_desc,
                         'message': f"مرحباً بك يا {real_first_name}! تم تفعيل حسابك بنجاح ✅"
                     })
                 else:
@@ -6616,6 +6690,7 @@ async def start_web_server(bot: Bot):
     app.router.add_post('/api/gateway/sos', api_gateway_sos)
     app.router.add_post('/api/gateway/log_open', api_gateway_log_open)
     app.router.add_post('/api/gateway/log_action', api_gateway_log_action)
+    app.router.add_get('/api/student/folder_link', api_student_folder_link)
     app.router.add_get('/api/admin/links', api_admin_links_get)
     app.router.add_get('/api/admin/group_settings', api_admin_group_settings_get)
     app.router.add_post('/api/admin/group_settings', api_admin_group_settings_save)
@@ -7064,8 +7139,17 @@ async def main():
                 await db_conn.execute("ALTER TABLE crm_tickets ADD COLUMN file_name TEXT")
             except Exception:
                 pass
-            except Exception:
-                pass
+            # --- INDEX DE PERFORMANCE SQLITE ---
+            try:
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_students_telegram_id ON academy_students(telegram_id)")
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_students_magic_token ON academy_students(magic_token)")
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_students_email ON academy_students(email)")
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_students_phone ON academy_students(phone)")
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_students_excluded ON academy_students(excluded)")
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_student_logs_sid ON student_logs(student_id)")
+                await db_conn.execute("CREATE INDEX IF NOT EXISTS idx_student_logs_tg ON student_logs(telegram_id)")
+            except Exception as e:
+                print("Index creation warning:", e)
             await db_conn.commit()
         # -------------------------------
 

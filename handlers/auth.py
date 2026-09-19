@@ -524,3 +524,151 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             await log_student_action(student_dict['student_id'], 'MEMBER_JOINED', f"انضم رسمياً إلى {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=tg_username)
     except Exception as e:
         logger.error(f"[CHAT_MEMBER] Error: {e}")
+
+# ==========================================================
+# 1-CLICK INSTANT ADMIN APPROVAL (FROM TELEGRAM SUPPORT GROUP)
+# ==========================================================
+@router.callback_query(F.data.startswith("admin_approve_"))
+async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
+    admin_user = callback.from_user
+    data = callback.data or ""
+    is_woman = "admin_approve_woman_" in data
+    gender = "FEMME" if is_woman else "HOMME"
+    gender_ar = "نساء 🧕" if is_woman else "رجال 🧔"
+    
+    parts = data.split("_")
+    target_tg_id = parts[-1]
+    
+    try:
+        target_tg_id = int(target_tg_id)
+    except Exception:
+        await callback.answer("❌ معرف الطالب غير صالح", show_alert=True)
+        return
+
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (target_tg_id,)) as cur:
+                student = await cur.fetchone()
+                
+            if not student:
+                async with db.execute("SELECT * FROM pending_verifications WHERE telegram_id = ? ORDER BY id DESC LIMIT 1", (target_tg_id,)) as cur:
+                    pv = await cur.fetchone()
+                if pv and pv['email']:
+                    async with db.execute("SELECT * FROM academy_students WHERE LOWER(email) = LOWER(?)", (pv['email'],)) as cur2:
+                        student = await cur2.fetchone()
+
+            if not student:
+                await callback.answer("❌ تعذر العثور على بيانات هذا الطالب في النظام", show_alert=True)
+                return
+
+            s_dict = dict(student)
+            real_sid = s_dict['student_id']
+            first_name = s_dict.get('first_name') or "طالب العلم"
+            
+            await db.execute("""
+                UPDATE academy_students 
+                SET payment_status = 'PAID', gender = ?, telegram_id = ?
+                WHERE student_id = ?
+            """, (gender, target_tg_id, real_sid))
+            
+            await db.execute("DELETE FROM pending_verifications WHERE telegram_id = ?", (target_tg_id,))
+            await db.commit()
+            
+            s_dict['gender'] = gender
+            folder_link, group_desc = await resolve_student_folder_link(db, s_dict)
+            
+            base_url = get_webapp_base_url()
+            kb_student = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
+                [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=approved"))],
+                [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))]
+            ])
+            
+            student_msg = (
+                f"🎉 <b>مبارك يا {first_name}! تمت المصادقة على حسابك وتفعيله بنجاح</b> ✅\n\n"
+                f"• رقم الطالب: <code>{real_sid}</code>\n"
+                f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
+                f"👇 <b>اضغط على الزر أدناه لإضافة مجلد قنوات ومجموعات دراستك بنقرة واحدة:</b>"
+            )
+            
+            try:
+                await bot.send_message(target_tg_id, student_msg, reply_markup=kb_student, parse_mode="HTML")
+            except Exception as e_send:
+                logger.warning(f"Could not send instant approval message to {target_tg_id}: {e_send}")
+
+            await log_student_action(
+                real_sid, 
+                'ADMIN_INSTANT_APPROVED', 
+                f"تمت المصادقة الفورية من تليجرام بواسطة المشرف {admin_user.first_name} ({gender_ar})",
+                telegram_id=target_tg_id
+            )
+
+        admin_name = admin_user.first_name or "المشرف"
+        await callback.answer(f"✅ تم تفعيل حساب الطالب بنجاح ({gender_ar})")
+        try:
+            new_caption = (callback.message.text or callback.message.caption or "") + f"\n\n<b>✅ تم التفعيل الفوري بواسطة المشرف {admin_name} ({gender_ar})</b>"
+            await callback.message.edit_reply_markup(reply_markup=None)
+            if callback.message.text:
+                await callback.message.edit_text(new_caption, parse_mode="HTML")
+            elif callback.message.caption:
+                await callback.message.edit_caption(caption=new_caption, parse_mode="HTML")
+        except Exception as e_edit:
+            logger.warning(f"Could not edit admin message: {e_edit}")
+
+    except Exception as ex:
+        logger.error(f"Error in instant approval: {ex}")
+        await callback.answer("❌ حدث خطأ أثناء التفعيل", show_alert=True)
+
+# ==========================================================
+# CONVERSATIONAL FALLBACK (WHEN STUDENT SENDS TEXT MESSAGES)
+# ==========================================================
+@router.message(F.text)
+async def handle_student_text_fallback(message: Message, bot: Bot):
+    """Réponse intelligente et polie quand un élève envoie un message texte libre au bot."""
+    if message.chat.type != "private":
+        return
+        
+    user_id = message.from_user.id
+    first_name = message.from_user.first_name or "طالب العلم"
+    base_url = get_webapp_base_url()
+    
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
+                student = await cur.fetchone()
+                
+            if student:
+                s_dict = dict(student)
+                folder_link, group_desc = await resolve_student_folder_link(db, s_dict)
+                has_joined = s_dict.get('group_joined') == 1
+                
+                buttons = [
+                    [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة (FAQ)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))],
+                    [InlineKeyboardButton(text="🔗 منصة فحص وتأكيد الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=status"))]
+                ]
+                if not has_joined:
+                    buttons.insert(0, [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية إلى تليجرام", url=folder_link)])
+                    
+                kb = InlineKeyboardMarkup(inline_keyboard=buttons)
+                resp_text = (
+                    f"مرحباً بك يا <b>{first_name}</b> 🎓\n\n"
+                    f"أنا المساعد الآلي لأكاديمية الباجي.\n"
+                    f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
+                    f"👇 لتصفح الدروس، مراجعة الأسئلة الشائعة أو التأكد من بياناتك، يُرجى استخدام الأزرار أدناه:"
+                )
+            else:
+                kb = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="🔗 منصة تفعيل وربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=chat_start"))],
+                    [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))]
+                ])
+                resp_text = (
+                    f"مرحباً بك يا <b>{first_name}</b> في أكاديمية الباجي 🎓\n\n"
+                    f"لم يتم ربط حسابك الدراسي بعد.\n\n"
+                    f"👇 يُرجى الضغط على الزر أدناه لتفعيل حسابك والانضمام لمجموعات دراستك المقررة:"
+                )
+                
+            await message.answer(resp_text, reply_markup=kb, parse_mode="HTML")
+    except Exception as e_fall:
+        logger.error(f"[FALLBACK] Error: {e_fall}")

@@ -1325,6 +1325,9 @@
                         }
                         linksBox.innerHTML = linksHtml;
                     }
+                    if (data.folder_link) {
+                        dynamicFolderLink = data.folder_link;
+                    }
                     const successMsg = document.getElementById('success-msg');
                     if (successMsg) successMsg.style.display = 'flex';
                 } else if (savedStatus === 'pending') {
@@ -1341,24 +1344,55 @@
             window.location.reload();
         }
 
-        function logAndJoinFolder() {
+        let dynamicFolderLink = "";
+
+        async function initStudentFolderLink() {
+            try {
+                const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
+                const params = new URLSearchParams(window.location.search);
+                const sourceToken = params.get('source') || params.get('token') || '';
+                const res = await fetch(`/api/student/folder_link?telegram_id=${tgId}&token=${encodeURIComponent(sourceToken)}`);
+                const data = await res.json();
+                if (data && data.folder_link) {
+                    dynamicFolderLink = data.folder_link;
+                }
+            } catch(e) {
+                console.log("Folder resolution error:", e);
+            }
+        }
+        initStudentFolderLink();
+
+        async function logAndJoinFolder() {
             const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0;
             const firstName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || '';
             const username = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || '';
             
-            fetch('/api/gateway/log_action', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegram_id: tgId,
-                    first_name: firstName,
-                    username: username,
-                    action_type: 'JOIN_GROUP_CLICK',
-                    description: 'الطالب ضغط على زر الانضمام لمجلد المجموعة'
-                })
-            }).catch(e => console.error("Log error:", e)).finally(() => {
-                window.Telegram.WebApp.openTelegramLink('https://t.me/addlist/Yw-eXYtl1BVkYTdk');
-            });
+            let targetLink = dynamicFolderLink;
+            try {
+                const res = await fetch('/api/gateway/log_action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegram_id: tgId,
+                        first_name: firstName,
+                        username: username,
+                        action_type: 'JOIN_GROUP_CLICK',
+                        description: 'الطالب ضغط على زر الانضمام لمجلد المجموعة'
+                    })
+                });
+                const resData = await res.json();
+                if (resData && resData.folder_link) {
+                    targetLink = resData.folder_link;
+                    dynamicFolderLink = resData.folder_link;
+                }
+            } catch(e) {
+                console.error("Log error:", e);
+            }
+            
+            if (!targetLink) {
+                targetLink = 'https://t.me/addlist/Yw-eXYtl1BVkYTdk';
+            }
+            window.Telegram.WebApp.openTelegramLink(targetLink);
         }
 
         // Load saved theme and font from server (injected by main.py)
@@ -1761,10 +1795,14 @@
                                 linksHtml += '<a href="' + data.links.group + '" target="_blank" style="background:#2ecc71; color:white; padding:12px; border-radius:10px; text-decoration:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">' + groupLabel + '</a>';
                             }
                             linksBox.innerHTML = linksHtml;
+                        if (data.folder_link) {
+                            dynamicFolderLink = data.folder_link;
                         }
+                        saveStudentState('approved', data);
                         document.getElementById('success-msg').style.display = 'flex';
                     } else {
                         // Pending
+                        saveStudentState('pending', data);
                         document.getElementById('pending-msg').style.display = 'flex';
                     }
                     if (window.trackFunnelStep) {
