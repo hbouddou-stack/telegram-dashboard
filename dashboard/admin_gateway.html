@@ -732,7 +732,7 @@
     display: block !important;
     width: 100% !important;
     max-width: 520px !important;
-    height: 980px !important;
+    height: 1380px !important;
     margin: 30px auto 40px auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2.5" stroke-dasharray="4,4"/></svg>') !important;
@@ -804,37 +804,16 @@
     font-weight: 700 !important;
 }
 
-/* Coordinates along the SVG S-curve */
-.fs-view-adventure #fs-onb-station-1,
-.fs-view-adventure #fs-station-1 {
-    bottom: 5%;
-    left: 85%;
-}
-.fs-view-adventure #fs-onb-station-2,
-.fs-view-adventure #fs-station-2 {
-    bottom: 25%;
-    left: 15%;
-}
-.fs-view-adventure #fs-onb-station-3,
-.fs-view-adventure #fs-station-3 {
-    bottom: 45%;
-    left: 85%;
-}
-.fs-view-adventure #fs-onb-station-4,
-.fs-view-adventure #fs-station-4 {
-    bottom: 65%;
-    left: 15%;
-}
-.fs-view-adventure #fs-onb-station-5,
-.fs-view-adventure #fs-station-5 {
-    bottom: 82%;
-    left: 60%;
-}
-.fs-view-adventure #fs-onb-station-6,
-.fs-view-adventure #fs-station-6 {
-    bottom: 95%;
-    left: 85%;
-}
+/* Coordinates along the SVG S-curve (9 steps) */
+.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 4%; left: 85%; }
+.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 15%; left: 40%; }
+.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 26%; left: 15%; }
+.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 38%; left: 40%; }
+.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 50%; left: 85%; }
+.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 62%; left: 40%; }
+.fs-view-adventure #fs-onb-station-7, .fs-view-adventure #fs-station-7 { bottom: 74%; left: 15%; }
+.fs-view-adventure #fs-onb-station-8, .fs-view-adventure #fs-station-8 { bottom: 85%; left: 55%; }
+.fs-view-adventure #fs-onb-station-9, .fs-view-adventure #fs-station-9 { bottom: 96%; left: 85%; }
 
 /* Walking character avatar on current step */
 .fs-view-adventure .metro-station.current::after {
@@ -991,6 +970,12 @@
 .fs-view-stepper #fs-onb-station-5 .metro-title::before { content: '5. '; font-weight: 900; }
 .fs-view-stepper #fs-station-6 .metro-title::before,
 .fs-view-stepper #fs-onb-station-6 .metro-title::before { content: '6. '; font-weight: 900; }
+.fs-view-stepper #fs-station-7 .metro-title::before,
+.fs-view-stepper #fs-onb-station-7 .metro-title::before { content: '7. '; font-weight: 900; }
+.fs-view-stepper #fs-station-8 .metro-title::before,
+.fs-view-stepper #fs-onb-station-8 .metro-title::before { content: '8. '; font-weight: 900; }
+.fs-view-stepper #fs-station-9 .metro-title::before,
+.fs-view-stepper #fs-onb-station-9 .metro-title::before { content: '9. '; font-weight: 900; }
 
 .fs-view-stepper .metro-station.completed {
     background: var(--success) !important;
@@ -11282,54 +11267,81 @@ window.addEventListener('DOMContentLoaded', () => {
             <div class="metro-station" id="fs-onb-station-1">
                 <div class="metro-dot-wrapper"><div class="metro-dot">1</div></div>
                 <div class="metro-content">
-                <div class="metro-title">فتح الصفحة</div>
-                <div class="metro-desc">دخول لصفحة الربط وتأهيل الطالب</div>
-                <div class="metro-date" id="fs-onb-date-1">-</div>
+                    <div class="metro-title">دخول صفحة التأهيل</div>
+                    <div class="metro-desc">فتح رابط Onboarding والوصول للموقع</div>
+                    <div class="metro-date" id="fs-onb-date-1">-</div>
                 </div>
             </div>
             
             <div class="metro-station" id="fs-onb-station-2">
                 <div class="metro-dot-wrapper"><div class="metro-dot">2</div></div>
                 <div class="metro-content">
-                <div class="metro-title">التعهد</div>
-                <div class="metro-desc">الموافقة على تخصيص وقت للمتابعة</div>
-                <div class="metro-date" id="fs-onb-date-2">-</div>
+                    <div class="metro-title">الموافقة على التعهد</div>
+                    <div class="metro-desc">تأكيد تخصيص دقيقتين للمتابعة بتركيز</div>
+                    <div class="metro-date" id="fs-onb-date-2">-</div>
                 </div>
             </div>
             
             <div class="metro-station" id="fs-onb-station-3">
                 <div class="metro-dot-wrapper"><div class="metro-dot">3</div></div>
                 <div class="metro-content">
-                <div class="metro-title">الفيديوهات</div>
-                <div class="metro-desc">مشاهدة فيديوهات الشرح والتعليمات</div>
-                <div class="metro-date" id="fs-onb-date-3">-</div>
+                    <div class="metro-title">فيديو 1: تثبيت تليجرام</div>
+                    <div class="metro-desc">شرح تحميل التطبيق وتجهيز الحساب</div>
+                    <div class="metro-date" id="fs-onb-date-3">-</div>
                 </div>
             </div>
             
             <div class="metro-station" id="fs-onb-station-4">
                 <div class="metro-dot-wrapper"><div class="metro-dot">4</div></div>
                 <div class="metro-content">
-                <div class="metro-title">ميثاق الشرف</div>
-                <div class="metro-desc">قراءة والموافقة على ميثاق الشرف</div>
-                <div class="metro-date" id="fs-onb-date-4">-</div>
+                    <div class="metro-title">فيديو 2: إدخال البيانات</div>
+                    <div class="metro-desc">طريقة كتابة المعرف والتحقق الأكاديمي</div>
+                    <div class="metro-date" id="fs-onb-date-4">-</div>
                 </div>
             </div>
             
             <div class="metro-station" id="fs-onb-station-5">
                 <div class="metro-dot-wrapper"><div class="metro-dot">5</div></div>
                 <div class="metro-content">
-                <div class="metro-title">شاشة الربط</div>
-                <div class="metro-desc">الوصول لنموذج إدخال رمز التحقق</div>
-                <div class="metro-date" id="fs-onb-date-5">-</div>
+                    <div class="metro-title">فيديو 3: مجموعات وقنوات الدفعة</div>
+                    <div class="metro-desc">التعرف على القنوات والمحتوى التفاعلي</div>
+                    <div class="metro-date" id="fs-onb-date-5">-</div>
                 </div>
             </div>
             
             <div class="metro-station" id="fs-onb-station-6">
                 <div class="metro-dot-wrapper"><div class="metro-dot">6</div></div>
                 <div class="metro-content">
-                <div class="metro-title">اكتمل الربط</div>
-                <div class="metro-desc">تم ربط الحساب بنجاح وتفعيل الاشتراك</div>
-                <div class="metro-date" id="fs-onb-date-6">-</div>
+                    <div class="metro-title">قراءة ميثاق الشرف</div>
+                    <div class="metro-desc">الاطلاع على بنود ميثاق الالتزام الأكاديمي</div>
+                    <div class="metro-date" id="fs-onb-date-6">-</div>
+                </div>
+            </div>
+
+            <div class="metro-station" id="fs-onb-station-7">
+                <div class="metro-dot-wrapper"><div class="metro-dot">7</div></div>
+                <div class="metro-content">
+                    <div class="metro-title">الموافقة والتوقيع على الميثاق</div>
+                    <div class="metro-desc">تأكيد الموافقة على جميع الشروط والانتقال للربط</div>
+                    <div class="metro-date" id="fs-onb-date-7">-</div>
+                </div>
+            </div>
+
+            <div class="metro-station" id="fs-onb-station-8">
+                <div class="metro-dot-wrapper"><div class="metro-dot">8</div></div>
+                <div class="metro-content">
+                    <div class="metro-title">شاشة الربط ونموذج التحقق</div>
+                    <div class="metro-desc">الوصول لحقول إدخال المعرف ورمز الدخول</div>
+                    <div class="metro-date" id="fs-onb-date-8">-</div>
+                </div>
+            </div>
+
+            <div class="metro-station" id="fs-onb-station-9">
+                <div class="metro-dot-wrapper"><div class="metro-dot">9</div></div>
+                <div class="metro-content">
+                    <div class="metro-title">اكتمال الربط بنجاح 🎓</div>
+                    <div class="metro-desc">تأكيد التفعيل وبدء استخدام بوت الأكاديمية</div>
+                    <div class="metro-date" id="fs-onb-date-9">-</div>
                 </div>
             </div>
             
@@ -11342,9 +11354,12 @@ async function openGhostFullscreenJourney(telegramId, ghostName) {
     document.getElementById('fs-onb-student-name').textContent = ghostName;
     document.getElementById('fs-onb-journey-overlay').style.display = 'flex';
     
-    for(let i=1; i<=6; i++) {
-        document.getElementById('fs-onb-station-'+i).className = 'metro-station';
-        document.getElementById('fs-onb-date-'+i).textContent = 'جاري التحميل...';
+    // Reset 9 stations
+    for (let i = 1; i <= 9; i++) {
+        const el = document.getElementById('fs-onb-station-' + i);
+        if (el) el.className = 'metro-station';
+        const dateEl = document.getElementById('fs-onb-date-' + i);
+        if (dateEl) dateEl.textContent = 'جاري التحميل...';
     }
     
     try {
@@ -11359,86 +11374,131 @@ async function openGhostFullscreenJourney(telegramId, ghostName) {
         }
         
         let state = {
-            opened: false,
-            commitment: false,
-            videos: false,
-            charter: false,
-            form: false,
-            success: false,
+            s1_opened: false,
+            s2_commitment: false,
+            s3_vid1: false,
+            s4_vid2: false,
+            s5_vid3: false,
+            s6_charter_view: false,
+            s7_charter_sign: false,
+            s8_form: false,
+            s9_success: false,
             error: false
         };
-        let dates = { 1: '-', 2: '-', 3: '-', 4: '-', 5: '-', 6: '-' };
+        let dates = { 1: '-', 2: '-', 3: '-', 4: '-', 5: '-', 6: '-', 7: '-', 8: '-', 9: '-' };
         let lastError = null;
         
         function getLogDate(actionPatterns) {
-            for(let pattern of actionPatterns) {
+            for (let pattern of actionPatterns) {
                 const found = logs.find(l => (l.action_type || l.action || '').toLowerCase().includes(pattern.toLowerCase()));
-                if(found) return new Date(found.timestamp).toLocaleString('ar-MA');
+                if (found) {
+                    const d = new Date(found.timestamp);
+                    const opts = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+                    return d.toLocaleDateString('ar-EG', opts).replace(',', ' - ');
+                }
             }
             return '-';
         }
         
-        state.opened = logs.some(l => (l.action_type || l.action || '').includes('PAGE_OPENED'));
+        // 1. Page Opened
+        state.s1_opened = logs.some(l => (l.action_type || l.action || '').includes('PAGE_OPENED'));
         dates[1] = getLogDate(['PAGE_OPENED']);
         
-        state.commitment = logs.some(l => (l.action_type || l.action || '').includes('COMMITMENT_CHECKED'));
-        dates[2] = getLogDate(['COMMITMENT_CHECKED']);
+        // 2. Commitment Checked
+        state.s2_commitment = logs.some(l => (l.action_type || l.action || '').includes('COMMITMENT_CHECKED') || (l.action_type || l.action || '').includes('STEP_1_COMMITMENT'));
+        dates[2] = getLogDate(['COMMITMENT_CHECKED', 'STEP_1_COMMITMENT']);
         
-        state.videos = logs.some(l => (l.action_type || l.action || '').includes('VID1_STARTED') || (l.action_type || l.action || '').includes('VID2_STARTED') || (l.action_type || l.action || '').includes('VID3_STARTED'));
-        dates[3] = getLogDate(['VID3_STARTED', 'VID2_STARTED', 'VID1_STARTED']);
+        // 3. Video 1 (Telegram Install)
+        state.s3_vid1 = logs.some(l => (l.action_type || l.action || '').includes('VID1_STARTED') || (l.action_type || l.action || '').includes('STEP_2_VID_1'));
+        dates[3] = getLogDate(['VID1_STARTED', 'STEP_2_VID_1']);
         
-        state.charter = logs.some(l => (l.action_type || l.action || '').includes('CHARTER_SIGNED'));
-        dates[4] = getLogDate(['CHARTER_SIGNED']);
+        // 4. Video 2 (Data Input)
+        state.s4_vid2 = logs.some(l => (l.action_type || l.action || '').includes('VID2_STARTED') || (l.action_type || l.action || '').includes('STEP_2_VID_2'));
+        dates[4] = getLogDate(['VID2_STARTED', 'STEP_2_VID_2']);
         
-        state.form = logs.some(l => (l.action_type || l.action || '').includes('FORM_REACHED') || (l.action_type || l.action || '').includes('INPUT_ERROR'));
-        dates[5] = getLogDate(['FORM_REACHED', 'INPUT_ERROR']);
+        // 5. Video 3 (Groups & Channels)
+        state.s5_vid3 = logs.some(l => (l.action_type || l.action || '').includes('VID3_STARTED') || (l.action_type || l.action || '').includes('STEP_2_VID_3'));
+        dates[5] = getLogDate(['VID3_STARTED', 'STEP_2_VID_3']);
         
-        state.success = logs.some(l => (l.action_type || l.action || '').includes('LINK_SUCCESS') || (l.action_type || l.action || '').includes('account_linked') || (l.action_type || l.action || '').includes('Bot started') || (l.action_type || l.action || '').includes('Link clicked'));
-        dates[6] = getLogDate(['LINK_SUCCESS', 'account_linked', 'Bot started', 'Link clicked']);
+        // 6. Charter Viewed
+        state.s6_charter_view = logs.some(l => (l.action_type || l.action || '').includes('CHARTER_VIEWED') || (l.action_type || l.action || '').includes('STEP_3_CHARTER'));
+        dates[6] = getLogDate(['CHARTER_VIEWED', 'STEP_3_CHARTER']);
         
-        const errLog = logs.find(l => (l.action_type || l.action || '').includes('INPUT_ERROR'));
+        // 7. Charter Signed
+        state.s7_charter_sign = logs.some(l => (l.action_type || l.action || '').includes('CHARTER_SIGNED') || (l.action_type || l.action || '').includes('STEP_3_CHARTER_APPROVED'));
+        dates[7] = getLogDate(['CHARTER_SIGNED', 'STEP_3_CHARTER_APPROVED']);
+        
+        // 8. Form Reached
+        state.s8_form = logs.some(l => (l.action_type || l.action || '').includes('FORM_REACHED') || (l.action_type || l.action || '').includes('STEP_4_FORM') || (l.action_type || l.action || '').includes('INPUT_ERROR'));
+        dates[8] = getLogDate(['FORM_REACHED', 'STEP_4_FORM', 'INPUT_ERROR']);
+        
+        // 9. Link Success
+        state.s9_success = logs.some(l => (l.action_type || l.action || '').includes('LINK_SUCCESS') || (l.action_type || l.action || '').includes('account_linked') || (l.action_type || l.action || '').includes('STEP_5_COMPLETED') || (l.action_type || l.action || '').includes('Bot started'));
+        dates[9] = getLogDate(['LINK_SUCCESS', 'account_linked', 'STEP_5_COMPLETED', 'Bot started']);
+        
+        // Check input errors
+        const errLog = logs.find(l => (l.action_type || l.action || '').includes('INPUT_ERROR') || (l.action_type || l.action || '').includes('NETWORK_ERROR'));
         if (errLog) {
             state.error = true;
-            lastError = errLog.description || 'Error';
+            lastError = errLog.description || 'خطأ في الربط';
         }
         
-        for(let i=1; i<=6; i++) {
-            document.getElementById('fs-onb-date-'+i).textContent = dates[i];
+        // Update station dates
+        for (let i = 1; i <= 9; i++) {
+            const dateEl = document.getElementById('fs-onb-date-' + i);
+            if (dateEl) dateEl.textContent = dates[i];
         }
         
+        // Compute highest completed level
         let progressLevel = 0;
+        if (state.s9_success) progressLevel = 9;
+        else if (state.s8_form) progressLevel = 8;
+        else if (state.s7_charter_sign) progressLevel = 7;
+        else if (state.s6_charter_view) progressLevel = 6;
+        else if (state.s5_vid3) progressLevel = 5;
+        else if (state.s4_vid2) progressLevel = 4;
+        else if (state.s3_vid1) progressLevel = 3;
+        else if (state.s2_commitment) progressLevel = 2;
+        else if (state.s1_opened) progressLevel = 1;
         
-        if(state.success) progressLevel = 6;
-        else if(state.form) progressLevel = 5;
-        else if(state.charter) progressLevel = 4;
-        else if(state.videos) progressLevel = 3;
-        else if(state.commitment) progressLevel = 2;
-        else if(state.opened) progressLevel = 1;
-        
-        for(let i=1; i<=progressLevel; i++) {
-            document.getElementById('fs-onb-station-'+i).classList.add('completed');
+        // Apply completed classes
+        for (let i = 1; i <= progressLevel; i++) {
+            const st = document.getElementById('fs-onb-station-' + i);
+            if (st) st.classList.add('completed');
         }
         
-        if(progressLevel < 6) {
-            document.getElementById('fs-onb-station-'+(progressLevel+1)).classList.add('current');
-            if (state.error && progressLevel === 5) {
-                document.getElementById('fs-onb-station-5').classList.remove('completed');
-                document.getElementById('fs-onb-station-5').classList.add('error');
-                document.getElementById('fs-onb-date-5').textContent = lastError;
-                document.getElementById('fs-onb-station-6').classList.remove('current');
+        // Apply current or error state
+        if (progressLevel < 9) {
+            const nextSt = document.getElementById('fs-onb-station-' + (progressLevel + 1));
+            if (nextSt) nextSt.classList.add('current');
+            
+            if (state.error && progressLevel === 8) {
+                const st8 = document.getElementById('fs-onb-station-8');
+                if (st8) {
+                    st8.classList.remove('completed');
+                    st8.classList.add('error');
+                    const d8 = document.getElementById('fs-onb-date-8');
+                    if (d8) d8.textContent = '⚠️ ' + lastError;
+                }
+                const st9 = document.getElementById('fs-onb-station-9');
+                if (st9) st9.classList.remove('current');
             }
         }
         
-        document.getElementById('fs-onb-metro-progress').style.height = (progressLevel === 0 ? 0 : (progressLevel === 6 ? 100 : (progressLevel-1) * 20)) + '%';
+        // Vertical timeline progress height (8 intervals between 9 steps = 12.5% per step)
+        const progressPct = progressLevel === 0 ? 0 : (progressLevel === 9 ? 100 : Math.round((progressLevel - 1) * 12.5));
+        const progressEl = document.getElementById('fs-onb-metro-progress');
+        if (progressEl) progressEl.style.height = progressPct + '%';
         
-    } catch(e) {
+    } catch (e) {
         console.error(e);
-        document.getElementById('fs-onb-date-1').textContent = 'Erreur chargement';
+        const d1 = document.getElementById('fs-onb-date-1');
+        if (d1) d1.textContent = 'خطأ في جلب البيانات';
     }
 }
 </script>
 
-<!-- FULL SCREEN JOURNEY OVERLAY -->
+<!-- FULL SCREEN JOURNEY OVERLAY --><!-- FULL SCREEN JOURNEY OVERLAY -->
 <div id="fs-journey-overlay" dir="rtl">
     <div id="fs-journey-header">
         <div style="display:flex; align-items:center; gap:15px;">
@@ -11538,7 +11598,98 @@ function setFsView(viewType, btnElem) {
     });
 }
 </script>
+
+<script>
+function openFullscreenJourney() {
+    if (!activeStudentId || !studentsData[activeStudentId]) return;
+    
+    const student = studentsData[activeStudentId];
+    document.getElementById('fs-student-name').textContent = (student.first_name || '') + ' ' + (student.last_name || '');
+    
+    const logs = studentLogsData[activeStudentId] || [];
+    let state = {
+        email_sent: false,
+        email_opened: false,
+        email_clicked: false,
+        email2_sent: false,
+        wa_sent: false,
+        tg_sent: false,
+        sms_sent: false,
+        onboarding_done: false
+    };
+    let dates = { 1: '-', 2: '-', 3: '-', 4: '-', 5: '-', 6: '-' };
+    
+    function getLogDate(actionPatterns) {
+        for (let pattern of actionPatterns) {
+            const found = logs.find(l => (l.action_type || l.action || '').toLowerCase().includes(pattern.toLowerCase()));
+            if (found) {
+                const d = new Date(found.timestamp);
+                const opts = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+                return d.toLocaleDateString('ar-EG', opts).replace(',', ' - ');
+            }
+        }
+        return '-';
+    }
+    
+    state.email_sent = logs.some(l => (l.action_type || l.action || '').includes('Email 1') || (l.action_type || l.action || '').includes('mail envoyé'));
+    state.email_opened = logs.some(l => (l.action_type || l.action || '').includes('opened') || (l.action_type || l.action || '').includes('ouvert'));
+    state.email_clicked = logs.some(l => (l.action_type || l.action || '').includes('Link clicked') || (l.action_type || l.action || '').includes('cliqué'));
+    dates[1] = getLogDate(['Email 1', 'mail', 'opened', 'clicked']);
+    
+    state.email2_sent = logs.some(l => (l.action_type || l.action || '').includes('Email 2') || (l.action_type || l.action || '').includes('Relance'));
+    dates[2] = getLogDate(['Email 2', 'Relance']);
+    
+    state.wa_sent = logs.some(l => (l.action_type || l.action || '').includes('WhatsApp'));
+    dates[3] = getLogDate(['WhatsApp']);
+    
+    state.tg_sent = logs.some(l => (l.action_type || l.action || '').includes('Telegram message') || (l.action_type || l.action || '').includes('telegram_dm'));
+    dates[4] = getLogDate(['Telegram message', 'telegram_dm']);
+    
+    state.sms_sent = logs.some(l => (l.action_type || l.action || '').includes('SMS'));
+    dates[5] = getLogDate(['SMS']);
+    
+    state.onboarding_done = !!student.telegram_id || logs.some(l => (l.action_type || l.action || '').includes('Bot started') || (l.action_type || l.action || '').includes('Group joined') || (l.action_type || l.action || '').includes('account_linked'));
+    dates[6] = getLogDate(['Bot started', 'Group joined', 'account_linked']);
+    
+    for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById('fs-station-' + i);
+        if (el) el.className = 'metro-station';
+        const dEl = document.getElementById('fs-date-' + i);
+        if (dEl) dEl.textContent = dates[i];
+    }
+    
+    let progressLevel = 0;
+    if (state.email_clicked) { progressLevel = 1; }
+    else if (state.email_sent) { document.getElementById('fs-station-1')?.classList.add('current'); }
+    
+    if (state.email2_sent) progressLevel = 2;
+    if (state.wa_sent) progressLevel = 3;
+    if (state.tg_sent) progressLevel = 4;
+    if (state.sms_sent) progressLevel = 5;
+    if (state.onboarding_done) progressLevel = 6;
+    
+    for (let i = 1; i <= progressLevel; i++) {
+        const st = document.getElementById('fs-station-' + i);
+        if (st) {
+            st.classList.add('completed');
+            st.classList.remove('current');
+        }
+    }
+    
+    if (progressLevel < 6) {
+        document.getElementById('fs-station-' + (progressLevel + 1))?.classList.add('current');
+    }
+    
+    const progressEl = document.getElementById('fs-metro-progress');
+    if (progressEl) {
+        progressEl.style.height = (progressLevel === 0 ? 0 : (progressLevel === 6 ? 100 : (progressLevel - 1) * 20)) + '%';
+    }
+    
+    document.getElementById('fs-journey-overlay').style.display = 'flex';
+}
+</script>
 </body>
+
 
 
 
