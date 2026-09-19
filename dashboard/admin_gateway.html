@@ -2022,6 +2022,17 @@
                     </div>
                 </div>
 
+                <!-- FULL SCREEN JOURNEY BUTTON (GENERAL TAB) -->
+                <div style="background:var(--accent); border-radius:12px; padding:12px; margin:0 5px 15px 0; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.05rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s; animation: pulse-btn 2s infinite;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <span>🛤️ افتح مسار الطالب الكامل (Plein Écran)</span>
+                </div>
+                <style>
+                @keyframes pulse-btn {
+                    0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
+                    70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+                }
+                </style>
                 <!-- Onboarding Funnel Summary in General Tab -->
                 <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="انقر لعرض المسار بالتفصيل">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
