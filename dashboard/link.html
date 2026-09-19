@@ -4,10 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>توجيهات الربط</title>
+    <!-- EARLY ONBOARDING DETECTION — runs synchronously before ANY HTML is painted -->
+    <script>
+        (function() {
+            var p = new URLSearchParams(window.location.search);
+            var src = (p.get('source') || '').toUpperCase();
+            var v   = (p.get('v')      || '').toLowerCase();
+            var isOnboarding = v === 'start'
+                || src.startsWith('H') || src.startsWith('F')
+                || src.indexOf('H1') !== -1 || src.indexOf('F1') !== -1
+                || src.indexOf('HOMME') !== -1 || src.indexOf('FEMME') !== -1;
+            if (isOnboarding) {
+                document.documentElement.classList.add('onboarding-mode');
+                // Also wipe stale localStorage immediately
+                try { localStorage.removeItem('student_auth_status'); } catch(e) {}
+                try { localStorage.removeItem('student_auth_data'); } catch(e) {}
+            }
+            // Store for use later by initChameleon
+            window._isOnboardingMode = isOnboarding;
+            window._onboardingSource = src;
+        })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Cairo:wght@400;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
+        /* === ONBOARDING MODE: controlled by early <head> script === */
+        html.onboarding-mode #main-form               { display: none !important; }
+        html.onboarding-mode #success-msg             { display: none !important; }
+        html.onboarding-mode #pending-msg             { display: none !important; }
+        html.onboarding-mode #dynamic-video-container { display: flex !important; }
+        /* =========================================================== */
+
         @keyframes pulse-glow {
             0% { box-shadow: 0 0 5px rgba(10,132,255,0.2); transform: scale(1); }
             50% { box-shadow: 0 0 20px rgba(10,132,255,0.8); transform: scale(1.02); }
@@ -1079,55 +1108,41 @@
     <script>
 
         // --- CHAMELEON UI LOGIC ---
-        // Store chameleon state globally so loadPreferences() can respect it
+        // Note: window._isOnboardingMode and CSS class 'onboarding-mode' were already set
+        // in <head> script — the wizard is ALREADY visible via CSS before JS runs.
         window._chameleonTheme = null;
 
         function initChameleon() {
+            // Use flag set in <head> (fallback: re-detect from URL)
             const params = new URLSearchParams(window.location.search);
-            const rawSource = (params.get('source') || '').trim();
-            const source = rawSource.toUpperCase();
-            const vParam = (params.get('v') || '').trim().toLowerCase();
+            const source = (window._onboardingSource || (params.get('source') || '').toUpperCase());
+            const vParam = (params.get('v') || '').toLowerCase();
 
             const mainForm = document.getElementById('main-form');
             const videoContainer = document.getElementById('dynamic-video-container');
             const btnUnderstood = document.getElementById('btn-understood');
             const videoWelcomeTitle = document.getElementById('video-welcome-title');
-
             const headerText = document.querySelector('h1');
             const pText = document.querySelector('#main-form p');
 
-            const isChameleon = source.startsWith('H') || source.startsWith('F') ||
-                                 source.includes('H1') || source.includes('F1') ||
-                                 source.includes('HOMME') || source.includes('FEMME');
-            const isOnboarding = isChameleon || vParam === 'start';
+            const isOnboarding = window._isOnboardingMode !== undefined
+                ? window._isOnboardingMode
+                : (vParam === 'start' || source.startsWith('H') || source.startsWith('F'));
 
-            // --- CRITICAL: Clear stale localStorage so wizard always shows ---
             if (isOnboarding) {
-                try { localStorage.removeItem('student_auth_status'); } catch(e) {}
-                try { localStorage.removeItem('student_auth_data'); } catch(e) {}
-            }
-
-            const isCompleted = isOnboarding ? null : localStorage.getItem('student_auth_status');
-
-            if (!isCompleted || isOnboarding) {
-                // Hide form, show wizard
+                // CSS already handles display — just ensure body scroll and inline styles are set
                 if (mainForm) mainForm.style.display = 'none';
                 if (videoContainer) {
                     videoContainer.style.display = 'flex';
                     document.body.style.overflow = 'hidden';
                 }
+                const successMsg = document.getElementById('success-msg');
+                const pendingMsg = document.getElementById('pending-msg');
+                if (successMsg) successMsg.style.display = 'none';
+                if (pendingMsg) pendingMsg.style.display = 'none';
 
-                // Always hide success/pending screens for fresh onboarding
-                if (isOnboarding) {
-                    const successMsg = document.getElementById('success-msg');
-                    const pendingMsg = document.getElementById('pending-msg');
-                    if (successMsg) successMsg.style.display = 'none';
-                    if (pendingMsg) pendingMsg.style.display = 'none';
-                }
-
-                // Apply gender theme + text
+                // Apply gender theme + personalized text
                 if (source === 'H1F1' || source === 'F1H1' || (source.includes('H') && source.includes('F'))) {
-                    // Mixed/Neutral
                     if (headerText) headerText.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
@@ -1146,12 +1161,16 @@
                 }
             }
 
-            // Bouton de validation (Fin du Wizard)
+            // Wizard finish button
             if (btnUnderstood && !btnUnderstood._chameleonBound) {
                 btnUnderstood._chameleonBound = true;
                 btnUnderstood.addEventListener('click', () => {
                     if (videoContainer) videoContainer.style.animation = 'scaleUp 0.3s reverse';
                     setTimeout(() => {
+                        // Remove CSS class so normal layout can take over
+                        document.documentElement.classList.remove('onboarding-mode');
+                        window._isOnboardingMode = false;
+
                         if (videoContainer) { videoContainer.style.display = 'none'; document.body.style.overflow = ''; }
                         if(document.getElementById('dynamic-video-1')) document.getElementById('dynamic-video-1').src='';
                         if(document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src='';
@@ -1172,10 +1191,10 @@
             }
         }
 
-        // Run immediately (DOM is already parsed at this point since script is at end of body)
+        // Run immediately — CSS already shows wizard, this configures themes/text
         initChameleon();
-        // Safety net: run again after 80ms in case any async code interfered
-        setTimeout(initChameleon, 80);
+        // Safety net: run again at 100ms in case anything interfered
+        setTimeout(initChameleon, 100);
         // --------------------------
 
 
