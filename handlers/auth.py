@@ -179,11 +179,15 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     student_first = s_dict.get('first_name') or first_name
                     has_joined = s_dict.get('group_joined') == 1
                     
+                    import urllib.parse as _up
+                    q_name = _up.quote(first_name or "")
+                    q_user = _up.quote(username or "")
+
                     if has_joined:
                         # DÉJÀ REJOINT : PAS DE BOUTON DOSSIER
                         kb = InlineKeyboardMarkup(inline_keyboard=[
-                            [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))],
-                            [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_v51_active"))]
+                            [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={real_sid}&v=rag_v2"))],
+                            [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={real_sid}&v=magic_v51_active"))]
                         ])
                         magic_welcome = (
                             f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية الباجي</b> 🎓\n\n"
@@ -195,8 +199,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         # EN ATTENTE DE REJOINDRE : BOUTON DOSSIER PRÉSENT
                         kb = InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=magic_v51"))],
-                            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))]
+                            [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={real_sid}&v=magic_v51"))],
+                            [InlineKeyboardButton(text="💬 مركز الدعم والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={real_sid}&v=rag_v2"))]
                         ])
                         magic_welcome = (
                             f"🎉 <b>أهلاً وسهلاً بك يا {student_first}! نبارك لك انضمامك لأكاديمية الباجي</b> 🎓\n\n"
@@ -259,9 +263,12 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     f"• مجموعتك الدراسية: <b>{group_desc}</b>\n\n"
                     f"👇 يمكنك متابعة الدروس أو استخدام المنصة أو التواصل مع الدعم عبر الأزرار أدناه:"
                 )
+                import urllib.parse as _up
+                q_name = _up.quote(first_name or "")
+                q_user = _up.quote(username or "")
                 kb = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))],
-                    [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?v=linked_active"))]
+                    [InlineKeyboardButton(text="📚 دليل الطالب والأسئلة الشائعة والمكتبة", web_app=WebAppInfo(url=f"{base_url}/ask.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={s_dict['student_id']}&v=rag_v2"))],
+                    [InlineKeyboardButton(text="🔗 منصة تأكيد البيانات والحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={s_dict['student_id']}&v=linked_active"))]
                 ])
             else:
                 # ÉLÈVE N'AYANT PAS ENCORE REJOINT : BOUTON DU DOSSIER PRÉSENT
@@ -276,8 +283,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                 q_user = _up.quote(username or "")
                 kb = InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                    [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&v=pending_folder"))],
-                    [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))]
+                    [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={s_dict['student_id']}&v=pending_folder"))],
+                    [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={s_dict['student_id']}&v=rag_v2"))]
                 ])
         else:
             welcome_text = (
@@ -297,7 +304,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
 
         await send_welcome_with_banner(message, welcome_text, kb)
         source_label = f" [رابط: {start_arg}]" if start_arg else ""
-        await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"فتح البوت ({'مفعل' if student else 'جديد'}){source_label}", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
+        st_label = f"طالب مسجل: {student['first_name']}" if student else "زائر جديد"
+        await log_student_action(student['student_id'] if student else 0, 'BOT_START', f"بدء البوت عبر الرابط ({st_label}){source_label}", telegram_id=user_id, telegram_name=first_name, telegram_username=username)
 
     except Exception as e:
         logger.error(f"[START] Error: {e}")

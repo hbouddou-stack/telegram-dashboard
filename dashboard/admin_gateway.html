@@ -3397,6 +3397,7 @@
             'FOLDER_CLICKED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📁', label: 'فتح مجلد الدروس' },
             'QUIZ_STARTED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📝', label: 'بدأ اختبار' },
             'TUTO_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📖', label: 'فتح الشرح' },
+            'BOT_START': { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.4)', text: '#059669', icon: '🟢', label: 'بدء البوت (START)' },
 
             // Onboarding Funnel Steps
             'ONBOARDING_PAGE_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '🚪', label: '1. فتح صفحة التأهيل' },
@@ -4018,6 +4019,7 @@
 
         function formatActionTypeArabic(type) {
             const map = {
+                'BOT_START': { label: '🟢 بدء البوت (START)', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
                 'ONBOARDING_PAGE_OPENED': { label: '🌐 فتح صفحة التأهيل', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)' },
                 'APP_OPENED': { label: '📱 فتح التطبيق', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)' },
                 'APP_OPENED_UNLINKED': { label: '📱 فتح التطبيق (غير مرتبط)', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' },

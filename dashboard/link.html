@@ -767,6 +767,22 @@
                             if (!fName) fName = p.get('tg_name') || p.get('first_name') || '';
                             if (!uName) uName = p.get('tg_user') || p.get('username') || '';
                         }
+                        // SessionStorage persistence fallback
+                        if (!tgId) {
+                            try {
+                                tgId = parseInt(sessionStorage.getItem('tg_id') || '0', 10);
+                                if (!fName) fName = sessionStorage.getItem('tg_name') || '';
+                                if (!uName) uName = sessionStorage.getItem('tg_user') || '';
+                            } catch(e) {}
+                        }
+                        if (tgId) {
+                            try {
+                                sessionStorage.setItem('tg_id', tgId);
+                                if (fName) sessionStorage.setItem('tg_name', fName);
+                                if (uName) sessionStorage.setItem('tg_user', uName);
+                            } catch(e) {}
+                        }
+
                         const source = p.get('source') || window._onboardingSource || '';
                         const token = p.get('token') || '';
                         
@@ -778,6 +794,9 @@
                         if (!currentStudentId) {
                             const sidField = document.getElementById('student_id');
                             if (sidField && sidField.value) currentStudentId = sidField.value.trim();
+                        }
+                        if (!currentStudentId) {
+                            currentStudentId = p.get('student_id') || p.get('sid') || '';
                         }
                         
                         fetch('/api/gateway/log_action', {
@@ -1618,21 +1637,11 @@
         loadPreferences();
 
         window.Telegram.WebApp.ready();
-        (async () => {
+        (function() {
             try {
-                let tid = null;
-                let name = '';
-                if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                    tid = window.Telegram.WebApp.initDataUnsafe.user.id;
-                    name = window.Telegram.WebApp.initDataUnsafe.user.first_name || '';
-                }
-                await fetch('/api/gateway/log_open', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ telegram_id: tid, first_name: name })
-                });
-                if (window.trackFunnelStep) {
-                    const src = new URLSearchParams(window.location.search).get('source') || 'direct';
+                if (window.trackFunnelStep && !window._pageOpenedTracked) {
+                    window._pageOpenedTracked = true;
+                    const src = new URLSearchParams(window.location.search).get('source') || window._onboardingSource || 'direct';
                     window.trackFunnelStep('ONBOARDING_PAGE_OPENED', `فتح صفحة التأهيل والربط (المصدر: ${src})`, 'STEP_0_OPEN');
                 }
             } catch(e) { console.error('Error logging open:', e); }

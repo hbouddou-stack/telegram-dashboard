@@ -1773,35 +1773,9 @@ async def api_admin_gateway_settings_get(request: web.Request):
 
 
 async def api_gateway_log_open(request: web.Request):
-    import aiosqlite
-    from config import DATABASE_PATH
-    try:
-        data = await request.json()
-        telegram_id = data.get('telegram_id')
-        first_name = data.get('first_name', '')
-        
-        if not telegram_id:
-            return web.json_response({'success': True, 'skipped': 'No telegram_id'})
-            
-        async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute("SELECT student_id, first_name FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
-                row = await cur.fetchone()
-                if row:
-                    student_id = row[0]
-                    student_name = row[1]
-                    await db.execute(
-                        "INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)",
-                        (student_id, telegram_id, 'APP_OPENED', f"فتح الطالب {student_name} التطبيق بنجاح")
-                    )
-                else:
-                    await db.execute(
-                        "INSERT INTO student_logs (student_id, telegram_id, action_type, description) VALUES (?, ?, ?, ?)",
-                        (0, telegram_id, 'APP_OPENED_UNLINKED', f"تم فتح التطبيق من قبل مستخدم غير مرتبط (الاسم في تيليجرام: {first_name})")
-                    )
-            await db.commit()
-        return web.json_response({'success': True})
-    except Exception as e:
-        return web.json_response({'success': False, 'error': str(e)})
+    # Deprecated endpoint previously writing duplicate APP_OPENED_UNLINKED
+    # Kept for backward-compatibility with older cached browsers; returns success without duplicate log
+    return web.json_response({'success': True, 'skipped': 'unified_in_log_action'})
 
 async def api_gateway_log_action(request: web.Request):
     import aiosqlite
@@ -1852,6 +1826,19 @@ async def api_gateway_log_action(request: web.Request):
                 async with db.execute("SELECT student_id, first_name, email FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur:
                     student_row = await cur.fetchone()
 
+            # Retrieve Telegram first_name / username if missing from bot_visitors
+            if telegram_id and (not first_name or not username):
+                try:
+                    async with db.execute("SELECT first_name, username FROM bot_visitors WHERE telegram_id = ?", (telegram_id,)) as cur_v:
+                        v_row = await cur_v.fetchone()
+                        if v_row:
+                            if not first_name:
+                                first_name = v_row[0] or ''
+                            if not username:
+                                username = v_row[1] or ''
+                except Exception:
+                    pass
+
             folder_link = ""
             group_desc = ""
             source_tag = f" [رابط: {source_in}]" if source_in else ""
@@ -1859,7 +1846,7 @@ async def api_gateway_log_action(request: web.Request):
                 resolved_id = student_row[0]
                 st_name = student_row[1] or first_name
                 desc = description or f"نشاط في مسار التأهيل للطالب {st_name} ({action_type})"
-                if source_tag and source_tag not in desc:
+                if source_tag and (source_in not in desc):
                     desc += source_tag
                 await db.execute(
                     "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
@@ -1888,7 +1875,7 @@ async def api_gateway_log_action(request: web.Request):
             else:
                 target_sid = matched_student_id if matched_student_id > 0 else 0
                 desc = description or f"نشاط مسار لمستخدم (المعرف: {matched_student_id or 'غير محدد'} | {first_name or telegram_id or 'مجهول'})"
-                if source_tag and source_tag not in desc:
+                if source_tag and (source_in not in desc):
                     desc += source_tag
                 await db.execute(
                     "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
