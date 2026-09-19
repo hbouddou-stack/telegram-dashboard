@@ -2044,8 +2044,8 @@
                                 <tr style="background:rgba(124, 58, 237, 0.08); border-bottom:2px solid var(--border);">
                                     <th style="padding:10px 14px; font-weight:800; color:var(--text1);">المعرف</th>
                                     <th style="padding:10px 14px; font-weight:800; color:var(--text1);">تاريخ وتوقيت العملية</th>
-                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">اسم الملف</th>
                                     <th style="padding:10px 14px; font-weight:800; color:var(--text1);">الطلاب</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">اسم الملف</th>
                                     <th style="padding:10px 14px; font-weight:800; color:var(--text1);">المسؤول</th>
                                 </tr>
                             </thead>
@@ -5182,40 +5182,57 @@
                 const tbody = document.getElementById('import-history-tbody');
                 if (data.success && data.logs) {
                     if (data.logs.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Aucun import enregistré.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text2);">لا يوجد أي عمليات رفع سابقة.</td></tr>';
                         return;
                     }
                     
-                    // Group by date
                     let groupedHtml = '';
                     let lastDate = '';
+                    
+                    // Grouping logic ensuring robust dates and standard numerals
                     data.logs.forEach(log => {
-                        let fullDateStr = formatLocalTime(log.created_at);
-                        let justDate = fullDateStr.split(' à ')[0]; // Gets the date part like "17/09/2026"
+                        let dateToParse = log.created_at;
+                        if (!dateToParse.includes('Z') && !dateToParse.includes('+')) dateToParse += 'Z';
+                        const d = new Date(dateToParse);
+                        
+                        let justDate = log.created_at.split('T')[0]; // fallback
+                        let timeStr = '';
+                        
+                        if (!isNaN(d.getTime())) {
+                            // Format Arabic Date with French/Western Digits (0-9)
+                            justDate = new Intl.DateTimeFormat('ar-EG', { 
+                                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+                            }).format(d).replace(/[٠-٩]/g, digit => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(digit)]);
+                            
+                            timeStr = new Intl.DateTimeFormat('ar-EG', { 
+                                hour: '2-digit', minute: '2-digit', hour12: false 
+                            }).format(d).replace(/[٠-٩]/g, digit => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(digit)]);
+                        }
                         
                         if (justDate !== lastDate) {
                             groupedHtml += `<tr style="background:var(--accent2); color:white; font-weight:bold;">
-                                <td colspan="5" style="padding:8px 12px; text-align:center;">📅 ${justDate}</td>
+                                <td colspan="5" style="padding:10px 14px; text-align:center; font-size:1.05rem;">📅 ${justDate}</td>
                             </tr>`;
                             lastDate = justDate;
                         }
                         
                         groupedHtml += `
-                        <tr style="border-bottom:1px solid var(--border); background:var(--surface);">
+                        <tr style="border-bottom:1px solid var(--border); background:var(--surface); transition:background 0.2s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background='var(--surface)'">
                             <td style="padding:12px; font-weight:bold; color:var(--text2);">#${log.id}</td>
-                            <td style="padding:12px;" title="${log.created_at} UTC">${fullDateStr}</td>
-                            <td style="padding:12px; font-family:monospace; color:var(--accent2);">${log.filename || 'Inconnu'}</td>
-                            <td style="padding:12px; font-weight:bold;">${log.imported_count} <span style="font-weight:normal; font-size:0.8rem; color:var(--text2);">élèves</span></td>
-                            <td style="padding:12px; font-weight:bold;">${log.admin_name}</td>
+                            <td style="padding:12px; font-weight:bold; color:var(--text1);" dir="ltr">${timeStr}</td>
+                            <td style="padding:12px; font-weight:bold; color:var(--text1);">${log.imported_count} <span style="font-weight:normal; font-size:0.8rem; color:var(--text2);">طالب</span></td>
+                            <td style="padding:12px; font-family:monospace; color:var(--accent2); font-size:0.85rem;" dir="ltr">${log.filename || 'غير معروف'}</td>
+                            <td style="padding:12px; font-weight:bold; color:var(--text1);">${log.admin_name || '-'}</td>
                         </tr>`;
                     });
+                    
                     tbody.innerHTML = groupedHtml;
-
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">Erreur de chargement.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444; font-weight:bold;">خطأ في تحميل البيانات.</td></tr>';
                 }
             } catch (e) {
                 console.error(e);
+                document.getElementById('import-history-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444; font-weight:bold;">حدث خطأ في الاتصال.</td></tr>';
             }
         }
         
