@@ -33,6 +33,54 @@ async def send_welcome_with_banner(message: Message, text: str, reply_markup: In
             logger.error(f"[BANNER_ERROR] {e}")
     await message.answer(text, reply_markup=reply_markup, parse_mode="HTML")
 
+async def resolve_student_folder_link(db, s_dict):
+    """
+    Détermine le lien de dossier Telegram (1 parmi les 8 dossiers : 4 années x Homme/Femme)
+    selon le niveau d'étude et le genre de l'élève.
+    """
+    gender_raw = (s_dict.get('gender') or 'HOMME').upper()
+    is_female = gender_raw in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN', 'انثى', 'أنثى']
+    gender_key = 'femme' if is_female else 'homme'
+
+    yr_str = str(s_dict.get('year') or '').lower()
+    year_num = 1
+    if '4' in yr_str or 'رابع' in yr_str:
+        year_num = 4
+    elif '3' in yr_str or 'ثالث' in yr_str:
+        year_num = 3
+    elif '2' in yr_str or 'ثاني' in yr_str:
+        year_num = 2
+    else:
+        year_num = 1
+
+    year_arabic = ["الأولى", "الثانية", "الثالثة", "الرابعة"][year_num - 1]
+    group_desc = f"السنة {year_arabic} {'نساء' if is_female else 'رجال'}"
+
+    target_key = f"link_{gender_key}_{year_num}"
+    folder_link = None
+    try:
+        async with db.execute("SELECT value FROM settings WHERE key = ?", (target_key,)) as cur:
+            row = await cur.fetchone()
+            if row and row[0] and row[0].strip():
+                folder_link = row[0].strip()
+    except Exception as e:
+        logger.warning(f"Error fetching setting {target_key}: {e}")
+
+    if not folder_link:
+        try:
+            async with db.execute("SELECT folder_link FROM group_settings LIMIT 1") as cur:
+                grow = await cur.fetchone()
+                if grow and grow[0] and grow[0].strip():
+                    folder_link = grow[0].strip()
+        except Exception:
+            pass
+
+    if not folder_link:
+        folder_link = "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
+
+    return folder_link, group_desc
+
+
 
 @router.message(CommandStart())
 @router.message(Command("start"))
@@ -124,16 +172,9 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                             
                     await db.commit()
                     
-                    # Récupération du lien officiel du dossier
-                    async with db.execute("SELECT * FROM group_settings LIMIT 1") as cur:
-                        settings_row = await cur.fetchone()
-                    settings = dict(settings_row) if settings_row else {}
-                    
-                    folder_link = settings.get('folder_link') or "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
+                    # Récupération du lien officiel du dossier parmi les 8 dossiers configurés
+                    folder_link, group_desc = await resolve_student_folder_link(db, s_dict)
                     student_first = s_dict.get('first_name') or first_name
-                    gender_clean = (s_dict.get('gender') or 'HOMME').upper()
-                    is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
-                    group_desc = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
                     has_joined = s_dict.get('group_joined') == 1
                     
                     if has_joined:
@@ -199,17 +240,11 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
         if student:
             s_dict = dict(student)
             real_name = s_dict.get('first_name') or first_name
-            gender_clean = (s_dict.get('gender') or 'HOMME').upper()
-            is_female = gender_clean in ['FEMME', 'FEMALE', 'F', 'WOMAN', 'WOMEN']
-            group_desc = "السنة الأولى نساء" if is_female else "السنة الأولى رجال"
+            # Résolution dynamique parmi les 8 dossiers
+            async with aiosqlite.connect(DATABASE_PATH) as _db_links:
+                _db_links.row_factory = aiosqlite.Row
+                folder_link, group_desc = await resolve_student_folder_link(_db_links, s_dict)
             has_joined = s_dict.get('group_joined') == 1
-            
-            async with aiosqlite.connect(DATABASE_PATH) as db:
-                db.row_factory = aiosqlite.Row
-                async with db.execute("SELECT * FROM group_settings LIMIT 1") as cur:
-                    settings_row = await cur.fetchone()
-                settings = dict(settings_row) if settings_row else {}
-            folder_link = settings.get('folder_link') or "https://t.me/addlist/Yw-eXYtl1BVkYTdk"
             
             if has_joined:
                 # ÉLÈVE AYANT DÉJÀ REJOINT : LE BOUTON DU DOSSIER DISPARAÎT !

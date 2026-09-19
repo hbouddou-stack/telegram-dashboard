@@ -1189,385 +1189,321 @@
         </div>
     </div>
 
-    <div id="tab-settings" class="tab-content" style="padding:0; max-width:1100px; margin:0 auto;">
-        <!-- Header Banner Hub -->
-        <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
-            <div>
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                    <span style="font-size: 1.8rem;">⚙️</span>
-                    <h2 style="margin: 0; font-size: 1.45rem; font-weight: 800; color: var(--text1); letter-spacing: -0.5px;">مركز القيادة والإعدادات</h2>
-                    <span style="background: var(--accent); color: white; font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Hub v2.5</span>
-                </div>
-                <div style="font-size: 0.88rem; color: var(--text2); line-height: 1.5;">تحكّم كامل في استيراد البيانات، مزامنة السحابة، مظهر المنظومة، وربط البوابات الذكية.</div>
+        <div id="tab-settings" class="tab-content" style="padding:0; width:100%; max-width:100%; box-sizing:border-box;">
+        <!-- Barre d'onglets supérieure style 'Carte de l'étudiant' -->
+        <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:4px; padding:6px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:15;">
+            <div class="mtab active" onclick="switchSettingsTab('s-general', this)" id="settab-general" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">⚙️</span>
+                <span style="font-size:0.75rem; font-weight:bold;">عام</span>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <div style="background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 0.75rem; color: var(--text2);">الطلاب النشطين</div>
-                    <div id="settings-badge-active-count" style="font-size: 1.1rem; font-weight: 800; color: #10b981;">1 312</div>
-                </div>
-                <div style="background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 0.75rem; color: var(--text2);">المستبعدون (الأرشيف)</div>
-                    <div id="settings-badge-excluded-count" style="font-size: 1.1rem; font-weight: 800; color: #ef4444;">8</div>
-                </div>
+            <div class="mtab" onclick="switchSettingsTab('s-academy', this)" id="settab-academy" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">🎓</span>
+                <span style="font-size:0.75rem; font-weight:bold;">الأكاديمية</span>
+            </div>
+            <div class="mtab" onclick="switchSettingsTab('s-telegram', this)" id="settab-telegram" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">✈️</span>
+                <span style="font-size:0.75rem; font-weight:bold;">تيليجرام (الروابط)</span>
+            </div>
+            <div class="mtab" onclick="switchSettingsTab('s-history', this)" id="settab-history" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">🕒</span>
+                <span style="font-size:0.75rem; font-weight:bold;">السجل</span>
             </div>
         </div>
 
-        <!-- Cockpit Navigation Sub-Hubs -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 24px;">
-            <button class="settings-tab-pill active" id="btn-sub-data" onclick="switchSettingsTab('s-data', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div style="font-size: 1.5rem; background: rgba(59, 130, 246, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">📥</div>
-                <div>
-                    <div style="font-size: 0.95rem; font-weight: 800;">البيانات والمزامنة</div>
-                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Data & Cloud Sync</div>
-                </div>
-            </button>
+        <div style="padding:16px 14px 40px; max-width:1100px; margin:0 auto; box-sizing:border-box;">
 
-            <button class="settings-tab-pill" id="btn-sub-history" onclick="switchSettingsTab('s-history', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div style="font-size: 1.5rem; background: rgba(168, 85, 247, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">🕒</div>
-                <div>
-                    <div style="font-size: 0.95rem; font-weight: 800;">سجل العمليات</div>
-                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Audit & History</div>
-                </div>
-            </button>
-
-            <button class="settings-tab-pill" id="btn-sub-design" onclick="switchSettingsTab('s-design', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div style="font-size: 1.5rem; background: rgba(234, 179, 8, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">🎨</div>
-                <div>
-                    <div style="font-size: 0.95rem; font-weight: 800;">المظهر وتنسيق مسار</div>
-                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Studio & Massar</div>
-                </div>
-            </button>
-
-            <button class="settings-tab-pill" id="btn-sub-system" onclick="switchSettingsTab('s-system', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div style="font-size: 1.5rem; background: rgba(16, 185, 129, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">⚡</div>
-                <div>
-                    <div style="font-size: 0.95rem; font-weight: 800;">النظام والربط السريع</div>
-                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Integrations & Manual</div>
-                </div>
-            </button>
-        </div>
-
-        <!-- ==================== PANE 1: DATA & CLOUD SYNC ==================== -->
-        <div id="s-data" class="settings-pane" style="display: block;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
-                <!-- Drag & Drop Import Card -->
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1.4rem;">📊</span>
-                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">استيراد ملف الطلاب (Excel / CSV)</h3>
-                            </div>
-                            <span style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.12); color: #3b82f6; padding: 2px 8px; border-radius: 6px; font-weight: 700;">.XLSX, .CSV</span>
+            <!-- ==================== 1. TAB: عام (GENERAL) ==================== -->
+            <div id="s-general" class="settings-pane" style="display:block;">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <!-- Carte 1: نمط ومظهر المنظومة -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                            <span style="font-size:1.3rem;">🎭</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">المظهر والوضع البصري</h3>
                         </div>
-                        <p style="font-size: 0.84rem; color: var(--text2); line-height: 1.5; margin-bottom: 18px;">
-                            قم بسحب وإسقاط ملف لائحة الطلاب لتحيين الأرقام، الأفواج، والبيانات تلقائياً مع دمج ذكي بدون تكرار.
-                        </p>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:16px;">
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('dark')" style="border:2px solid var(--accent); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#0d1117; color:#f0f6fc;">
+                                <div style="font-size:1.3rem; margin-bottom:4px;">🌙</div>
+                                <div style="font-size:0.8rem; font-weight:bold;">الوضع الليلي</div>
+                            </div>
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('cpi')" style="border:1px solid var(--border); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#0a0f1d; color:#f3f4f6;">
+                                <div style="font-size:1.3rem; margin-bottom:4px;">🌌</div>
+                                <div style="font-size:0.8rem; font-weight:bold;">الأزرق الملكي</div>
+                            </div>
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('light')" style="border:1px solid var(--border); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#ffffff; color:#111827;">
+                                <div style="font-size:1.3rem; margin-bottom:4px;">☀️</div>
+                                <div style="font-size:0.8rem; font-weight:bold;">الوضع النهاري</div>
+                            </div>
+                        </div>
 
-                        <!-- Dropzone Box -->
-                        <div id="upload-drop-zone" style="border: 2px dashed rgba(124, 58, 237, 0.4); background: rgba(124, 58, 237, 0.04); border-radius: 14px; padding: 32px 20px; text-align: center; transition: all 0.25s ease; cursor: pointer;" onclick="document.getElementById('excel-file-input').click()">
-                            <div style="font-size: 2.8rem; margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">📁</div>
-                            <div style="font-size: 0.98rem; font-weight: 700; color: var(--text1); margin-bottom: 6px;">اضغط لاختيار ملف، أو اسحبه إلى هنا</div>
-                            <div style="font-size: 0.78rem; color: var(--text2); margin-bottom: 18px;">يدعم كشوفات مسار الرسمية، ملفات Excel المنسقة وملفات CSV</div>
-                            <button class="btn btn-primary" type="button" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);">
-                                <span>📂 استعراض الملفات</span>
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                            <div>
+                                <div style="font-size:0.85rem; font-weight:bold; color:var(--text1);">عرض النسب العائلي أولاً</div>
+                                <div style="font-size:0.75rem; color:var(--text2);">تقديم الاسم العائلي على الاسم الشخصي في القوائم</div>
+                            </div>
+                            <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer; accent-color:var(--accent);" onchange="toggleForceName(this)">
+                        </div>
+                    </div>
+
+                    <!-- Carte 2: Albaji API Key -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">🔐</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">بوابة الربط بالرسائل والتنبيهات (WhatsApp & SMS)</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px; line-height:1.5;">الرمز السري المشفر المستخدم لتأكيد الحسابات وإرسال الإشعارات للطلاب.</div>
+                        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                            <input type="password" id="albaji-api-key" placeholder="••••••••••••••••" style="flex:1; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:monospace; font-size:0.9rem;">
+                            <button type="button" class="btn" onclick="toggleAlbajiKeyVisibility()" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:10px 14px; border-radius:10px; cursor:pointer;">
+                                <span id="albaji-eye-icon">👁️</span>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveAlbajiKey()" style="width:100%; padding:10px; border-radius:10px; font-weight:bold; font-size:0.88rem; background:var(--accent);">
+                            💾 حفظ رمز الربط
+                        </button>
+                    </div>
+
+                    <!-- Carte 3: إضافة طالب يدوياً -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                            <span style="font-size:1.3rem;">👤</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">إضافة طالب جديد يدوياً</h3>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="manual-student-fn" placeholder="الاسم الشخصي" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <input type="text" id="manual-student-ln" placeholder="النسب (العائلي)" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            </div>
+                            <input type="text" id="manual-student-id" placeholder="رقم الطالب (مسار - ex: 123426)" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (مطلوب)" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (10/10/2000)" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <input type="text" id="manual-student-phone" placeholder="الهاتف (اختياري)" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            </div>
+                            <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top:6px; padding:11px; border-radius:10px; font-weight:bold; font-size:0.9rem; background:#10b981; border:none; cursor:pointer;">
+                                ✅ تسجيل الطالب في المنظومة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 2. TAB: الأكاديمية (ACADEMY) ==================== -->
+            <div id="s-academy" class="settings-pane" style="display:none;">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <!-- تنسيق رقم مسار -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">🏷️</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">تنسيق رقم مسار وتمييز الدفعات</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">فصل سنة التسجيل وتلوينها لتمييز المستويات فوراً بالعين المجردة.</div>
+
+                        <!-- Live Preview -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px; text-align:center;">
+                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:6px;">معاينة حية ومباشرة لرقم الطالب:</div>
+                            <div id="massar-live-preview" style="font-family:monospace; font-size:1.3rem; font-weight:800; padding:6px 14px; background:var(--surface); display:inline-flex; border-radius:8px; border:1px solid var(--border);">
+                                1234-26
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">الفاصل بين الرقم والسنة:</label>
+                            <select id="pref-id-separator" onchange="saveIdPrefs()" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <option value="dash">تيرة فاصلة (1234-26)</option>
+                                <option value="parentheses">بين قوسين 1234(26)</option>
+                                <option value="space">مسافة فارغة (1234 26)</option>
+                                <option value="none">بدون فاصل (123426)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">ألوان الدفعات حسب السنة:</label>
+                            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                                <input type="text" id="pref-id-year" placeholder="السنة (ex: 26)" maxlength="2" style="width:80px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); text-align:center; font-weight:bold;">
+                                <input type="color" id="pref-id-color" value="#8b0000" style="padding:0; border:none; width:42px; height:38px; border-radius:8px; cursor:pointer; background:transparent;">
+                                <button class="btn btn-primary" onclick="addYearColor()" style="flex:1; padding:8px 14px; border-radius:10px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
+                                    ➕ حفظ لون الدفعة
+                                </button>
+                            </div>
+                            <div id="pref-color-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- استيراد وتصدير قاعدة الطلاب -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                            <span style="font-size:1.3rem;">📊</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">استيراد وتصدير ملفات الطلاب</h3>
+                        </div>
+
+                        <!-- Dropzone -->
+                        <div id="upload-drop-zone" style="border:2px dashed rgba(124, 58, 237, 0.4); background:rgba(124, 58, 237, 0.04); border-radius:12px; padding:24px 16px; text-align:center; cursor:pointer; margin-bottom:14px;" onclick="document.getElementById('excel-file-input').click()">
+                            <div style="font-size:2.2rem; margin-bottom:6px;">📥</div>
+                            <div style="font-weight:bold; font-size:0.95rem; color:var(--text1); margin-bottom:4px;">اسحب ملف الطلاب هنا أو اضغط للاختيار</div>
+                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:12px;">يدعم ملفات مسار الرسمية، ملفات Excel المنسقة وملفات CSV</div>
+                            <button class="btn btn-primary" type="button" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
+                                📂 استعراض الملف
                             </button>
                             <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
                         </div>
-                    </div>
 
-                    <!-- Quick Download Template -->
-                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.82rem; color: var(--text2);">هل تحتاج النموذج القياسي؟</span>
-                        <a href="/api/admin/gateway/export_template" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #10b981; text-decoration: none; padding: 6px 12px; border-radius: 8px; background: rgba(16, 185, 129, 0.1);">
-                            <span>📥 تحميل النموذج الفارغ</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Google Sheets & Cloud Backup Card -->
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1.4rem;">☁️</span>
-                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">بوابة Google Sheets والمزامنة</h3>
-                            </div>
-                            <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.12); color: #10b981; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Live Sync</span>
-                        </div>
-                        <p style="font-size: 0.84rem; color: var(--text2); line-height: 1.5; margin-bottom: 20px;">
-                            مزامنة ثنائية الاتجاه مع جدول Google Sheets الخارجي لمطابقة التحديثات وحفظ نسخ احتياطية دورية.
-                        </p>
-
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <button id="btn-sync-sheets" class="btn" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);" onclick="syncGoogleSheets()">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.1rem;">🔄</span>
-                                    <span>مزامنة فورية من Google Sheets</span>
-                                </div>
-                                <span style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px;">Pull</span>
-                            </button>
-
-                            <button id="btn-export-sheets" class="btn" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);" onclick="exportGoogleSheets()">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.1rem;">📤</span>
-                                    <span>تصدير البيانات إلى ورقة المتابعة</span>
-                                </div>
-                                <span style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px;">Push</span>
-                            </button>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <a href="/api/admin/gateway/export_template" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16, 185, 129, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.82rem; text-decoration:none;">
+                                📥 تحميل النموذج الفارغ
+                            </a>
+                            <a href="/api/admin/gateway/export_all" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(59, 130, 246, 0.12); color:#3b82f6; border:1px solid rgba(59, 130, 246, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.82rem; text-decoration:none;">
+                                💾 تصدير كافة الطلاب
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Danger Zone Button: Purge Sheets -->
-                    <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border);">
-                        <button id="btn-purge-sheets" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;" onclick="purgeGoogleSheets()">
-                            <span>🗑️ تفريغ جدول Google Sheets (Purger)</span>
+                    <!-- مزامنة Google Sheets -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">☁️</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">مزامنة جداول Google Sheets</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">المزامنة الحية والتصدير المباشر لجدول المتابعة الخارجي.</div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <button id="btn-sync-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#059669; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="syncGoogleSheets()">
+                                🔄 مزامنة من السحابة
+                            </button>
+                            <button id="btn-export-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#2563eb; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="exportGoogleSheets()">
+                                📤 تصدير إلى السحابة
+                            </button>
+                        </div>
+                        <button id="btn-purge-sheets" class="btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(239, 68, 68, 0.08); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.25); padding:8px; border-radius:8px; font-weight:bold; font-size:0.78rem; cursor:pointer;" onclick="purgeGoogleSheets()">
+                            🗑️ تفريغ جدول Google Sheets فقط
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Global Database Exports Row -->
-            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
-                <div>
-                    <div style="font-size: 1.05rem; font-weight: 800; color: var(--text1); margin-bottom: 4px;">💾 التصدير الشامل للبيانات (Full Backup)</div>
-                    <div style="font-size: 0.82rem; color: var(--text2);">حمّل قاعدة بيانات الطلاب كاملة بتنسيق Excel للعمل بدون اتصال أو للأرشفة.</div>
-                </div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="/api/admin/gateway/export_all" class="btn" style="text-decoration: none; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
-                        <span>📥 تصدير كل الطلاب (1 320)</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== PANE 2: AUDIT & HISTORY ==================== -->
-        <div id="s-history" class="settings-pane" style="display: none;">
-            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;">سجل عمليات الاستيراد والمزامنة</h3>
-                        <div style="font-size: 0.82rem; color: var(--text2); margin-top: 4px;">تتبع تفصيلي لكل ملف Excel تم رفعه مع توقيت العملية وحساب المسؤول.</div>
-                    </div>
-                    <button class="btn" onclick="loadImportHistory()" style="background: var(--bg); border: 1px solid var(--border); color: var(--text1); padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                        <span>🔄 تحديث السجل</span>
-                    </button>
-                </div>
-
-                <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 12px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; background: var(--bg); text-align: right;">
-                        <thead>
-                            <tr style="background: rgba(124, 58, 237, 0.08); border-bottom: 2px solid var(--border);">
-                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">المعرف</th>
-                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">تاريخ وتوقيت العملية</th>
-                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">اسم الملف</th>
-                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">عدد الطلاب المستوردين</th>
-                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">المسؤول (Admin)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="import-history-tbody">
-                            <tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text2);">جاري تحميل السجل...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== PANE 3: STUDIO & MASSAR DESIGN ==================== -->
-        <div id="s-design" class="settings-pane" style="display: none;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-                <!-- Massar ID Customizer -->
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                        <span style="font-size: 1.4rem;">🏷️</span>
-                        <div>
-                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">تنسيق رقم مسار (Massar Format)</h3>
-                            <div style="font-size: 0.8rem; color: var(--text2);">فصل السنة بلون مميز لسهولة فرز الدفعات</div>
-                        </div>
-                    </div>
-
-                    <!-- Live Interactive Preview Card -->
-                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center;">
-                        <div style="font-size: 0.75rem; color: var(--text2); margin-bottom: 8px; font-weight: 700;">معاينة حية ومباشرة للرقم (Aperçu en direct) :</div>
-                        <div id="massar-live-preview" style="font-family: monospace; font-size: 1.35rem; font-weight: 800; padding: 8px 16px; background: var(--surface); display: inline-flex; border-radius: 10px; border: 1px solid var(--border); letter-spacing: 1px;">
-                            1234-26
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 18px;">
-                        <label style="font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; display: block; color: var(--text1);">فاصل الأرقام (Séparateur)</label>
-                        <select id="pref-id-separator" onchange="saveIdPrefs()" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.9rem;">
-                            <option value="dash">تيرة فاصلة (1234-26) [موصى به]</option>
-                            <option value="parentheses">بين قوسين 1234(26)</option>
-                            <option value="space">مسافة فارغة (1234 26)</option>
-                            <option value="none">بدون فاصل (123426)</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom: 16px;">
-                        <label style="font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; display: block; color: var(--text1);">تخصيص لون السنة (آخر رقمين)</label>
-                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <input type="text" id="pref-id-year" placeholder="السنة (ex: 26)" maxlength="2" style="width: 90px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); text-align: center; font-weight: 700;">
-                            <input type="color" id="pref-id-color" value="#8b0000" style="padding: 0; border: none; width: 44px; height: 42px; border-radius: 10px; cursor: pointer; background: transparent;">
-                            <button class="btn btn-primary" onclick="addYearColor()" style="flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; background: var(--accent);">
-                                ➕ حفظ لون الدفعة
-                            </button>
-                        </div>
-                        <div id="pref-color-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;"></div>
-                    </div>
-                </div>
-
-                <!-- Theme & Visual Identity Card -->
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                            <span style="font-size: 1.4rem;">🎭</span>
+            <!-- ==================== 3. TAB: تيليجرام (TELEGRAM & 8 DOSSIERS) ==================== -->
+            <div id="s-telegram" class="settings-pane" style="display:none;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.4rem;">📁</span>
                             <div>
-                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">نمط المنظومة والمظهر (Thèmes)</h3>
-                                <div style="font-size: 0.8rem; color: var(--text2);">اختر مظهر لوحة التحكم الذي يناسب بيئة عملك</div>
+                                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">إدارة روابط مجلدات الأكاديمية (8 مجلدات)</h3>
+                                <div style="font-size:0.78rem; color:var(--text2);">الروابط التي يرسلها البوت للطالب تلقائياً فور نجاح عملية الربط حسب جنسه ومستواه الدراسي</div>
                             </div>
                         </div>
+                        <button class="btn btn-primary" onclick="saveFolderLinks()" style="padding:8px 18px; border-radius:8px; font-weight:bold; font-size:0.85rem; background:var(--accent); display:flex; align-items:center; gap:6px;">
+                            💾 حفظ كافة الروابط
+                        </button>
+                    </div>
 
-                        <!-- 3 Theme Cards Selector -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px;">
-                            <!-- Dark Cyber Default -->
-                            <div class="theme-choice-card" onclick="applyDashboardTheme('dark')" style="border: 2px solid var(--accent); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; background: #0d1117; color: #f0f6fc; transition: all 0.2s;">
-                                <div style="font-size: 1.3rem; margin-bottom: 4px;">🌙</div>
-                                <div style="font-size: 0.8rem; font-weight: 800;">Dark Cyber</div>
-                                <div style="font-size: 0.68rem; opacity: 0.7;">الوضع الليلي</div>
+                    <!-- Notice pédagogique -->
+                    <div style="background:rgba(59, 130, 246, 0.08); border:1px solid rgba(59, 130, 246, 0.25); border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:0.8rem; color:var(--text1); line-height:1.6;">
+                        💡 <b>طريقة العمل :</b> عندما يكمل الطالب إدخال بياناته بنجاح، يقوم البوت فوراً بقراءة مستواه (س1 إلى س4) وجنسه (رجل أو امرأة)، ثم يعطيه الزر المباشر لإضافة مجلد قنواته ومجموعاته الخاصة على تليجرام بنقرة واحدة.
+                    </div>
+
+                    <!-- 2 Colonnes : Hommes et Femmes -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(310px, 1fr)); gap:18px;">
+                        
+                        <!-- القسم 1: مجلدات الطلاب (ذكور / رجال) -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid #3b82f6;">
+                                <span style="font-size:1.3rem;">👨</span>
+                                <h4 style="margin:0; font-size:1rem; font-weight:800; color:#3b82f6;">مجلدات الطلاب (الرجال / الذكور)</h4>
                             </div>
 
-                            <!-- CPI Blue -->
-                            <div class="theme-choice-card" onclick="applyDashboardTheme('cpi')" style="border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; background: #0a0f1d; color: #f3f4f6; transition: all 0.2s;">
-                                <div style="font-size: 1.3rem; margin-bottom: 4px;">🌌</div>
-                                <div style="font-size: 0.8rem; font-weight: 800;">CPI Navy</div>
-                                <div style="font-size: 0.68rem; opacity: 0.7;">أزرق ملكي</div>
-                            </div>
-
-                            <!-- Light Clean -->
-                            <div class="theme-choice-card" onclick="applyDashboardTheme('light')" style="border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; background: #ffffff; color: #111827; transition: all 0.2s;">
-                                <div style="font-size: 1.3rem; margin-bottom: 4px;">☀️</div>
-                                <div style="font-size: 0.8rem; font-weight: 800;">Light Clean</div>
-                                <div style="font-size: 0.68rem; opacity: 0.7;">الوضع النهاري</div>
-                            </div>
-                        </div>
-
-                        <!-- Student Display Options -->
-                        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display:flex; flex-direction:column; gap:12px;">
                                 <div>
-                                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--text1);">إلزام عرض النسب العائلي أولاً</div>
-                                    <div style="font-size: 0.75rem; color: var(--text2);">Forcer le nom au lieu du prénom</div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">1️⃣ السنة الأولى (رجال):</label>
+                                    <input type="text" id="link_homme_1" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
                                 </div>
-                                <input type="checkbox" id="setting-force-name" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent);" onchange="toggleForceName(this)">
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">2️⃣ السنة الثانية (رجال):</label>
+                                    <input type="text" id="link_homme_2" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">3️⃣ السنة الثالثة (رجال):</label>
+                                    <input type="text" id="link_homme_3" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">4️⃣ السنة الرابعة (رجال):</label>
+                                    <input type="text" id="link_homme_4" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
                             </div>
                         </div>
+
+                        <!-- القسم 2: مجلدات الطالبات (إناث / نساء) -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid #ec4899;">
+                                <span style="font-size:1.3rem;">👩</span>
+                                <h4 style="margin:0; font-size:1rem; font-weight:800; color:#ec4899;">مجلدات الطالبات (النساء / الإناث)</h4>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">1️⃣ السنة الأولى (نساء):</label>
+                                    <input type="text" id="link_femme_1" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">2️⃣ السنة الثانية (نساء):</label>
+                                    <input type="text" id="link_femme_2" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">3️⃣ السنة الثالثة (نساء):</label>
+                                    <input type="text" id="link_femme_3" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">4️⃣ السنة الرابعة (نساء):</label>
+                                    <input type="text" id="link_femme_4" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div style="font-size: 0.75rem; color: var(--text2); text-align: center;">
-                        تُحفظ تفضيلات المظهر وتنسيق مسار محلياً في متصفحك بشكل فوري.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== PANE 4: SYSTEM & MANUAL ENTRY ==================== -->
-        <div id="s-system" class="settings-pane" style="display: none;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-                <!-- Modern Manual Add Form -->
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-                        <span style="font-size: 1.4rem;">➕</span>
-                        <div>
-                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">إضافة طالب يدوياً (Ajout Manuel)</h3>
-                            <div style="font-size: 0.8rem; color: var(--text2);">تسجيل طالب جديد مباشرة في قاعدة البيانات دون ملف</div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; gap: 10px;">
-                            <div style="flex: 1;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">الاسم الشخصي</label>
-                                <input type="text" id="manual-student-fn" placeholder="الاسم" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">النسب (العائلي)</label>
-                                <input type="text" id="manual-student-ln" placeholder="النسب" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">رقم مسار (Massar ID)</label>
-                            <input type="text" id="manual-student-id" placeholder="مثال: 123426" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
-                        </div>
-
-                        <div>
-                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">البريد الإلكتروني <span style="color:#ef4444;">*</span></label>
-                            <input type="email" id="manual-student-email" placeholder="student@example.com" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
-                        </div>
-
-                        <div style="display: flex; gap: 10px;">
-                            <div style="flex: 1;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">تاريخ الميلاد <span style="color:#ef4444;">*</span></label>
-                                <input type="text" id="manual-student-dob" placeholder="10/10/2000" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">الهاتف (اختياري)</label>
-                                <input type="text" id="manual-student-phone" placeholder="212600000000" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
-                            <span>✅ تسجيل وإضافة الطالب</span>
+                    <!-- Bouton de sauvegarde global -->
+                    <div style="margin-top:18px; text-align:center;">
+                        <button class="btn btn-primary" onclick="saveFolderLinks()" style="padding:12px 30px; border-radius:10px; font-weight:bold; font-size:0.95rem; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border:none; cursor:pointer; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);">
+                            💾 حفظ وتفعيل جميع روابط تليجرام
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Albaji API Key & Integrations Card -->
-                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                            <span style="font-size: 1.4rem;">🔐</span>
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">بوابة وتكامل Albaji (WhatsApp / SMS)</h3>
-                                <div style="font-size: 0.8rem; color: var(--text2);">الربط مع خادم الرسائل الفورية والتنبيهات التلقائية</div>
-                            </div>
+            <!-- ==================== 4. TAB: السجل (HISTORY & AUDIT) ==================== -->
+            <div id="s-history" class="settings-pane" style="display:none;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">سجل عمليات الاستيراد والمزامنة</h3>
+                            <div style="font-size:0.78rem; color:var(--text2); margin-top:2px;">تتبع تفصيلي لكل ملف تم رفعه في المنظومة.</div>
                         </div>
-
-                        <p style="font-size: 0.84rem; color: var(--text2); line-height: 1.5; margin-bottom: 16px;">
-                            الرمز السري API Key المشفر المستخدم لإرسال رسائل التفعيل، استعادة الحسابات وإشعارات الدفع عبر واتساب والرسائل القصيرة.
-                        </p>
-
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
-                            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text1);">الرمز السري (Clé API Secrète) :</label>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="password" id="albaji-api-key" placeholder="••••••••••••••••" style="flex: 1; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: monospace; font-size: 0.95rem;">
-                                <button type="button" class="btn" onclick="toggleAlbajiKeyVisibility()" style="background: var(--bg); border: 1px solid var(--border); color: var(--text1); padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: 1rem;" title="إظهار / إخفاء">
-                                    <span id="albaji-eye-icon">👁️</span>
-                                </button>
-                            </div>
-                            <button class="btn btn-primary" onclick="saveAlbajiKey()" style="padding: 11px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; background: #0ea5e9; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <span>💾 حفظ وتأكيد المفتاح</span>
-                            </button>
-                        </div>
+                        <button class="btn" onclick="loadImportHistory()" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:bold; cursor:pointer;">
+                            🔄 تحديث
+                        </button>
                     </div>
 
-                    <!-- System Diagnostics Info -->
-                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text1); margin-bottom: 6px;">حالة الاتصال والخدمة :</div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text2); margin-bottom: 4px;">
-                            <span>قاعدة البيانات :</span>
-                            <span style="color: #10b981; font-weight: 700;">متصلة ومؤمّنة (SQLite WAL)</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text2);">
-                            <span>خادم البوابة :</span>
-                            <span style="color: #10b981; font-weight: 700;">Online (Railway / Production)</span>
-                        </div>
+                    <div style="overflow-x:auto; border:1px solid var(--border); border-radius:10px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; background:var(--bg); text-align:right;">
+                            <thead>
+                                <tr style="background:rgba(124, 58, 237, 0.08); border-bottom:2px solid var(--border);">
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">المعرف</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">تاريخ وتوقيت العملية</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">اسم الملف</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">الطلاب</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">المسؤول</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-history-tbody">
+                                <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text2);">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
+
 
     <!-- TAB: إحصاء -->
     <div id="tab-stats" class="tab-content">
@@ -2464,9 +2400,7 @@
             <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
         </div>
     
-        <hr style="border-color:var(--border); margin:20px 0;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 15px; color:var(--text1);">🔗 إدارة روابط المجموعات (Liens)</h3>
-        <div id="links-container"><div class="no-items">جاري التحميل...</div>
+    </div>
     </div>
     <script>
         window.Telegram.WebApp.ready();
@@ -4044,11 +3978,10 @@
         })();
 
         // ============ SETTINGS TAB SWITCHER ============
+        // ============ NOUVEAU MENU REGLAGES (STYLE CARTE ELEVE) ============
         function switchSettingsTab(tabId, clickedEl) {
             document.querySelectorAll('.settings-pane').forEach(p => p.style.display = 'none');
-            document.querySelectorAll('.settings-tab-pill').forEach(b => {
-                b.style.borderColor = 'var(--border)';
-                b.style.background = 'var(--surface)';
+            document.querySelectorAll('.mtab-container .mtab').forEach(b => {
                 b.classList.remove('active');
             });
             
@@ -4056,34 +3989,68 @@
             if (targetPane) targetPane.style.display = 'block';
 
             const btn = clickedEl || document.querySelector(`[onclick*="${tabId}"]`);
-            if (btn) {
-                btn.style.borderColor = 'var(--accent)';
-                btn.style.background = 'var(--surface)';
-                btn.classList.add('active');
-            }
+            if (btn) btn.classList.add('active');
 
             if (tabId === 's-history') {
                 loadImportHistory();
-            } else if (tabId === 's-design') {
+            } else if (tabId === 's-academy') {
                 renderYearColors();
+            } else if (tabId === 's-telegram') {
+                fetchFolderLinks();
             }
         }
 
-        // ============ SETTINGS API & INTEGRATIONS ============
+        async function fetchFolderLinks() {
+            try {
+                const res = await fetch('/api/admin/links');
+                const data = await res.json();
+                if (data.success && data.links) {
+                    const genders = ['homme', 'femme'];
+                    const years = [1, 2, 3, 4];
+                    for (let g of genders) {
+                        for (let y of years) {
+                            const key = 'link_' + g + '_' + y;
+                            const input = document.getElementById(key);
+                            const found = data.links.find(l => l.key === key);
+                            if (input) {
+                                input.value = found ? found.value : '';
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Error loading folder links:", e);
+            }
+        }
+
+        async function saveFolderLinks() {
+            const genders = ['homme', 'femme'];
+            const years = [1, 2, 3, 4];
+            let count = 0;
+            try {
+                for (let g of genders) {
+                    for (let y of years) {
+                        const key = 'link_' + g + '_' + y;
+                        const input = document.getElementById(key);
+                        if (!input) continue;
+                        await fetch('/api/admin/gateway/settings', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ key, value: input.value.trim() })
+                        });
+                        count++;
+                    }
+                }
+                showToast('✅ تم حفظ جميع روابط مجلدات تليجرام الـ 8 بنجاح!', 'success');
+            } catch(e) {
+                alert('خطأ أثناء حفظ الروابط: ' + e.message);
+            }
+        }
+
         async function loadGeneralSettings() {
             try {
-                // Update badge counts
-                if (typeof allStudents !== 'undefined' && allStudents.length > 0) {
-                    const activeCount = allStudents.filter(s => s.excluded != 1).length;
-                    const exclCount = allStudents.filter(s => s.excluded == 1).length;
-                    const bActive = document.getElementById('settings-badge-active-count');
-                    const bExcl = document.getElementById('settings-badge-excluded-count');
-                    if (bActive) bActive.textContent = activeCount.toLocaleString('fr-FR');
-                    if (bExcl) bExcl.textContent = exclCount.toLocaleString('fr-FR');
-                }
-
                 renderYearColors();
-
+                fetchFolderLinks();
                 const res = await fetch('/api/admin/gateway/settings');
                 const data = await res.json();
                 if (data.success && data.settings) {
