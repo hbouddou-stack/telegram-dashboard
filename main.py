@@ -2289,15 +2289,13 @@ async def api_admin_sos_reply(request: web.Request):
                     reply_url = f"{base_url}/link.html?source={source}&telegram_id={telegram_id}&step=form&direct=1"
                     
                     response_text = (
-                        "<blockquote>"
-                        "🛠️ <b>رد إدارة أكاديمية الباجي:</b>\n\n"
-                        f"{reply_message}"
-                        "</blockquote>\n\n"
-                        "<blockquote>"
+                        "🛠️ <b>رد إدارة أكاديمية الباجي:</b>\n"
+                        f"<blockquote>{reply_message}</blockquote>\n\n"
                         "📋 <b>تفاصيل طلبك المسجلة لدينا:</b>\n"
+                        "<blockquote>"
                         f"• <b>رسالتك:</b> {student_msg or 'طلب مساعدة'}\n"
                         f"• <b>رقم الطالب المدخل:</b> <code>{student_id_entered or 'غير محدد'}</code>\n"
-                        f"• <b>البريد الإلكتروني:</b> <code>{email or 'غير محدد'}</code>"
+                        f"• <b>البريد الإلكتروني:</b>\n<code>{email or 'غير محدد'}</code>"
                         "</blockquote>\n\n"
                         "👇 <b>يمكنك إعادة المحاولة وتأكيد بياناتك مباشرة عبر الزر أدناه:</b>"
                     )
@@ -2323,6 +2321,29 @@ async def api_admin_sos_reply(request: web.Request):
         return web.json_response({'success': True})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_sos_delete(request: web.Request):
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        sos_id = request.match_info.get('id')
+        if not sos_id:
+            try:
+                data = await request.json()
+                sos_id = data.get('sos_id') or data.get('id')
+            except Exception:
+                pass
+        
+        if not sos_id:
+            return web.json_response({'success': False, 'error': 'Missing sos_id'}, status=400)
+            
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("DELETE FROM gateway_sos WHERE id = ?", (sos_id,))
+            await db.commit()
+            
+        return web.json_response({'success': True, 'deleted_id': sos_id})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)}, status=500)
 
 async def api_admin_gateway_chat(request: web.Request):
     telegram_id = request.query.get('id')
@@ -6987,6 +7008,8 @@ async def start_web_server(bot: Bot):
 
     app.router.add_get('/api/admin/sos', api_admin_sos_list)
     app.router.add_post('/api/admin/sos/reply', api_admin_sos_reply)
+    app.router.add_post('/api/admin/sos/delete', api_admin_sos_delete)
+    app.router.add_delete('/api/admin/sos/{id}', api_admin_sos_delete)
     app.router.add_post('/api/student/stats', get_student_stats)
     app.router.add_post('/api/student/quiz/taxonomy', get_student_quiz_taxonomy)
     app.router.add_get('/api/student/quiz/options', get_student_quiz_options)
