@@ -2079,9 +2079,9 @@ async def api_admin_sos_list(request: web.Request):
                 FROM gateway_sos g
                 LEFT JOIN academy_students s ON (
                     (g.email_tentative IS NOT NULL AND g.email_tentative != '' AND LOWER(TRIM(g.email_tentative)) = LOWER(TRIM(s.email))) 
-                    OR (g.student_id_tentative IS NOT NULL AND g.student_id_tentative != '' AND g.student_id_tentative = s.student_id)
+                    OR (g.student_id_tentative IS NOT NULL AND g.student_id_tentative != '' AND CAST(g.student_id_tentative AS TEXT) = CAST(s.student_id AS TEXT))
                 )
-                LEFT JOIN users u ON g.telegram_id = u.telegram_id
+                LEFT JOIN users u ON CAST(g.telegram_id AS TEXT) = CAST(u.telegram_id AS TEXT) AND g.telegram_id IS NOT NULL AND g.telegram_id != 0 AND g.telegram_id != ''
                 ORDER BY g.id DESC LIMIT 100
             """) as cur:
                 rows = [dict(row) for row in await cur.fetchall()]
@@ -2093,19 +2093,76 @@ async def api_admin_sos_list(request: web.Request):
                     item['first_name'] = item.get('student_first_name')
                     item['last_name'] = item.get('student_last_name')
                     item['gender'] = item.get('student_gender')
-                if (not item.get('tg_first_name') or not item.get('tg_username')) and item.get('telegram_id'):
+
+                tid_val = str(item.get('telegram_id') or '').strip()
+                if tid_val in ('0', 'None', 'null', ''):
+                    tid_val = ''
+
+                # If telegram_id was missing on this SOS record, discover it from student_logs
+                if not tid_val:
+                    email_t = (item.get('email_tentative') or '').strip().lower()
+                    sid_t = (item.get('student_id_tentative') or '').strip()
+                    
+                    if email_t:
+                        async with db.execute("SELECT telegram_id, telegram_name, telegram_username FROM student_logs WHERE telegram_id IS NOT NULL AND telegram_id != 0 AND LOWER(description) LIKE ? ORDER BY id DESC LIMIT 1", (f"%{email_t}%",)) as cur_f:
+                            f_row = await cur_f.fetchone()
+                            if f_row and f_row[0]:
+                                tid_val = str(f_row[0])
+                                if f_row[1] and not item.get('tg_first_name'): item['tg_first_name'] = f_row[1]
+                                if f_row[2] and not item.get('tg_username'): item['tg_username'] = f_row[2]
+
+                    if not tid_val and sid_t and sid_t.isdigit():
+                        async with db.execute("SELECT telegram_id, telegram_name, telegram_username FROM student_logs WHERE telegram_id IS NOT NULL AND telegram_id != 0 AND (student_id = ? OR description LIKE ?) ORDER BY id DESC LIMIT 1", (int(sid_t), f"%{sid_t}%")) as cur_f2:
+                            f_row2 = await cur_f2.fetchone()
+                            if f_row2 and f_row2[0]:
+                                tid_val = str(f_row2[0])
+                                if f_row2[1] and not item.get('tg_first_name'): item['tg_first_name'] = f_row2[1]
+                                if f_row2[2] and not item.get('tg_username'): item['tg_username'] = f_row2[2]
+
+                    if not tid_val and item.get('message'):
+                        msg_sub = item['message'][:25].strip()
+                        if msg_sub:
+                            async with db.execute("SELECT telegram_id, telegram_name, telegram_username FROM student_logs WHERE telegram_id IS NOT NULL AND telegram_id != 0 AND description LIKE ? ORDER BY id DESC LIMIT 1", (f"%{msg_sub}%",)) as cur_f3:
+                                f_row3 = await cur_f3.fetchone()
+                                if f_row3 and f_row3[0]:
+                                    tid_val = str(f_row3[0])
+                                    if f_row3[1] and not item.get('tg_first_name'): item['tg_first_name'] = f_row3[1]
+                                    if f_row3[2] and not item.get('tg_username'): item['tg_username'] = f_row3[2]
+
+                    if tid_val:
+                        item['telegram_id'] = int(tid_val) if tid_val.isdigit() else tid_val
+                        try:
+                            await db.execute("UPDATE gateway_sos SET telegram_id = ? WHERE id = ?", (item['telegram_id'], item['id']))
+                            await db.commit()
+                        except Exception:
+                            pass
+
+                # If telegram_id exists, look directly into users table (the source of the Visitors tab)
+                if tid_val and (not item.get('tg_first_name') or not item.get('tg_username')):
+                    int_tid = int(tid_val) if tid_val.isdigit() else 0
+                    async with db.execute("SELECT first_name, last_name, username FROM users WHERE telegram_id = ? OR CAST(telegram_id AS TEXT) = ?", (int_tid, tid_val)) as cur_u:
+                        u_row = await cur_u.fetchone()
+                        if u_row:
+                            if u_row[0] and not item.get('tg_first_name'): item['tg_first_name'] = u_row[0]
+                            if u_row[1] and not item.get('tg_last_name'): item['tg_last_name'] = u_row[1]
+                            if u_row[2] and not item.get('tg_username'): item['tg_username'] = u_row[2]
+
+                # Fallback to student_logs if still missing
+                if tid_val and (not item.get('tg_first_name') or not item.get('tg_username')):
+                    int_tid = int(tid_val) if tid_val.isdigit() else 0
                     async with db.execute("""
                         SELECT telegram_name, telegram_username 
                         FROM student_logs 
-                        WHERE telegram_id = ? AND (telegram_name != '' OR telegram_username != '')
+                        WHERE (telegram_id = ? OR CAST(telegram_id AS TEXT) = ?) AND (telegram_name != '' OR telegram_username != '')
                         ORDER BY id DESC LIMIT 1
-                    """, (item['telegram_id'],)) as cur_l:
+                    """, (int_tid, tid_val)) as cur_l:
                         row_l = await cur_l.fetchone()
                         if row_l:
                             if not item.get('tg_first_name') and row_l[0]:
                                 item['tg_first_name'] = row_l[0]
                             if not item.get('tg_username') and row_l[1]:
                                 item['tg_username'] = row_l[1]
+
                 sos_list.append(item)
 
         return web.json_response({'success': True, 'sos_list': sos_list})

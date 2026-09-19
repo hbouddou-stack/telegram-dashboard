@@ -9496,6 +9496,9 @@ async function toggleStudentValidity() {
         let rawSosList = [];
         async function fetchSos() {
             try {
+                if (!rawGhostList || rawGhostList.length === 0) {
+                    loadGhostVisitors().then(() => renderSosList()).catch(() => {});
+                }
                 const res = await fetch('/api/admin/sos');
                 const data = await res.json();
                 if(data.success) {
@@ -9655,9 +9658,15 @@ async function toggleStudentValidity() {
                     : '<span class="badge badge-open">قيد المعالجة</span>';
                 
                 const matchedStudent = allStudents.find(st => 
-                    (st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
+                    (sos.telegram_id && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
                     (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
-                    (sos.student_id_tentative && String(st.student_id) === String(sos.student_id_tentative))
+                    (sos.student_id_tentative && st.student_id && String(st.student_id) === String(sos.student_id_tentative))
+                );
+
+                const matchedGhost = (rawGhostList || []).find(v => 
+                    (sos.telegram_id && v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) ||
+                    (sos.email_tentative && v.student_email && v.student_email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
+                    (sos.student_id_tentative && v.student_id && String(v.student_id) === String(sos.student_id_tentative))
                 );
 
                 const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
@@ -9666,10 +9675,10 @@ async function toggleStudentValidity() {
                 const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
 
                 // Telegram info
-                let tgFirst = sos.tg_first_name || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
-                let tgLast = sos.tg_last_name || (matchedStudent ? matchedStudent.tg_last_name : '');
+                let tgFirst = sos.tg_first_name || (matchedGhost ? matchedGhost.first_name : '') || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
+                let tgLast = sos.tg_last_name || (matchedGhost ? matchedGhost.last_name : '') || (matchedStudent ? matchedStudent.tg_last_name : '');
                 let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
-                let tgUsername = (sos.tg_username || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
+                let tgUsername = (sos.tg_username || (matchedGhost ? matchedGhost.username : '') || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
 
                 let nameBadgeHtml = '';
                 if (hasDbName) {
@@ -9733,17 +9742,22 @@ async function toggleStudentValidity() {
             activeSosStudentId = sos.student_id_tentative;
             
             const matchedStudent = allStudents.find(st => 
-                (st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
+                (sos.telegram_id && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
                 (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
-                (sos.student_id_tentative && String(st.student_id) === String(sos.student_id_tentative))
+                (sos.student_id_tentative && st.student_id && String(st.student_id) === String(sos.student_id_tentative))
+            );
+            const matchedGhost = (rawGhostList || []).find(v => 
+                (sos.telegram_id && v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) ||
+                (sos.email_tentative && v.student_email && v.student_email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
+                (sos.student_id_tentative && v.student_id && String(v.student_id) === String(sos.student_id_tentative))
             );
             const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
             const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
             const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
-            let tgFirst = sos.tg_first_name || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
-            let tgLast = sos.tg_last_name || (matchedStudent ? matchedStudent.tg_last_name : '');
+            let tgFirst = sos.tg_first_name || (matchedGhost ? matchedGhost.first_name : '') || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
+            let tgLast = sos.tg_last_name || (matchedGhost ? matchedGhost.last_name : '') || (matchedStudent ? matchedStudent.tg_last_name : '');
             let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
-            let tgUsername = (sos.tg_username || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
+            let tgUsername = (sos.tg_username || (matchedGhost ? matchedGhost.username : '') || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
 
             let whoHtml = '';
             if (dbFullName) {
@@ -9989,7 +10003,7 @@ async function toggleStudentValidity() {
         }
 
         // ============ INIT ============
-        fetchStudents(); fetchKpiMetrics();
+        fetchStudents(); fetchKpiMetrics(); loadGhostVisitors().catch(() => {});
     
 
 
