@@ -2111,7 +2111,7 @@
 
     <!-- Modal: Historique de l'élève / مسار الطالب -->
     <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
-        <div class="modal" style="max-width: 680px; width: 95%; max-height: 88vh; display: flex; flex-direction: column; padding: 18px; border-radius: 16px;">
+        <div class="modal" style="max-width: 720px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 18px; border-radius: 16px;">
             <div class="modal-header" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
                 <h2 style="font-size: 1.15rem; color: var(--text1); display: flex; align-items: center; gap: 8px;">
                     <span>🧭</span> مسار الخطوات وسجل النشاط
@@ -2119,6 +2119,7 @@
                 <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✖</button>
             </div>
             
+            <!-- Identités -->
             <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
                 <div style="flex:1; min-width: 240px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
                     <h3 style="font-size: 0.85rem; margin-bottom: 6px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
@@ -2130,10 +2131,31 @@
                 </div>
             </div>
 
+            <!-- Funnel Stepper Progress Bar -->
+            <div id="funnel-summary-container" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px;">
+                <div style="font-size:0.8rem; font-weight:bold; color:var(--text2); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🎯 تقدم الطالب في المحطات الإلزامية (المسار الرئيسي):</span>
+                    <span id="funnel-percent-badge" style="background:rgba(99,102,241,0.12); color:#6366f1; padding:2px 8px; border-radius:10px; font-size:0.75rem;">0%</span>
+                </div>
+                <div id="funnel-stepper-chips" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
+                    <!-- Chips dynamically injected -->
+                </div>
+            </div>
+
+            <!-- Timeline Box with View Toggle -->
             <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; flex:1; min-height: 320px; overflow: hidden;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                    <h3 style="font-size: 0.88rem; margin:0; color:var(--text1); font-weight: bold;">📜 التتبع الزمني للخطوات (Timeline)</h3>
-                    <span id="timeline-steps-count" style="font-size:0.75rem; color:var(--text2);"></span>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom: 10px;">
+                    <div style="display:flex; gap:6px; background:var(--surface); padding:3px; border-radius:8px; border:1px solid var(--border);">
+                        <button id="btn-timeline-grouped" onclick="setTimelineViewMode('grouped')" 
+                                style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:4px 12px; border-radius:6px; border:none; background:var(--primary); color:#fff;">
+                            ⚡ مسار ذكي (بدون تكرار)
+                        </button>
+                        <button id="btn-timeline-raw" onclick="setTimelineViewMode('raw')" 
+                                style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:4px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2);">
+                            📜 السجل الخام بالتفصيل
+                        </button>
+                    </div>
+                    <span id="timeline-steps-count" style="font-size:0.75rem; color:var(--text2); font-family:monospace;"></span>
                 </div>
                 <div id="logs-body" style="overflow-y:auto; flex:1; padding-right: 4px; padding-left: 4px;">
                     <div class="no-items">جاري التحميل...</div>
@@ -2899,6 +2921,319 @@
             }
         }
 
+        let currentJourneyLogs = [];
+        let currentTimelineView = 'grouped'; // 'grouped' or 'raw'
+        let currentJourneyVisitorContext = { telegram_id: '', displayName: '', student_id: '' };
+
+        function groupJourneyLogs(logs) {
+            if (!logs || !logs.length) return [];
+            const groups = [];
+            let current = null;
+
+            for (let i = 0; i < logs.length; i++) {
+                const l = logs[i];
+                if (current && current.action_type === l.action_type) {
+                    current.count++;
+                    current.entries.push(l);
+                } else {
+                    if (current) groups.push(current);
+                    current = {
+                        action_type: l.action_type,
+                        description: l.description,
+                        latest_timestamp: l.timestamp,
+                        first_timestamp: l.timestamp,
+                        count: 1,
+                        entries: [l]
+                    };
+                }
+            }
+            if (current) groups.push(current);
+            return groups;
+        }
+
+        function setTimelineViewMode(mode) {
+            currentTimelineView = mode;
+            const btnGrouped = document.getElementById('btn-timeline-grouped');
+            const btnRaw = document.getElementById('btn-timeline-raw');
+
+            if (mode === 'grouped') {
+                if (btnGrouped) {
+                    btnGrouped.style.background = 'var(--primary)';
+                    btnGrouped.style.color = '#fff';
+                }
+                if (btnRaw) {
+                    btnRaw.style.background = 'transparent';
+                    btnRaw.style.color = 'var(--text2)';
+                }
+            } else {
+                if (btnRaw) {
+                    btnRaw.style.background = 'var(--primary)';
+                    btnRaw.style.color = '#fff';
+                }
+                if (btnGrouped) {
+                    btnGrouped.style.background = 'transparent';
+                    btnGrouped.style.color = 'var(--text2)';
+                }
+            }
+
+            renderJourneyTimeline();
+        }
+
+        function renderFunnelStepper(logs, student_id) {
+            const container = document.getElementById('funnel-stepper-chips');
+            const badge = document.getElementById('funnel-percent-badge');
+            if (!container) return;
+
+            // 6 standard onboarding checkpoints
+            const steps = [
+                {
+                    key: 'OPEN',
+                    label: '1. فتح الصفحة',
+                    icon: '🌐',
+                    isDone: (lgs) => lgs.some(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type))
+                },
+                {
+                    key: 'COMMIT',
+                    label: '2. شروط الالتزام',
+                    icon: '✅',
+                    isDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_COMMITMENT_CHECKED' || (l.description && l.description.includes('الالتزام')))
+                },
+                {
+                    key: 'VIDEOS',
+                    label: '3. الفيديوهات',
+                    icon: '🎥',
+                    isDone: (lgs) => lgs.some(l => ['ONBOARDING_VID1_STARTED', 'ONBOARDING_VID2_STARTED', 'ONBOARDING_VID3_STARTED'].includes(l.action_type) || (l.description && l.description.includes('فيديو')))
+                },
+                {
+                    key: 'CHARTER',
+                    label: '4. الميثاق الطلابي',
+                    icon: '📜',
+                    isDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_CHARTER_SIGNED' || (l.description && l.description.includes('الميثاق')))
+                },
+                {
+                    key: 'FORM',
+                    label: '5. شاشة الربط',
+                    icon: '📝',
+                    isDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_FORM_REACHED' || l.action_type === 'ONBOARDING_INPUT_ERROR' || (l.description && l.description.includes('استمارة')))
+                },
+                {
+                    key: 'LINKED',
+                    label: '6. اكتمال الربط',
+                    icon: '🟢',
+                    isDone: (lgs) => !!student_id || lgs.some(l => ['ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK'].includes(l.action_type))
+                }
+            ];
+
+            let completedCount = 0;
+            const stepsStatus = steps.map(step => {
+                const done = step.isDone(logs || []);
+                if (done) completedCount++;
+                return { ...step, done };
+            });
+
+            // If the user has completed a further step, previous steps are considered implicitly passed
+            let highestDoneIndex = -1;
+            for (let i = stepsStatus.length - 1; i >= 0; i--) {
+                if (stepsStatus[i].done) {
+                    highestDoneIndex = i;
+                    break;
+                }
+            }
+            for (let i = 0; i <= highestDoneIndex; i++) {
+                stepsStatus[i].done = true;
+            }
+            const finalCompleted = stepsStatus.filter(s => s.done).length;
+            const pct = Math.round((finalCompleted / steps.length) * 100);
+
+            if (badge) {
+                badge.textContent = `${pct}% مكتمل (${finalCompleted}/${steps.length})`;
+                if (pct === 100) {
+                    badge.style.background = 'rgba(16, 185, 129, 0.15)';
+                    badge.style.color = '#10b981';
+                } else if (pct > 0) {
+                    badge.style.background = 'rgba(99, 102, 241, 0.12)';
+                    badge.style.color = '#6366f1';
+                } else {
+                    badge.style.background = 'rgba(100, 116, 139, 0.12)';
+                    badge.style.color = '#64748b';
+                }
+            }
+
+            container.innerHTML = stepsStatus.map((step, idx) => {
+                const isCurrent = !step.done && (idx === 0 || stepsStatus[idx - 1]?.done);
+                let bg = 'rgba(100, 116, 139, 0.08)';
+                let color = 'var(--text2)';
+                let border = '1px solid var(--border)';
+                let iconStatus = '⏳';
+
+                if (step.done) {
+                    bg = 'rgba(16, 185, 129, 0.12)';
+                    color = '#10b981';
+                    border = '1px solid rgba(16, 185, 129, 0.3)';
+                    iconStatus = '✓';
+                } else if (isCurrent) {
+                    bg = 'rgba(245, 158, 11, 0.12)';
+                    color = '#f59e0b';
+                    border = '1px solid rgba(245, 158, 11, 0.4)';
+                    iconStatus = '📍';
+                }
+
+                return `
+                    <div style="flex:1; min-width:110px; background:${bg}; color:${color}; border:${border}; border-radius:10px; padding:6px 8px; font-size:0.75rem; font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:4px; white-space:nowrap;">
+                        <span style="display:flex; align-items:center; gap:4px;">
+                            <span>${step.icon}</span>
+                            <span>${step.label}</span>
+                        </span>
+                        <span style="font-size:0.75rem; font-weight:bold;">${iconStatus}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleGroupDetails(groupId) {
+            const el = document.getElementById(groupId);
+            const icon = document.getElementById('icon-' + groupId);
+            if (!el) return;
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                if (icon) icon.innerText = '▲ إخفاء التكرارات';
+            } else {
+                el.style.display = 'none';
+                if (icon) icon.innerText = '▼ عرض كل التكرارات';
+            }
+        }
+
+        function renderJourneyTimeline() {
+            const logsBody = document.getElementById('logs-body');
+            const countSpan = document.getElementById('timeline-steps-count');
+            if (!logsBody) return;
+
+            if (!currentJourneyLogs || currentJourneyLogs.length === 0) {
+                logsBody.innerHTML = `
+                    <div style="text-align:center; padding:40px 20px; color:var(--text2);">
+                        <div style="font-size:2.5rem; margin-bottom:8px;">📭</div>
+                        <div>لا توجد حركات مسجلة في قاعدة البيانات لهذا المستخدم بعد.</div>
+                    </div>
+                `;
+                if (countSpan) countSpan.textContent = '0 خطوة مسجلة';
+                return;
+            }
+
+            if (countSpan) {
+                if (currentTimelineView === 'grouped') {
+                    const groups = groupJourneyLogs(currentJourneyLogs);
+                    countSpan.textContent = `${groups.length} محطة مجمعة (${currentJourneyLogs.length} حركة إجمالية)`;
+                } else {
+                    countSpan.textContent = `${currentJourneyLogs.length} حركة مسجلة بالتفصيل`;
+                }
+            }
+
+            let html = `
+                <div style="position:relative; padding:10px 10px 10px 20px;">
+                    <!-- Vertical Timeline Line -->
+                    <div style="position:absolute; right:27px; top:18px; bottom:18px; width:2px; background:var(--border); z-index:1;"></div>
+            `;
+
+            if (currentTimelineView === 'grouped') {
+                const groups = groupJourneyLogs(currentJourneyLogs);
+
+                html += groups.map((g, index) => {
+                    const act = formatActionTypeArabic(g.action_type);
+                    const isFirst = index === 0;
+                    const dateLatest = formatLogTimestampFrenchDigits(g.latest_timestamp);
+                    const hasMultiple = g.count > 1;
+                    const groupId = `group-detail-${index}`;
+
+                    return `
+                        <div style="position:relative; display:flex; gap:16px; margin-bottom:14px; z-index:2;">
+                            <!-- Timeline Node Bullet -->
+                            <div style="width:36px; height:36px; border-radius:50%; background:${act.bg}; color:${act.color}; border:2px solid ${act.color}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,0.06);">
+                                ${isFirst ? '⭐' : '•'}
+                            </div>
+
+                            <!-- Grouped Card Content -->
+                            <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="font-weight:bold; font-size:0.88rem; color:${act.color}; background:${act.bg}; padding:3px 10px; border-radius:8px; border:1px solid ${act.color}33;">
+                                            ${act.label}
+                                        </span>
+                                        ${hasMultiple ? `
+                                            <span style="font-size:0.75rem; font-weight:bold; background:rgba(239,68,68,0.12); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:10px;">
+                                                تكرر ${g.count} مرات
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    <span dir="ltr" style="font-size:0.75rem; color:var(--text2); font-family:monospace; background:var(--bg); padding:2px 8px; border-radius:6px; border:1px solid var(--border);">
+                                        🕒 ${dateLatest}
+                                    </span>
+                                </div>
+                                <div style="font-size:0.84rem; color:var(--text1); line-height:1.6;">
+                                    ${g.description || ''}
+                                </div>
+
+                                ${hasMultiple ? `
+                                    <div style="margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);">
+                                        <button onclick="toggleGroupDetails('${groupId}')" 
+                                                id="icon-${groupId}"
+                                                style="cursor:pointer; background:none; border:none; color:var(--primary); font-size:0.76rem; font-weight:bold; padding:2px 0;">
+                                            ▼ عرض كل التكرارات (${g.count})
+                                        </button>
+                                        <div id="${groupId}" style="display:none; margin-top:8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px;">
+                                            <div style="font-size:0.74rem; font-weight:bold; color:var(--text2); margin-bottom:6px;">سجل التكرارات المتتالية:</div>
+                                            ${g.entries.map((entry, eIdx) => {
+                                                const eDate = formatLogTimestampFrenchDigits(entry.timestamp);
+                                                return `
+                                                    <div style="font-size:0.75rem; color:var(--text2); padding:3px 0; border-bottom:1px solid var(--border)44; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                                                        <span style="color:var(--text1);">${eIdx + 1}. ${entry.description || act.label}</span>
+                                                        <span dir="ltr" style="font-family:monospace; font-size:0.72rem; flex-shrink:0;">${eDate}</span>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                // Raw linear mode
+                html += currentJourneyLogs.map((l, index) => {
+                    const dateFormatted = formatLogTimestampFrenchDigits(l.timestamp);
+                    const act = formatActionTypeArabic(l.action_type);
+                    const isFirst = index === 0;
+
+                    return `
+                        <div style="position:relative; display:flex; gap:16px; margin-bottom:14px; z-index:2;">
+                            <!-- Timeline Node Bullet -->
+                            <div style="width:36px; height:36px; border-radius:50%; background:${act.bg}; color:${act.color}; border:2px solid ${act.color}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,0.06);">
+                                ${isFirst ? '⭐' : '•'}
+                            </div>
+
+                            <!-- Card Content -->
+                            <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                                    <span style="font-weight:bold; font-size:0.88rem; color:${act.color}; background:${act.bg}; padding:3px 10px; border-radius:8px; border:1px solid ${act.color}33;">
+                                        ${act.label}
+                                    </span>
+                                    <span dir="ltr" style="font-size:0.75rem; color:var(--text2); font-family:monospace; background:var(--bg); padding:2px 8px; border-radius:6px; border:1px solid var(--border);">
+                                        🕒 ${dateFormatted}
+                                    </span>
+                                </div>
+                                <div style="font-size:0.84rem; color:var(--text1); line-height:1.6;">
+                                    ${l.description || ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            html += `</div>`;
+            logsBody.innerHTML = html;
+        }
+
         async function viewVisitorFullJourney(telegram_id, displayName, student_id) {
             const modal = document.getElementById('student-logs-modal');
             const dbIdentity = document.getElementById('modal-db-identity');
@@ -2908,6 +3243,9 @@
 
             if (!modal) return;
 
+            currentJourneyVisitorContext = { telegram_id, displayName, student_id };
+            currentJourneyLogs = [];
+
             dbIdentity.innerHTML = student_id ? `<strong>المعرّف:</strong> <span style="font-family:monospace; font-weight:bold;">${student_id}</span><br><strong>الاسم:</strong> ${displayName}` : `<span style="color:var(--text2);">زائر مجهول (غير مرتبط بعد)</span>`;
             tgIdentity.innerHTML = `<strong>Telegram ID:</strong> <span style="font-family:monospace; font-weight:bold;">${telegram_id}</span><br><strong>الاسم:</strong> ${displayName}`;
             logsBody.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري جلب المسار الكامل من البداية...</div></div>';
@@ -2915,53 +3253,22 @@
             
             modal.style.display = 'flex';
 
+            // Reset view buttons to default 'grouped'
+            setTimelineViewMode('grouped');
+
             try {
                 const url = `/api/admin/gateway/logs?tid=${telegram_id}&id=${student_id || 'null'}`;
                 const res = await fetch(url);
                 const data = await res.json();
 
-                if (data.success && data.logs && data.logs.length > 0) {
-                    if (countSpan) countSpan.textContent = `${data.logs.length} خطوة مسجلة`;
-
-                    let html = `
-                        <div style="position:relative; padding:10px 10px 10px 20px;">
-                            <!-- Vertical Timeline Line -->
-                            <div style="position:absolute; right:27px; top:18px; bottom:18px; width:2px; background:var(--border); z-index:1;"></div>
-                    `;
-
-                    html += data.logs.map((l, index) => {
-                        const dateFormatted = formatLogTimestampFrenchDigits(l.timestamp);
-                        const act = formatActionTypeArabic(l.action_type);
-                        const isFirst = index === 0;
-
-                        return `
-                            <div style="position:relative; display:flex; gap:16px; margin-bottom:14px; z-index:2;">
-                                <!-- Timeline Node Bullet -->
-                                <div style="width:36px; height:36px; border-radius:50%; background:${act.bg}; color:${act.color}; border:2px solid ${act.color}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,0.06);">
-                                    ${isFirst ? '⭐' : '•'}
-                                </div>
-
-                                <!-- Card Content -->
-                                <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-                                        <span style="font-weight:bold; font-size:0.88rem; color:${act.color}; background:${act.bg}; padding:3px 10px; border-radius:8px; border:1px solid ${act.color}33;">
-                                            ${act.label}
-                                        </span>
-                                        <span dir="ltr" style="font-size:0.75rem; color:var(--text2); font-family:monospace; background:var(--bg); padding:2px 8px; border-radius:6px; border:1px solid var(--border);">
-                                            🕒 ${dateFormatted}
-                                        </span>
-                                    </div>
-                                    <div style="font-size:0.84rem; color:var(--text1); line-height:1.6;">
-                                        ${colorizeDescription ? colorizeDescription(l.description || '') : (l.description || '')}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-
-                    html += `</div>`;
-                    logsBody.innerHTML = html;
+                if (data.success && data.logs) {
+                    currentJourneyLogs = data.logs || [];
+                    // Render Stepper Progress
+                    renderFunnelStepper(currentJourneyLogs, student_id);
+                    // Render Timeline
+                    renderJourneyTimeline();
                 } else {
+                    renderFunnelStepper([], student_id);
                     logsBody.innerHTML = `
                         <div style="text-align:center; padding:40px 20px; color:var(--text2);">
                             <div style="font-size:2.5rem; margin-bottom:8px;">📭</div>
