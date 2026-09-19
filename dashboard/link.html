@@ -941,9 +941,9 @@
                         }
                         
                         try {
-                            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.MainButton) {
-                                window.Telegram.WebApp.MainButton.show();
-                                if (window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
+                            if (window.Telegram && window.Telegram.WebApp) {
+                                if (window.Telegram.WebApp.MainButton) window.Telegram.WebApp.MainButton.hide();
+                                if (window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.hide();
                             }
                         } catch(e) {}
                     }, 200);
@@ -975,13 +975,13 @@
                 <span style="color:var(--accent); cursor:pointer; font-size:0.8rem;" onclick="showTuto()">أين أجد رقم الطالب؟ ℹ️</span>
             </label>
             <div id="student_id_container" class="otp-container">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="0">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="1">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="2">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="3">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="4">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="5">
-                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="6" placeholder="·" title="الخانة السابعة (اختيارية للأرقام من 7 خانات)">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="0">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="1">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="2">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="3">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="4">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="5">
+                <input type="text" inputmode="numeric" class="otp-input" data-index="6" placeholder="·" title="الخانة السابعة (اختيارية للأرقام من 7 خانات)">
             </div>
             <div style="font-size:0.78rem; color:var(--text-2); margin-top:5px; text-align:center;">
                 رقم الطالب يتكون من 6 أو 7 أرقام (الخانة السابعة للأرقام المكونة من 7 خانات)
@@ -1014,8 +1014,14 @@
         <input type="hidden" id="dob_month" value="">
         <input type="hidden" id="dob_year" value="">
 
-        <div style="margin-top:25px;">
-            <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">لدي مشكلة في التسجيل 🆘</button>
+        <!-- FORM ACTION BUTTONS (NO STICKY BAR) -->
+        <div style="margin-top: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <button type="button" id="btn-submit-form" onclick="linkAccount()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), #6222cc); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <span>🚀</span> تأكيد وربط الحساب
+            </button>
+            <button type="button" class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="height: 48px; padding: 0 16px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; width: 100%; border-radius: 12px; box-sizing: border-box; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; font-weight: 700; cursor: pointer;">
+                🆘 لدي مشكلة في التسجيل (طلب مساعدة)
+            </button>
         </div>
         
         
@@ -1095,17 +1101,16 @@
     </div>
 
     <!-- SOS MODAL -->
-    <div class="modal-overlay" id="sos-modal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="sos-modal" onclick="if(event.target===this) closeSOS();" style="z-index: 999999;">
+        <div class="modal-content" style="z-index: 1000000; position: relative;">
             <div class="modal-header">
                 <h2>🆘 طلب مساعدة</h2>
-                    <button class="close-btn" onclick="closeSOS()">&times;</button>
-                </div>
-                <p style="color:var(--text-2); font-size:0.95rem; margin:0 0 12px 0;">اشرح مشكلتك هنا وسيقوم احد المشرفين بالرد عليك عبر تيليجرام في اقرب وقت.</p>
-                <textarea id="sos_msg" placeholder="مثال: لا استطيع الدخول، نسيت البريد الالكتروني..." style="width:100%; resize:none; height:100px; background:#1e293b; border:1px solid #475569; color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none; box-sizing:border-box;"></textarea>
-                <button onclick="sendSOS()" id="btn-send-sos" style="width:100%; margin-top:10px; background:#ef4444; color:#fff; border:none; border-radius:10px; padding:14px; font-size:1rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer;">إرسال طلب المساعدة</button>
-                <div id="sos-debug" style="margin-top:8px; font-size:11px; font-family:monospace; color:#888; min-height:16px;"></div>
+                <button class="close-btn" type="button" onclick="closeSOS()">&times;</button>
             </div>
+            <p style="color:var(--text-2); font-size:0.95rem; margin:0 0 12px 0;">اشرح مشكلتك هنا وسيقوم أحد المشرفين بالرد عليك عبر تيليجرام في أقرب وقت.</p>
+            <textarea id="sos_msg" placeholder="مثال: لا أستطيع الدخول، نسيت البريد الإلكتروني..." style="width:100%; resize:none; height:100px; background:#1e293b; border:1px solid #475569; color:#fff; border-radius:10px; padding:12px; font-size:0.95rem; font-family:'Tajawal', sans-serif; outline:none; box-sizing:border-box;"></textarea>
+            <button onclick="sendSOS()" id="btn-send-sos" type="button" style="width:100%; margin-top:10px; background:#ef4444; color:#fff; border:none; border-radius:10px; padding:14px; font-size:1rem; font-weight:700; font-family:'Tajawal', sans-serif; cursor:pointer;">إرسال طلب المساعدة</button>
+            <div id="sos-debug" style="margin-top:8px; font-size:11px; font-family:monospace; color:#888; min-height:16px;"></div>
         </div>
     </div>
     
@@ -1250,8 +1255,10 @@
                         }
                         
                         try {
-                            window.Telegram.WebApp.MainButton.show();
-                            if(window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
+                            if (window.Telegram && window.Telegram.WebApp) {
+                                if (window.Telegram.WebApp.MainButton) window.Telegram.WebApp.MainButton.hide();
+                                if (window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.hide();
+                            }
                         } catch(e) {}
                     }, 250);
                 };
@@ -1310,7 +1317,7 @@
             
             const updateHidden = () => {
                 let val = '';
-                inputs.forEach(i => val += i.value);
+                inputs.forEach(i => val += (i.value || ''));
                 if (hiddenInput) hiddenInput.value = val;
                 if (typeof debouncedValidateField === 'function') debouncedValidateField();
             };
@@ -1320,68 +1327,69 @@
                 input.setAttribute('pattern', '[0-9]*');
                 input.setAttribute('autocomplete', 'off');
 
-                // --- AUTO PASTE ---
-                input.addEventListener('paste', (e) => {
-                    e.preventDefault();
-                    let paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
-                    if (!paste) return;
-                    for (let i = 0; i < inputs.length; i++) {
-                        if (i >= index && paste[i - index]) {
-                            inputs[i].value = paste[i - index];
-                        }
-                    }
-                    // Focus on the next empty box, or the last one if full
-                    let nextIndex = index + paste.length;
-                    if (nextIndex >= inputs.length) nextIndex = inputs.length - 1;
-                    inputs[nextIndex].focus();
-                    updateHidden();
+                // Clicking or focusing selects existing digit so typing replaces it instantly
+                input.addEventListener('focus', () => {
+                    input.select();
                 });
-                // ------------------
+                input.addEventListener('click', () => {
+                    input.select();
+                });
 
-                input.addEventListener('input', (e) => {
-                    const cleanVal = input.value.replace(/[^0-9]/g, '');
-                    if (cleanVal.length > 0) {
-                        input.value = cleanVal.slice(-1);
+                // Primary Smart Input Handler (Synchronous auto-advance for mobile & desktop)
+                input.addEventListener('input', () => {
+                    const raw = input.value || '';
+                    const digits = raw.replace(/[^0-9]/g, '');
+
+                    if (digits.length === 0) {
+                        input.value = '';
+                        updateHidden();
+                        return;
+                    }
+
+                    if (digits.length === 1) {
+                        input.value = digits;
+                        updateHidden();
+                        // Advance to next box immediately
                         if (index < inputs.length - 1) {
-                            setTimeout(() => {
-                                inputs[index + 1].focus();
-                                inputs[index + 1].select();
-                            }, 10);
+                            inputs[index + 1].focus();
+                            inputs[index + 1].select();
                         }
                     } else {
-                        input.value = '';
-                    }
-                    updateHidden();
-                });
-                
-                input.addEventListener('keyup', (e) => {
-                    if (e.key >= '0' && e.key <= '9' && index < inputs.length - 1) {
-                        inputs[index + 1].focus();
+                        // Multi-digits (fast typing, paste, or browser auto-fill)
+                        for (let i = 0; i < digits.length && (index + i) < inputs.length; i++) {
+                            inputs[index + i].value = digits[i];
+                        }
+                        const nextIndex = Math.min(index + digits.length, inputs.length - 1);
+                        inputs[nextIndex].focus();
+                        inputs[nextIndex].select();
+                        updateHidden();
                     }
                 });
 
+                // Backspace handling
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Backspace') {
                         if (!input.value && index > 0) {
-                            inputs[index - 1].focus();
+                            e.preventDefault();
                             inputs[index - 1].value = '';
+                            inputs[index - 1].focus();
+                            inputs[index - 1].select();
                             updateHidden();
                         }
                     }
                 });
 
-                input.addEventListener('focus', () => {
-                    input.select();
-                });
-
+                // Paste handling
                 input.addEventListener('paste', (e) => {
                     e.preventDefault();
-                    let paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
-                    for (let i = 0; i < inputs.length && i < paste.length; i++) {
-                        inputs[i].value = paste[i];
+                    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+                    if (!paste) return;
+                    for (let i = 0; i < paste.length && (index + i) < inputs.length; i++) {
+                        inputs[index + i].value = paste[i];
                     }
-                    const targetIdx = Math.min(paste.length, inputs.length - 1);
-                    inputs[targetIdx].focus();
+                    const nextIndex = Math.min(index + paste.length, inputs.length - 1);
+                    inputs[nextIndex].focus();
+                    inputs[nextIndex].select();
                     updateHidden();
                 });
             });
@@ -1640,49 +1648,12 @@
         }
         window.Telegram.WebApp.expand();
         
-        // Initialize Native MainButton
+        // Hide Telegram native sticky buttons completely — we use clean in-page buttons
         const tg = window.Telegram.WebApp;
-        tg.MainButton.text = "دخول";
-        tg.MainButton.color = "#8736ff";
-        tg.MainButton.textColor = "#ffffff";
-        
-        tg.MainButton.onClick(() => {
-            if (document.getElementById('main-form').style.display !== 'none') {
-                linkAccount();
-            }
-        });
-        
-        // Initialize SecondaryButton if supported (Telegram v7.10+)
-        if (tg.SecondaryButton) {
-            tg.SecondaryButton.setParams({
-                text: "لدي مشكلة 🆘",
-                color: "#1e293b", // Slate 800
-                text_color: "#f87171",
-                is_visible: false, // will show later if needed
-                position: "bottom"
-            });
-            tg.SecondaryButton.onClick(() => {
-                showSOS();
-            });
-        }
-        
-        // Hide or show based on wizard state
-        setTimeout(() => {
-            const wiz = document.getElementById('dynamic-video-container');
-            if (wiz && wiz.style.display !== 'none') {
-                tg.MainButton.hide();
-                if(tg.SecondaryButton) tg.SecondaryButton.hide();
-            } else {
-                tg.MainButton.show();
-                if(tg.SecondaryButton) tg.SecondaryButton.show();
-            }
-        }, 150);
-
-        const htmlSosBtn = document.getElementById('btn-sos-trigger');
-        if (htmlSosBtn && window.Telegram.WebApp.SecondaryButton) {
-            htmlSosBtn.style.display = 'none';
-            htmlSosBtn.parentElement.style.marginTop = '0';
-        }
+        try {
+            if (tg && tg.MainButton) tg.MainButton.hide();
+            if (tg && tg.SecondaryButton) tg.SecondaryButton.hide();
+        } catch(e) {}
         
         // Onboarding Tour Logic
         const tourSteps = [
@@ -1908,8 +1879,12 @@
             }
 
             const initData = window.Telegram.WebApp.initData;
-            tg.MainButton.showProgress();
-            tg.MainButton.disable();
+            const submitBtn = document.getElementById('btn-submit-form');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span>⏳</span> جاري التحقق وتفعيل الحساب...';
+                submitBtn.style.opacity = '0.7';
+            }
 
             try {
                 const response = await fetch('/api/link_account', {
@@ -1997,8 +1972,15 @@
                 document.getElementById('global-error').textContent = "خطأ في الاتصال";
                 document.getElementById('global-error').style.display = 'block';
             }
-            tg.MainButton.hideProgress();
-            tg.MainButton.enable();
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>🚀</span> تأكيد وربط الحساب';
+                submitBtn.style.opacity = '1';
+            }
+            try {
+                if (tg && tg.MainButton) tg.MainButton.hide();
+                if (tg && tg.SecondaryButton) tg.SecondaryButton.hide();
+            } catch(e) {}
         }
         
         function joinGroup() {
@@ -2009,13 +1991,18 @@
         
         function showSOS() {
             const modal = document.getElementById('sos-modal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.zIndex = '999999';
+                setTimeout(() => modal.classList.add('show'), 10);
+            }
         }
         function closeSOS() {
             const modal = document.getElementById('sos-modal');
-            modal.classList.remove('show');
-            setTimeout(() => modal.style.display = 'none', 300);
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.style.display = 'none', 250);
+            }
         }
         
         async function sendSOS() {
