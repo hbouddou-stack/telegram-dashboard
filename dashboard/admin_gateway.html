@@ -3408,6 +3408,12 @@
             'ONBOARDING_FORM_REACHED': { bg: 'rgba(14,165,233,0.1)', border: 'rgba(14,165,233,0.4)', text: '#0ea5e9', icon: '📝', label: '8. شاشة إدخال المعرف' },
             'ONBOARDING_INPUT_ERROR': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⚠️', label: 'خطأ في إدخال المعرف' },
             'ONBOARDING_LINK_SUCCESS': { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.6)', text: '#15803d', icon: '🎉', label: '9. اكتمل التأهيل والربط' },
+            'ONBOARDING_WAITING_ROOM': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'صالة الانتظار (قيد المراجعة)' },
+            'ONBOARDING_SOS_OPENED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'فتح نافذة SOS' },
+            'ONBOARDING_SOS_SENT': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'إرسال استغاثة SOS' },
+            'SOS_REQUESTED': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🆘', label: 'طلب مساعدة SOS' },
+            'LINK_WAITING_EXCEL': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'في صالة الانتظار (إكسيل)' },
+            'LINK_WAITING_PAYMENT': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'في صالة الانتظار (الدفع)' },
 
             'EMAIL_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '📨', label: 'إرسال إيميل' },
             'WHATSAPP_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '💬', label: 'إرسال واتساب' },
@@ -3427,7 +3433,7 @@
         
         function colorizeDescription(desc) {
             if (!desc) return '';
-            let colored = desc.replace(/\b(\d{6})\b/g, '<span style="color:#ff9f0a; font-family:monospace; font-weight:800; padding:2px 4px; background:rgba(255,159,10,0.15); border-radius:4px; letter-spacing:1px;">$1</span>');
+            let colored = desc.replace(/\b(\d{6,7})\b/g, '<span style="color:#ff9f0a; font-family:monospace; font-weight:800; padding:2px 4px; background:rgba(255,159,10,0.15); border-radius:4px; letter-spacing:1px;">$1</span>');
             colored = colored.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi, '<span style="color:#0a84ff; font-family:monospace; font-weight:700; padding:2px 4px; background:rgba(10,132,255,0.15); border-radius:4px;">$1</span>');
             return colored;
         }

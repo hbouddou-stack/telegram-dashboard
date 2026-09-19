@@ -1941,13 +1941,16 @@
                         }
                         saveStudentState('approved', data);
                         document.getElementById('success-msg').style.display = 'flex';
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_LINK_SUCCESS', `تم تفعيل وربط الحساب بنجاح وتسليم الروابط (${student_id})`, 'STEP_5_COMPLETED');
+                        }
                     } else {
-                        // Pending
+                        // Pending / Salle d'attente
                         saveStudentState('pending', data);
                         document.getElementById('pending-msg').style.display = 'flex';
-                    }
-                    if (window.trackFunnelStep) {
-                        window.trackFunnelStep('ONBOARDING_LINK_SUCCESS', `تم تفعيل وربط الحساب بنجاح (${student_id})`, 'STEP_5_COMPLETED');
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_WAITING_ROOM', `في صالة الانتظار - بانتظار التحقق أو المصادقة الإدارية (الرقم: ${student_id} | البريد: ${email})`, 'STEP_5_WAITING_ROOM');
+                        }
                     }
                 } else {
                     failCount++;
@@ -2006,6 +2009,15 @@
                 modal.style.display = 'flex';
                 modal.style.zIndex = '999999';
                 setTimeout(() => modal.classList.add('show'), 10);
+
+                // Track in funnel: student clicked SOS button
+                if (window.trackFunnelStep) {
+                    const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+                    const typedSid = otpInputs.map(i => i.value).join('');
+                    const typedEmail = (document.getElementById('email')?.value || '').trim();
+                    const desc = `قام الطالب بالنقر على زر SOS لطلب مساعدة (الرقم المدخل: ${typedSid || 'لا يوجد'} | البريد: ${typedEmail || 'لا يوجد'})`;
+                    window.trackFunnelStep('ONBOARDING_SOS_OPENED', desc, 'STEP_SOS_OPENED');
+                }
             }
         }
         function closeSOS() {
@@ -2070,6 +2082,10 @@
                     closeSOS();
                     document.getElementById('sos_msg').value = '';
                     slog('Envoye avec succes !', '#22c55e');
+                    if (window.trackFunnelStep) {
+                        const desc = `أرسل الطالب رسالة استغاثة SOS: "${msg}" (الرقم المدخل: ${student_id || 'غير محدد'} | البريد: ${email || 'غير محدد'})`;
+                        window.trackFunnelStep('ONBOARDING_SOS_SENT', desc, 'STEP_SOS_SENT');
+                    }
                     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
                         window.Telegram.WebApp.showAlert("تم ارسال طلبك بنجاح. سيتم الرد عليك قريبا في رسالة خاصة.");
                     } else {

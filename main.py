@@ -1883,10 +1883,11 @@ async def api_gateway_log_action(request: web.Request):
                 except Exception as e_fl:
                     logger.warning(f"Failed to resolve folder link in log_action: {e_fl}")
             else:
-                desc = description or f"نشاط مسار لمستخدم غير مسجل بعد ({first_name or telegram_id or 'مجهول'})"
+                target_sid = matched_student_id if matched_student_id > 0 else 0
+                desc = description or f"نشاط مسار لمستخدم (المعرف: {matched_student_id or 'غير محدد'} | {first_name or telegram_id or 'مجهول'})"
                 await db.execute(
                     "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)", 
-                    (0, telegram_id or 0, first_name, username, action_type, desc)
+                    (target_sid, telegram_id or 0, first_name, username, action_type, desc)
                 )
 
             await db.commit()
@@ -1955,8 +1956,27 @@ async def api_gateway_sos(request: web.Request):
         dob = data.get('dob', '')
         student_id = data.get('student_id', '')
         
+        # Parse numeric student id if present
+        numeric_sid = 0
+        if student_id:
+            try:
+                numeric_sid = int(str(student_id).strip())
+            except Exception:
+                numeric_sid = 0
+
+        desc_sos = f"🆘 طلب مساعدة SOS: '{message}' (الرقم المدخل: {student_id or 'غير محدد'} | البريد: {email or 'غير محدد'})"
+
         async with aiosqlite.connect(DATABASE_PATH) as db:
             await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative) VALUES (?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id))
+            await db.execute(
+                "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
+                (numeric_sid, telegram_id or 0, '', '', 'SOS_REQUESTED', desc_sos)
+            )
+            if numeric_sid > 0:
+                try:
+                    await db.execute("UPDATE academy_students SET last_onboarding_step = 'STEP_SOS_REQUESTED', last_onboarding_detail = ? WHERE student_id = ?", (desc_sos, numeric_sid))
+                except Exception:
+                    pass
             await db.commit()
         
         # Notify admins via Telegram
@@ -5708,7 +5728,7 @@ async def api_link_account(request: web.Request):
                 else:
                     # Trouvé mais statut non payé -> En attente
                     await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
-                    await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في انتظار تأكيد التحويل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    await log_student_action(student['student_id'], 'LINK_WAITING_PAYMENT', f"حساب مسجل لكن في صالة الانتظار لتأكيد التحويل - رقم الطالب: {student['student_id']} - البريد: {email}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
                 # 3. Webhook Admin Alert: Send Instant Notification with 1-Click Approval Buttons to Support Group
                 from config import TELEGRAM_SUPPORT_GROUP_ID
                 if bot and TELEGRAM_SUPPORT_GROUP_ID:
@@ -5761,8 +5781,14 @@ async def api_link_account(request: web.Request):
                     })
             else:
                 # Cas 2 : L'élève n'est pas encore dans l'Excel -> Buffer d'attente
+                numeric_sid = 0
+                if student_id_input:
+                    try:
+                        numeric_sid = int(student_id_input)
+                    except Exception:
+                        numeric_sid = 0
                 await db.add_pending_verification(telegram_id, email, telegram_username, telegram_first_name, phone)
-                await log_student_action(0, 'LINK_WAITING_EXCEL', f"تسجيل جديد قيد الانتظار لمطابقة الإكسيل ({email})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                await log_student_action(numeric_sid, 'LINK_WAITING_EXCEL', f"تسجيل جديد في صالة الانتظار لمطابقة الإكسيل - رقم الطالب المدخل: {student_id_input or 'غير محدد'} - البريد: {email}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
                 # 3. Webhook Admin Alert: Send Instant Notification with 1-Click Approval Buttons to Support Group
                 from config import TELEGRAM_SUPPORT_GROUP_ID
                 if bot and TELEGRAM_SUPPORT_GROUP_ID:
