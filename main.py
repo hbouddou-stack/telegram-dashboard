@@ -1965,6 +1965,31 @@ async def api_gateway_sos(request: web.Request):
         last_name = (data.get('last_name') or '').strip()
         username = (data.get('username') or '').strip()
         
+        # Parse init_data if telegram_id was not directly sent
+        init_data = data.get('init_data') or data.get('initData') or ''
+        if (not telegram_id or str(telegram_id) in ('0', 'None', 'null', '')) and init_data:
+            try:
+                import json
+                import urllib.parse
+                qs = urllib.parse.parse_qs(init_data)
+                if 'user' in qs:
+                    u_obj = json.loads(qs['user'][0])
+                    telegram_id = u_obj.get('id')
+                    if not first_name:
+                        first_name = u_obj.get('first_name', '')
+                    if not last_name:
+                        last_name = u_obj.get('last_name', '')
+                    if not username:
+                        username = u_obj.get('username', '')
+            except Exception:
+                pass
+
+        if telegram_id:
+            try:
+                telegram_id = int(telegram_id)
+            except Exception:
+                pass
+
         # Parse numeric student id if present
         numeric_sid = 0
         if student_id:
@@ -2073,21 +2098,6 @@ async def api_admin_sos_list(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
 
-            # Immediately repair and reset any false admin link on student tickets
-            try:
-                from config import TELEGRAM_ADMIN_IDS
-                admin_ids_set = set(TELEGRAM_ADMIN_IDS) | {2045194295}
-                admin_ids_str = ",".join(str(x) for x in admin_ids_set)
-                await db.execute(f"""
-                    UPDATE gateway_sos 
-                    SET telegram_id = NULL 
-                    WHERE telegram_id IN ({admin_ids_str}) 
-                      AND (email_tentative != 'h.bouddou@gmail.com' OR email_tentative IS NULL)
-                """)
-                await db.commit()
-            except Exception:
-                pass
-
             async with db.execute("""
                 SELECT g.*, 
                        s.gender AS student_gender, s.first_name AS student_first_name, s.last_name AS student_last_name,
@@ -2114,20 +2124,83 @@ async def api_admin_sos_list(request: web.Request):
                 if tid_val in ('0', 'None', 'null', ''):
                     tid_val = ''
                     item['telegram_id'] = None
-                    item['tg_first_name'] = None
-                    item['tg_last_name'] = None
-                    item['tg_username'] = None
 
-                # Only if a valid telegram_id was genuinely provided on this SOS ticket:
+                # If telegram_id was missing on this SOS record, discover it from student_logs
+                if not tid_val:
+                    email_t = (item.get('email_tentative') or '').strip().lower()
+                    sid_t = (item.get('student_id_tentative') or '').strip()
+                    msg_t = (item.get('message') or '').strip()
+
+                    found_tid = None
+                    found_name = None
+                    found_user = None
+
+                    # 1. Match by email in student_logs (allow admin ID only if email matches admin's email)
+                    if email_t and not found_tid:
+                        async with db.execute("""
+                            SELECT telegram_id, telegram_name, telegram_username 
+                            FROM student_logs 
+                            WHERE telegram_id IS NOT NULL AND telegram_id != 0 
+                              AND (telegram_id != 2045194295 OR ? = 'h.bouddou@gmail.com')
+                              AND LOWER(description) LIKE ?
+                            ORDER BY id DESC LIMIT 1
+                        """, (email_t, f"%{email_t}%")) as cur_m:
+                            m_row = await cur_m.fetchone()
+                            if m_row and m_row[0]:
+                                found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
+
+                    # 2. Match by student_id in student_logs
+                    if sid_t and sid_t.isdigit() and not found_tid:
+                        async with db.execute("""
+                            SELECT telegram_id, telegram_name, telegram_username 
+                            FROM student_logs 
+                            WHERE telegram_id IS NOT NULL AND telegram_id != 0 
+                              AND telegram_id != 2045194295
+                              AND (student_id = ? OR description LIKE ?)
+                            ORDER BY id DESC LIMIT 1
+                        """, (int(sid_t), f"%{sid_t}%")) as cur_m:
+                            m_row = await cur_m.fetchone()
+                            if m_row and m_row[0]:
+                                found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
+
+                    # 3. Match by message snippet in student_logs
+                    if msg_t and len(msg_t) >= 5 and not found_tid:
+                        msg_snip = msg_t[:30]
+                        async with db.execute("""
+                            SELECT telegram_id, telegram_name, telegram_username 
+                            FROM student_logs 
+                            WHERE telegram_id IS NOT NULL AND telegram_id != 0 
+                              AND telegram_id != 2045194295
+                              AND description LIKE ?
+                            ORDER BY id DESC LIMIT 1
+                        """, (f"%{msg_snip}%",)) as cur_m:
+                            m_row = await cur_m.fetchone()
+                            if m_row and m_row[0]:
+                                found_tid, found_name, found_user = str(m_row[0]), m_row[1], m_row[2]
+
+                    if found_tid:
+                        tid_val = found_tid
+                        item['telegram_id'] = int(found_tid) if found_tid.isdigit() else found_tid
+                        if found_name and not item.get('tg_first_name'):
+                            item['tg_first_name'] = found_name
+                        if found_user and not item.get('tg_username'):
+                            item['tg_username'] = found_user
+                        try:
+                            await db.execute("UPDATE gateway_sos SET telegram_id = ? WHERE id = ?", (item['telegram_id'], item['id']))
+                            await db.commit()
+                        except Exception:
+                            pass
+
+                # If telegram_id is known (whether admin or student):
                 if tid_val:
                     int_tid = int(tid_val) if tid_val.isdigit() else 0
-                    if not item.get('tg_first_name'):
+                    if not item.get('tg_first_name') or not item.get('tg_username'):
                         async with db.execute("SELECT first_name, last_name, username FROM users WHERE telegram_id = ? OR CAST(telegram_id AS TEXT) = ?", (int_tid, tid_val)) as cur_u:
                             u_row = await cur_u.fetchone()
                             if u_row:
-                                item['tg_first_name'] = u_row[0] or ''
-                                item['tg_last_name'] = u_row[1] or ''
-                                item['tg_username'] = u_row[2] or ''
+                                if not item.get('tg_first_name') and u_row[0]: item['tg_first_name'] = u_row[0]
+                                if not item.get('tg_last_name') and u_row[1]: item['tg_last_name'] = u_row[1]
+                                if not item.get('tg_username') and u_row[2]: item['tg_username'] = u_row[2]
 
                     if not item.get('tg_first_name'):
                         async with db.execute("""
@@ -2138,9 +2211,8 @@ async def api_admin_sos_list(request: web.Request):
                         """, (int_tid, tid_val)) as cur_l:
                             row_l = await cur_l.fetchone()
                             if row_l:
-                                item['tg_first_name'] = row_l[0] or ''
-                                if not item.get('tg_username'):
-                                    item['tg_username'] = row_l[1] or ''
+                                if not item.get('tg_first_name') and row_l[0]: item['tg_first_name'] = row_l[0]
+                                if not item.get('tg_username') and row_l[1]: item['tg_username'] = row_l[1]
 
                 sos_list.append(item)
 
@@ -2203,7 +2275,7 @@ async def api_admin_sos_reply(request: web.Request):
                 try:
                     bot = request.app['bot']
                     base_url = get_webapp_base_url()
-                    reply_url = f"{base_url}/link.html?source={source}&step=form&direct=1"
+                    reply_url = f"{base_url}/link.html?source={source}&telegram_id={telegram_id}&step=form&direct=1"
                     
                     response_text = (
                         "<blockquote>"

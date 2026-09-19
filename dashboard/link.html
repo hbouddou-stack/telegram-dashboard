@@ -742,13 +742,32 @@
                 // Telemetry Helper for Onboarding Funnel Tracking
                 window.trackFunnelStep = function(actionType, description, stepCode) {
                     try {
-                        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
-                        const tgId = tgUser.id || 0;
-                        const fName = tgUser.first_name || '';
-                        const uName = tgUser.username || '';
+                        let tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+                        let tgId = tgUser.id || 0;
+                        let fName = tgUser.first_name || '';
+                        let uName = tgUser.username || '';
+
+                        // Fallback: parse raw initData string
+                        if (!tgId && window.Telegram?.WebApp?.initData) {
+                            try {
+                                const parsedInit = new URLSearchParams(window.Telegram.WebApp.initData);
+                                const userRaw = parsedInit.get('user');
+                                if (userRaw) {
+                                    const parsedUser = JSON.parse(userRaw);
+                                    tgId = parsedUser.id || 0;
+                                    fName = parsedUser.first_name || '';
+                                    uName = parsedUser.username || '';
+                                }
+                            } catch(e) {}
+                        }
                         
                         const p = new URLSearchParams(window.location.search);
-                        const source = p.get('source') || '';
+                        if (!tgId) {
+                            tgId = parseInt(p.get('telegram_id') || p.get('tg_id') || p.get('user_id') || '0', 10);
+                            if (!fName) fName = p.get('tg_name') || p.get('first_name') || '';
+                            if (!uName) uName = p.get('tg_user') || p.get('username') || '';
+                        }
+                        const source = p.get('source') || window._onboardingSource || '';
                         const token = p.get('token') || '';
                         
                         const otpInputs = document.querySelectorAll('.otp-input');
@@ -2094,11 +2113,28 @@
                     tgLastName = u.last_name || '';
                     tgUsername = u.username || '';
                 }
+                if (!tid && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+                    try {
+                        const parsedInit = new URLSearchParams(window.Telegram.WebApp.initData);
+                        const userRaw = parsedInit.get('user');
+                        if (userRaw) {
+                            const u = JSON.parse(userRaw);
+                            tid = u.id;
+                            tgFirstName = u.first_name || '';
+                            tgLastName = u.last_name || '';
+                            tgUsername = u.username || '';
+                        }
+                    } catch(e) {}
+                }
+                const sp = new URLSearchParams(window.location.search);
                 if (!tid) {
-                    const sp = new URLSearchParams(window.location.search);
                     tid = sp.get('telegram_id') || sp.get('tg_id') || sp.get('user_id');
                 }
-                const srcParam = window._onboardingSource || new URLSearchParams(window.location.search).get('source') || '';
+                if (!tgFirstName) tgFirstName = sp.get('tg_name') || sp.get('first_name') || '';
+                if (!tgUsername) tgUsername = sp.get('tg_user') || sp.get('username') || '';
+
+                const srcParam = window._onboardingSource || sp.get('source') || '';
+                const rawInit = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) ? window.Telegram.WebApp.initData : '';
                 const sosPayload = {
                     email,
                     message: msg,
@@ -2108,7 +2144,8 @@
                     source: srcParam,
                     first_name: tgFirstName,
                     last_name: tgLastName,
-                    username: tgUsername
+                    username: tgUsername,
+                    init_data: rawInit
                 };
                 let response;
                 try {

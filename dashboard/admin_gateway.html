@@ -9657,17 +9657,32 @@ async function toggleStudentValidity() {
                     ? '<span class="badge badge-linked">تم حلها</span>'
                     : '<span class="badge badge-open">قيد المعالجة</span>';
                 
-                const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined' && String(sos.telegram_id) !== '2045194295';
+                const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
                 
+                let matchedGhost = hasValidTid ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) : null;
                 const matchedStudent = allStudents.find(st => 
                     (hasValidTid && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
-                    (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
-                    (sos.student_id_tentative && st.student_id && String(st.student_id) === String(sos.student_id_tentative))
+                    (sos.email_tentative && st.email && st.email.trim().toLowerCase() === sos.email_tentative.trim().toLowerCase()) ||
+                    (sos.student_id_tentative && st.student_id && String(st.student_id).trim() === String(sos.student_id_tentative).trim())
                 );
 
-                const matchedGhost = hasValidTid 
-                    ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id))
-                    : null;
+                // If ghost not found by telegram_id, match by logs / message / email / student ID in rawGhostList
+                if (!matchedGhost && rawGhostList && rawGhostList.length > 0) {
+                    const sMsg = (sos.message || '').trim().toLowerCase();
+                    const sId = (sos.student_id_tentative || '').trim();
+                    const sEm = (sos.email_tentative || '').trim().toLowerCase();
+
+                    matchedGhost = rawGhostList.find(v => {
+                        const vDesc = (v.last_desc || '').toLowerCase();
+                        if (sMsg && sMsg.length > 5 && vDesc.includes(sMsg)) return true;
+                        if (sId && sId.length >= 2 && vDesc.includes(sId)) return true;
+                        if (sEm && sEm.length >= 4 && vDesc.includes(sEm)) return true;
+                        return false;
+                    });
+                }
+
+                const effectiveTid = sos.telegram_id || (matchedGhost ? matchedGhost.telegram_id : null);
+                const isAdmin = String(effectiveTid) === '2045194295';
 
                 const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
                 const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
@@ -9680,12 +9695,28 @@ async function toggleStudentValidity() {
                 let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
                 let tgUsername = (sos.tg_username || (matchedGhost ? matchedGhost.username : '') || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
 
+                if (isAdmin && !tgFullName) {
+                    tgFullName = 'Houssam';
+                }
+
                 let nameBadgeHtml = '';
-                if (hasDbName) {
+                if (isAdmin) {
+                    nameBadgeHtml = `
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-weight:800; color:#f59e0b; font-size:1.02rem; display:flex; align-items:center; gap:4px;">
+                                <span>👑</span>
+                                <span>${tgFullName || 'المشرف (Houssam)'}</span>
+                            </span>
+                            ${tgUsername ? `<span dir="ltr" style="font-size:0.82rem; font-weight:800; color:#0088cc; background:rgba(0,136,204,0.15); border:1px solid rgba(0,136,204,0.3); padding:1px 7px; border-radius:6px;">@${tgUsername}</span>` : ''}
+                            <span style="font-size:0.75rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:1px 6px; border-radius:6px;">(تجربة المشرف Admin)</span>
+                        </div>
+                    `;
+                } else if (hasDbName) {
                     nameBadgeHtml = `
                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                             <span style="font-weight:800; color:var(--accent); font-size:1.02rem;">👤 ${dbFullName}</span>
                             ${tgUsername ? `<span dir="ltr" style="font-size:0.8rem; font-weight:700; color:#0a84ff; background:rgba(10,132,255,0.12); padding:1px 6px; border-radius:6px;">@${tgUsername}</span>` : ''}
+                            ${tgFullName && tgFullName !== dbFullName ? `<span style="font-size:0.8rem; color:var(--text2); display:flex; align-items:center; gap:3px;">✈️ ${tgFullName}</span>` : ''}
                         </div>
                     `;
                 } else if (tgFullName || tgUsername) {
@@ -9696,14 +9727,20 @@ async function toggleStudentValidity() {
                                 <span>${tgFullName || 'مستخدم تيليجرام'}</span>
                             </span>
                             ${tgUsername ? `<span dir="ltr" style="font-size:0.82rem; font-weight:800; color:#0088cc; background:rgba(0,136,204,0.15); border:1px solid rgba(0,136,204,0.3); padding:1px 7px; border-radius:6px;">@${tgUsername}</span>` : ''}
-                            <span style="font-size:0.75rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:1px 6px; border-radius:6px;">(تيليجرام - غير مسجل بالقاعدة)</span>
+                            <span style="font-size:0.75rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:1px 6px; border-radius:6px;">(زائر تيليجرام - غير مسجل بالقاعدة)</span>
+                        </div>
+                    `;
+                } else if (effectiveTid) {
+                    nameBadgeHtml = `
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-weight:700; color:#0088cc; font-size:0.95rem;">✈️ زائر تيليجرام</span>
+                            <span dir="ltr" style="font-size:0.78rem; font-family:monospace; color:var(--text2); background:rgba(0,136,204,0.1); padding:2px 6px; border-radius:4px;">ID: ${effectiveTid}</span>
                         </div>
                     `;
                 } else {
                     nameBadgeHtml = `
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span style="font-weight:700; color:var(--text2); font-size:0.95rem;">👤 غير معروف</span>
-                            ${sos.telegram_id ? `<span dir="ltr" style="font-size:0.78rem; font-family:monospace; color:var(--text2);">ID: ${sos.telegram_id}</span>` : ''}
                         </div>
                     `;
                 }
@@ -9736,21 +9773,37 @@ async function toggleStudentValidity() {
         }
 
         function openSosModal(sos) {
-            activeSosId = sos.id;
-            activeSosTid = sos.telegram_id;
-            activeSosEmail = sos.email_tentative;
-            activeSosStudentId = sos.student_id_tentative;
-            
-            const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined' && String(sos.telegram_id) !== '2045194295';
+            const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
 
+            let matchedGhost = hasValidTid ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) : null;
             const matchedStudent = allStudents.find(st => 
                 (hasValidTid && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
-                (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
-                (sos.student_id_tentative && st.student_id && String(st.student_id) === String(sos.student_id_tentative))
+                (sos.email_tentative && st.email && st.email.trim().toLowerCase() === sos.email_tentative.trim().toLowerCase()) ||
+                (sos.student_id_tentative && st.student_id && String(st.student_id).trim() === String(sos.student_id_tentative).trim())
             );
-            const matchedGhost = hasValidTid 
-                ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id))
-                : null;
+
+            // Match against rawGhostList by logs / message / student ID / email if not matched by ID
+            if (!matchedGhost && rawGhostList && rawGhostList.length > 0) {
+                const sMsg = (sos.message || '').trim().toLowerCase();
+                const sId = (sos.student_id_tentative || '').trim();
+                const sEm = (sos.email_tentative || '').trim().toLowerCase();
+
+                matchedGhost = rawGhostList.find(v => {
+                    const vDesc = (v.last_desc || '').toLowerCase();
+                    if (sMsg && sMsg.length > 5 && vDesc.includes(sMsg)) return true;
+                    if (sId && sId.length >= 2 && vDesc.includes(sId)) return true;
+                    if (sEm && sEm.length >= 4 && vDesc.includes(sEm)) return true;
+                    return false;
+                });
+            }
+
+            const effectiveTid = sos.telegram_id || (matchedGhost ? matchedGhost.telegram_id : null);
+            activeSosId = sos.id;
+            activeSosTid = effectiveTid;
+            activeSosEmail = sos.email_tentative;
+            activeSosStudentId = sos.student_id_tentative;
+
+            const isAdmin = String(effectiveTid) === '2045194295';
             const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
             const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
             const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
@@ -9759,14 +9812,22 @@ async function toggleStudentValidity() {
             let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
             let tgUsername = (sos.tg_username || (matchedGhost ? matchedGhost.username : '') || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
 
+            if (isAdmin && !tgFullName) {
+                tgFullName = 'Houssam';
+            }
+
             let whoHtml = '';
-            if (dbFullName) {
+            if (isAdmin) {
+                whoHtml = `<strong>الحساب:</strong> <span style="color:#f59e0b; font-weight:800;">👑 المشرف (${tgFullName})</span> ${tgUsername ? `(@${tgUsername})` : ''} <em style="color:#f59e0b;">(تجربة المشرف Admin)</em>`;
+            } else if (dbFullName) {
                 whoHtml = `<strong>الاسم بالقاعدة:</strong> ${dbFullName}`;
                 if (tgFullName || tgUsername) {
                     whoHtml += `<br><strong>حساب تيليجرام:</strong> ✈️ ${tgFullName || ''} ${tgUsername ? `(@${tgUsername})` : ''}`;
                 }
             } else if (tgFullName || tgUsername) {
-                whoHtml = `<strong>حساب تيليجرام:</strong> <span style="color:#0088cc; font-weight:800;">✈️ ${tgFullName || 'مجهول'} ${tgUsername ? `(@${tgUsername})` : ''}</span> <em style="color:#f59e0b;">(غير مسجل بالقاعدة)</em>`;
+                whoHtml = `<strong>حساب تيليجرام:</strong> <span style="color:#0088cc; font-weight:800;">✈️ ${tgFullName || 'مجهول'} ${tgUsername ? `(@${tgUsername})` : ''}</span> <em style="color:#f59e0b;">(زائر - غير مسجل بالقاعدة)</em>`;
+            } else if (effectiveTid) {
+                whoHtml = `<strong>حساب تيليجرام:</strong> ✈️ زائر تيليجرام (ID: ${effectiveTid})`;
             } else {
                 whoHtml = `<strong>الحساب:</strong> غير مسجل بالقاعدة`;
             }
@@ -9775,7 +9836,7 @@ async function toggleStudentValidity() {
                 whoHtml + '<br>' +
                 '<strong>البريد المدخل:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
                 '<strong>رقم الطالب المدخل:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
-                '<strong>TG ID:</strong> ' + (sos.telegram_id || 'غير معروف') + '<br>' +
+                '<strong>TG ID:</strong> ' + (effectiveTid ? `<code>${effectiveTid}</code>` : 'غير معروف') + '<br>' +
                 (sos.source ? ('<strong>الرابط / المصدر:</strong> <code>' + sos.source + '</code><br>') : '') +
                 '<strong>الوقت:</strong> ' + formatDateArabic(sos.timestamp);
             document.getElementById('sos-modal-message').textContent = sos.message || '';

@@ -271,9 +271,12 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     f"• مجموعتك المقررة: <b>{group_desc}</b>\n\n"
                     f"👇 <b>اضغط على الزر أدناه لإضافة مجلد الأكاديمية والانضمام فوراً للمجموعات:</b>"
                 )
+                import urllib.parse as _up
+                q_name = _up.quote(first_name or "")
+                q_user = _up.quote(username or "")
                 kb = InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="📁 إضافة مجلد الأكاديمية كاملاً إلى تليجرام", url=folder_link)],
-                    [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?v=pending_folder"))],
+                    [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتأكيد البيانات", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&v=pending_folder"))],
                     [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))]
                 ])
         else:
@@ -284,8 +287,11 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             )
             import time as _time
             _ts = int(_time.time())
+            import urllib.parse as _up
+            q_name = _up.quote(first_name or "")
+            q_user = _up.quote(username or "")
             kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?source={start_arg}&v=start&_t={_ts}"))]
+                [InlineKeyboardButton(text="🔗 منصة ربط الحساب وتفعيل الاشتراك", web_app=WebAppInfo(url=f"{base_url}/link.html?source={start_arg}&telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&v=start&_t={_ts}"))]
             ])
 
 
@@ -295,8 +301,11 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
 
     except Exception as e:
         logger.error(f"[START] Error: {e}")
+        import urllib.parse as _up
+        q_name = _up.quote(first_name or "")
+        q_user = _up.quote(username or "")
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔗 منصة ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html"))]
+            [InlineKeyboardButton(text="🔗 منصة ربط الحساب", web_app=WebAppInfo(url=f"{base_url}/link.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}"))]
         ])
         await message.answer("مرحباً بك في أكاديمية الباجي! اضغط على الزر أدناه لتفعيل حسابك:", reply_markup=kb)
 
