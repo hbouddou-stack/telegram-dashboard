@@ -1161,35 +1161,44 @@
                 }
             }
 
-            // Wizard finish button
-            if (btnUnderstood && !btnUnderstood._chameleonBound) {
-                btnUnderstood._chameleonBound = true;
-                btnUnderstood.addEventListener('click', () => {
+            // Wizard finish button (Bulletproof version)
+            if (btnUnderstood) {
+                btnUnderstood.onclick = function() {
                     if (videoContainer) videoContainer.style.animation = 'scaleUp 0.3s reverse';
                     setTimeout(() => {
-                        // Remove CSS class so normal layout can take over
+                        // Forcibly remove onboarding class
                         document.documentElement.classList.remove('onboarding-mode');
                         window._isOnboardingMode = false;
 
-                        if (videoContainer) { videoContainer.style.display = 'none'; document.body.style.overflow = ''; }
-                        if(document.getElementById('dynamic-video-1')) document.getElementById('dynamic-video-1').src='';
-                        if(document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src='';
-                        if(document.getElementById('dynamic-video-3')) document.getElementById('dynamic-video-3').src='';
+                        // Hide wizard
+                        if (videoContainer) { 
+                            videoContainer.style.display = 'none'; 
+                            document.body.style.overflow = ''; 
+                        }
+                        
+                        // Stop videos
+                        ['dynamic-video-1', 'dynamic-video-2', 'dynamic-video-3'].forEach(id => {
+                            const vid = document.getElementById(id);
+                            if (vid) vid.src = '';
+                        });
+
+                        // Forcibly show form
                         if (mainForm) {
-                            mainForm.style.display = 'flex';
-                            mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                            mainForm.setAttribute('style', 'display: flex !important; flex-direction: column; gap: 20px; animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);');
                             if (window.trackFunnelStep) {
                                 window.trackFunnelStep('ONBOARDING_FORM_REACHED', 'وصل الطالب إلى نموذج إدخال رقم الطالب والبريد الإلكتروني', 'STEP_4_FORM');
                             }
                         }
+                        
                         try {
                             window.Telegram.WebApp.MainButton.show();
                             if(window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
                         } catch(e) {}
                     }, 250);
-                });
+                };
             }
         }
+
 
         // Run immediately — CSS already shows wizard, this configures themes/text
         initChameleon();
