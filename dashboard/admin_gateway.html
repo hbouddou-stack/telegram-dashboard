@@ -291,217 +291,6 @@
             color: white !important;
         }
 
-
-/* =========================================
-   ADVENTURE VIEW (DESERT JOURNEY) CSS
-========================================= */
-
-.fs-vbtn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--text2);
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.95rem;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.fs-vbtn.active {
-    background: var(--accent);
-    color: white;
-    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
-}
-
-.fs-view-adventure {
-    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding: 40px 10px 80px 10px !important;
-}
-
-.fs-view-adventure .metro-map {
-    display: block !important;
-    width: 100% !important;
-    max-width: 500px !important;
-    height: 900px !important;
-    margin-top: 60px !important; /* Push map below sticky header */
-    margin: 0 auto !important;
-    position: relative !important;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
-    background-size: 100% 100% !important;
-    background-position: center !important;
-}
-
-.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
-
-.fs-view-adventure .metro-station {
-    position: absolute !important;
-    width: 150px !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    margin: 0 !important;
-    background: rgba(255, 253, 235, 0.95) !important;
-    border: 3px solid #b45309 !important;
-    border-radius: 12px !important;
-    padding: 12px 8px !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
-    z-index: 10 !important;
-    transform: translate(-50%, 50%) !important; 
-    transition: 0.3s;
-}
-
-.fs-view-adventure .metro-dot-wrapper { display: none !important; }
-.fs-view-adventure .metro-content { 
-    background: transparent !important; 
-    border: none !important; 
-    box-shadow: none !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    width: 100% !important;
-    text-align: center !important;
-}
-.fs-view-adventure .metro-content::before { display: none !important; }
-
-.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
-.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
-.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
-
-/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
-.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
-.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
-.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
-.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
-.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
-.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
-
-/* The Walking Avatar on Current Step */
-.fs-view-adventure .metro-station.current::after {
-    content: '🚶‍♂️';
-    position: absolute;
-    font-size: 50px;
-    top: -65px; 
-    left: 50%;
-    transform: translateX(-50%);
-    animation: walkBounce 0.8s infinite alternate;
-    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 20;
-}
-
-@keyframes walkBounce {
-    0% { transform: translate(-50%, 0) rotate(-5deg); }
-    100% { transform: translate(-50%, -15px) rotate(5deg); }
-}
-
-/* Completed & Current & Error States */
-.fs-view-adventure .metro-station.completed {
-    background: rgba(220, 252, 231, 0.95) !important;
-    border-color: #166534 !important;
-}
-.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
-.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
-.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
-
-.fs-view-adventure .metro-station.current {
-    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
-    border-color: #eab308 !important;
-    transform: translate(-50%, 50%) scale(1.05) !important;
-}
-
-.fs-view-adventure .metro-station.error {
-    background: rgba(254, 226, 226, 0.95) !important;
-    border-color: #991b1b !important;
-}
-.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
-.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
-.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
-
-
-/* -----------------------------------------
-   3D STEPPER VIEW
------------------------------------------ */
-.fs-view-stepper {
-    padding-top: 60px !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-}
-.fs-view-stepper .metro-map {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    width: max-content !important;
-    max-width: none !important;
-    margin: 0 auto !important;
-    padding: 20px 40px !important;
-    gap: 15px !important;
-    direction: rtl !important;
-    align-items: center !important; /* Fix vertical stretching */
-}
-
-.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
-
-.fs-view-stepper .metro-station {
-    min-width: 250px !important;
-    height: 120px !important; /* Fixed height to prevent vertical stretching */
-    margin: 0 !important;
-    clip-path: polygon(100% 0%, 10% 0%, 0% 50%, 10% 100%, 100% 100%, 90% 50%) !important;
-    padding: 15px 35px 15px 45px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: #e2e8f0 !important;
-    border: none !important;
-    transition: 0.3s;
-}
-.fs-view-stepper .metro-station:first-child {
-    clip-path: polygon(100% 0%, 10% 0%, 0% 50%, 10% 100%, 100% 100%) !important;
-}
-.fs-view-stepper .metro-station:last-child {
-    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 90% 50%) !important;
-}
-
-.fs-view-stepper .metro-dot-wrapper { display: none !important; }
-.fs-view-stepper .metro-content { 
-    background: transparent !important; 
-    border: none !important; 
-    box-shadow: none !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-}
-.fs-view-stepper .metro-content::before { display: none !important; }
-
-.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.05rem !important; }
-.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.85rem !important; margin-top:5px !important;}
-
-/* Numbering before title in stepper */
-.fs-view-stepper #fs-station-1 .metro-title::before, .fs-view-stepper #fs-onb-station-1 .metro-title::before { content: '1. '; }
-.fs-view-stepper #fs-station-2 .metro-title::before, .fs-view-stepper #fs-onb-station-2 .metro-title::before { content: '2. '; }
-.fs-view-stepper #fs-station-3 .metro-title::before, .fs-view-stepper #fs-onb-station-3 .metro-title::before { content: '3. '; }
-.fs-view-stepper #fs-station-4 .metro-title::before, .fs-view-stepper #fs-onb-station-4 .metro-title::before { content: '4. '; }
-.fs-view-stepper #fs-station-5 .metro-title::before, .fs-view-stepper #fs-onb-station-5 .metro-title::before { content: '5. '; }
-.fs-view-stepper #fs-station-6 .metro-title::before, .fs-view-stepper #fs-onb-station-6 .metro-title::before { content: '6. '; }
-
-.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
-.fs-view-stepper .metro-station.completed .metro-title, 
-.fs-view-stepper .metro-station.completed .metro-desc, 
-.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
-
-.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
-.fs-view-stepper .metro-station.current .metro-title, 
-.fs-view-stepper .metro-station.current .metro-desc, 
-.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
-
-.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
-.fs-view-stepper .metro-station.error .metro-title, 
-.fs-view-stepper .metro-station.error .metro-desc, 
-.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
 </style>
 
 <style>
@@ -603,134 +392,6 @@
             color: white !important;
         }
 
-
-/* =========================================
-   ADVENTURE VIEW (DESERT JOURNEY) CSS
-========================================= */
-
-.fs-vbtn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--text2);
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.95rem;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.fs-vbtn.active {
-    background: var(--accent);
-    color: white;
-    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
-}
-
-.fs-view-adventure {
-    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding: 40px 10px 80px 10px !important;
-}
-
-.fs-view-adventure .metro-map {
-    display: block !important;
-    width: 100% !important;
-    max-width: 500px !important;
-    height: 900px !important;
-    margin-top: 60px !important; /* Push map below sticky header */
-    margin: 0 auto !important;
-    position: relative !important;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
-    background-size: 100% 100% !important;
-    background-position: center !important;
-}
-
-.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
-
-.fs-view-adventure .metro-station {
-    position: absolute !important;
-    width: 150px !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    margin: 0 !important;
-    background: rgba(255, 253, 235, 0.95) !important;
-    border: 3px solid #b45309 !important;
-    border-radius: 12px !important;
-    padding: 12px 8px !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
-    z-index: 10 !important;
-    transform: translate(-50%, 50%) !important; 
-    transition: 0.3s;
-}
-
-.fs-view-adventure .metro-dot-wrapper { display: none !important; }
-.fs-view-adventure .metro-content { 
-    background: transparent !important; 
-    border: none !important; 
-    box-shadow: none !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    width: 100% !important;
-    text-align: center !important;
-}
-.fs-view-adventure .metro-content::before { display: none !important; }
-
-.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
-.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
-.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
-
-/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
-.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
-.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
-.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
-.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
-.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
-.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
-
-/* The Walking Avatar on Current Step */
-.fs-view-adventure .metro-station.current::after {
-    content: '🚶‍♂️';
-    position: absolute;
-    font-size: 50px;
-    top: -65px; 
-    left: 50%;
-    transform: translateX(-50%);
-    animation: walkBounce 0.8s infinite alternate;
-    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 20;
-}
-
-@keyframes walkBounce {
-    0% { transform: translate(-50%, 0) rotate(-5deg); }
-    100% { transform: translate(-50%, -15px) rotate(5deg); }
-}
-
-/* Completed & Current & Error States */
-.fs-view-adventure .metro-station.completed {
-    background: rgba(220, 252, 231, 0.95) !important;
-    border-color: #166534 !important;
-}
-.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
-.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
-.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
-
-.fs-view-adventure .metro-station.current {
-    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
-    border-color: #eab308 !important;
-    transform: translate(-50%, 50%) scale(1.05) !important;
-}
-
-.fs-view-adventure .metro-station.error {
-    background: rgba(254, 226, 226, 0.95) !important;
-    border-color: #991b1b !important;
-}
-.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
-.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
-.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
-
 </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -808,10 +469,48 @@
                 display: flex !important;
             }
         }
-    
-/* =========================================
-   ADVENTURE VIEW (DESERT JOURNEY) CSS
-========================================= */
+    </style>
+
+<style>
+/* =========================================================
+   FULL SCREEN STUDENT & ONBOARDING JOURNEY (3 MODES)
+   ========================================================= */
+
+#fs-journey-overlay, #fs-onb-journey-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg);
+    z-index: 9999999;
+    display: none;
+    flex-direction: column;
+    color: var(--text1);
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    box-sizing: border-box;
+}
+
+#fs-journey-header, #fs-onb-journey-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.fs-view-selector {
+    display: flex;
+    background: rgba(0, 0, 0, 0.08);
+    padding: 4px;
+    border-radius: 12px;
+    gap: 6px;
+    border: 1px solid var(--border);
+}
 
 .fs-vbtn {
     padding: 8px 16px;
@@ -820,172 +519,58 @@
     background: transparent;
     color: var(--text2);
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 0.95rem;
-    transition: 0.3s;
-    display: flex;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-.fs-vbtn.active {
-    background: var(--accent);
-    color: white;
-    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+    user-select: none;
+    white-space: nowrap;
 }
 
-.fs-view-adventure {
-    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding: 40px 10px 80px 10px !important;
-}
-
-.fs-view-adventure .metro-map {
-    display: block !important;
-    width: 100% !important;
-    max-width: 500px !important;
-    height: 900px !important;
-    margin-top: 60px !important; /* Push map below sticky header */
-    margin: 0 auto !important;
-    position: relative !important;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
-    background-size: 100% 100% !important;
-    background-position: center !important;
-}
-
-.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
-
-.fs-view-adventure .metro-station {
-    position: absolute !important;
-    width: 150px !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    margin: 0 !important;
-    background: rgba(255, 253, 235, 0.95) !important;
-    border: 3px solid #b45309 !important;
-    border-radius: 12px !important;
-    padding: 12px 8px !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
-    z-index: 10 !important;
-    transform: translate(-50%, 50%) !important; 
-    transition: 0.3s;
-}
-
-.fs-view-adventure .metro-dot-wrapper { display: none !important; }
-.fs-view-adventure .metro-content { 
-    background: transparent !important; 
-    border: none !important; 
-    box-shadow: none !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    width: 100% !important;
-    text-align: center !important;
-}
-.fs-view-adventure .metro-content::before { display: none !important; }
-
-.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
-.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
-.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
-
-/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
-.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
-.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
-.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
-.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
-.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
-.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
-
-/* The Walking Avatar on Current Step */
-.fs-view-adventure .metro-station.current::after {
-    content: '🚶‍♂️';
-    position: absolute;
-    font-size: 50px;
-    top: -65px; 
-    left: 50%;
-    transform: translateX(-50%);
-    animation: walkBounce 0.8s infinite alternate;
-    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 20;
-}
-
-@keyframes walkBounce {
-    0% { transform: translate(-50%, 0) rotate(-5deg); }
-    100% { transform: translate(-50%, -15px) rotate(5deg); }
-}
-
-/* Completed & Current & Error States */
-.fs-view-adventure .metro-station.completed {
-    background: rgba(220, 252, 231, 0.95) !important;
-    border-color: #166534 !important;
-}
-.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
-.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
-.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
-
-.fs-view-adventure .metro-station.current {
-    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
-    border-color: #eab308 !important;
-    transform: translate(-50%, 50%) scale(1.05) !important;
-}
-
-.fs-view-adventure .metro-station.error {
-    background: rgba(254, 226, 226, 0.95) !important;
-    border-color: #991b1b !important;
-}
-.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
-.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
-.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
-
-</style>
-
-
-<style>
-/* SMART VERTICAL FULL SCREEN JOURNEY CSS */
-#fs-journey-overlay, #fs-onb-journey-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: var(--bg);
-    z-index: 9999999;
-    display: none;
-    flex-direction: column;
+.fs-vbtn:hover {
     color: var(--text1);
-    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    background: rgba(255, 255, 255, 0.05);
 }
-#fs-journey-header, #fs-onb-journey-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-}
-.fs-view-selector { display: flex; gap: 10px; }
-.fs-view-btn { padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); cursor: pointer; font-weight: bold; }
-.fs-view-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
+.fs-vbtn.active {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(124, 58, 237, 0.35);
+}
+
+/* Base scrollable container */
 .fs-journey-container {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 60px 20px 40px 20px;
+    padding: 40px 20px 60px 20px;
     background: var(--bg);
+    box-sizing: border-box;
+    width: 100%;
 }
 
+/* =========================================================
+   MODE 1: عمودي (SMART VERTICAL TIMELINE)
+   ========================================================= */
 .metro-map {
     display: flex;
     flex-direction: column;
     position: relative;
-    max-width: 500px;
+    max-width: 540px;
     margin: 0 auto;
-    padding: 20px 0;
+    padding: 30px 0 20px 0;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .metro-line {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 30px;
+    top: 35px;
+    bottom: 35px;
+    right: 28px;
     width: 4px;
     background: var(--border);
     border-radius: 4px;
@@ -994,11 +579,11 @@
 
 .metro-line-progress {
     position: absolute;
-    top: 0;
-    right: 30px;
+    top: 35px;
+    right: 28px;
     width: 4px;
     background: var(--success);
-    transition: height 1s ease-out;
+    transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 4px;
     z-index: 2;
     height: 0%;
@@ -1010,17 +595,20 @@
     display: flex;
     align-items: flex-start;
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 28px;
+    box-sizing: border-box;
 }
-.metro-station:last-child { margin-bottom: 0; }
+.metro-station:last-child {
+    margin-bottom: 0;
+}
 
 .metro-dot-wrapper {
-    width: 64px;
+    width: 60px;
     flex-shrink: 0;
     display: flex;
     justify-content: center;
     position: relative;
-    padding-top: 12px;
+    padding-top: 14px;
 }
 
 .metro-dot {
@@ -1035,18 +623,20 @@
     font-size: 15px;
     font-weight: 800;
     color: var(--text2);
-    transition: all 0.4s;
+    transition: all 0.3s ease;
 }
 
 .metro-content {
     flex: 1;
-    padding: 16px;
+    padding: 16px 18px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-right: 15px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    margin-right: 14px;
     position: relative;
+    text-align: right;
+    box-sizing: border-box;
 }
 
 .metro-content::before {
@@ -1062,14 +652,41 @@
     transform: rotate(45deg);
 }
 
+.metro-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text1);
+    margin-bottom: 6px;
+}
+
+.metro-desc {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 8px;
+    line-height: 1.45;
+}
+
+.metro-date {
+    font-size: 0.78rem;
+    color: var(--text2);
+    font-family: inherit;
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    border: 1px solid var(--border);
+    font-weight: 600;
+}
+
+/* Vertical Station States */
 .metro-station.completed .metro-dot {
     border-color: var(--success);
     background: var(--success);
-    color: white;
-    box-shadow: 0 0 15px rgba(34, 197, 89, 0.4);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(34, 197, 89, 0.4);
 }
 .metro-station.completed .metro-content {
-    border-color: rgba(34, 197, 89, 0.3);
+    border-color: rgba(34, 197, 89, 0.35);
 }
 
 .metro-station.current .metro-dot {
@@ -1077,179 +694,335 @@
     background: var(--surface);
     color: var(--warning);
     box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
-    animation: pulse 2s infinite;
+    animation: fs-pulse 2s infinite;
 }
 .metro-station.current .metro-content {
     border-color: var(--warning);
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 4px 18px rgba(245, 158, 11, 0.18);
 }
 
 .metro-station.error .metro-dot {
     border-color: var(--danger);
     background: var(--danger);
-    color: white;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
 }
 .metro-station.error .metro-content {
     border-color: var(--danger);
     background: rgba(239, 68, 68, 0.05);
 }
 
-.metro-title {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--text1);
-    margin-bottom: 6px;
-}
-.metro-desc {
-    font-size: 0.85rem;
-    color: var(--text2);
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-.metro-date {
-    font-size: 0.75rem;
-    color: var(--text2);
-    font-family: monospace;
-    background: var(--bg);
-    padding: 4px 8px;
-    border-radius: 6px;
-    display: inline-block;
-    border: 1px solid var(--border);
-}
-@keyframes pulse {
+@keyframes fs-pulse {
     0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
     70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
     100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
 }
 
-/* =========================================
-   ADVENTURE VIEW (DESERT JOURNEY) CSS
-========================================= */
-
-.fs-vbtn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--text2);
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.95rem;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.fs-vbtn.active {
-    background: var(--accent);
-    color: white;
-    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
-}
-
+/* =========================================================
+   MODE 2: رحلة الصحراء (DESERT ADVENTURE MAP)
+   ========================================================= */
 .fs-view-adventure {
-    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
+    background: linear-gradient(180deg, #1e1b4b 0%, #6d28d9 25%, #f97316 65%, #eab308 100%) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    padding: 40px 10px 80px 10px !important;
+    padding: 20px 10px 80px 10px !important;
 }
 
 .fs-view-adventure .metro-map {
     display: block !important;
     width: 100% !important;
-    max-width: 500px !important;
-    height: 900px !important;
-    margin-top: 60px !important; /* Push map below sticky header */
-    margin: 0 auto !important;
+    max-width: 520px !important;
+    height: 980px !important;
+    margin: 30px auto 40px auto !important;
     position: relative !important;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2.5" stroke-dasharray="4,4"/></svg>') !important;
     background-size: 100% 100% !important;
     background-position: center !important;
 }
 
-.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
+.fs-view-adventure .metro-line,
+.fs-view-adventure .metro-line-progress {
+    display: none !important;
+}
 
 .fs-view-adventure .metro-station {
     position: absolute !important;
-    width: 150px !important;
+    width: 155px !important;
     flex-direction: column !important;
     align-items: center !important;
     margin: 0 !important;
-    background: rgba(255, 253, 235, 0.95) !important;
+    background: rgba(255, 253, 235, 0.96) !important;
     border: 3px solid #b45309 !important;
-    border-radius: 12px !important;
-    padding: 12px 8px !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+    border-radius: 14px !important;
+    padding: 12px 10px !important;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.45) !important;
     z-index: 10 !important;
-    transform: translate(-50%, 50%) !important; 
-    transition: 0.3s;
+    transform: translate(-50%, 50%) !important;
+    transition: transform 0.3s ease;
+    box-sizing: border-box !important;
 }
 
-.fs-view-adventure .metro-dot-wrapper { display: none !important; }
-.fs-view-adventure .metro-content { 
-    background: transparent !important; 
-    border: none !important; 
-    box-shadow: none !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
+.fs-view-adventure .metro-dot-wrapper {
+    display: none !important;
+}
+
+.fs-view-adventure .metro-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
     width: 100% !important;
     text-align: center !important;
 }
-.fs-view-adventure .metro-content::before { display: none !important; }
+.fs-view-adventure .metro-content::before {
+    display: none !important;
+}
 
-.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
-.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
-.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
+.fs-view-adventure .metro-title {
+    font-size: 0.92rem !important;
+    color: #78350f !important;
+    font-weight: 900 !important;
+    margin-bottom: 5px !important;
+}
 
-/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
-.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
-.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
-.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
-.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
-.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
-.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
+.fs-view-adventure .metro-desc {
+    font-size: 0.76rem !important;
+    color: #92400e !important;
+    line-height: 1.35 !important;
+    margin-bottom: 6px !important;
+}
 
-/* The Walking Avatar on Current Step */
+.fs-view-adventure .metro-date {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border: 1px solid #fcd34d !important;
+    font-size: 0.72rem !important;
+    display: inline-block !important;
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    font-weight: 700 !important;
+}
+
+/* Coordinates along the SVG S-curve */
+.fs-view-adventure #fs-onb-station-1,
+.fs-view-adventure #fs-station-1 {
+    bottom: 5%;
+    left: 85%;
+}
+.fs-view-adventure #fs-onb-station-2,
+.fs-view-adventure #fs-station-2 {
+    bottom: 25%;
+    left: 15%;
+}
+.fs-view-adventure #fs-onb-station-3,
+.fs-view-adventure #fs-station-3 {
+    bottom: 45%;
+    left: 85%;
+}
+.fs-view-adventure #fs-onb-station-4,
+.fs-view-adventure #fs-station-4 {
+    bottom: 65%;
+    left: 15%;
+}
+.fs-view-adventure #fs-onb-station-5,
+.fs-view-adventure #fs-station-5 {
+    bottom: 82%;
+    left: 60%;
+}
+.fs-view-adventure #fs-onb-station-6,
+.fs-view-adventure #fs-station-6 {
+    bottom: 95%;
+    left: 85%;
+}
+
+/* Walking character avatar on current step */
 .fs-view-adventure .metro-station.current::after {
     content: '🚶‍♂️';
     position: absolute;
-    font-size: 50px;
-    top: -65px; 
+    font-size: 52px;
+    top: -68px;
     left: 50%;
     transform: translateX(-50%);
-    animation: walkBounce 0.8s infinite alternate;
-    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 20;
+    animation: fs-walk 0.8s infinite alternate ease-in-out;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+    z-index: 25;
 }
 
-@keyframes walkBounce {
-    0% { transform: translate(-50%, 0) rotate(-5deg); }
-    100% { transform: translate(-50%, -15px) rotate(5deg); }
+@keyframes fs-walk {
+    0% { transform: translate(-50%, 0) rotate(-6deg); }
+    100% { transform: translate(-50%, -16px) rotate(6deg); }
 }
 
-/* Completed & Current & Error States */
 .fs-view-adventure .metro-station.completed {
-    background: rgba(220, 252, 231, 0.95) !important;
+    background: rgba(220, 252, 231, 0.97) !important;
     border-color: #166534 !important;
 }
 .fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
 .fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
-.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
+.fs-view-adventure .metro-station.completed .metro-date {
+    background: #bbf7d0 !important;
+    color: #166534 !important;
+    border-color: #86efac !important;
+}
 
 .fs-view-adventure .metro-station.current {
-    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
+    box-shadow: 0 0 28px rgba(253, 224, 71, 0.9) !important;
     border-color: #eab308 !important;
-    transform: translate(-50%, 50%) scale(1.05) !important;
+    transform: translate(-50%, 50%) scale(1.06) !important;
 }
 
 .fs-view-adventure .metro-station.error {
-    background: rgba(254, 226, 226, 0.95) !important;
+    background: rgba(254, 226, 226, 0.97) !important;
     border-color: #991b1b !important;
 }
 .fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
 .fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
-.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
+.fs-view-adventure .metro-station.error .metro-date {
+    background: #fecaca !important;
+    color: #991b1b !important;
+    border-color: #f87171 !important;
+}
 
+/* =========================================================
+   MODE 3: 3D STEPPER (HORIZONTAL CHEVRON STEPPER)
+   ========================================================= */
+.fs-view-stepper {
+    padding: 50px 20px 60px 20px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: max-content !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 30px 40px !important;
+    gap: 12px !important;
+    direction: rtl !important;
+    align-items: center !important;
+}
+
+.fs-view-stepper .metro-line,
+.fs-view-stepper .metro-line-progress {
+    display: none !important;
+}
+
+.fs-view-stepper .metro-station {
+    min-width: 250px !important;
+    max-width: 280px !important;
+    height: 140px !important;
+    margin: 0 !important;
+    clip-path: polygon(100% 0%, 10% 0%, 0% 50%, 10% 100%, 100% 100%, 90% 50%) !important;
+    padding: 16px 36px 16px 44px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #e2e8f0 !important;
+    border: none !important;
+    transition: all 0.25s ease !important;
+    box-sizing: border-box !important;
+}
+
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 10% 0%, 0% 50%, 10% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 90% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper {
+    display: none !important;
+}
+
+.fs-view-stepper .metro-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+}
+.fs-view-stepper .metro-content::before {
+    display: none !important;
+}
+
+.fs-view-stepper .metro-title {
+    color: #475569 !important;
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    margin-bottom: 4px !important;
+}
+
+.fs-view-stepper .metro-desc {
+    color: #64748b !important;
+    font-size: 0.82rem !important;
+    line-height: 1.35 !important;
+    margin-bottom: 6px !important;
+}
+
+.fs-view-stepper .metro-date {
+    font-size: 0.72rem !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+}
+
+/* Numbering 1 to 6 on Stepper Titles */
+.fs-view-stepper #fs-station-1 .metro-title::before,
+.fs-view-stepper #fs-onb-station-1 .metro-title::before { content: '1. '; font-weight: 900; }
+.fs-view-stepper #fs-station-2 .metro-title::before,
+.fs-view-stepper #fs-onb-station-2 .metro-title::before { content: '2. '; font-weight: 900; }
+.fs-view-stepper #fs-station-3 .metro-title::before,
+.fs-view-stepper #fs-onb-station-3 .metro-title::before { content: '3. '; font-weight: 900; }
+.fs-view-stepper #fs-station-4 .metro-title::before,
+.fs-view-stepper #fs-onb-station-4 .metro-title::before { content: '4. '; font-weight: 900; }
+.fs-view-stepper #fs-station-5 .metro-title::before,
+.fs-view-stepper #fs-onb-station-5 .metro-title::before { content: '5. '; font-weight: 900; }
+.fs-view-stepper #fs-station-6 .metro-title::before,
+.fs-view-stepper #fs-onb-station-6 .metro-title::before { content: '6. '; font-weight: 900; }
+
+.fs-view-stepper .metro-station.completed {
+    background: var(--success) !important;
+}
+.fs-view-stepper .metro-station.completed .metro-title,
+.fs-view-stepper .metro-station.completed .metro-desc,
+.fs-view-stepper .metro-station.completed .metro-date {
+    color: #ffffff !important;
+}
+
+.fs-view-stepper .metro-station.current {
+    background: var(--warning) !important;
+    transform: scale(1.06) !important;
+    z-index: 20 !important;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.45) !important;
+    clip-path: none !important;
+    border-radius: 14px !important;
+}
+.fs-view-stepper .metro-station.current .metro-title,
+.fs-view-stepper .metro-station.current .metro-desc,
+.fs-view-stepper .metro-station.current .metro-date {
+    color: #ffffff !important;
+}
+
+.fs-view-stepper .metro-station.error {
+    background: var(--danger) !important;
+}
+.fs-view-stepper .metro-station.error .metro-title,
+.fs-view-stepper .metro-station.error .metro-desc,
+.fs-view-stepper .metro-station.error .metro-date {
+    color: #ffffff !important;
+}
 </style>
 </head>
 
@@ -11489,20 +11262,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- ONBOARDING FULL SCREEN JOURNEY OVERLAY -->
 <div id="fs-onb-journey-overlay" dir="rtl" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg); z-index:9999999; display:none; flex-direction:column; color:var(--text1); font-family:'IBM Plex Sans Arabic', sans-serif;">
-    <div id="fs-onb-journey-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:var(--surface); border-bottom:1px solid var(--border);">
+    <div id="fs-onb-journey-header">
         <div style="display:flex; align-items:center; gap:15px;">
             <button onclick="document.getElementById('fs-onb-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
             <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🎥 مسار Onboarding : <span id="fs-onb-student-name" style="color:var(--accent2);"></span></h2>
-            <div class="fs-view-selector" style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px; overflow-x:auto;">
-                <button class="fs-vbtn active" onclick="setFsView('vertical', this)">📏 عمودي</button>
-                <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ الصحراء</button>
-                <button class="fs-vbtn" onclick="setFsView('stepper', this)">🚀 3D Stepper</button>
-            </div>
-            
+        </div>
+        <div class="fs-view-selector">
+            <button class="fs-vbtn active" onclick="setFsView('vertical', this)">📏 عمودي</button>
+            <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ الصحراء</button>
+            <button class="fs-vbtn" onclick="setFsView('stepper', this)">🚀 3D Stepper</button>
         </div>
     </div>
     
-    <div class="fs-journey-container" id="fs-onb-metro-view" style="flex:1; display:flex; justify-content:center; align-items:center; overflow-x:auto; padding:40px; background:radial-gradient(circle at center, var(--surface) 0%, var(--bg) 100%); ">
+    <div class="fs-journey-container" id="fs-onb-metro-view">
         <div class="metro-map">
             <div class="metro-line"></div>
             <div class="metro-line-progress" id="fs-onb-metro-progress"></div>
@@ -11673,11 +11445,11 @@ async function openGhostFullscreenJourney(telegramId, ghostName) {
             <button onclick="document.getElementById('fs-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
             <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🛤️ مسار الطالب : <span id="fs-student-name" style="color:var(--accent2);"></span></h2>
         </div>
-                <div class="fs-view-selector" style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px; overflow-x:auto;">
-                <button class="fs-vbtn active" onclick="setFsView('vertical', this)">📏 عمودي</button>
-                <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ الصحراء</button>
-                <button class="fs-vbtn" onclick="setFsView('stepper', this)">🚀 3D Stepper</button>
-            </div>
+        <div class="fs-view-selector">
+            <button class="fs-vbtn active" onclick="setFsView('vertical', this)">📏 عمودي</button>
+            <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ الصحراء</button>
+            <button class="fs-vbtn" onclick="setFsView('stepper', this)">🚀 3D Stepper</button>
+        </div>
     </div>
     
     <div class="fs-journey-container" id="fs-metro-view">
@@ -11745,123 +11517,25 @@ async function openGhostFullscreenJourney(telegramId, ghostName) {
 
 <script>
 function setFsView(viewType, btnElem) {
-    if (btnElem) {
-        const btns = btnElem.parentElement.querySelectorAll('.fs-vbtn');
-        btns.forEach(b => b.classList.remove('active'));
-        btnElem.classList.add('active');
-    }
-    
-    // Apply class to containers
+    // 1. Sync active class on buttons across both modals
+    document.querySelectorAll('.fs-view-selector').forEach(selector => {
+        selector.querySelectorAll('.fs-vbtn').forEach(btn => {
+            const isTarget = btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + viewType + "'");
+            if (isTarget) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    });
+
+    // 2. Switch classes on both journey containers
     const containers = document.querySelectorAll('.fs-journey-container');
     containers.forEach(c => {
         c.classList.remove('fs-view-adventure', 'fs-view-stepper');
         if (viewType === 'adventure') c.classList.add('fs-view-adventure');
         if (viewType === 'stepper') c.classList.add('fs-view-stepper');
     });
-});
-}
-
-function openFullscreenJourney() {
-    if(!activeStudentId || !studentsData[activeStudentId]) return;
-    
-    const student = studentsData[activeStudentId];
-    document.getElementById('fs-student-name').textContent = student.first_name + ' ' + student.last_name;
-    
-    // Parse logs to determine status
-    const logs = studentLogsData[activeStudentId] || [];
-    let state = {
-        email_sent: false,
-        email_opened: false,
-        email_clicked: false,
-        email2_sent: false,
-        wa_sent: false,
-        tg_sent: false,
-        sms_sent: false,
-        onboarding_done: false, // We'll infer this
-    };
-    let dates = { 1: '-', 2: '-', 3: '-', 4: '-', 5: '-', 6: '-' };
-    
-    // Helper to find earliest/latest log date
-    function getLogDate(actionPatterns) {
-        for(let pattern of actionPatterns) {
-            const found = logs.find(l => l.action.toLowerCase().includes(pattern.toLowerCase()));
-            if(found) return new Date(found.timestamp).toLocaleString('ar-MA');
-        }
-        return '-';
-    }
-    
-    // Check Email 1
-    state.email_sent = logs.some(l => l.action.includes('Email 1') || l.action.includes('mail envoyé'));
-    state.email_opened = logs.some(l => l.action.includes('opened') || l.action.includes('ouvert'));
-    state.email_clicked = logs.some(l => l.action.includes('Link clicked') || l.action.includes('cliqué'));
-    dates[1] = getLogDate(['Email 1', 'mail', 'opened', 'clicked']);
-    
-    // Check Email 2 (Relance)
-    state.email2_sent = logs.some(l => l.action.includes('Email 2') || l.action.includes('Relance'));
-    dates[2] = getLogDate(['Email 2', 'Relance']);
-    
-    // Check WhatsApp
-    state.wa_sent = logs.some(l => l.action.includes('WhatsApp'));
-    dates[3] = getLogDate(['WhatsApp']);
-    
-    // Check Telegram
-    state.tg_sent = logs.some(l => l.action.includes('Telegram message') || l.action.includes('telegram_dm'));
-    dates[4] = getLogDate(['Telegram message', 'telegram_dm']);
-    
-    // Check SMS
-    state.sms_sent = logs.some(l => l.action.includes('SMS'));
-    dates[5] = getLogDate(['SMS']);
-    
-    // Onboarding
-    state.onboarding_done = !!student.telegram_id || logs.some(l => l.action.includes('Bot started') || l.action.includes('Group joined'));
-    dates[6] = getLogDate(['Bot started', 'Group joined']);
-    
-    // Reset all stations
-    for(let i=1; i<=6; i++) {
-        const el = document.getElementById('fs-station-'+i);
-        el.className = 'metro-station';
-        document.getElementById('fs-date-'+i).textContent = dates[i];
-    }
-    
-    // Calculate progress and classes
-    let progressLevel = 0;
-    
-    // Station 1
-    if(state.email_clicked) { document.getElementById('fs-station-1').classList.add('completed'); progressLevel = 1; }
-    else if(state.email_sent) { document.getElementById('fs-station-1').classList.add('current'); }
-    
-    // Station 2
-    if(state.email2_sent) { document.getElementById('fs-station-2').classList.add('completed'); progressLevel = 2; }
-    
-    // Station 3
-    if(state.wa_sent) { document.getElementById('fs-station-3').classList.add('completed'); progressLevel = 3; }
-    
-    // Station 4
-    if(state.tg_sent) { document.getElementById('fs-station-4').classList.add('completed'); progressLevel = 4; }
-    
-    // Station 5
-    if(state.sms_sent) { document.getElementById('fs-station-5').classList.add('completed'); progressLevel = 5; }
-    
-    // Station 6 (Onboarding)
-    if(state.onboarding_done) { document.getElementById('fs-station-6').classList.add('completed'); progressLevel = 6; }
-    
-    // For stations that are before the highest completed one, mark them as completed too if skipped
-    for(let i=1; i<=progressLevel; i++) {
-        document.getElementById('fs-station-'+i).classList.add('completed');
-        document.getElementById('fs-station-'+i).classList.remove('current');
-    }
-    
-    // Mark next step as current if we haven't reached the end
-    if(progressLevel < 6) {
-        document.getElementById('fs-station-'+(progressLevel+1)).classList.add('current');
-    }
-    
-    // Set progress bar width (from center of station 1 to center of station N)
-    // 6 stations, 5 intervals. 100% / 5 = 20% per interval.
-    document.getElementById('fs-metro-progress').style.height = (progressLevel === 0 ? 0 : (progressLevel === 6 ? 100 : (progressLevel-1) * 20)) + '%';
-    
-    // Show overlay
-    document.getElementById('fs-journey-overlay').style.display = 'flex';
 }
 </script>
 </body>
