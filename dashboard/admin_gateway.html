@@ -3181,6 +3181,7 @@
 
                     <!-- Actions -->
                     <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                        <button class="btn btn-primary" onclick="openGhostFullscreenJourney('${v.telegram_id}', '${tgName.replace(/'/g, "\\'")}')" style="background:var(--accent); border:none; padding:8px 12px; font-weight:bold; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:5px; box-shadow:0 0 10px rgba(124, 58, 237, 0.4); color:white; cursor:pointer;" title="Plein Écran Onboarding">🛤️ مسار Onboarding</button>
                         <!-- Full Timeline / Journey Log Button -->
                         <button onclick="viewVisitorFullJourney('${v.telegram_id}', '${(studentDisplayName || tgName).replace(/'/g, "\\'")}', '${v.student_id || ''}')" 
                                 style="background:rgba(99,102,241,0.12); color:#6366f1; border:1px solid rgba(99,102,241,0.3); padding:8px 12px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" 
@@ -10468,6 +10469,168 @@ window.addEventListener('DOMContentLoaded', () => {
         if (icon) icon.textContent = '🌙';
     }
 });
+</script>
+
+
+<!-- ONBOARDING FULL SCREEN JOURNEY OVERLAY -->
+<div id="fs-onb-journey-overlay" dir="rtl" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg); z-index:9999999; display:none; flex-direction:column; color:var(--text1); font-family:'IBM Plex Sans Arabic', sans-serif;">
+    <div id="fs-onb-journey-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:var(--surface); border-bottom:1px solid var(--border);">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <button onclick="document.getElementById('fs-onb-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
+            <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🎥 مسار Onboarding : <span id="fs-onb-student-name" style="color:var(--accent2);"></span></h2>
+        </div>
+    </div>
+    
+    <div class="fs-journey-container" id="fs-onb-metro-view" style="flex:1; display:flex; justify-content:center; align-items:center; overflow-x:auto; padding:40px; background:radial-gradient(circle at center, var(--surface) 0%, var(--bg) 100%); direction:ltr;">
+        <div class="metro-map">
+            <div class="metro-line"></div>
+            <div class="metro-line-progress" id="fs-onb-metro-progress"></div>
+            
+            <div class="metro-station" id="fs-onb-station-1">
+                <div class="metro-dot">1</div>
+                <div class="metro-title">فتح الصفحة</div>
+                <div class="metro-desc">ONBOARDING_PAGE_OPENED</div>
+                <div class="metro-date" id="fs-onb-date-1">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-onb-station-2">
+                <div class="metro-dot">2</div>
+                <div class="metro-title">التعهد</div>
+                <div class="metro-desc">ONBOARDING_COMMITMENT</div>
+                <div class="metro-date" id="fs-onb-date-2">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-onb-station-3">
+                <div class="metro-dot">3</div>
+                <div class="metro-title">الفيديوهات</div>
+                <div class="metro-desc">ONBOARDING_VIDEOS</div>
+                <div class="metro-date" id="fs-onb-date-3">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-onb-station-4">
+                <div class="metro-dot">4</div>
+                <div class="metro-title">ميثاق الشرف</div>
+                <div class="metro-desc">ONBOARDING_CHARTER</div>
+                <div class="metro-date" id="fs-onb-date-4">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-onb-station-5">
+                <div class="metro-dot">5</div>
+                <div class="metro-title">شاشة الربط</div>
+                <div class="metro-desc">ONBOARDING_FORM</div>
+                <div class="metro-date" id="fs-onb-date-5">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-onb-station-6">
+                <div class="metro-dot">6</div>
+                <div class="metro-title">اكتمل الربط</div>
+                <div class="metro-desc">LINK_SUCCESS</div>
+                <div class="metro-date" id="fs-onb-date-6">-</div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+async function openGhostFullscreenJourney(telegramId, ghostName) {
+    document.getElementById('fs-onb-student-name').textContent = ghostName;
+    document.getElementById('fs-onb-journey-overlay').style.display = 'flex';
+    
+    for(let i=1; i<=6; i++) {
+        document.getElementById('fs-onb-station-'+i).className = 'metro-station';
+        document.getElementById('fs-onb-date-'+i).textContent = 'جاري التحميل...';
+    }
+    
+    try {
+        const res = await fetch('/api/admin/gateway/logs?tid=' + encodeURIComponent(telegramId));
+        const data = await res.json();
+        
+        let logs = [];
+        if (data.success && data.logs) {
+            logs = data.logs;
+        } else if (Array.isArray(data)) {
+            logs = data;
+        }
+        
+        let state = {
+            opened: false,
+            commitment: false,
+            videos: false,
+            charter: false,
+            form: false,
+            success: false,
+            error: false
+        };
+        let dates = { 1: '-', 2: '-', 3: '-', 4: '-', 5: '-', 6: '-' };
+        let lastError = null;
+        
+        function getLogDate(actionPatterns) {
+            for(let pattern of actionPatterns) {
+                const found = logs.find(l => (l.action_type || l.action || '').toLowerCase().includes(pattern.toLowerCase()));
+                if(found) return new Date(found.timestamp).toLocaleString('ar-MA');
+            }
+            return '-';
+        }
+        
+        state.opened = logs.some(l => (l.action_type || l.action || '').includes('PAGE_OPENED'));
+        dates[1] = getLogDate(['PAGE_OPENED']);
+        
+        state.commitment = logs.some(l => (l.action_type || l.action || '').includes('COMMITMENT_CHECKED'));
+        dates[2] = getLogDate(['COMMITMENT_CHECKED']);
+        
+        state.videos = logs.some(l => (l.action_type || l.action || '').includes('VID1_STARTED') || (l.action_type || l.action || '').includes('VID2_STARTED') || (l.action_type || l.action || '').includes('VID3_STARTED'));
+        dates[3] = getLogDate(['VID3_STARTED', 'VID2_STARTED', 'VID1_STARTED']);
+        
+        state.charter = logs.some(l => (l.action_type || l.action || '').includes('CHARTER_SIGNED'));
+        dates[4] = getLogDate(['CHARTER_SIGNED']);
+        
+        state.form = logs.some(l => (l.action_type || l.action || '').includes('FORM_REACHED') || (l.action_type || l.action || '').includes('INPUT_ERROR'));
+        dates[5] = getLogDate(['FORM_REACHED', 'INPUT_ERROR']);
+        
+        state.success = logs.some(l => (l.action_type || l.action || '').includes('LINK_SUCCESS') || (l.action_type || l.action || '').includes('account_linked') || (l.action_type || l.action || '').includes('Bot started') || (l.action_type || l.action || '').includes('Link clicked'));
+        dates[6] = getLogDate(['LINK_SUCCESS', 'account_linked', 'Bot started', 'Link clicked']);
+        
+        const errLog = logs.find(l => (l.action_type || l.action || '').includes('INPUT_ERROR'));
+        if (errLog) {
+            state.error = true;
+            lastError = errLog.description || 'Error';
+        }
+        
+        for(let i=1; i<=6; i++) {
+            document.getElementById('fs-onb-date-'+i).textContent = dates[i];
+        }
+        
+        let progressLevel = 0;
+        
+        if(state.success) progressLevel = 6;
+        else if(state.form) progressLevel = 5;
+        else if(state.charter) progressLevel = 4;
+        else if(state.videos) progressLevel = 3;
+        else if(state.commitment) progressLevel = 2;
+        else if(state.opened) progressLevel = 1;
+        
+        for(let i=1; i<=progressLevel; i++) {
+            document.getElementById('fs-onb-station-'+i).classList.add('completed');
+        }
+        
+        if(progressLevel < 6) {
+            document.getElementById('fs-onb-station-'+(progressLevel+1)).classList.add('current');
+            if (state.error && progressLevel === 5) {
+                document.getElementById('fs-onb-station-5').classList.remove('completed');
+                document.getElementById('fs-onb-station-5').classList.add('error');
+                document.getElementById('fs-onb-date-5').textContent = lastError;
+                document.getElementById('fs-onb-station-6').classList.remove('current');
+            }
+        }
+        
+        document.getElementById('fs-onb-metro-progress').style.width = (progressLevel === 0 ? 0 : (progressLevel === 6 ? 100 : (progressLevel-1) * 20)) + '%';
+        
+    } catch(e) {
+        console.error(e);
+        document.getElementById('fs-onb-date-1').textContent = 'Erreur chargement';
+    }
+}
 </script>
 
 <!-- FULL SCREEN JOURNEY OVERLAY -->
