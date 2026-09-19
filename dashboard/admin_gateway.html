@@ -670,6 +670,9 @@
                     <button onclick="toggleDuplicatesOnlyFilter(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--surface); color:var(--text1); border:1px solid var(--border); border-radius:12px; padding:11px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; margin-bottom:8px;">
                         👥 عرض المكررين فقط في القائمة
                     </button>
+                    <button id="btn-drawer-excluded" onclick="toggleExcludedFilter(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:rgba(239,68,68,0.1); color:#ef4444; border:1.5px solid #ef4444; border-radius:12px; padding:12px; font-weight:bold; cursor:pointer; font-size:0.95rem; font-family:inherit; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        🚫 عرض الطلاب المستبعدين (الأرشيف)
+                    </button>
                     <button onclick="resetAllFilters(); document.getElementById('filter-drawer').style.display='none'" style="width:100%; background:var(--surface); color:var(--text1); border:1.5px solid var(--border); border-radius:12px; padding:11px; font-weight:bold; cursor:pointer; font-size:0.9rem; font-family:inherit; margin-bottom:8px;">
                         🔄 إعادة ضبط جميع الفلاتر (إظهار كل الطلاب)
                     </button>
@@ -2235,7 +2238,7 @@
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all' };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all', showExcluded: false };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -3610,7 +3613,7 @@
             // Trigger data loading
             if(id === 'overview') loadHomeDashboard();
             if(id === 'actions') calculateMassTarget();
-            if(id === 'students') filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            if(id === 'students') filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
             if(id === 'sos') fetchSos();
             if(id === 'links') fetchLinks();
             if(id === 'logs') fetchGlobalLogs();
@@ -3641,17 +3644,17 @@
         function setGenderFilter(val, el) {
             filters.gender = val;
             _activatePill('g-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
         }
         function setTelegramFilter(val, el) {
             filters.telegram = val;
             _activatePill('tg-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
         }
         function setPayFilter(val, el) {
             filters.payment = val;
             _activatePill('pay-', el);
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
         }
         
         function setSort(key, defaultOrder, el) {
@@ -3672,7 +3675,7 @@
                 const text = el.innerText.replace(/[🔼🔽]/g, '').trim();
                 el.innerText = text + (currentSort.order === 'asc' ? ' 🔼' : ' 🔽');
             }
-            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+            filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
         }
         
         function changeViewMode(mode) {
@@ -3885,7 +3888,7 @@
                     }
 
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
-                    filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView();
+                    filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
                     // Auto-refresh stats tab if it's currently active
                     if (document.getElementById('tab-stats') && document.getElementById('tab-stats').classList.contains('active')) {
                         loadStats(30, document.getElementById('stats-30'));
@@ -3899,8 +3902,58 @@
         window.filterOnlyDuplicates = false;
         window.duplicateReasonsMap = new Map();
 
+        function toggleExcludedFilter() {
+            filters.showExcluded = !filters.showExcluded;
+            if (filters.showExcluded) {
+                window.filterOnlyDuplicates = false;
+            }
+            updateExcludedButtonUI();
+            filterStudents();
+        }
+
+        function updateExcludedButtonUI() {
+            const btn = document.getElementById('btn-drawer-excluded');
+            const exCount = (allStudents || []).filter(s => s.excluded == 1).length;
+            if (btn) {
+                if (filters.showExcluded) {
+                    btn.style.background = '#ef4444';
+                    btn.style.color = '#ffffff';
+                    btn.innerHTML = `🚫 عرض المستبعدين (مفعَّل ✅ ${exCount} طلاب) - اضغط للإلغاء`;
+                } else {
+                    btn.style.background = 'rgba(239,68,68,0.1)';
+                    btn.style.color = '#ef4444';
+                    btn.innerHTML = `🚫 عرض الطلاب المستبعدين (${exCount} في الأرشيف)`;
+                }
+            }
+        }
+
+        function resetAllFilters() {
+            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all', showExcluded: false };
+            window.filterOnlyDuplicates = false;
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            const leadType = document.getElementById('lead-type-filter');
+            if (leadType) leadType.value = 'all';
+            const remarkSel = document.getElementById('remark-select');
+            if (remarkSel) remarkSel.value = 'all';
+            const srcSel = document.getElementById('source-select');
+            if (srcSel) srcSel.value = 'all';
+            updateExcludedButtonUI();
+            const btnDup = document.getElementById('btn-toggle-duplicates-filter');
+            if (btnDup) {
+                btnDup.style.background = 'var(--surface)';
+                btnDup.style.color = 'var(--text1)';
+                btnDup.innerHTML = '👥 المكررين فقط';
+            }
+            filterStudents();
+        }
+
         function toggleDuplicatesOnlyFilter() {
             window.filterOnlyDuplicates = !window.filterOnlyDuplicates;
+            if (window.filterOnlyDuplicates) {
+                filters.showExcluded = false;
+                updateExcludedButtonUI();
+            }
             const btn = document.getElementById('btn-toggle-duplicates-filter');
             if (btn) {
                 if (window.filterOnlyDuplicates) {
@@ -4553,6 +4606,11 @@ function filterStudents() {
             }
 
             const filtered = allStudents.filter(s => {
+                if (filters.showExcluded) {
+                    if (s.excluded != 1) return false;
+                } else {
+                    if (s.excluded == 1) return false;
+                }
                 if (window.filterOnlyDuplicates && !window.duplicateReasonsMap.has(String(s.student_id))) {
                     return false;
                 }
@@ -4744,14 +4802,36 @@ function filterStudents() {
                 countDisplay.style.textAlign = 'center';
                 countDisplay.style.fontSize = '1.15rem';
                 
-                const countPrefix = window.filterOnlyDuplicates ? '⚠️ مكررين: ' : 'الإجمالي: ';
-                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">${countPrefix}<span style="color:${window.filterOnlyDuplicates ? '#dc2626' : themeColor}; font-weight:900; font-size:1.35rem;">${filtered.length}</span> ${studentWord}</span>`;
+                const countPrefix = filters.showExcluded ? '🚫 مستبعدون (الأرشيف): ' : (window.filterOnlyDuplicates ? '⚠️ مكررين: ' : 'الإجمالي: ');
+                const displayColor = filters.showExcluded ? '#ef4444' : (window.filterOnlyDuplicates ? '#dc2626' : themeColor);
+                countDisplay.style.color = displayColor;
+                countDisplay.style.background = filters.showExcluded ? 'rgba(239, 68, 68, 0.12)' : (window.filterOnlyDuplicates ? 'rgba(220, 38, 38, 0.12)' : themeBg);
+                countDisplay.innerHTML = `👥 <span style="margin-right:5px;">${countPrefix}<span style="color:${displayColor}; font-weight:900; font-size:1.35rem;">${filtered.length}</span> ${studentWord}</span>`;
             }
 
             const list = document.getElementById('students-list');
             list.innerHTML = '';
+
+            if (filters.showExcluded) {
+                const banner = document.createElement('div');
+                banner.style.cssText = 'background:#fef2f2; border:1.5px solid #ef4444; border-radius:14px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;';
+                banner.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.4rem;">🚫</span>
+                        <div>
+                            <div style="font-weight:900; color:#991b1b; font-size:0.95rem;">أنت الآن تستعرض قائمة الطلاب المستبعدين (الأرشيف)</div>
+                            <div style="color:#b91c1c; font-size:0.8rem;">هذه الحسابات مستبعدة من الإحصائيات العامة لتطابق تماماً ملف الإكسل (1,312 طالب). يمكنك استعادة أي حساب بالضغط على زر استعادة.</div>
+                        </div>
+                    </div>
+                    <button onclick="toggleExcludedFilter()" style="background:#1f2937; color:white; border:none; padding:8px 16px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">
+                        ↩️ العودة للقائمة النشطة
+                    </button>
+                `;
+                list.appendChild(banner);
+            }
+
             if(filtered.length === 0) {
-                list.innerHTML = '<div class="no-items">لا يوجد أي تلميذ يطابق هذه الفلاتر</div>';
+                list.innerHTML += '<div class="no-items">' + (filters.showExcluded ? 'لا يوجد أي طالب في قائمة المستبعدين حالياً' : 'لا يوجد أي تلميذ يطابق هذه الفلاتر') + '</div>';
                 return;
             }
             
@@ -4792,6 +4872,7 @@ function filterStudents() {
                         <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الدفع</th>
                         <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">🎥 مسار التأهيل</th>
                         <th style="padding:12px; direction:ltr; text-align:right; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الإيميل</th>
+                        ${filters.showExcluded ? '<th style="padding:12px; text-align:center; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">إجراء</th>' : ''}
                     </tr>
                 `;
                 table.appendChild(thead);
@@ -4937,6 +5018,7 @@ function filterStudents() {
                         <td style="padding:12px;">${payBadge}</td>
                         <td style="padding:12px; text-align:center;">${onbBadge}</td>
                         <td style="padding:12px; direction:ltr; text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
+                        ${filters.showExcluded ? `<td style="padding:12px; text-align:center;"><button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="background:#10b981; color:white; border:none; padding:5px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.8rem;">🔄 استعادة</button></td>` : ''}
                     `;
                     tbody.appendChild(tr);
                 }
@@ -5054,6 +5136,7 @@ function filterStudents() {
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
                             ${frNameHTML}
+                            ${filters.showExcluded ? `<button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="background:#10b981; color:white; border:none; padding:4px 10px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.75rem;">🔄 استعادة الحساب</button>` : ''}
                         </div>
                         <div style="margin-top:8px;">${coloredEmail}</div>
                         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:12px; background:rgba(255,255,255,0.03); padding:8px; border-radius:8px; border: 1px solid var(--border);">
@@ -5063,6 +5146,7 @@ function filterStudents() {
                             ${srcBadge ? `<span style="font-size:0.75rem;color:var(--text2);font-weight:bold;">| ${srcBadge}</span>` : ''}
                         </div>
                         ${tgLine ? `<div style="margin-top:8px;">${tgLine}</div>` : ''}
+                        ${filters.showExcluded ? `<div style="margin-top:8px; text-align:center;"><button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="width:100%; background:#10b981; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.82rem;">🔄 استعادة وتفعيل الحساب</button></div>` : ''}
                     `;
                 } else if (styleOpt === '3') {
                     // Template 3: Dense and Compact
@@ -5448,9 +5532,10 @@ function filterStudents() {
                     } else {
                         openDuplicateScanner();
                     }
-                    if (window.filterOnlyDuplicates) {
+                    if (window.filterOnlyDuplicates || filters.showExcluded) {
                         filterStudents();
                     }
+                    updateExcludedButtonUI();
                 } else {
                     alert('خطأ: ' + (data.error || 'غير معروف'));
                 }

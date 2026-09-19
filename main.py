@@ -1016,25 +1016,25 @@ async def api_admin_gateway_stats(request: web.Request):
     from config import DATABASE_PATH
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE payment_status = 'PAID'") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE payment_status = 'PAID' AND (excluded = 0 OR excluded IS NULL)") as cur:
                 total_paid = (await cur.fetchone())[0]
             if total_paid == 0:
                 async with db.execute("SELECT COUNT(*) FROM academy_students WHERE excluded = 0 OR excluded IS NULL") as cur:
                     total_paid = (await cur.fetchone())[0]
                     
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_sent = 1") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_sent = 1 AND (excluded = 0 OR excluded IS NULL)") as cur:
                 email_sent = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_opened_at IS NOT NULL") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE email_opened_at IS NOT NULL AND (excluded = 0 OR excluded IS NULL)") as cur:
                 email_opened = (await cur.fetchone())[0]
             async with db.execute("SELECT COUNT(*) FROM academy_students WHERE (excluded = 0 OR excluded IS NULL) AND (telegram_id IS NOT NULL)") as cur:
                 bot_linked = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(DISTINCT student_id) FROM student_logs WHERE action_type IN ('FOLDER_CLICKED', 'APP_OPENED', 'TUTO_OPENED')") as cur:
+            async with db.execute("SELECT COUNT(DISTINCT l.student_id) FROM student_logs l JOIN academy_students s ON l.student_id = s.student_id WHERE l.action_type IN ('FOLDER_CLICKED', 'APP_OPENED', 'TUTO_OPENED') AND (s.excluded = 0 OR s.excluded IS NULL)") as cur:
                 folder_clicked = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE group_joined = 1") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE group_joined = 1 AND (excluded = 0 OR excluded IS NULL)") as cur:
                 group_joined = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE whatsapp_sent = 1") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE whatsapp_sent = 1 AND (excluded = 0 OR excluded IS NULL)") as cur:
                 wa_sent = (await cur.fetchone())[0]
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE whatsapp_sent = 1 AND group_joined = 1") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE whatsapp_sent = 1 AND group_joined = 1 AND (excluded = 0 OR excluded IS NULL)") as cur:
                 wa_converted = (await cur.fetchone())[0]
                 
             async with db.execute("SELECT value FROM settings WHERE key = 'night_patrol_enabled'") as cur:
