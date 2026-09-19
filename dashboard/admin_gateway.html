@@ -328,6 +328,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -418,6 +419,89 @@
 .fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
 .fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
 
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 60px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: max-content !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 20px 40px !important;
+    gap: 15px !important;
+    direction: rtl !important;
+    align-items: center !important; /* Fix vertical stretching */
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 250px !important;
+    height: 120px !important; /* Fixed height to prevent vertical stretching */
+    margin: 0 !important;
+    clip-path: polygon(100% 0%, 10% 0%, 0% 50%, 10% 100%, 100% 100%, 90% 50%) !important;
+    padding: 15px 35px 15px 45px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #e2e8f0 !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 10% 0%, 0% 50%, 10% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 90% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.05rem !important; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.85rem !important; margin-top:5px !important;}
+
+/* Numbering before title in stepper */
+.fs-view-stepper #fs-station-1 .metro-title::before, .fs-view-stepper #fs-onb-station-1 .metro-title::before { content: '1. '; }
+.fs-view-stepper #fs-station-2 .metro-title::before, .fs-view-stepper #fs-onb-station-2 .metro-title::before { content: '2. '; }
+.fs-view-stepper #fs-station-3 .metro-title::before, .fs-view-stepper #fs-onb-station-3 .metro-title::before { content: '3. '; }
+.fs-view-stepper #fs-station-4 .metro-title::before, .fs-view-stepper #fs-onb-station-4 .metro-title::before { content: '4. '; }
+.fs-view-stepper #fs-station-5 .metro-title::before, .fs-view-stepper #fs-onb-station-5 .metro-title::before { content: '5. '; }
+.fs-view-stepper #fs-station-6 .metro-title::before, .fs-view-stepper #fs-onb-station-6 .metro-title::before { content: '6. '; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
 </style>
 
 <style>
@@ -556,6 +640,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -760,6 +845,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -1073,6 +1159,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -2446,6 +2533,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -2671,6 +2759,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -2867,6 +2956,7 @@
     width: 100% !important;
     max-width: 500px !important;
     height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
     margin: 0 auto !important;
     position: relative !important;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
@@ -11403,10 +11493,10 @@ window.addEventListener('DOMContentLoaded', () => {
         <div style="display:flex; align-items:center; gap:15px;">
             <button onclick="document.getElementById('fs-onb-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
             <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🎥 مسار Onboarding : <span id="fs-onb-student-name" style="color:var(--accent2);"></span></h2>
-            <div style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px;">
-                <button class="fs-vbtn active" onclick="setFsView('vertical', this)">عمودي</button>
-                <button class="fs-vbtn" onclick="setFsView('board', this)">لعبة الأوز</button>
-                <button class="fs-vbtn" onclick="setFsView('stepper', this)">3D Stepper</button>
+            <div class="fs-view-selector" style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px; overflow-x:auto;">
+                <button class="fs-vbtn active" onclick="setFsView('vertical', this)">📏 عمودي</button>
+                <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ الصحراء</button>
+                <button class="fs-vbtn" onclick="setFsView('stepper', this)">🚀 3D Stepper</button>
             </div>
             
         </div>
@@ -11583,9 +11673,10 @@ async function openGhostFullscreenJourney(telegramId, ghostName) {
             <button onclick="document.getElementById('fs-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
             <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🛤️ مسار الطالب : <span id="fs-student-name" style="color:var(--accent2);"></span></h2>
         </div>
-                <div class="fs-view-selector" style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px;">
+                <div class="fs-view-selector" style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px; overflow-x:auto;">
                 <button class="fs-vbtn active" onclick="setFsView('vertical', this)">📏 عمودي</button>
-                <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ رحلة الصحراء</button>
+                <button class="fs-vbtn" onclick="setFsView('adventure', this)">🏜️ الصحراء</button>
+                <button class="fs-vbtn" onclick="setFsView('stepper', this)">🚀 3D Stepper</button>
             </div>
     </div>
     
@@ -11663,9 +11754,11 @@ function setFsView(viewType, btnElem) {
     // Apply class to containers
     const containers = document.querySelectorAll('.fs-journey-container');
     containers.forEach(c => {
-        c.classList.remove('fs-view-adventure');
+        c.classList.remove('fs-view-adventure', 'fs-view-stepper');
         if (viewType === 'adventure') c.classList.add('fs-view-adventure');
+        if (viewType === 'stepper') c.classList.add('fs-view-stepper');
     });
+});
 }
 
 function openFullscreenJourney() {
