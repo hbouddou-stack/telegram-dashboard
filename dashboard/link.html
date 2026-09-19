@@ -118,7 +118,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
         body {
             display: flex;
@@ -134,25 +134,6 @@
             justify-content: center;
             align-items: center;
             position: relative;
-        }
-        
-
-                input.addEventListener('focus', () => {
-                    input.select();
-                });
-
-                input.addEventListener('paste', (e) => {
-                    e.preventDefault();
-                    let paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
-                    for (let i = 0; i < inputs.length && i < paste.length; i++) {
-                        inputs[i].value = paste[i];
-                    }
-                    const targetIdx = Math.min(paste.length, inputs.length - 1);
-                    inputs[targetIdx].focus();
-                    updateHidden();
-                });
-            });
-        });
         }
         .video-container video {
             width: 100%;
@@ -1014,15 +995,16 @@
         <input type="hidden" id="dob_month" value="">
         <input type="hidden" id="dob_year" value="">
 
-        <!-- FORM ACTION BUTTONS (NO STICKY BAR) -->
-        <div style="margin-top: 22px; display: flex; flex-direction: column; gap: 12px;">
-            <button type="button" id="btn-submit-form" onclick="linkAccount()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), #6222cc); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <!-- STICKY FORM ACTION BUTTONS -->
+        <div id="form-sticky-bar" style="position: sticky; bottom: 0; left: 0; right: 0; margin: 24px -20px -40px -20px; padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px)) 20px; background: var(--modal-bg); border-top: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 -8px 24px rgba(0,0,0,0.45); display: flex; flex-direction: column; gap: 10px; z-index: 99; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+            <button type="button" id="btn-submit-form" onclick="linkAccount()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, var(--accent), #6222cc); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
                 <span>🚀</span> تأكيد وربط الحساب
             </button>
-            <button type="button" class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="height: 48px; padding: 0 16px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; width: 100%; border-radius: 12px; box-sizing: border-box; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; font-weight: 700; cursor: pointer;">
+            <button type="button" class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="height: 44px; padding: 0 16px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; width: 100%; border-radius: 12px; box-sizing: border-box; background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; font-weight: 700; cursor: pointer;">
                 🆘 لدي مشكلة في التسجيل (طلب مساعدة)
             </button>
         </div>
+    </div>
         
         
     <!-- Grid Modal -->
@@ -1311,13 +1293,24 @@
             if (typeof debouncedValidateField === 'function') debouncedValidateField();
         }
 
+        function normalizeDigits(str) {
+            if (!str) return '';
+            const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            let res = String(str);
+            for (let i = 0; i < 10; i++) {
+                res = res.replaceAll(arabicDigits[i], i.toString()).replaceAll(persianDigits[i], i.toString());
+            }
+            return res.replace(/[^0-9]/g, '');
+        }
+
         function initOTP() {
             const inputs = Array.from(document.querySelectorAll('.otp-input'));
             const hiddenInput = document.getElementById('student_id');
             
             const updateHidden = () => {
                 let val = '';
-                inputs.forEach(i => val += (i.value || ''));
+                inputs.forEach(i => val += (normalizeDigits(i.value) || ''));
                 if (hiddenInput) hiddenInput.value = val;
                 if (typeof debouncedValidateField === 'function') debouncedValidateField();
             };
@@ -1335,10 +1328,21 @@
                     input.select();
                 });
 
-                // Primary Smart Input Handler (Synchronous auto-advance for mobile & desktop)
-                input.addEventListener('input', () => {
+                // Primary Smart Input Handler (Synchronous auto-advance for mobile & desktop, Arabic & Western)
+                input.addEventListener('input', (e) => {
+                    // Mobile backspace detection
+                    if (e && e.inputType === 'deleteContentBackward') {
+                        if (!input.value && index > 0) {
+                            inputs[index - 1].value = '';
+                            inputs[index - 1].focus();
+                            inputs[index - 1].select();
+                        }
+                        updateHidden();
+                        return;
+                    }
+
                     const raw = input.value || '';
-                    const digits = raw.replace(/[^0-9]/g, '');
+                    const digits = normalizeDigits(raw);
 
                     if (digits.length === 0) {
                         input.value = '';
@@ -1366,7 +1370,7 @@
                     }
                 });
 
-                // Backspace handling
+                // Backspace key handling
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Backspace') {
                         if (!input.value && index > 0) {
@@ -1382,7 +1386,8 @@
                 // Paste handling
                 input.addEventListener('paste', (e) => {
                     e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+                    const raw = (e.clipboardData || window.clipboardData).getData('text');
+                    const paste = normalizeDigits(raw);
                     if (!paste) return;
                     for (let i = 0; i < paste.length && (index + i) < inputs.length; i++) {
                         inputs[index + i].value = paste[i];
@@ -1859,7 +1864,12 @@
         async function linkAccount() {
             clearErrors();
             const email = document.getElementById('email').value.trim();
-            const student_id = document.getElementById('student_id').value.trim();
+            let student_id = (document.getElementById('student_id')?.value || '').trim();
+            if (!student_id) {
+                const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+                student_id = otpInputs.map(i => i.value).join('').trim();
+            }
+            student_id = normalizeDigits(student_id);
             
             if(!email || !student_id) {
                 document.getElementById('global-error').textContent = "يرجى ملء جميع الحقول";
@@ -1925,6 +1935,7 @@
                                 linksHtml += '<a href="' + data.links.group + '" target="_blank" style="background:#2ecc71; color:white; padding:12px; border-radius:10px; text-decoration:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">' + groupLabel + '</a>';
                             }
                             linksBox.innerHTML = linksHtml;
+                        }
                         if (data.folder_link) {
                             dynamicFolderLink = data.folder_link;
                         }
@@ -2011,7 +2022,12 @@
             
             const email = document.getElementById('email').value.trim();
             const msg = document.getElementById('sos_msg').value.trim();
-            const student_id = document.getElementById('student_id').value.trim();
+            let student_id = (document.getElementById('student_id')?.value || '').trim();
+            if (!student_id) {
+                const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+                student_id = otpInputs.map(i => i.value).join('').trim();
+            }
+            if (typeof normalizeDigits === 'function') student_id = normalizeDigits(student_id);
             const dEl = document.getElementById('day-value');
             const mEl = document.getElementById('month-value');
             const yEl = document.getElementById('year-value');
@@ -2031,11 +2047,24 @@
                 if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                     tid = window.Telegram.WebApp.initDataUnsafe.user.id;
                 }
-                const response = await fetch('/api/gateway/sos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
-                });
+                if (!tid) {
+                    const sp = new URLSearchParams(window.location.search);
+                    tid = sp.get('telegram_id') || sp.get('tg_id') || sp.get('user_id');
+                }
+                let response;
+                try {
+                    response = await fetch('/api/gateway/sos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
+                    });
+                } catch(netErr) {
+                    response = await fetch('/api/sos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, message: msg, telegram_id: tid, dob: dob, student_id: student_id })
+                    });
+                }
                 slog('HTTP ' + response.status, response.ok ? '#22c55e' : '#ef4444');
                 if(response.ok) {
                     closeSOS();
