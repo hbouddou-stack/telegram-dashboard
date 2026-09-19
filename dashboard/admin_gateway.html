@@ -471,7 +471,157 @@
         }
     </style>
 
+
+<style>
+/* FULL SCREEN JOURNEY CSS */
+#fs-journey-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: var(--bg);
+    z-index: 9999999;
+    display: none;
+    flex-direction: column;
+    color: var(--text1);
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+}
+#fs-journey-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+.fs-view-selector {
+    display: flex;
+    gap: 10px;
+}
+.fs-view-btn {
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+}
+.fs-view-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+.fs-journey-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+    padding: 40px;
+    background: radial-gradient(circle at center, var(--surface) 0%, var(--bg) 100%);
+    direction: ltr; /* Keeping line LTR so progress goes left to right naturally or RTL if preferred */
+}
+/* METRO MAP VIEW */
+.metro-map {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: max-content;
+    padding: 20px 0;
+}
+.metro-line {
+    position: absolute;
+    top: 50%;
+    left: 40px;
+    right: 40px;
+    height: 6px;
+    background: var(--border);
+    transform: translateY(-50%);
+    z-index: 1;
+}
+.metro-line-progress {
+    position: absolute;
+    top: 50%;
+    left: 40px;
+    height: 6px;
+    background: var(--success);
+    transform: translateY(-50%);
+    z-index: 2;
+    transition: width 0.5s ease;
+    width: 0%;
+}
+.metro-station {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 140px;
+    margin: 0 15px;
+    cursor: default;
+}
+.metro-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 4px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+.metro-station.completed .metro-dot {
+    border-color: var(--success);
+    background: var(--success);
+    color: white;
+    box-shadow: 0 0 15px rgba(34, 197, 89, 0.4);
+}
+.metro-station.current .metro-dot {
+    border-color: var(--warning);
+    background: var(--surface);
+    color: var(--warning);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+    animation: pulse 2s infinite;
+}
+.metro-station.error .metro-dot {
+    border-color: var(--danger);
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+.metro-title {
+    margin-top: 15px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--text2);
+}
+.metro-station.completed .metro-title { color: var(--success); }
+.metro-station.current .metro-title { color: var(--warning); }
+.metro-station.error .metro-title { color: var(--danger); }
+.metro-desc {
+    font-size: 0.75rem;
+    color: var(--text2);
+    text-align: center;
+    margin-top: 4px;
+    min-height: 20px;
+}
+.metro-date {
+    font-size: 0.7rem;
+    color: var(--text2);
+    margin-top: 4px;
+    font-family: monospace;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+</style>
 </head>
+
 <body class="theme-cpi">
     <div class="header">
         
@@ -2053,7 +2203,15 @@
             <!-- Tab 4: Funnel -->
             <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom:15px;">
 
+    
+    <!-- FULL SCREEN JOURNEY BUTTON -->
+    <div style="background:var(--accent); border-radius:12px; padding:15px; margin-bottom:20px; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.1rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        <span>🛤️ افتح المسار الكامل (Parcours Complet Plein Écran)</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </div>
+    
     <!-- UNIFIED COMPOSER V2 -->
+
     <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:20px; text-align:right;" dir="rtl">
         <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1.05rem;">✉️ رسالة مخصصة (V2)</h4>
         
@@ -10300,7 +10458,183 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<!-- FULL SCREEN JOURNEY OVERLAY -->
+<div id="fs-journey-overlay" dir="rtl">
+    <div id="fs-journey-header">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <button onclick="document.getElementById('fs-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
+            <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🛤️ مسار الطالب : <span id="fs-student-name" style="color:var(--accent2);"></span></h2>
+        </div>
+        <div class="fs-view-selector">
+            <button class="fs-view-btn active" onclick="setFsView('metro')">🚇 خريطة المترو</button>
+            <button class="fs-view-btn" onclick="alert('En cours de développement !')">🎲 لعبة الإوزة</button>
+            <button class="fs-view-btn" onclick="alert('En cours de développement !')">🖥️ Stepper 3D</button>
+        </div>
+    </div>
+    
+    <div class="fs-journey-container" id="fs-metro-view">
+        <div class="metro-map" dir="ltr">
+            <div class="metro-line"></div>
+            <div class="metro-line-progress" id="fs-metro-progress"></div>
+            
+            <div class="metro-station" id="fs-station-1">
+                <div class="metro-dot">1</div>
+                <div class="metro-title">الإيميل الترحيبي</div>
+                <div class="metro-desc">تم الإرسال</div>
+                <div class="metro-date" id="fs-date-1">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-station-2">
+                <div class="metro-dot">2</div>
+                <div class="metro-title">إيميل التذكير</div>
+                <div class="metro-desc">رسالة التذكير</div>
+                <div class="metro-date" id="fs-date-2">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-station-3">
+                <div class="metro-dot">3</div>
+                <div class="metro-title">WhatsApp</div>
+                <div class="metro-desc">تواصل واتساب</div>
+                <div class="metro-date" id="fs-date-3">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-station-4">
+                <div class="metro-dot">4</div>
+                <div class="metro-title">Telegram</div>
+                <div class="metro-desc">رسالة تيليجرام</div>
+                <div class="metro-date" id="fs-date-4">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-station-5">
+                <div class="metro-dot">5</div>
+                <div class="metro-title">رسالة SMS</div>
+                <div class="metro-desc">رسالة نصية</div>
+                <div class="metro-date" id="fs-date-5">-</div>
+            </div>
+            
+            <div class="metro-station" id="fs-station-6">
+                <div class="metro-dot">6</div>
+                <div class="metro-title">التأهيل Onboarding</div>
+                <div class="metro-desc">الفيديوهات والشارتر</div>
+                <div class="metro-date" id="fs-date-6">-</div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+function setFsView(view) {
+    // For later implementation of other views
+    console.log("View selected:", view);
+}
+
+function openFullscreenJourney() {
+    if(!activeStudentId || !studentsData[activeStudentId]) return;
+    
+    const student = studentsData[activeStudentId];
+    document.getElementById('fs-student-name').textContent = student.first_name + ' ' + student.last_name;
+    
+    // Parse logs to determine status
+    const logs = studentLogsData[activeStudentId] || [];
+    let state = {
+        email_sent: false,
+        email_opened: false,
+        email_clicked: false,
+        email2_sent: false,
+        wa_sent: false,
+        tg_sent: false,
+        sms_sent: false,
+        onboarding_done: false, // We'll infer this
+    };
+    let dates = { 1: '-', 2: '-', 3: '-', 4: '-', 5: '-', 6: '-' };
+    
+    // Helper to find earliest/latest log date
+    function getLogDate(actionPatterns) {
+        for(let pattern of actionPatterns) {
+            const found = logs.find(l => l.action.toLowerCase().includes(pattern.toLowerCase()));
+            if(found) return new Date(found.timestamp).toLocaleString('ar-MA');
+        }
+        return '-';
+    }
+    
+    // Check Email 1
+    state.email_sent = logs.some(l => l.action.includes('Email 1') || l.action.includes('mail envoyé'));
+    state.email_opened = logs.some(l => l.action.includes('opened') || l.action.includes('ouvert'));
+    state.email_clicked = logs.some(l => l.action.includes('Link clicked') || l.action.includes('cliqué'));
+    dates[1] = getLogDate(['Email 1', 'mail', 'opened', 'clicked']);
+    
+    // Check Email 2 (Relance)
+    state.email2_sent = logs.some(l => l.action.includes('Email 2') || l.action.includes('Relance'));
+    dates[2] = getLogDate(['Email 2', 'Relance']);
+    
+    // Check WhatsApp
+    state.wa_sent = logs.some(l => l.action.includes('WhatsApp'));
+    dates[3] = getLogDate(['WhatsApp']);
+    
+    // Check Telegram
+    state.tg_sent = logs.some(l => l.action.includes('Telegram message') || l.action.includes('telegram_dm'));
+    dates[4] = getLogDate(['Telegram message', 'telegram_dm']);
+    
+    // Check SMS
+    state.sms_sent = logs.some(l => l.action.includes('SMS'));
+    dates[5] = getLogDate(['SMS']);
+    
+    // Onboarding
+    state.onboarding_done = !!student.telegram_id || logs.some(l => l.action.includes('Bot started') || l.action.includes('Group joined'));
+    dates[6] = getLogDate(['Bot started', 'Group joined']);
+    
+    // Reset all stations
+    for(let i=1; i<=6; i++) {
+        const el = document.getElementById('fs-station-'+i);
+        el.className = 'metro-station';
+        document.getElementById('fs-date-'+i).textContent = dates[i];
+    }
+    
+    // Calculate progress and classes
+    let progressLevel = 0;
+    
+    // Station 1
+    if(state.email_clicked) { document.getElementById('fs-station-1').classList.add('completed'); progressLevel = 1; }
+    else if(state.email_sent) { document.getElementById('fs-station-1').classList.add('current'); }
+    
+    // Station 2
+    if(state.email2_sent) { document.getElementById('fs-station-2').classList.add('completed'); progressLevel = 2; }
+    
+    // Station 3
+    if(state.wa_sent) { document.getElementById('fs-station-3').classList.add('completed'); progressLevel = 3; }
+    
+    // Station 4
+    if(state.tg_sent) { document.getElementById('fs-station-4').classList.add('completed'); progressLevel = 4; }
+    
+    // Station 5
+    if(state.sms_sent) { document.getElementById('fs-station-5').classList.add('completed'); progressLevel = 5; }
+    
+    // Station 6 (Onboarding)
+    if(state.onboarding_done) { document.getElementById('fs-station-6').classList.add('completed'); progressLevel = 6; }
+    
+    // For stations that are before the highest completed one, mark them as completed too if skipped
+    for(let i=1; i<=progressLevel; i++) {
+        document.getElementById('fs-station-'+i).classList.add('completed');
+        document.getElementById('fs-station-'+i).classList.remove('current');
+    }
+    
+    // Mark next step as current if we haven't reached the end
+    if(progressLevel < 6) {
+        document.getElementById('fs-station-'+(progressLevel+1)).classList.add('current');
+    }
+    
+    // Set progress bar width (from center of station 1 to center of station N)
+    // 6 stations, 5 intervals. 100% / 5 = 20% per interval.
+    document.getElementById('fs-metro-progress').style.width = (progressLevel === 0 ? 0 : (progressLevel === 6 ? 100 : (progressLevel-1) * 20)) + '%';
+    
+    // Show overlay
+    document.getElementById('fs-journey-overlay').style.display = 'flex';
+}
+</script>
 </body>
+
 
 
 </html>
