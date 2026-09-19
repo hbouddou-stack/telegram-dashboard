@@ -5583,7 +5583,7 @@ async def api_validate_student(request: web.Request):
         student_id = data.get('student_id', '').strip()
         email = data.get('email', '').strip().lower()
         
-        if not student_id or len(student_id) != 6:
+        if not student_id or len(student_id) not in (6, 7):
             return web.json_response({'valid': False, 'message': ''})
             
         async with aiosqlite.connect(DATABASE_PATH) as db:

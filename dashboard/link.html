@@ -574,16 +574,17 @@
         /* OTP FIELDS STRICT LTR */
         .otp-container {
             display: flex !important;
-            gap: 8px !important;
+            gap: 6px !important;
             justify-content: center !important;
             direction: ltr !important;
             unicode-bidi: bidi-override !important;
         }
         .otp-input {
-            width: calc(100% / 6 - 6px);
+            width: calc(100% / 7 - 5px);
+            max-width: 44px;
             height: 50px;
             text-align: center !important;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             font-weight: bold;
             border-radius: 12px;
             background: rgba(0,0,0,0.4);
@@ -980,18 +981,22 @@
                 <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="3">
                 <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="4">
                 <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="5">
+                <input type="text" inputmode="numeric" class="otp-input" maxlength="1" data-index="6" placeholder="·" title="الخانة السابعة (اختيارية للأرقام من 7 خانات)">
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-2); margin-top:5px; text-align:center;">
+                رقم الطالب يتكون من 6 أو 7 أرقام (الخانة السابعة للأرقام المكونة من 7 خانات)
             </div>
             <input type="hidden" id="student_id" value="">
             <div class="inline-error-text" id="err-student_id" style="margin-top: 4px;"></div>
         </div>
         
-                <div class="input-group">
+        <div class="input-group">
             <label style="display:flex; justify-content:space-between; align-items:center;">
                 <span>البريد الإلكتروني</span>
-                <span style="font-size:0.78rem; color:var(--accent);">@gmail.com افتراضي</span>
+                <span style="font-size:0.78rem; color:var(--accent);">@gmail.com افتراضي (قابل للتعديل)</span>
             </label>
             <div style="position: relative; direction: ltr; text-align: left;">
-                <input type="email" id="email" oninput="debouncedValidateField()" placeholder="username@gmail.com" required style="width: 100%; box-sizing: border-box; direction: ltr; text-align: left; padding-left: 15px; font-family: monospace; font-size: 1rem;">
+                <input type="email" id="email" value="@gmail.com" onfocus="handleEmailFocus(this)" oninput="debouncedValidateField()" placeholder="username@gmail.com" required style="width: 100%; box-sizing: border-box; direction: ltr; text-align: left; padding-left: 15px; font-family: monospace; font-size: 1rem;">
                 <div id="email_status" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; display: none;"></div>
             </div>
             <!-- QUICK DOMAIN PILLS -->
@@ -1004,19 +1009,10 @@
             <div class="inline-error-text" id="err-email"></div>
         </div>
         
-        <div class="input-group">
-            <label>تاريخ الميلاد</label>
-            <div class="dob-group" id="dob-group-container">
-                <div class="fake-select" id="btn-day" onclick="openGrid('day')">اليوم</div>
-                <div class="fake-select" id="btn-month" onclick="openGrid('month')">الشهر</div>
-                <div class="fake-select" id="btn-year" onclick="openGrid('year')">السنة</div>
-            </div>
-            
-            <input type="hidden" id="dob_day" value="">
-            <input type="hidden" id="dob_month" value="">
-            <input type="hidden" id="dob_year" value="">
-            <div class="inline-error-text" id="err-dob"></div>
-        </div>
+        <!-- Hidden fallbacks for legacy references -->
+        <input type="hidden" id="dob_day" value="">
+        <input type="hidden" id="dob_month" value="">
+        <input type="hidden" id="dob_year" value="">
 
         <div style="margin-top:25px;">
             <button class="sos-btn" id="btn-sos-trigger" onclick="showSOS()" style="margin-top:0; height:50px; padding:0 16px; font-size:1.05rem; display:flex; align-items:center; justify-content:center; width:100%; border-radius:12px; box-sizing:border-box;">لدي مشكلة في التسجيل 🆘</button>
@@ -1274,19 +1270,37 @@
         // AUTO-ADVANCING 6-DIGIT OTP ENGINE
         // ==========================================
         
+        function handleEmailFocus(el) {
+            if (el && el.value === '@gmail.com') {
+                setTimeout(() => {
+                    try {
+                        el.setSelectionRange(0, 0);
+                    } catch(e) {}
+                }, 10);
+            }
+        }
+
         function appendEmailDomain(domain) {
             const emailInput = document.getElementById('email');
             if (!emailInput) return;
             let val = emailInput.value.trim();
-            if (!val) {
-                emailInput.value = domain;
-            } else if (val.includes('@')) {
-                val = val.split('@')[0] + domain;
-                emailInput.value = val;
+            let prefix = '';
+            if (val.includes('@')) {
+                prefix = val.split('@')[0];
             } else {
-                emailInput.value = val + domain;
+                prefix = val;
             }
+            emailInput.value = prefix ? (prefix + domain) : domain;
             emailInput.focus();
+            setTimeout(() => {
+                try {
+                    if (prefix) {
+                        emailInput.setSelectionRange(emailInput.value.length, emailInput.value.length);
+                    } else {
+                        emailInput.setSelectionRange(0, 0);
+                    }
+                } catch(e) {}
+            }, 10);
             if (typeof debouncedValidateField === 'function') debouncedValidateField();
         }
 
@@ -1601,10 +1615,14 @@
         }
         
         function selectGridItem(type, val, label) {
-            document.getElementById('dob_' + type).value = val;
-            document.getElementById('btn-' + type).innerText = label;
-            document.getElementById('btn-' + type).style.borderColor = 'var(--accent)';
-            document.getElementById('btn-' + type).style.background = 'rgba(135, 54, 255, 0.2)';
+            const hid = document.getElementById('dob_' + type);
+            if (hid) hid.value = val;
+            const btn = document.getElementById('btn-' + type);
+            if (btn) {
+                btn.innerText = label;
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.background = 'rgba(135, 54, 255, 0.2)';
+            }
             closeGrid();
         }
 
@@ -1809,7 +1827,7 @@
             if (emailField) emailField.classList.remove('input-error', 'input-success');
             if (emailErrDiv) emailErrDiv.style.display = 'none';
             
-            if (studentId.length !== 6) {
+            if (studentId.length !== 6 && studentId.length !== 7) {
                 statusIcon.style.display = 'none';
                 if(emailIcon) emailIcon.style.display = 'none';
                 return;
@@ -1819,7 +1837,8 @@
             statusIcon.style.display = 'block';
             statusIcon.innerHTML = '<div style="width:16px; height:16px; border-radius:50%; background:var(--text-2); animation: pulse 1s infinite;"></div>';
             
-            if (emailIcon && email.length > 5) {
+            const hasValidEmail = email.length > 5 && email.includes('@') && !email.startsWith('@') && email !== '@gmail.com';
+            if (emailIcon && hasValidEmail) {
                 emailIcon.style.display = 'block';
                 emailIcon.innerHTML = '<div style="width:16px; height:16px; border-radius:50%; background:var(--text-2); animation: pulse 1s infinite;"></div>';
             } else if (emailIcon) {
@@ -1830,7 +1849,7 @@
             validateTimeout = setTimeout(async () => {
                 try {
                     const payload = {student_id: studentId};
-                    if (email.length > 5) {
+                    if (hasValidEmail) {
                         payload.email = email;
                     }
                     
@@ -1870,23 +1889,23 @@
             clearErrors();
             const email = document.getElementById('email').value.trim();
             const student_id = document.getElementById('student_id').value.trim();
-            const d = document.getElementById('dob_day').value;
-            const m = document.getElementById('dob_month').value;
-            const y = document.getElementById('dob_year').value;
             
-            if(!email || !student_id || !d || !m || !y) {
+            if(!email || !student_id) {
                 document.getElementById('global-error').textContent = "يرجى ملء جميع الحقول";
                 document.getElementById('global-error').style.display = 'block';
                 return;
             }
-            
-            // Force 6 digits
-            if(student_id.length !== 6) {
-                showFieldError('student_id', "يجب أن يتكون رقم الطالب من 6 أرقام");
+
+            if(email === '@gmail.com' || !email.includes('@') || email.startsWith('@')) {
+                showFieldError('email', "يرجى كتابة عنوان البريد الإلكتروني كاملاً");
                 return;
             }
             
-            const dob = `${d}/${m}/${y}`; // Formatting for backend (DD/MM/YYYY)
+            // Allow 6 or 7 digits
+            if(student_id.length !== 6 && student_id.length !== 7) {
+                showFieldError('student_id', "يجب أن يتكون رقم الطالب من 6 أو 7 أرقام");
+                return;
+            }
 
             const initData = window.Telegram.WebApp.initData;
             tg.MainButton.showProgress();
@@ -1896,7 +1915,7 @@
                 const response = await fetch('/api/link_account', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, dob, student_id, initData })
+                    body: JSON.stringify({ email, student_id, initData })
                 });
                 const data = await response.json();
                 
