@@ -291,6 +291,164 @@
             color: white !important;
         }
 
+
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
 </style>
 
 <style>
@@ -392,6 +550,164 @@
             color: white !important;
         }
 
+
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
 </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -469,7 +785,165 @@
                 display: flex !important;
             }
         }
-    </style>
+    
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
+</style>
 
 
 <style>
@@ -655,6 +1129,164 @@
     70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
     100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
 }
+
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
 </style>
 </head>
 
@@ -1901,6 +2533,164 @@
             color: white !important;
         }
 
+
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
 </style>
 
 
@@ -1999,7 +2789,165 @@
                 .ac-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
                 .ac-card-title { font-size:0.8rem; color:var(--text2); margin-bottom:6px; }
                 .ac-card-val { font-size:1.1rem; font-weight:900; }
-            </style>
+            
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
+</style>
 
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding:0; background:var(--bg);">
@@ -2068,7 +3016,165 @@
                     70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
                     100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
                 }
-                </style>
+                
+/* =========================================
+   MULTI-VIEWS CSS (BOARD & STEPPER)
+========================================= */
+
+/* SWITCHER UI */
+.fs-vbtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* -----------------------------------------
+   BOARD GAME VIEW (JEU DE L'OIE 3x2)
+----------------------------------------- */
+.fs-view-board .metro-map {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 30px !important;
+    max-width: 900px !important;
+    direction: rtl !important;
+}
+@media (max-width: 800px) {
+    .fs-view-board .metro-map { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 500px) {
+    .fs-view-board .metro-map { grid-template-columns: 1fr !important; }
+}
+
+.fs-view-board .metro-line, .fs-view-board .metro-line-progress { display: none !important; }
+
+.fs-view-board .metro-station {
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+.fs-view-board .metro-dot-wrapper {
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+}
+.fs-view-board .metro-content {
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+.fs-view-board .metro-content::before { display: none !important; }
+
+/* S-Curve Ordering for Desktop (3x2 grid) */
+@media (min-width: 801px) {
+    .fs-view-board #fs-onb-station-1 { grid-column: 1; grid-row: 1; }
+    .fs-view-board #fs-onb-station-2 { grid-column: 2; grid-row: 1; }
+    .fs-view-board #fs-onb-station-3 { grid-column: 3; grid-row: 1; }
+    .fs-view-board #fs-onb-station-4 { grid-column: 3; grid-row: 2; }
+    .fs-view-board #fs-onb-station-5 { grid-column: 2; grid-row: 2; }
+    .fs-view-board #fs-onb-station-6 { grid-column: 1; grid-row: 2; }
+    
+    /* Arrows */
+    .fs-view-board .metro-station::after {
+        content: '←';
+        position: absolute;
+        left: -25px;
+        top: 20px;
+        font-size: 30px;
+        color: var(--border);
+        font-weight: bold;
+    }
+    .fs-view-board #fs-onb-station-3::after { content: '↓'; left: 50%; top: auto; bottom: -35px; }
+    .fs-view-board #fs-onb-station-4::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-5::after { content: '→'; left: auto; right: -25px; top: 20px; }
+    .fs-view-board #fs-onb-station-6::after { display: none; }
+}
+
+/* -----------------------------------------
+   3D STEPPER VIEW
+----------------------------------------- */
+.fs-view-stepper {
+    padding-top: 80px !important;
+}
+.fs-view-stepper .metro-map {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    gap: 4px !important;
+    direction: rtl !important;
+}
+
+.fs-view-stepper .metro-line, .fs-view-stepper .metro-line-progress { display: none !important; }
+
+.fs-view-stepper .metro-station {
+    min-width: 260px !important;
+    margin: 0 !important;
+    /* RTL Arrow Pointing Left */
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%, 92% 50%) !important;
+    padding: 30px 40px 30px 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--surface) !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fs-view-stepper .metro-station:first-child {
+    clip-path: polygon(100% 0%, 8% 0%, 0% 50%, 8% 100%, 100% 100%) !important;
+}
+.fs-view-stepper .metro-station:last-child {
+    clip-path: polygon(100% 0%, 0% 0%, 0% 100%, 100% 100%, 92% 50%) !important;
+}
+
+.fs-view-stepper .metro-dot-wrapper { display: none !important; }
+.fs-view-stepper .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+}
+.fs-view-stepper .metro-content::before { display: none !important; }
+
+/* Colors for Stepper */
+.fs-view-stepper .metro-station { background: #e2e8f0 !important; }
+.fs-view-stepper .metro-title { color: #475569 !important; font-size:1.15rem; }
+.fs-view-stepper .metro-desc { color: #64748b !important; font-size:0.95rem; }
+
+.fs-view-stepper .metro-station.completed { background: var(--success) !important; }
+.fs-view-stepper .metro-station.completed .metro-title, 
+.fs-view-stepper .metro-station.completed .metro-desc, 
+.fs-view-stepper .metro-station.completed .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.current { background: var(--warning) !important; transform: scale(1.05); z-index: 10; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4) !important; clip-path: none !important; border-radius: 12px !important; }
+.fs-view-stepper .metro-station.current .metro-title, 
+.fs-view-stepper .metro-station.current .metro-desc, 
+.fs-view-stepper .metro-station.current .metro-date { color: white !important; }
+
+.fs-view-stepper .metro-station.error { background: var(--danger) !important; }
+.fs-view-stepper .metro-station.error .metro-title, 
+.fs-view-stepper .metro-station.error .metro-desc, 
+.fs-view-stepper .metro-station.error .metro-date { color: white !important; }
+</style>
                 <!-- Onboarding Funnel Summary in General Tab -->
                 <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="انقر لعرض المسار بالتفصيل">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -10514,6 +11620,12 @@ window.addEventListener('DOMContentLoaded', () => {
         <div style="display:flex; align-items:center; gap:15px;">
             <button onclick="document.getElementById('fs-onb-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
             <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🎥 مسار Onboarding : <span id="fs-onb-student-name" style="color:var(--accent2);"></span></h2>
+            <div style="display:flex; background:rgba(0,0,0,0.05); padding:4px; border-radius:10px; gap:4px; margin-right:20px;">
+                <button class="fs-vbtn active" onclick="setFsView('vertical', this)">عمودي</button>
+                <button class="fs-vbtn" onclick="setFsView('board', this)">لعبة الأوز</button>
+                <button class="fs-vbtn" onclick="setFsView('stepper', this)">3D Stepper</button>
+            </div>
+            
         </div>
     </div>
     
@@ -10688,10 +11800,10 @@ async function openGhostFullscreenJourney(telegramId, ghostName) {
             <button onclick="document.getElementById('fs-journey-overlay').style.display='none'" style="background:var(--danger); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">✕ إغلاق</button>
             <h2 style="margin:0; font-size:1.2rem; color:var(--text1);">🛤️ مسار الطالب : <span id="fs-student-name" style="color:var(--accent2);"></span></h2>
         </div>
-        <div class="fs-view-selector">
-            <button class="fs-view-btn active" onclick="setFsView('metro')">🚇 خريطة المترو</button>
-            <button class="fs-view-btn" onclick="alert('En cours de développement !')">🎲 لعبة الإوزة</button>
-            <button class="fs-view-btn" onclick="alert('En cours de développement !')">🖥️ Stepper 3D</button>
+                <div class="fs-view-selector">
+            <button class="fs-vbtn active" onclick="setFsView('vertical', this)">عمودي</button>
+            <button class="fs-vbtn" onclick="setFsView('board', this)">لعبة الأوز</button>
+            <button class="fs-vbtn" onclick="setFsView('stepper', this)">3D Stepper</button>
         </div>
     </div>
     
