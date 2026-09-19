@@ -2109,28 +2109,33 @@
         </div>
     </div>
 
-    <!-- Modal: Historique de l'élève -->
+    <!-- Modal: Historique de l'élève / مسار الطالب -->
     <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2>📜 السجل والهوية</h2>
+        <div class="modal" style="max-width: 680px; width: 95%; max-height: 88vh; display: flex; flex-direction: column; padding: 18px; border-radius: 16px;">
+            <div class="modal-header" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
+                <h2 style="font-size: 1.15rem; color: var(--text1); display: flex; align-items: center; gap: 8px;">
+                    <span>🧭</span> مسار الخطوات وسجل النشاط
+                </h2>
                 <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✖</button>
             </div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                <div style="flex:1; min-width: 250px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
-                    <div id="modal-db-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
+                <div style="flex:1; min-width: 240px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.85rem; margin-bottom: 6px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
+                    <div id="modal-db-identity" style="font-size: 0.82rem; color:var(--text1); line-height: 1.6;">-</div>
                 </div>
-                <div style="flex:1; min-width: 250px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
-                    <div id="modal-tg-identity" style="font-size: 0.85rem; color:var(--text1); line-height: 1.6;">-</div>
+                <div style="flex:1; min-width: 240px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.25); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.85rem; margin-bottom: 6px; color:#0088cc;">✈️ هوية تيليجرام</h3>
+                    <div id="modal-tg-identity" style="font-size: 0.82rem; color:var(--text1); line-height: 1.6;">-</div>
                 </div>
             </div>
 
-            <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; max-height:300px;">
-                <h3 style="font-size: 0.9rem; margin-bottom: 8px; color:var(--text1);">📜 سجل النشاطات</h3>
-                <div id="logs-body" style="overflow-y:auto; flex:1;">
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; flex:1; min-height: 320px; overflow: hidden;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                    <h3 style="font-size: 0.88rem; margin:0; color:var(--text1); font-weight: bold;">📜 التتبع الزمني للخطوات (Timeline)</h3>
+                    <span id="timeline-steps-count" style="font-size:0.75rem; color:var(--text2);"></span>
+                </div>
+                <div id="logs-body" style="overflow-y:auto; flex:1; padding-right: 4px; padding-left: 4px;">
                     <div class="no-items">جاري التحميل...</div>
                 </div>
             </div>
@@ -2739,13 +2744,29 @@
                 
                 let dateStr = v.created_at || '';
                 try {
-                    dateStr = new Date(v.created_at + 'Z').toLocaleDateString('ar-EG', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                    const d = new Date(v.created_at + 'Z');
+                    if (!isNaN(d.getTime())) {
+                        const dd = String(d.getDate()).padStart(2, '0');
+                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                        const hh = String(d.getHours()).padStart(2, '0');
+                        const min = String(d.getMinutes()).padStart(2, '0');
+                        dateStr = `${dd}/${mm} à ${hh}:${min}`;
+                    }
                 } catch(e){}
 
                 let lastSeenStr = '';
                 if (v.last_time) {
                     try {
-                        lastSeenStr = new Date(v.last_time.replace(' ', 'T')).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+                        const d = new Date(v.last_time.replace(' ', 'T'));
+                        if (!isNaN(d.getTime())) {
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const hh = String(d.getHours()).padStart(2, '0');
+                            const min = String(d.getMinutes()).padStart(2, '0');
+                            lastSeenStr = `${dd}/${mm} à ${hh}:${min}`;
+                        } else {
+                            lastSeenStr = v.last_time;
+                        }
                     } catch(e) {
                         lastSeenStr = v.last_time;
                     }
@@ -2829,17 +2850,68 @@
             });
         }
 
+        function formatActionTypeArabic(type) {
+            const map = {
+                'ONBOARDING_PAGE_OPENED': { label: '🌐 فتح صفحة التأهيل', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)' },
+                'APP_OPENED': { label: '📱 فتح التطبيق', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)' },
+                'APP_OPENED_UNLINKED': { label: '📱 فتح التطبيق (غير مرتبط)', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' },
+                'ONBOARDING_COMMITMENT_CHECKED': { label: '✅ الموافقة على شروط الالتزام', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+                'ONBOARDING_VID1_STARTED': { label: '🎥 تشغيل الفيديو 1 (الترحيب والتعريف)', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)' },
+                'ONBOARDING_VID2_STARTED': { label: '🎥 تشغيل الفيديو 2 (النظام الدراسي)', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
+                'ONBOARDING_VID3_STARTED': { label: '🎥 تشغيل الفيديو 3 (طريقة المذاكرة)', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
+                'ONBOARDING_CHARTER_SIGNED': { label: '📜 توقيع الميثاق الطلابي', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' },
+                'ONBOARDING_FORM_REACHED': { label: '📝 الوصول إلى شاشة الربط (إدخال البيانات)', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
+                'ONBOARDING_INPUT_ERROR': { label: '⚠️ خطأ في مطابقة البيانات', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)' },
+                'ONBOARDING_LINK_SUCCESS': { label: '🎉 نجاح ربط الحساب', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'MANUAL_LINK': { label: '🔗 ربط يدوي بواسطة المشرف', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'MANUAL_UNLINK': { label: '⛓️ إلغاء الربط يدوياً', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)' },
+                'CRM_NOTE': { label: '📝 ملاحظة إدارية', color: '#0a84ff', bg: 'rgba(10, 132, 255, 0.12)' },
+                'EMAIL_SENT': { label: '✉️ إرسال بريد إلكتروني', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)' },
+                'WHATSAPP_SENT': { label: '💬 رسالة واتساب', color: '#25D366', bg: 'rgba(37, 211, 102, 0.12)' },
+                'SMS_SENT': { label: '📨 رسالة SMS', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
+                'TUTO_OPENED': { label: 'ℹ️ فتح دليل الشرح', color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' }
+            };
+
+            return map[type] || {
+                label: `📌 ${type || 'نشاط مسجل'}`,
+                color: '#64748b',
+                bg: 'rgba(100, 116, 139, 0.1)'
+            };
+        }
+
+        function formatLogTimestampFrenchDigits(ts) {
+            if (!ts) return '-';
+            try {
+                const date = new Date(ts.replace(' ', 'T'));
+                if (isNaN(date.getTime())) return ts;
+
+                // Format with French locale to guarantee Western Arabic numerals (0, 1, 2, 3...)
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+
+                return `${day}/${month}/${year} à ${hours}:${minutes}:${seconds}`;
+            } catch(e) {
+                return ts;
+            }
+        }
+
         async function viewVisitorFullJourney(telegram_id, displayName, student_id) {
             const modal = document.getElementById('student-logs-modal');
             const dbIdentity = document.getElementById('modal-db-identity');
             const tgIdentity = document.getElementById('modal-tg-identity');
             const logsBody = document.getElementById('logs-body');
+            const countSpan = document.getElementById('timeline-steps-count');
 
             if (!modal) return;
 
-            dbIdentity.innerHTML = student_id ? `<strong>المعرّف:</strong> ${student_id}<br><strong>الاسم:</strong> ${displayName}` : `<span style="color:var(--text2);">زائر مجهول (غير مرتبط بعد)</span>`;
-            tgIdentity.innerHTML = `<strong>Telegram ID:</strong> ${telegram_id}<br><strong>الاسم:</strong> ${displayName}`;
-            logsBody.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text2);">⏳ جاري جلب المسار الكامل من البداية...</div>';
+            dbIdentity.innerHTML = student_id ? `<strong>المعرّف:</strong> <span style="font-family:monospace; font-weight:bold;">${student_id}</span><br><strong>الاسم:</strong> ${displayName}` : `<span style="color:var(--text2);">زائر مجهول (غير مرتبط بعد)</span>`;
+            tgIdentity.innerHTML = `<strong>Telegram ID:</strong> <span style="font-family:monospace; font-weight:bold;">${telegram_id}</span><br><strong>الاسم:</strong> ${displayName}`;
+            logsBody.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري جلب المسار الكامل من البداية...</div></div>';
+            if (countSpan) countSpan.textContent = '';
             
             modal.style.display = 'flex';
 
@@ -2849,29 +2921,57 @@
                 const data = await res.json();
 
                 if (data.success && data.logs && data.logs.length > 0) {
-                    let html = `<div style="margin-bottom:8px; font-size:0.8rem; color:var(--accent); font-weight:bold;">📍 إجمالي الحركات والخطوات المسجلة: ${data.logs.length} خطوة</div>`;
-                    html += data.logs.map(l => {
-                        let dateStr = l.timestamp || '';
-                        try {
-                            dateStr = new Date(l.timestamp.replace(' ', 'T')).toLocaleString('ar-EG');
-                        } catch(e){}
+                    if (countSpan) countSpan.textContent = `${data.logs.length} خطوة مسجلة`;
+
+                    let html = `
+                        <div style="position:relative; padding:10px 10px 10px 20px;">
+                            <!-- Vertical Timeline Line -->
+                            <div style="position:absolute; right:27px; top:18px; bottom:18px; width:2px; background:var(--border); z-index:1;"></div>
+                    `;
+
+                    html += data.logs.map((l, index) => {
+                        const dateFormatted = formatLogTimestampFrenchDigits(l.timestamp);
+                        const act = formatActionTypeArabic(l.action_type);
+                        const isFirst = index === 0;
+
                         return `
-                            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                                    <span style="font-weight:bold; font-size:0.85rem; color:var(--text1);">${l.action_type}</span>
-                                    <span style="font-size:0.75rem; color:var(--text2); direction:ltr;">${dateStr}</span>
+                            <div style="position:relative; display:flex; gap:16px; margin-bottom:14px; z-index:2;">
+                                <!-- Timeline Node Bullet -->
+                                <div style="width:36px; height:36px; border-radius:50%; background:${act.bg}; color:${act.color}; border:2px solid ${act.color}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,0.06);">
+                                    ${isFirst ? '⭐' : '•'}
                                 </div>
-                                <div style="font-size:0.83rem; color:var(--text1); line-height:1.5;">${colorizeDescription ? colorizeDescription(l.description || '') : (l.description || '')}</div>
+
+                                <!-- Card Content -->
+                                <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                                        <span style="font-weight:bold; font-size:0.88rem; color:${act.color}; background:${act.bg}; padding:3px 10px; border-radius:8px; border:1px solid ${act.color}33;">
+                                            ${act.label}
+                                        </span>
+                                        <span dir="ltr" style="font-size:0.75rem; color:var(--text2); font-family:monospace; background:var(--bg); padding:2px 8px; border-radius:6px; border:1px solid var(--border);">
+                                            🕒 ${dateFormatted}
+                                        </span>
+                                    </div>
+                                    <div style="font-size:0.84rem; color:var(--text1); line-height:1.6;">
+                                        ${colorizeDescription ? colorizeDescription(l.description || '') : (l.description || '')}
+                                    </div>
+                                </div>
                             </div>
                         `;
                     }).join('');
+
+                    html += `</div>`;
                     logsBody.innerHTML = html;
                 } else {
-                    logsBody.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text2);">لا توجد حركات مسجلة في قاعدة البيانات لهذا المستخدم بعد.</div>';
+                    logsBody.innerHTML = `
+                        <div style="text-align:center; padding:40px 20px; color:var(--text2);">
+                            <div style="font-size:2.5rem; margin-bottom:8px;">📭</div>
+                            <div>لا توجد حركات مسجلة في قاعدة البيانات لهذا المستخدم بعد.</div>
+                        </div>
+                    `;
                 }
             } catch(e) {
                 console.error('Error fetching full journey:', e);
-                logsBody.innerHTML = '<div style="color:#ef4444; text-align:center; padding:20px;">❌ خطأ في جلب السجل</div>';
+                logsBody.innerHTML = '<div style="color:#ef4444; text-align:center; padding:20px;">❌ خطأ في الاتصال بالسيرفر وجلب السجل</div>';
             }
         }
 
