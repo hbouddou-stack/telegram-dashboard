@@ -5552,6 +5552,8 @@ async def api_link_account(request: web.Request):
     import logging
     _log = logging.getLogger('bot')
     
+    bot = request.app.get('bot')
+
     try:
         data = await request.json()
         email = data.get('email', '').strip().lower()
