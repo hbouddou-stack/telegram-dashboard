@@ -1075,9 +1075,10 @@
                 
                 <!-- View Toggle (50%) -->
                 <div style="flex:1; display:flex; border-radius:12px; border:1px solid var(--border); overflow:hidden; font-family:'Tajawal', inherit;">
-                    <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1);">بطاقات</div>
-                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);">جدول</div>
-                    <div id="view-toggle-kanban" onclick="changeViewMode('kanban')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.9rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);">مسار (CRM)</div>
+                    <div id="view-toggle-grid" onclick="changeViewMode('grid')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.88rem; font-weight:bold; background:var(--surface); color:var(--text1);">بطاقات</div>
+                    <div id="view-toggle-table" onclick="changeViewMode('table')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.88rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);">جدول</div>
+                    <div id="view-toggle-kanban" onclick="changeViewMode('kanban')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.88rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);">مسار (CRM)</div>
+                    <div id="view-toggle-panoramic" onclick="changeViewMode('panoramic')" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; font-size:0.88rem; font-weight:bold; background:var(--surface); color:var(--text1); border-right:1px solid var(--border);" title="بانوراما ومسار التدفق لدفعة الطلاب">📊 بانوراما</div>
                 </div>
             </div>
             
@@ -1294,16 +1295,27 @@
                 
                 let vT = document.getElementById('view-toggle-table');
                 let vG = document.getElementById('view-toggle-grid');
+                let vK = document.getElementById('view-toggle-kanban');
+                let vP = document.getElementById('view-toggle-panoramic');
                 let hint = document.getElementById('scroll-hint');
                 
                 if(vT && vG) {
+                    vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
+                    vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
+                    if(vK) { vK.style.background = 'var(--surface)'; vK.style.color = 'var(--text1)'; }
+                    if(vP) { vP.style.background = 'var(--surface)'; vP.style.color = 'var(--text1)'; }
+                    
                     if(mode === 'table') {
                         vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
-                        vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
                         if(hint) hint.style.display = 'block';
+                    } else if(mode === 'kanban') {
+                        if(vK) { vK.style.background = 'var(--accent2)'; vK.style.color = 'white'; }
+                        if(hint) hint.style.display = 'none';
+                    } else if(mode === 'panoramic') {
+                        if(vP) { vP.style.background = 'var(--accent2)'; vP.style.color = 'white'; }
+                        if(hint) hint.style.display = 'none';
                     } else {
                         vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
-                        vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
                         if(hint) hint.style.display = 'none';
                     }
                 }
@@ -1424,18 +1436,23 @@
                 let vT = document.getElementById('view-toggle-table');
                 let vG = document.getElementById('view-toggle-grid');
                 let vK = document.getElementById('view-toggle-kanban');
+                let vP = document.getElementById('view-toggle-panoramic');
                 let hint = document.getElementById('scroll-hint');
 
                 if(vT && vG && vK) {
                     vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
                     vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
                     vK.style.background = 'var(--surface)'; vK.style.color = 'var(--text1)';
+                    if(vP) { vP.style.background = 'var(--surface)'; vP.style.color = 'var(--text1)'; }
 
                     if(mode === 'table') {
                         vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
                         if(hint) hint.style.display = 'block';
                     } else if(mode === 'kanban') {
                         vK.style.background = 'var(--accent2)'; vK.style.color = 'white';
+                        if(hint) hint.style.display = 'none';
+                    } else if(mode === 'panoramic') {
+                        if(vP) { vP.style.background = 'var(--accent2)'; vP.style.color = 'white'; }
                         if(hint) hint.style.display = 'none';
                     } else {
                         vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
@@ -4797,18 +4814,23 @@
                 let vT = document.getElementById('view-toggle-table');
                 let vG = document.getElementById('view-toggle-grid');
                 let vK = document.getElementById('view-toggle-kanban');
+                let vP = document.getElementById('view-toggle-panoramic');
                 let hint = document.getElementById('scroll-hint');
 
                 if(vT && vG && vK) {
                     vT.style.background = 'var(--surface)'; vT.style.color = 'var(--text1)';
                     vG.style.background = 'var(--surface)'; vG.style.color = 'var(--text1)';
                     vK.style.background = 'var(--surface)'; vK.style.color = 'var(--text1)';
+                    if(vP) { vP.style.background = 'var(--surface)'; vP.style.color = 'var(--text1)'; }
 
                     if(mode === 'table') {
                         vT.style.background = 'var(--accent2)'; vT.style.color = 'white';
                         if(hint) hint.style.display = 'block';
                     } else if(mode === 'kanban') {
                         vK.style.background = 'var(--accent2)'; vK.style.color = 'white';
+                        if(hint) hint.style.display = 'none';
+                    } else if(mode === 'panoramic') {
+                        if(vP) { vP.style.background = 'var(--accent2)'; vP.style.color = 'white'; }
                         if(hint) hint.style.display = 'none';
                     } else {
                         vG.style.background = 'var(--accent2)'; vG.style.color = 'white';
@@ -5360,6 +5382,594 @@ function setKanbanBoard(board) {
     window.currentKanbanBoard = board;
     if (typeof filterStudents === 'function') filterStudents();
 }
+
+
+// Global state for Panoramic Funnel View
+window.panoramicGenderFilter = window.panoramicGenderFilter || 'all';
+window.panoramicSelectedStep = window.panoramicSelectedStep !== undefined ? window.panoramicSelectedStep : null;
+
+function isStudentPaid(s) {
+    if (!s) return false;
+    const ps = String(s.payment_status || '').toUpperCase().trim();
+    return ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(ps) || 
+           (ps.includes('مسدد') && !ps.includes('غير مسدد')) || 
+           ps.includes('✅');
+}
+
+function getStudentOnboardingStage(s) {
+    // Returns stage number 0 to 9, and whether there is an input error
+    // 0: لم يبدأ بعد
+    // 1: فتح صفحة التأهيل
+    // 2: الموافقة على التعهد
+    // 3: فيديو 1 (تثبيت تليجرام)
+    // 4: فيديو 2 (إدخال البيانات)
+    // 5: فيديو 3 (المجموعات والقنوات)
+    // 6: ميثاق الشرف
+    // 7: توقيع الميثاق
+    // 8: شاشة الربط
+    // 9: اكتمال الربط بنجاح (مربوط)
+    if (!s) return { step: 0, hasError: false };
+
+    const isLinked = !!s.telegram_id || (s.group_joined == 1 || String(s.group_joined).toLowerCase() === 'true');
+    if (isLinked) {
+        return { step: 9, hasError: false };
+    }
+
+    const step = String(s.last_onboarding_step || '').toUpperCase();
+    const detail = String(s.last_onboarding_detail || '').toUpperCase();
+    const hasError = step.includes('ERROR') || step.includes('FAIL') || detail.includes('ERROR');
+
+    if (hasError) {
+        return { step: 8, hasError: true };
+    }
+    if (step.includes('FORM') || step.includes('STEP_4')) {
+        return { step: 8, hasError: false };
+    }
+    if (step.includes('APPROVED') || step.includes('SIGN') || step.includes('STEP_3_CHARTER_APPROVED')) {
+        return { step: 7, hasError: false };
+    }
+    if (step.includes('CHARTER') || step.includes('STEP_3')) {
+        return { step: 6, hasError: false };
+    }
+    if (step.includes('VID_3') || step.includes('VID3') || step.includes('STEP_2_VID_3')) {
+        return { step: 5, hasError: false };
+    }
+    if (step.includes('VID_2') || step.includes('VID2') || step.includes('STEP_2_VID_2')) {
+        return { step: 4, hasError: false };
+    }
+    if (step.includes('VID_1') || step.includes('VID1') || step.includes('STEP_2_VID_1')) {
+        return { step: 3, hasError: false };
+    }
+    if (step.includes('COMMITMENT') || step.includes('STEP_1')) {
+        return { step: 2, hasError: false };
+    }
+    if (step.includes('OPEN') || step.includes('PAGE_OPENED')) {
+        return { step: 1, hasError: false };
+    }
+    return { step: 0, hasError: false };
+}
+
+function setPanoramicGender(gender) {
+    window.panoramicGenderFilter = gender;
+    window.panoramicSelectedStep = null; // reset selected step filter on gender change
+    if (typeof filterStudents === 'function') filterStudents();
+}
+
+function selectPanoramicStep(stepNum) {
+    if (window.panoramicSelectedStep === stepNum) {
+        window.panoramicSelectedStep = null; // toggle off
+    } else {
+        window.panoramicSelectedStep = stepNum;
+    }
+    if (typeof filterStudents === 'function') filterStudents();
+}
+
+function renderPanoramicFunnelView(listElement, filteredStudents) {
+    listElement.innerHTML = '';
+
+    // 1. Gender Filter handling
+    const gFilter = window.panoramicGenderFilter || 'all';
+    let cohort = filteredStudents.filter(s => {
+        if (gFilter === 'all') return true;
+        const g = String(s.gender || '').toLowerCase();
+        const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
+        const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنثى');
+        if (gFilter === 'men') return isM;
+        if (gFilter === 'women') return isF;
+        return true;
+    });
+
+    // 2. Metrics & Classification
+    // We consider Paid Students as the baseline of the Funnel
+    const totalCohort = cohort.length;
+    const paidStudents = cohort.filter(s => isStudentPaid(s));
+    const unpaidStudents = cohort.filter(s => !isStudentPaid(s));
+    const totalPaid = paidStudents.length;
+
+    // Steps 1 to 9 definitions
+    const stepDefinitions = [
+        { num: 1, name: 'فتح صفحة التأهيل', icon: '🚪', desc: 'دخول رابط التأهيل والتفعيل لأول مرة' },
+        { num: 2, name: 'الموافقة على التعهد', icon: '✍️', desc: 'قراءة شروط البداية والالتزام' },
+        { num: 3, name: 'فيديو 1: تثبيت تليجرام', icon: '📱', desc: 'مشاهدة فيديو تنصيب التطبيق وتجهيزه' },
+        { num: 4, name: 'فيديو 2: إدخال البيانات', icon: '📝', desc: 'شرح إدخال المعرف الدراسي وكيفية الربط' },
+        { num: 5, name: 'فيديو 3: مجموعات الدفعة', icon: '👥', desc: 'التعرف على القنوات والمجموعات الرسمية' },
+        { num: 6, name: 'قراءة ميثاق الشرف', icon: '📜', desc: 'الاطلاع على بنود وقوانين الأكاديمية' },
+        { num: 7, name: 'توقيع ميثاق الشرف', icon: '🖋️', desc: 'الموافقة الرسمية والتوقيع الإلكتروني' },
+        { num: 8, name: 'شاشة إدخال المعرف والربط', icon: '🔑', desc: 'إدخال رقم مسار/المعرف في النموذج' },
+        { num: 9, name: 'اكتمال الربط بنجاح ✅', icon: '🎉', desc: 'تفعيل الحساب وبدء البوت والانضمام' }
+    ];
+
+    // Compute student stages for all paid students
+    // A student is at max reached step: s.stage.step
+    // They have "reached" all steps <= s.stage.step
+    const studentStages = paidStudents.map(s => {
+        const info = getStudentOnboardingStage(s);
+        return { student: s, stage: info.step, hasError: info.hasError };
+    });
+
+    // Counts of students currently halted at each step
+    const currentAtStep = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+    // Counts of students who reached at least this step
+    const reachedStep = { 0: totalPaid, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+    let errorsAtStep8 = 0;
+
+    studentStages.forEach(item => {
+        currentAtStep[item.stage] = (currentAtStep[item.stage] || 0) + 1;
+        if (item.hasError) errorsAtStep8++;
+        for (let i = 1; i <= item.stage; i++) {
+            reachedStep[i] = (reachedStep[i] || 0) + 1;
+        }
+    });
+
+    const totalCompleted = reachedStep[9] || 0;
+    const globalConversionRate = totalPaid > 0 ? Math.round((totalCompleted / totalPaid) * 100) : 0;
+    const unstartedCount = currentAtStep[0] || 0;
+
+    // 3. Build UI Container
+    const mainWrap = document.createElement('div');
+    mainWrap.style.display = 'flex';
+    mainWrap.style.flexDirection = 'column';
+    mainWrap.style.gap = '20px';
+    mainWrap.style.direction = 'rtl';
+    mainWrap.style.fontFamily = "'Tajawal', inherit";
+
+    // --- Header & Gender Filter Bar ---
+    const headerBar = document.createElement('div');
+    headerBar.style.display = 'flex';
+    headerBar.style.justifyContent = 'space-between';
+    headerBar.style.alignItems = 'center';
+    headerBar.style.flexWrap = 'wrap';
+    headerBar.style.gap = '15px';
+    headerBar.style.background = 'var(--surface)';
+    headerBar.style.padding = '16px 20px';
+    headerBar.style.borderRadius = '16px';
+    headerBar.style.border = '1px solid var(--border)';
+    headerBar.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
+
+    const headerTitle = document.createElement('div');
+    headerTitle.innerHTML = `
+        <div style="font-size:1.25rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:10px;">
+            <span>📊</span>
+            <span>بانوراما التدفق والتحويل للدفعة (Macro Cohort Funnel)</span>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text2); margin-top:3px;">
+            تتبع مسار كافة الطلاب المسددين خطوة بخطوة من البداية حتى تفعيل البوت واكتشاف نقاط الانسحاب
+        </div>
+    `;
+
+    // Gender Switcher
+    const genderSwitcher = document.createElement('div');
+    genderSwitcher.style.display = 'flex';
+    genderSwitcher.style.background = 'var(--surface2)';
+    genderSwitcher.style.borderRadius = '12px';
+    genderSwitcher.style.padding = '4px';
+    genderSwitcher.style.border = '1px solid var(--border)';
+    genderSwitcher.style.gap = '4px';
+
+    const genderButtons = [
+        { id: 'all', label: '👥 كل الدفعة (' + cohort.length + ')' },
+        { id: 'men', label: '👨 بنين' },
+        { id: 'women', label: '👩 بنات' }
+    ];
+
+    genderButtons.forEach(gb => {
+        const btn = document.createElement('button');
+        btn.textContent = gb.label;
+        btn.onclick = () => setPanoramicGender(gb.id);
+        btn.style.padding = '8px 16px';
+        btn.style.borderRadius = '8px';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.style.fontWeight = 'bold';
+        btn.style.fontSize = '0.85rem';
+        btn.style.transition = 'all 0.2s ease';
+        if (gFilter === gb.id) {
+            btn.style.background = 'var(--accent2)';
+            btn.style.color = '#ffffff';
+            btn.style.boxShadow = '0 2px 8px rgba(99,102,241,0.3)';
+        } else {
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--text2)';
+        }
+        genderSwitcher.appendChild(btn);
+    });
+
+    headerBar.appendChild(headerTitle);
+    headerBar.appendChild(genderSwitcher);
+    mainWrap.appendChild(headerBar);
+
+    // --- KPI Overview Cards ---
+    const kpiGrid = document.createElement('div');
+    kpiGrid.style.display = 'grid';
+    kpiGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(210px, 1fr))';
+    kpiGrid.style.gap = '15px';
+
+    const kpis = [
+        {
+            title: 'إجمالي المسددين (نقطة البداية)',
+            value: totalPaid,
+            sub: 'من أصل ' + totalCohort + ' مسجل في الفلتر الحالي',
+            color: '#3b82f6',
+            icon: '💳'
+        },
+        {
+            title: 'بدأوا التأهيل',
+            value: reachedStep[1],
+            sub: Math.round((reachedStep[1] / (totalPaid || 1)) * 100) + '% من المسددين فتحوا الرابط',
+            color: '#8b5cf6',
+            icon: '🚀'
+        },
+        {
+            title: 'أكملوا الربط بنجاح ✅',
+            value: totalCompleted,
+            sub: 'معدل النجاح الكلي: ' + globalConversionRate + '%',
+            color: '#10b981',
+            icon: '🎉'
+        },
+        {
+            title: 'توقفوا أو بحاجة لدعم',
+            value: (totalPaid - totalCompleted),
+            sub: errorsAtStep8 > 0 ? ('⚠️ ' + errorsAtStep8 + ' خطأ في المعرف') : 'بين مختلف المحطات',
+            color: '#f59e0b',
+            icon: '⏳'
+        }
+    ];
+
+    kpis.forEach(k => {
+        const card = document.createElement('div');
+        card.style.background = 'var(--surface)';
+        card.style.border = '1px solid var(--border)';
+        card.style.borderRadius = '14px';
+        card.style.padding = '16px';
+        card.style.display = 'flex';
+        card.style.alignItems = 'center';
+        card.style.gap = '14px';
+        card.style.boxShadow = '0 2px 10px rgba(0,0,0,0.02)';
+        card.innerHTML = `
+            <div style="width:48px; height:48px; border-radius:12px; background:${k.color}15; color:${k.color}; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0;">
+                ${k.icon}
+            </div>
+            <div>
+                <div style="font-size:0.8rem; color:var(--text2); font-weight:600;">${k.title}</div>
+                <div style="font-size:1.6rem; font-weight:800; color:var(--text1); line-height:1.2; margin:2px 0;">${k.value}</div>
+                <div style="font-size:0.75rem; color:var(--text2);">${k.sub}</div>
+            </div>
+        `;
+        kpiGrid.appendChild(card);
+    });
+    mainWrap.appendChild(kpiGrid);
+
+    // --- Starting Pool Card: Step 0 (المسددون الذين لم يفتحوا الرابط بعد) ---
+    const startingPoolDiv = document.createElement('div');
+    startingPoolDiv.style.background = 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.04))';
+    startingPoolDiv.style.border = '1px solid rgba(59,130,246,0.25)';
+    startingPoolDiv.style.borderRadius = '16px';
+    startingPoolDiv.style.padding = '18px 24px';
+    startingPoolDiv.style.display = 'flex';
+    startingPoolDiv.style.alignItems = 'center';
+    startingPoolDiv.style.justifyContent = 'space-between';
+    startingPoolDiv.style.flexWrap = 'wrap';
+    startingPoolDiv.style.gap = '15px';
+
+    const isStep0Selected = window.panoramicSelectedStep === 0;
+    startingPoolDiv.innerHTML = `
+        <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:50px; height:50px; border-radius:14px; background:#3b82f6; color:white; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; box-shadow:0 4px 12px rgba(59,130,246,0.3);">
+                0
+            </div>
+            <div>
+                <div style="font-size:1.1rem; font-weight:800; color:var(--text1); display:flex; align-items:center; gap:8px;">
+                    <span>حوض البداية: الطلاب المسددون (Paid Students Pool)</span>
+                    <span style="font-size:0.8rem; background:#3b82f6; color:white; padding:2px 8px; border-radius:12px;">نقطة الانطلاق 100%</span>
+                </div>
+                <div style="font-size:0.85rem; color:var(--text2); margin-top:4px;">
+                    العدد الكلي المؤهل للانطلاق: <strong style="color:var(--text1);">${totalPaid} طالب</strong>
+                    ${unstartedCount > 0 ? ` • <span style="color:#ef4444; font-weight:bold;">${unstartedCount} طالب</span> لم يفتحوا الرابط إطلاقاً حتى الآن` : ' • جميع الطلاب فتحوا الرابط على الأقل مرة واحدة'}
+                </div>
+            </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="selectPanoramicStep(0)" style="background:${isStep0Selected ? '#3b82f6' : 'var(--surface)'}; color:${isStep0Selected ? 'white' : '#3b82f6'}; border:1px solid #3b82f6; padding:8px 16px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <span>${isStep0Selected ? 'إلغاء التحديد ✕' : 'عرض المتوقفين هنا (' + unstartedCount + ')'}</span>
+            </button>
+        </div>
+    `;
+    mainWrap.appendChild(startingPoolDiv);
+
+    // --- 9-Step Visual Funnel Grid / Waterfall ---
+    const funnelSection = document.createElement('div');
+    funnelSection.style.background = 'var(--surface)';
+    funnelSection.style.border = '1px solid var(--border)';
+    funnelSection.style.borderRadius = '16px';
+    funnelSection.style.padding = '22px';
+    funnelSection.style.boxShadow = '0 4px 20px rgba(0,0,0,0.03)';
+
+    const funnelHeader = document.createElement('div');
+    funnelHeader.style.display = 'flex';
+    funnelHeader.style.justifyContent = 'space-between';
+    funnelHeader.style.alignItems = 'center';
+    funnelHeader.style.marginBottom = '20px';
+    funnelHeader.style.borderBottom = '1px solid var(--border)';
+    funnelHeader.style.paddingBottom = '12px';
+    funnelHeader.innerHTML = `
+        <div style="font-size:1.1rem; font-weight:800; color:var(--text1);">
+            🛤️ محطات مسار التأهيل التسع (The 9 Stages of Onboarding)
+        </div>
+        <div style="font-size:0.8rem; color:var(--text2);">
+            💡 انقر على أي مرحلة لتصفية قائمة الطلاب أسفله وعرض المعنيين بها فوراً
+        </div>
+    `;
+    funnelSection.appendChild(funnelHeader);
+
+    const stepsList = document.createElement('div');
+    stepsList.style.display = 'flex';
+    stepsList.style.flexDirection = 'column';
+    stepsList.style.gap = '14px';
+
+    stepDefinitions.forEach(step => {
+        const reached = reachedStep[step.num] || 0;
+        const reachedPct = totalPaid > 0 ? Math.round((reached / totalPaid) * 100) : 0;
+        const currentHere = currentAtStep[step.num] || 0;
+        
+        // Calculate drop-off from previous step
+        const prevReached = step.num === 1 ? totalPaid : (reachedStep[step.num - 1] || 0);
+        const dropCount = Math.max(0, prevReached - reached);
+        const dropPct = prevReached > 0 ? Math.round((dropCount / prevReached) * 100) : 0;
+
+        const isSelected = window.panoramicSelectedStep === step.num;
+
+        // Step Colors
+        let stepColor = '#6366f1';
+        if (step.num === 8 && errorsAtStep8 > 0) stepColor = '#f59e0b';
+        if (step.num === 9) stepColor = '#10b981';
+
+        const stepRow = document.createElement('div');
+        stepRow.onclick = () => selectPanoramicStep(step.num);
+        stepRow.style.background = isSelected ? 'rgba(99,102,241,0.08)' : 'var(--surface2)';
+        stepRow.style.border = isSelected ? '2px solid var(--accent2)' : '1px solid var(--border)';
+        stepRow.style.borderRadius = '14px';
+        stepRow.style.padding = '14px 18px';
+        stepRow.style.cursor = 'pointer';
+        stepRow.style.transition = 'all 0.2s ease';
+        stepRow.style.display = 'flex';
+        stepRow.style.flexDirection = 'column';
+        stepRow.style.gap = '10px';
+
+        stepRow.onmouseenter = () => { if (!isSelected) stepRow.style.borderColor = 'var(--accent2)'; };
+        stepRow.onmouseleave = () => { if (!isSelected) stepRow.style.borderColor = 'var(--border)'; };
+
+        // Main info bar
+        const mainBar = document.createElement('div');
+        mainBar.style.display = 'flex';
+        mainBar.style.alignItems = 'center';
+        mainBar.style.justifyContent = 'space-between';
+        mainBar.style.flexWrap = 'wrap';
+        mainBar.style.gap = '10px';
+
+        mainBar.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:${stepColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0;">
+                    ${step.num}
+                </div>
+                <div>
+                    <div style="font-weight:800; font-size:1.0rem; color:var(--text1); display:flex; align-items:center; gap:8px;">
+                        <span>${step.icon}</span>
+                        <span>${step.name}</span>
+                        ${step.num === 8 && errorsAtStep8 > 0 ? `<span style="font-size:0.75rem; background:#fee2e2; color:#dc2626; padding:2px 8px; border-radius:10px; font-weight:bold;">⚠️ ${errorsAtStep8} أخطاء إدخال</span>` : ''}
+                        ${isSelected ? '<span style="font-size:0.75rem; background:var(--accent2); color:white; padding:2px 8px; border-radius:10px;">محدد حالياً</span>' : ''}
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text2); margin-top:2px;">
+                        ${step.desc}
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div style="text-align:center;">
+                    <div style="font-size:0.75rem; color:var(--text2);">وصلوا لهذه المحطة</div>
+                    <div style="font-size:1.2rem; font-weight:800; color:var(--text1);">${reached} <span style="font-size:0.8rem; color:var(--text2);">(${reachedPct}%)</span></div>
+                </div>
+                <div style="text-align:center; min-width:90px;">
+                    <div style="font-size:0.75rem; color:var(--text2);">متوقفون هنا الآن</div>
+                    <div style="font-size:1.2rem; font-weight:800; color:${currentHere > 0 ? '#ef4444' : 'var(--text2)'};">${currentHere}</div>
+                </div>
+                ${step.num > 1 ? `
+                    <div style="text-align:center; min-width:85px;">
+                        <div style="font-size:0.75rem; color:var(--text2);">تسرب (Drop-off)</div>
+                        <div style="font-size:0.95rem; font-weight:700; color:${dropCount > 0 ? '#dc2626' : '#16a34a'};">
+                            ${dropCount > 0 ? `-${dropCount} (${dropPct}%)` : '0%'}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        // Progress Visual Bar
+        const barWrap = document.createElement('div');
+        barWrap.style.width = '100%';
+        barWrap.style.height = '10px';
+        barWrap.style.background = 'rgba(0,0,0,0.06)';
+        barWrap.style.borderRadius = '6px';
+        barWrap.style.overflow = 'hidden';
+        barWrap.style.position = 'relative';
+
+        const fillBar = document.createElement('div');
+        fillBar.style.height = '100%';
+        fillBar.style.width = reachedPct + '%';
+        fillBar.style.background = `linear-gradient(90deg, ${stepColor}, #a855f7)`;
+        fillBar.style.borderRadius = '6px';
+        fillBar.style.transition = 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+
+        barWrap.appendChild(fillBar);
+        stepRow.appendChild(mainBar);
+        stepRow.appendChild(barWrap);
+        stepsList.appendChild(stepRow);
+    });
+
+    funnelSection.appendChild(stepsList);
+    mainWrap.appendChild(funnelSection);
+
+    // --- Filtered Students Table below Funnel ---
+    const studentsTableSection = document.createElement('div');
+    studentsTableSection.style.background = 'var(--surface)';
+    studentsTableSection.style.border = '1px solid var(--border)';
+    studentsTableSection.style.borderRadius = '16px';
+    studentsTableSection.style.padding = '22px';
+    studentsTableSection.style.boxShadow = '0 4px 20px rgba(0,0,0,0.03)';
+
+    // Filter students based on selected step (or show all paid if no step selected)
+    let displayList = [];
+    let tableTitle = '';
+
+    if (window.panoramicSelectedStep === null) {
+        displayList = paidStudents;
+        tableTitle = `📋 قائمة الطلاب المسددين (${paidStudents.length} طالب) - انقر على محطة بالأعلى لتصفيتهم`;
+    } else if (window.panoramicSelectedStep === 0) {
+        displayList = paidStudents.filter(s => getStudentOnboardingStage(s).step === 0);
+        tableTitle = `🔴 الطلاب المتوقفون عند حوض البداية ولم يفتحوا الرابط بعد (${displayList.length} طالب)`;
+    } else {
+        const selStep = window.panoramicSelectedStep;
+        displayList = paidStudents.filter(s => getStudentOnboardingStage(s).step === selStep);
+        const selName = stepDefinitions.find(st => st.num === selStep)?.name || ('محطة ' + selStep);
+        tableTitle = `📍 الطلاب المتوقفون حالياً عند المحطة [${selStep}]: ${selName} (${displayList.length} طالب)`;
+    }
+
+    const tableHeaderDiv = document.createElement('div');
+    tableHeaderDiv.style.display = 'flex';
+    tableHeaderDiv.style.justifyContent = 'space-between';
+    tableHeaderDiv.style.alignItems = 'center';
+    tableHeaderDiv.style.flexWrap = 'wrap';
+    tableHeaderDiv.style.gap = '10px';
+    tableHeaderDiv.style.marginBottom = '16px';
+    tableHeaderDiv.innerHTML = `
+        <div style="font-size:1.05rem; font-weight:800; color:var(--text1);">
+            ${tableTitle}
+        </div>
+        <div style="display:flex; gap:10px;">
+            ${window.panoramicSelectedStep !== null ? `
+                <button onclick="selectPanoramicStep(${window.panoramicSelectedStep})" style="background:var(--surface2); color:var(--text1); border:1px solid var(--border); padding:6px 12px; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:bold;">
+                    إظهار كل المسددين ✕
+                </button>
+            ` : ''}
+            <button onclick="navigator.clipboard.writeText(${JSON.stringify(displayList.map(s => s.email).filter(Boolean).join(','))}); alert('تم نسخ إيميلات ' + ${displayList.length} + ' طالب بنجاح');" style="background:rgba(99,102,241,0.12); color:#6366f1; border:1px solid rgba(99,102,241,0.3); padding:6px 14px; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">
+                <span>📧</span> نسخ الإيميلات (${displayList.length})
+            </button>
+            <button onclick="navigator.clipboard.writeText(${JSON.stringify(displayList.map(s => s.phone).filter(Boolean).join(','))}); alert('تم نسخ أرقام ' + ${displayList.length} + ' طالب بنجاح');" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:6px 14px; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:6px;">
+                <span>📱</span> نسخ الأرقام (${displayList.length})
+            </button>
+        </div>
+    `;
+    studentsTableSection.appendChild(tableHeaderDiv);
+
+    if (displayList.length === 0) {
+        const emptyNotice = document.createElement('div');
+        emptyNotice.style.padding = '30px';
+        emptyNotice.style.textAlign = 'center';
+        emptyNotice.style.color = 'var(--text2)';
+        emptyNotice.style.fontSize = '0.95rem';
+        emptyNotice.textContent = 'لا يوجد أي طالب متوقف عند هذه المحطة حالياً.';
+        studentsTableSection.appendChild(emptyNotice);
+    } else {
+        const tableWrapper = document.createElement('div');
+        tableWrapper.style.overflowX = 'auto';
+        tableWrapper.style.maxHeight = '500px';
+        tableWrapper.style.overflowY = 'auto';
+        tableWrapper.style.borderRadius = '10px';
+        tableWrapper.style.border = '1px solid var(--border)';
+
+        const table = document.createElement('table');
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        table.style.fontSize = '0.85rem';
+        table.style.background = 'var(--surface)';
+
+        table.innerHTML = `
+            <thead style="background:var(--surface2); position:sticky; top:0; z-index:2; border-bottom:1px solid var(--border);">
+                <tr>
+                    <th style="padding:10px 12px; text-align:right;">#</th>
+                    <th style="padding:10px 12px; text-align:right;">الاسم الكامل</th>
+                    <th style="padding:10px 12px; text-align:right;">المعرف الدراسي</th>
+                    <th style="padding:10px 12px; text-align:right;">الجنس</th>
+                    <th style="padding:10px 12px; text-align:right;">المحطة الحالية</th>
+                    <th style="padding:10px 12px; text-align:right;">حالة تليجرام</th>
+                    <th style="padding:10px 12px; text-align:center;">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+
+        const tbody = table.querySelector('tbody');
+        displayList.forEach((s, idx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border)';
+            tr.style.transition = 'background 0.15s ease';
+            tr.onmouseenter = () => tr.style.background = 'var(--surface2)';
+            tr.onmouseleave = () => tr.style.background = 'transparent';
+
+            const stageInfo = getStudentOnboardingStage(s);
+            let stageBadge = `<span style="background:rgba(99,102,241,0.12); color:#6366f1; padding:3px 8px; border-radius:8px; font-weight:bold; font-size:0.78rem;">المحطة ${stageInfo.step}</span>`;
+            if (stageInfo.step === 0) {
+                stageBadge = `<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:8px; font-weight:bold; font-size:0.78rem;">لم يبدأ (0)</span>`;
+            } else if (stageInfo.step === 9) {
+                stageBadge = `<span style="background:#dcfce7; color:#16a34a; padding:3px 8px; border-radius:8px; font-weight:bold; font-size:0.78rem;">مكتمل (9) ✅</span>`;
+            } else if (stageInfo.hasError) {
+                stageBadge = `<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:8px; font-weight:bold; font-size:0.78rem;">⚠️ خطأ معرف (8)</span>`;
+            }
+
+            const g = String(s.gender || '').toLowerCase();
+            const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
+            const genderLabel = isM ? '👨 ذكر' : '👩 أنثى';
+
+            const tgStatus = s.telegram_id ? `<span style="color:#10b981; font-weight:bold;">مربوط (${s.telegram_id})</span>` : `<span style="color:var(--text2);">غير مربوط</span>`;
+
+            tr.innerHTML = `
+                <td style="padding:10px 12px; color:var(--text2); font-weight:bold;">${idx + 1}</td>
+                <td style="padding:10px 12px; font-weight:bold; color:var(--text1);">${(s.first_name || '') + ' ' + (s.last_name || '')}</td>
+                <td style="padding:10px 12px; font-family:monospace; color:var(--text1);">${s.student_id || s.academic_id || '-'}</td>
+                <td style="padding:10px 12px;">${genderLabel}</td>
+                <td style="padding:10px 12px;">${stageBadge}</td>
+                <td style="padding:10px 12px;">${tgStatus}</td>
+                <td style="padding:10px 12px; text-align:center;">
+                    <button onclick="openStudentCard(allStudents.find(st => st.student_id === '${s.student_id}') || ${JSON.stringify(s).replace(/"/g, '&quot;')})" style="background:var(--surface2); border:1px solid var(--border); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem; font-weight:bold; color:var(--text1);" title="عرض الملف">
+                        👤 الملف
+                    </button>
+                    ${s.telegram_id ? `
+                        <button onclick="openGhostFullscreenJourney('${s.telegram_id}', '${((s.first_name || '') + ' ' + (s.last_name || '')).replace(/'/g, "\'")}')" style="background:var(--accent2); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem; font-weight:bold; margin-right:4px;" title="عرض مسار الرحلة">
+                            🛤️ الرحلة
+                        </button>
+                    ` : ''}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        tableWrapper.appendChild(table);
+        studentsTableSection.appendChild(tableWrapper);
+    }
+
+    mainWrap.appendChild(studentsTableSection);
+    listElement.appendChild(mainWrap);
+}
+
 
 function renderKanbanView(listElement, filtered) {
     // 1. Define Boards
@@ -6216,6 +6826,11 @@ function filterStudents() {
             }
             
             
+            if (currentViewMode === 'panoramic') {
+                renderPanoramicFunnelView(list, filtered);
+                return;
+            }
+
             if (currentViewMode === 'kanban') {
                 renderKanbanView(list, filtered);
                 return;
