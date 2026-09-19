@@ -1150,10 +1150,22 @@
                 </div>
             </div>
 
+            <!-- Mode Toggle: Unlinked vs Linked -->
+            <div style="margin-top:12px; display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" 
+                        style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border-radius:8px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:6px;">
+                    <span>👻</span> غير مرتبطين (الزوار المجهولون)
+                </button>
+                <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" 
+                        style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text2); display:flex; align-items:center; gap:6px;">
+                    <span>🟢</span> تم ربطهم بنجاح (المكتملون)
+                </button>
+            </div>
+
             <!-- Search and Filter Bar -->
             <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
                 <div style="flex:1; min-width:240px; position:relative;">
-                    <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID..." 
+                    <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID أو رقم الطالب..." 
                            style="width:100%; box-sizing:border-box; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none; transition:border-color 0.2s;" />
                 </div>
                 <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;" id="ghost-filter-chips">
@@ -2470,6 +2482,38 @@
         // =================== GHOST VISITORS ===================
         let rawGhostList = [];
         let ghostCurrentFilter = 'ALL';
+        let ghostCurrentMode = 'unlinked'; // 'unlinked' or 'linked'
+
+        function switchGhostMode(mode) {
+            ghostCurrentMode = mode;
+            const btnUnlinked = document.getElementById('btn-ghost-mode-unlinked');
+            const btnLinked = document.getElementById('btn-ghost-mode-linked');
+            
+            if (mode === 'unlinked') {
+                if (btnUnlinked) {
+                    btnUnlinked.style.background = 'var(--primary)';
+                    btnUnlinked.style.color = '#fff';
+                    btnUnlinked.style.border = 'none';
+                }
+                if (btnLinked) {
+                    btnLinked.style.background = 'var(--surface)';
+                    btnLinked.style.color = 'var(--text2)';
+                    btnLinked.style.border = '1px solid var(--border)';
+                }
+            } else {
+                if (btnLinked) {
+                    btnLinked.style.background = '#10b981';
+                    btnLinked.style.color = '#fff';
+                    btnLinked.style.border = 'none';
+                }
+                if (btnUnlinked) {
+                    btnUnlinked.style.background = 'var(--surface)';
+                    btnUnlinked.style.color = 'var(--text2)';
+                    btnUnlinked.style.border = '1px solid var(--border)';
+                }
+            }
+            loadGhostVisitors();
+        }
 
         function setGhostFilter(filterType) {
             ghostCurrentFilter = filterType;
@@ -2498,6 +2542,15 @@
             const action = v.last_action || '';
             const desc = v.last_desc || '';
             
+            if (ghostCurrentMode === 'linked') {
+                return {
+                    label: '🟢 حساب مرتبط بنجاح',
+                    color: '#10b981',
+                    bg: 'rgba(16, 185, 129, 0.12)',
+                    category: 'ACTIVE'
+                };
+            }
+
             if (!action && !desc) {
                 return {
                     label: '💤 لم يبدأ المسار بعد',
@@ -2590,10 +2643,10 @@
         async function loadGhostVisitors() {
             const list = document.getElementById('ghost-list');
             if(!list) return;
-            list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري تحميل الزوار المجهولين...</div></div>';
+            list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري تحميل القائمة...</div></div>';
             
             try {
-                const res = await fetch('/api/admin/gateway/ghost_visitors');
+                const res = await fetch('/api/admin/gateway/ghost_visitors?status=' + encodeURIComponent(ghostCurrentMode));
                 const data = await res.json();
                 
                 if(!data.success) {
@@ -2620,22 +2673,30 @@
                 const badgeInfo = getFunnelBadge(v);
                 v._badgeInfo = badgeInfo;
 
-                // Tab Filter
-                if (ghostCurrentFilter === 'ACTIVE' && badgeInfo.category !== 'ACTIVE') return false;
-                if (ghostCurrentFilter === 'BLOCKED' && badgeInfo.category !== 'BLOCKED') return false;
-                if (ghostCurrentFilter === 'INACTIVE' && badgeInfo.category !== 'INACTIVE') return false;
+                // Tab Filter (applicable only in unlinked mode)
+                if (ghostCurrentMode === 'unlinked') {
+                    if (ghostCurrentFilter === 'ACTIVE' && badgeInfo.category !== 'ACTIVE') return false;
+                    if (ghostCurrentFilter === 'BLOCKED' && badgeInfo.category !== 'BLOCKED') return false;
+                    if (ghostCurrentFilter === 'INACTIVE' && badgeInfo.category !== 'INACTIVE') return false;
+                }
 
                 // Search Filter
                 if (q) {
                     const fullName = `${v.first_name || ''} ${v.last_name || ''}`.toLowerCase();
                     const username = (v.username || '').toLowerCase();
                     const tid = String(v.telegram_id || '');
+                    const stId = String(v.student_id || '');
+                    const stName = `${v.student_first_name || ''} ${v.student_last_name || ''}`.toLowerCase();
+                    const stEmail = String(v.student_email || '').toLowerCase();
                     const desc = (v.last_desc || '').toLowerCase();
                     const action = (v.last_action || '').toLowerCase();
 
                     const match = fullName.includes(q) || 
                                   username.includes(q) || 
                                   tid.includes(q) || 
+                                  stId.includes(q) ||
+                                  stName.includes(q) ||
+                                  stEmail.includes(q) ||
                                   desc.includes(q) ||
                                   action.includes(q);
                     if (!match) return false;
@@ -2644,16 +2705,19 @@
             });
 
             if (badgeText) {
-                badgeText.textContent = `${filtered.length} من ${rawGhostList.length} زائر مجهول`;
+                const modeLabel = ghostCurrentMode === 'linked' ? 'حساب مرتبط' : 'زائر مجهول';
+                badgeText.textContent = `${filtered.length} من ${rawGhostList.length} ${modeLabel}`;
             }
 
             if(filtered.length === 0) {
                 if (rawGhostList.length === 0) {
+                    const emptyMsg = ghostCurrentMode === 'linked' 
+                        ? 'لا يوجد حسابات مرتبطة حديثاً حتى الآن.'
+                        : 'رائع! لا يوجد زوار مجهولون حالياً، جميع الطلاب قاموا بربط حساباتهم بنجاح.';
                     list.innerHTML = `
                         <div style="text-align:center; padding:50px 20px; color:var(--text2);">
                             <div style="font-size:3.5rem; margin-bottom:12px;">🎉</div>
-                            <h3 style="margin:0 0 6px; color:var(--text1);">رائع! لا يوجد زوار مجهولون حالياً</h3>
-                            <p style="margin:0; font-size:0.85rem;">جميع الطلاب الذين دخلوا البوت قاموا بربط حساباتهم بنجاح.</p>
+                            <h3 style="margin:0 0 6px; color:var(--text1);">${emptyMsg}</h3>
                         </div>
                     `;
                 } else {
@@ -2671,7 +2735,7 @@
             list.innerHTML = '';
             filtered.forEach(v => {
                 const card = document.createElement('div');
-                card.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; box-shadow:0 2px 6px rgba(0,0,0,0.02); transition:transform 0.15s, border-color 0.15s;';
+                card.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; box-shadow:0 2px 6px rgba(0,0,0,0.02);';
                 
                 let dateStr = v.created_at || '';
                 try {
@@ -2687,22 +2751,30 @@
                     }
                 }
                 
-                const name = [v.first_name, v.last_name].filter(Boolean).join(' ') || 'مستخدم غير مسمى';
+                const tgName = [v.first_name, v.last_name].filter(Boolean).join(' ') || 'مستخدم غير مسمى';
                 const username = v.username ? '@' + v.username : 'لا يوجد معرف';
                 const badge = v._badgeInfo || getFunnelBadge(v);
+
+                const isLinked = !!v.student_id;
+                const studentDisplayName = isLinked ? `${v.student_first_name || ''} ${v.student_last_name || ''}`.trim() : '';
                 
                 card.innerHTML = `
                     <div style="display:flex; align-items:center; gap:14px; min-width:280px; flex:1;">
                         <div style="width:46px; height:46px; border-radius:50%; background:${badge.bg}; color:${badge.color}; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; border:1px solid ${badge.color}33;">
-                            👻
+                            ${isLinked ? '🎓' : '👻'}
                         </div>
                         <div style="flex:1;">
                             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                <span style="font-weight:bold; color:var(--text1); font-size:1rem;">${name}</span>
+                                <span style="font-weight:bold; color:var(--text1); font-size:1rem;">${tgName}</span>
                                 <span style="font-size:0.8rem; color:#0a84ff; background:rgba(10,132,255,0.08); padding:2px 8px; border-radius:6px; font-family:monospace; direction:ltr;">${username}</span>
+                                ${isLinked ? `
+                                    <span style="background:rgba(16,185,129,0.12); color:#10b981; font-weight:bold; font-size:0.8rem; padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">
+                                        مرتبط بـ: ${studentDisplayName || 'طالب'} (Matricule: ${v.student_id})
+                                    </span>
+                                ` : ''}
                             </div>
                             
-                            <!-- Funnel Drop-off Badge -->
+                            <!-- Funnel Badge & Desc -->
                             <div style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                 <span style="font-size:0.78rem; font-weight:600; padding:3px 10px; border-radius:12px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
                                     ${badge.label}
@@ -2712,7 +2784,8 @@
 
                             <div style="font-size:0.74rem; color:var(--text2); margin-top:5px; display:flex; gap:12px; flex-wrap:wrap;">
                                 <span>🆔 <strong style="color:var(--text1); font-family:monospace;">${v.telegram_id}</strong></span>
-                                <span>📅 أول ظهور: ${dateStr}</span>
+                                ${isLinked && v.student_email ? `<span>✉️ ${v.student_email}</span>` : ''}
+                                <span>📅 دخول البوت: ${dateStr}</span>
                                 ${lastSeenStr ? `<span>⏱️ آخر نشاط: ${lastSeenStr}</span>` : ''}
                             </div>
                         </div>
@@ -2720,25 +2793,92 @@
 
                     <!-- Actions -->
                     <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                        <!-- Full Timeline / Journey Log Button -->
+                        <button onclick="viewVisitorFullJourney('${v.telegram_id}', '${(studentDisplayName || tgName).replace(/'/g, "\\'")}', '${v.student_id || ''}')" 
+                                style="background:rgba(99,102,241,0.12); color:#6366f1; border:1px solid rgba(99,102,241,0.3); padding:8px 12px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" 
+                                title="عرض جميع الحركات والخطوات السابقة بالتفصيل دون أي مسح">
+                            <span>📜</span> مسار الخطوات
+                        </button>
+
                         ${v.username ? `
                             <a href="https://t.me/${v.username}" target="_blank" 
-                               style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:8px 14px; border-radius:9px; text-decoration:none; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:5px; border:1px solid rgba(10,132,255,0.2);">
+                               style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:8px 12px; border-radius:9px; text-decoration:none; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:5px; border:1px solid rgba(10,132,255,0.2);">
                                 <span>✉️</span> محادثة
                             </a>
                         ` : `
                             <a href="tg://user?id=${v.telegram_id}" target="_blank" 
-                               style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:8px 14px; border-radius:9px; text-decoration:none; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:5px; border:1px solid rgba(10,132,255,0.2);">
-                                <span>✉️</span> فتح الحساب
+                               style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:8px 12px; border-radius:9px; text-decoration:none; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:5px; border:1px solid rgba(10,132,255,0.2);">
+                                <span>✉️</span> الحساب
                             </a>
                         `}
-                        <button onclick="promptManualLinkGhost('${v.telegram_id}', '${name.replace(/'/g, "\\'")}')" 
-                                style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:8px 14px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                            <span>🔗</span> ربط بطالب
-                        </button>
+
+                        ${!isLinked ? `
+                            <button onclick="promptManualLinkGhost('${v.telegram_id}', '${tgName.replace(/'/g, "\\'")}')" 
+                                    style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:8px 14px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                                <span>🔗</span> ربط بطالب
+                            </button>
+                        ` : `
+                            <button onclick="openStudentModalFromGhost('${v.student_id}')" 
+                                    style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:8px 12px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                                <span>👤</span> بطاقة الطالب
+                            </button>
+                        `}
                     </div>
                 `;
                 list.appendChild(card);
             });
+        }
+
+        async function viewVisitorFullJourney(telegram_id, displayName, student_id) {
+            const modal = document.getElementById('student-logs-modal');
+            const dbIdentity = document.getElementById('modal-db-identity');
+            const tgIdentity = document.getElementById('modal-tg-identity');
+            const logsBody = document.getElementById('logs-body');
+
+            if (!modal) return;
+
+            dbIdentity.innerHTML = student_id ? `<strong>المعرّف:</strong> ${student_id}<br><strong>الاسم:</strong> ${displayName}` : `<span style="color:var(--text2);">زائر مجهول (غير مرتبط بعد)</span>`;
+            tgIdentity.innerHTML = `<strong>Telegram ID:</strong> ${telegram_id}<br><strong>الاسم:</strong> ${displayName}`;
+            logsBody.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text2);">⏳ جاري جلب المسار الكامل من البداية...</div>';
+            
+            modal.style.display = 'flex';
+
+            try {
+                const url = `/api/admin/gateway/logs?tid=${telegram_id}&id=${student_id || 'null'}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.success && data.logs && data.logs.length > 0) {
+                    let html = `<div style="margin-bottom:8px; font-size:0.8rem; color:var(--accent); font-weight:bold;">📍 إجمالي الحركات والخطوات المسجلة: ${data.logs.length} خطوة</div>`;
+                    html += data.logs.map(l => {
+                        let dateStr = l.timestamp || '';
+                        try {
+                            dateStr = new Date(l.timestamp.replace(' ', 'T')).toLocaleString('ar-EG');
+                        } catch(e){}
+                        return `
+                            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <span style="font-weight:bold; font-size:0.85rem; color:var(--text1);">${l.action_type}</span>
+                                    <span style="font-size:0.75rem; color:var(--text2); direction:ltr;">${dateStr}</span>
+                                </div>
+                                <div style="font-size:0.83rem; color:var(--text1); line-height:1.5;">${colorizeDescription ? colorizeDescription(l.description || '') : (l.description || '')}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    logsBody.innerHTML = html;
+                } else {
+                    logsBody.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text2);">لا توجد حركات مسجلة في قاعدة البيانات لهذا المستخدم بعد.</div>';
+                }
+            } catch(e) {
+                console.error('Error fetching full journey:', e);
+                logsBody.innerHTML = '<div style="color:#ef4444; text-align:center; padding:20px;">❌ خطأ في جلب السجل</div>';
+            }
+        }
+
+        function openStudentModalFromGhost(student_id) {
+            if (typeof openStudentCard === 'function' && student_id) {
+                openStudentCard(student_id);
+            }
         }
 
         async function promptManualLinkGhost(telegram_id, ghostName) {
@@ -2762,7 +2902,7 @@
                 const data = await res.json();
                 if (data.success) {
                     showToast(`✅ تم ربط الحساب بنجاح للطالب رقم ${cleanId}!`, 'success');
-                    // Immediately reload ghosts; the linked student will automatically vanish from ghost list!
+                    // Reload current view
                     await loadGhostVisitors();
                     // Also refresh students list if available
                     if (typeof fetchStudents === 'function') {
