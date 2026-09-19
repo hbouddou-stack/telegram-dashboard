@@ -111,6 +111,7 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             # -----------------------------
 
             student = None
+            is_chameleon_tag = False
             
             # 1. Traitement du Lien Magique depuis Email / WhatsApp
             if start_arg:
@@ -137,7 +138,8 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         source_tag = parts[-1].upper()
                         clean_sid = '_'.join(parts[:-1])
 
-                if regex_mod.match(r'^[HF][1-5]$', start_arg, regex_mod.IGNORECASE):
+                is_chameleon_tag = bool(regex_mod.match(r'^(?:[hf][1-5]?|[hf]1?[hf]1?|h1f1|f1h1|homme\d?|femme\d?)$', start_arg, regex_mod.IGNORECASE))
+                if is_chameleon_tag:
                     student = None
                     pass_to_normal_flow = True
                 else:
@@ -233,9 +235,12 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                         print("Alert error:", e)
                     return
 
-            # 2. Vérification par Telegram ID si déjà lié
-            async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
-                student = await cur.fetchone()
+            # 2. Vérification par Telegram ID si déjà lié (ignoré si lien caméléon/onboarding)
+            if not is_chameleon_tag:
+                async with db.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
+                    student = await cur.fetchone()
+            else:
+                student = None
 
         if student:
             s_dict = dict(student)

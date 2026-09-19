@@ -1079,10 +1079,11 @@
     <script>
 
                         // --- CHAMELEON UI LOGIC ---
-        document.addEventListener('DOMContentLoaded', () => {
+        function initChameleon() {
             const params = new URLSearchParams(window.location.search);
-            const source = params.get('source') || '';
-            const vParam = params.get('v') || '';
+            const rawSource = (params.get('source') || '').trim();
+            const source = rawSource.toUpperCase();
+            const vParam = (params.get('v') || '').trim().toLowerCase();
             
             const mainForm = document.getElementById('main-form');
             const videoContainer = document.getElementById('dynamic-video-container');
@@ -1094,17 +1095,35 @@
             
             const isCompleted = localStorage.getItem('student_auth_status');
             
-            // Toujours afficher le Wizard pour les NOUVEAUX ou ceux qui utilisent v=start
-            if (!isCompleted || vParam === 'start' || source.startsWith('H') || source.startsWith('F')) {
+            const isChameleon = source.startsWith('H') || source.startsWith('F') || source.includes('H1') || source.includes('F1') || source.includes('HOMME') || source.includes('FEMME');
+
+            // Toujours afficher le Wizard pour les NOUVEAUX ou ceux qui utilisent v=start ou ceux arrivant d'un lien H/F/Chameleon
+            if (!isCompleted || vParam === 'start' || isChameleon) {
                 if (mainForm) mainForm.style.display = 'none';
-                if (videoContainer) { videoContainer.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+                if (videoContainer) { 
+                    videoContainer.style.display = 'flex'; 
+                    document.body.style.overflow = 'hidden'; 
+                }
                 
-                if (source.startsWith('H')) {
+                // Masquer tout ancien écran de succès/attente en cache pour jouer le parcours complet
+                if (isChameleon || vParam === 'start') {
+                    const successMsg = document.getElementById('success-msg');
+                    const pendingMsg = document.getElementById('pending-msg');
+                    if (successMsg) successMsg.style.display = 'none';
+                    if (pendingMsg) pendingMsg.style.display = 'none';
+                }
+                
+                if (source === 'H1F1' || source === 'F1H1' || (source.includes('H') && source.includes('F'))) {
+                    // Mixte / Neutre
+                    if (headerText) headerText.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
+                    if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
+                    if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك في أكاديمية الباجي 🎓';
+                } else if (source.startsWith('H') || source.includes('HOMME')) {
                     document.body.className = 'theme-neon';
                     if (headerText) headerText.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامك إلينا.';
                     if (videoWelcomeTitle) videoWelcomeTitle.innerHTML = 'مرحباً بك أخي الكريم 🧔‍♂️';
-                } else if (source.startsWith('F')) {
+                } else if (source.startsWith('F') || source.includes('FEMME')) {
                     document.body.className = 'theme-desert';
                     if (headerText) headerText.innerHTML = 'مرحباً بكِ أختي الكريمة 🧕';
                     if (pText) pText.innerHTML = 'نحن سعداء بانضمامكِ إلينا.';
@@ -1122,20 +1141,26 @@
                         if(document.getElementById('dynamic-video-2')) document.getElementById('dynamic-video-2').src='';
                         if(document.getElementById('dynamic-video-3')) document.getElementById('dynamic-video-3').src='';
                         if (mainForm) {
-                                mainForm.style.display = 'flex';
-                                mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-                                if (window.trackFunnelStep) {
-                                    window.trackFunnelStep('ONBOARDING_FORM_REACHED', 'وصل الطالب إلى نموذج إدخال رقم الطالب والبريد الإلكتروني', 'STEP_4_FORM');
-                                }
+                            mainForm.style.display = 'flex';
+                            mainForm.style.animation = 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                            if (window.trackFunnelStep) {
+                                window.trackFunnelStep('ONBOARDING_FORM_REACHED', 'وصل الطالب إلى نموذج إدخال رقم الطالب والبريد الإلكتروني', 'STEP_4_FORM');
                             }
-                            try {
-                                window.Telegram.WebApp.MainButton.show();
-                                if(window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
-                            } catch(e) {}
+                        }
+                        try {
+                            window.Telegram.WebApp.MainButton.show();
+                            if(window.Telegram.WebApp.SecondaryButton) window.Telegram.WebApp.SecondaryButton.show();
+                        } catch(e) {}
                     }, 250);
                 });
             }
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initChameleon);
+        } else {
+            initChameleon();
+        }
         // --------------------------
 
 
