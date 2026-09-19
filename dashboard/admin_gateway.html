@@ -1189,151 +1189,386 @@
         </div>
     </div>
 
-    <div id="tab-settings" class="tab-content" style="padding:0;">
-                <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-weight:bold; color:var(--text1);">المظهر (Thème)</div>
-                        <div style="font-size:0.85rem; color:var(--text2);">التبديل بين الوضع الليلي والنهاري</div>
-                    </div>
-                    <button class="btn btn-primary" onclick="toggleTheme()" style="padding:8px 16px; border-radius:8px;">🌙 / ☀️ تبديل</button>
+    <div id="tab-settings" class="tab-content" style="padding:0; max-width:1100px; margin:0 auto;">
+        <!-- Header Banner Hub -->
+        <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                    <span style="font-size: 1.8rem;">⚙️</span>
+                    <h2 style="margin: 0; font-size: 1.45rem; font-weight: 800; color: var(--text1); letter-spacing: -0.5px;">مركز القيادة والإعدادات</h2>
+                    <span style="background: var(--accent); color: white; font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Hub v2.5</span>
                 </div>
-
-        <div style="display:flex; border-bottom:1px solid var(--border); margin-bottom:20px;">
-            <div class="settings-tab-btn active" onclick="switchSettingsTab('s-import')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid var(--accent); color:var(--text1);">📤 Importer</div>
-            <div class="settings-tab-btn" onclick="switchSettingsTab('s-history')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">🕒 Historique</div>
-            <div class="settings-tab-btn" onclick="switchSettingsTab('s-manual')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">➕ Ajout manuel</div>
-            <div class="settings-tab-btn" onclick="switchSettingsTab('s-advanced')" style="padding:15px 20px; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; color:var(--text2);">⚙️ Avancé</div>
-        </div>
-
-        <div id="s-import" class="settings-pane" style="display:block; padding:15px;">
-            <div style="background: var(--surface); border: 2px dashed var(--border); padding: 40px 20px; border-radius: 12px; text-align: center; margin-bottom: 16px; transition: border-color 0.2s;" id="upload-drop-zone">
-                <div style="font-size: 3rem; margin-bottom: 15px;">📥</div>
-                <h3 style="font-size: 1.2rem; margin-bottom: 10px; color:var(--text1);">Importer un fichier (Excel ou CSV)</h3>
-                <div style="font-size: 0.9rem; color: var(--text2); margin-bottom: 25px;">Glissez-déposez votre fichier ici, ou cliquez pour le sélectionner depuis vos dossiers.</div>
-                
-                <label class="btn btn-primary" style="display: inline-flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 12px 24px; border-radius: 10px; font-size:1.05rem;">
-                    <span>Parcourir les fichiers...</span>
-                    <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
-                </label>
+                <div style="font-size: 0.88rem; color: var(--text2); line-height: 1.5;">تحكّم كامل في استيراد البيانات، مزامنة السحابة، مظهر المنظومة، وربط البوابات الذكية.</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text2);">الطلاب النشطين</div>
+                    <div id="settings-badge-active-count" style="font-size: 1.1rem; font-weight: 800; color: #10b981;">1 312</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text2);">المستبعدون (الأرشيف)</div>
+                    <div id="settings-badge-excluded-count" style="font-size: 1.1rem; font-weight: 800; color: #ef4444;">8</div>
+                </div>
             </div>
         </div>
 
-        <div id="s-history" class="settings-pane" style="display:none; padding:15px;">
-            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 15px;">Historique des Imports</h3>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:0.85rem; background:var(--bg); border-radius:8px; overflow:hidden;">
+        <!-- Cockpit Navigation Sub-Hubs -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 24px;">
+            <button class="settings-tab-pill active" id="btn-sub-data" onclick="switchSettingsTab('s-data', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.5rem; background: rgba(59, 130, 246, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">📥</div>
+                <div>
+                    <div style="font-size: 0.95rem; font-weight: 800;">البيانات والمزامنة</div>
+                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Data & Cloud Sync</div>
+                </div>
+            </button>
+
+            <button class="settings-tab-pill" id="btn-sub-history" onclick="switchSettingsTab('s-history', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.5rem; background: rgba(168, 85, 247, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">🕒</div>
+                <div>
+                    <div style="font-size: 0.95rem; font-weight: 800;">سجل العمليات</div>
+                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Audit & History</div>
+                </div>
+            </button>
+
+            <button class="settings-tab-pill" id="btn-sub-design" onclick="switchSettingsTab('s-design', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.5rem; background: rgba(234, 179, 8, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">🎨</div>
+                <div>
+                    <div style="font-size: 0.95rem; font-weight: 800;">المظهر وتنسيق مسار</div>
+                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Studio & Massar</div>
+                </div>
+            </button>
+
+            <button class="settings-tab-pill" id="btn-sub-system" onclick="switchSettingsTab('s-system', this)" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text1); font-weight: 700; cursor: pointer; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.5rem; background: rgba(16, 185, 129, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">⚡</div>
+                <div>
+                    <div style="font-size: 0.95rem; font-weight: 800;">النظام والربط السريع</div>
+                    <div style="font-size: 0.75rem; color: var(--text2); font-weight: 400;">Integrations & Manual</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- ==================== PANE 1: DATA & CLOUD SYNC ==================== -->
+        <div id="s-data" class="settings-pane" style="display: block;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                <!-- Drag & Drop Import Card -->
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.4rem;">📊</span>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">استيراد ملف الطلاب (Excel / CSV)</h3>
+                            </div>
+                            <span style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.12); color: #3b82f6; padding: 2px 8px; border-radius: 6px; font-weight: 700;">.XLSX, .CSV</span>
+                        </div>
+                        <p style="font-size: 0.84rem; color: var(--text2); line-height: 1.5; margin-bottom: 18px;">
+                            قم بسحب وإسقاط ملف لائحة الطلاب لتحيين الأرقام، الأفواج، والبيانات تلقائياً مع دمج ذكي بدون تكرار.
+                        </p>
+
+                        <!-- Dropzone Box -->
+                        <div id="upload-drop-zone" style="border: 2px dashed rgba(124, 58, 237, 0.4); background: rgba(124, 58, 237, 0.04); border-radius: 14px; padding: 32px 20px; text-align: center; transition: all 0.25s ease; cursor: pointer;" onclick="document.getElementById('excel-file-input').click()">
+                            <div style="font-size: 2.8rem; margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">📁</div>
+                            <div style="font-size: 0.98rem; font-weight: 700; color: var(--text1); margin-bottom: 6px;">اضغط لاختيار ملف، أو اسحبه إلى هنا</div>
+                            <div style="font-size: 0.78rem; color: var(--text2); margin-bottom: 18px;">يدعم كشوفات مسار الرسمية، ملفات Excel المنسقة وملفات CSV</div>
+                            <button class="btn btn-primary" type="button" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);">
+                                <span>📂 استعراض الملفات</span>
+                            </button>
+                            <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
+                        </div>
+                    </div>
+
+                    <!-- Quick Download Template -->
+                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.82rem; color: var(--text2);">هل تحتاج النموذج القياسي؟</span>
+                        <a href="/api/admin/gateway/export_template" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #10b981; text-decoration: none; padding: 6px 12px; border-radius: 8px; background: rgba(16, 185, 129, 0.1);">
+                            <span>📥 تحميل النموذج الفارغ</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Google Sheets & Cloud Backup Card -->
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.4rem;">☁️</span>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">بوابة Google Sheets والمزامنة</h3>
+                            </div>
+                            <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.12); color: #10b981; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Live Sync</span>
+                        </div>
+                        <p style="font-size: 0.84rem; color: var(--text2); line-height: 1.5; margin-bottom: 20px;">
+                            مزامنة ثنائية الاتجاه مع جدول Google Sheets الخارجي لمطابقة التحديثات وحفظ نسخ احتياطية دورية.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <button id="btn-sync-sheets" class="btn" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);" onclick="syncGoogleSheets()">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.1rem;">🔄</span>
+                                    <span>مزامنة فورية من Google Sheets</span>
+                                </div>
+                                <span style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px;">Pull</span>
+                            </button>
+
+                            <button id="btn-export-sheets" class="btn" style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);" onclick="exportGoogleSheets()">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.1rem;">📤</span>
+                                    <span>تصدير البيانات إلى ورقة المتابعة</span>
+                                </div>
+                                <span style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px;">Push</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone Button: Purge Sheets -->
+                    <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border);">
+                        <button id="btn-purge-sheets" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;" onclick="purgeGoogleSheets()">
+                            <span>🗑️ تفريغ جدول Google Sheets (Purger)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Database Exports Row -->
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+                <div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: var(--text1); margin-bottom: 4px;">💾 التصدير الشامل للبيانات (Full Backup)</div>
+                    <div style="font-size: 0.82rem; color: var(--text2);">حمّل قاعدة بيانات الطلاب كاملة بتنسيق Excel للعمل بدون اتصال أو للأرشفة.</div>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="/api/admin/gateway/export_all" class="btn" style="text-decoration: none; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                        <span>📥 تصدير كل الطلاب (1 320)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PANE 2: AUDIT & HISTORY ==================== -->
+        <div id="s-history" class="settings-pane" style="display: none;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;">سجل عمليات الاستيراد والمزامنة</h3>
+                        <div style="font-size: 0.82rem; color: var(--text2); margin-top: 4px;">تتبع تفصيلي لكل ملف Excel تم رفعه مع توقيت العملية وحساب المسؤول.</div>
+                    </div>
+                    <button class="btn" onclick="loadImportHistory()" style="background: var(--bg); border: 1px solid var(--border); color: var(--text1); padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>🔄 تحديث السجل</span>
+                    </button>
+                </div>
+
+                <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 12px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; background: var(--bg); text-align: right;">
                         <thead>
-                            <tr style="background:rgba(10,132,255,0.1); border-bottom:2px solid var(--border); text-align:right;">
-                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">ID</th>
-                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Date</th>
-                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Fichier</th>
-                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Élèves Importés</th>
-                                <th style="padding:12px;; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">Responsable (Admin)</th>
+                            <tr style="background: rgba(124, 58, 237, 0.08); border-bottom: 2px solid var(--border);">
+                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">المعرف</th>
+                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">تاريخ وتوقيت العملية</th>
+                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">اسم الملف</th>
+                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">عدد الطلاب المستوردين</th>
+                                <th style="padding: 14px 16px; font-weight: 800; color: var(--text1);">المسؤول (Admin)</th>
                             </tr>
                         </thead>
                         <tbody id="import-history-tbody">
-                            <tr><td colspan="5" style="text-align:center; padding:20px;">Chargement...</td></tr>
+                            <tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text2);">جاري تحميل السجل...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <div id="s-manual" class="settings-pane" style="display:none; padding:15px;">
-            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">👤 Ajouter un élève manuellement</h3>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (ex: h.bouddou@gmail.com)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (ex: 10/10/2000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <input type="text" id="manual-student-id" placeholder="رقم الطالب (مسار - ex: 123456)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="manual-student-fn" placeholder="الاسم الشخصي" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                        <input type="text" id="manual-student-ln" placeholder="النسب (العائلي)" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
+        <!-- ==================== PANE 3: STUDIO & MASSAR DESIGN ==================== -->
+        <div id="s-design" class="settings-pane" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                <!-- Massar ID Customizer -->
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <span style="font-size: 1.4rem;">🏷️</span>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">تنسيق رقم مسار (Massar Format)</h3>
+                            <div style="font-size: 0.8rem; color: var(--text2);">فصل السنة بلون مميز لسهولة فرز الدفعات</div>
+                        </div>
                     </div>
-                    <input type="text" id="manual-student-phone" placeholder="رقم الهاتف (اختياري - ex: 212600000000)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px;">✅ Enregistrer l'élève</button>
+
+                    <!-- Live Interactive Preview Card -->
+                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text2); margin-bottom: 8px; font-weight: 700;">معاينة حية ومباشرة للرقم (Aperçu en direct) :</div>
+                        <div id="massar-live-preview" style="font-family: monospace; font-size: 1.35rem; font-weight: 800; padding: 8px 16px; background: var(--surface); display: inline-flex; border-radius: 10px; border: 1px solid var(--border); letter-spacing: 1px;">
+                            1234-26
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; display: block; color: var(--text1);">فاصل الأرقام (Séparateur)</label>
+                        <select id="pref-id-separator" onchange="saveIdPrefs()" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.9rem;">
+                            <option value="dash">تيرة فاصلة (1234-26) [موصى به]</option>
+                            <option value="parentheses">بين قوسين 1234(26)</option>
+                            <option value="space">مسافة فارغة (1234 26)</option>
+                            <option value="none">بدون فاصل (123426)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; display: block; color: var(--text1);">تخصيص لون السنة (آخر رقمين)</label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="pref-id-year" placeholder="السنة (ex: 26)" maxlength="2" style="width: 90px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); text-align: center; font-weight: 700;">
+                            <input type="color" id="pref-id-color" value="#8b0000" style="padding: 0; border: none; width: 44px; height: 42px; border-radius: 10px; cursor: pointer; background: transparent;">
+                            <button class="btn btn-primary" onclick="addYearColor()" style="flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; background: var(--accent);">
+                                ➕ حفظ لون الدفعة
+                            </button>
+                        </div>
+                        <div id="pref-color-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <!-- Theme & Visual Identity Card -->
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 1.4rem;">🎭</span>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">نمط المنظومة والمظهر (Thèmes)</h3>
+                                <div style="font-size: 0.8rem; color: var(--text2);">اختر مظهر لوحة التحكم الذي يناسب بيئة عملك</div>
+                            </div>
+                        </div>
+
+                        <!-- 3 Theme Cards Selector -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px;">
+                            <!-- Dark Cyber Default -->
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('dark')" style="border: 2px solid var(--accent); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; background: #0d1117; color: #f0f6fc; transition: all 0.2s;">
+                                <div style="font-size: 1.3rem; margin-bottom: 4px;">🌙</div>
+                                <div style="font-size: 0.8rem; font-weight: 800;">Dark Cyber</div>
+                                <div style="font-size: 0.68rem; opacity: 0.7;">الوضع الليلي</div>
+                            </div>
+
+                            <!-- CPI Blue -->
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('cpi')" style="border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; background: #0a0f1d; color: #f3f4f6; transition: all 0.2s;">
+                                <div style="font-size: 1.3rem; margin-bottom: 4px;">🌌</div>
+                                <div style="font-size: 0.8rem; font-weight: 800;">CPI Navy</div>
+                                <div style="font-size: 0.68rem; opacity: 0.7;">أزرق ملكي</div>
+                            </div>
+
+                            <!-- Light Clean -->
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('light')" style="border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; background: #ffffff; color: #111827; transition: all 0.2s;">
+                                <div style="font-size: 1.3rem; margin-bottom: 4px;">☀️</div>
+                                <div style="font-size: 0.8rem; font-weight: 800;">Light Clean</div>
+                                <div style="font-size: 0.68rem; opacity: 0.7;">الوضع النهاري</div>
+                            </div>
+                        </div>
+
+                        <!-- Student Display Options -->
+                        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--text1);">إلزام عرض النسب العائلي أولاً</div>
+                                    <div style="font-size: 0.75rem; color: var(--text2);">Forcer le nom au lieu du prénom</div>
+                                </div>
+                                <input type="checkbox" id="setting-force-name" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent);" onchange="toggleForceName(this)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.75rem; color: var(--text2); text-align: center;">
+                        تُحفظ تفضيلات المظهر وتنسيق مسار محلياً في متصفحك بشكل فوري.
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="s-advanced" class="settings-pane" style="display:none; padding:15px;">
-            
-            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 Format du Numéro Étudiant (Massar)</h3>
-                <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px;">Personnalisez l'affichage du numéro et attribuez une couleur aux deux derniers chiffres (Année d'inscription).</div>
-                
-                <div style="margin-bottom:15px;">
-                    <label style="font-size:0.85rem; font-weight:bold; margin-bottom:4px; display:block;">Séparateur</label>
-                    <select id="pref-id-separator" onchange="saveIdPrefs()" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1);">
-                        <option value="none">Collé (123426)</option>
-                        <option value="dash">Tiret (1234-26)</option>
-                        <option value="parentheses">Parenthèses 1234(26)</option>
-                        <option value="space">Espace (1234 26)</option>
-                    </select>
-                </div>
-                
-                <div style="margin-bottom:10px;">
-                    <label style="font-size:0.85rem; font-weight:bold; margin-bottom:4px; display:block;">Couleurs par Année (2 derniers chiffres)</label>
-                    <div style="display:flex; gap:8px; margin-bottom:8px;">
-                        <input type="text" id="pref-id-year" placeholder="ex: 26" style="width:70px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1);">
-                        <input type="color" id="pref-id-color" value="#8b0000" style="padding:0; border:none; width:40px; height:36px; border-radius:8px; cursor:pointer;">
-                        <button class="btn btn-primary" onclick="addYearColor()" style="padding:8px 15px; background:#0ea5e9;">Ajouter / Modifier</button>
+        <!-- ==================== PANE 4: SYSTEM & MANUAL ENTRY ==================== -->
+        <div id="s-system" class="settings-pane" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                <!-- Modern Manual Add Form -->
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                        <span style="font-size: 1.4rem;">➕</span>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">إضافة طالب يدوياً (Ajout Manuel)</h3>
+                            <div style="font-size: 0.8rem; color: var(--text2);">تسجيل طالب جديد مباشرة في قاعدة البيانات دون ملف</div>
+                        </div>
                     </div>
-                    <div id="pref-color-list" style="display:flex; flex-direction:column; gap:5px;"></div>
-                </div>
-            </div>
-            
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">⬇️ Exports Globaux</h3>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <a href="/api/admin/gateway/export_template" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #059669; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <span>📥 Télécharger Modèle (Excel)</span>
-                    </a>
-                    <a href="/api/admin/gateway/export_all" class="btn" style="flex: 1; text-decoration: none; text-align: center; background: #0284c7; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <span>📥 Exporter toute la base</span>
-                    </a>
-                </div>
-            </div>
 
-            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">📊 Google Sheets (Synchronisation)</h3>
-                <div style="font-size: 0.82rem; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
-                    Si vous utilisez une base connectée via l'API Google.
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button id="btn-sync-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #0f9d58;" onclick="syncGoogleSheets()">
-                        <span>🔄 Forcer Synchro</span>
-                    </button>
-                    <button id="btn-export-sheets" class="btn btn-primary" style="flex: 1; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #1a73e8;" onclick="exportGoogleSheets()">
-                        <span>💾 Sauvegarder</span>
-                    </button>
-                    <button id="btn-purge-sheets" class="btn btn-primary" style="flex: 1 1 100%; display: flex; cursor: pointer; align-items: center; justify-content: center; gap: 8px; background: #dc2626;" onclick="purgeGoogleSheets()">
-                        <span>🗑️ Purger tous les élèves Google Sheets</span>
-                    </button>
-                </div>
-            </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">الاسم الشخصي</label>
+                                <input type="text" id="manual-student-fn" placeholder="الاسم" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">النسب (العائلي)</label>
+                                <input type="text" id="manual-student-ln" placeholder="النسب" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
+                            </div>
+                        </div>
 
-            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">🏷️ Affichage des Noms</h3>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <span style="font-size: 0.88rem;">Forcer le nom au lieu du prénom</span>
-                    <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer;" onchange="toggleForceName(this)">
+                        <div>
+                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">رقم مسار (Massar ID)</label>
+                            <input type="text" id="manual-student-id" placeholder="مثال: 123426" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
+                        </div>
+
+                        <div>
+                            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">البريد الإلكتروني <span style="color:#ef4444;">*</span></label>
+                            <input type="email" id="manual-student-email" placeholder="student@example.com" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">تاريخ الميلاد <span style="color:#ef4444;">*</span></label>
+                                <input type="text" id="manual-student-dob" placeholder="10/10/2000" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 4px; display: block;">الهاتف (اختياري)</label>
+                                <input type="text" id="manual-student-phone" placeholder="212600000000" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit; font-size: 0.88rem;">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top: 8px; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+                            <span>✅ تسجيل وإضافة الطالب</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            
-            <div style="background: var(--surface); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">🔐 Clé API Albaji (WhatsApp & SMS)</h3>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <input type="password" id="albaji-api-key" placeholder="Entrez la clé secrète (••••••••)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: inherit;">
-                    <button class="btn btn-primary" onclick="saveAlbajiKey()" style="background:#0ea5e9;">💾 Enregistrer la clé</button>
+
+                <!-- Albaji API Key & Integrations Card -->
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 1.4rem;">🔐</span>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">بوابة وتكامل Albaji (WhatsApp / SMS)</h3>
+                                <div style="font-size: 0.8rem; color: var(--text2);">الربط مع خادم الرسائل الفورية والتنبيهات التلقائية</div>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.84rem; color: var(--text2); line-height: 1.5; margin-bottom: 16px;">
+                            الرمز السري API Key المشفر المستخدم لإرسال رسائل التفعيل، استعادة الحسابات وإشعارات الدفع عبر واتساب والرسائل القصيرة.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+                            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text1);">الرمز السري (Clé API Secrète) :</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="password" id="albaji-api-key" placeholder="••••••••••••••••" style="flex: 1; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text1); font-family: monospace; font-size: 0.95rem;">
+                                <button type="button" class="btn" onclick="toggleAlbajiKeyVisibility()" style="background: var(--bg); border: 1px solid var(--border); color: var(--text1); padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: 1rem;" title="إظهار / إخفاء">
+                                    <span id="albaji-eye-icon">👁️</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveAlbajiKey()" style="padding: 11px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; background: #0ea5e9; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <span>💾 حفظ وتأكيد المفتاح</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- System Diagnostics Info -->
+                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text1); margin-bottom: 6px;">حالة الاتصال والخدمة :</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text2); margin-bottom: 4px;">
+                            <span>قاعدة البيانات :</span>
+                            <span style="color: #10b981; font-weight: 700;">متصلة ومؤمّنة (SQLite WAL)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text2);">
+                            <span>خادم البوابة :</span>
+                            <span style="color: #10b981; font-weight: 700;">Online (Railway / Production)</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-
-    
     <!-- TAB: إحصاء -->
     <div id="tab-stats" class="tab-content">
         <div style="padding:12px 12px 100px;">
@@ -3706,14 +3941,44 @@
                 filterStudents();
             }
 
+                let idFormatPrefs = JSON.parse(localStorage.getItem('idFormatPrefs') || '{"separator":"dash", "yearColors":{}}');
+
+        function updateMassarLivePreview() {
+            const previewEl = document.getElementById('massar-live-preview');
+            if (!previewEl) return;
+            const sep = idFormatPrefs.separator || 'dash';
+            let sepChar = '-';
+            if (sep === 'none') sepChar = '';
+            else if (sep === 'space') sepChar = ' ';
+            else if (sep === 'parentheses') sepChar = '(';
+
+            const yearColor = idFormatPrefs.yearColors['26'] || '#ef4444';
+            if (sep === 'parentheses') {
+                previewEl.innerHTML = `<span>1234</span><span style="color:var(--text2);">(</span><span style="color:${yearColor}; font-weight:900;">26</span><span style="color:var(--text2);">)</span>`;
+            } else {
+                previewEl.innerHTML = `<span>1234</span><span style="color:var(--text2);">${sepChar}</span><span style="color:${yearColor}; font-weight:900;">26</span>`;
+            }
+        }
+
+        function saveIdPrefs() {
+            const sep = document.getElementById('pref-id-separator').value;
+            idFormatPrefs.separator = sep;
+            localStorage.setItem('idFormatPrefs', JSON.stringify(idFormatPrefs));
+            renderYearColors();
+            updateMassarLivePreview();
+            if(typeof filterStudents === 'function') filterStudents();
+            showToast('✅ تم تحديث تنسيق رقم مسار بنجاح!', 'success');
+        }
+
         function addYearColor() {
             const yr = document.getElementById('pref-id-year').value.trim();
             const col = document.getElementById('pref-id-color').value;
             if (yr.length === 2 && !isNaN(yr)) {
                 idFormatPrefs.yearColors[yr] = col;
                 saveIdPrefs();
+                document.getElementById('pref-id-year').value = '';
             } else {
-                alert("Veuillez entrer exactement 2 chiffres pour l'année (ex: 26).");
+                alert("يرجى إدخال رقمين فقط للسنة (مثال: 26).");
             }
         }
 
@@ -3726,38 +3991,243 @@
             const list = document.getElementById('pref-color-list');
             if (!list) return;
             const sel = document.getElementById('pref-id-separator');
-            if (sel) sel.value = idFormatPrefs.separator;
+            if (sel) sel.value = idFormatPrefs.separator || 'dash';
             
             list.innerHTML = Object.keys(idFormatPrefs.yearColors).map(yr => `
-                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); padding:6px 12px; border-radius:6px; border:1px solid var(--border);">
+                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); padding:6px 12px; border-radius:8px; border:1px solid var(--border);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="display:inline-block; width:15px; height:15px; border-radius:50%; background:${idFormatPrefs.yearColors[yr]}; border:1px solid rgba(0,0,0,0.1);"></span>
-                        <span style="font-weight:bold;">Année se terminant par ${yr}</span>
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${idFormatPrefs.yearColors[yr]}; border:1px solid rgba(0,0,0,0.2);"></span>
+                        <span style="font-weight:bold; font-size:0.85rem;">سنة التسجيل : <span style="font-family:monospace; color:${idFormatPrefs.yearColors[yr]};">20${yr}</span> (${yr})</span>
                     </div>
-                    <button onclick="removeYearColor('${yr}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.1rem;">×</button>
+                    <button onclick="removeYearColor('${yr}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.2rem; line-height:1;" title="حذف">×</button>
                 </div>
             `).join('');
+
+            updateMassarLivePreview();
         }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            renderYearColors();
-        });
-        
-        function switchSettingsTab(tabId) {
+
+        // ============ THEME MANAGEMENT ============
+        function applyDashboardTheme(themeName) {
+            document.body.classList.remove('theme-cpi', 'theme-light');
+            if (themeName === 'cpi') {
+                document.body.classList.add('theme-cpi');
+            } else if (themeName === 'light') {
+                document.body.classList.add('theme-light');
+            }
+            localStorage.setItem('admin-theme', themeName);
+
+            // Highlight active card
+            document.querySelectorAll('.theme-choice-card').forEach(card => {
+                card.style.borderColor = 'var(--border)';
+            });
+            if (event && event.currentTarget && event.currentTarget.classList.contains('theme-choice-card')) {
+                event.currentTarget.style.borderColor = 'var(--accent)';
+            }
+            showToast('🎨 تم تطبيق المظهر: ' + themeName, 'info');
+        }
+
+        function toggleTheme() {
+            if (document.body.classList.contains('theme-light')) {
+                applyDashboardTheme('dark');
+            } else if (document.body.classList.contains('theme-cpi')) {
+                applyDashboardTheme('light');
+            } else {
+                applyDashboardTheme('cpi');
+            }
+        }
+
+        // Init theme on start
+        (function initSavedTheme() {
+            const savedTheme = localStorage.getItem('admin-theme') || 'dark';
+            if (savedTheme === 'cpi') document.body.classList.add('theme-cpi');
+            else if (savedTheme === 'light') document.body.classList.add('theme-light');
+        })();
+
+        // ============ SETTINGS TAB SWITCHER ============
+        function switchSettingsTab(tabId, clickedEl) {
             document.querySelectorAll('.settings-pane').forEach(p => p.style.display = 'none');
-            document.querySelectorAll('.settings-tab-btn').forEach(b => {
-                b.style.borderBottom = '3px solid transparent';
-                b.style.color = 'var(--text2)';
+            document.querySelectorAll('.settings-tab-pill').forEach(b => {
+                b.style.borderColor = 'var(--border)';
+                b.style.background = 'var(--surface)';
+                b.classList.remove('active');
             });
             
-            document.getElementById(tabId).style.display = 'block';
-            event.currentTarget.style.borderBottom = '3px solid var(--accent)';
-            event.currentTarget.style.color = 'var(--text1)';
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.style.display = 'block';
+
+            const btn = clickedEl || document.querySelector(`[onclick*="${tabId}"]`);
+            if (btn) {
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.background = 'var(--surface)';
+                btn.classList.add('active');
+            }
 
             if (tabId === 's-history') {
                 loadImportHistory();
+            } else if (tabId === 's-design') {
+                renderYearColors();
             }
         }
+
+        // ============ SETTINGS API & INTEGRATIONS ============
+        async function loadGeneralSettings() {
+            try {
+                // Update badge counts
+                if (typeof allStudents !== 'undefined' && allStudents.length > 0) {
+                    const activeCount = allStudents.filter(s => s.excluded != 1).length;
+                    const exclCount = allStudents.filter(s => s.excluded == 1).length;
+                    const bActive = document.getElementById('settings-badge-active-count');
+                    const bExcl = document.getElementById('settings-badge-excluded-count');
+                    if (bActive) bActive.textContent = activeCount.toLocaleString('fr-FR');
+                    if (bExcl) bExcl.textContent = exclCount.toLocaleString('fr-FR');
+                }
+
+                renderYearColors();
+
+                const res = await fetch('/api/admin/gateway/settings');
+                const data = await res.json();
+                if (data.success && data.settings) {
+                    const force = data.settings.force_telegram_name === 'true';
+                    const forceCheckbox = document.getElementById('setting-force-name');
+                    if (forceCheckbox) forceCheckbox.checked = force;
+                    
+                    const albajiInput = document.getElementById('albaji-api-key');
+                    if (albajiInput && data.settings.albaji_api_key) {
+                        albajiInput.value = data.settings.albaji_api_key;
+                    }
+                }
+            } catch(e) { console.error('Error loading settings', e); }
+        }
+
+        async function toggleForceName(checkbox) {
+            try {
+                await fetch('/api/admin/gateway/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ key: 'force_telegram_name', value: checkbox.checked ? 'true' : 'false' })
+                });
+                showToast('✅ تم حفظ إعداد عرض الأسماء بنجاح', 'success');
+            } catch(e) { console.error(e); }
+        }
+
+        async function saveAlbajiKey() {
+            const input = document.getElementById('albaji-api-key');
+            if (!input) return;
+            const key = input.value.trim();
+            try {
+                const res = await fetch('/api/admin/gateway/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ key: 'albaji_api_key', value: key })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ تم حفظ مفتاح Albaji API بنجاح!', 'success');
+                } else {
+                    alert('خطأ في الحفظ: ' + (data.error || 'يرجى المحاولة مجدداً'));
+                }
+            } catch(e) {
+                alert('خطأ في الاتصال: ' + e.message);
+            }
+        }
+
+        function toggleAlbajiKeyVisibility() {
+            const input = document.getElementById('albaji-api-key');
+            const icon = document.getElementById('albaji-eye-icon');
+            if (!input || !icon) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁️';
+            }
+        }
+
+        // ============ GOOGLE SHEETS SYNC ============
+        async function syncGoogleSheets() {
+            const btn = document.getElementById('btn-sync-sheets');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ جاري المزامنة...</span>';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/admin/gateway/sync_sheets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('✅ تمت المزامنة بنجاح! تم استيراد/تحديث ' + data.count + ' طالب.');
+                    if (typeof fetchStudents === 'function') fetchStudents();
+                    if (typeof fetchKpiMetrics === 'function') fetchKpiMetrics();
+                } else {
+                    alert('❌ خطأ في المزامنة: ' + data.error);
+                }
+            } catch(e) { 
+                console.error(e); 
+                alert('حدث خطأ غير متوقع أثناء المزامنة.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function exportGoogleSheets() {
+            const btn = document.getElementById('btn-export-sheets');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ جاري التصدير...</span>';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/admin/gateway/export_sheets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('✅ تم التصدير بنجاح! تم تصدير بيانات ' + data.count + ' طالب إلى ورقة "Suivi Élèves".');
+                } else {
+                    alert('❌ خطأ في التصدير: ' + data.error);
+                }
+            } catch(e) { 
+                console.error(e); 
+                alert('حدث خطأ غير متوقع أثناء التصدير.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function purgeGoogleSheets() {
+            if (!confirm("⚠️ تحذير خطير: هل أنت متأكد تماماً من رغبتك في مسح وتفريغ جميع بيانات الطلاب من جدول Google Sheets؟ لن يؤثر هذا على قاعدة بيانات المنظومة الأساسية.")) {
+                return;
+            }
+            const btn = document.getElementById('btn-purge-sheets');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳ جاري التفريغ...</span>';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/admin/gateway/purge_sheets', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert('✅ تم تفريغ بيانات الطلاب من Google Sheets بنجاح.');
+                } else {
+                    alert('❌ خطأ أثناء التفريغ: ' + data.error);
+                }
+            } catch(e) { 
+                console.error(e); 
+                alert('حدث خطأ غير متوقع أثناء تفريغ الجدول.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
 
         
         function formatLocalTime(utcDateStr) {
