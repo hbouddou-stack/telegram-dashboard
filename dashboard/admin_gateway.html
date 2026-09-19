@@ -9657,17 +9657,17 @@ async function toggleStudentValidity() {
                     ? '<span class="badge badge-linked">تم حلها</span>'
                     : '<span class="badge badge-open">قيد المعالجة</span>';
                 
+                const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined' && String(sos.telegram_id) !== '2045194295';
+                
                 const matchedStudent = allStudents.find(st => 
-                    (sos.telegram_id && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
+                    (hasValidTid && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
                     (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
                     (sos.student_id_tentative && st.student_id && String(st.student_id) === String(sos.student_id_tentative))
                 );
 
-                const matchedGhost = (rawGhostList || []).find(v => 
-                    (sos.telegram_id && v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) ||
-                    (sos.email_tentative && v.student_email && v.student_email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
-                    (sos.student_id_tentative && v.student_id && String(v.student_id) === String(sos.student_id_tentative))
-                );
+                const matchedGhost = hasValidTid 
+                    ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id))
+                    : null;
 
                 const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
                 const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
@@ -9741,16 +9741,16 @@ async function toggleStudentValidity() {
             activeSosEmail = sos.email_tentative;
             activeSosStudentId = sos.student_id_tentative;
             
+            const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined' && String(sos.telegram_id) !== '2045194295';
+
             const matchedStudent = allStudents.find(st => 
-                (sos.telegram_id && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
+                (hasValidTid && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
                 (sos.email_tentative && st.email && st.email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
                 (sos.student_id_tentative && st.student_id && String(st.student_id) === String(sos.student_id_tentative))
             );
-            const matchedGhost = (rawGhostList || []).find(v => 
-                (sos.telegram_id && v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) ||
-                (sos.email_tentative && v.student_email && v.student_email.toLowerCase() === sos.email_tentative.toLowerCase()) ||
-                (sos.student_id_tentative && v.student_id && String(v.student_id) === String(sos.student_id_tentative))
-            );
+            const matchedGhost = hasValidTid 
+                ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id))
+                : null;
             const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
             const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
             const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
