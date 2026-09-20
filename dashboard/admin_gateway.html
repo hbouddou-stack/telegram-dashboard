@@ -6749,13 +6749,22 @@ function switchCrmWorkspace(ws) {
         }
     });
 
-    // Toggle UI cleanup
+    // Toggle UI cleanup for Advanced/Academic filters
     document.querySelectorAll('.hide-in-relance').forEach(el => {
-        if (ws === 'relance') el.classList.add('hide-in-relance-active');
-        else el.classList.remove('hide-in-relance-active');
+        if (ws === 'relance') {
+            el.style.setProperty('display', 'none', 'important');
+        } else {
+            el.style.display = 'flex';
+        }
     });
     
-    if(relanceToolbar) relanceToolbar.style.display = 'none'; // WE NEVER SHOW THE OLD RELANCE TOOLBAR ANYMORE
+    // Toggle the NEW Sales Funnel
+    const funnelBar = document.getElementById('quick-remark-filters');
+    if (funnelBar) {
+        funnelBar.style.display = (ws === 'relance') ? 'flex' : 'none';
+    }
+    
+    if(relanceToolbar) relanceToolbar.style.display = 'none'; // OLD RELANCE TOOLBAR IS DEAD
 
     if (ws === 'relance') {
         if(btnRelance) {
@@ -6768,8 +6777,7 @@ function switchCrmWorkspace(ws) {
             filters.payment = 'all'; // Funnel handles it
             filters.funnelStage = filters.funnelStage || 'funnel_new';
         }
-        const pEl = document.getElementById('pay-unpaid');
-        if(pEl && typeof setPayFilterUI === 'function') setPayFilterUI('unpaid', pEl);
+        // DO NOT call setPayFilterUI here, it ruins the funnel!
     } else if (ws === 'pedagogy') {
         if(btnPeda) {
             btnPeda.style.background = 'linear-gradient(135deg, #10b981, #059669)';
