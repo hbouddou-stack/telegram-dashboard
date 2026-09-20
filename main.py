@@ -1225,7 +1225,36 @@ async def api_admin_gateway_students(request: web.Request):
                 except Exception:
                     pass
 
-            async with db.execute("""
+                        # CRM AGENT MAPPING (Modify this dictionary with real Telegram IDs and Agent Names)
+            CRM_AGENTS = {
+                "111111111": "Fatima",
+                "222222222": "Khadija",
+                "333333333": "Aicha"
+            }
+            
+            agent_tg_id = request.query.get('tg_user_id', '').strip()
+            
+            # Check if super admin
+            from config import TELEGRAM_ADMIN_IDS
+            is_super_admin = False
+            if agent_tg_id.isdigit() and int(agent_tg_id) in TELEGRAM_ADMIN_IDS:
+                is_super_admin = True
+                
+            where_clause = ""
+            params = []
+            
+            # If a telegram ID is provided and it's NOT a super admin, filter the leads
+            # If no ID is provided, we default to showing all (assuming desktop/super admin direct access)
+            if agent_tg_id and not is_super_admin:
+                agent_name = CRM_AGENTS.get(agent_tg_id)
+                if agent_name:
+                    where_clause = "WHERE s.crm_assigned_to = ?"
+                    params.append(agent_name)
+                else:
+                    # If ID is unknown, block access (return nothing)
+                    where_clause = "WHERE 1 = 0"
+
+            query = f"""
                 SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
                        s.year, s.gender, s.dob, s.source, s.source_file, s.phone, s.created_at, s.payment_status,
                        s.profession, s.country, s.nationality, s.arabic_level, s.school_level,
@@ -1238,12 +1267,14 @@ async def api_admin_gateway_students(request: web.Request):
                        u.first_name as tg_first_name, u.last_name as tg_last_name, s.magic_token
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
+                {where_clause}
                 ORDER BY s.created_at DESC, s.first_name ASC
-            """) as cur:
+            """
+            async with db.execute(query, params) as cur:
                 students = [dict(row) for row in await cur.fetchall()]
         import config as cfg
         bot_user = getattr(cfg, 'MAIN_BOT_USERNAME', 'alsirahquizz_bot') or 'alsirahquizz_bot'
-        return web.json_response({'success': True, 'students': students, 'bot_username': bot_user})
+        return web.json_response({'success': True, 'students': students, 'bot_username': bot_user, 'is_super_admin': is_super_admin, 'agent_name': CRM_AGENTS.get(agent_tg_id, 'Admin')})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 

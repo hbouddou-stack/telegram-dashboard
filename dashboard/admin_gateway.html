@@ -5343,11 +5343,25 @@
         // ============ STUDENTS ============
         async function fetchStudents() {
             try {
-                const res = await fetch('/api/admin/gateway/students?t=' + Date.now());
+                let tgUserId = '';
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                    tgUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
+                }
+                const res = await fetch('/api/admin/gateway/students?tg_user_id=' + tgUserId + '&t=' + Date.now());
                 const data = await res.json();
                 
                 if(data.success) {
                     allStudents = data.students;
+                    window.isSuperAdmin = data.is_super_admin;
+                    window.currentAgentName = data.agent_name;
+                    
+                    if (!window.isSuperAdmin && window.currentAgentName) {
+                        const advSel = document.getElementById('crm-advisor-select');
+                        if (advSel) {
+                            advSel.innerHTML = `<option value="all">👤 ${window.currentAgentName} (Vos leads)</option>`;
+                            advSel.disabled = true;
+                        }
+                    }
                     
                     // Build dynamic Excel files dropdown
                     const sourceSelect = document.getElementById('source-select');
@@ -11087,11 +11101,25 @@ function renderHomeAlerts(alerts) {
                 const chartArea = document.getElementById('daily-chart-area');
                 const tbody = document.getElementById('daily-stats-body');
                 if (chartArea) chartArea.innerHTML = '<div style="color:var(--text2); font-size:0.85rem; margin:auto;">⏳ جاري جلب البيانات...</div>';
-                fetch('/api/admin/gateway/students?t=' + Date.now())
+                let tgUserId2 = '';
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                    tgUserId2 = window.Telegram.WebApp.initDataUnsafe.user.id;
+                }
+                fetch('/api/admin/gateway/students?tg_user_id=' + tgUserId2 + '&t=' + Date.now())
                     .then(r => r.json())
                     .then(data => {
                         if (data.success && data.students) {
                             allStudents = data.students;
+                    window.isSuperAdmin = data.is_super_admin;
+                    window.currentAgentName = data.agent_name;
+                    
+                    if (!window.isSuperAdmin && window.currentAgentName) {
+                        const advSel = document.getElementById('crm-advisor-select');
+                        if (advSel) {
+                            advSel.innerHTML = `<option value="all">👤 ${window.currentAgentName} (Vos leads)</option>`;
+                            advSel.disabled = true;
+                        }
+                    }
                         }
                         _doLoadStats(days, el);
                     })
