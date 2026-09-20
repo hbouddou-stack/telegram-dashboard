@@ -1237,14 +1237,16 @@ async def api_admin_gateway_students(request: web.Request):
             # Check if super admin
             from config import TELEGRAM_ADMIN_IDS
             is_super_admin = False
-            if agent_tg_id.isdigit() and int(agent_tg_id) in TELEGRAM_ADMIN_IDS:
+            # If no ID provided at all (browser/desktop access) → treat as super admin
+            if not agent_tg_id:
+                is_super_admin = True
+            elif agent_tg_id.isdigit() and int(agent_tg_id) in TELEGRAM_ADMIN_IDS:
                 is_super_admin = True
                 
             where_clause = ""
             params = []
             
             # If a telegram ID is provided and it's NOT a super admin, filter the leads
-            # If no ID is provided, we default to showing all (assuming desktop/super admin direct access)
             if agent_tg_id and not is_super_admin:
                 agent_name = CRM_AGENTS.get(agent_tg_id)
                 if agent_name:
