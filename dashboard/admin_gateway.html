@@ -1571,6 +1571,8 @@ window.setRemarkFilterQuick = function(val, el) {
             .remark-pill-active .cat-count { color: var(--text1); background: var(--bg); }
         </style>
         <div id="quick-remark-filters" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:8px; align-items:center; direction:rtl; scrollbar-width: thin;">
+            <button onclick="toggleCrmAnalytics()" class="remark-pill" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #8b5cf6; background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 8px rgba(139,92,246,0.4);">📊 إحصائيات الوكيل</button>
+            <div style="width:2px; height:24px; background:var(--border); margin:0 4px; flex-shrink:0;"></div>
             <button onclick="setRemarkFilterQuick('untouched', this)" data-cat="untouched" class="remark-pill remark-pill-active" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #3b82f6; background:rgba(59,130,246,0.1); color:#2563eb; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit;">🆕 لم يتم التواصل <span class="cat-count">(0)</span></button>
             <button onclick="setRemarkFilterQuick('all', this)" data-cat="all" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">الكل <span class="cat-count">(0)</span></button>
             <button onclick="setRemarkFilterQuick('will_pay', this)" data-cat="will_pay" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #10b981; background:rgba(16,185,129,0.05); color:#059669; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟢 مهتم/سيدفع <span class="cat-count">(0)</span></button>
@@ -1579,7 +1581,41 @@ window.setRemarkFilterQuick = function(val, el) {
             <button onclick="setRemarkFilterQuick('invalid_number', this)" data-cat="invalid_number" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #64748b; background:rgba(100,116,139,0.05); color:#475569; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔵 رقم خاطئ <span class="cat-count">(0)</span></button>
             <button onclick="setRemarkFilterQuick('foreign_sent', this)" data-cat="foreign_sent" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #8b5cf6; background:rgba(139,92,246,0.05); color:#7c3aed; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟣 تم الإرسال/أجنبي <span class="cat-count">(0)</span></button>
         </div>
-<div id="students-list"></div>
+
+        <!-- CRM Analytics Dashboard -->
+        <div id="crm-analytics-dashboard" style="display:none; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); direction:rtl;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="margin:0; color:var(--text1); font-family:'Tajawal';">📊 الأداء والمتابعة <span id="analytics-agent-name" style="color:var(--accent);"></span></h3>
+                <button onclick="toggleCrmAnalytics()" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); border-radius:8px; padding:4px 12px; cursor:pointer;">✖ إغلاق</button>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:20px;">
+                <!-- Chart -->
+                <div style="flex:1; min-width:300px; max-width:400px; margin:auto;">
+                    <canvas id="crmAgentPieChart"></canvas>
+                </div>
+                <!-- KPIs -->
+                <div style="flex:1; min-width:250px; display:flex; flex-direction:column; gap:12px; justify-content:center;">
+                    <div style="background:var(--bg); padding:16px; border-radius:12px; border:1px solid var(--border); border-right:4px solid var(--accent);">
+                        <div style="font-size:0.85rem; color:var(--text2);">إجمالي المسند إليه (بما في ذلك المسددين)</div>
+                        <div style="font-size:1.8rem; font-weight:bold; color:var(--text1);" id="analytics-kpi-total">0</div>
+                    </div>
+                    <div style="background:var(--bg); padding:16px; border-radius:12px; border:1px solid var(--border); border-right:4px solid #10b981;">
+                        <div style="font-size:0.85rem; color:var(--text2);">المسددون (Paid)</div>
+                        <div style="font-size:1.8rem; font-weight:bold; color:#10b981;" id="analytics-kpi-paid">0</div>
+                    </div>
+                    <div style="background:var(--bg); padding:16px; border-radius:12px; border:1px solid var(--border); border-right:4px solid #3b82f6;">
+                        <div style="font-size:0.85rem; color:var(--text2);">قيد المتابعة (À traiter / Unpaid)</div>
+                        <div style="font-size:1.8rem; font-weight:bold; color:#3b82f6;" id="analytics-kpi-unpaid">0</div>
+                    </div>
+                    <div style="background:var(--bg); padding:16px; border-radius:12px; border:1px solid var(--border); border-right:4px solid #f59e0b;">
+                        <div style="font-size:0.85rem; color:var(--text2);">معدل التحويل (المدفوع / الإجمالي)</div>
+                        <div style="font-size:1.8rem; font-weight:bold; color:#f59e0b;" id="analytics-kpi-conversion">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="students-list"></div>
+
 
     </div>
     
@@ -7256,6 +7292,110 @@ function filterStudents() {
                 });
             }
 
+            
+window.crmPieChartInstance = null;
+window.toggleCrmAnalytics = function() {
+    const dash = document.getElementById('crm-analytics-dashboard');
+    if (dash.style.display === 'none') {
+        dash.style.display = 'block';
+        renderCrmAnalytics();
+    } else {
+        dash.style.display = 'none';
+    }
+};
+
+window.renderCrmAnalytics = function() {
+    if (!window.Chart || typeof allStudents === 'undefined') return;
+    
+    // Get selected agent
+    const agSel = document.getElementById('main-agent-select');
+    const agentName = agSel ? agSel.value : 'all';
+    
+    document.getElementById('analytics-agent-name').textContent = agentName === 'all' ? '(الكل)' : `(${agentName})`;
+    
+    let agentStudents = allStudents.filter(s => s.excluded != 1);
+    if (agentName !== 'all') {
+        agentStudents = agentStudents.filter(s => String(s.crm_assigned_to || '').trim() === agentName);
+    }
+    
+    let total = agentStudents.length;
+    let paid = 0;
+    let unpaid = 0;
+    
+    const catCounts = {
+        will_pay: 0,
+        no_answer: 0,
+        not_interested: 0,
+        invalid_number: 0,
+        foreign_sent: 0,
+        technical: 0,
+        other: 0,
+        untouched: 0
+    };
+    
+    agentStudents.forEach(s => {
+        const pv = String(s.payment_status || '').toUpperCase().trim();
+        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
+        if (isPaid) {
+            paid++;
+        } else {
+            unpaid++;
+            const rText = String(s.comments || s.marketing_notes || '');
+            const obj = window.getRemarkCategory ? window.getRemarkCategory(rText) : null;
+            if (obj && obj.id) catCounts[obj.id] = (catCounts[obj.id] || 0) + 1;
+        }
+    });
+    
+    document.getElementById('analytics-kpi-total').textContent = total;
+    document.getElementById('analytics-kpi-paid').textContent = paid;
+    document.getElementById('analytics-kpi-unpaid').textContent = unpaid;
+    document.getElementById('analytics-kpi-conversion').textContent = total > 0 ? Math.round((paid / total) * 100) + '%' : '0%';
+    
+    // Prepare Chart Data
+    const ctx = document.getElementById('crmAgentPieChart');
+    if (!ctx) return;
+    
+    if (window.crmPieChartInstance) window.crmPieChartInstance.destroy();
+    
+    const dataLabels = ['لم يتم التواصل', 'مهتم/سيدفع', 'لا يجيب', 'غير مهتم/إلغاء', 'رقم خاطئ', 'تم الإرسال'];
+    const dataValues = [
+        catCounts.untouched || 0,
+        catCounts.will_pay || 0,
+        catCounts.no_answer || 0,
+        catCounts.not_interested || 0,
+        catCounts.invalid_number || 0,
+        catCounts.foreign_sent || 0
+    ];
+    const dataColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#64748b', '#8b5cf6'];
+    
+    window.crmPieChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: dataLabels,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: dataColors,
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { font: { family: 'Tajawal' } } },
+                title: { display: true, text: 'توزيع حالات المتابعة (غير المسددين)', font: { family: 'Tajawal', size: 16 } }
+            },
+            cutout: '60%'
+        }
+    });
+};
+
+
+if (document.getElementById('crm-analytics-dashboard') && document.getElementById('crm-analytics-dashboard').style.display !== 'none') {
+                if (typeof renderCrmAnalytics === 'function') renderCrmAnalytics();
+            }
+            
             // Compute workspace counts & CRM metrics
             try {
                 const activeStudentsNoEx = (allStudents || []).filter(st => {
