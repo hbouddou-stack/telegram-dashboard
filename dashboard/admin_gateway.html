@@ -1074,6 +1074,9 @@
                         <select id="crm-advisor-select" onchange="setCrmAgentFilter(this.value)" style="padding:6px 10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.85rem; font-weight:bold; outline:none;">
                             <option value="all">👤 جميع المسؤولين</option>
                         </select>
+                        <button onclick="syncGSheetAgents(this)" id="btn-sync-gsheet-toolbar" title="مزامنة فورية مع Google Sheet" style="background:linear-gradient(135deg, #059669, #10b981); color:white; border:none; padding:7px 12px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:0.82rem; font-family:inherit; display:flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(16,185,129,0.25);">
+                            <span>🔄 مزامنة الشيت</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1142,7 +1145,17 @@
                 </button>
             </div>
 
-            <!-- Line 4: Lead Type (Source) -->
+            <!-- Line 4: Agent Filter & GSheet Sync (Always Visible) -->
+            <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
+                <select id="main-agent-select" onchange="setCrmAgentFilter(this.value)" style="flex:1.2; padding:10px 12px; border-radius:12px; border:1.5px solid #2563eb; background:var(--surface); color:var(--text1); font-family:inherit; font-weight:bold; font-size:0.9rem; outline:none; box-shadow:0 2px 5px rgba(37,99,235,0.1); direction:rtl;">
+                    <option value="all">👤 جميع الأعوان (Tous les agents)</option>
+                </select>
+                <button onclick="syncGSheetAgents(this)" id="btn-sync-gsheet-main" title="مزامنة فورية مع Google Sheet وتعيين الأعوان والملاحظات" style="background:linear-gradient(135deg, #059669, #10b981); color:white; border:none; padding:10px 14px; border-radius:12px; font-weight:900; cursor:pointer; font-size:0.85rem; font-family:inherit; display:flex; align-items:center; gap:6px; white-space:nowrap; box-shadow:0 3px 10px rgba(16,185,129,0.3); transition:all 0.2s;">
+                    <span>🔄 مزامنة GSheet</span>
+                </button>
+            </div>
+
+            <!-- Line 4b: Lead Type (Source) -->
             <div style="display:flex; margin-bottom:10px;">
                 <select id="lead-type-filter" onchange="if(typeof filterStudents === 'function') filterStudents()" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-weight:bold; font-size:0.95rem; outline:none; box-shadow:0 2px 5px rgba(0,0,0,0.02); direction:rtl;">
                     <option value="all">🔍 نوع التسجيل (الكل)</option>
@@ -5393,6 +5406,9 @@
                     }
 
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
+                    if (typeof populateAgentDropdowns === 'function') {
+                        populateAgentDropdowns(allStudents);
+                    }
                     switchCrmWorkspace(window.crmWorkspace || 'relance');
                     if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
                     // Auto-refresh stats tab if it's currently active
@@ -6691,9 +6707,90 @@ function toggleCrmDueToday(el) {
     filterStudents();
 }
 
+
+// ==========================================
+// AGENT DROPDOWNS & GSHEET SYNC LOGIC
+// ==========================================
+window.populateAgentDropdowns = function(students) {
+    if (!students || !students.length) return;
+    const agentCounts = {};
+    students.forEach(st => {
+        if (st.excluded == 1) return;
+        const ag = (st.crm_assigned_to || '').trim();
+        if (ag) {
+            agentCounts[ag] = (agentCounts[ag] || 0) + 1;
+        }
+    });
+
+    const agentNames = Object.keys(agentCounts).sort();
+    const dropdownIds = ['crm-advisor-select', 'main-agent-select'];
+
+    dropdownIds.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+
+        const currentVal = (typeof filters !== 'undefined' && filters.crmAgent) ? filters.crmAgent : sel.value;
+        const labelAll = id === 'main-agent-select' ? '👤 جميع الأعوان (Tous)' : '👤 جميع المسؤولين';
+        sel.innerHTML = `<option value="all">${labelAll} (${students.length})</option>`;
+
+        agentNames.forEach(name => {
+            const count = agentCounts[name];
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = `👤 ${name} (${count})`;
+            sel.appendChild(opt);
+        });
+
+        if (window.isSuperAdmin === false && window.currentAgentName) {
+            sel.value = window.currentAgentName;
+            sel.disabled = true;
+        } else {
+            sel.value = (currentVal && agentNames.includes(currentVal)) ? currentVal : 'all';
+            sel.disabled = false;
+        }
+    });
+};
+
+window.syncGSheetAgents = async function(btn) {
+    const originalContent = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ جاري المزامنة...';
+    }
+    
+    try {
+        const res = await fetch('/api/admin/gateway/import_agents_gsheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data && data.success) {
+            alert(`✅ تمت المزامنة بنجاح من Google Sheet!
+تم تحديث ${data.updated} طالب وتعيين الأعوان والملاحظات.`);
+            if (typeof fetchStudents === 'function') {
+                await fetchStudents();
+            }
+        } else {
+            alert(`❌ خطأ أثناء المزامنة: ${(data && data.error) || 'حدث خطأ غير معروف'}`);
+        }
+    } catch (err) {
+        console.error('Error in syncGSheetAgents:', err);
+        alert(`❌ فشل الاتصال بالخادم: ${err.message}`);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalContent || '🔄 مزامنة GSheet';
+        }
+    }
+};
+
 function setCrmAgentFilter(val) {
     if(!filters) return;
     filters.crmAgent = val;
+    const sel1 = document.getElementById('crm-advisor-select');
+    const sel2 = document.getElementById('main-agent-select');
+    if (sel1 && sel1.value !== val) sel1.value = val;
+    if (sel2 && sel2.value !== val) sel2.value = val;
     filterStudents();
 }
 
@@ -7069,7 +7166,7 @@ function filterStudents() {
 
                 let matchCrmAgent = true;
                 if (filters.crmAgent && filters.crmAgent !== 'all') {
-                    matchCrmAgent = (s.crm_assigned_to === filters.crmAgent);
+                    matchCrmAgent = (String(s.crm_assigned_to || '').trim().toLowerCase() === filters.crmAgent.trim().toLowerCase());
                 }
 
                 let matchCrmDueToday = true;
@@ -7144,18 +7241,12 @@ function filterStudents() {
                 const eKpiDue = document.getElementById('crm-count-duetoday');
                 if (eKpiDue) eKpiDue.textContent = kpiDue;
 
-                const advSel = document.getElementById('crm-advisor-select');
-                if (advSel && advSet.size > 0) {
-                    // Always refresh dropdown
-                    const currentVal = advSel.value;
-                    while (advSel.options.length > 1) advSel.remove(1);
-                    Array.from(advSet).sort().forEach(adv => {
-                        const opt = document.createElement('option');
-                        opt.value = adv;
-                        opt.textContent = '👤 ' + adv;
-                        advSel.appendChild(opt);
-                    });
-                }
+                // Sync dropdown values without destroying options
+                const curAgent = (typeof filters !== 'undefined' && filters.crmAgent) ? filters.crmAgent : 'all';
+                const s1 = document.getElementById('crm-advisor-select');
+                const s2 = document.getElementById('main-agent-select');
+                if (s1 && s1.value !== curAgent) s1.value = curAgent;
+                if (s2 && s2.value !== curAgent) s2.value = curAgent;
             } catch(e) {}
 
             // Sort filtered results
