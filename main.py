@@ -1700,11 +1700,15 @@ async def api_admin_gateway_import_agents_gsheet(request: web.Request):
             db_emails = {}
             db_phones = {}
             
+            db_student_ids = {}
             for row in db_students:
-                s_id = row[0]
+                s_id = str(row[0]).strip()
+                db_student_ids[s_id] = s_id
+                
                 acad_id = str(row[1]).strip() if row[1] else ""
                 if acad_id:
                     db_acad_26[acad_id + "26"] = s_id
+                    db_acad_26[acad_id] = s_id
                 email = str(row[2]).strip().lower() if row[2] else ""
                 if email:
                     db_emails[email] = s_id
@@ -1712,6 +1716,10 @@ async def api_admin_gateway_import_agents_gsheet(request: web.Request):
                 c_phone = re.sub(r'\D', '', phone)
                 if c_phone:
                     db_phones[c_phone] = s_id
+                    if c_phone.startswith('212'):
+                        db_phones[c_phone[3:]] = s_id
+                    elif c_phone.startswith('0'):
+                        db_phones['212' + c_phone[1:]] = s_id
             
             updated_ids = set()
             for row in reader:
@@ -1725,9 +1733,10 @@ async def api_admin_gateway_import_agents_gsheet(request: web.Request):
                 if not team: continue
                 
                 s_id = None
-                if numero in db_acad_26: s_id = db_acad_26[numero]
-                elif email in db_emails: s_id = db_emails[email]
-                elif c_phone in db_phones: s_id = db_phones[c_phone]
+                if numero in db_student_ids: s_id = db_student_ids[numero]
+                elif numero in db_acad_26: s_id = db_acad_26[numero]
+                elif email and email in db_emails: s_id = db_emails[email]
+                elif c_phone and c_phone in db_phones: s_id = db_phones[c_phone]
                 
                 if s_id:
                     await db.execute("UPDATE academy_students SET crm_assigned_to = ?, crm_next_action_note = ? WHERE student_id = ?", (team, comment, s_id))
