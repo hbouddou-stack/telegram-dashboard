@@ -7128,6 +7128,7 @@ function filterStudents() {
                 activeStudentsNoEx.forEach(st => {
                     const pv = String(st.payment_status || '').toUpperCase().trim();
                     const isStPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
+                      if (st.crm_assigned_to && st.crm_assigned_to.trim()) advSet.add(st.crm_assigned_to.trim());
                     if (!isStPaid) {
                         const stSt = st.crm_lead_status || 'NOUVEAU';
                         if (stSt === 'NOUVEAU') kpiNew++;
@@ -7139,9 +7140,7 @@ function filterStudents() {
                         if (st.crm_next_action_date && st.crm_next_action_date <= todayIso) {
                             kpiDue++;
                         }
-                        if (st.crm_assigned_to && st.crm_assigned_to.trim()) {
-                            advSet.add(st.crm_assigned_to.trim());
-                        }
+                        
                     }
                 });
 
