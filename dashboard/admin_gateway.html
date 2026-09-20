@@ -7078,7 +7078,14 @@ function filterStudents() {
 
             // Compute workspace counts & CRM metrics
             try {
-                const activeStudentsNoEx = (allStudents || []).filter(st => st.excluded != 1);
+                const activeStudentsNoEx = (allStudents || []).filter(st => {
+                      if (st.excluded == 1) return false;
+                      if (typeof filters !== 'undefined' && filters.crmAgent && filters.crmAgent !== 'all') {
+                          const ag = String(st.crm_assigned_to || '').toLowerCase().trim();
+                          if (ag !== filters.crmAgent.toLowerCase().trim()) return false;
+                      }
+                      return true;
+                  });
                 const totalUnpaidCount = activeStudentsNoEx.filter(st => {
                     const pv = String(st.payment_status || '').toUpperCase().trim();
                     return !(['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد')));
