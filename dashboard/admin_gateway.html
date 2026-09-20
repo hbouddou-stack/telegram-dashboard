@@ -1112,7 +1112,7 @@
             <input style="width:100%; margin-bottom:10px; padding:12px 18px; border-radius:12px; border:1px solid var(--accent); background:var(--surface); font-family:inherit; font-size:1.05rem; outline:none; box-shadow:0 2px 5px rgba(0,0,0,0.02);" class="search-box" type="text" id="search-input" placeholder="🔍 بحث (الاسم، الإيميل...)" oninput="filterStudents()">
             
             <!-- Line 2: Split Controls (Gender & View Mode) -->
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div id="academic-row-1" class="hide-in-relance" style="display:flex; gap:10px; margin-bottom:10px;">
                 <!-- Gender Segmented Control (50%) -->
                 <div style="flex:1; display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:1.1rem;">
                     <div id="g-all" onclick="setGenderFilterUI('all', this)" style="flex:1; text-align:center; padding:8px 0; cursor:pointer; background:#a855f7; color:white; transition:all 0.2s;">👥</div>
@@ -1130,7 +1130,7 @@
             </div>
             
             <!-- Line 3: Quick Action Buttons (Paid/Unpaid & Advanced Filters) -->
-            <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <div id="academic-row-2" class="hide-in-relance" style="display:flex; gap:8px; margin-bottom:10px;">
                 <!-- Paid / Unpaid Filter -->
                 <div style="flex:1; display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:0.95rem;">
                     <div id="pay-all" onclick="setPayFilterUI('all', this)" style="flex:1; text-align:center; padding:10px 0; cursor:pointer; background:var(--accent); color:white; font-weight:bold; transition:all 0.2s;">الكل</div>
@@ -1531,18 +1531,15 @@
 <script>
 // --- Added by Script: Remark Categorization ---
 window.getRemarkCategory = function(text) {
-    if (!text || String(text).trim() === '') return { id: 'untouched', label: '🆕 لم يتم التواصل', color: '#2563eb', bg: 'rgba(37,99,235,0.15)', border: '#3b82f6' };
+    if (!text || String(text).trim() === '') return { id: 'funnel_new', label: '🆕 نيو (Nouveaux)' };
     const t = String(text).toLowerCase();
-    if (t.match(/لا يجيب|لايجيب|لاتجيب|العلبة الصوتية|مغلق|مشغول|يتعذر|رنة|هاتف|رسالة/)) return { id: 'no_answer', label: '🟡 لا يجيب', color: '#d97706', bg: 'rgba(245,158,11,0.15)', border: '#f59e0b' };
-    if (t.match(/غير مهتم|لا يريد|رفض|ليس|لا |مستبعد|إلغاء/)) return { id: 'not_interested', label: '🔴 غير مهتم', color: '#dc2626', bg: 'rgba(239,68,68,0.15)', border: '#ef4444' };
-    if (t.match(/ستدفع|سيسدد|ستسدد|قريبا|غدا|مهتم|ارسل الحساب|موافق|تسجيل|تسجل|بعد|يفكر|تم/)) return { id: 'will_pay', label: '🟢 مهتم/سيدفع', color: '#059669', bg: 'rgba(16,185,129,0.15)', border: '#10b981' };
-    if (t.match(/مكرر|غير صحيح|خاطئ|غلط/)) return { id: 'invalid_number', label: '🔵 رقم خاطئ', color: '#475569', bg: 'rgba(100,116,139,0.15)', border: '#64748b' };
-    if (t.match(/أجنبي|اجنبي|ارسال|إرسال|واتساب|خارج/)) return { id: 'foreign_sent', label: '🟣 تم الإرسال', color: '#7c3aed', bg: 'rgba(139,92,246,0.15)', border: '#8b5cf6' };
-    if (t.match(/مشكل|موقع|إيميل|تقني/)) return { id: 'technical', label: '🟠 مشكل تقني', color: '#ea580c', bg: 'rgba(234,88,12,0.15)', border: '#f97316' };
-    return { id: 'other', label: '⚪ ملاحظة أخرى', color: '#4b5563', bg: 'rgba(75,85,99,0.15)', border: '#9ca3af' };
+    if (t.match(/غير مهتم|لا يريد|رفض|ليس|لا |مستبعد|إلغاء|مكرر|غير صحيح|خاطئ|غلط/)) return { id: 'funnel_lost' };
+    if (t.match(/ستدفع|سيسدد|ستسدد|قريبا|غدا|مهتم|ارسل الحساب|موافق|تسجيل|تسجل|بعد|يفكر|تم/)) return { id: 'funnel_promise' };
+    // Everything else (No answer, technical, foreign, other) falls into 'En cours'
+    return { id: 'funnel_progress' };
 };
 
-window.setRemarkFilterQuick = function(val, el) {
+window.setSalesFunnel = function(val, el) {
     document.querySelectorAll('.remark-pill').forEach(btn => btn.classList.remove('remark-pill-active'));
     if (el) {
         el.classList.add('remark-pill-active');
@@ -1551,38 +1548,43 @@ window.setRemarkFilterQuick = function(val, el) {
         if (targetBtn) targetBtn.classList.add('remark-pill-active');
     }
     
-    const sel = document.getElementById('remark-select');
-    if (sel) sel.value = val;
-    
     if (typeof filters !== 'undefined') {
-        filters.remark = val;
+        filters.funnelStage = val;
+        // Reset old filters that conflict
+        filters.payment = 'all'; 
+        filters.remark = 'all';
         if(typeof filterStudents === 'function') filterStudents();
     }
 };
 // ----------------------------------------------
 </script>
 
-        <!-- Quick Remark Filters (Pills) -->
         <style>
+            .hide-in-relance-active { display: none !important; }
             .remark-pill { transition: all 0.2s; white-space: nowrap; }
             .remark-pill:hover { opacity: 0.8; transform: translateY(-1px); }
             .remark-pill-active { background: var(--text1) !important; color: var(--bg) !important; border-color: var(--text1) !important; }
             .cat-count { margin-right:4px; font-weight:900; background:rgba(255,255,255,0.25); border-radius:10px; padding:2px 6px; font-size:0.75rem; }
             .remark-pill-active .cat-count { color: var(--text1); background: var(--bg); }
         </style>
-        <div id="quick-remark-filters" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:8px; align-items:center; direction:rtl; scrollbar-width: thin;">
-            <button onclick="toggleCrmAnalytics()" class="remark-pill" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #8b5cf6; background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 2px 8px rgba(139,92,246,0.4);">📊 إحصائيات الوكيل</button>
+        
+        <!-- THE 5-STEP SALES FUNNEL -->
+        <div id="quick-remark-filters" class="sales-funnel-bar" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:8px; align-items:center; direction:rtl; scrollbar-width: thin;">
+            
+            <button onclick="toggleCrmAnalytics()" class="remark-pill" style="flex-shrink:0; padding:8px 12px; border-radius:20px; border:2px solid #8b5cf6; background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; font-weight:900; cursor:pointer; font-size:0.9rem; box-shadow:0 2px 8px rgba(139,92,246,0.4);">📊 إحصائيات</button>
             <div style="width:2px; height:24px; background:var(--border); margin:0 4px; flex-shrink:0;"></div>
-            <button onclick="setRemarkFilterQuick('untouched', this)" data-cat="untouched" class="remark-pill remark-pill-active" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #3b82f6; background:rgba(59,130,246,0.1); color:#2563eb; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit;">🆕 لم يتم التواصل <span class="cat-count">(0)</span></button>
-            <button onclick="setRemarkFilterQuick('all', this)" data-cat="all" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">الكل <span class="cat-count">(0)</span></button>
-            <button onclick="setRemarkFilterQuick('will_pay', this)" data-cat="will_pay" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #10b981; background:rgba(16,185,129,0.05); color:#059669; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟢 مهتم/سيدفع <span class="cat-count">(0)</span></button>
-            <button onclick="setRemarkFilterQuick('no_answer', this)" data-cat="no_answer" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.05); color:#d97706; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟡 لا يجيب <span class="cat-count">(0)</span></button>
-            <button onclick="setRemarkFilterQuick('not_interested', this)" data-cat="not_interested" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #ef4444; background:rgba(239,68,68,0.05); color:#dc2626; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔴 غير مهتم/إلغاء <span class="cat-count">(0)</span></button>
-            <button onclick="setRemarkFilterQuick('invalid_number', this)" data-cat="invalid_number" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #64748b; background:rgba(100,116,139,0.05); color:#475569; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔵 رقم خاطئ <span class="cat-count">(0)</span></button>
-            <button onclick="setRemarkFilterQuick('foreign_sent', this)" data-cat="foreign_sent" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #8b5cf6; background:rgba(139,92,246,0.05); color:#7c3aed; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟣 تم الإرسال/أجنبي <span class="cat-count">(0)</span></button>
+            
+            <button onclick="setSalesFunnel('funnel_new', this)" data-cat="funnel_new" class="remark-pill remark-pill-active" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #3b82f6; background:rgba(59,130,246,0.1); color:#2563eb; font-weight:900; cursor:pointer; font-size:0.95rem;">🆕 الجدد (À contacter) <span class="cat-count" id="cnt-new">(0)</span></button>
+            
+            <button onclick="setSalesFunnel('funnel_progress', this)" data-cat="funnel_progress" class="remark-pill" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #f59e0b; background:rgba(245,158,11,0.1); color:#d97706; font-weight:900; cursor:pointer; font-size:0.95rem;">⏳ قيد المتابعة (En cours) <span class="cat-count" id="cnt-progress">(0)</span></button>
+            
+            <button onclick="setSalesFunnel('funnel_promise', this)" data-cat="funnel_promise" class="remark-pill" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #8b5cf6; background:rgba(139,92,246,0.1); color:#7c3aed; font-weight:900; cursor:pointer; font-size:0.95rem;">💸 وعد بالسداد (Promesse) <span class="cat-count" id="cnt-promise">(0)</span></button>
+            
+            <button onclick="setSalesFunnel('funnel_won', this)" data-cat="funnel_won" class="remark-pill" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #10b981; background:rgba(16,185,129,0.1); color:#059669; font-weight:900; cursor:pointer; font-size:0.95rem;">✅ مسددين (Convertis) <span class="cat-count" id="cnt-won">(0)</span></button>
+            
+            <button onclick="setSalesFunnel('funnel_lost', this)" data-cat="funnel_lost" class="remark-pill" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #ef4444; background:rgba(239,68,68,0.1); color:#dc2626; font-weight:900; cursor:pointer; font-size:0.95rem;">❌ ملغى (Perdus) <span class="cat-count" id="cnt-lost">(0)</span></button>
+            
         </div>
-
-        <!-- CRM Analytics Dashboard -->
         <div id="crm-analytics-dashboard" style="display:none; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); direction:rtl;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                 <h3 style="margin:0; color:var(--text1); font-family:'Tajawal';">📊 الأداء والمتابعة <span id="analytics-agent-name" style="color:var(--accent);"></span></h3>
@@ -6747,14 +6749,25 @@ function switchCrmWorkspace(ws) {
         }
     });
 
+    // Toggle UI cleanup
+    document.querySelectorAll('.hide-in-relance').forEach(el => {
+        if (ws === 'relance') el.classList.add('hide-in-relance-active');
+        else el.classList.remove('hide-in-relance-active');
+    });
+    
+    if(relanceToolbar) relanceToolbar.style.display = 'none'; // WE NEVER SHOW THE OLD RELANCE TOOLBAR ANYMORE
+
     if (ws === 'relance') {
         if(btnRelance) {
             btnRelance.style.background = 'linear-gradient(135deg, #ef4444, #f97316)';
             btnRelance.style.color = 'white';
             btnRelance.style.boxShadow = '0 3px 10px rgba(239,68,68,0.25)';
         }
-        if(relanceToolbar) relanceToolbar.style.display = 'block';
-        if(typeof filters !== 'undefined') filters.payment = 'unpaid';
+        
+        if(typeof filters !== 'undefined') {
+            filters.payment = 'all'; // Funnel handles it
+            filters.funnelStage = filters.funnelStage || 'funnel_new';
+        }
         const pEl = document.getElementById('pay-unpaid');
         if(pEl && typeof setPayFilterUI === 'function') setPayFilterUI('unpaid', pEl);
     } else if (ws === 'pedagogy') {
@@ -7135,7 +7148,8 @@ function filterStudents() {
                 });
             }
 
-            window.currentRemarkCounters = { untouched: 0, all: 0, will_pay: 0, not_interested: 0, no_answer: 0, invalid_number: 0, foreign_sent: 0, technical: 0, other: 0 };
+            window.funnelCounters = { funnel_new: 0, funnel_progress: 0, funnel_promise: 0, funnel_won: 0, funnel_lost: 0 };
+            if (!filters.funnelStage) filters.funnelStage = 'funnel_new';
             const filtered = allStudents.filter(s => {
                 if (filters.showExcluded) {
                     if (s.excluded != 1) return false;
@@ -7217,13 +7231,22 @@ function filterStudents() {
                         || (filters.payment === 'unpaid' && !isPaid);
                     
                 // Marketing Remarks Filtering
-                let matchRemark = true;
-                const rText = String(s.comments || s.marketing_notes || '');
-                const rCatObj = window.getRemarkCategory ? window.getRemarkCategory(rText) : null;
-                const cat = rCatObj ? rCatObj.id : null;
+                // 5-STEP FUNNEL LOGIC
+                let funnelStage = 'funnel_new';
+                const pv = String(s.payment_status || '').toUpperCase().trim();
+                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
                 
-                if (filters.remark && filters.remark !== 'all') {
-                    matchRemark = (filters.remark === cat);
+                if (isPaid) {
+                    funnelStage = 'funnel_won';
+                } else {
+                    const rText = String(s.comments || s.marketing_notes || '');
+                    const rCatObj = window.getRemarkCategory ? window.getRemarkCategory(rText) : null;
+                    if (rCatObj && rCatObj.id) funnelStage = rCatObj.id;
+                }
+                
+                let matchFunnel = true;
+                if (window.crmWorkspace === 'relance') {
+                    matchFunnel = (filters.funnelStage === funnelStage);
                 }
 
                 const matchStatus = !filters.status || filters.status === 'all'
@@ -7265,31 +7288,25 @@ function filterStudents() {
                 }
 
                 const matchAllOthers = matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchLeadType && matchCrmStatus && matchCrmAgent && matchCrmDueToday;
-                if (matchAllOthers && window.currentRemarkCounters) {
-                    window.currentRemarkCounters.all++;
-                    if (cat) window.currentRemarkCounters[cat] = (window.currentRemarkCounters[cat] || 0) + 1;
+                
+                // If we are in relance, we ignore matchPayment from the sticky bar because funnel handles it
+                const finalMatchOthers = window.crmWorkspace === 'relance' ? (matchSearch && matchCrmAgent && matchLeadType && matchCrmDueToday) : matchAllOthers;
+                
+                if (finalMatchOthers && window.funnelCounters) {
+                    window.funnelCounters[funnelStage]++;
                 }
-                return matchAllOthers && matchRemark;
+                
+                return window.crmWorkspace === 'relance' ? (finalMatchOthers && matchFunnel) : matchAllOthers;
             
             }); // End of filtering
 
-            // Update Quick Filter Counters in DOM
-            if (window.currentRemarkCounters) {
-                const cats = ['all', 'untouched', 'will_pay', 'not_interested', 'no_answer', 'invalid_number', 'foreign_sent'];
-                cats.forEach(c => {
-                    const btn = document.querySelector(`.remark-pill[data-cat="${c}"]`);
-                    if (btn) {
-                        const cnt = window.currentRemarkCounters[c] || 0;
-                        const span = btn.querySelector('.cat-count');
-                        if (span) span.textContent = `(${cnt})`;
-                        // Subtle visual hint if untouched is 0
-                        if (c === 'untouched' && cnt === 0) {
-                            btn.style.opacity = '0.5';
-                        } else if (c === 'untouched') {
-                            btn.style.opacity = '1';
-                        }
-                    }
-                });
+            // Update Funnel Counters
+            if (window.funnelCounters) {
+                document.getElementById('cnt-new').textContent = `(${window.funnelCounters.funnel_new || 0})`;
+                document.getElementById('cnt-progress').textContent = `(${window.funnelCounters.funnel_progress || 0})`;
+                document.getElementById('cnt-promise').textContent = `(${window.funnelCounters.funnel_promise || 0})`;
+                document.getElementById('cnt-won').textContent = `(${window.funnelCounters.funnel_won || 0})`;
+                document.getElementById('cnt-lost').textContent = `(${window.funnelCounters.funnel_lost || 0})`;
             }
 
             
@@ -7357,16 +7374,14 @@ window.renderCrmAnalytics = function() {
     
     if (window.crmPieChartInstance) window.crmPieChartInstance.destroy();
     
-    const dataLabels = ['لم يتم التواصل', 'مهتم/سيدفع', 'لا يجيب', 'غير مهتم/إلغاء', 'رقم خاطئ', 'تم الإرسال'];
+    const dataLabels = ['الجدد', 'قيد المتابعة', 'وعد بالسداد', 'ملغى'];
     const dataValues = [
-        catCounts.untouched || 0,
-        catCounts.will_pay || 0,
-        catCounts.no_answer || 0,
-        catCounts.not_interested || 0,
-        catCounts.invalid_number || 0,
-        catCounts.foreign_sent || 0
+        window.funnelCounters.funnel_new || 0,
+        window.funnelCounters.funnel_progress || 0,
+        window.funnelCounters.funnel_promise || 0,
+        window.funnelCounters.funnel_lost || 0
     ];
-    const dataColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#64748b', '#8b5cf6'];
+    const dataColors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'];
     
     window.crmPieChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
@@ -13380,10 +13395,10 @@ function openFullscreenJourney() {
 
 
 <!-- FLOATING CRM SWITCHER (GEAR) -->
-<div id="floating-crm-gear" style="position:fixed; bottom:25px; left:25px; z-index:9999; display:flex; flex-direction:column; align-items:flex-start; gap:10px;">
+<div id="floating-crm-gear" style="position:fixed; top:15px; left:15px; z-index:9999; display:flex; flex-direction:column-reverse; align-items:flex-start; gap:10px;">
     
     <!-- The Menu that appears -->
-    <div id="crm-floating-menu" style="display:none; flex-direction:column; gap:8px; background:var(--surface); border:1px solid var(--border); box-shadow:0 8px 24px rgba(0,0,0,0.15); border-radius:16px; padding:12px; direction:rtl; min-width:260px; transition:all 0.3s ease; transform-origin:bottom left;">
+    <div id="crm-floating-menu" style="display:none; flex-direction:column; gap:8px; background:var(--surface); border:1px solid var(--border); box-shadow:0 8px 24px rgba(0,0,0,0.15); border-radius:16px; padding:12px; direction:rtl; min-width:260px; transition:all 0.3s ease; transform-origin:top left;">
         <h4 style="margin:0 0 5px 0; color:var(--text1); font-size:0.95rem; text-align:center;">اختر مساحة العمل</h4>
         
         <button id="ws-btn-relance" onclick="switchCrmWorkspace('relance'); toggleFloatingCrmMenu();" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:linear-gradient(135deg, #ef4444, #f97316); color:white; font-weight:900; font-size:0.9rem; cursor:pointer; box-shadow:0 3px 10px rgba(239,68,68,0.25);">
