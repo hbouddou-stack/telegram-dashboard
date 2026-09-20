@@ -1165,13 +1165,13 @@
                     <span>طالب</span>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                    <button onclick="openComposerV2()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:9px 18px; border-radius:12px; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 3px 10px rgba(16,185,129,0.4); display:flex; align-items:center; gap:6px;">🚀 إرسال رسالة V2</button>
                     
-                    <button onclick="syncGSheetAgents()" style="background:#2563eb; color:white; border:none; padding:9px 14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.88rem; font-family:inherit; margin-right:8px;">
-                        🔄 Importer Assignations GSheet
-                    </button>
+                      <button onclick="syncGSheetAgents()" title="Importer depuis Google Sheet" style="background:#2563eb; color:white; border:none; padding:9px 14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.88rem; font-family:inherit;">
+                          🔄 GSheet
+                      </button>
 
-<button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.88rem; font-family:inherit;">📝 كتابة رسالة</button>
+<button onclick="openComposerV2()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:9px 18px; border-radius:12px; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 3px 10px rgba(16,185,129,0.4); display:flex; align-items:center; gap:6px;">🚀 إرسال رسالة V2</button>
+                    <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.88rem; font-family:inherit;">📝 كتابة رسالة</button>
                 </div>
             </div>
 </div>
@@ -5346,24 +5346,7 @@
         }
 
         // ============ STUDENTS ============
-        
-async function syncGSheetAgents() {
-    if(!confirm('Voulez-vous synchroniser les assignations (Agents/Commentaires) depuis le Google Sheet "appels 2026" ?')) return;
-    try {
-        const res = await fetch('/api/admin/gateway/import_agents_gsheet', {method: 'POST'});
-        const data = await res.json();
-        if(data.success) {
-            alert(`Succès ! ${data.updated} dossiers mis à jour.`);
-            fetchStudents();
-        } else {
-            alert('Erreur: ' + data.error);
-        }
-    } catch(e) {
-        alert('Erreur: ' + e.message);
-    }
-}
-
-async function fetchStudents() {
+        async function fetchStudents() {
             try {
                 let tgUserId = '';
                 if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
@@ -6943,6 +6926,7 @@ function filterStudents() {
                     if (list.length > 1) list.forEach(st => {
                         if (!window.duplicateReasonsMap.has(String(st.student_id))) window.duplicateReasonsMap.set(String(st.student_id), 'هاتف');
                     });
+                    if (currentVal) { advSel.value = currentVal; }
                 });
                 Object.entries(byName).forEach(([k, list]) => {
                     if (list.length > 1) list.forEach(st => {
@@ -7101,13 +7085,13 @@ function filterStudents() {
             // Compute workspace counts & CRM metrics
             try {
                 const activeStudentsNoEx = (allStudents || []).filter(st => {
-                      if (st.excluded == 1) return false;
-                      if (typeof filters !== 'undefined' && filters.crmAgent && filters.crmAgent !== 'all') {
-                          const ag = String(st.crm_assigned_to || '').toLowerCase().trim();
-                          if (ag !== filters.crmAgent.toLowerCase().trim()) return false;
-                      }
-                      return true;
-                  });
+                    if (st.excluded == 1) return false;
+                    if (typeof filters !== 'undefined' && filters.crmAgent && filters.crmAgent !== 'all') {
+                        const ag = String(st.crm_assigned_to || '').toLowerCase().trim();
+                        if (ag !== filters.crmAgent.toLowerCase().trim()) return false;
+                    }
+                    return true;
+                });
                 const totalUnpaidCount = activeStudentsNoEx.filter(st => {
                     const pv = String(st.payment_status || '').toUpperCase().trim();
                     return !(['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد')));
@@ -7128,7 +7112,6 @@ function filterStudents() {
                 activeStudentsNoEx.forEach(st => {
                     const pv = String(st.payment_status || '').toUpperCase().trim();
                     const isStPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
-                      if (st.crm_assigned_to && st.crm_assigned_to.trim()) advSet.add(st.crm_assigned_to.trim());
                     if (!isStPaid) {
                         const stSt = st.crm_lead_status || 'NOUVEAU';
                         if (stSt === 'NOUVEAU') kpiNew++;
@@ -7140,7 +7123,9 @@ function filterStudents() {
                         if (st.crm_next_action_date && st.crm_next_action_date <= todayIso) {
                             kpiDue++;
                         }
-                        
+                           }
+                    if (st.crm_assigned_to && st.crm_assigned_to.trim()) {
+                        advSet.add(st.crm_assigned_to.trim());
                     }
                 });
 
@@ -7160,8 +7145,11 @@ function filterStudents() {
                 if (eKpiDue) eKpiDue.textContent = kpiDue;
 
                 const advSel = document.getElementById('crm-advisor-select');
-                if (advSel && advSel.options.length <= 1 && advSet.size > 0) {
-                    advSet.forEach(adv => {
+                if (advSel && advSet.size > 0) {
+                    // Always refresh dropdown
+                    const currentVal = advSel.value;
+                    while (advSel.options.length > 1) advSel.remove(1);
+                    Array.from(advSet).sort().forEach(adv => {
                         const opt = document.createElement('option');
                         opt.value = adv;
                         opt.textContent = '👤 ' + adv;
@@ -11817,12 +11805,7 @@ function renderHomeAlerts(alerts) {
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
             <button id="btn-float-v2" onclick="openComposerV2()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit; box-shadow:0 4px 14px rgba(16,185,129,0.45); display:flex; align-items:center; gap:6px;">🚀 إرسال رسالة V2</button>
-            
-                    <button onclick="syncGSheetAgents()" style="background:#2563eb; color:white; border:none; padding:9px 14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.88rem; font-family:inherit; margin-right:8px;">
-                        🔄 Importer Assignations GSheet
-                    </button>
-
-<button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">📝 رسالة</button>
+            <button onclick="openComposer()" style="background:#0ea5e9; color:white; border:none; padding:9px 12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">📝 رسالة</button>
             <button onclick="unselectAll()" style="background:var(--bg); border:1px solid var(--border); color:var(--text2); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center;" title="إلغاء التحديد">✕</button>
         </div>
     </div>
