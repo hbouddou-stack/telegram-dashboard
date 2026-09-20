@@ -1212,6 +1212,19 @@ async def api_admin_gateway_students(request: web.Request):
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
+            for col, col_def in [
+                ('crm_lead_status', "TEXT DEFAULT 'NOUVEAU'"),
+                ('crm_assigned_to', 'TEXT'),
+                ('crm_next_action_date', 'TEXT'),
+                ('crm_next_action_note', 'TEXT'),
+                ('crm_last_contact_at', 'TEXT')
+            ]:
+                try:
+                    await db.execute(f"ALTER TABLE academy_students ADD COLUMN {col} {col_def}")
+                    await db.commit()
+                except Exception:
+                    pass
+
             async with db.execute("""
                 SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
                        s.year, s.gender, s.dob, s.source, s.source_file, s.phone, s.created_at, s.payment_status,
@@ -1221,6 +1234,7 @@ async def api_admin_gateway_students(request: web.Request):
                        s.whatsapp_sent, s.whatsapp_sent_at, s.whatsapp_clicked_at, s.sms_sent, s.sms_sent_at, s.last_click_source,
                        s.group_joined, s.joined_at, s.folder_clicked_at, s.bot_started_at, s.excluded,
                        s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
+                       s.crm_lead_status, s.crm_assigned_to, s.crm_next_action_date, s.crm_next_action_note, s.crm_last_contact_at,
                        u.first_name as tg_first_name, u.last_name as tg_last_name, s.magic_token
                 FROM academy_students s
                 LEFT JOIN users u ON u.telegram_id = s.telegram_id
@@ -1371,6 +1385,127 @@ async def api_admin_gateway_add_crm_note(request: web.Request):
                 await conn.commit()
                 
         return web.json_response({'success': True})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_crm_lead_update(request: web.Request):
+    """
+    Updates a lead's CRM status, assignment, next action date, logs action and handles 1-click payment validation
+    """
+    import aiosqlite
+    import datetime
+    from config import DATABASE_PATH
+    import database as db_mod
+
+    try:
+        data = await request.json()
+        student_id = data.get('student_id')
+        if not student_id:
+            return web.json_response({'success': False, 'error': 'Missing student_id'})
+
+        crm_lead_status = data.get('crm_lead_status')
+        crm_assigned_to = data.get('crm_assigned_to')
+        crm_next_action_date = data.get('crm_next_action_date')
+        crm_next_action_note = data.get('crm_next_action_note')
+        action_type = data.get('action_type', 'NOTE')
+        note = data.get('note', '')
+        admin_name = data.get('admin_name', 'Conseiller')
+        mark_as_paid = bool(data.get('mark_as_paid', False)) or (crm_lead_status == 'GAGNE')
+
+        now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+
+            async with db.execute("SELECT * FROM academy_students WHERE student_id = ?", (student_id,)) as cur:
+                student = await cur.fetchone()
+            if not student:
+                return web.json_response({'success': False, 'error': 'Student not found'})
+            student = dict(student)
+
+            updates = ["crm_last_contact_at = ?"]
+            params = [now_str]
+
+            if crm_lead_status:
+                updates.append("crm_lead_status = ?")
+                params.append(crm_lead_status)
+
+            if crm_assigned_to is not None:
+                updates.append("crm_assigned_to = ?")
+                params.append(crm_assigned_to)
+
+            if crm_next_action_date is not None:
+                updates.append("crm_next_action_date = ?")
+                params.append(crm_next_action_date)
+
+            if crm_next_action_note is not None:
+                updates.append("crm_next_action_note = ?")
+                params.append(crm_next_action_note)
+
+            if action_type == 'APPEL':
+                if not student.get('appel_1'):
+                    updates.append("appel_1 = ?")
+                    params.append(f"{now_str[:10]} ({admin_name})")
+                elif not student.get('appel_2'):
+                    updates.append("appel_2 = ?")
+                    params.append(f"{now_str[:10]} ({admin_name})")
+                elif not student.get('appel_3'):
+                    updates.append("appel_3 = ?")
+                    params.append(f"{now_str[:10]} ({admin_name})")
+
+            if mark_as_paid:
+                updates.append("payment_status = 'PAID'")
+                updates.append("crm_lead_status = 'GAGNE'")
+
+            params.append(student_id)
+            sql = f"UPDATE academy_students SET {', '.join(updates)} WHERE student_id = ?"
+            await db.execute(sql, tuple(params))
+            await db.commit()
+
+        tid = student.get('telegram_id')
+        if mark_as_paid:
+            log_desc = f"✅ تم تأكيد السداد وتحويل الطالب رسمياً إلى مساحة الدراسة [بواسطة: {admin_name}]"
+            if note:
+                log_desc += f" - ملاحظة: {note}"
+            await db_mod.log_student_action(student_id, "PAYMENT_CONFIRMED", log_desc, telegram_id=tid)
+        elif note or action_type:
+            log_desc = f"[{action_type}] [{crm_lead_status or student.get('crm_lead_status') or 'NOUVEAU'}] [بواسطة: {admin_name}] {note}".strip()
+            if crm_next_action_date:
+                log_desc += f" (الموعد القادم: {crm_next_action_date})"
+            await db_mod.log_student_action(student_id, f"CRM_{action_type.upper()}", log_desc, telegram_id=tid)
+
+        return web.json_response({
+            'success': True,
+            'student_id': student_id,
+            'payment_status': 'PAID' if mark_as_paid else student.get('payment_status'),
+            'crm_lead_status': 'GAGNE' if mark_as_paid else (crm_lead_status or student.get('crm_lead_status'))
+        })
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return web.json_response({'success': False, 'error': str(e)})
+
+async def api_admin_crm_lead_batch_assign(request: web.Request):
+    """
+    Assigns multiple leads to a team member in batch
+    """
+    import aiosqlite
+    from config import DATABASE_PATH
+    try:
+        data = await request.json()
+        student_ids = data.get('student_ids', [])
+        assigned_to = data.get('assigned_to', '').strip()
+        admin_name = data.get('admin_name', 'Admin')
+
+        if not student_ids:
+            return web.json_response({'success': False, 'error': 'No students selected'})
+
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            placeholders = ','.join(['?'] * len(student_ids))
+            params = [assigned_to] + student_ids
+            await db.execute(f"UPDATE academy_students SET crm_assigned_to = ? WHERE student_id IN ({placeholders})", tuple(params))
+            await db.commit()
+
+        return web.json_response({'success': True, 'count': len(student_ids), 'assigned_to': assigned_to})
     except Exception as e:
         return web.json_response({'success': False, 'error': str(e)})
 
@@ -6994,6 +7129,8 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/ghost_visitors', api_admin_gateway_ghost_visitors)
     app.router.add_get('/api/admin/gateway/student_timeline', api_admin_gateway_student_timeline)
     app.router.add_post('/api/admin/gateway/add_crm_note', api_admin_gateway_add_crm_note)
+    app.router.add_post('/api/admin/crm/lead/update', api_admin_crm_lead_update)
+    app.router.add_post('/api/admin/crm/lead/batch_assign', api_admin_crm_lead_batch_assign)
     app.router.add_get('/api/admin/gateway/logs', api_admin_gateway_logs)
     app.router.add_get('/api/admin/gateway/logs/all', api_admin_gateway_logs_all)
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)

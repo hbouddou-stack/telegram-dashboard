@@ -1056,6 +1056,65 @@
     
     <!-- TAB: الطلاب -->
         <div id="tab-students" class="tab-content active" style="padding-top:0;">
+        <!-- ===== CRM HYBRID WORKSPACE SWITCHER ===== -->
+        <div style="padding: 10px 15px 5px; background: var(--bg);">
+            <div style="display:flex; gap:8px; background:var(--surface); padding:6px; border-radius:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.04); direction:rtl;">
+                <button id="ws-btn-relance" onclick="switchCrmWorkspace('relance')" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:linear-gradient(135deg, #ef4444, #f97316); color:white; font-weight:900; font-size:0.95rem; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 10px rgba(239,68,68,0.25);">
+                    <span>🎯 مساحة المتابعة والتحصيل (Relance)</span>
+                    <span id="ws-count-relance" style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-size:0.85rem;">1,043</span>
+                </button>
+                <button id="ws-btn-pedagogy" onclick="switchCrmWorkspace('pedagogy')" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:transparent; color:var(--text1); font-weight:800; font-size:0.95rem; cursor:pointer; transition:all 0.2s;">
+                    <span>🎓 مساحة التأهيل والدراسة (Pédagogie)</span>
+                    <span id="ws-count-pedagogy" style="background:rgba(16,185,129,0.15); color:#059669; padding:2px 8px; border-radius:10px; font-size:0.85rem;">461</span>
+                </button>
+                <button id="ws-btn-all" onclick="switchCrmWorkspace('all')" style="flex:0.6; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px 10px; border-radius:12px; border:none; background:transparent; color:var(--text2); font-weight:bold; font-size:0.88rem; cursor:pointer; transition:all 0.2s;">
+                    <span>📋 عرض شامل</span>
+                    <span id="ws-count-all" style="background:var(--border); padding:2px 6px; border-radius:10px; font-size:0.8rem;">1,504</span>
+                </button>
+            </div>
+
+            <!-- RELANCE CONTROL BAR & CRM FILTERS -->
+            <div id="relance-toolbar" style="margin-top:10px; background:rgba(249,115,22,0.05); border:1.5px solid rgba(249,115,22,0.3); border-radius:14px; padding:12px 14px; direction:rtl;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; font-weight:900; color:#c2410c; font-size:0.95rem;">
+                        <span>💼 خطة التحصيل والمتابعة (Pipeline Commercial)</span>
+                        <span style="font-size:0.8rem; background:#ffedd5; color:#9a3412; padding:2px 8px; border-radius:10px;">قاعدة: لا متروك بدون موعد قادم</span>
+                    </div>
+                    <!-- Quick action pills -->
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <button id="crm-flt-duetoday" onclick="toggleCrmDueToday(this)" style="background:var(--surface); border:1px solid #ea580c; color:#c2410c; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:0.82rem; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;">
+                            <span>📅 مواعيد اليوم والمستعجلة</span>
+                            <span id="crm-count-duetoday" style="background:#ea580c; color:white; padding:1px 6px; border-radius:10px; font-size:0.75rem;">0</span>
+                        </button>
+                        <select id="crm-advisor-select" onchange="setCrmAgentFilter(this.value)" style="padding:6px 10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.85rem; font-weight:bold; outline:none;">
+                            <option value="all">👤 جميع المسؤولين</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- CRM 5 STAGES QUICK PILLS -->
+                <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; align-items:center;">
+                    <button class="crm-stage-pill active" onclick="setCrmStageFilter('all', this)" id="crm-pill-all" style="padding:6px 12px; border-radius:20px; border:1px solid #cbd5e1; background:#0f172a; color:white; font-size:0.82rem; font-weight:bold; cursor:pointer; white-space:nowrap;">
+                        الكل (<span id="crm-kpi-total">1043</span>)
+                    </button>
+                    <button class="crm-stage-pill" onclick="setCrmStageFilter('NOUVEAU', this)" id="crm-pill-nouveau" style="padding:6px 12px; border-radius:20px; border:1px solid #93c5fd; background:var(--surface); color:#1d4ed8; font-size:0.82rem; font-weight:bold; cursor:pointer; white-space:nowrap;">
+                        🔵 جديد (<span id="crm-kpi-new">0</span>)
+                    </button>
+                    <button class="crm-stage-pill" onclick="setCrmStageFilter('A_RELANCER', this)" id="crm-pill-relancer" style="padding:6px 12px; border-radius:20px; border:1px solid #fdba74; background:var(--surface); color:#c2410c; font-size:0.82rem; font-weight:bold; cursor:pointer; white-space:nowrap;">
+                        🟠 بانتظار الرد / واتساب (<span id="crm-kpi-relance">0</span>)
+                    </button>
+                    <button class="crm-stage-pill" onclick="setCrmStageFilter('EN_DISCUSSION', this)" id="crm-pill-discussion" style="padding:6px 12px; border-radius:20px; border:1px solid #fde047; background:var(--surface); color:#854d0e; font-size:0.82rem; font-weight:bold; cursor:pointer; white-space:nowrap;">
+                        🟡 قيد التفاوض (<span id="crm-kpi-discussion">0</span>)
+                    </button>
+                    <button class="crm-stage-pill" onclick="setCrmStageFilter('PROMESSE_PAIEMENT', this)" id="crm-pill-promise" style="padding:6px 12px; border-radius:20px; border:1px solid #d8b4fe; background:var(--surface); color:#6b21a8; font-size:0.82rem; font-weight:bold; cursor:pointer; white-space:nowrap;">
+                        🟣 موعد سداد محدد (<span id="crm-kpi-promise">0</span>)
+                    </button>
+                    <button class="crm-stage-pill" onclick="setCrmStageFilter('PERDU', this)" id="crm-pill-perdu" style="padding:6px 12px; border-radius:20px; border:1px solid #fca5a5; background:var(--surface); color:#b91c1c; font-size:0.82rem; font-weight:bold; cursor:pointer; white-space:nowrap;">
+                        🔴 ملغى / غير مهتم (<span id="crm-kpi-lost">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
         <!-- ===== REFONTE FILTRES ===== -->
         <div class="filter-section" style="padding:0; margin:0; border:none; background:var(--bg); position:sticky; top:0; z-index:999; padding-top:10px; padding-bottom:5px;">
 
@@ -3376,7 +3435,7 @@
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all', showExcluded: false };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all', showExcluded: false, crmStatus: 'all', crmAgent: 'all', crmDueToday: false };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -5330,7 +5389,8 @@
                     }
 
                 window.BOT_USERNAME = data.bot_username || 'alsirahquizz_bot';
-                    filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
+                    switchCrmWorkspace(window.crmWorkspace || 'relance');
+                    if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
                     // Auto-refresh stats tab if it's currently active
                     if (document.getElementById('tab-stats') && document.getElementById('tab-stats').classList.contains('active')) {
                         const targetDays = window.currentStatsDays !== undefined ? window.currentStatsDays : 0;
@@ -5944,17 +6004,22 @@ function renderPanoramicFunnelView(listElement, filteredStudents) {
 
 
 function renderKanbanView(listElement, filtered) {
+    // Default Kanban board based on workspace
+    if (window.crmWorkspace === 'relance') {
+        window.currentKanbanBoard = 'marketing';
+    } else if (window.crmWorkspace === 'pedagogy' && window.currentKanbanBoard === 'marketing') {
+        window.currentKanbanBoard = 'integration';
+    }
+
     // 1. Define Boards
     let cols = [];
-    if (window.currentKanbanBoard === 'marketing') {
+    if (window.crmWorkspace === 'relance' || window.currentKanbanBoard === 'marketing') {
         cols = [
-            { id: 'm1', title: '١. مسجل جديد (للاتصال)', color: '#3b82f6', items: [] },
-            { id: 'm2', title: '٢. لا يرد (محاولات)', color: '#f59e0b', items: [] },
-            { id: 'm3', title: '٣. رقم خاطئ (إيميل)', color: '#ef4444', items: [] },
-            { id: 'm4', title: '٤. في قيد التفكير / تواصل', color: '#8b5cf6', items: [] },
-            { id: 'm5', title: '٥. إنقاذ (سعر/منحة)', color: '#ec4899', items: [] },
-            { id: 'm6', title: '٦. اكتملت البيعة 🎉', color: '#10b981', items: [] },
-            { id: 'm7', title: '٧. أرشيف (مرفوض)', color: '#94a3b8', items: [] }
+            { id: 'm1', statusKey: 'NOUVEAU', title: '١. 🔵 جديد / للمتابعة', color: '#3b82f6', items: [] },
+            { id: 'm2', statusKey: 'A_RELANCER', title: '٢. 🟠 في انتظار الرد / واتساب', color: '#f97316', items: [] },
+            { id: 'm3', statusKey: 'EN_DISCUSSION', title: '٣. 🟡 قيد التفاوض / رد', color: '#eab308', items: [] },
+            { id: 'm4', statusKey: 'PROMESSE_PAIEMENT', title: '٤. 🟣 موعد سداد محدد', color: '#a855f7', items: [] },
+            { id: 'm5', statusKey: 'PERDU', title: '٥. 🔴 ملغى / غير مهتم', color: '#ef4444', items: [] }
         ];
     } else if (window.currentKanbanBoard === 'integration') {
         cols = [
@@ -5987,24 +6052,14 @@ function renderKanbanView(listElement, filtered) {
         const isPlatform = note.includes('منصة') || note.includes('plateforme');
         const isActive = note.includes('نشط') || note.includes('actif');
 
-        if (window.currentKanbanBoard === 'marketing') {
-            if (isPaid) {
-                cols[5].items.push(s);
-            } else {
-                if (note.includes('perdu') || note.includes('مرفوض') || note.includes('refus') || note.includes('archive') || note.includes('أرشيف') || note.includes('annulé') || note.includes('إلغاء')) {
-                    cols[6].items.push(s);
-                } else if (note.includes('faux') || note.includes('خطأ') || note.includes('invalide') || note.includes('غلط')) {
-                    cols[2].items.push(s);
-                } else if (note.includes('injoignable') || note.includes('لا يرد') || note.includes('répondeur') || note.includes('مغلق')) {
-                    cols[1].items.push(s);
-                } else if (note.includes('cher') || note.includes('غالي') || note.includes('promo') || note.includes('bourse') || note.includes('منحة') || note.includes('sauvetage') || note.includes('مساعدة') || note.includes('تخفيض')) {
-                    cols[4].items.push(s);
-                } else if (note.trim() === '') {
-                    cols[0].items.push(s);
-                } else {
-                    cols[3].items.push(s);
-                }
-            }
+        if (window.crmWorkspace === 'relance' || window.currentKanbanBoard === 'marketing') {
+            if (isPaid) return; // Unpaid leads only in Relance
+            const st = (s.crm_lead_status || 'NOUVEAU').toUpperCase();
+            if (st === 'A_RELANCER') cols[1].items.push(s);
+            else if (st === 'EN_DISCUSSION') cols[2].items.push(s);
+            else if (st === 'PROMESSE_PAIEMENT') cols[3].items.push(s);
+            else if (st === 'PERDU') cols[4].items.push(s);
+            else cols[0].items.push(s);
         } 
         else if (window.currentKanbanBoard === 'integration') {
             if (!isPaid) {
@@ -6319,30 +6374,71 @@ function renderKanbanView(listElement, filtered) {
                 stId = stId.substring(0,4) + '-' + stId.substring(4);
             }
 
-            // Left side: #Index + Name
-            let leftDiv = `<div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
-                                <input type="checkbox" class="kanban-checkbox" value="${s.student_id}" onclick="event.stopPropagation();" style="transform:scale(1.1); margin-left:4px; cursor:pointer;">
-                                <span style="color:var(--text2); font-size:0.75rem; font-weight:bold;">#${index + 1}</span>
-                                <span style="font-weight:bold; color:var(--text1); font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${arName}">${arName}</span>
-                            </div>`;
+            const safeName = arName.replace(/'/g, "\\'");
+            const isRelanceMode = (window.crmWorkspace === 'relance' || window.currentKanbanBoard === 'marketing');
             
-            // Right side: ID + Phone + Optional Note Icon
-            let rightHtml = `<div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">`;
-            if (s.marketing_notes && String(s.marketing_notes).trim() !== '') {
-                rightHtml += `<span title="${s.marketing_notes}" style="font-size:0.8rem; cursor:help;">📝</span>`;
-            }
-            if (window.currentKanbanBoard === 'marketing') {
-                rightHtml += `<button onclick="event.stopPropagation(); openQeModal('${s.student_id}')" style="background:#f59e0b; color:white; border:none; padding:4px 8px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:bold;" title="تحديث الحالة ونقل البطاقة">🔄 تحديث الحالة</button>`;
+            let cardHtml = '';
+            if (isRelanceMode) {
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'stretch';
+                card.style.gap = '8px';
+                card.style.padding = '10px 12px';
+
+                const todayIso = new Date().toISOString().split('T')[0];
+                const isOverdue = s.crm_next_action_date && (s.crm_next_action_date <= todayIso);
+
+                let reminderBadge = '';
+                if (s.crm_next_action_date) {
+                    reminderBadge = `<div style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; padding:2px 8px; border-radius:8px; font-weight:bold; background:${isOverdue ? '#fee2e2' : '#fef3c7'}; color:${isOverdue ? '#b91c1c' : '#92400e'}; border:1px solid ${isOverdue ? '#fca5a5' : '#fde68a'};">
+                        <span>⏰ ${s.crm_next_action_date}</span>
+                        ${s.crm_next_action_note ? `<span style="opacity:0.85;">(${s.crm_next_action_note})</span>` : ''}
+                    </div>`;
+                }
+
+                let advisorBadge = s.crm_assigned_to ? `<span style="background:rgba(15,23,42,0.06); color:#334155; padding:2px 6px; border-radius:6px; font-size:0.72rem; font-weight:bold;">👤 ${s.crm_assigned_to}</span>` : '';
+
+                cardHtml = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                        <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                            <input type="checkbox" class="kanban-checkbox" value="${s.student_id}" onclick="event.stopPropagation();" style="transform:scale(1.1); cursor:pointer;">
+                            <span style="font-size:0.9rem;">${isFemale ? '👩' : '👨'}</span>
+                            <span style="font-weight:900; color:var(--text1); font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${arName}">${arName}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                            ${advisorBadge}
+                            <span style="font-size:0.75rem; color:var(--text2); font-weight:bold;">${s.phone || ''}</span>
+                        </div>
+                    </div>
+
+                    ${reminderBadge ? `<div>${reminderBadge}</div>` : ''}
+
+                    <!-- Quick 1-Click Action Bar -->
+                    <div style="display:flex; gap:5px; align-items:center; justify-content:space-between; margin-top:2px; padding-top:6px; border-top:1px dashed ${cardBorder};">
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            ${s.phone ? `<a href="tel:${s.phone}" onclick="event.stopPropagation();" style="background:var(--surface); border:1px solid var(--border); color:#0ea5e9; padding:4px 8px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:bold; display:flex; align-items:center;" title="اتصال">📞</a>` : ''}
+                            ${s.phone ? `<button onclick="event.stopPropagation(); openCrmWhatsApp('${s.phone}', '${safeName}', '${s.gender}');" style="background:#22c55e; border:none; color:white; padding:4px 8px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:bold;" title="واتساب">💬</button>` : ''}
+                            <button onclick="event.stopPropagation(); openCrmFollowupModal('${s.student_id}');" style="background:#ea580c; border:none; color:white; padding:4px 9px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:bold; font-family:inherit;" title="تسجيل متابعة وتحديد موعد">📝 متابعة</button>
+                        </div>
+                        <button onclick="event.stopPropagation(); quickConfirmPayment('${s.student_id}', '${safeName}');" style="background:linear-gradient(135deg, #10b981, #059669); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.78rem; cursor:pointer; font-weight:900; font-family:inherit; box-shadow:0 2px 5px rgba(16,185,129,0.3);" title="1-Click: تأكيد السداد ونقل الطالب إلى مساحة الدراسة">✅ تم السداد</button>
+                    </div>
+                `;
             } else {
-                rightHtml += `<span onclick="event.stopPropagation(); openQeModal('${s.student_id}')" style="font-size:0.85rem; cursor:pointer; margin-left:4px; margin-right:2px;" title="تحديث الملاحظة (نقل البطاقة)">✏️</span>`;
+                let leftDiv = `<div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                                    <input type="checkbox" class="kanban-checkbox" value="${s.student_id}" onclick="event.stopPropagation();" style="transform:scale(1.1); margin-left:4px; cursor:pointer;">
+                                    <span style="color:var(--text2); font-size:0.75rem; font-weight:bold;">#${index + 1}</span>
+                                    <span style="font-weight:bold; color:var(--text1); font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${arName}">${arName}</span>
+                                </div>`;
+                
+                let rightHtml = `<div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                                    <span onclick="event.stopPropagation(); openCrmFollowupModal('${s.student_id}')" style="font-size:0.85rem; cursor:pointer; margin-left:4px; margin-right:2px;" title="متابعة">📝</span>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                                        ${stId ? `<span style="background:rgba(255,255,255,0.7); color:var(--text1); border:1px solid ${cardBorder}; padding:1px 6px; border-radius:12px; font-size:0.7rem; font-weight:bold; ">${stId}</span>` : ''}
+                                        <span style=" font-size:0.75rem; font-weight:bold; color:var(--text2);">${s.phone || ''}</span>
+                                    </div>
+                                </div>`;
+                cardHtml = leftDiv + rightHtml;
             }
-            rightHtml += `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
-                            ${stId ? `<span style="background:rgba(255,255,255,0.7); color:var(--text1); border:1px solid ${cardBorder}; padding:1px 6px; border-radius:12px; font-size:0.7rem; font-weight:bold; ">${stId}</span>` : ''}
-                            <span style=" font-size:0.75rem; font-weight:bold; color:var(--text2);">${s.phone || ''}</span>
-                          </div>
-                          </div>`;
-            
-            card.innerHTML = leftDiv + rightHtml;
+            card.innerHTML = cardHtml;
             itemsContainer.appendChild(card);
         });
 
@@ -6519,6 +6615,273 @@ function renderKanbanView(listElement, filtered) {
 }
 
 
+
+// ==========================================
+// CRM HYBRID ARCHITECTURE & RELANCE LOGIC
+// ==========================================
+window.crmWorkspace = localStorage.getItem('crmWorkspace') || 'relance';
+window.currentCrmModalAction = 'APPEL';
+
+function switchCrmWorkspace(ws) {
+    window.crmWorkspace = ws;
+    localStorage.setItem('crmWorkspace', ws);
+
+    const btnRelance = document.getElementById('ws-btn-relance');
+    const btnPeda = document.getElementById('ws-btn-pedagogy');
+    const btnAll = document.getElementById('ws-btn-all');
+    const relanceToolbar = document.getElementById('relance-toolbar');
+
+    [btnRelance, btnPeda, btnAll].forEach(b => {
+        if(b) {
+            b.style.background = 'transparent';
+            b.style.color = 'var(--text1)';
+            b.style.boxShadow = 'none';
+        }
+    });
+
+    if (ws === 'relance') {
+        if(btnRelance) {
+            btnRelance.style.background = 'linear-gradient(135deg, #ef4444, #f97316)';
+            btnRelance.style.color = 'white';
+            btnRelance.style.boxShadow = '0 3px 10px rgba(239,68,68,0.25)';
+        }
+        if(relanceToolbar) relanceToolbar.style.display = 'block';
+        if(typeof filters !== 'undefined') filters.payment = 'unpaid';
+        const pEl = document.getElementById('pay-unpaid');
+        if(pEl && typeof setPayFilterUI === 'function') setPayFilterUI('unpaid', pEl);
+    } else if (ws === 'pedagogy') {
+        if(btnPeda) {
+            btnPeda.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            btnPeda.style.color = 'white';
+            btnPeda.style.boxShadow = '0 3px 10px rgba(16,185,129,0.25)';
+        }
+        if(relanceToolbar) relanceToolbar.style.display = 'none';
+        if(typeof filters !== 'undefined') filters.payment = 'paid';
+        const pEl = document.getElementById('pay-paid');
+        if(pEl && typeof setPayFilterUI === 'function') setPayFilterUI('paid', pEl);
+    } else {
+        if(btnAll) {
+            btnAll.style.background = 'var(--text1)';
+            btnAll.style.color = 'var(--bg)';
+            btnAll.style.boxShadow = '0 3px 10px rgba(0,0,0,0.1)';
+        }
+        if(relanceToolbar) relanceToolbar.style.display = 'none';
+        if(typeof filters !== 'undefined') filters.payment = 'all';
+        const pEl = document.getElementById('pay-all');
+        if(pEl && typeof setPayFilterUI === 'function') setPayFilterUI('all', pEl);
+    }
+
+    if(typeof filterStudents === 'function') filterStudents();
+}
+
+function toggleCrmDueToday(el) {
+    if(!filters) return;
+    filters.crmDueToday = !filters.crmDueToday;
+    if(filters.crmDueToday) {
+        el.style.background = '#ea580c';
+        el.style.color = 'white';
+    } else {
+        el.style.background = 'var(--surface)';
+        el.style.color = '#c2410c';
+    }
+    filterStudents();
+}
+
+function setCrmAgentFilter(val) {
+    if(!filters) return;
+    filters.crmAgent = val;
+    filterStudents();
+}
+
+function setCrmStageFilter(stage, el) {
+    if(!filters) return;
+    filters.crmStatus = stage;
+    document.querySelectorAll('.crm-stage-pill').forEach(p => {
+        p.classList.remove('active');
+        p.style.background = 'var(--surface)';
+        p.style.color = p.getAttribute('id') === 'crm-pill-all' ? 'var(--text1)' : '#475569';
+    });
+    if(el) {
+        el.classList.add('active');
+        el.style.background = '#0f172a';
+        el.style.color = 'white';
+    }
+    filterStudents();
+}
+
+window.openCrmWhatsApp = function(phone, studentName, gender) {
+    if (!phone) {
+        alert('⚠️ لا يتوفر رقم هاتف مسجل لهذا الطالب.');
+        return;
+    }
+    let p = String(phone).replace(/\D/g, '');
+    if (p.startsWith('00')) p = p.substring(2);
+    if (p.startsWith('0') && p.length === 10) {
+        p = '212' + p.substring(1);
+    }
+    
+    let isF = false;
+    if (gender) {
+        const g = String(gender).toLowerCase();
+        isF = g.startsWith('f') || g === 'female' || g.includes('أنث');
+    }
+    const title = isF ? 'أختي الفاضلة' : 'أخي الفاضل';
+    const sName = studentName ? ` ${studentName}` : '';
+    const text = encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، مرحباً بك ${title}${sName}، معكم إدارة أكاديمية أسوة بخصوص استكمال ملف تسجيلكم للموسم الدراسي الجديد. هل يمكننا مساعدتكم في أي خطوة أو استفسار؟`);
+    window.open(`https://wa.me/${p}?text=${text}`, '_blank');
+};
+
+window.quickConfirmPayment = async function(studentId, studentName) {
+    studentName = studentName || 'الطالب';
+    const confirmMsg = `هل تأكدت من استلام الرسوم للطالب "${studentName}"؟\n\n🟢 سيتم تحويله فوراً إلى مساحة التأهيل والدراسة وإشعار الفريق البيداغوجي.`;
+    if (!confirm(confirmMsg)) return;
+
+    const adminName = localStorage.getItem('adminName') || 'Conseiller';
+    try {
+        const res = await fetch('/api/admin/crm/lead/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                student_id: studentId,
+                mark_as_paid: true,
+                action_type: 'PAIEMENT',
+                note: 'تم تأكيد السداد بنجاح ونقله للدراسة',
+                admin_name: adminName
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const s = (allStudents || []).find(x => String(x.student_id) === String(studentId));
+            if (s) {
+                s.payment_status = 'PAID';
+                s.crm_lead_status = 'GAGNE';
+            }
+            alert(`🎉 مبارك! تم تأكيد السداد للطالب "${studentName}" ونقله بنجاح لمساحة التأهيل.`);
+            if (typeof filterStudents === 'function') filterStudents();
+        } else {
+            alert('❌ حدث خطأ أثناء التحديث: ' + (data.error || 'خطأ غير معروف'));
+        }
+    } catch (e) {
+        alert('❌ تعذر الاتصال بالخادم: ' + e.message);
+    }
+};
+
+window.openCrmFollowupModal = function(studentId) {
+    const s = (allStudents || []).find(x => String(x.student_id) === String(studentId));
+    if(!s) return;
+
+    document.getElementById('crm-modal-student-id').value = s.student_id;
+    const name = (s.first_name || '') + ' ' + (s.last_name || '');
+    const phone = s.phone || 'بدون هاتف';
+    const genderIcon = (String(s.gender||'').toLowerCase().includes('أنث') || String(s.gender||'').toLowerCase().startsWith('f')) ? '👩' : '👨';
+    document.getElementById('crm-modal-student-name').innerHTML = `${genderIcon} ${name} &bull; <span dir="ltr">${phone}</span>`;
+
+    // Defaults
+    document.getElementById('crm-modal-status').value = s.crm_lead_status || 'NOUVEAU';
+    
+    // Suggest tomorrow as next date if empty
+    let nextD = s.crm_next_action_date;
+    if(!nextD) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        nextD = tomorrow.toISOString().split('T')[0];
+    }
+    document.getElementById('crm-modal-next-date').value = nextD;
+    document.getElementById('crm-modal-next-note').value = s.crm_next_action_note || '';
+    
+    const savedAdmin = localStorage.getItem('adminName') || s.crm_assigned_to || '';
+    document.getElementById('crm-modal-advisor').value = savedAdmin;
+    document.getElementById('crm-modal-note-text').value = '';
+
+    setCrmModalAction('APPEL', document.getElementById('crm-act-appel'));
+    document.getElementById('crm-followup-modal').style.display = 'flex';
+};
+
+window.closeCrmFollowupModal = function() {
+    document.getElementById('crm-followup-modal').style.display = 'none';
+};
+
+window.setCrmModalAction = function(act, el) {
+    window.currentCrmModalAction = act;
+    document.querySelectorAll('.crm-act-btn').forEach(b => {
+        b.style.background = 'var(--surface)';
+        b.style.color = 'var(--text1)';
+        b.style.border = '1px solid var(--border)';
+    });
+    if(el) {
+        el.style.background = act === 'APPEL' ? '#0ea5e9' : (act === 'WHATSAPP' ? '#10b981' : (act === 'EMAIL' ? '#f59e0b' : '#64748b'));
+        el.style.color = 'white';
+        el.style.border = 'none';
+    }
+};
+
+window.submitCrmFollowup = async function() {
+    const sid = document.getElementById('crm-modal-student-id').value;
+    const status = document.getElementById('crm-modal-status').value;
+    const nextDate = document.getElementById('crm-modal-next-date').value;
+    const nextNote = document.getElementById('crm-modal-next-note').value.trim();
+    const advisor = document.getElementById('crm-modal-advisor').value.trim() || 'Conseiller';
+    const note = document.getElementById('crm-modal-note-text').value.trim();
+
+    // Mandatory date rule (Zero Abandon)
+    if(['NOUVEAU', 'A_RELANCER', 'EN_DISCUSSION', 'PROMESSE_PAIEMENT'].includes(status) && !nextDate) {
+        alert('⚠️ قاعدة صفر تراجع: تحديد موعد المتابعة القادم إلزامي لضمان عدم ضياع الطالب!');
+        document.getElementById('crm-modal-next-date').focus();
+        return;
+    }
+
+    localStorage.setItem('adminName', advisor);
+    const saveBtn = document.getElementById('crm-modal-save-btn');
+    saveBtn.textContent = '⏳ جاري الحفظ...';
+    saveBtn.disabled = true;
+
+    try {
+        const res = await fetch('/api/admin/crm/lead/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                student_id: sid,
+                crm_lead_status: status,
+                crm_assigned_to: advisor,
+                crm_next_action_date: nextDate,
+                crm_next_action_note: nextNote,
+                action_type: window.currentCrmModalAction || 'NOTE',
+                note: note,
+                admin_name: advisor
+            })
+        });
+        const data = await res.json();
+        if(data.success) {
+            const s = (allStudents || []).find(x => String(x.student_id) === String(sid));
+            if(s) {
+                s.crm_lead_status = status;
+                s.crm_assigned_to = advisor;
+                s.crm_next_action_date = nextDate;
+                s.crm_next_action_note = nextNote;
+                s.crm_last_contact_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            }
+            closeCrmFollowupModal();
+            if(typeof filterStudents === 'function') filterStudents();
+        } else {
+            alert('❌ خطأ في الحفظ: ' + (data.error || 'خطأ غير معروف'));
+        }
+    } catch(e) {
+        alert('❌ تعذر الاتصال بالخادم: ' + e.message);
+    } finally {
+        saveBtn.textContent = '💾 حفظ المتابعة';
+        saveBtn.disabled = false;
+    }
+};
+
+window.crmModalValidatePayment = async function() {
+    const sid = document.getElementById('crm-modal-student-id').value;
+    const s = (allStudents || []).find(x => String(x.student_id) === String(sid));
+    const name = s ? ((s.first_name || '') + ' ' + (s.last_name || '')) : 'الطالب';
+    closeCrmFollowupModal();
+    await quickConfirmPayment(sid, name);
+};
+// ==========================================
+
 function filterStudents() {
             const leadTypeFilter = document.getElementById('lead-type-filter') ? document.getElementById('lead-type-filter').value : 'all';
             const q = document.getElementById('search-input').value.toLowerCase();
@@ -6693,9 +7056,92 @@ function filterStudents() {
                 else if (leadTypeFilter === 'annexe') matchLeadType = isAnnexe;
                 else if (leadTypeFilter === 'new') matchLeadType = isNew;
 
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchRemark && matchLeadType;
+                let matchCrmStatus = true;
+                if (filters.crmStatus && filters.crmStatus !== 'all') {
+                    const curStatus = s.crm_lead_status || 'NOUVEAU';
+                    matchCrmStatus = (curStatus === filters.crmStatus);
+                }
+
+                let matchCrmAgent = true;
+                if (filters.crmAgent && filters.crmAgent !== 'all') {
+                    matchCrmAgent = (s.crm_assigned_to === filters.crmAgent);
+                }
+
+                let matchCrmDueToday = true;
+                if (filters.crmDueToday) {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    matchCrmDueToday = !!s.crm_next_action_date && (s.crm_next_action_date <= todayStr);
+                }
+
+                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchRemark && matchLeadType && matchCrmStatus && matchCrmAgent && matchCrmDueToday;
             
             }); // End of filtering
+
+            // Compute workspace counts & CRM metrics
+            try {
+                const activeStudentsNoEx = (allStudents || []).filter(st => st.excluded != 1);
+                const totalUnpaidCount = activeStudentsNoEx.filter(st => {
+                    const pv = String(st.payment_status || '').toUpperCase().trim();
+                    return !(['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد')));
+                }).length;
+                const totalPaidCount = activeStudentsNoEx.length - totalUnpaidCount;
+
+                const elWsR = document.getElementById('ws-count-relance');
+                const elWsP = document.getElementById('ws-count-pedagogy');
+                const elWsA = document.getElementById('ws-count-all');
+                if (elWsR) elWsR.textContent = totalUnpaidCount.toLocaleString();
+                if (elWsP) elWsP.textContent = totalPaidCount.toLocaleString();
+                if (elWsA) elWsA.textContent = activeStudentsNoEx.length.toLocaleString();
+
+                const todayIso = new Date().toISOString().split('T')[0];
+                let kpiNew = 0, kpiRel = 0, kpiDisc = 0, kpiProm = 0, kpiLost = 0, kpiDue = 0;
+                const advSet = new Set();
+
+                activeStudentsNoEx.forEach(st => {
+                    const pv = String(st.payment_status || '').toUpperCase().trim();
+                    const isStPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
+                    if (!isStPaid) {
+                        const stSt = st.crm_lead_status || 'NOUVEAU';
+                        if (stSt === 'NOUVEAU') kpiNew++;
+                        else if (stSt === 'A_RELANCER') kpiRel++;
+                        else if (stSt === 'EN_DISCUSSION') kpiDisc++;
+                        else if (stSt === 'PROMESSE_PAIEMENT') kpiProm++;
+                        else if (stSt === 'PERDU') kpiLost++;
+
+                        if (st.crm_next_action_date && st.crm_next_action_date <= todayIso) {
+                            kpiDue++;
+                        }
+                        if (st.crm_assigned_to && st.crm_assigned_to.trim()) {
+                            advSet.add(st.crm_assigned_to.trim());
+                        }
+                    }
+                });
+
+                const eKpiTot = document.getElementById('crm-kpi-total');
+                if (eKpiTot) eKpiTot.textContent = totalUnpaidCount;
+                const eKpiN = document.getElementById('crm-kpi-new');
+                if (eKpiN) eKpiN.textContent = kpiNew;
+                const eKpiR = document.getElementById('crm-kpi-relance');
+                if (eKpiR) eKpiR.textContent = kpiRel;
+                const eKpiD = document.getElementById('crm-kpi-discussion');
+                if (eKpiD) eKpiD.textContent = kpiDisc;
+                const eKpiP = document.getElementById('crm-kpi-promise');
+                if (eKpiP) eKpiP.textContent = kpiProm;
+                const eKpiL = document.getElementById('crm-kpi-lost');
+                if (eKpiL) eKpiL.textContent = kpiLost;
+                const eKpiDue = document.getElementById('crm-count-duetoday');
+                if (eKpiDue) eKpiDue.textContent = kpiDue;
+
+                const advSel = document.getElementById('crm-advisor-select');
+                if (advSel && advSel.options.length <= 1 && advSet.size > 0) {
+                    advSet.forEach(adv => {
+                        const opt = document.createElement('option');
+                        opt.value = adv;
+                        opt.textContent = '👤 ' + adv;
+                        advSel.appendChild(opt);
+                    });
+                }
+            } catch(e) {}
 
             // Sort filtered results
             filtered.sort((a, b) => {
@@ -6829,19 +7275,35 @@ function filterStudents() {
                 const getSortIcon = (k) => currentSort.key === k ? (currentSort.order === 'asc' ? ' 🔼' : ' 🔽') : '';
 
                 const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
-                        <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" title="رقم السطر">رقم</th>
-                        <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
-                        <th style="padding:12px; cursor:pointer; width:90px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
-                        <th style="padding:12px; cursor:pointer; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
-                        <th style="padding:12px; cursor:pointer; width:60px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
-                        <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الدفع</th>
-                        <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">🎥 مسار التأهيل</th>
-                        <th style="padding:12px;  text-align:right; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الإيميل</th>
-                        ${filters.showExcluded ? '<th style="padding:12px; text-align:center; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">إجراء</th>' : ''}
-                    </tr>
-                `;
+                const isRelanceTable = (window.crmWorkspace === 'relance');
+                
+                if (isRelanceTable) {
+                    thead.innerHTML = `
+                        <tr style="background:#fff7ed; border-bottom:2px solid #ea580c; text-align:right;">
+                            <th style="padding:12px 8px; width:45px; position:sticky; top:0; background:var(--surface); z-index:10;">#</th>
+                            <th style="padding:12px; cursor:pointer; position:sticky; top:0; background:var(--surface); z-index:10;" onclick="sortTable('name')">الطالب (الاسم) ${getSortIcon('name')}</th>
+                            <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10;">الهاتف والتواصل</th>
+                            <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10;">حالة المتابعة (CRM)</th>
+                            <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10;">الموعد القادم (Zéro Abandon)</th>
+                            <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10;">المسؤول</th>
+                            <th style="padding:12px; text-align:center; position:sticky; top:0; background:var(--surface); z-index:10;">⚡ إجراء فوري (1-Click)</th>
+                        </tr>
+                    `;
+                } else {
+                    thead.innerHTML = `
+                        <tr style="background:${themeBg}; border-bottom:2px solid ${themeColor}; text-align:right;">
+                            <th style="padding:12px 8px; color:var(--text2); width:50px; cursor:default; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" title="رقم السطر">رقم</th>
+                            <th style="padding:12px 8px; cursor:pointer; text-align:center; width:60px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('status')">البوت ${getSortIcon('status')}</th>
+                            <th style="padding:12px; cursor:pointer; width:90px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('id')">رقم مسار ${getSortIcon('id')}</th>
+                            <th style="padding:12px; cursor:pointer; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('name')">الاسم ${getSortIcon('name')}</th>
+                            <th style="padding:12px; cursor:pointer; width:60px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="sortTable('level')">السنة ${getSortIcon('level')}</th>
+                            <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الدفع</th>
+                            <th style="padding:12px; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">🎥 مسار التأهيل</th>
+                            <th style="padding:12px;  text-align:right; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">الإيميل</th>
+                            ${filters.showExcluded ? '<th style="padding:12px; text-align:center; position:sticky; top:0; background:var(--surface); z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.05);">إجراء</th>' : ''}
+                        </tr>
+                    `;
+                }
                 table.appendChild(thead);
                 const tbody = document.createElement('tbody');
                 
@@ -6976,17 +7438,65 @@ function filterStudents() {
                         }
                     }
 
-                    tr.innerHTML = `
-                        <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button></td>
-                        <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
-                        <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
-                        <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
-                        <td style="padding:12px; text-align:center;">${yrBadge}</td>
-                        <td style="padding:12px;">${payBadge}</td>
-                        <td style="padding:12px; text-align:center;">${onbBadge}</td>
-                        <td style="padding:12px;  text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
-                        ${filters.showExcluded ? `<td style="padding:12px; text-align:center;"><button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="background:#10b981; color:white; border:none; padding:5px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.8rem;">🔄 استعادة</button></td>` : ''}
-                    `;
+                    const safeName = (arName || '').replace(/'/g, "\\'");
+                    if (isRelanceTable) {
+                        const todayIso = new Date().toISOString().split('T')[0];
+                        const isOverdue = s.crm_next_action_date && (s.crm_next_action_date <= todayIso);
+
+                        const st = (s.crm_lead_status || 'NOUVEAU').toUpperCase();
+                        let stBadge = '<span style="background:#dbeafe; color:#1d4ed8; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:0.75rem;">🔵 جديد</span>';
+                        if (st === 'A_RELANCER') stBadge = '<span style="background:#ffedd5; color:#c2410c; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:0.75rem;">🟠 بانتظار الرد</span>';
+                        else if (st === 'EN_DISCUSSION') stBadge = '<span style="background:#fef9c3; color:#854d0e; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:0.75rem;">🟡 قيد التفاوض</span>';
+                        else if (st === 'PROMESSE_PAIEMENT') stBadge = '<span style="background:#f3e8ff; color:#6b21a8; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:0.75rem;">🟣 موعد سداد</span>';
+                        else if (st === 'PERDU') stBadge = '<span style="background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:0.75rem;">🔴 ملغى</span>';
+
+                        let nextDateDisplay = '<span style="color:var(--text2); font-size:0.75rem;">غير محدد</span>';
+                        if (s.crm_next_action_date) {
+                            nextDateDisplay = `<div style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; padding:2px 8px; border-radius:8px; font-weight:bold; background:${isOverdue ? '#fee2e2' : '#fff7ed'}; color:${isOverdue ? '#b91c1c' : '#c2410c'}; border:1px solid ${isOverdue ? '#fca5a5' : '#fed7aa'};">
+                                <span>⏰ ${s.crm_next_action_date}</span>
+                                ${s.crm_next_action_note ? `<span style="opacity:0.85;">(${s.crm_next_action_note})</span>` : ''}
+                            </div>`;
+                        }
+
+                        tr.innerHTML = `
+                            <td style="padding:10px 8px; font-weight:bold; color:#64748b;">#${i + 1}</td>
+                            <td style="padding:10px 12px; font-weight:900;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span>${isFemale ? '👩' : '👨'}</span>
+                                    <span>${arName}</span>
+                                </div>
+                                <div style="font-size:0.72rem; color:var(--text2); font-weight:normal; margin-top:2px;">${s.email || ''}</div>
+                            </td>
+                            <td style="padding:10px 12px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span style="font-weight:bold; font-size:0.85rem;" dir="ltr">${s.phone || '-'}</span>
+                                    ${s.phone ? `<a href="tel:${s.phone}" onclick="event.stopPropagation();" style="background:var(--surface); border:1px solid var(--border); color:#0ea5e9; padding:2px 6px; border-radius:6px; font-size:0.75rem; text-decoration:none;" title="اتصال">📞</a>` : ''}
+                                    ${s.phone ? `<button onclick="event.stopPropagation(); openCrmWhatsApp('${s.phone}', '${safeName}', '${s.gender}');" style="background:#22c55e; border:none; color:white; padding:2px 6px; border-radius:6px; font-size:0.75rem; cursor:pointer;" title="واتساب">💬</button>` : ''}
+                                </div>
+                            </td>
+                            <td style="padding:10px 12px;">${stBadge}</td>
+                            <td style="padding:10px 12px;">${nextDateDisplay}</td>
+                            <td style="padding:10px 12px; font-size:0.8rem; font-weight:bold; color:#475569;">${s.crm_assigned_to ? '👤 ' + s.crm_assigned_to : '<span style="color:var(--text2); font-weight:normal;">-</span>'}</td>
+                            <td style="padding:10px 12px; text-align:center;">
+                                <div style="display:inline-flex; gap:6px; align-items:center;">
+                                    <button onclick="event.stopPropagation(); openCrmFollowupModal('${s.student_id}');" style="background:#ea580c; border:none; color:white; padding:5px 10px; border-radius:8px; font-size:0.78rem; font-weight:bold; cursor:pointer; font-family:inherit;" title="تسجيل متابعة">📝 متابعة</button>
+                                    <button onclick="event.stopPropagation(); quickConfirmPayment('${s.student_id}', '${safeName}');" style="background:linear-gradient(135deg, #10b981, #059669); border:none; color:white; padding:5px 12px; border-radius:8px; font-size:0.78rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 2px 6px rgba(16,185,129,0.3);" title="تأكيد السداد ونقل للدراسة">✅ تم السداد</button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button></td>
+                            <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
+                            <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
+                            <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
+                            <td style="padding:12px; text-align:center;">${yrBadge}</td>
+                            <td style="padding:12px;">${payBadge}</td>
+                            <td style="padding:12px; text-align:center;">${onbBadge}</td>
+                            <td style="padding:12px;  text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
+                            ${filters.showExcluded ? `<td style="padding:12px; text-align:center;"><button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="background:#10b981; color:white; border:none; padding:5px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.8rem;">🔄 استعادة</button></td>` : ''}
+                        `;
+                    }
                     tbody.appendChild(tr);
                 }
                 table.appendChild(tbody);
@@ -9174,7 +9684,8 @@ async function toggleStudentValidity() {
                     cardPayment.style.background = 'rgba(52,199,89,0.05)';
                     cardPayment.style.borderColor = 'rgba(52,199,89,0.3)';
                 } else {
-                    paymentEl.textContent = '❌ غير مدفوع';
+                    const safeName = String(student.first_name || '').replace(/'/g, "\\'");
+                    paymentEl.innerHTML = `<span>❌ غير مدفوع</span> <button type="button" onclick="event.stopPropagation(); quickConfirmPayment('${student.student_id}', '${safeName}'); document.getElementById('logs-overlay').style.display='none';" style="margin-right:8px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:4px 10px; border-radius:8px; font-weight:900; font-size:0.78rem; cursor:pointer; font-family:inherit; box-shadow:0 2px 5px rgba(16,185,129,0.3);" title="نقل الطالب فوراً إلى مساحة التأهيل والدراسة">✅ تأكيد السداد</button>`;
                     paymentEl.style.color = '#ef4444';
                     cardPayment.style.background = 'rgba(239,68,68,0.05)';
                     cardPayment.style.borderColor = 'rgba(239,68,68,0.3)';
@@ -12459,6 +12970,73 @@ function openFullscreenJourney() {
     document.getElementById('fs-journey-overlay').style.display = 'flex';
 }
 </script>
+
+<!-- DEDICATED CRM FOLLOW-UP MODAL (Zero Abandon) -->
+<div id="crm-followup-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; direction:rtl; backdrop-filter:blur(3px);">
+    <div style="background:var(--bg); width:92%; max-width:520px; max-height:90vh; overflow-y:auto; border-radius:20px; padding:24px; box-shadow:0 15px 35px rgba(0,0,0,0.25); border:1.5px solid var(--border); box-sizing:border-box;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+                <h3 style="margin:0; color:var(--text1); font-size:1.25rem; font-weight:900;">📝 تسجيل إجراء متابعة للطالب</h3>
+                <p id="crm-modal-student-name" style="margin:4px 0 0; color:#ea580c; font-weight:bold; font-size:0.95rem;"></p>
+            </div>
+            <button onclick="closeCrmFollowupModal()" style="background:var(--surface); border:none; width:34px; height:34px; border-radius:50%; font-size:1.1rem; color:var(--text1); cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+        </div>
+
+        <input type="hidden" id="crm-modal-student-id" value="">
+
+        <!-- Action Type Buttons -->
+        <label style="display:block; margin-bottom:6px; font-weight:bold; font-size:0.85rem; color:var(--text2);">وسيلة التواصل:</label>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-bottom:14px;">
+            <button type="button" class="crm-act-btn active" onclick="setCrmModalAction('APPEL', this)" id="crm-act-appel" style="padding:8px 4px; border-radius:10px; border:1px solid #cbd5e1; background:#0ea5e9; color:white; font-weight:bold; font-size:0.8rem; cursor:pointer;">📞 اتصال</button>
+            <button type="button" class="crm-act-btn" onclick="setCrmModalAction('WHATSAPP', this)" id="crm-act-wa" style="padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; font-size:0.8rem; cursor:pointer;">💬 واتساب</button>
+            <button type="button" class="crm-act-btn" onclick="setCrmModalAction('EMAIL', this)" id="crm-act-email" style="padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; font-size:0.8rem; cursor:pointer;">📧 إيميل</button>
+            <button type="button" class="crm-act-btn" onclick="setCrmModalAction('NOTE', this)" id="crm-act-note" style="padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; font-size:0.8rem; cursor:pointer;">📌 ملاحظة</button>
+        </div>
+
+        <!-- Lead Status -->
+        <label style="display:block; margin-bottom:6px; font-weight:bold; font-size:0.85rem; color:var(--text2);">حالة المتابعة الجديدة:</label>
+        <select id="crm-modal-status" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-weight:bold; font-size:0.9rem; margin-bottom:14px; outline:none;">
+            <option value="NOUVEAU">🔵 جديد / للمتابعة (Nouveau)</option>
+            <option value="A_RELANCER">🟠 في انتظار الرد / رسالة واتساب (À relancer)</option>
+            <option value="EN_DISCUSSION">🟡 قيد التفاوض / رد على المكالمة (En discussion)</option>
+            <option value="PROMESSE_PAIEMENT">🟣 موعد سداد محدد (Promesse de paiement)</option>
+            <option value="PERDU">🔴 ملغى / غير مهتم (Perdu / Archivé)</option>
+        </select>
+
+        <!-- Mandatory Next Action Date (Zero Abandon) -->
+        <div style="background:rgba(234,88,12,0.08); border:1px dashed #ea580c; border-radius:12px; padding:12px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label style="font-weight:900; font-size:0.88rem; color:#c2410c;">⏰ تاريخ الموعد القادم (إلزامي - صفر تراجع):</label>
+                <span style="font-size:0.75rem; color:#9a3412;">Zéro Abandon</span>
+            </div>
+            <input type="date" id="crm-modal-next-date" style="width:100%; padding:9px; border-radius:8px; border:1px solid #fdba74; background:var(--surface); color:var(--text1); font-family:inherit; font-weight:bold; outline:none; box-sizing:border-box;">
+            <input type="text" id="crm-modal-next-note" placeholder="موضوع الموعد القادم (مثال: معاودة الاتصال للتأكد من التحويل البنكي)..." style="width:100%; margin-top:8px; padding:8px; border-radius:8px; border:1px solid #fdba74; background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.82rem; outline:none; box-sizing:border-box;">
+        </div>
+
+        <!-- Advisor & Note text -->
+        <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <div style="flex:1;">
+                <label style="display:block; margin-bottom:4px; font-weight:bold; font-size:0.82rem; color:var(--text2);">اسم المسؤول:</label>
+                <input type="text" id="crm-modal-advisor" placeholder="اسمك..." style="width:100%; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.88rem; outline:none; box-sizing:border-box;">
+            </div>
+        </div>
+
+        <label style="display:block; margin-bottom:4px; font-weight:bold; font-size:0.82rem; color:var(--text2);">تفاصيل الملاحظة / ما دار مع الطالب:</label>
+        <textarea id="crm-modal-note-text" placeholder="اكتب ما تم الاتفاق عليه أو سبب التأجيل..." style="width:100%; height:85px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:inherit; font-size:0.88rem; outline:none; resize:none; box-sizing:border-box; margin-bottom:18px;"></textarea>
+
+        <!-- Actions Footer -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:8px;">
+                <button type="button" onclick="closeCrmFollowupModal()" style="flex:0.8; padding:11px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; font-family:inherit;">إلغاء</button>
+                <button type="button" id="crm-modal-save-btn" onclick="submitCrmFollowup()" style="flex:1.5; padding:11px; border-radius:10px; border:none; background:linear-gradient(135deg, #ea580c, #c2410c); color:white; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 3px 10px rgba(234,88,12,0.3);">💾 حفظ المتابعة</button>
+            </div>
+            <button type="button" onclick="crmModalValidatePayment()" style="width:100%; padding:11px; border-radius:10px; border:none; background:linear-gradient(135deg, #10b981, #059669); color:white; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 3px 10px rgba(16,185,129,0.3); display:flex; align-items:center; justify-content:center; gap:6px;">
+                <span>✅ تم السداد (نقل الطالب فوراً لمساحة الدراسة)</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 </body>
 
 

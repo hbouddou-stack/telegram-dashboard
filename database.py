@@ -121,7 +121,12 @@ async def init_db():
             ('appel_1', 'TEXT'),
             ('appel_2', 'TEXT'),
             ('appel_3', 'TEXT'),
-            ('team', 'TEXT')
+            ('team', 'TEXT'),
+            ('crm_lead_status', "TEXT DEFAULT 'NOUVEAU'"),
+            ('crm_assigned_to', 'TEXT'),
+            ('crm_next_action_date', 'TEXT'),
+            ('crm_next_action_note', 'TEXT'),
+            ('crm_last_contact_at', 'TEXT')
         ]:
             try:
                 await db.execute(f'ALTER TABLE academy_students ADD COLUMN {col} {col_def}')
