@@ -2064,16 +2064,25 @@
     <!-- TAB: إحصاء -->
     <div id="tab-stats" class="tab-content">
         <div style="padding:12px 12px 100px;">
+            <!-- Stats Notice / Alignment with Excel -->
+            <div id="stats-excel-notice" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:10px 14px; margin-bottom:14px; font-size:0.8rem; color:var(--text1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.1rem;">📊</span>
+                    <span><b>إحصائيات مطابقة لملف الإكسل:</b> تُعرض جميع البيانات للطلاب النشطين المعتمدين مع استبعاد الحسابات التجريبية.</span>
+                </div>
+                <span id="stats-active-students-badge" style="background:rgba(16,185,129,0.18); color:#059669; font-weight:800; padding:3px 10px; border-radius:8px; font-size:0.78rem;">1,504 طالب معتمد</span>
+            </div>
+
             <!-- Stats Control Bar: Period + Sub-View Toggle -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
                 <!-- Period Selector -->
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                     <span style="font-size:0.78rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
                     <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border);">
-                        <div class="pill-btn" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">7 أيام</div>
-                        <div class="pill-btn pill-active" id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
-                        <div class="pill-btn"            id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
-                        <div class="pill-btn"            id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">الكل</div>
+                        <div class="pill-btn pill-active" id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">الكل (الإكسل)</div>
+                        <div class="pill-btn" id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
+                        <div class="pill-btn" id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
+                        <div class="pill-btn" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">7 أيام</div>
                     </div>
                 </div>
 
@@ -4762,7 +4771,8 @@
             if(id === 'settings') loadGeneralSettings();
             if(id === 'ghosts') loadGhostVisitors();
             if(id === 'stats') {
-                const _doLoadStats = () => loadStats(30, document.getElementById('stats-30'));
+                const targetDays = window.currentStatsDays !== undefined ? window.currentStatsDays : 0;
+                const _doLoadStats = () => loadStats(targetDays, document.getElementById('stats-' + targetDays) || document.getElementById('stats-0'));
                 if (typeof allStudents === 'undefined' || allStudents.length === 0) {
                     // Data not loaded yet - fetch first
                     fetchStudents().then(_doLoadStats).catch(_doLoadStats);
@@ -5323,7 +5333,8 @@
                     filterStudents(); if(typeof updateDashboardView === 'function') updateDashboardView(); if(typeof updateExcludedButtonUI === 'function') updateExcludedButtonUI();
                     // Auto-refresh stats tab if it's currently active
                     if (document.getElementById('tab-stats') && document.getElementById('tab-stats').classList.contains('active')) {
-                        loadStats(30, document.getElementById('stats-30'));
+                        const targetDays = window.currentStatsDays !== undefined ? window.currentStatsDays : 0;
+                        loadStats(targetDays, document.getElementById('stats-' + targetDays) || document.getElementById('stats-0'));
                     }
                 }
             } catch(e) { console.error(e); }
@@ -10446,6 +10457,16 @@ function renderHomeAlerts(alerts) {
             return picked;
         }
 
+        function isStudentPaid(s) {
+            const ps = String(s.payment_status || '').toUpperCase().trim();
+            return ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
+        }
+
+        function isStudentFemme(s) {
+            const g = String(s.gender || '').toUpperCase().trim();
+            return g === 'FEMME' || g === 'F' || g === 'أنثى';
+        }
+
         function renderDayView() {
             const dateStr   = window._dayViewDates[window._dayViewIdx];
             if (!dateStr) return;
@@ -10457,14 +10478,12 @@ function renderHomeAlerts(alerts) {
             const dayName = toArabicDayName(dateStr);
             titleEl.textContent = `${dayName} ${toArabicDate(dateStr)}`;
 
-            const src = typeof allStudents !== 'undefined' ? allStudents : [];
+            const rawSrc = typeof allStudents !== 'undefined' ? allStudents : [];
+            const src = rawSrc.filter(s => s.excluded != 1);
             const dayStudents = src.filter(s => normalizeDate(s.created_at) === dateStr);
             const totalDay = dayStudents.length;
-            const paidDay  = dayStudents.filter(s => {
-                const ps = String(s.payment_status||'').toUpperCase().trim();
-                return ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
-            }).length;
-            const womenDay = dayStudents.filter(s => { const g = String(s.gender||'').toUpperCase().trim(); return g==='FEMME'||g==='F'; }).length;
+            const paidDay  = dayStudents.filter(isStudentPaid).length;
+            const womenDay = dayStudents.filter(isStudentFemme).length;
             const menDay   = totalDay - womenDay;
 
             summaryEl.textContent = `${totalDay} مسجل — ${paidDay} مسدد (${totalDay>0?Math.round(paidDay/totalDay*100):0}%) — ${womenDay}♀ / ${menDay}♂`;
@@ -10478,9 +10497,7 @@ function renderHomeAlerts(alerts) {
                 const timePart = raw.includes(' ') ? raw.split(' ')[1] : '';
                 const hour = timePart ? parseInt(timePart.split(':')[0], 10) : -1;
                 if (hour < 0 || hour > 23) return;
-                const g = String(s.gender||'').toUpperCase().trim();
-                const isFemme = g==='FEMME'||g==='F';
-                if (isFemme) hourMap[hour].women++; else hourMap[hour].men++;
+                if (isStudentFemme(s)) hourMap[hour].women++; else hourMap[hour].men++;
             });
 
             if (totalDay === 0) {
@@ -10599,7 +10616,11 @@ function renderHomeAlerts(alerts) {
                 document.querySelectorAll('[id^="stats-"]').forEach(e => e.classList.remove('pill-active'));
                 if (el) el.classList.add('pill-active');
 
-                const src = typeof allStudents !== 'undefined' ? allStudents : [];
+                const rawSrc = typeof allStudents !== 'undefined' ? allStudents : [];
+                const src = rawSrc.filter(s => s.excluded != 1);
+                const activeBadge = document.getElementById('stats-active-students-badge');
+                if (activeBadge) activeBadge.textContent = src.length + ' طالب معتمد';
+
                 const chartArea = document.getElementById('daily-chart-area');
                 const tbody     = document.getElementById('daily-stats-body');
                 const tfoot     = document.getElementById('daily-stats-foot');
@@ -10630,10 +10651,8 @@ function renderHomeAlerts(alerts) {
                     if (!nd) return;
                     if (!dayMap[nd]) dayMap[nd] = { total:0, paid:0, unpaid:0, women:0, men:0 };
                     dayMap[nd].total++;
-                    const ps = String(s.payment_status||'').toUpperCase().trim();
-                    const isPaid = ps==='PAID'||ps==='PAYE'||ps==='مسدد';
-                    const g = String(s.gender||'').toUpperCase().trim();
-                    const isFemme = g==='FEMME'||g==='F'||g==='أنثى';
+                    const isPaid = isStudentPaid(s);
+                    const isFemme = isStudentFemme(s);
                     if (isPaid) dayMap[nd].paid++; else dayMap[nd].unpaid++;
                     if (isFemme) dayMap[nd].women++; else dayMap[nd].men++;
                 });
@@ -10643,12 +10662,12 @@ function renderHomeAlerts(alerts) {
 
                 // KPI
                 const totalCount  = filtered.length;
-                const paidCount   = filtered.filter(s => { const ps=String(s.payment_status||'').toUpperCase().trim(); return ps==='PAID'||ps==='PAYE'||ps==='مسدد'; }).length;
+                const paidCount   = filtered.filter(isStudentPaid).length;
                 const unpaidCount = totalCount - paidCount;
-                const womenCount  = filtered.filter(s => { const g=String(s.gender||'').toUpperCase().trim(); return g==='FEMME'||g==='F'||g==='أنثى'; }).length;
-                const menCount    = filtered.filter(s => { const g=String(s.gender||'').toUpperCase().trim(); return g==='HOMME'||g==='M'||g==='ذكر'; }).length;
+                const womenCount  = filtered.filter(isStudentFemme).length;
+                const menCount    = totalCount - womenCount;
                 const paidPct  = totalCount > 0 ? Math.round((paidCount/totalCount)*100) : 0;
-                const womenPct = (womenCount+menCount) > 0 ? Math.round((womenCount/(womenCount+menCount))*100) : 50;
+                const womenPct = totalCount > 0 ? Math.round((womenCount/totalCount)*100) : 50;
 
                 document.getElementById('kpi-total').textContent = totalCount;
                 document.getElementById('kpi-paid-pct').textContent = paidPct + '%';
@@ -10817,7 +10836,7 @@ function renderHomeAlerts(alerts) {
 
         // ===== SUB-VIEW TOGGLE: DAYS vs HOURS =====
         window.currentStatsSubView = 'days';
-        window.currentStatsDays = 30;
+        window.currentStatsDays = 0;
 
         function switchStatsSubView(view) {
             window.currentStatsSubView = view;
@@ -10853,8 +10872,9 @@ function renderHomeAlerts(alerts) {
         // ===== HOURLY AGGREGATE STATS (0h -> 23h across filtered period) =====
         function renderHourlyAggregateStats() {
             try {
-                const src = typeof allStudents !== 'undefined' ? allStudents : [];
-                const days = window.currentStatsDays !== undefined ? window.currentStatsDays : 30;
+                const rawSrc = typeof allStudents !== 'undefined' ? allStudents : [];
+                const src = rawSrc.filter(s => s.excluded != 1);
+                const days = window.currentStatsDays !== undefined ? window.currentStatsDays : 0;
                 
                 let filtered;
                 if (days === 0) {
@@ -10894,12 +10914,10 @@ function renderHomeAlerts(alerts) {
                     if (hour < 0 || hour > 23) return;
 
                     hourMap[hour].total++;
-                    const ps = String(s.payment_status || '').toUpperCase().trim();
-                    const isPaid = ps === 'PAID' || ps === 'PAYE' || ps === 'مسدد';
+                    const isPaid = isStudentPaid(s);
                     if (isPaid) hourMap[hour].paid++; else hourMap[hour].unpaid++;
 
-                    const g = String(s.gender || '').toUpperCase().trim();
-                    const isFemme = g === 'FEMME' || g === 'F' || g === 'أنثى';
+                    const isFemme = isStudentFemme(s);
                     if (isFemme) hourMap[hour].women++; else hourMap[hour].men++;
                 });
 
