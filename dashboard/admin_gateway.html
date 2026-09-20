@@ -1058,21 +1058,6 @@
         <div id="tab-students" class="tab-content active" style="padding-top:0;">
         <!-- ===== CRM HYBRID WORKSPACE SWITCHER ===== -->
         <div style="padding: 10px 15px 5px; background: var(--bg);">
-            <div style="display:flex; gap:8px; background:var(--surface); padding:6px; border-radius:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.04); direction:rtl;">
-                <button id="ws-btn-relance" onclick="switchCrmWorkspace('relance')" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:linear-gradient(135deg, #ef4444, #f97316); color:white; font-weight:900; font-size:0.95rem; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 10px rgba(239,68,68,0.25);">
-                    <span>🎯 مساحة المتابعة والتحصيل (Relance)</span>
-                    <span id="ws-count-relance" style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-size:0.85rem;">1,043</span>
-                </button>
-                <button id="ws-btn-pedagogy" onclick="switchCrmWorkspace('pedagogy')" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:transparent; color:var(--text1); font-weight:800; font-size:0.95rem; cursor:pointer; transition:all 0.2s;">
-                    <span>🎓 مساحة التأهيل والدراسة (Pédagogie)</span>
-                    <span id="ws-count-pedagogy" style="background:rgba(16,185,129,0.15); color:#059669; padding:2px 8px; border-radius:10px; font-size:0.85rem;">461</span>
-                </button>
-                <button id="ws-btn-all" onclick="switchCrmWorkspace('all')" style="flex:0.6; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px 10px; border-radius:12px; border:none; background:transparent; color:var(--text2); font-weight:bold; font-size:0.88rem; cursor:pointer; transition:all 0.2s;">
-                    <span>📋 عرض شامل</span>
-                    <span id="ws-count-all" style="background:var(--border); padding:2px 6px; border-radius:10px; font-size:0.8rem;">1,504</span>
-                </button>
-            </div>
-
             <!-- RELANCE CONTROL BAR & CRM FILTERS -->
             <div id="relance-toolbar" style="margin-top:10px; background:rgba(249,115,22,0.05); border:1.5px solid rgba(249,115,22,0.3); border-radius:14px; padding:12px 14px; direction:rtl;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
@@ -13037,7 +13022,48 @@ function openFullscreenJourney() {
     </div>
 </div>
 
+
+<!-- FLOATING CRM SWITCHER (GEAR) -->
+<div id="floating-crm-gear" style="position:fixed; bottom:25px; left:25px; z-index:9999; display:flex; flex-direction:column; align-items:flex-start; gap:10px;">
+    
+    <!-- The Menu that appears -->
+    <div id="crm-floating-menu" style="display:none; flex-direction:column; gap:8px; background:var(--surface); border:1px solid var(--border); box-shadow:0 8px 24px rgba(0,0,0,0.15); border-radius:16px; padding:12px; direction:rtl; min-width:260px; transition:all 0.3s ease; transform-origin:bottom left;">
+        <h4 style="margin:0 0 5px 0; color:var(--text1); font-size:0.95rem; text-align:center;">اختر مساحة العمل</h4>
+        
+        <button id="ws-btn-relance" onclick="switchCrmWorkspace('relance'); toggleFloatingCrmMenu();" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:linear-gradient(135deg, #ef4444, #f97316); color:white; font-weight:900; font-size:0.9rem; cursor:pointer; box-shadow:0 3px 10px rgba(239,68,68,0.25);">
+            <span>🎯 المتابعة والتحصيل</span>
+            <span id="ws-count-relance" style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-size:0.8rem;">1,043</span>
+        </button>
+        
+        <button id="ws-btn-pedagogy" onclick="switchCrmWorkspace('pedagogy'); toggleFloatingCrmMenu();" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-radius:12px; border:none; background:transparent; color:var(--text1); font-weight:800; font-size:0.9rem; cursor:pointer;">
+            <span>🎓 التأهيل والدراسة</span>
+            <span id="ws-count-pedagogy" style="background:rgba(16,185,129,0.15); color:#059669; padding:2px 8px; border-radius:10px; font-size:0.8rem;">461</span>
+        </button>
+        
+        <button id="ws-btn-all" onclick="switchCrmWorkspace('all'); toggleFloatingCrmMenu();" style="display:flex; align-items:center; justify-content:space-between; gap:6px; padding:10px 14px; border-radius:12px; border:none; background:transparent; color:var(--text2); font-weight:bold; font-size:0.85rem; cursor:pointer;">
+            <span>📋 عرض شامل</span>
+            <span id="ws-count-all" style="background:var(--border); padding:2px 6px; border-radius:10px; font-size:0.75rem;">1,504</span>
+        </button>
+    </div>
+
+    <!-- The Gear Button itself -->
+    <button onclick="toggleFloatingCrmMenu()" style="width:60px; height:60px; border-radius:50%; border:none; background:linear-gradient(135deg, #4f46e5, #6366f1); color:white; font-size:1.8rem; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(79,70,229,0.4); cursor:pointer; transition:transform 0.2s;">
+        <i class="fas fa-cog"></i>
+    </button>
+</div>
+
+<script>
+function toggleFloatingCrmMenu() {
+    const menu = document.getElementById('crm-floating-menu');
+    if(menu.style.display === 'none' || menu.style.display === '') {
+        menu.style.display = 'flex';
+    } else {
+        menu.style.display = 'none';
+    }
+}
+</script>
 </body>
+
 
 
 
