@@ -6743,6 +6743,10 @@ function switchCrmWorkspace(ws) {
         if(pEl && typeof setPayFilterUI === 'function') setPayFilterUI('all', pEl);
     }
 
+    if (typeof populateAgentDropdowns === 'function' && typeof allStudents !== 'undefined') {
+        populateAgentDropdowns(allStudents);
+    }
+
     if(typeof filterStudents === 'function') filterStudents();
 }
 
@@ -6766,8 +6770,19 @@ function toggleCrmDueToday(el) {
 window.populateAgentDropdowns = function(students) {
     if (!students || !students.length) return;
     const agentCounts = {};
+    let totalValid = 0;
     students.forEach(st => {
         if (st.excluded == 1) return;
+        
+        // Respect Workspace logic for Counters
+        const pv = String(st.payment_status || '').toUpperCase().trim();
+        const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
+        
+        if (window.crmWorkspace === 'relance' && isPaid) return;
+        if (window.crmWorkspace === 'pedagogy' && !isPaid) return;
+        
+        totalValid++;
+
         const ag = (st.crm_assigned_to || '').trim();
         if (ag) {
             agentCounts[ag] = (agentCounts[ag] || 0) + 1;
@@ -6783,7 +6798,7 @@ window.populateAgentDropdowns = function(students) {
 
         const currentVal = (typeof filters !== 'undefined' && filters.crmAgent) ? filters.crmAgent : sel.value;
         const labelAll = id === 'main-agent-select' ? '👤 جميع الأعوان (Tous)' : '👤 جميع المسؤولين';
-        sel.innerHTML = `<option value="all">${labelAll} (${students.length})</option>`;
+        sel.innerHTML = `<option value="all">${labelAll} (${totalValid})</option>`;
 
         agentNames.forEach(name => {
             const count = agentCounts[name];
