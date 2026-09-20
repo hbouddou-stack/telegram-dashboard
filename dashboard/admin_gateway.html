@@ -1527,7 +1527,49 @@
             
     
         </script>
-        <div id="students-list"></div>
+        
+// --- Added by Script: Remark Categorization ---
+window.getRemarkCategory = function(text) {
+    if (!text) return null;
+    const t = String(text).toLowerCase();
+    if (t.match(/لا يجيب|لايجيب|لاتجيب|العلبة الصوتية|مغلق|مشغول|يتعذر|رنة|هاتف/)) return { id: 'no_answer', label: '🟡 لا يجيب', color: '#d97706', bg: 'rgba(245,158,11,0.15)', border: '#f59e0b' };
+    if (t.match(/غير مهتم|لا يريد|رفض|ليس|لا |مستبعد|إلغاء/)) return { id: 'not_interested', label: '🔴 غير مهتم', color: '#dc2626', bg: 'rgba(239,68,68,0.15)', border: '#ef4444' };
+    if (t.match(/ستدفع|سيسدد|ستسدد|قريبا|غدا|مهتم|ارسل الحساب|موافق|تسجيل|تسجل|بعد|يفكر|تم/)) return { id: 'will_pay', label: '🟢 مهتم/سيدفع', color: '#059669', bg: 'rgba(16,185,129,0.15)', border: '#10b981' };
+    if (t.match(/مكرر|غير صحيح|خاطئ|غلط/)) return { id: 'invalid_number', label: '🔵 رقم خاطئ', color: '#475569', bg: 'rgba(100,116,139,0.15)', border: '#64748b' };
+    if (t.match(/أجنبي|اجنبي|ارسال|إرسال|واتساب|خارج/)) return { id: 'foreign_sent', label: '🟣 تم الإرسال', color: '#7c3aed', bg: 'rgba(139,92,246,0.15)', border: '#8b5cf6' };
+    if (t.match(/مشكل|موقع|إيميل|تقني/)) return { id: 'technical', label: '🟠 مشكل تقني', color: '#ea580c', bg: 'rgba(234,88,12,0.15)', border: '#f97316' };
+    return { id: 'other', label: '⚪ ملاحظة أخرى', color: '#4b5563', bg: 'rgba(75,85,99,0.15)', border: '#9ca3af' };
+};
+
+window.setRemarkFilterQuick = function(val, el) {
+    document.querySelectorAll('.remark-pill').forEach(btn => btn.classList.remove('remark-pill-active'));
+    if (el) el.classList.add('remark-pill-active');
+    
+    const sel = document.getElementById('remark-select');
+    if (sel) sel.value = val;
+    
+    if (typeof filters !== 'undefined') {
+        filters.remark = val;
+        if(typeof filterStudents === 'function') filterStudents();
+    }
+};
+// ----------------------------------------------
+
+        <!-- Quick Remark Filters (Pills) -->
+        <style>
+            .remark-pill { transition: all 0.2s; white-space: nowrap; }
+            .remark-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+            .remark-pill-active { background: var(--text1) !important; color: var(--bg) !important; border-color: var(--text1) !important; }
+        </style>
+        <div id="quick-remark-filters" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:8px; align-items:center; direction:rtl; scrollbar-width: thin;">
+            <button onclick="setRemarkFilterQuick('all', this)" class="remark-pill remark-pill-active" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">الكل</button>
+            <button onclick="setRemarkFilterQuick('will_pay', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #10b981; background:rgba(16,185,129,0.05); color:#059669; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟢 مهتم/سيدفع</button>
+            <button onclick="setRemarkFilterQuick('not_interested', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #ef4444; background:rgba(239,68,68,0.05); color:#dc2626; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔴 غير مهتم/إلغاء</button>
+            <button onclick="setRemarkFilterQuick('no_answer', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.05); color:#d97706; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟡 لا يجيب</button>
+            <button onclick="setRemarkFilterQuick('invalid_number', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #64748b; background:rgba(100,116,139,0.05); color:#475569; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔵 رقم خاطئ</button>
+            <button onclick="setRemarkFilterQuick('foreign_sent', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #8b5cf6; background:rgba(139,92,246,0.05); color:#7c3aed; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟣 تم الإرسال/أجنبي</button>
+        </div>
+<div id="students-list"></div>
 
     </div>
     
@@ -7114,26 +7156,11 @@ function filterStudents() {
                     
                 // Marketing Remarks Filtering
                 let matchRemark = true;
+                const rText = String(s.comments || s.marketing_notes || '');
+                const rCatObj = window.getRemarkCategory ? window.getRemarkCategory(rText) : null;
+                const cat = rCatObj ? rCatObj.id : null;
+                
                 if (filters.remark && filters.remark !== 'all') {
-                    const c = String(s.comments || '').toLowerCase();
-                    let cat = null;
-                    if (!c) {
-                        cat = null;
-                    } else if (c.includes('لا يجيب') || c.includes('لايجيب') || c.includes('لاتجيب') || c.includes('العلبة الصوتية')) {
-                        cat = 'no_answer';
-                    } else if (c.includes('ستدفع') || c.includes('سيسدد') || c.includes('ستسدد') || c.includes('قريبا') || c.includes('غدا')) {
-                        cat = 'will_pay';
-                    } else if (c.includes('مكرر') || c.includes('غير صحيح') || c.includes('خاطئ')) {
-                        cat = 'invalid_number';
-                    } else if (c.includes('أجنبي') || c.includes('اجنبي') || c.includes('ارسال') || c.includes('إرسال') || c.includes('واتساب')) {
-                        cat = 'foreign_sent';
-                    } else if (c.includes('مشكل') || c.includes('موقع') || c.includes('إيميل') || c.includes('تسجيل')) {
-                        cat = 'technical';
-                    } else if (c.includes('مهتم')) {
-                        cat = 'not_interested';
-                    } else {
-                        cat = 'other';
-                    }
                     matchRemark = (filters.remark === cat);
                 }
 
@@ -7767,7 +7794,11 @@ function filterStudents() {
                         </div>
                         <div style="margin-top:8px;">${coloredEmail}</div>
                         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap; margin-top:10px;">
-                            ${acaId ? `<span style="font-size:0.72rem;background:rgba(52,199,89,0.15);color:#34c759;padding:2px 8px;border-radius:10px;font-weight:bold;">رقم الطالب: ${acaId}</span>` : ''}
+                            ${(window.getRemarkCategory && window.getRemarkCategory(String(s.comments || s.marketing_notes || ''))) ? (() => { 
+                                const obj = window.getRemarkCategory(String(s.comments || s.marketing_notes || ''));
+                                return `<span style="font-size:0.72rem; background:${obj.bg}; color:${obj.color}; border:1px solid ${obj.border}; padding:2px 8px; border-radius:10px; font-weight:bold; margin-right:4px;" title="${String(s.comments || s.marketing_notes).replace(/"/g, '&quot;')}">${obj.label}</span>`;
+                             })() : ''}
+                             ${acaId ? `<span style="font-size:0.72rem;background:rgba(52,199,89,0.15);color:#34c759;padding:2px 8px;border-radius:10px;font-weight:bold;">رقم الطالب: ${acaId}</span>` : ''}
                             ${yearBadgeHTML}
                             ${srcBadge}
                         </div>
