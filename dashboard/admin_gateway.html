@@ -5341,7 +5341,24 @@
         }
 
         // ============ STUDENTS ============
-        async function fetchStudents() {
+        
+async function syncGSheetAgents() {
+    if(!confirm('Voulez-vous synchroniser les assignations (Agents/Commentaires) depuis le Google Sheet "appels 2026" ?')) return;
+    try {
+        const res = await fetch('/api/admin/gateway/import_agents_gsheet', {method: 'POST'});
+        const data = await res.json();
+        if(data.success) {
+            alert(`Succès ! ${data.updated} dossiers mis à jour.`);
+            fetchStudents();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    } catch(e) {
+        alert('Erreur: ' + e.message);
+    }
+}
+
+async function fetchStudents() {
             try {
                 let tgUserId = '';
                 if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {

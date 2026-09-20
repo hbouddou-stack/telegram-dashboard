@@ -1673,6 +1673,71 @@ async def api_admin_gateway_archive_student(request: web.Request):
         return web.json_response({'success': False, 'error': str(e)})
 
 
+
+async def api_admin_gateway_import_agents_gsheet(request: web.Request):
+    try:
+        import urllib.request
+        import csv
+        import aiosqlite
+        import re
+        from config import DATABASE_PATH
+        
+        sheet_id = "1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI"
+        gid = "608153295"
+        url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+        
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = urllib.request.urlopen(req)
+        lines = [l.decode('utf-8') for l in response.readlines()]
+        reader = csv.reader(lines)
+        next(reader)
+        
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            cur = await db.execute("SELECT student_id, academic_id, email, phone FROM academy_students")
+            db_students = await cur.fetchall()
+            
+            db_acad_26 = {}
+            db_emails = {}
+            db_phones = {}
+            
+            for row in db_students:
+                s_id = row[0]
+                acad_id = str(row[1]).strip() if row[1] else ""
+                if acad_id:
+                    db_acad_26[acad_id + "26"] = s_id
+                email = str(row[2]).strip().lower() if row[2] else ""
+                if email:
+                    db_emails[email] = s_id
+                phone = str(row[3]).strip() if row[3] else ""
+                c_phone = re.sub(r'\D', '', phone)
+                if c_phone:
+                    db_phones[c_phone] = s_id
+            
+            updated_ids = set()
+            for row in reader:
+                if len(row) < 20: continue
+                numero = str(row[0]).strip()
+                email = str(row[3]).strip().lower()
+                c_phone = re.sub(r'\D', '', str(row[4]).strip())
+                team = str(row[18]).strip()
+                comment = str(row[19]).strip()
+                
+                if not team: continue
+                
+                s_id = None
+                if numero in db_acad_26: s_id = db_acad_26[numero]
+                elif email in db_emails: s_id = db_emails[email]
+                elif c_phone in db_phones: s_id = db_phones[c_phone]
+                
+                if s_id:
+                    await db.execute("UPDATE academy_students SET crm_assigned_to = ?, crm_next_action_note = ? WHERE student_id = ?", (team, comment, s_id))
+                    updated_ids.add(s_id)
+            
+            await db.commit()
+            return web.json_response({'success': True, 'updated': len(updated_ids)})
+    except Exception as e:
+        return web.json_response({'success': False, 'error': str(e)})
+
 async def api_admin_gateway_import_students(request: web.Request):
     try:
         import aiosqlite
@@ -7167,6 +7232,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/admin/gateway/check_member', api_admin_gateway_check_member)
     app.router.add_post('/api/admin/gateway/add_student', api_admin_gateway_add_student)
     app.router.add_post('/api/admin/gateway/archive_student', api_admin_gateway_archive_student)
+    app.router.add_post('/api/admin/gateway/import_agents_gsheet', api_admin_gateway_import_agents_gsheet)
     app.router.add_post('/api/admin/gateway/import_students', api_admin_gateway_import_students)
     app.router.add_get('/api/admin/gateway/import_logs', api_admin_gateway_import_logs)
     app.router.add_post('/api/admin/gateway/sync_sheets', api_admin_gateway_sync_sheets)
