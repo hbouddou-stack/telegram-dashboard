@@ -1531,9 +1531,9 @@
 <script>
 // --- Added by Script: Remark Categorization ---
 window.getRemarkCategory = function(text) {
-    if (!text) return null;
+    if (!text || String(text).trim() === '') return { id: 'untouched', label: '🆕 لم يتم التواصل', color: '#2563eb', bg: 'rgba(37,99,235,0.15)', border: '#3b82f6' };
     const t = String(text).toLowerCase();
-    if (t.match(/لا يجيب|لايجيب|لاتجيب|العلبة الصوتية|مغلق|مشغول|يتعذر|رنة|هاتف/)) return { id: 'no_answer', label: '🟡 لا يجيب', color: '#d97706', bg: 'rgba(245,158,11,0.15)', border: '#f59e0b' };
+    if (t.match(/لا يجيب|لايجيب|لاتجيب|العلبة الصوتية|مغلق|مشغول|يتعذر|رنة|هاتف|رسالة/)) return { id: 'no_answer', label: '🟡 لا يجيب', color: '#d97706', bg: 'rgba(245,158,11,0.15)', border: '#f59e0b' };
     if (t.match(/غير مهتم|لا يريد|رفض|ليس|لا |مستبعد|إلغاء/)) return { id: 'not_interested', label: '🔴 غير مهتم', color: '#dc2626', bg: 'rgba(239,68,68,0.15)', border: '#ef4444' };
     if (t.match(/ستدفع|سيسدد|ستسدد|قريبا|غدا|مهتم|ارسل الحساب|موافق|تسجيل|تسجل|بعد|يفكر|تم/)) return { id: 'will_pay', label: '🟢 مهتم/سيدفع', color: '#059669', bg: 'rgba(16,185,129,0.15)', border: '#10b981' };
     if (t.match(/مكرر|غير صحيح|خاطئ|غلط/)) return { id: 'invalid_number', label: '🔵 رقم خاطئ', color: '#475569', bg: 'rgba(100,116,139,0.15)', border: '#64748b' };
@@ -1544,7 +1544,12 @@ window.getRemarkCategory = function(text) {
 
 window.setRemarkFilterQuick = function(val, el) {
     document.querySelectorAll('.remark-pill').forEach(btn => btn.classList.remove('remark-pill-active'));
-    if (el) el.classList.add('remark-pill-active');
+    if (el) {
+        el.classList.add('remark-pill-active');
+    } else {
+        const targetBtn = document.querySelector(`.remark-pill[data-cat="${val}"]`);
+        if (targetBtn) targetBtn.classList.add('remark-pill-active');
+    }
     
     const sel = document.getElementById('remark-select');
     if (sel) sel.value = val;
@@ -1562,14 +1567,17 @@ window.setRemarkFilterQuick = function(val, el) {
             .remark-pill { transition: all 0.2s; white-space: nowrap; }
             .remark-pill:hover { opacity: 0.8; transform: translateY(-1px); }
             .remark-pill-active { background: var(--text1) !important; color: var(--bg) !important; border-color: var(--text1) !important; }
+            .cat-count { margin-right:4px; font-weight:900; background:rgba(255,255,255,0.25); border-radius:10px; padding:2px 6px; font-size:0.75rem; }
+            .remark-pill-active .cat-count { color: var(--text1); background: var(--bg); }
         </style>
         <div id="quick-remark-filters" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:8px; align-items:center; direction:rtl; scrollbar-width: thin;">
-            <button onclick="setRemarkFilterQuick('all', this)" class="remark-pill remark-pill-active" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">الكل</button>
-            <button onclick="setRemarkFilterQuick('will_pay', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #10b981; background:rgba(16,185,129,0.05); color:#059669; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟢 مهتم/سيدفع</button>
-            <button onclick="setRemarkFilterQuick('not_interested', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #ef4444; background:rgba(239,68,68,0.05); color:#dc2626; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔴 غير مهتم/إلغاء</button>
-            <button onclick="setRemarkFilterQuick('no_answer', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.05); color:#d97706; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟡 لا يجيب</button>
-            <button onclick="setRemarkFilterQuick('invalid_number', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #64748b; background:rgba(100,116,139,0.05); color:#475569; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔵 رقم خاطئ</button>
-            <button onclick="setRemarkFilterQuick('foreign_sent', this)" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #8b5cf6; background:rgba(139,92,246,0.05); color:#7c3aed; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟣 تم الإرسال/أجنبي</button>
+            <button onclick="setRemarkFilterQuick('untouched', this)" data-cat="untouched" class="remark-pill remark-pill-active" style="flex-shrink:0; padding:8px 16px; border-radius:20px; border:2px solid #3b82f6; background:rgba(59,130,246,0.1); color:#2563eb; font-weight:900; cursor:pointer; font-size:0.95rem; font-family:inherit;">🆕 لم يتم التواصل <span class="cat-count">(0)</span></button>
+            <button onclick="setRemarkFilterQuick('all', this)" data-cat="all" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text1); font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">الكل <span class="cat-count">(0)</span></button>
+            <button onclick="setRemarkFilterQuick('will_pay', this)" data-cat="will_pay" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #10b981; background:rgba(16,185,129,0.05); color:#059669; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟢 مهتم/سيدفع <span class="cat-count">(0)</span></button>
+            <button onclick="setRemarkFilterQuick('no_answer', this)" data-cat="no_answer" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #f59e0b; background:rgba(245,158,11,0.05); color:#d97706; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟡 لا يجيب <span class="cat-count">(0)</span></button>
+            <button onclick="setRemarkFilterQuick('not_interested', this)" data-cat="not_interested" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #ef4444; background:rgba(239,68,68,0.05); color:#dc2626; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔴 غير مهتم/إلغاء <span class="cat-count">(0)</span></button>
+            <button onclick="setRemarkFilterQuick('invalid_number', this)" data-cat="invalid_number" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #64748b; background:rgba(100,116,139,0.05); color:#475569; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🔵 رقم خاطئ <span class="cat-count">(0)</span></button>
+            <button onclick="setRemarkFilterQuick('foreign_sent', this)" data-cat="foreign_sent" class="remark-pill" style="flex-shrink:0; padding:6px 14px; border-radius:20px; border:1.5px solid #8b5cf6; background:rgba(139,92,246,0.05); color:#7c3aed; font-weight:bold; cursor:pointer; font-size:0.85rem; font-family:inherit;">🟣 تم الإرسال/أجنبي <span class="cat-count">(0)</span></button>
         </div>
 <div id="students-list"></div>
 
@@ -3482,7 +3490,7 @@ window.setRemarkFilterQuick = function(val, el) {
         window.Telegram.WebApp.expand();
 
         let allStudents = [];
-        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all', showExcluded: false, crmStatus: 'all', crmAgent: 'all', crmDueToday: false };
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'untouched', showExcluded: false, crmStatus: 'all', crmAgent: 'all', crmDueToday: false };
         let activeSosId = null;
         let activeSosTid = null;
         let activeSosEmail = null;
@@ -5495,7 +5503,7 @@ window.setRemarkFilterQuick = function(val, el) {
         }
 
         function resetAllFilters() {
-            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'all', showExcluded: false };
+            filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'untouched', showExcluded: false };
             window.filterOnlyDuplicates = false;
             const searchInput = document.getElementById('search-input');
             if (searchInput) searchInput.value = '';
@@ -7076,6 +7084,7 @@ function filterStudents() {
                 });
             }
 
+            window.currentRemarkCounters = { untouched: 0, all: 0, will_pay: 0, not_interested: 0, no_answer: 0, invalid_number: 0, foreign_sent: 0, technical: 0, other: 0 };
             const filtered = allStudents.filter(s => {
                 if (filters.showExcluded) {
                     if (s.excluded != 1) return false;
@@ -7204,9 +7213,33 @@ function filterStudents() {
                     matchCrmDueToday = !!s.crm_next_action_date && (s.crm_next_action_date <= todayStr);
                 }
 
-                return matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchRemark && matchLeadType && matchCrmStatus && matchCrmAgent && matchCrmDueToday;
+                const matchAllOthers = matchSearch && matchGender && matchLevel && matchStatus && matchColor && matchSource && matchTelegram && matchPayment && matchLeadType && matchCrmStatus && matchCrmAgent && matchCrmDueToday;
+                if (matchAllOthers && window.currentRemarkCounters) {
+                    window.currentRemarkCounters.all++;
+                    if (cat) window.currentRemarkCounters[cat] = (window.currentRemarkCounters[cat] || 0) + 1;
+                }
+                return matchAllOthers && matchRemark;
             
             }); // End of filtering
+
+            // Update Quick Filter Counters in DOM
+            if (window.currentRemarkCounters) {
+                const cats = ['all', 'untouched', 'will_pay', 'not_interested', 'no_answer', 'invalid_number', 'foreign_sent'];
+                cats.forEach(c => {
+                    const btn = document.querySelector(`.remark-pill[data-cat="${c}"]`);
+                    if (btn) {
+                        const cnt = window.currentRemarkCounters[c] || 0;
+                        const span = btn.querySelector('.cat-count');
+                        if (span) span.textContent = `(${cnt})`;
+                        // Subtle visual hint if untouched is 0
+                        if (c === 'untouched' && cnt === 0) {
+                            btn.style.opacity = '0.5';
+                        } else if (c === 'untouched') {
+                            btn.style.opacity = '1';
+                        }
+                    }
+                });
+            }
 
             // Compute workspace counts & CRM metrics
             try {
