@@ -7241,8 +7241,6 @@ function filterStudents() {
                 // Marketing Remarks Filtering
                 // 5-STEP FUNNEL LOGIC
                 let funnelStage = 'funnel_new';
-                const pv = String(s.payment_status || '').toUpperCase().trim();
-                const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'مدفوع', 'مكتمل', 'نعم', '1', 'OUI', 'YES', 'VALIDE', 'CONFIRME', 'TRUE', 'مسدد', 'معفي'].includes(pv) || (pv.includes('مسدد') && !pv.includes('غير مسدد'));
                 
                 if (isPaid) {
                     funnelStage = 'funnel_won';
