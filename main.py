@@ -1550,11 +1550,41 @@ async def api_admin_gateway_logs(request: web.Request):
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
+            
+            query_tid = '''
+                SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username 
+                FROM student_logs 
+                WHERE telegram_id = ? OR student_id = ? 
+                UNION ALL 
+                SELECT 
+                    CASE 
+                        WHEN student_id_tentative IS NULL OR student_id_tentative = '' OR student_id_tentative = '0' THEN 'SOS_1' 
+                        ELSE 'SOS_2' 
+                    END as action_type, 
+                    message as description, timestamp, telegram_id, 'Visiteur' as telegram_name, '' as telegram_username 
+                FROM gateway_sos 
+                WHERE telegram_id = ? OR student_id = ? 
+                ORDER BY timestamp DESC LIMIT 80
+            '''
+            
+            query_sid = '''
+                SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username 
+                FROM student_logs 
+                WHERE student_id = ? 
+                UNION ALL 
+                SELECT 
+                    'SOS_2' as action_type, 
+                    message as description, timestamp, telegram_id, 'Visiteur' as telegram_name, '' as telegram_username 
+                FROM gateway_sos 
+                WHERE student_id = ? OR student_id_tentative = ?
+                ORDER BY timestamp DESC LIMIT 80
+            '''
+            
             if tid and tid != 'null' and tid != 'undefined':
-                async with db.execute("SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username FROM student_logs WHERE telegram_id = ? OR student_id = ? ORDER BY id DESC LIMIT 50", (tid, student_id)) as cur:
+                async with db.execute(query_tid, (tid, student_id, tid, student_id)) as cur:
                     logs = [dict(row) for row in await cur.fetchall()]
             else:
-                async with db.execute("SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username FROM student_logs WHERE student_id = ? ORDER BY id DESC LIMIT 50", (student_id,)) as cur:
+                async with db.execute(query_sid, (student_id, student_id, str(student_id))) as cur:
                     logs = [dict(row) for row in await cur.fetchall()]
         return web.json_response({'success': True, 'logs': logs})
     except Exception as e:
@@ -2370,24 +2400,39 @@ async def api_admin_sos_list(request: web.Request):
             async with db.execute("""
                 SELECT g.*, 
                        s.gender AS student_gender, s.first_name AS student_first_name, s.last_name AS student_last_name,
-                       u.first_name AS tg_first_name, u.last_name AS tg_last_name, u.username AS tg_username
+                       u.first_name AS tg_first_name, u.last_name AS tg_last_name, u.username AS tg_username,
+                       v.start_param
                 FROM gateway_sos g
                 LEFT JOIN academy_students s ON (
                     (g.email_tentative IS NOT NULL AND g.email_tentative != '' AND LOWER(TRIM(g.email_tentative)) = LOWER(TRIM(s.email))) 
                     OR (g.student_id_tentative IS NOT NULL AND g.student_id_tentative != '' AND CAST(g.student_id_tentative AS TEXT) = CAST(s.student_id AS TEXT))
                 )
                 LEFT JOIN users u ON CAST(g.telegram_id AS TEXT) = CAST(u.telegram_id AS TEXT) AND g.telegram_id IS NOT NULL AND g.telegram_id != 0 AND g.telegram_id != ''
-                ORDER BY g.id DESC LIMIT 100
+                LEFT JOIN bot_visitors v ON CAST(g.telegram_id AS TEXT) = CAST(v.telegram_id AS TEXT) AND g.telegram_id IS NOT NULL AND g.telegram_id != 0 AND g.telegram_id != ''
+                ORDER BY g.id DESC LIMIT 150
             """) as cur:
                 rows = [dict(row) for row in await cur.fetchall()]
             
             sos_list = []
             for r in rows:
                 item = dict(r)
+                
+                # Gender resolution
+                gender_val = item.get('student_gender')
+                
+                if not gender_val:
+                    # Fallback to start_param link
+                    sp = str(item.get('start_param') or '').upper()
+                    if 'F' in sp:
+                        gender_val = 'FEMME'
+                    elif 'H' in sp:
+                        gender_val = 'HOMME'
+                        
+                item['gender'] = gender_val
+                
                 if item.get('student_first_name') or item.get('student_last_name'):
                     item['first_name'] = item.get('student_first_name')
                     item['last_name'] = item.get('student_last_name')
-                    item['gender'] = item.get('student_gender')
 
                 tid_val = str(item.get('telegram_id') or '').strip()
                 if tid_val in ('0', 'None', 'null', ''):

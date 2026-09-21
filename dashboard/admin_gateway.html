@@ -3574,8 +3574,10 @@ window.setSalesFunnel = function(val, el) {
             'ONBOARDING_WAITING_ROOM': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'صالة الانتظار (قيد المراجعة)' },
             'ONBOARDING_SOS_OPENED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'فتح نافذة SOS' },
             'ONBOARDING_SOS_SENT': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'إرسال استغاثة SOS' },
+            'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
+            'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
             'SOS_REQUESTED': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🆘', label: 'طلب مساعدة SOS' },
-            'LINK_WAITING_EXCEL': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'في صالة الانتظار (إكسيل)' },
+            'LINK_WAITING_EXCEL': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '🛋️', label: 'في صالة الانتظار (إكسيل)' },
             'LINK_WAITING_PAYMENT': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'في صالة الانتظار (الدفع)' },
 
             'EMAIL_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '📨', label: 'إرسال إيميل' },
@@ -3657,11 +3659,19 @@ window.setSalesFunnel = function(val, el) {
         }
 
         // ============ DATE FORMATTER IN ARABIC ============
+        window.ADMIN_TIMEZONE = 'Africa/Casablanca'; // Smart Timezone Global Config
+
         function formatDateArabic(dateStr) {
             if (!dateStr) return '-';
-            const date = new Date(dateStr.replace(' ', 'T'));
+            // Force UTC interpretation by appending 'Z' if not already present
+            let ds = dateStr.replace(' ', 'T');
+            if (!ds.endsWith('Z') && ds.length <= 19) {
+                ds += 'Z';
+            }
+            const date = new Date(ds);
             if (isNaN(date.getTime())) return dateStr;
             const options = { 
+                timeZone: window.ADMIN_TIMEZONE, // Smart timezone mapping
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
@@ -4067,111 +4077,75 @@ window.setSalesFunnel = function(val, el) {
             list.innerHTML = '';
             filtered.forEach(v => {
                 const card = document.createElement('div');
-                card.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; box-shadow:0 2px 6px rgba(0,0,0,0.02);';
-                
+                card.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:pointer; transition:0.2s;';
+                card.onmouseover = () => card.style.borderColor = 'var(--primary)';
+                card.onmouseout = () => card.style.borderColor = 'var(--border)';
+                // Clicking anywhere on the card opens the full journey
+                card.onclick = (e) => {
+                    if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && e.target.closest('button') === null && e.target.closest('a') === null) {
+                        viewVisitorFullJourney(v.telegram_id, tgName.replace(/'/g, "\\\'"), v.student_id || '');
+                    }
+                };
+
                 let dateStr = v.created_at || '';
                 try {
-                    const d = new Date(v.created_at + 'Z');
+                    const d = new Date((v.created_at || '').replace(' ', 'T') + 'Z');
                     if (!isNaN(d.getTime())) {
                         const dd = String(d.getDate()).padStart(2, '0');
                         const mm = String(d.getMonth() + 1).padStart(2, '0');
                         const hh = String(d.getHours()).padStart(2, '0');
                         const min = String(d.getMinutes()).padStart(2, '0');
-                        dateStr = `${dd}/${mm} à ${hh}:${min}`;
+                        dateStr = `${hh}:${min} - ${dd}/${mm}`;
                     }
                 } catch(e){}
 
                 let lastSeenStr = '';
                 if (v.last_time) {
                     try {
-                        const d = new Date(v.last_time.replace(' ', 'T'));
+                        const d = new Date(v.last_time.replace(' ', 'T') + 'Z');
                         if (!isNaN(d.getTime())) {
                             const dd = String(d.getDate()).padStart(2, '0');
                             const mm = String(d.getMonth() + 1).padStart(2, '0');
                             const hh = String(d.getHours()).padStart(2, '0');
                             const min = String(d.getMinutes()).padStart(2, '0');
-                            lastSeenStr = `${dd}/${mm} à ${hh}:${min}`;
-                        } else {
-                            lastSeenStr = v.last_time;
+                            lastSeenStr = `${hh}:${min}`;
                         }
-                    } catch(e) {
-                        lastSeenStr = v.last_time;
-                    }
+                    } catch(e){}
                 }
                 
                 const tgName = [v.first_name, v.last_name].filter(Boolean).join(' ') || 'مستخدم غير مسمى';
-                const username = v.username ? '@' + v.username : 'لا يوجد معرف';
+                const username = v.username ? '@' + v.username : '';
                 const badge = v._badgeInfo || getFunnelBadge(v);
-
                 const isLinked = !!v.student_id;
                 const studentDisplayName = isLinked ? `${v.student_first_name || ''} ${v.student_last_name || ''}`.trim() : '';
-                
+
                 card.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:14px; min-width:280px; flex:1;">
-                        <div style="width:46px; height:46px; border-radius:50%; background:${badge.bg}; color:${badge.color}; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; border:1px solid ${badge.color}33;">
+                    <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:250px;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:${badge.bg}; color:${badge.color}; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid ${badge.color}33;">
                             ${isLinked ? '🎓' : '👻'}
                         </div>
-                        <div style="flex:1;">
-                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                <span style="font-weight:bold; color:var(--text1); font-size:1rem;">${tgName}</span>
-                                <span style="font-size:0.8rem; color:#0a84ff; background:rgba(10,132,255,0.08); padding:2px 8px; border-radius:6px; font-family:monospace; ">${username}</span>
-                                ${isLinked ? `
-                                    <span style="background:rgba(16,185,129,0.12); color:#10b981; font-weight:bold; font-size:0.8rem; padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">
-                                        مرتبط بـ: ${studentDisplayName || 'طالب'} (Matricule: ${v.student_id})
-                                    </span>
-                                ` : ''}
+                        <div style="flex:1; overflow:hidden;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <span style="font-weight:700; color:var(--text1); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${tgName}</span>
+                                ${username ? `<span style="font-size:0.75rem; color:#0a84ff; background:rgba(10,132,255,0.08); padding:1px 6px; border-radius:4px;">${username}</span>` : ''}
                             </div>
-                            
-                            <!-- Funnel Badge & Desc -->
-                            <div style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                <span style="font-size:0.78rem; font-weight:600; padding:3px 10px; border-radius:12px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
-                                    ${badge.label}
-                                </span>
-                                ${v.last_desc && v.last_desc !== badge.label ? `<span style="font-size:0.73rem; color:var(--text2); max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${v.last_desc}">💬 ${v.last_desc}</span>` : ''}
-                            </div>
-
-                            <div style="font-size:0.74rem; color:var(--text2); margin-top:5px; display:flex; gap:12px; flex-wrap:wrap;">
-                                <span>🆔 <strong style="color:var(--text1); font-family:monospace;">${v.telegram_id}</strong></span>
-                                ${isLinked && v.student_email ? `<span>✉️ ${v.student_email}</span>` : ''}
-                                <span>📅 دخول البوت: ${dateStr}</span>
-                                ${lastSeenStr ? `<span>⏱️ آخر نشاط: ${lastSeenStr}</span>` : ''}
+                            <div style="display:flex; align-items:center; gap:8px; margin-top:4px; font-size:0.75rem; color:var(--text2); flex-wrap:wrap;">
+                                <span style="background:var(--surface); border:1px solid var(--border); padding:2px 6px; border-radius:4px; font-family:monospace;">ID: ${v.telegram_id}</span>
+                                <span>🕒 ${dateStr}</span>
+                                ${isLinked ? `<span style="color:#10b981; font-weight:bold;">🔗 ${studentDisplayName}</span>` : ''}
                             </div>
                         </div>
                     </div>
-
-                    <!-- Actions -->
-                    <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-                        <button class="btn btn-primary" onclick="openGhostFullscreenJourney('${v.telegram_id}', '${tgName.replace(/'/g, "\\'")}')" style="background:var(--accent); border:none; padding:8px 12px; font-weight:bold; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:5px; box-shadow:0 0 10px rgba(124, 58, 237, 0.4); color:white; cursor:pointer;" title="Plein Écran Onboarding">🛤️ مسار Onboarding</button>
-                        <!-- Full Timeline / Journey Log Button -->
-                        <button onclick="viewVisitorFullJourney('${v.telegram_id}', '${(studentDisplayName || tgName).replace(/'/g, "\\'")}', '${v.student_id || ''}')" 
-                                style="background:rgba(99,102,241,0.12); color:#6366f1; border:1px solid rgba(99,102,241,0.3); padding:8px 12px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" 
-                                title="عرض جميع الحركات والخطوات السابقة بالتفصيل دون أي مسح">
-                            <span>📜</span> مسار الخطوات
+                    
+                    <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
+                        <span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
+                            ${badge.label}
+                        </span>
+                        
+                        <button onclick="viewVisitorFullJourney('${v.telegram_id}', '${(studentDisplayName || tgName).replace(/'/g, "\\\'").replace(/"/g, '')}', '${v.student_id || ''}')" 
+                                style="background:rgba(99,102,241,0.1); color:#6366f1; border:none; padding:6px 12px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                            <span>📜</span> التفاصيل
                         </button>
-
-                        ${v.username ? `
-                            <a href="https://t.me/${v.username}" target="_blank" 
-                               style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:8px 12px; border-radius:9px; text-decoration:none; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:5px; border:1px solid rgba(10,132,255,0.2);">
-                                <span>✉️</span> محادثة
-                            </a>
-                        ` : `
-                            <a href="tg://user?id=${v.telegram_id}" target="_blank" 
-                               style="background:rgba(10,132,255,0.1); color:#0a84ff; padding:8px 12px; border-radius:9px; text-decoration:none; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:5px; border:1px solid rgba(10,132,255,0.2);">
-                                <span>✉️</span> الحساب
-                            </a>
-                        `}
-
-                        ${!isLinked ? `
-                            <button onclick="promptManualLinkGhost('${v.telegram_id}', '${tgName.replace(/'/g, "\\'")}')" 
-                                    style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:8px 14px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                                <span>🔗</span> ربط بطالب
-                            </button>
-                        ` : `
-                            <button onclick="openStudentModalFromGhost('${v.student_id}')" 
-                                    style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:8px 12px; border-radius:9px; font-size:0.82rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                                <span>👤</span> بطاقة الطالب
-                            </button>
-                        `}
                     </div>
                 `;
                 list.appendChild(card);
@@ -4200,7 +4174,9 @@ window.setSalesFunnel = function(val, el) {
                 'SMS_SENT': { label: '📨 رسالة SMS', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
                 'TUTO_OPENED': { label: 'ℹ️ فتح دليل الشرح', color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' },
                 'ONBOARDING_SOS_OPENED': { label: '🆘 فتح نافذة المساعدة (SOS)', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
-                'SOS_REQUESTED': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+                'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
+            'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
+            'SOS_REQUESTED': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
                 'ONBOARDING_SOS_SENT': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' }
             };
 
