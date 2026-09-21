@@ -1557,8 +1557,43 @@
                     if (form) form.style.display = 'none';
                     const pendingMsg = document.getElementById('pending-msg');
                     if (pendingMsg) pendingMsg.style.display = 'flex';
+                    startPollingForSuccess();
                 }
             } catch(e) {}
+        }
+
+        
+        let pendingPollInterval = null;
+        function startPollingForSuccess() {
+            if (pendingPollInterval) return;
+            pendingPollInterval = setInterval(async () => {
+                const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || new URLSearchParams(window.location.search).get('telegram_id') || 0;
+                if (!tgId) return;
+                try {
+                    const res = await fetch(`/api/student/folder_link?telegram_id=${tgId}`);
+                    const data = await res.json();
+                    if (data && data.folder_link) {
+                        clearInterval(pendingPollInterval);
+                        pendingPollInterval = null;
+                        
+                        dynamicFolderLink = data.folder_link;
+                        
+                        // Hide pending and form, show success
+                        const form = document.getElementById('form-container');
+                        if (form) form.style.display = 'none';
+                        const pendingMsg = document.getElementById('pending-msg');
+                        if (pendingMsg) pendingMsg.style.display = 'none';
+                        const successMsg = document.getElementById('success-msg');
+                        if (successMsg) successMsg.style.display = 'flex';
+                        
+                        saveStudentState('approved', data);
+                        
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_LINK_SUCCESS', 'تحقق ناجح تلقائي (Auto-Refresh)', 'STEP_5_COMPLETED');
+                        }
+                    }
+                } catch(e) {}
+            }, 5000);
         }
 
         function resetTestState() {
@@ -2004,6 +2039,7 @@
                         // Pending / Salle d'attente
                         saveStudentState('pending', data);
                         document.getElementById('pending-msg').style.display = 'flex';
+                        startPollingForSuccess();
                         if (window.trackFunnelStep) {
                             window.trackFunnelStep('ONBOARDING_WAITING_ROOM', `في صالة الانتظار - بانتظار التحقق أو المصادقة الإدارية (الرقم: ${student_id} | البريد: ${email})`, 'STEP_5_WAITING_ROOM');
                         }

@@ -2804,6 +2804,31 @@ async def api_admin_gateway_action(request: web.Request):
                     return web.json_response({'success': False, 'error': 'Missing telegram_id'})
                 await db.execute("UPDATE academy_students SET telegram_id = ? WHERE student_id = ?", (telegram_id, student_id))
                 await log_student_action(student_id, 'MANUAL_LINK', f"تم ربط الحساب يدويًا بواسطة المشرف مع تيليجرام ID: {telegram_id}", telegram_id=telegram_id)
+                # Send professional Telegram success message
+                try:
+                    from bot_instance import bot
+                    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+                    from keyboards import get_webapp_base_url
+                    base_url = get_webapp_base_url()
+                    reply_url = f"{base_url}/link.html"
+                    
+                    response_text = (
+                        "✅ <b>تمت عملية التحقق بنجاح.</b>
+
+"
+                        "يرجى فتح التطبيق المصغر (Mini-App) أدناه للوصول إلى المجلد الأكاديمي الخاص بك واستكمال انضمامك."
+                    )
+                    reply_kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(text="📱 فتح التطبيق المصغر", web_app=WebAppInfo(url=reply_url))]
+                    ])
+                    await bot.send_message(
+                        chat_id=int(telegram_id),
+                        text=response_text,
+                        reply_markup=reply_kb,
+                        parse_mode="HTML"
+                    )
+                except Exception as e:
+                    print(f"Failed to send success msg to {telegram_id}: {e}")
                 
             elif action == 'send_email_1' or action == 'send_email_2':
                 # Pour l'instant on utilise le template d'onboarding par défaut (à faire évoluer plus tard si on veut 2 templates différents)
