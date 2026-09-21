@@ -1294,7 +1294,8 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
         rows = []
         counts = {
             'absent': 0, 'started': 0, 'videos': 0, 'terms': 0,
-            'form': 0, 'submitted': 0, 'waiting': 0, 'inactive': 0, 'completed': 0
+            'form': 0, 'submitted': 0, 'waiting': 0, 'inactive': 0, 'completed': 0,
+            'sos': 0
         }
         
         async with aiosqlite.connect(DATABASE_PATH) as db:
@@ -1337,10 +1338,33 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             # 9. Completed: STEP_FOLDER_CLICKED
             async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
                 counts['completed'] = (await cur.fetchone())['c']
+                
+            # 10. Open SOS tickets
+            async with db.execute("SELECT COUNT(*) as c FROM gateway_sos WHERE status = 'open'") as cur:
+                counts['sos'] = (await cur.fetchone())['c']
 
             # --- FETCH ACTUAL VISITORS ---
             # Define Base Selection: For 'absent', we query academy_students. For others, we query users.
-            if status == 'absent':
+            if status == 'sos':
+                base_select = """
+                    SELECT 
+                        u.telegram_id, u.first_name, u.last_name, u.username, u.created_at,
+                        s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
+                        s.email as student_email, s.gender as student_gender, s.year as level,
+                        s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
+                        'SOS_REQUESTED' as last_action,
+                        g.message as last_desc,
+                        g.id as sos_id
+                    FROM gateway_sos g
+                    JOIN users u ON u.telegram_id = g.telegram_id
+                    LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
+                    WHERE g.status = 'open'
+                """
+                if search:
+                    st = search.replace("'", "''")
+                    base_select += f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%')"
+                base_select += " ORDER BY g.created_at DESC LIMIT 500"
+            elif status == 'absent':
                 base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0)"
                 # Apply filters
                 if gender and gender != 'all':

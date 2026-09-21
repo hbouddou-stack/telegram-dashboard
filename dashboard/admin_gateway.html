@@ -1841,141 +1841,298 @@ window.setSalesFunnel = function(val, el) {
 
     <!-- TAB: الإعدادات (Settings) -->
     <!-- TAB: الزوار المجهولون (Ghost Visitors) -->
-    <div id="tab-ghosts" class="tab-content" style="flex-direction:column; height:100%; overflow:hidden; background:var(--bg);">
-        <!-- Header & Filters -->
-        <div style="padding:15px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; display:flex; flex-direction:column; gap:12px;">
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <!-- Clean Mode Segmented Control -->
-                <div style="display:flex; flex-direction:column; gap:12px; width:100%; margin-bottom:12px;">
-                    <!-- 1. Search Bar -->
-                    <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID..." 
-                           style="width:100%; max-width:400px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none;" />
-                    
-                    <!-- 2. Controls Row: Mode Toggle & View Toggles -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        
-                        <!-- 3x3 Snake Grid for Funnel Steps (9 Steps) -->
-                        <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-                            
-                            <!-- ROW 1 (RTL Logical: Absent(Right) ⬅️ Started(Mid) ⬅️ Videos(Left)) -->
-                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                                <button id="btn-funnel-absent" onclick="switchGhostMode('absent')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div style="display:flex; align-items:center; gap:4px;"><span>🔴</span> <span>لم يبدأوا</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
-                                </button>
-                                
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
-                                
-                                <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div style="display:flex; align-items:center; gap:4px;"><span>🔵</span> <span>زوار البوت</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
-                                </button>
-                                
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
-                                
-                                <button id="btn-funnel-videos" onclick="switchGhostMode('videos')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div style="display:flex; align-items:center; gap:4px;"><span>📺</span> <span>الفيديوهات</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-videos">0</span>)</span>
-                                </button>
-                            </div>
-
-                            <!-- DOWN ARROW FROM ROW 1 TO ROW 2 (Aligns with left-most item in RTL, which is column 5) -->
-                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                                <div></div><div></div><div></div><div></div>
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬇️</div>
-                            </div>
-
-                            <!-- ROW 2 (LTR Visually: Terms(Left) ➡️ Form(Mid) ➡️ Submitted(Right)) -->
-                            <!-- We set dir="ltr" so element 1 is left, 5 is right! -->
-                            <div dir="ltr" style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                                <button id="btn-funnel-terms" onclick="switchGhostMode('terms')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div dir="rtl" style="display:flex; align-items:center; gap:4px;"><span>الموافقة</span> <span>✍️</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-terms">0</span>)</span>
-                                </button>
-                                
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➡️</div>
-                                
-                                <button id="btn-funnel-form" onclick="switchGhostMode('form')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div dir="rtl" style="display:flex; align-items:center; gap:4px;"><span>فتحوا النموذج</span> <span>📝</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-form">0</span>)</span>
-                                </button>
-                                
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➡️</div>
-                                
-                                <button id="btn-funnel-submitted" onclick="switchGhostMode('submitted')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div dir="rtl" style="display:flex; align-items:center; gap:4px;"><span>أرسلوا النموذج</span> <span>📤</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-submitted">0</span>)</span>
-                                </button>
-                            </div>
-                            
-                            <!-- DOWN ARROW FROM ROW 2 TO ROW 3 (Aligns with right-most item in LTR/RTL, which is column 1 in RTL) -->
-                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬇️</div>
-                                <div></div><div></div><div></div><div></div>
-                            </div>
-
-                            <!-- ROW 3 (RTL Logical: Waiting(Right) ⬅️ Inactive(Mid) ⬅️ Completed(Left)) -->
-                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                                <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div style="display:flex; align-items:center; gap:4px;"><span>🆘</span> <span>صالة الانتظار</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
-                                </button>
-                                
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
-                                
-                                <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div style="display:flex; align-items:center; gap:4px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
-                                </button>
-                                
-                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
-                                
-                                <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                    <div style="display:flex; align-items:center; gap:4px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
-                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
-                                </button>
-                            </div>
-                            
-                        </div>
-                        <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
-                            <button onclick="setGhostView('list')"" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
-                            <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
-                            <button onclick="setGhostView('funnel')" id="g-view-funnel" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="مسار التحويل">🚀</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. Chips Filters (Clean and spaced) -->
-                <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-                    <!-- Gender Chips -->
-                    <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-gender">
-                        <span style="font-size:0.8rem; color:var(--text2); font-weight:bold; margin-left:4px;">الجنس:</span>
-                        <button class="chip active" onclick="setGhostGender('all', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5; white-space:nowrap;">👥</button>
-                        <button class="chip" onclick="setGhostGender('H', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">👦</button>
-                        <button class="chip" onclick="setGhostGender('F', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">👧</button>
-                    </div>
-                    <!-- Level Chips -->
-                    <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-level">
-                        <span style="font-size:0.8rem; color:var(--text2); font-weight:bold; margin-left:4px;">المستوى:</span>
-                        <button class="chip active" onclick="setGhostLevel('all', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5; white-space:nowrap;">📚</button>
-                        <button class="chip" onclick="setGhostLevel('1', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">1</button>
-                        <button class="chip" onclick="setGhostLevel('2', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">2</button>
-                        <button class="chip" onclick="setGhostLevel('3', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">3</button>
-                        <button class="chip" onclick="setGhostLevel('4', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">4</button>
-                    </div>
+    <div id="tab-ghosts" class="tab-content" style="padding:0; width:100%; max-width:100%; height:100%; display:none; flex-direction:column; background:var(--bg); overflow:hidden;">
+        
+        <!-- TOP HEADER -->
+        <div style="padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.6rem;">🧭</span>
+                <div>
+                    <h2 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1);">مسار التأهيل والتحويل التفاعلي</h2>
+                    <p style="margin:2px 0 0; font-size:0.78rem; color:var(--text2);">مخطط مسار الطلاب خطوة بخطوة - اضغط على أي بطاقة لفتح قائمة الطلاب</p>
                 </div>
             </div>
-            <!-- List -->
-        <div id="ghost-list" style="flex:1; overflow-y:auto; padding:15px;">
-            <div style="text-align:center; padding:40px; color:var(--text2);">
-                <div style="font-size:3rem; margin-bottom:10px;">👻</div>
-                <div>اضغط على "تحديث" لتحميل القائمة</div>
-            </div>
+            <button onclick="loadGhostVisitors()" style="display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-weight:bold; font-size:0.85rem; cursor:pointer; transition:0.2s;" title="تحديث الأرقام">
+                <span>🔄</span> <span>تحديث</span>
+            </button>
         </div>
+
+        <!-- FLOWCHART CONTAINER -->
+        <div style="flex:1; overflow-y:auto; padding:24px 16px 80px; display:flex; flex-direction:column; align-items:center; gap:0; width:100%; box-sizing:border-box;">
+            
+            <div style="width:100%; max-width:850px; display:flex; flex-direction:column; align-items:center;">
+                
+                <!-- STAGE 1: ABSENT -->
+                <div class="funnel-node-card" id="btn-funnel-absent" onclick="openGhostModal('absent')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(239,68,68,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.7rem; background:rgba(239,68,68,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">⚪</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">1. لم يبدأوا المسار</div>
+                            <div style="font-size:0.75rem; color:var(--text2);">مسجلون بالأكاديمية ولكن لم يدخلوا البوت إطلاقاً</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ef4444; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-absent">0</span>
+                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
+                    </div>
+                </div>
+
+                <!-- CONNECTOR ARROW -->
+                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
+                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(59,130,246,0.4));"></div>
+                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                </div>
+
+                <!-- STAGE 2: STARTED -->
+                <div class="funnel-node-card" id="btn-funnel-started" onclick="openGhostModal('started')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(59,130,246,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.7rem; background:rgba(59,130,246,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🔵</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">2. زوار البوت (الإنطلاق)</div>
+                            <div style="font-size:0.75rem; color:var(--text2);">ضغطوا /start في البوت ولم ينتقلوا للشرح</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#3b82f6; background:rgba(59,130,246,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-started">0</span>
+                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
+                    </div>
+                </div>
+
+                <!-- CONNECTOR ARROW -->
+                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
+                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(59,130,246,0.4), rgba(168,85,247,0.4));"></div>
+                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                </div>
+
+                <!-- STAGE 3: VIDEOS -->
+                <div class="funnel-node-card" id="btn-funnel-videos" onclick="openGhostModal('videos')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(168,85,247,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.7rem; background:rgba(168,85,247,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🎥</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">3. شاهدوا الفيديوهات</div>
+                            <div style="font-size:0.75rem; color:var(--text2);">فتحوا الشروحات وشاهدوا الفيديوهات التعريفية</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#a855f7; background:rgba(168,85,247,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-videos">0</span>
+                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
+                    </div>
+                </div>
+
+                <!-- CONNECTOR ARROW -->
+                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
+                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(168,85,247,0.4), rgba(236,72,153,0.4));"></div>
+                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                </div>
+
+                <!-- STAGE 4: TERMS -->
+                <div class="funnel-node-card" id="btn-funnel-terms" onclick="openGhostModal('terms')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(236,72,153,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.7rem; background:rgba(236,72,153,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">📝</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">4. وافقوا على الشروط والميثاق</div>
+                            <div style="font-size:0.75rem; color:var(--text2);">قبلوا ميثاق الالتزام ولم يفتحوا النموذج بعد</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ec4899; background:rgba(236,72,153,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-terms">0</span>
+                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
+                    </div>
+                </div>
+
+                <!-- CONNECTOR ARROW -->
+                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
+                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(236,72,153,0.4), rgba(249,115,22,0.4));"></div>
+                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                </div>
+
+                <!-- STAGE 5: FORM (FORK POINT) -->
+                <div class="funnel-node-card" id="btn-funnel-form" onclick="openGhostModal('form')" style="width:100%; max-width:440px; background:var(--surface); border:2px solid rgba(249,115,22,0.5); border-radius:14px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 16px rgba(249,115,22,0.1);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.7rem; background:rgba(249,115,22,0.12); width:46px; height:46px; display:flex; align-items:center; justify-content:center; border-radius:10px;">📋</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:900; font-size:1rem; color:var(--text1);">5. فتحوا نموذج إدخال البيانات</div>
+                            <div style="font-size:0.75rem; color:var(--text2);">وصلوا لاستمارة الربط (المسار يتفرع هنا)</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span dir="ltr" style="font-family:monospace; font-weight:900; font-size:1.25rem; color:#f97316; background:rgba(249,115,22,0.15); padding:4px 14px; border-radius:20px;" id="ghost-count-form">0</span>
+                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
+                    </div>
+                </div>
+
+                <!-- ==================== BRANCHING FORK CONTAINER ==================== -->
+                <div style="width:100%; margin-top:14px; display:flex; flex-direction:column; align-items:center;">
+                    
+                    <!-- SVG FORK ARROWS -->
+                    <div style="width:100%; max-width:650px; display:flex; justify-content:space-around; align-items:center; position:relative; height:34px;">
+                        <!-- Left Fork to SOS -->
+                        <div style="flex:1; border-top:2px dashed #ef4444; margin-right:20px; position:relative;">
+                            <span style="position:absolute; right:0; top:-12px; font-size:0.7rem; font-weight:bold; color:#ef4444; background:var(--bg); padding:0 6px;">واجهوا مشكلة 🚨</span>
+                        </div>
+                        <div style="font-size:1.1rem; color:var(--text2); z-index:2;">⑂</div>
+                        <!-- Right Fork to Submitted -->
+                        <div style="flex:1; border-top:2px solid #14b8a6; margin-left:20px; position:relative;">
+                            <span style="position:absolute; left:0; top:-12px; font-size:0.7rem; font-weight:bold; color:#14b8a6; background:var(--bg); padding:0 6px;">أتموا الإرسال ✅</span>
+                        </div>
+                    </div>
+
+                    <!-- 2 MAIN BRANCHES SIDE BY SIDE -->
+                    <div style="width:100%; max-width:800px; display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start; margin-top:8px;">
+                        
+                        <!-- LEFT BRANCH: SOS EMERGENCY -->
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                            <div class="funnel-node-card" id="btn-funnel-sos" onclick="openGhostModal('sos')" style="width:100%; background:rgba(239,68,68,0.05); border:1.5px solid rgba(239,68,68,0.4); border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(239,68,68,0.08);">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1.5rem; background:rgba(239,68,68,0.15); width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🚨</span>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:800; font-size:0.88rem; color:#ef4444;">طلبوا النجدة (SOS)</div>
+                                        <div style="font-size:0.7rem; color:var(--text2);">تواصلوا لطلب الدعم والمساعدة</div>
+                                    </div>
+                                </div>
+                                <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ef4444; background:rgba(239,68,68,0.15); padding:4px 10px; border-radius:20px;" id="ghost-count-sos">0</span>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT BRANCH: SUBMITTED (CONTINUES THE ONBOARDING PIPELINE) -->
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                            
+                            <!-- SUBMITTED STAGE -->
+                            <div class="funnel-node-card" id="btn-funnel-submitted" onclick="openGhostModal('submitted')" style="width:100%; background:var(--surface); border:1.5px solid rgba(20,184,166,0.3); border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1.5rem; background:rgba(20,184,166,0.1); width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px;">📤</span>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:800; font-size:0.88rem; color:var(--text1);">6. أرسلوا النموذج (الربط)</div>
+                                        <div style="font-size:0.7rem; color:var(--text2);">أتموا كتابة بياناتهم وإرسالها</div>
+                                    </div>
+                                </div>
+                                <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#14b8a6; background:rgba(20,184,166,0.1); padding:4px 10px; border-radius:20px;" id="ghost-count-submitted">0</span>
+                            </div>
+
+                            <!-- CONNECTOR ARROW -->
+                            <div style="display:flex; flex-direction:column; align-items:center;">
+                                <div style="width:2px; height:12px; background:rgba(20,184,166,0.4);"></div>
+                                <span style="font-size:0.9rem; color:var(--text2); line-height:1;">⬇️</span>
+                            </div>
+
+                            <!-- SUB-FORK: WAITING OR ACTIVE -->
+                            <div style="width:100%; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                
+                                <!-- WAITING ROOM -->
+                                <div class="funnel-node-card" id="btn-funnel-waiting" onclick="openGhostModal('waiting')" style="background:var(--surface); border:1.5px solid rgba(245,158,11,0.3); border-radius:12px; padding:10px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; cursor:pointer; transition:all 0.2s;">
+                                    <span style="font-size:1.4rem;">🟠</span>
+                                    <div style="font-weight:800; font-size:0.78rem; color:var(--text1);">7. صالة الانتظار</div>
+                                    <div style="font-size:0.65rem; color:var(--text2);">قيد المراجعة</div>
+                                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.05rem; color:#f59e0b; background:rgba(245,158,11,0.1); padding:2px 8px; border-radius:14px;" id="ghost-count-waiting">0</span>
+                                </div>
+
+                                <!-- INACTIVE (RECEIVED LINK) -->
+                                <div class="funnel-node-card" id="btn-funnel-inactive" onclick="openGhostModal('inactive')" style="background:var(--surface); border:1.5px solid rgba(234,179,8,0.3); border-radius:12px; padding:10px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; cursor:pointer; transition:all 0.2s;">
+                                    <span style="font-size:1.4rem;">🟡</span>
+                                    <div style="font-weight:800; font-size:0.78rem; color:var(--text1);">8. تلقوا الرابط</div>
+                                    <div style="font-size:0.65rem; color:var(--text2);">لم ينضموا بعد</div>
+                                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.05rem; color:#eab308; background:rgba(234,179,8,0.1); padding:2px 8px; border-radius:14px;" id="ghost-count-inactive">0</span>
+                                </div>
+
+                            </div>
+
+                            <!-- CONNECTOR ARROW TO COMPLETED -->
+                            <div style="display:flex; flex-direction:column; align-items:center; padding:2px 0;">
+                                <div style="width:2px; height:12px; background:rgba(34,197,94,0.4);"></div>
+                                <span style="font-size:0.9rem; color:var(--text2); line-height:1;">⬇️</span>
+                            </div>
+
+                            <!-- COMPLETED -->
+                            <div class="funnel-node-card" id="btn-funnel-completed" onclick="openGhostModal('completed')" style="width:100%; background:rgba(34,197,94,0.06); border:1.5px solid rgba(34,197,94,0.4); border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(34,197,94,0.06);">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1.5rem; background:rgba(34,197,94,0.15); width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🟢</span>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:800; font-size:0.88rem; color:#16a34a;">9. انضموا بنجاح!</div>
+                                        <div style="font-size:0.7rem; color:var(--text2);">دخلوا المجموعة واكتمل التحويل</div>
+                                    </div>
+                                </div>
+                                <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#16a34a; background:rgba(34,197,94,0.15); padding:4px 10px; border-radius:20px;" id="ghost-count-completed">0</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ==================== GHOST STUDENTS MODAL POP-UP ==================== -->
+        <div id="ghost-students-modal-overlay" onclick="if(event.target === this) closeGhostModal()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(6px); z-index:9999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+            
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; width:100%; max-width:860px; height:88vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden;">
+                
+                <!-- MODAL HEADER -->
+                <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:var(--surface); flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span id="ghost-modal-icon" style="font-size:1.6rem;">👥</span>
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <h3 id="ghost-modal-title" style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">قائمة الطلاب</h3>
+                                <span dir="ltr" id="ghost-modal-count-badge" style="font-family:monospace; font-size:0.95rem; font-weight:800; padding:2px 10px; border-radius:12px; background:rgba(99,102,241,0.1); color:#4f46e5;">(0)</span>
+                            </div>
+                            <div id="ghost-modal-subtitle" style="font-size:0.75rem; color:var(--text2); margin-top:2px;">تفاصيل الطلاب في هذه المرحلة من المسار</div>
+                        </div>
+                    </div>
+                    <button onclick="closeGhostModal()" style="width:36px; height:36px; border-radius:50%; border:1px solid var(--border); background:var(--bg); color:var(--text2); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" title="إغلاق النافذة">✕</button>
+                </div>
+
+                <!-- MODAL CONTROLS & FILTERS -->
+                <div style="padding:12px 18px; background:var(--bg); border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:10px; flex-shrink:0;">
+                    <!-- Search & View Mode -->
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو ID..." 
+                               style="flex:1; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-size:0.85rem; outline:none;" />
+                        
+                        <div style="display:flex; background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                            <button onclick="setGhostView('list')" id="g-view-list" style="padding:7px 12px; border:none; background:var(--primary); color:white; cursor:pointer;" title="قائمة">📝</button>
+                            <button onclick="setGhostView('table')" id="g-view-table" style="padding:7px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
+                        </div>
+                    </div>
+
+                    <!-- Gender & Level Filters -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <!-- Gender -->
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:0.75rem; color:var(--text2); font-weight:bold;">الجنس:</span>
+                            <button class="chip active" onclick="setGhostGender('all', this)" style="cursor:pointer; font-size:0.9rem; padding:3px 10px; border-radius:14px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5;">👥 الكل</button>
+                            <button class="chip" onclick="setGhostGender('H', this)" style="cursor:pointer; font-size:0.9rem; padding:3px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">👦 ذكور</button>
+                            <button class="chip" onclick="setGhostGender('F', this)" style="cursor:pointer; font-size:0.9rem; padding:3px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">👧 إناث</button>
+                        </div>
+                        <!-- Level -->
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:0.75rem; color:var(--text2); font-weight:bold;">المستوى:</span>
+                            <button class="chip active" onclick="setGhostLevel('all', this)" style="cursor:pointer; font-size:0.85rem; padding:3px 10px; border-radius:14px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5;">الكل</button>
+                            <button class="chip" onclick="setGhostLevel('1', this)" style="cursor:pointer; font-size:0.85rem; padding:3px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">1</button>
+                            <button class="chip" onclick="setGhostLevel('2', this)" style="cursor:pointer; font-size:0.85rem; padding:3px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">2</button>
+                            <button class="chip" onclick="setGhostLevel('3', this)" style="cursor:pointer; font-size:0.85rem; padding:3px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">3</button>
+                            <button class="chip" onclick="setGhostLevel('4', this)" style="cursor:pointer; font-size:0.85rem; padding:3px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">4</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL BODY: STUDENT LIST -->
+                <div id="ghost-list" style="flex:1; overflow-y:auto; padding:15px; background:var(--surface);">
+                    <div style="text-align:center; padding:40px; color:var(--text2);">
+                        <div style="font-size:2.5rem; margin-bottom:10px;">👥</div>
+                        <div>جاري تحميل بيانات الطلاب...</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-        <div id="tab-settings" class="tab-content" style="padding:0; width:100%; max-width:100%; box-sizing:border-box;">
+    <div id="tab-settings" class="tab-content" style="padding:0; width:100%; max-width:100%; box-sizing:border-box;">
         <!-- Barre d'onglets supérieure style 'Carte de l'étudiant' -->
         <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:4px; padding:6px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:15;">
             <div class="mtab active" onclick="switchSettingsTab('s-general', this)" id="settab-general" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
@@ -3909,36 +4066,69 @@ window.setSalesFunnel = function(val, el) {
         let ghostLevelFilter = 'all';
         let ghostGenderFilter = 'all';
 
-        function switchGhostMode(mode) {
+        const FUNNEL_CONFIG = {
+            'absent': { icon: '⚪', title: '1. لم يبدأوا المسار', subtitle: 'مسجلون بالأكاديمية ولكن لم يدخلوا البوت', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+            'started': { icon: '🔵', title: '2. زوار البوت (البدء)', subtitle: 'ضغطوا /start في البوت ولم ينتقلوا للشرح', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+            'videos': { icon: '🎥', title: '3. شاهدوا الفيديوهات', subtitle: 'فتحوا الشروحات وشاهدوا الفيديوهات التعريفية', color: '#a855f7', bg: 'rgba(168,85,247,0.1)' },
+            'terms': { icon: '📝', title: '4. وافقوا على الميثاق', subtitle: 'قبلوا ميثاق الالتزام ولم يفتحوا النموذج بعد', color: '#ec4899', bg: 'rgba(236,72,153,0.1)' },
+            'form': { icon: '📋', title: '5. فتحوا النموذج', subtitle: 'وصلوا لاستمارة الربط وإدخال البيانات', color: '#f97316', bg: 'rgba(249,115,22,0.1)' },
+            'sos': { icon: '🚨', title: 'طلبوا النجدة (SOS)', subtitle: 'تواصلوا مع الدعم الفني لحل مشكلة في الدخول', color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
+            'submitted': { icon: '📤', title: '6. أرسلوا النموذج', subtitle: 'أتموا كتابة بياناتهم وإرسال استمارة الربط', color: '#14b8a6', bg: 'rgba(20,184,166,0.1)' },
+            'waiting': { icon: '🟠', title: '7. صالة الانتظار', subtitle: 'في انتظار المراجعة والتدقيق والربط اليدوي', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+            'inactive': { icon: '🟡', title: '8. تلقوا الرابط', subtitle: 'تم تفعيل حسابهم وتلقوا الرابط ولكن لم يدخلوا', color: '#eab308', bg: 'rgba(234,179,8,0.1)' },
+            'completed': { icon: '🟢', title: '9. انضموا بنجاح', subtitle: 'دخلوا المجموعة والمنظومة التعليمية بنجاح', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' }
+        };
+
+        function openGhostModal(mode) {
             ghostCurrentMode = mode;
-            const tabs = ['absent', 'started', 'videos', 'terms', 'form', 'submitted', 'waiting', 'inactive', 'completed'];
-            const colors = {
-                  'absent': { bg: 'rgba(239,68,68,0.1)', text: '#ef4444', border: 'rgba(239,68,68,0.3)' },
-                  'started': { bg: 'rgba(59,130,246,0.1)', text: '#3b82f6', border: 'rgba(59,130,246,0.3)' },
-                  'videos': { bg: 'rgba(168,85,247,0.1)', text: '#a855f7', border: 'rgba(168,85,247,0.3)' },
-                  'terms': { bg: 'rgba(236,72,153,0.1)', text: '#ec4899', border: 'rgba(236,72,153,0.3)' },
-                  'form': { bg: 'rgba(249,115,22,0.1)', text: '#f97316', border: 'rgba(249,115,22,0.3)' },
-                  'submitted': { bg: 'rgba(20,184,166,0.1)', text: '#14b8a6', border: 'rgba(20,184,166,0.3)' },
-                  'waiting': { bg: 'rgba(245,158,11,0.1)', text: '#f59e0b', border: 'rgba(245,158,11,0.3)' },
-                  'inactive': { bg: 'rgba(234,179,8,0.1)', text: '#eab308', border: 'rgba(234,179,8,0.3)' },
-                  'completed': { bg: 'rgba(34,197,94,0.1)', text: '#22c55e', border: 'rgba(34,197,94,0.3)' }
-              };
+            const cfg = FUNNEL_CONFIG[mode] || { icon: '👥', title: 'قائمة الطلاب', subtitle: '', color: '#4f46e5', bg: 'rgba(99,102,241,0.1)' };
             
-            tabs.forEach(t => {
-                const btn = document.getElementById('btn-funnel-' + t);
-                if (btn) {
-                    if (t === mode) {
-                        btn.style.background = colors[t].bg;
-                        btn.style.color = colors[t].text;
-                        btn.style.border = '1px solid ' + colors[t].border;
-                    } else {
-                        btn.style.background = 'var(--bg)';
-                        btn.style.color = 'var(--text2)';
-                        btn.style.border = '1px solid var(--border)';
-                    }
-                }
+            // Highlight node in diagram
+            document.querySelectorAll('.funnel-node-card').forEach(c => {
+                c.style.transform = 'none';
+                c.style.borderColor = 'var(--border)';
             });
-            loadGhostVisitors(); // Reload from server to get correct funnel cohort
+            const activeCard = document.getElementById('btn-funnel-' + mode);
+            if (activeCard) {
+                activeCard.style.transform = 'scale(1.02)';
+                activeCard.style.borderColor = cfg.color;
+            }
+
+            // Update modal header
+            const titleEl = document.getElementById('ghost-modal-title');
+            const iconEl = document.getElementById('ghost-modal-icon');
+            const subEl = document.getElementById('ghost-modal-subtitle');
+            const badgeEl = document.getElementById('ghost-modal-count-badge');
+            
+            if (titleEl) titleEl.textContent = cfg.title;
+            if (iconEl) iconEl.textContent = cfg.icon;
+            if (subEl) subEl.textContent = cfg.subtitle;
+            if (badgeEl) {
+                const countVal = document.getElementById('ghost-count-' + mode)?.textContent || '0';
+                badgeEl.textContent = '(' + countVal + ')';
+                badgeEl.style.color = cfg.color;
+                badgeEl.style.background = cfg.bg;
+            }
+
+            // Open Modal
+            const overlay = document.getElementById('ghost-students-modal-overlay');
+            if (overlay) overlay.style.display = 'flex';
+
+            loadGhostVisitors();
+        }
+
+        function closeGhostModal() {
+            const overlay = document.getElementById('ghost-students-modal-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeGhostModal();
+        });
+
+        function switchGhostMode(mode) {
+            openGhostModal(mode);
         }
         
         function setGhostGender(val, el) {
