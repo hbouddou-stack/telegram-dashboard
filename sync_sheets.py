@@ -83,6 +83,10 @@ async def run_google_sheets_sync(sheet_id: str):
                             payment_status = 'PAID'
                             break
                 
+                # NEW FIX: ONLY import PAID users into the bot DB
+                if payment_status != 'PAID':
+                    continue
+                
                 country = str(row[8]).strip() if len(row) > 8 else ''
                 dob = str(row[9]).strip() if len(row) > 9 else ''
                 school_level = str(row[12]).strip() if len(row) > 12 else ''

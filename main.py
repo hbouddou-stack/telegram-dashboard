@@ -1364,8 +1364,8 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) > 0") as cur:
                 counts['submitted'] = (await cur.fetchone())['c']
                 
-            # 7. Waiting: Open SOS OR linked but stuck before LINK_SUCCESS
-            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))") as cur:
+            # 7. Waiting: linked but stuck before LINK_SUCCESS AND NO open SOS
+            async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED') AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0") as cur:
                 counts['waiting'] = (await cur.fetchone())['c']
                 
             # 8. Inactive: Linked, but STEP_LINK_SUCCESS (didn't click folder)
@@ -1400,7 +1400,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                 if search:
                     st = search.replace("'", "''")
                     base_select += f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%')"
-                base_select += " ORDER BY g.created_at DESC LIMIT 500"
+                base_select += " ORDER BY g.timestamp DESC LIMIT 500"
             elif status == 'absent':
                 base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0)"
                 # Apply filters
@@ -1438,7 +1438,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                 elif status == 'submitted':
                     where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) > 0"
                 elif status == 'waiting':
-                    where_clause = " WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )"
+                    where_clause = " WHERE (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED')) AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0)"
                 elif status == 'inactive':
                     where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_LINK_SUCCESS'"
                 elif status == 'completed':
