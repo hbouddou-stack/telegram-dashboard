@@ -4347,7 +4347,25 @@ window.setSalesFunnel = function(val, el) {
             }
         }
 
-        function renderGhostVisitors() {
+        
+          async function excludeGhost(telegramId) {
+              if(!confirm("Êtes-vous sûr de vouloir exclure cet utilisateur des statistiques ?")) return;
+              try {
+                  const res = await fetch('/api/admin/gateway/ghost_toggle_exclude', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({ telegram_id: telegramId, excluded: 1 })
+                  });
+                  const data = await res.json();
+                  if(data.success) {
+                      loadGhosts();
+                  }
+              } catch(e) {
+                  alert('Erreur: ' + e);
+              }
+          }
+
+          function renderGhostVisitors() {
             const list = document.getElementById('ghost-list');
             const badgeText = document.getElementById('ghost-count-text');
             if(!list) return;
