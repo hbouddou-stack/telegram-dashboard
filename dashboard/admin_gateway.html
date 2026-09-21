@@ -1842,52 +1842,51 @@ window.setSalesFunnel = function(val, el) {
     <!-- TAB: الإعدادات (Settings) -->
     <!-- TAB: الزوار المجهولون (Ghost Visitors) -->
     <div id="tab-ghosts" class="tab-content" style="flex-direction:column; height:100%; overflow:hidden; background:var(--bg);">
-        <!-- Header -->
-        <div style="padding:15px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0;">
+        <!-- Header & Filters -->
+        <div style="padding:15px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; display:flex; flex-direction:column; gap:12px;">
+            
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div>
-                    <h2 style="margin:0; font-size:1.15rem; color:var(--text1); display:flex; align-items:center; gap:8px;">
-                        <span>👻</span> الزوار المجهولون (المرشحون للربط)
-                    </h2>
-                    <p style="margin:4px 0 0; font-size:0.8rem; color:var(--text2);">مستخدمون بدأوا البوت أو فتحوا رابط مسار التأهيل لكن لم يربطوا حسابهم الطلابي بعد</p>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <span id="ghost-count-text" style="background:rgba(239,68,68,0.12); color:#ef4444; padding:5px 12px; border-radius:20px; font-size:0.82rem; font-weight:bold; border:1px solid rgba(239,68,68,0.25);">
-                        0 زائر مجهول
-                    </span>
-                    <button class="btn btn-primary" onclick="loadGhostVisitors()" style="padding:8px 14px; border-radius:8px; font-size:0.85rem; display:flex; align-items:center; gap:6px;">
-                        <span>🔄</span> تحديث
+                <!-- Clean Mode Segmented Control -->
+                <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                    <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:6px; transition:0.2s;">
+                        <span>👻</span> غير مرتبطين
+                    </button>
+                    <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
+                        <span>🟢</span> نجحوا بالربط
                     </button>
                 </div>
+                
+                <!-- View Toggle & Count -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="ghost-count-text" style="color:var(--text2); font-size:0.85rem; font-weight:bold;">0</span>
+                    <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                        <button onclick="setGhostView('list')" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
+                        <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
+                        <button onclick="setGhostView('funnel')" id="g-view-funnel" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="مسار التحويل">🚀</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Mode Toggle: Unlinked vs Linked -->
-            <div style="margin-top:12px; display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:10px;">
-                <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" 
-                        style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border-radius:8px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:6px;">
-                    <span>👻</span> غير مرتبطين (الزوار المجهولون)
-                </button>
-                <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" 
-                        style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text2); display:flex; align-items:center; gap:6px;">
-                    <span>🟢</span> تم ربطهم بنجاح (المكتملون)
-                </button>
-            </div>
-
-            <!-- Search and Filter Bar -->
-            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:240px; position:relative;">
-                    <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID أو رقم الطالب..." 
-                           style="width:100%; box-sizing:border-box; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none; transition:border-color 0.2s;" />
-                </div>
-                <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;" id="ghost-filter-chips">
-                    <button class="chip active" id="chip-ghost-all" onclick="setGhostFilter('ALL')" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--primary); color:#fff;">الكل</button>
-                    <button class="chip" id="chip-ghost-active" onclick="setGhostFilter('ACTIVE')" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">🎯 بدأ المسار</button>
-                    <button class="chip" id="chip-ghost-blocked" onclick="setGhostFilter('BLOCKED')" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">⚠️ متوقف/خطأ</button>
-                    <button class="chip" id="chip-ghost-inactive" onclick="setGhostFilter('INACTIVE')" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2);">💤 لم يتفاعل</button>
-                </div>
+            <!-- Search and Dropdown Filters -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID..." 
+                       style="flex:1; min-width:200px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none;" />
+                
+                <select id="ghost-filter-level" onchange="filterGhostVisitors()" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; font-size:0.85rem; min-width:140px;">
+                    <option value="all">🎓 كل المستويات</option>
+                    <option value="1">1ère Année</option>
+                    <option value="2">2ème Année</option>
+                    <option value="3">3ème Année</option>
+                    <option value="4">4ème Année</option>
+                </select>
+                
+                <select id="ghost-filter-gender" onchange="filterGhostVisitors()" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; font-size:0.85rem; min-width:140px;">
+                    <option value="all">🚻 كل الأجناس</option>
+                    <option value="H">ذكر (H)</option>
+                    <option value="F">أنثى (F)</option>
+                </select>
             </div>
         </div>
-
         <!-- List -->
         <div id="ghost-list" style="flex:1; overflow-y:auto; padding:15px;">
             <div style="text-align:center; padding:40px; color:var(--text2);">
@@ -3574,6 +3573,8 @@ window.setSalesFunnel = function(val, el) {
             'ONBOARDING_WAITING_ROOM': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'صالة الانتظار (قيد المراجعة)' },
             'ONBOARDING_SOS_OPENED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'فتح نافذة SOS' },
             'ONBOARDING_SOS_SENT': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'إرسال استغاثة SOS' },
+                'SOS_REPLIED': { label: 'رد الإدارة على استغاثة SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'SOS_APPLIED': { label: 'تطبيق SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
             'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
             'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
             'SOS_REQUESTED': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🆘', label: 'طلب مساعدة SOS' },
@@ -3828,34 +3829,14 @@ window.setSalesFunnel = function(val, el) {
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
-            const btnUnlinked = document.getElementById('btn-ghost-mode-unlinked');
-            const btnLinked = document.getElementById('btn-ghost-mode-linked');
+            document.getElementById('btn-ghost-mode-unlinked').style.background = mode === 'unlinked' ? 'var(--primary)' : 'transparent';
+            document.getElementById('btn-ghost-mode-unlinked').style.color = mode === 'unlinked' ? '#fff' : 'var(--text2)';
+            document.getElementById('btn-ghost-mode-linked').style.background = mode === 'linked' ? 'var(--primary)' : 'transparent';
+            document.getElementById('btn-ghost-mode-linked').style.color = mode === 'linked' ? '#fff' : 'var(--text2)';
             
-            if (mode === 'unlinked') {
-                if (btnUnlinked) {
-                    btnUnlinked.style.background = 'var(--primary)';
-                    btnUnlinked.style.color = '#fff';
-                    btnUnlinked.style.border = 'none';
-                }
-                if (btnLinked) {
-                    btnLinked.style.background = 'var(--surface)';
-                    btnLinked.style.color = 'var(--text2)';
-                    btnLinked.style.border = '1px solid var(--border)';
-                }
-            } else {
-                if (btnLinked) {
-                    btnLinked.style.background = '#10b981';
-                    btnLinked.style.color = '#fff';
-                    btnLinked.style.border = 'none';
-                }
-                if (btnUnlinked) {
-                    btnUnlinked.style.background = 'var(--surface)';
-                    btnUnlinked.style.color = 'var(--text2)';
-                    btnUnlinked.style.border = '1px solid var(--border)';
-                }
-            }
-            loadGhostVisitors();
+            filterGhostVisitors();
         }
+
 
         function setGhostFilter(filterType) {
             ghostCurrentFilter = filterType;
@@ -3982,7 +3963,20 @@ window.setSalesFunnel = function(val, el) {
             };
         }
 
-        async function loadGhostVisitors() {
+        async 
+        function setGhostView(view) {
+            ghostViewMode = view;
+            ['list', 'table', 'funnel'].forEach(v => {
+                const btn = document.getElementById('g-view-' + v);
+                if(btn) {
+                    btn.style.opacity = (v === view) ? '1' : '0.6';
+                    btn.style.background = (v === view) ? 'var(--primary)' : 'transparent';
+                    btn.style.color = (v === view) ? 'white' : 'var(--text2)';
+                }
+            });
+            renderGhostVisitors();
+        }
+function loadGhostVisitors() {
             const list = document.getElementById('ghost-list');
             if(!list) return;
             list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري تحميل القائمة...</div></div>';
@@ -4010,17 +4004,34 @@ window.setSalesFunnel = function(val, el) {
             if(!list) return;
 
             const q = (document.getElementById('ghost-search-input')?.value || '').trim().toLowerCase();
+            const levelF = document.getElementById('ghost-filter-level')?.value || 'all';
+            const genderF = document.getElementById('ghost-filter-gender')?.value || 'all';
 
             let filtered = rawGhostList.filter(v => {
                 const badgeInfo = getFunnelBadge(v);
                 v._badgeInfo = badgeInfo;
 
-                // Tab Filter (applicable only in unlinked mode)
-                if (ghostCurrentMode === 'unlinked') {
-                    if (ghostCurrentFilter === 'ACTIVE' && badgeInfo.category !== 'ACTIVE') return false;
-                    if (ghostCurrentFilter === 'BLOCKED' && badgeInfo.category !== 'BLOCKED') return false;
-                    if (ghostCurrentFilter === 'INACTIVE' && badgeInfo.category !== 'INACTIVE') return false;
+                // Infer Gender and Level from start_param or linked data
+                let infLevel = '';
+                let infGender = '';
+                if (v.start_param) {
+                    const sp = String(v.start_param).toUpperCase();
+                    if (sp.includes('F')) infGender = 'F';
+                    if (sp.includes('H')) infGender = 'H';
+                    if (sp.includes('1')) infLevel = '1';
+                    if (sp.includes('2')) infLevel = '2';
+                    if (sp.includes('3')) infLevel = '3';
+                    if (sp.includes('4')) infLevel = '4';
                 }
+                if (v.study_year) infLevel = String(v.study_year);
+                if (v.gender) infGender = String(v.gender).charAt(0).toUpperCase();
+                
+                v._infLevel = infLevel;
+                v._infGender = infGender;
+
+                // Apply Filters
+                if (levelF !== 'all' && infLevel !== levelF) return false;
+                if (genderF !== 'all' && infGender !== genderF) return false;
 
                 // Search Filter
                 if (q) {
@@ -4048,109 +4059,154 @@ window.setSalesFunnel = function(val, el) {
 
             if (badgeText) {
                 const modeLabel = ghostCurrentMode === 'linked' ? 'حساب مرتبط' : 'زائر مجهول';
-                badgeText.textContent = `${filtered.length} من ${rawGhostList.length} ${modeLabel}`;
+                badgeText.textContent = `${filtered.length} ${modeLabel}`;
             }
 
             if(filtered.length === 0) {
-                if (rawGhostList.length === 0) {
-                    const emptyMsg = ghostCurrentMode === 'linked' 
-                        ? 'لا يوجد حسابات مرتبطة حديثاً حتى الآن.'
-                        : 'رائع! لا يوجد زوار مجهولون حالياً، جميع الطلاب قاموا بربط حساباتهم بنجاح.';
-                    list.innerHTML = `
-                        <div style="text-align:center; padding:50px 20px; color:var(--text2);">
-                            <div style="font-size:3.5rem; margin-bottom:12px;">🎉</div>
-                            <h3 style="margin:0 0 6px; color:var(--text1);">${emptyMsg}</h3>
-                        </div>
-                    `;
-                } else {
-                    list.innerHTML = `
-                        <div style="text-align:center; padding:40px 20px; color:var(--text2);">
-                            <div style="font-size:2.5rem; margin-bottom:10px;">🔍</div>
-                            <div>لا توجد نتائج تطابق بحثك: "<strong>${q}</strong>"</div>
-                            <button onclick="document.getElementById('ghost-search-input').value=''; filterGhostVisitors();" class="btn btn-secondary" style="margin-top:12px; padding:6px 14px; font-size:0.82rem;">إلغاء البحث</button>
-                        </div>
-                    `;
-                }
+                list.innerHTML = `<div style="text-align:center; padding:50px 20px; color:var(--text2);">
+                    <div style="font-size:3.5rem; margin-bottom:12px;">👻</div>
+                    <h3 style="margin:0; color:var(--text1);">لا توجد نتائج مطابقة</h3>
+                </div>`;
                 return;
             }
 
             list.innerHTML = '';
-            filtered.forEach(v => {
-                const card = document.createElement('div');
-                card.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:pointer; transition:0.2s;';
-                card.onmouseover = () => card.style.borderColor = 'var(--primary)';
-                card.onmouseout = () => card.style.borderColor = 'var(--border)';
-                // Clicking anywhere on the card opens the full journey
-                card.onclick = (e) => {
-                    if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && e.target.closest('button') === null && e.target.closest('a') === null) {
-                        viewVisitorFullJourney(v.telegram_id, tgName.replace(/'/g, "\\\'"), v.student_id || '');
-                    }
-                };
-
-                let dateStr = v.created_at || '';
-                try {
-                    const d = new Date((v.created_at || '').replace(' ', 'T') + 'Z');
-                    if (!isNaN(d.getTime())) {
-                        const dd = String(d.getDate()).padStart(2, '0');
-                        const mm = String(d.getMonth() + 1).padStart(2, '0');
-                        const hh = String(d.getHours()).padStart(2, '0');
-                        const min = String(d.getMinutes()).padStart(2, '0');
-                        dateStr = `${hh}:${min} - ${dd}/${mm}`;
-                    }
-                } catch(e){}
-
-                let lastSeenStr = '';
-                if (v.last_time) {
-                    try {
-                        const d = new Date(v.last_time.replace(' ', 'T') + 'Z');
-                        if (!isNaN(d.getTime())) {
-                            const dd = String(d.getDate()).padStart(2, '0');
-                            const mm = String(d.getMonth() + 1).padStart(2, '0');
-                            const hh = String(d.getHours()).padStart(2, '0');
-                            const min = String(d.getMinutes()).padStart(2, '0');
-                            lastSeenStr = `${hh}:${min}`;
-                        }
-                    } catch(e){}
-                }
-                
-                const tgName = [v.first_name, v.last_name].filter(Boolean).join(' ') || 'مستخدم غير مسمى';
-                const username = v.username ? '@' + v.username : '';
-                const badge = v._badgeInfo || getFunnelBadge(v);
-                const isLinked = !!v.student_id;
-                const studentDisplayName = isLinked ? `${v.student_first_name || ''} ${v.student_last_name || ''}`.trim() : '';
-
-                card.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:250px;">
-                        <div style="width:40px; height:40px; border-radius:50%; background:${badge.bg}; color:${badge.color}; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid ${badge.color}33;">
-                            ${isLinked ? '🎓' : '👻'}
-                        </div>
-                        <div style="flex:1; overflow:hidden;">
-                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                <span style="font-weight:700; color:var(--text1); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${tgName}</span>
-                                ${username ? `<span style="font-size:0.75rem; color:#0a84ff; background:rgba(10,132,255,0.08); padding:1px 6px; border-radius:4px;">${username}</span>` : ''}
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px; margin-top:4px; font-size:0.75rem; color:var(--text2); flex-wrap:wrap;">
-                                <span style="background:var(--surface); border:1px solid var(--border); padding:2px 6px; border-radius:4px; font-family:monospace;">ID: ${v.telegram_id}</span>
-                                <span>🕒 ${dateStr}</span>
-                                ${isLinked ? `<span style="color:#10b981; font-weight:bold;">🔗 ${studentDisplayName}</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
+            
+            if (ghostViewMode === 'table') {
+                let html = `<table style="width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.85rem;">
+                    <thead>
+                        <tr style="background:var(--bg); border-bottom:1px solid var(--border); color:var(--text2); text-align:right;">
+                            <th style="padding:12px;">#</th>
+                            <th style="padding:12px;">الهوية</th>
+                            <th style="padding:12px;">ID تيليجرام</th>
+                            <th style="padding:12px;">الجنس/المستوى</th>
+                            <th style="padding:12px;">آخر تفاعل</th>
+                            <th style="padding:12px;">الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                filtered.forEach((v, i) => {
+                    const tgName = [v.first_name, v.last_name].filter(Boolean).join(' ') || 'مجهول';
+                    const badge = v._badgeInfo || getFunnelBadge(v);
                     
-                    <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
-                        <span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
-                            ${badge.label}
-                        </span>
-                        
-                        <button onclick="viewVisitorFullJourney('${v.telegram_id}', '${(studentDisplayName || tgName).replace(/'/g, "\\\'").replace(/"/g, '')}', '${v.student_id || ''}')" 
-                                style="background:rgba(99,102,241,0.1); color:#6366f1; border:none; padding:6px 12px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-                            <span>📜</span> التفاصيل
-                        </button>
+                    let lastSeenStr = '-';
+                    if (v.last_time) {
+                        try {
+                            const d = new Date(v.last_time.replace(' ', 'T') + 'Z');
+                            if (!isNaN(d.getTime())) {
+                                lastSeenStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} - ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            }
+                        } catch(e){}
+                    }
+                    
+                    const genLabel = v._infGender === 'F' ? 'أنثى' : (v._infGender === 'H' ? 'ذكر' : '-');
+                    const levLabel = v._infLevel ? `سنة ${v._infLevel}` : '-';
+
+                    html += `<tr style="border-bottom:1px solid var(--border); transition:0.2s; cursor:pointer;" onmouseover="this.style.background='rgba(99,102,241,0.05)'" onmouseout="this.style.background='transparent'" onclick="viewVisitorFullJourney('${v.telegram_id}', '${tgName.replace(/'/g, "\\'").replace(/"/g, '')}', '${v.student_id || ''}')">
+                        <td style="padding:12px; font-weight:bold; color:var(--text2);">${i+1}</td>
+                        <td style="padding:12px; font-weight:bold;">${tgName}</td>
+                        <td style="padding:12px; font-family:monospace;">${v.telegram_id}</td>
+                        <td style="padding:12px; color:var(--text2);">${genLabel} / ${levLabel}</td>
+                        <td style="padding:12px; color:var(--text2);">${lastSeenStr}</td>
+                        <td style="padding:12px;"><span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">${badge.label}</span></td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                list.innerHTML = html;
+            } 
+            else if (ghostViewMode === 'funnel') {
+                const total = filtered.length;
+                let c_start = 0, c_form = 0, c_sos = 0, c_linked = 0;
+                filtered.forEach(v => {
+                    const action = (v.last_action || '').toUpperCase();
+                    if(action.includes('LINK_SUCCESS') || v.student_id) c_linked++;
+                    else if(action.includes('SOS')) c_sos++;
+                    else if(action.includes('FORM') || action.includes('ERROR')) c_form++;
+                    else c_start++;
+                });
+                
+                list.innerHTML = `
+                    <div style="padding:20px; max-width:600px; margin:0 auto;">
+                        <h3 style="text-align:center; color:var(--text1); margin-bottom:20px;">🚀 مسار التحويل للزوار (${total})</h3>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-weight:bold;">1. زوار جدد (لم يتفاعلوا كثيراً)</div>
+                                <div style="font-size:1.2rem; font-weight:bold; color:var(--text1);">${c_start}</div>
+                            </div>
+                            <div style="text-align:center; color:var(--text2);">⬇️</div>
+                            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-weight:bold;">2. محاولات تسجيل / في الاستمارة</div>
+                                <div style="font-size:1.2rem; font-weight:bold; color:var(--text1);">${c_form}</div>
+                            </div>
+                            <div style="text-align:center; color:var(--text2);">⬇️</div>
+                            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-weight:bold; color:#ef4444;">🚨 طلبات مساعدة (SOS)</div>
+                                <div style="font-size:1.2rem; font-weight:bold; color:#ef4444;">${c_sos}</div>
+                            </div>
+                            <div style="text-align:center; color:var(--text2);">⬇️</div>
+                            <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-weight:bold; color:#10b981;">✅ نجحوا بالربط</div>
+                                <div style="font-size:1.2rem; font-weight:bold; color:#10b981;">${c_linked}</div>
+                            </div>
+                        </div>
                     </div>
                 `;
-                list.appendChild(card);
-            });
+            }
+            else {
+                // LIST VIEW
+                filtered.forEach((v, i) => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:pointer; transition:0.2s;';
+                    card.onmouseover = () => card.style.borderColor = 'var(--primary)';
+                    card.onmouseout = () => card.style.borderColor = 'var(--border)';
+                    card.onclick = (e) => {
+                        viewVisitorFullJourney(v.telegram_id, tgName.replace(/'/g, "\\'").replace(/"/g, ''), v.student_id || '');
+                    };
+
+                    let lastSeenStr = '-';
+                    if (v.last_time) {
+                        try {
+                            const d = new Date(v.last_time.replace(' ', 'T') + 'Z');
+                            if (!isNaN(d.getTime())) {
+                                lastSeenStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                            }
+                        } catch(e){}
+                    }
+                    
+                    const tgName = [v.first_name, v.last_name].filter(Boolean).join(' ') || 'مجهول';
+                    const badge = v._badgeInfo || getFunnelBadge(v);
+                    const isLinked = !!v.student_id;
+                    const studentDisplayName = isLinked ? `${v.student_first_name || ''} ${v.student_last_name || ''}`.trim() : '';
+
+                    card.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:250px;">
+                            <div style="font-weight:bold; color:var(--text2); width:20px; text-align:center;">${i+1}.</div>
+                            <div style="width:40px; height:40px; border-radius:50%; background:${badge.bg}; color:${badge.color}; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; border:1px solid ${badge.color}33;">
+                                ${isLinked ? '🎓' : '👻'}
+                            </div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <span style="font-weight:700; color:var(--text1); font-size:0.95rem;">${tgName}</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-top:4px; font-size:0.75rem; color:var(--text2); flex-wrap:wrap;">
+                                    <span>🆔 ${v.telegram_id}</span>
+                                    <span>⏱️ آخر تفاعل: ${lastSeenStr}</span>
+                                    ${isLinked ? `<span style="color:#10b981; font-weight:bold;">🔗 ${studentDisplayName}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
+                            <span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
+                                ${badge.label}
+                            </span>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            }
         }
+
 
         function formatActionTypeArabic(type) {
             const map = {
@@ -4177,7 +4233,9 @@ window.setSalesFunnel = function(val, el) {
                 'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
             'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
             'SOS_REQUESTED': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
-                'ONBOARDING_SOS_SENT': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' }
+                'ONBOARDING_SOS_SENT': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+                'SOS_REPLIED': { label: 'رد الإدارة على استغاثة SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'SOS_APPLIED': { label: 'تطبيق SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' }
             };
 
             return map[type] || {
