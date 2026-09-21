@@ -1855,16 +1855,22 @@ window.setSalesFunnel = function(val, el) {
                     <!-- 2. Controls Row: Mode Toggle & View Toggles -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
-                            <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:rgba(99,102,241,0.1); color:#4f46e5; display:flex; align-items:center; gap:6px; transition:0.2s;">
-                                <span>👻</span> غير مرتبطين (<span id="ghost-count-unlinked">0</span>)
+                            <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
+                                <span>🔵</span> بدأوا (<span id="ghost-count-started">0</span>)
                             </button>
-                            <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
-                                <span>🟢</span> نجحوا بالربط (<span id="ghost-count-linked">0</span>)
+                            <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
+                                <span>🟠</span> صالة الانتظار (<span id="ghost-count-waiting">0</span>)
+                            </button>
+                            <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
+                                <span>🟡</span> غير نشطين (<span id="ghost-count-inactive">0</span>)
+                            </button>
+                            <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s;">
+                                <span>🟢</span> مكتملون (<span id="ghost-count-completed">0</span>)
                             </button>
                         </div>
                         
                         <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
-                            <button onclick="setGhostView('list')" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
+                            <button onclick="setGhostView('list')"" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
                             <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
                             <button onclick="setGhostView('funnel')" id="g-view-funnel" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="مسار التحويل">🚀</button>
                         </div>
@@ -3829,28 +3835,34 @@ window.setSalesFunnel = function(val, el) {
         // =================== GHOST VISITORS ===================
         let rawGhostList = [];
         let ghostCurrentFilter = 'ALL';
-        let ghostCurrentMode = 'unlinked';
+        let ghostCurrentMode = 'started';
         let ghostViewMode = 'list';
         let ghostLevelFilter = 'all';
         let ghostGenderFilter = 'all';
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
-            const uBtn = document.getElementById('btn-ghost-mode-unlinked');
-            const lBtn = document.getElementById('btn-ghost-mode-linked');
+            const tabs = ['started', 'waiting', 'inactive', 'completed'];
+            const colors = {
+                'started': { bg: 'rgba(59,130,246,0.1)', text: '#3b82f6' },
+                'waiting': { bg: 'rgba(249,115,22,0.1)', text: '#f97316' },
+                'inactive': { bg: 'rgba(234,179,8,0.1)', text: '#eab308' },
+                'completed': { bg: 'rgba(34,197,94,0.1)', text: '#22c55e' }
+            };
             
-            if (mode === 'unlinked') {
-                uBtn.style.background = 'rgba(99,102,241,0.1)';
-                uBtn.style.color = '#4f46e5';
-                lBtn.style.background = 'transparent';
-                lBtn.style.color = 'var(--text2)';
-            } else {
-                lBtn.style.background = 'rgba(99,102,241,0.1)';
-                lBtn.style.color = '#4f46e5';
-                uBtn.style.background = 'transparent';
-                uBtn.style.color = 'var(--text2)';
-            }
-            filterGhostVisitors();
+            tabs.forEach(t => {
+                const btn = document.getElementById('btn-funnel-' + t);
+                if (btn) {
+                    if (t === mode) {
+                        btn.style.background = colors[t].bg;
+                        btn.style.color = colors[t].text;
+                    } else {
+                        btn.style.background = 'transparent';
+                        btn.style.color = 'var(--text2)';
+                    }
+                }
+            });
+            loadGhostVisitors(); // Reload from server to get correct funnel cohort
         }
         
         function setGhostGender(val, el) {
