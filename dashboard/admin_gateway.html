@@ -1847,49 +1847,51 @@ window.setSalesFunnel = function(val, el) {
             
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <!-- Clean Mode Segmented Control -->
-                <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
-                    <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:#e0e7ff; color:#4338ca; display:flex; align-items:center; gap:6px; transition:0.2s;">
-                        <span>👻</span> غير مرتبطين (<span id="ghost-count-unlinked">0</span>)
-                    </button>
-                    <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
-                        <span>🟢</span> نجحوا بالربط (<span id="ghost-count-linked">0</span>)
-                    </button>
-                </div>
-                
-                <!-- View Toggle -->
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
-                        <button onclick="setGhostView('list')" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
-                        <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
-                        <button onclick="setGhostView('funnel')" id="g-view-funnel" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="مسار التحويل">🚀</button>
+                <div style="display:flex; flex-direction:column; gap:12px; width:100%; margin-bottom:12px;">
+                    <!-- 1. Search Bar -->
+                    <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID..." 
+                           style="width:100%; max-width:400px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none;" />
+                    
+                    <!-- 2. Controls Row: Mode Toggle & View Toggles -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                            <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:rgba(99,102,241,0.1); color:#4f46e5; display:flex; align-items:center; gap:6px; transition:0.2s;">
+                                <span>👻</span> غير مرتبطين (<span id="ghost-count-unlinked">0</span>)
+                            </button>
+                            <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
+                                <span>🟢</span> نجحوا بالربط (<span id="ghost-count-linked">0</span>)
+                            </button>
+                        </div>
+                        
+                        <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                            <button onclick="setGhostView('list')" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
+                            <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
+                            <button onclick="setGhostView('funnel')" id="g-view-funnel" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="مسار التحويل">🚀</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Search and Chips Filters -->
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID..." 
-                       style="width:100%; max-width:400px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none;" />
-                
+                <!-- 3. Chips Filters (Clean and spaced) -->
                 <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
                     <!-- Gender Chips -->
-                    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-gender">
-                        <button class="chip active" onclick="setGhostGender('all', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--primary); color:#fff; white-space:nowrap;">الكل (Tous)</button>
-                        <button class="chip" onclick="setGhostGender('H', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">ذكر (H)</button>
-                        <button class="chip" onclick="setGhostGender('F', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">أنثى (F)</button>
+                    <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-gender">
+                        <span style="font-size:0.8rem; color:var(--text2); font-weight:bold; margin-left:4px;">الجنس:</span>
+                        <button class="chip active" onclick="setGhostGender('all', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5; white-space:nowrap; font-weight:bold;">الكل</button>
+                        <button class="chip" onclick="setGhostGender('H', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap; font-weight:bold;">ذكر</button>
+                        <button class="chip" onclick="setGhostGender('F', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap; font-weight:bold;">أنثى</button>
                     </div>
                     <!-- Level Chips -->
-                    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-level">
-                        <button class="chip active" onclick="setGhostLevel('all', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--primary); color:#fff; white-space:nowrap;">الكل (Niveau)</button>
-                        <button class="chip" onclick="setGhostLevel('1', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 1</button>
-                        <button class="chip" onclick="setGhostLevel('2', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 2</button>
-                        <button class="chip" onclick="setGhostLevel('3', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 3</button>
-                        <button class="chip" onclick="setGhostLevel('4', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 4</button>
+                    <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-level">
+                        <span style="font-size:0.8rem; color:var(--text2); font-weight:bold; margin-left:4px;">المستوى:</span>
+                        <button class="chip active" onclick="setGhostLevel('all', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5; white-space:nowrap; font-weight:bold;">الكل</button>
+                        <button class="chip" onclick="setGhostLevel('1', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap; font-weight:bold;">سنة 1</button>
+                        <button class="chip" onclick="setGhostLevel('2', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap; font-weight:bold;">سنة 2</button>
+                        <button class="chip" onclick="setGhostLevel('3', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap; font-weight:bold;">سنة 3</button>
+                        <button class="chip" onclick="setGhostLevel('4', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap; font-weight:bold;">سنة 4</button>
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- List -->
+            <!-- List -->
         <div id="ghost-list" style="flex:1; overflow-y:auto; padding:15px;">
             <div style="text-align:center; padding:40px; color:var(--text2);">
                 <div style="font-size:3rem; margin-bottom:10px;">👻</div>
@@ -3838,17 +3840,16 @@ window.setSalesFunnel = function(val, el) {
             const lBtn = document.getElementById('btn-ghost-mode-linked');
             
             if (mode === 'unlinked') {
-                uBtn.style.background = '#e0e7ff';
-                uBtn.style.color = '#4338ca';
+                uBtn.style.background = 'rgba(99,102,241,0.1)';
+                uBtn.style.color = '#4f46e5';
                 lBtn.style.background = 'transparent';
                 lBtn.style.color = 'var(--text2)';
             } else {
-                lBtn.style.background = '#e0e7ff';
-                lBtn.style.color = '#4338ca';
+                lBtn.style.background = 'rgba(99,102,241,0.1)';
+                lBtn.style.color = '#4f46e5';
                 uBtn.style.background = 'transparent';
                 uBtn.style.color = 'var(--text2)';
             }
-            
             filterGhostVisitors();
         }
         
@@ -3859,10 +3860,23 @@ window.setSalesFunnel = function(val, el) {
                 c.classList.remove('active');
                 c.style.background = 'var(--surface)';
                 c.style.color = 'var(--text2)';
+                c.style.border = '1px solid var(--border)';
             });
             el.classList.add('active');
-            el.style.background = 'var(--primary)';
-            el.style.color = '#fff';
+            
+            if (val === 'H') {
+                el.style.background = '#dbeafe';
+                el.style.color = '#2563eb';
+                el.style.border = '1px solid #bfdbfe';
+            } else if (val === 'F') {
+                el.style.background = '#fce7f3';
+                el.style.color = '#db2777';
+                el.style.border = '1px solid #fbcfe8';
+            } else {
+                el.style.background = 'rgba(99,102,241,0.1)';
+                el.style.color = '#4f46e5';
+                el.style.border = '1px solid rgba(99,102,241,0.3)';
+            }
             filterGhostVisitors();
         }
 
@@ -3873,10 +3887,12 @@ window.setSalesFunnel = function(val, el) {
                 c.classList.remove('active');
                 c.style.background = 'var(--surface)';
                 c.style.color = 'var(--text2)';
+                c.style.border = '1px solid var(--border)';
             });
             el.classList.add('active');
-            el.style.background = 'var(--primary)';
-            el.style.color = '#fff';
+            el.style.background = 'rgba(99,102,241,0.1)';
+            el.style.color = '#4f46e5';
+            el.style.border = '1px solid rgba(99,102,241,0.3)';
             filterGhostVisitors();
         }
 
@@ -4738,6 +4754,21 @@ window.setSalesFunnel = function(val, el) {
         function renderJourneyTimeline() {
             const logsBody = document.getElementById('logs-body');
             const countSpan = document.getElementById('timeline-steps-count');
+
+            if (currentJourneyLogs && currentJourneyLogs.length > 0) {
+                currentJourneyLogs.forEach(l => {
+                    if (l.action_type) {
+                        let act = String(l.action_type).toUpperCase();
+                        if (act.includes('SOS REQUESTED') || act.includes('SOS_REQUESTED')) l.action_type = 'SOS_REQUESTED';
+                        if (act.includes('SOS REPLIED') || act.includes('SOS_REPLIED')) l.action_type = 'SOS_REPLIED';
+                        if (act.includes('SOS APPLIED') || act.includes('SOS_APPLIED')) l.action_type = 'SOS_APPLIED';
+                    }
+                    if (l.description) {
+                        l.description = String(l.description).replace(/SOS Requested/ig, 'طلب مساعدة SOS').replace(/SOS Replied/ig, 'رد الإدارة على استغاثة SOS').replace(/SOS Applied/ig, 'تطبيق SOS');
+                    }
+                });
+            }
+
             if (!logsBody) return;
 
             if (!currentJourneyLogs || currentJourneyLogs.length === 0) {
@@ -4878,6 +4909,21 @@ window.setSalesFunnel = function(val, el) {
             const tgIdentity = document.getElementById('modal-tg-identity');
             const logsBody = document.getElementById('logs-body');
             const countSpan = document.getElementById('timeline-steps-count');
+
+            if (currentJourneyLogs && currentJourneyLogs.length > 0) {
+                currentJourneyLogs.forEach(l => {
+                    if (l.action_type) {
+                        let act = String(l.action_type).toUpperCase();
+                        if (act.includes('SOS REQUESTED') || act.includes('SOS_REQUESTED')) l.action_type = 'SOS_REQUESTED';
+                        if (act.includes('SOS REPLIED') || act.includes('SOS_REPLIED')) l.action_type = 'SOS_REPLIED';
+                        if (act.includes('SOS APPLIED') || act.includes('SOS_APPLIED')) l.action_type = 'SOS_APPLIED';
+                    }
+                    if (l.description) {
+                        l.description = String(l.description).replace(/SOS Requested/ig, 'طلب مساعدة SOS').replace(/SOS Replied/ig, 'رد الإدارة على استغاثة SOS').replace(/SOS Applied/ig, 'تطبيق SOS');
+                    }
+                });
+            }
+
 
             if (!modal) return;
 
