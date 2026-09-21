@@ -133,6 +133,33 @@
     }
     .pill.aujourdhui.active .pill-badge { background: var(--warning); color: white; }
 
+    
+    /* Paid active pill */
+    .pill.paye.active {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .pill.paye.active .pill-badge { background: var(--success); color: white; }
+    
+    .badge-paye { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+    
+    .last-note-box {
+      background: #f1f5f9;
+      border-right: 3px solid #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      margin-top: 14px;
+      margin-bottom: 14px;
+      display: flex;
+      gap: 10px;
+    }
+    .last-note-box i { color: var(--text-muted); font-size: 1.1rem; }
+    .gender-female { border-right: 5px solid #f472b6; background: linear-gradient(to left, rgba(244,114,182,0.03), #fff); }
+    .gender-male { border-right: 5px solid #60a5fa; background: linear-gradient(to left, rgba(96,165,250,0.03), #fff); }
+
     /* --- MAIN CONTAINER --- */
     .container {
       max-width: 680px;
@@ -412,11 +439,6 @@
       <div class="header-title"><i class="fa-solid fa-briefcase"></i> Oswah CRM</div>
       <select id="agentSelect" class="agent-selector" onchange="filterData()">
         <option value="all">👥 جميع الوكلاء</option>
-        <option value="فاطمة الزهراء">فاطمة الزهراء</option>
-        <option value="أيوب">أيوب</option>
-        <option value="محمد محمود">محمد محمود</option>
-        <option value="Agent 4">Agent 4</option>
-        <option value="Agent 5">Agent 5</option>
       </select>
     </div>
 
@@ -433,6 +455,9 @@
       </div>
       <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
         <i class="fa-solid fa-rotate-right"></i> للمتابعة <span class="pill-badge" id="count-relance">0</span>
+      </div>
+      <div class="pill paye" data-filter="paye" onclick="setFilter('paye')" style="margin-right: 10px;">
+        <i class="fa-solid fa-check-double"></i> تم السداد <span class="pill-badge" id="count-paye">0</span>
       </div>
     </div>
   </header>
@@ -514,7 +539,10 @@
           const status = (lead.Statut_CRM || '').toLowerCase();
           const nextDate = lead.Date_Prochaine_Action || '';
           
-          if (status === 'nouveau' || status === 'جديد' || !status) {
+          
+          if (status === 'مسدد' || status.includes('payé') || status.includes('تم السداد')) {
+            lead._category = 'paye';
+          } else if (status === 'nouveau' || status === 'جديد' || !status) {
             lead._category = 'nouveau';
           } else if (nextDate) {
             if (nextDate < today) lead._category = 'retard';
@@ -523,7 +551,16 @@
           } else {
             lead._category = 'relance';
           }
+
         });
+
+        
+        // Populate agents
+        const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))].sort();
+        const select = document.getElementById('agentSelect');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="all">👥 جميع الوكلاء</option>' + uniqueAgents.map(a => `<option value="${a}">${a}</option>`).join('');
+        if (uniqueAgents.includes(currentVal)) select.value = currentVal;
 
         filterData();
       } catch (err) {
@@ -540,7 +577,8 @@
         'retard': 'متابعات متأخرة',
         'aujourdhui': 'مهام اليوم',
         'nouveau': 'العملاء الجدد',
-        'relance': 'قيد المتابعة'
+        'relance': 'قيد المتابعة',
+        'paye': 'تم السداد'
       };
       document.getElementById('current-filter-label').textContent = labels[f] || '';
       filterData();
@@ -563,6 +601,7 @@
       document.getElementById('count-aujourdhui').textContent = stats.aujourdhui;
       document.getElementById('count-nouveau').textContent = stats.nouveau;
       document.getElementById('count-relance').textContent = stats.relance;
+      document.getElementById('count-paye').textContent = stats.paye;
 
       // Filter by category
       const displayed = filtered.filter(l => l._category === activeFilter);
@@ -600,24 +639,37 @@
         else if (l._category === 'nouveau') statusBadge = '<span class="badge-status badge-nouveau">⭐ جديد</span>';
         else statusBadge = '<span class="badge-status badge-relance">🔄 قيد المتابعة</span>';
 
+        const genderClass = l.Genre === 'female' ? 'gender-female' : 'gender-male';
+        
+        let waLink = `https://wa.me/${cleanPhone}`;
+
+        let statusBadge = '';
+        if (l._category === 'retard') statusBadge = '<span class="badge-status badge-retard">⏰ متأخر</span>';
+        else if (l._category === 'aujourdhui') statusBadge = '<span class="badge-status badge-aujourdhui">📅 اليوم</span>';
+        else if (l._category === 'nouveau') statusBadge = '<span class="badge-status badge-nouveau">⭐ جديد</span>';
+        else if (l._category === 'paye') statusBadge = '<span class="badge-status badge-paye">✅ مسدد</span>';
+        else statusBadge = '<span class="badge-status badge-relance">🔄 قيد المتابعة</span>';
+        
+        const lastNote = l.Ancien_Commentaire ? `<div class="last-note-box"><i class="fa-solid fa-quote-right"></i><div>${escapeHtml(l.Ancien_Commentaire)}</div></div>` : '';
+
         return `
-          <div class="lead-card">
+          <div class="lead-card ${genderClass}">
             <div class="lead-header">
               <div>
                 <div class="lead-name">${escapeHtml(l.Nom || 'بدون اسم')}</div>
-                <div class="lead-id">ID: #${l.ID_Lead} | الوكيل: <b>${escapeHtml(l.Agent_Nom || 'غير معين')}</b></div>
+                <div class="lead-id">رقم الطالب: <b>#${l.ID_Lead}</b></div>
               </div>
               <div>${statusBadge}</div>
             </div>
 
-            <div class="info-tags">
-              <span class="info-tag"><i class="fa-solid fa-phone"></i> <span dir="ltr">${escapeHtml(l.Telephone || '-')}</span></span>
-              <span class="info-tag"><i class="fa-solid fa-globe"></i> ${escapeHtml(l.Pays || 'Maroc')}</span>
-              <span class="info-tag"><i class="fa-solid ${l.Genre === 'female' ? 'fa-venus' : 'fa-mars'}"></i> ${l.Genre === 'female' ? 'أنثى' : 'ذكر'}</span>
+            <div class="info-tags" style="margin-bottom: 8px;">
+              <span class="info-tag" style="font-size:0.95rem; font-weight:700;"><i class="fa-solid fa-phone"></i> <span dir="ltr">${escapeHtml(l.Telephone || '-')}</span></span>
             </div>
+            
+            ${lastNote}
 
-            <div class="next-action-box">
-              <b>الخطوة القادمة:</b> ${escapeHtml(l.Prochaine_Action || 'الاتصال')}
+            <div class="next-action-box" style="display: ${l._category==='paye' ? 'none' : 'block'};">
+              <b>الخطوة القادمة:</b> ${escapeHtml(l.Prochaine_Action || 'غير محدد')}
               ${l.Date_Prochaine_Action ? `<span style="color:var(--text-muted); font-size:0.8rem; margin-right:5px;">(${l.Date_Prochaine_Action})</span>` : ''}
               ${l.Dernier_Contact_Resultat ? `<div style="margin-top:4px; font-size:0.8rem;"><i class="fa-solid fa-reply"></i> النتيجة السابقة: ${escapeHtml(l.Dernier_Contact_Resultat)}</div>` : ''}
             </div>
@@ -630,14 +682,7 @@
                 <i class="fa-brands fa-whatsapp"></i> واتساب
               </a>
               <button class="btn-action btn-log" onclick="openInteractionModal('${l.ID_Lead}')">
-                <i class="fa-solid fa-pen-to-square"></i> تسجيل متابعة
-              </button>
-            </div>
-
-            <div class="card-footer">
-              <span class="last-note">${escapeHtml(l.Ancien_Commentaire || 'لا توجد ملاحظات سابقة')}</span>
-              <button class="btn-history" onclick="openInteractionModal('${l.ID_Lead}')">
-                <i class="fa-solid fa-clock-rotate-left"></i> السجل
+                <i class="fa-solid fa-pen-to-square"></i> تسجيل متابعة / السجل
               </button>
             </div>
           </div>
