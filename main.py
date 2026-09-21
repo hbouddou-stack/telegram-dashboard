@@ -1414,7 +1414,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     base_select += f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%')"
                 base_select += " ORDER BY g.timestamp DESC LIMIT 500"
             elif status == 'absent':
-                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0)"
+                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0) AND (s.excluded = 0 OR s.excluded IS NULL)"
                 # Apply filters
                 if gender and gender != 'all':
                     base_select += f" AND UPPER(s.gender) LIKE '{gender}%'"
