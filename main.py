@@ -1011,6 +1011,43 @@ async def handle_admin_gateway(request):
     resp.headers['Pragma'] = 'no-cache'
     return resp
 
+async def handle_crm(request):
+    resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'crm.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
+
+async def api_crm_data(request):
+    import crm_service
+    agent = request.query.get('agent', 'all')
+    search = request.query.get('search', '')
+    status = request.query.get('status', 'all')
+    data = crm_service.get_leads(agent_name=agent, search=search, status_filter=status)
+    return web.json_response(data)
+
+async def api_crm_lead_details(request):
+    import crm_service
+    lead_id = request.query.get('lead_id', '')
+    details = crm_service.get_lead_details(lead_id)
+    return web.json_response(details)
+
+async def api_crm_update_lead(request):
+    import crm_service
+    try:
+        body = await request.json()
+        lead_id = body.get('lead_id')
+        statut = body.get('statut', '')
+        resultat = body.get('resultat', '')
+        prochaine_action = body.get('prochaine_action', '')
+        date_prochaine = body.get('date_prochaine', '')
+        note = body.get('note', '')
+        agent_email = body.get('agent_email', '')
+        canal = body.get('canal', 'Téléphone')
+        success = crm_service.update_lead_status(lead_id, statut, resultat, prochaine_action, date_prochaine, note, agent_email, canal)
+        return web.json_response({'success': success})
+    except Exception as e:
+        return web.json_response({'error': str(e)}, status=400)
+
 async def api_admin_gateway_stats(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -7367,6 +7404,12 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin-gateway.html', handle_admin_gateway)
     app.router.add_get('/admin_gateway', handle_admin_gateway)
     app.router.add_get('/admin-gateway', handle_admin_gateway)
+    # CRM Mini App routes
+    app.router.add_get('/crm', handle_crm)
+    app.router.add_get('/crm.html', handle_crm)
+    app.router.add_get('/api/crm/data', api_crm_data)
+    app.router.add_get('/api/crm/lead-details', api_crm_lead_details)
+    app.router.add_post('/api/crm/update-lead', api_crm_update_lead)
     app.router.add_post('/api/admin/gateway/send_bulk_emails', api_admin_send_bulk_emails)
     app.router.add_get('/api/admin/gateway/email_dispatch_status', api_admin_email_dispatch_status)
     app.router.add_get('/api/track/open', api_track_open)

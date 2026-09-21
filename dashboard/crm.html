@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Oswah CRM - Espace Commercial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(22, 30, 49, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --warning: #f59e0b;
+      --info: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Tajawal', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background gradient */
+    .ambient-glow {
+      position: fixed;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 18px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .brand h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      color: var(--primary);
+    }
+
+    .agent-select-wrapper {
+      position: relative;
+    }
+
+    .agent-select {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Search & Stats Bar */
+    .search-box {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 14px 10px 38px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      background: rgba(30, 41, 59, 0.9);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.5;
+    }
+
+    /* Metrics Scroll */
+    .stats-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0 8px;
+      scrollbar-width: none;
+    }
+    .stats-pills::-webkit-scrollbar { display: none; }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 24px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .pill.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .pill-badge {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+    }
+
+    .pill.retard.active {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--danger);
+      color: #fca5a5;
+    }
+
+    /* Leads Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      padding: 14px 18px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .leads-count-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .lead-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .lead-card:active {
+      transform: scale(0.99);
+    }
+
+    .lead-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .lead-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .badge-status {
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .badge-retard { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-aujourdhui { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-nouveau { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-relance { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-paye { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .lead-info-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .info-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .lead-action-status {
+      background: rgba(15, 23, 42, 0.5);
+      border-left: 3px solid var(--primary);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-bottom: 14px;
+    }
+    .lead-action-status.retard { border-left-color: var(--danger); }
+    .lead-action-status.urgent { border-left-color: var(--warning); }
+
+    /* Action Buttons Grid */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 9px 4px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-action.whatsapp {
+      color: #25d366;
+      border-color: rgba(37, 211, 102, 0.3);
+      background: rgba(37, 211, 102, 0.08);
+    }
+    .btn-action.whatsapp:hover {
+      background: rgba(37, 211, 102, 0.18);
+    }
+
+    .btn-action.nrp {
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .btn-action.paye {
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .btn-action.history {
+      color: #93c5fd;
+      border-color: rgba(147, 197, 253, 0.2);
+    }
+
+    /* Modal / Bottom Sheet */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .bottom-sheet {
+      background: #111827;
+      border-top: 1px solid var(--card-border);
+      width: 100%;
+      max-width: 600px;
+      border-radius: 20px 20px 0 0;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.25s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .sheet-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* History timeline */
+    .timeline {
+      position: relative;
+      padding-left: 20px;
+      margin: 16px 0;
+      border-left: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -26px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .timeline-content {
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      background: rgba(30, 41, 59, 0.4);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    /* Note input in modal */
+    .note-form textarea {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      resize: vertical;
+      min-height: 70px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 200;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .loading-spinner {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-logo">💼</div>
+        <div>
+          <h1>OSWAH <span>CRM</span></h1>
+        </div>
+      </div>
+      <div class="agent-select-wrapper">
+        <select id="agentSelect" class="agent-select" onchange="onAgentChanged()">
+          <option value="all">👥 Tous les agents</option>
+          <option value="فاطمة الحميدي">فاطمة الحميدي</option>
+          <option value="مريم">مريم</option>
+          <option value="فاطمة الزهراء">فاطمة الزهراء</option>
+          <option value="Agent 4">Agent 4</option>
+          <option value="Agent 5">Agent 5</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Rechercher par nom, téléphone, pays..." oninput="onSearchInput()">
+    </div>
+
+    <div class="stats-pills">
+      <div class="pill active" data-filter="all" onclick="setFilter('all')">
+        Tous <span class="pill-badge" id="count-all">0</span>
+      </div>
+      <div class="pill retard" data-filter="retard" onclick="setFilter('retard')">
+        🔴 En retard <span class="pill-badge" id="count-retard">0</span>
+      </div>
+      <div class="pill" data-filter="aujourdhui" onclick="setFilter('aujourdhui')">
+        📅 Aujourd'hui <span class="pill-badge" id="count-aujourdhui">0</span>
+      </div>
+      <div class="pill" data-filter="nouveau" onclick="setFilter('nouveau')">
+        🆕 Nouveaux <span class="pill-badge" id="count-nouveau">0</span>
+      </div>
+      <div class="pill" data-filter="relance" onclick="setFilter('relance')">
+        ⏳ Relances <span class="pill-badge" id="count-relance">0</span>
+      </div>
+      <div class="pill" data-filter="paye" onclick="setFilter('paye')">
+        ✅ Inscrits <span class="pill-badge" id="count-paye">0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="leads-count-bar">
+      <span id="listSummary">Chargement des leads...</span>
+      <button onclick="fetchLeads(true)" style="background:none; border:none; color:var(--primary); font-size:0.8rem; cursor:pointer; font-weight:600;">🔄 Rafraîchir</button>
+    </div>
+
+    <div id="leadsList">
+      <div class="loading-spinner">
+        Chargement des fiches commerciales...
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail & History Modal -->
+  <div class="modal-backdrop" id="leadModal" onclick="closeModalOnBackdrop(event)">
+    <div class="bottom-sheet">
+      <div class="sheet-header">
+        <div>
+          <div class="sheet-title" id="modalLeadName">Détails du Lead</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);" id="modalLeadMeta">ID: #000</div>
+        </div>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:0.85rem; font-weight:700; margin-bottom:6px;">Ajouter une interaction :</div>
+          <div class="note-form">
+            <textarea id="modalNoteInput" placeholder="Note ou résumé de l'appel (ex: A demandé à être rappelé samedi)..."></textarea>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+              <select id="modalResultSelect" class="agent-select" style="flex:1;">
+                <option value="Intéressé / En réflexion">Intéressé / En réflexion</option>
+                <option value="NRP / Injoignable">Pas de réponse (NRP)</option>
+                <option value="Message WhatsApp laissé">Message WhatsApp envoyé</option>
+                <option value="Promesse de paiement">Promesse de paiement</option>
+                <option value="Pas intéressé / Invalide">Pas intéressé</option>
+              </select>
+            </div>
+            <button class="btn-submit" onclick="submitModalInteraction()">Enregistrer l'échange</button>
+          </div>
+        </div>
+
+        <div style="font-size:0.9rem; font-weight:700; margin-top:20px; border-top:1px solid var(--card-border); padding-top:14px;">
+          Historique des interactions
+        </div>
+        <div class="timeline" id="modalTimeline">
+          <!-- Timeline entries rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✅ Action enregistrée avec succès</div>
+
+  <script>
+    let currentFilter = 'all';
+    let currentAgent = localStorage.getItem('oswah_crm_agent') || 'all';
+    let allLeads = [];
+    let activeLeadId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('agentSelect').value = currentAgent;
+      fetchLeads();
+    });
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.pill').forEach(p => {
+        p.classList.toggle('active', p.getAttribute('data-filter') === filter);
+      });
+      renderLeads();
+    }
+
+    function onAgentChanged() {
+      currentAgent = document.getElementById('agentSelect').value;
+      localStorage.setItem('oswah_crm_agent', currentAgent);
+      fetchLeads();
+    }
+
+    function onSearchInput() {
+      renderLeads();
+    }
+
+    async function fetchLeads(showToastMsg = false) {
+      try {
+        const res = await fetch(`/api/crm/data?agent=${encodeURIComponent(currentAgent)}`);
+        const data = await res.json();
+        
+        allLeads = data.leads || [];
+        
+        // Update stats
+        const stats = data.stats || {};
+        document.getElementById('count-all').textContent = stats.total || allLeads.length;
+        document.getElementById('count-retard').textContent = stats.en_retard || 0;
+        document.getElementById('count-aujourdhui').textContent = stats.aujourdhui || 0;
+        document.getElementById('count-nouveau').textContent = stats.nouveaux || 0;
+        document.getElementById('count-relance').textContent = stats.relances || 0;
+        document.getElementById('count-paye').textContent = stats.payes || 0;
+
+        renderLeads();
+        if (showToastMsg) showToast('Données synchronisées avec Google Sheets !');
+      } catch (err) {
+        console.error('Fetch error:', err);
+        document.getElementById('leadsList').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">Erreur de chargement. Veuillez rafraîchir.</div>`;
+      }
+    }
+
+    function renderLeads() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const container = document.getElementById('leadsList');
+
+      let filtered = allLeads.filter(l => {
+        // Status pill filter
+        if (currentFilter !== 'all' && l._category !== currentFilter) return false;
+
+        // Search query
+        if (query) {
+          const matchName = String(l.Nom || '').toLowerCase().includes(query);
+          const matchTel = String(l.Telephone || '').toLowerCase().includes(query);
+          const matchPays = String(l.Pays || '').toLowerCase().includes(query);
+          const matchId = String(l.ID_Lead || '').toLowerCase().includes(query);
+          if (!matchName && !matchTel && !matchPays && !matchId) return false;
+        }
+        return true;
+      });
+
+      document.getElementById('listSummary').textContent = `${filtered.length} client(s) affiché(s)`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:50px 20px; color:var(--text-muted);">
+            <div style="font-size:2rem; margin-bottom:10px;">🎉</div>
+            <div style="font-weight:600;">Aucun lead dans cette catégorie !</div>
+            <div style="font-size:0.8rem; margin-top:4px;">Tout est à jour ou vos filtres ne retournent aucun résultat.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(l => {
+        const cat = l._category || 'relance';
+        const cleanPhone = String(l.Telephone || '').replace(/[^0-9]/g, '');
+        const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Assalamu alaykum " + (l.Nom || "") + ", nous vous contactons depuis l'Académie Oswah.")}`;
+        
+        let statusBadge = '';
+        if (cat === 'retard') statusBadge = '<span class="badge-status badge-retard">🔴 En retard</span>';
+        else if (cat === 'aujourdhui') statusBadge = '<span class="badge-status badge-aujourdhui">📅 Aujourd\'hui</span>';
+        else if (cat === 'nouveau') statusBadge = '<span class="badge-status badge-nouveau">🆕 Nouveau</span>';
+        else if (cat === 'paye') statusBadge = '<span class="badge-status badge-paye">✅ Inscrit / Payé</span>';
+        else statusBadge = '<span class="badge-status badge-relance">⏳ En cours</span>';
+
+        return `
+          <div class="lead-card">
+            <div class="lead-header">
+              <div>
+                <div class="lead-name">${escapeHtml(l.Nom || 'Sans Nom')}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">ID: #${l.ID_Lead} • Agent: <b>${escapeHtml(l.Agent_Nom || 'Non assigné')}</b></div>
+              </div>
+              ${statusBadge}
+            </div>
+
+            <div class="lead-info-row">
+              <span class="info-tag">📞 ${escapeHtml(l.Telephone || '-')}</span>
+              <span class="info-tag">🌍 ${escapeHtml(l.Pays || 'Maroc')}</span>
+              <span class="info-tag">${l.Genre === 'female' ? '🧕 Femme' : '🧔 Homme'}</span>
+            </div>
+
+            <div class="lead-action-status ${cat}">
+              <b>Prochaine action :</b> ${escapeHtml(l.Prochaine_Action || 'À appeler')}
+              ${l.Date_Prochaine_Action ? `<span style="opacity:0.75;">(${l.Date_Prochaine_Action})</span>` : ''}
+              ${l.Dernier_Contact_Resultat ? `<div style="font-size:0.75rem; margin-top:3px; opacity:0.8;">Dernier retour : ${escapeHtml(l.Dernier_Contact_Resultat)}</div>` : ''}
+            </div>
+
+            <div class="actions-grid">
+              <a href="${waLink}" target="_blank" class="btn-action whatsapp" onclick="logWhatsApp('${l.ID_Lead}')">
+                <span>💬</span> WhatsApp
+              </a>
+              <a href="tel:${cleanPhone}" class="btn-action">
+                <span>📞</span> Appeler
+              </a>
+              <button class="btn-action nrp" onclick="markNRP('${l.ID_Lead}')">
+                <span>⏳</span> Pas de rép.
+              </button>
+              <button class="btn-action paye" onclick="markPaid('${l.ID_Lead}')">
+                <span>✅</span> Payé
+              </button>
+            </div>
+
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.75rem; color:var(--text-muted); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width:70%;">
+                ${escapeHtml(l.Ancien_Commentaire || '')}
+              </span>
+              <button class="btn-action history" style="padding:4px 10px; font-size:0.72rem;" onclick="openLeadModal('${l.ID_Lead}')">
+                📝 Historique & Notes
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function markNRP(leadId) {
+      if (!confirm("Décaler ce lead à dans 2 jours (NRP / Pas de réponse) ?")) return;
+
+      const d = new Date();
+      d.setDate(d.getDate() + 2);
+      const nextDate = d.toISOString().split('T')[0];
+
+      await updateLead(leadId, {
+        statut: 'Relance',
+        resultat: 'NRP / Injoignable',
+        prochaine_action: 'À relancer',
+        date_prochaine: nextDate,
+        note: 'Appel passé sans réponse (Automatisé J+2)'
+      });
+      showToast('Lead décalé à dans 48h !');
+    }
+
+    async function markPaid(leadId) {
+      if (!confirm("Valider l'inscription / paiement de ce lead ?")) return;
+
+      await updateLead(leadId, {
+        statut: 'Payé / Inscrit',
+        resultat: 'Paiement confirmé',
+        prochaine_action: 'Clôturé',
+        date_prochaine: '',
+        note: 'Inscription confirmée et payée'
+      });
+      showToast('Lead marqué comme Payé / Inscrit ! 🎉');
+    }
+
+    async function logWhatsApp(leadId) {
+      await updateLead(leadId, {
+        statut: 'En cours',
+        resultat: 'WhatsApp envoyé',
+        prochaine_action: 'Attente réponse WhatsApp',
+        date_prochaine: new Date().toISOString().split('T')[0],
+        note: 'Message WhatsApp envoyé'
+      });
+    }
+
+    async function updateLead(leadId, payload) {
+      try {
+        const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+        if (lead) {
+          lead.Statut_CRM = payload.statut;
+          lead.Dernier_Contact_Resultat = payload.resultat;
+          lead.Prochaine_Action = payload.prochaine_action;
+          lead.Date_Prochaine_Action = payload.date_prochaine;
+          // recalculate category locally
+          const today = new Date().toISOString().split('T')[0];
+          if (payload.statut.includes('Payé')) lead._category = 'paye';
+          else if (payload.date_prochaine && payload.date_prochaine < today) lead._category = 'retard';
+          else if (payload.date_prochaine === today) lead._category = 'aujourdhui';
+          else lead._category = 'relance';
+          renderLeads();
+        }
+
+        await fetch('/api/crm/update-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lead_id: leadId,
+            ...payload,
+            agent_email: lead ? lead.Agent_Email : ''
+          })
+        });
+      } catch (err) {
+        console.error('Update error:', err);
+      }
+    }
+
+    async function openLeadModal(leadId) {
+      activeLeadId = leadId;
+      const modal = document.getElementById('leadModal');
+      modal.classList.add('active');
+
+      const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+      if (lead) {
+        document.getElementById('modalLeadName').textContent = lead.Nom || 'Détails';
+        document.getElementById('modalLeadMeta').textContent = `ID: #${lead.ID_Lead} • ${lead.Telephone || ''} • ${lead.Pays || ''}`;
+      }
+
+      document.getElementById('modalTimeline').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Chargement de l\'historique...</div>';
+
+      try {
+        const res = await fetch(`/api/crm/lead-details?lead_id=${leadId}`);
+        const data = await res.json();
+        const interactions = data.interactions || [];
+
+        if (interactions.length === 0) {
+          document.getElementById('modalTimeline').innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Aucun historique précédent.</div>';
+        } else {
+          document.getElementById('modalTimeline').innerHTML = interactions.map(i => `
+            <div class="timeline-item">
+              <div class="timeline-date">${escapeHtml(i.Date_Heure || '')} • <b>${escapeHtml(i.Canal || 'Appel')}</b> (${escapeHtml(i.Resultat || '')})</div>
+              <div class="timeline-content">${escapeHtml(i.Commentaire || '')}</div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('leadModal').classList.remove('active');
+      activeLeadId = null;
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === 'leadModal') closeModal();
+    }
+
+    async function submitModalInteraction() {
+      const note = document.getElementById('modalNoteInput').value.trim();
+      const resultat = document.getElementById('modalResultSelect').value;
+
+      if (!note && !resultat) return;
+
+      await updateLead(activeLeadId, {
+        statut: 'En cours',
+        resultat: resultat,
+        prochaine_action: 'À relancer',
+        date_prochaine: new Date().toISOString().split('T')[0],
+        note: note || resultat
+      });
+
+      document.getElementById('modalNoteInput').value = '';
+      closeModal();
+      showToast('Interaction ajoutée !');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = '✅ ' + msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag] || tag));
+    }
+  </script>
+</body>
+</html>
