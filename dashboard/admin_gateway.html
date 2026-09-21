@@ -1854,37 +1854,90 @@ window.setSalesFunnel = function(val, el) {
                     
                     <!-- 2. Controls Row: Mode Toggle & View Toggles -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                            <button id="btn-funnel-absent" onclick="switchGhostMode('absent')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:4px;"><span>🔴</span> <span>لم يبدأوا</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
-                            </button>
-                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
-                              <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:4px;"><span>🔵</span> <span>زوار البوت</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
-                            </button>
-                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
-                              <button id="btn-funnel-form" onclick="switchGhostMode('form')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:4px;"><span>🟣</span> <span>فتحوا النموذج</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-form">0</span>)</span>
-                            </button>
-                            <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:4px;"><span>🟠</span> <span>صالة الانتظار</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
-                            </button>
-                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
-                              <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:4px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
-                            </button>
-                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
-                              <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:4px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
-                            </button>
-                        </div>
                         
+                        <!-- 3x3 Snake Grid for Funnel Steps (9 Steps) -->
+                        <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
+                            
+                            <!-- ROW 1 (RTL Logical: Absent(Right) ⬅️ Started(Mid) ⬅️ Videos(Left)) -->
+                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
+                                <button id="btn-funnel-absent" onclick="switchGhostMode('absent')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div style="display:flex; align-items:center; gap:4px;"><span>🔴</span> <span>لم يبدأوا</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
+                                </button>
+                                
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
+                                
+                                <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div style="display:flex; align-items:center; gap:4px;"><span>🔵</span> <span>زوار البوت</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
+                                </button>
+                                
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
+                                
+                                <button id="btn-funnel-videos" onclick="switchGhostMode('videos')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div style="display:flex; align-items:center; gap:4px;"><span>📺</span> <span>الفيديوهات</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-videos">0</span>)</span>
+                                </button>
+                            </div>
+
+                            <!-- DOWN ARROW FROM ROW 1 TO ROW 2 (Aligns with left-most item in RTL, which is column 5) -->
+                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
+                                <div></div><div></div><div></div><div></div>
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬇️</div>
+                            </div>
+
+                            <!-- ROW 2 (LTR Visually: Terms(Left) ➡️ Form(Mid) ➡️ Submitted(Right)) -->
+                            <!-- We set dir="ltr" so element 1 is left, 5 is right! -->
+                            <div dir="ltr" style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
+                                <button id="btn-funnel-terms" onclick="switchGhostMode('terms')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div dir="rtl" style="display:flex; align-items:center; gap:4px;"><span>الموافقة</span> <span>✍️</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-terms">0</span>)</span>
+                                </button>
+                                
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➡️</div>
+                                
+                                <button id="btn-funnel-form" onclick="switchGhostMode('form')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div dir="rtl" style="display:flex; align-items:center; gap:4px;"><span>فتحوا النموذج</span> <span>📝</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-form">0</span>)</span>
+                                </button>
+                                
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➡️</div>
+                                
+                                <button id="btn-funnel-submitted" onclick="switchGhostMode('submitted')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div dir="rtl" style="display:flex; align-items:center; gap:4px;"><span>أرسلوا النموذج</span> <span>📤</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-submitted">0</span>)</span>
+                                </button>
+                            </div>
+                            
+                            <!-- DOWN ARROW FROM ROW 2 TO ROW 3 (Aligns with right-most item in LTR/RTL, which is column 1 in RTL) -->
+                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬇️</div>
+                                <div></div><div></div><div></div><div></div>
+                            </div>
+
+                            <!-- ROW 3 (RTL Logical: Waiting(Right) ⬅️ Inactive(Mid) ⬅️ Completed(Left)) -->
+                            <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
+                                <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div style="display:flex; align-items:center; gap:4px;"><span>🆘</span> <span>صالة الانتظار</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
+                                </button>
+                                
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
+                                
+                                <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div style="display:flex; align-items:center; gap:4px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
+                                </button>
+                                
+                                <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">⬅️</div>
+                                
+                                <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="height:100%; min-height:80px; cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                    <div style="display:flex; align-items:center; gap:4px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
+                                    <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
+                                </button>
+                            </div>
+                            
+                        </div>
                         <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
                             <button onclick="setGhostView('list')"" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
                             <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
@@ -3858,15 +3911,18 @@ window.setSalesFunnel = function(val, el) {
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
-            const tabs = ['absent', 'started', 'form', 'waiting', 'inactive', 'completed'];
+            const tabs = ['absent', 'started', 'videos', 'terms', 'form', 'submitted', 'waiting', 'inactive', 'completed'];
             const colors = {
-                'absent': { bg: 'rgba(239,68,68,0.1)', text: '#ef4444', border: 'rgba(239,68,68,0.3)' },
-                'started': { bg: 'rgba(59,130,246,0.1)', text: '#3b82f6', border: 'rgba(59,130,246,0.3)' },
-                'form': { bg: 'rgba(139,92,246,0.1)', text: '#8b5cf6', border: 'rgba(139,92,246,0.3)' },
-                'waiting': { bg: 'rgba(249,115,22,0.1)', text: '#f97316', border: 'rgba(249,115,22,0.3)' },
-                'inactive': { bg: 'rgba(234,179,8,0.1)', text: '#eab308', border: 'rgba(234,179,8,0.3)' },
-                'completed': { bg: 'rgba(34,197,94,0.1)', text: '#22c55e', border: 'rgba(34,197,94,0.3)' }
-            };
+                  'absent': { bg: 'rgba(239,68,68,0.1)', text: '#ef4444', border: 'rgba(239,68,68,0.3)' },
+                  'started': { bg: 'rgba(59,130,246,0.1)', text: '#3b82f6', border: 'rgba(59,130,246,0.3)' },
+                  'videos': { bg: 'rgba(168,85,247,0.1)', text: '#a855f7', border: 'rgba(168,85,247,0.3)' },
+                  'terms': { bg: 'rgba(236,72,153,0.1)', text: '#ec4899', border: 'rgba(236,72,153,0.3)' },
+                  'form': { bg: 'rgba(249,115,22,0.1)', text: '#f97316', border: 'rgba(249,115,22,0.3)' },
+                  'submitted': { bg: 'rgba(20,184,166,0.1)', text: '#14b8a6', border: 'rgba(20,184,166,0.3)' },
+                  'waiting': { bg: 'rgba(245,158,11,0.1)', text: '#f59e0b', border: 'rgba(245,158,11,0.3)' },
+                  'inactive': { bg: 'rgba(234,179,8,0.1)', text: '#eab308', border: 'rgba(234,179,8,0.3)' },
+                  'completed': { bg: 'rgba(34,197,94,0.1)', text: '#22c55e', border: 'rgba(34,197,94,0.3)' }
+              };
             
             tabs.forEach(t => {
                 const btn = document.getElementById('btn-funnel-' + t);

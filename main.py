@@ -1283,75 +1283,120 @@ async def api_admin_gateway_students(request: web.Request):
 
 
 async def api_admin_gateway_ghost_visitors(request: web.Request):
-    """Returns users who visited/started the bot, filtered by funnel status"""
     import aiosqlite
     from config import DATABASE_PATH
     try:
-        status = request.query.get('status', 'started').strip().lower()
+        status = request.query.get('status', 'started')
+        search = request.query.get('search', '').strip().lower()
+        gender = request.query.get('gender', 'all')
+        level = request.query.get('level', 'all')
+        
+        rows = []
+        counts = {
+            'absent': 0, 'started': 0, 'videos': 0, 'terms': 0,
+            'form': 0, 'submitted': 0, 'waiting': 0, 'inactive': 0, 'completed': 0
+        }
+        
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             
-            counts = {'absent': 0, 'started': 0, 'form': 0, 'waiting': 0, 'inactive': 0, 'completed': 0}
-            
-            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE telegram_id IS NULL OR telegram_id = ''") as cur:
+            # --- GLOBAL COUNTS ---
+            # 1. Absent: In academy_students, no telegram_id
+            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE telegram_id IS NULL OR telegram_id = 0") as cur:
                 counts['absent'] = (await cur.fetchone())['c']
                 
-            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
+            # For ghost states, we rely on users not linked, or linked but stuck.
+            # 2. Started: user exists, not linked, no open SOS, max log is just bot start or none
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_PAGE_OPENED', 'ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
                 counts['started'] = (await cur.fetchone())['c']
                 
-            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) > 0") as cur:
+            # 3. Videos: opened the webapp, watched video, but didn't sign charter
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_PAGE_OPENED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
+                counts['videos'] = (await cur.fetchone())['c']
+                
+            # 4. Terms: signed charter, but didn't reach form
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_CHARTER_SIGNED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
+                counts['terms'] = (await cur.fetchone())['c']
+                
+            # 5. Form: Reached form but didn't submit/fail
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) = 0") as cur:
                 counts['form'] = (await cur.fetchone())['c']
                 
-            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )") as cur:
+            # 6. Submitted: Failed linking (not found/unpaid) but no open SOS yet
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) > 0") as cur:
+                counts['submitted'] = (await cur.fetchone())['c']
+                
+            # 7. Waiting: Open SOS OR linked but stuck before LINK_SUCCESS
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))") as cur:
                 counts['waiting'] = (await cur.fetchone())['c']
                 
+            # 8. Inactive: Linked, but STEP_LINK_SUCCESS (didn't click folder)
             async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step = 'STEP_LINK_SUCCESS'") as cur:
                 counts['inactive'] = (await cur.fetchone())['c']
                 
+            # 9. Completed: STEP_FOLDER_CLICKED
             async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
                 counts['completed'] = (await cur.fetchone())['c']
 
+            # --- FETCH ACTUAL VISITORS ---
+            # Define Base Selection: For 'absent', we query academy_students. For others, we query users.
             if status == 'absent':
-                base_select = """
-                    SELECT 
-                        NULL as telegram_id, NULL as first_name, NULL as last_name, NULL as username, NULL as created_at,
-                        s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
-                        s.email as student_email, s.gender as student_gender,
-                        s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
-                        (SELECT action_type FROM student_logs WHERE student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_action,
-                        (SELECT description FROM student_logs WHERE student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_desc,
-                        (SELECT timestamp FROM student_logs WHERE student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_time
-                    FROM academy_students s
-                """
-                where_clause = " WHERE s.telegram_id IS NULL OR s.telegram_id = '' "
-                order_limit = " ORDER BY s.id DESC LIMIT 500"
+                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0)"
+                # Apply filters
+                if gender and gender != 'all':
+                    base_select += f" AND UPPER(s.gender) LIKE '{gender}%'"
+                if level and level != 'all':
+                    base_select += f" AND s.year = {level}"
+                if search:
+                    base_select += f" AND (LOWER(s.first_name) LIKE '%{search}%' OR LOWER(s.last_name) LIKE '%{search}%' OR LOWER(s.email) LIKE '%{search}%')"
+                base_select += " ORDER BY s.created_at DESC LIMIT 500"
             else:
                 base_select = """
                     SELECT 
                         u.telegram_id, u.first_name, u.last_name, u.username, u.created_at,
                         s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
-                        s.email as student_email, s.gender as student_gender,
+                        s.email as student_email, s.gender as student_gender, s.year as level,
                         s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
                         (SELECT action_type FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_action,
                         (SELECT description FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_desc,
-                        (SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_time
+                        (SELECT status FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open' ORDER BY id DESC LIMIT 1) as sos_status,
+                        (SELECT message FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open' ORDER BY id DESC LIMIT 1) as sos_message
                     FROM users u
                     LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
                 """
-                order_limit = " ORDER BY COALESCE((SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1), u.created_at) DESC LIMIT 500"
+                where_clause = ""
                 
-                if status == 'waiting':
+                if status == 'started':
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_PAGE_OPENED', 'ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0"
+                elif status == 'videos':
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_PAGE_OPENED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0"
+                elif status == 'terms':
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_CHARTER_SIGNED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0"
+                elif status == 'form':
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) = 0"
+                elif status == 'submitted':
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) > 0"
+                elif status == 'waiting':
                     where_clause = " WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )"
                 elif status == 'inactive':
                     where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_LINK_SUCCESS'"
                 elif status == 'completed':
                     where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED'"
-                elif status == 'form':
-                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) > 0"
-                else: # started
-                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) = 0"
-                    
-            async with db.execute(base_select + where_clause + order_limit) as cur:
+
+                # Append filters
+                filter_clause = ""
+                if gender and gender != 'all':
+                    # Need to check users.first_name/last_name heuristics or student.gender if linked
+                    pass # Keep simple for ghosts, skip exact gender filter for pure users to avoid complexity
+                if search:
+                    st = search.replace("'", "''")
+                    filter_clause = f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%')"
+                
+                order_limit = " ORDER BY COALESCE((SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1), u.created_at) DESC LIMIT 500"
+                
+                base_select = base_select + where_clause + filter_clause + order_limit
+                
+            async with db.execute(base_select) as cur:
                 rows = [dict(r) for r in await cur.fetchall()]
                 
         return web.json_response({'success': True, 'visitors': rows, 'counts': counts, 'status': status})
