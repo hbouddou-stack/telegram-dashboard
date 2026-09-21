@@ -1352,7 +1352,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             
             # --- GLOBAL COUNTS ---
             # 1. Absent: In academy_students, no telegram_id
-            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE (telegram_id IS NULL OR telegram_id = 0) AND (excluded = 0 OR excluded IS NULL)") as cur:
+            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE (telegram_id IS NULL OR telegram_id = 0) AND (excluded = 0 OR excluded IS NULL) AND UPPER(payment_status) IN ('PAID', 'PAYE')") as cur:
                 counts['absent'] = (await cur.fetchone())['c']
                 
             # For ghost states, we rely on users not linked, or linked but stuck.
@@ -1414,7 +1414,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     base_select += f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%')"
                 base_select += " ORDER BY g.timestamp DESC LIMIT 500"
             elif status == 'absent':
-                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0) AND (s.excluded = 0 OR s.excluded IS NULL)"
+                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0) AND (s.excluded = 0 OR s.excluded IS NULL) AND UPPER(s.payment_status) IN ('PAID', 'PAYE')"
                 # Apply filters
                 if gender and gender != 'all':
                     base_select += f" AND UPPER(s.gender) LIKE '{gender}%'"
@@ -7896,12 +7896,7 @@ async def main():
             except Exception:
                 pass
                 
-            # FIX: Ensure ONLY paid students exist in the bot's database
-            try:
-                await db_conn.execute("DELETE FROM academy_students WHERE payment_status != 'PAID' OR payment_status IS NULL")
-                await db_conn.commit()
-            except Exception as e:
-                print("Cleanup unpaid error:", e)
+
                 
             try:
                 await db_conn.execute("ALTER TABLE academy_students ADD COLUMN source_file TEXT")
