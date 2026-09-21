@@ -1854,16 +1854,18 @@ window.setSalesFunnel = function(val, el) {
                     
                     <!-- 2. Controls Row: Mode Toggle & View Toggles -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; width:100%;">
+                        <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
                             <button id="btn-funnel-absent" onclick="switchGhostMode('absent')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🔴</span> <span>لم يبدأوا</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
+                              <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🔵</span> <span>زوار البوت</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-form" onclick="switchGhostMode('form')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
+                              <button id="btn-funnel-form" onclick="switchGhostMode('form')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟣</span> <span>فتحوا النموذج</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-form">0</span>)</span>
                             </button>
@@ -1871,31 +1873,14 @@ window.setSalesFunnel = function(val, el) {
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟠</span> <span>صالة الانتظار</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
+                              <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                              <div style="color:var(--text2); opacity:0.5; font-size:1.2rem; text-align:center;">➔</div>
+                              <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
-                            </button>
-                        </div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
-                            </button>
-                            <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:6px;"><span>🔵</span> <span>زوار البوت</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
-                            </button>
-                            <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:6px;"><span>🟠</span> <span>صالة الانتظار</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
-                            </button>
-                            <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:6px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
-                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
-                            </button>
-                            <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="grid-column: 1 / -1; cursor:pointer; font-weight:bold; font-size:0.9rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
-                                <div style="display:flex; align-items:center; gap:6px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
                             </button>
                         </div>
@@ -3136,7 +3121,7 @@ window.setSalesFunnel = function(val, el) {
                                 <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">👥 الفريق</div>
                                 <div id="profile-team-text" style="font-weight:bold; color:var(--text1);">-</div>
                             </div>
-                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; grid-column: 1 / -1;">
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; ">
                                 <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📝 الملاحظات</div>
                                 <div id="profile-comments-text" style="font-weight:bold; color:#ff9f0a; white-space:pre-wrap;">-</div>
                             </div>
