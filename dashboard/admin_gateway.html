@@ -1848,17 +1848,16 @@ window.setSalesFunnel = function(val, el) {
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <!-- Clean Mode Segmented Control -->
                 <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
-                    <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:6px; transition:0.2s;">
-                        <span>👻</span> غير مرتبطين
+                    <button id="btn-ghost-mode-unlinked" onclick="switchGhostMode('unlinked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:#e0e7ff; color:#4338ca; display:flex; align-items:center; gap:6px; transition:0.2s;">
+                        <span>👻</span> غير مرتبطين (<span id="ghost-count-unlinked">0</span>)
                     </button>
                     <button id="btn-ghost-mode-linked" onclick="switchGhostMode('linked')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border);">
-                        <span>🟢</span> نجحوا بالربط
+                        <span>🟢</span> نجحوا بالربط (<span id="ghost-count-linked">0</span>)
                     </button>
                 </div>
                 
-                <!-- View Toggle & Count -->
+                <!-- View Toggle -->
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <span id="ghost-count-text" style="color:var(--text2); font-size:0.85rem; font-weight:bold;">0</span>
                     <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
                         <button onclick="setGhostView('list')" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
                         <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
@@ -1867,24 +1866,27 @@ window.setSalesFunnel = function(val, el) {
                 </div>
             </div>
 
-            <!-- Search and Dropdown Filters -->
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <!-- Search and Chips Filters -->
+            <div style="display:flex; flex-direction:column; gap:12px;">
                 <input type="text" id="ghost-search-input" oninput="filterGhostVisitors()" placeholder="🔍 ابحث بالاسم، المعرف (@username)، أو تيليجرام ID..." 
-                       style="flex:1; min-width:200px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none;" />
+                       style="width:100%; max-width:400px; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-size:0.88rem; outline:none;" />
                 
-                <select id="ghost-filter-level" onchange="filterGhostVisitors()" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; font-size:0.85rem; min-width:140px;">
-                    <option value="all">🎓 كل المستويات</option>
-                    <option value="1">1ère Année</option>
-                    <option value="2">2ème Année</option>
-                    <option value="3">3ème Année</option>
-                    <option value="4">4ème Année</option>
-                </select>
-                
-                <select id="ghost-filter-gender" onchange="filterGhostVisitors()" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; font-size:0.85rem; min-width:140px;">
-                    <option value="all">🚻 كل الأجناس</option>
-                    <option value="H">ذكر (H)</option>
-                    <option value="F">أنثى (F)</option>
-                </select>
+                <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                    <!-- Gender Chips -->
+                    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-gender">
+                        <button class="chip active" onclick="setGhostGender('all', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--primary); color:#fff; white-space:nowrap;">الكل (Tous)</button>
+                        <button class="chip" onclick="setGhostGender('H', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">ذكر (H)</button>
+                        <button class="chip" onclick="setGhostGender('F', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">أنثى (F)</button>
+                    </div>
+                    <!-- Level Chips -->
+                    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-level">
+                        <button class="chip active" onclick="setGhostLevel('all', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--primary); color:#fff; white-space:nowrap;">الكل (Niveau)</button>
+                        <button class="chip" onclick="setGhostLevel('1', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 1</button>
+                        <button class="chip" onclick="setGhostLevel('2', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 2</button>
+                        <button class="chip" onclick="setGhostLevel('3', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 3</button>
+                        <button class="chip" onclick="setGhostLevel('4', this)" style="cursor:pointer; font-size:0.8rem; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">سنة 4</button>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- List -->
@@ -3832,11 +3834,49 @@ window.setSalesFunnel = function(val, el) {
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
-            document.getElementById('btn-ghost-mode-unlinked').style.background = mode === 'unlinked' ? 'var(--primary)' : 'transparent';
-            document.getElementById('btn-ghost-mode-unlinked').style.color = mode === 'unlinked' ? '#fff' : 'var(--text2)';
-            document.getElementById('btn-ghost-mode-linked').style.background = mode === 'linked' ? 'var(--primary)' : 'transparent';
-            document.getElementById('btn-ghost-mode-linked').style.color = mode === 'linked' ? '#fff' : 'var(--text2)';
+            const uBtn = document.getElementById('btn-ghost-mode-unlinked');
+            const lBtn = document.getElementById('btn-ghost-mode-linked');
             
+            if (mode === 'unlinked') {
+                uBtn.style.background = '#e0e7ff';
+                uBtn.style.color = '#4338ca';
+                lBtn.style.background = 'transparent';
+                lBtn.style.color = 'var(--text2)';
+            } else {
+                lBtn.style.background = '#e0e7ff';
+                lBtn.style.color = '#4338ca';
+                uBtn.style.background = 'transparent';
+                uBtn.style.color = 'var(--text2)';
+            }
+            
+            filterGhostVisitors();
+        }
+        
+        function setGhostGender(val, el) {
+            ghostGenderFilter = val;
+            const parent = el.parentElement;
+            parent.querySelectorAll('.chip').forEach(c => {
+                c.classList.remove('active');
+                c.style.background = 'var(--surface)';
+                c.style.color = 'var(--text2)';
+            });
+            el.classList.add('active');
+            el.style.background = 'var(--primary)';
+            el.style.color = '#fff';
+            filterGhostVisitors();
+        }
+
+        function setGhostLevel(val, el) {
+            ghostLevelFilter = val;
+            const parent = el.parentElement;
+            parent.querySelectorAll('.chip').forEach(c => {
+                c.classList.remove('active');
+                c.style.background = 'var(--surface)';
+                c.style.color = 'var(--text2)';
+            });
+            el.classList.add('active');
+            el.style.background = 'var(--primary)';
+            el.style.color = '#fff';
             filterGhostVisitors();
         }
 
@@ -4007,8 +4047,8 @@ window.setSalesFunnel = function(val, el) {
             if(!list) return;
 
             const q = (document.getElementById('ghost-search-input')?.value || '').trim().toLowerCase();
-            const levelF = document.getElementById('ghost-filter-level')?.value || 'all';
-            const genderF = document.getElementById('ghost-filter-gender')?.value || 'all';
+            const levelF = ghostLevelFilter;
+            const genderF = ghostGenderFilter;
 
             let filtered = rawGhostList.filter(v => {
                 const badgeInfo = getFunnelBadge(v);
@@ -4060,9 +4100,9 @@ window.setSalesFunnel = function(val, el) {
                 return true;
             });
 
-            if (badgeText) {
-                const modeLabel = ghostCurrentMode === 'linked' ? 'حساب مرتبط' : 'زائر مجهول';
-                badgeText.textContent = `${filtered.length} ${modeLabel}`;
+            const activeCountSpan = document.getElementById(ghostCurrentMode === 'unlinked' ? 'ghost-count-unlinked' : 'ghost-count-linked');
+            if (activeCountSpan) {
+                activeCountSpan.textContent = filtered.length;
             }
 
             if(filtered.length === 0) {
@@ -4235,7 +4275,11 @@ window.setSalesFunnel = function(val, el) {
                 'ONBOARDING_SOS_OPENED': { label: '🆘 فتح نافذة المساعدة (SOS)', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
                 'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
             'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
-            'SOS_REQUESTED': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+            
+                'SOS Requested': { label: 'طلب مساعدة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+                'SOS Replied': { label: 'رد الإدارة على استغاثة SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'SOS Applied': { label: 'تطبيق SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'SOS_REQUESTED': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
                 'ONBOARDING_SOS_SENT': { label: '🚨 إرسال استغاثة (SOS)', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
                 'SOS_REPLIED': { label: 'رد الإدارة على استغاثة SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
                 'SOS_APPLIED': { label: 'تطبيق SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' }
