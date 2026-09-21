@@ -7877,6 +7877,13 @@ async def main():
 
         # --- MIGRATIONS AUTOMATIQUES ---
         async with aiosqlite.connect(DATABASE_PATH) as db_conn:
+            # FIX: Ensure ONLY paid students exist in the bot's database
+            try:
+                await db_conn.execute("DELETE FROM academy_students WHERE payment_status != 'PAID' OR payment_status IS NULL")
+                await db_conn.commit()
+            except Exception as e:
+                print("Cleanup unpaid error:", e)
+                
             try:
                 await db_conn.execute("ALTER TABLE academy_students ADD COLUMN source_file TEXT")
                 print("Added source_file column to academy_students")
