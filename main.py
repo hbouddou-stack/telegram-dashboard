@@ -1283,7 +1283,7 @@ async def api_admin_gateway_students(request: web.Request):
 
 
 async def api_admin_gateway_ghost_visitors(request: web.Request):
-    """Returns users who visited/started the bot, filtered by funnel status (absent, started, waiting, inactive, completed)"""
+    """Returns users who visited/started the bot, filtered by funnel status"""
     import aiosqlite
     from config import DATABASE_PATH
     try:
@@ -1291,14 +1291,16 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             
-            # --- 1. Calculate Global Counts for the 5 states ---
-            counts = {'absent': 0, 'started': 0, 'waiting': 0, 'inactive': 0, 'completed': 0}
+            counts = {'absent': 0, 'started': 0, 'form': 0, 'waiting': 0, 'inactive': 0, 'completed': 0}
             
             async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE telegram_id IS NULL OR telegram_id = ''") as cur:
                 counts['absent'] = (await cur.fetchone())['c']
                 
-            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0") as cur:
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
                 counts['started'] = (await cur.fetchone())['c']
+                
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) > 0") as cur:
+                counts['form'] = (await cur.fetchone())['c']
                 
             async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )") as cur:
                 counts['waiting'] = (await cur.fetchone())['c']
@@ -1309,7 +1311,6 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
                 counts['completed'] = (await cur.fetchone())['c']
 
-            # --- 2. Fetch specific list based on status ---
             if status == 'absent':
                 base_select = """
                     SELECT 
@@ -1345,8 +1346,10 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_LINK_SUCCESS'"
                 elif status == 'completed':
                     where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED'"
+                elif status == 'form':
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) > 0"
                 else: # started
-                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0"
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM')) = 0"
                     
             async with db.execute(base_select + where_clause + order_limit) as cur:
                 rows = [dict(r) for r in await cur.fetchall()]
