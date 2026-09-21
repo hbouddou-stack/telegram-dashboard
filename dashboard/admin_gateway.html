@@ -3825,7 +3825,10 @@ window.setSalesFunnel = function(val, el) {
         // =================== GHOST VISITORS ===================
         let rawGhostList = [];
         let ghostCurrentFilter = 'ALL';
-        let ghostCurrentMode = 'unlinked'; // 'unlinked' or 'linked'
+        let ghostCurrentMode = 'unlinked';
+        let ghostViewMode = 'list';
+        let ghostLevelFilter = 'all';
+        let ghostGenderFilter = 'all';
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
