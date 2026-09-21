@@ -2788,9 +2788,7 @@ async def api_admin_gateway_action(request: web.Request):
                     reply_url = f"{base_url}/link.html"
                     
                     response_text = (
-                        "✅ <b>تمت عملية التحقق بنجاح.</b>
-
-"
+                        "✅ <b>تمت عملية التحقق بنجاح.</b>\n\n"
                         "يرجى فتح التطبيق المصغر (Mini-App) أدناه للوصول إلى المجلد الأكاديمي الخاص بك واستكمال انضمامك."
                     )
                     reply_kb = InlineKeyboardMarkup(inline_keyboard=[
