@@ -3966,7 +3966,6 @@ window.setSalesFunnel = function(val, el) {
             };
         }
 
-        async 
         function setGhostView(view) {
             ghostViewMode = view;
             ['list', 'table', 'funnel'].forEach(v => {
@@ -3979,7 +3978,8 @@ window.setSalesFunnel = function(val, el) {
             });
             renderGhostVisitors();
         }
-function loadGhostVisitors() {
+
+        async function loadGhostVisitors() {
             const list = document.getElementById('ghost-list');
             if(!list) return;
             list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري تحميل القائمة...</div></div>';
