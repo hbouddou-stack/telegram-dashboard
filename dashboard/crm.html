@@ -133,7 +133,6 @@
     }
     .pill.aujourdhui.active .pill-badge { background: var(--warning); color: white; }
 
-    
     /* Paid active pill */
     .pill.paye.active {
       background: rgba(16, 185, 129, 0.1);
@@ -143,22 +142,6 @@
     .pill.paye.active .pill-badge { background: var(--success); color: white; }
     
     .badge-paye { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
-    
-    .last-note-box {
-      background: #f1f5f9;
-      border-right: 3px solid #cbd5e1;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      color: var(--text-main);
-      margin-top: 14px;
-      margin-bottom: 14px;
-      display: flex;
-      gap: 10px;
-    }
-    .last-note-box i { color: var(--text-muted); font-size: 1.1rem; }
-    .gender-female { border-right: 5px solid #f472b6; background: linear-gradient(to left, rgba(244,114,182,0.03), #fff); }
-    .gender-male { border-right: 5px solid #60a5fa; background: linear-gradient(to left, rgba(96,165,250,0.03), #fff); }
 
     /* --- MAIN CONTAINER --- */
     .container {
@@ -186,6 +169,9 @@
     .lead-card:active {
       transform: scale(0.98);
     }
+    .gender-female { border-right: 5px solid #f472b6; background: linear-gradient(to left, rgba(244,114,182,0.03), #fff); }
+    .gender-male { border-right: 5px solid #60a5fa; background: linear-gradient(to left, rgba(96,165,250,0.03), #fff); }
+
     .lead-header {
       display: flex;
       justify-content: space-between;
@@ -247,6 +233,20 @@
       color: var(--text-main);
     }
     .next-action-box b { color: var(--primary); }
+    
+    .last-note-box {
+      background: #f1f5f9;
+      border-right: 3px solid #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      margin-top: 14px;
+      margin-bottom: 14px;
+      display: flex;
+      gap: 10px;
+    }
+    .last-note-box i { color: var(--text-muted); font-size: 1.1rem; }
 
     /* Actions Grid */
     .actions-grid {
@@ -484,8 +484,8 @@
         <label class="form-label">نتيجة التواصل:</label>
         <select id="modalResultSelect" class="form-control">
           <option value="">-- اختر النتيجة --</option>
-          <option value="لا يوجد رد (NRP)">لا يوجد رد (NRP)</option>
-          <option value="مهتم / قيد التفكير">مهتم / قيد التفكير</option>
+          <option value="لا يوجد رد">لا يوجد رد</option>
+          <option value="مهتم">مهتم</option>
           <option value="وعد بالسداد">وعد بالسداد</option>
           <option value="غير مهتم">غير مهتم</option>
           <option value="رقم خاطئ">رقم خاطئ</option>
@@ -531,16 +531,14 @@
         const data = await res.json();
         const today = new Date().toISOString().split('T')[0];
 
-        allLeads = data.leads.filter(l => l.Statut_CRM !== 'مسدد' && !String(l.Statut_CRM).includes('Payé'));
+        allLeads = data.leads || [];
 
         // Categorize leads
         allLeads.forEach(lead => {
-          // Fallback missing values
           const status = (lead.Statut_CRM || '').toLowerCase();
           const nextDate = lead.Date_Prochaine_Action || '';
           
-          
-          if (status === 'مسدد' || status.includes('payé') || status.includes('تم السداد')) {
+          if (status === 'مسدد' || status.includes('payé') || status.includes('تم السداد') || status.includes('paye')) {
             lead._category = 'paye';
           } else if (status === 'nouveau' || status === 'جديد' || !status) {
             lead._category = 'nouveau';
@@ -551,19 +549,18 @@
           } else {
             lead._category = 'relance';
           }
-
         });
 
-        
         // Populate agents
         const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))].sort();
         const select = document.getElementById('agentSelect');
         const currentVal = select.value;
         select.innerHTML = '<option value="all">👥 جميع الوكلاء</option>' + uniqueAgents.map(a => `<option value="${a}">${a}</option>`).join('');
         if (uniqueAgents.includes(currentVal)) select.value = currentVal;
-
+        
         filterData();
       } catch (err) {
+        console.error(err);
         document.getElementById('leadsList').innerHTML = '<div class="loader" style="color:var(--danger)">❌ خطأ في الاتصال بالخادم</div>';
       }
     }
@@ -594,7 +591,7 @@
       }
 
       // Update counters
-      const stats = { retard: 0, aujourdhui: 0, nouveau: 0, relance: 0 };
+      const stats = { retard: 0, aujourdhui: 0, nouveau: 0, relance: 0, paye: 0 };
       filtered.forEach(l => { if (stats[l._category] !== undefined) stats[l._category]++; });
 
       document.getElementById('count-retard').textContent = stats.retard;
@@ -633,15 +630,7 @@
         
         let waLink = `https://wa.me/${cleanPhone}`;
 
-        let statusBadge = '';
-        if (l._category === 'retard') statusBadge = '<span class="badge-status badge-retard">⏰ متأخر</span>';
-        else if (l._category === 'aujourdhui') statusBadge = '<span class="badge-status badge-aujourdhui">📅 اليوم</span>';
-        else if (l._category === 'nouveau') statusBadge = '<span class="badge-status badge-nouveau">⭐ جديد</span>';
-        else statusBadge = '<span class="badge-status badge-relance">🔄 قيد المتابعة</span>';
-
-        const genderClass = l.Genre === 'female' ? 'gender-female' : 'gender-male';
-        
-        let waLink = `https://wa.me/${cleanPhone}`;
+        const genderClass = l.Genre === 'female' || l.Genre === 'أنثى' ? 'gender-female' : 'gender-male';
 
         let statusBadge = '';
         if (l._category === 'retard') statusBadge = '<span class="badge-status badge-retard">⏰ متأخر</span>';
@@ -698,10 +687,6 @@
           lead.Dernier_Contact_Resultat = payload.resultat;
           lead.Prochaine_Action = payload.prochaine_action;
           lead.Date_Prochaine_Action = payload.date_prochaine;
-          // Optimistic UI update
-          if (payload.statut === 'مسدد') {
-            allLeads = allLeads.filter(l => String(l.ID_Lead) !== String(leadId)); // Remove from view
-          }
         }
 
         filterData();
@@ -723,17 +708,17 @@
     async function logWhatsApp(leadId) {
       const today = new Date().toISOString().split('T')[0];
       await updateLeadAPI(leadId, {
-        statut: 'متابعة',
-        resultat: 'تم إرسال واتساب',
-        prochaine_action: 'انتظار رد واتساب',
+        statut: 'للمتابعة',
+        resultat: 'واتساب مرسل',
+        prochaine_action: 'انتظار رد',
         date_prochaine: today,
-        note: 'رسالة واتساب مرسلة'
+        note: 'تم إرسال رسالة واتساب'
       });
-      showToast('تم تسجيل رسالة الواتساب');
+      showToast('تم تسجيل إرسال الواتساب');
     }
     
     async function logCallAttempt(leadId) {
-      // Just visually logging that a call was initiated. Real outcome will be via modal.
+      // Visual only
     }
 
     async function markPaid() {
@@ -742,7 +727,7 @@
 
       await updateLeadAPI(activeLeadId, {
         statut: 'مسدد',
-        resultat: 'تأكيد الدفع',
+        resultat: 'تم تأكيد الدفع',
         prochaine_action: 'مغلق',
         date_prochaine: '',
         note: 'تم تأكيد الدفع والاشتراك بنجاح'
@@ -767,19 +752,19 @@
         return;
       }
 
-      let status = 'متابعة';
-      let nextAction = 'متابعة';
+      let status = 'للمتابعة';
+      let nextAction = 'معاودة الاتصال';
       
       if (resultat === 'غير مهتم' || resultat === 'رقم خاطئ') {
         status = 'مغلق';
         nextAction = 'لا شيء';
-      } else if (resultat === 'لا يوجد رد (NRP)') {
+      } else if (resultat === 'لا يوجد رد') {
         nextAction = 'معاودة الاتصال';
       }
 
       await updateLeadAPI(activeLeadId, {
         statut: status,
-        resultat: resultat || 'متابعة',
+        resultat: resultat || 'للمتابعة',
         prochaine_action: nextAction,
         date_prochaine: nextDate,
         note: note || resultat
@@ -799,16 +784,13 @@
         document.getElementById('modalLeadName').textContent = `تسجيل متابعة: ${lead.Nom || ''}`;
       }
       
-      // Reset form
       document.getElementById('modalResultSelect').value = '';
       document.getElementById('modalNoteInput').value = '';
       
-      // Default next date = tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       document.getElementById('modalNextDate').value = tomorrow.toISOString().split('T')[0];
 
-      // Load History
       const timeline = document.getElementById('modalTimeline');
       timeline.innerHTML = '<div class="loader" style="padding:10px;"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل السجل...</div>';
 
