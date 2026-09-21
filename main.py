@@ -786,7 +786,7 @@ async def api_admin_gateway_home_stats(request: web.Request):
             finances = {"paid": 0, "unpaid": 0}
             for r in payments_raw:
                 ps = str(r['payment_status'] or '').upper().strip()
-                if ps in ['PAID', 'PAYE', 'مسدد']:
+                if ps in ['PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي'] or ('مسدد' in ps and 'غير مسدد' not in ps):
                     finances["paid"] += r['cnt']
                 else:
                     finances["unpaid"] += r['cnt']
@@ -828,7 +828,7 @@ async def api_admin_gateway_kpi(request: web.Request):
             db.row_factory = aiosqlite.Row
             
             # 1. Total paid
-            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE payment_status = 'PAID' OR payment_status = 'PAYE'") as cur:
+            async with db.execute("SELECT COUNT(*) as cnt FROM academy_students WHERE (UPPER(payment_status) IN ('PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي') OR payment_status LIKE '%مسدد%' AND payment_status NOT LIKE '%غير مسدد%')") as cur:
                 total_paid = (await cur.fetchone())['cnt']
                 
             # 2. Email funnel
@@ -873,7 +873,7 @@ async def api_admin_gateway_kpi(request: web.Request):
                 SELECT student_id, first_name, last_name, email, phone, email_sent, email_sent_at, email_opened_at, email_clicked_at, 
                        whatsapp_sent, whatsapp_sent_at, whatsapp_clicked_at, created_at 
                 FROM academy_students 
-                WHERE (payment_status = 'PAID' OR payment_status = 'PAYE') 
+                WHERE ((UPPER(payment_status) IN ('PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي') OR payment_status LIKE '%مسدد%' AND payment_status NOT LIKE '%غير مسدد%')) 
                   AND (telegram_id IS NULL OR telegram_id = '')
                 ORDER BY created_at DESC
             """) as cur:
@@ -1053,7 +1053,7 @@ async def api_admin_gateway_stats(request: web.Request):
     from config import DATABASE_PATH
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
-            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE payment_status = 'PAID' AND (excluded = 0 OR excluded IS NULL)") as cur:
+            async with db.execute("SELECT COUNT(*) FROM academy_students WHERE (UPPER(payment_status) IN ('PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي') OR payment_status LIKE '%مسدد%' AND payment_status NOT LIKE '%غير مسدد%') AND (excluded = 0 OR excluded IS NULL)") as cur:
                 total_paid = (await cur.fetchone())[0]
             if total_paid == 0:
                 async with db.execute("SELECT COUNT(*) FROM academy_students WHERE excluded = 0 OR excluded IS NULL") as cur:
@@ -1352,7 +1352,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             
             # --- GLOBAL COUNTS ---
             # 1. Absent: In academy_students, no telegram_id
-            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE (telegram_id IS NULL OR telegram_id = 0) AND (excluded = 0 OR excluded IS NULL) AND UPPER(payment_status) IN ('PAID', 'PAYE')") as cur:
+            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE (telegram_id IS NULL OR telegram_id = 0) AND (excluded = 0 OR excluded IS NULL) AND (UPPER(payment_status) IN ('PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي') OR payment_status LIKE '%مسدد%' AND payment_status NOT LIKE '%غير مسدد%')") as cur:
                 counts['absent'] = (await cur.fetchone())['c']
                 
             # For ghost states, we rely on users not linked, or linked but stuck.
@@ -1414,7 +1414,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     base_select += f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%')"
                 base_select += " ORDER BY g.timestamp DESC LIMIT 500"
             elif status == 'absent':
-                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0) AND (s.excluded = 0 OR s.excluded IS NULL) AND UPPER(s.payment_status) IN ('PAID', 'PAYE')"
+                base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0) AND (s.excluded = 0 OR s.excluded IS NULL) AND (UPPER(s.payment_status) IN ('PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي') OR s.payment_status LIKE '%مسدد%' AND s.payment_status NOT LIKE '%غير مسدد%')"
                 # Apply filters
                 if gender and gender != 'all':
                     base_select += f" AND UPPER(s.gender) LIKE '{gender}%'"
