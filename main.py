@@ -1352,7 +1352,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             
             # --- GLOBAL COUNTS ---
             # 1. Absent: In academy_students, no telegram_id
-            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE telegram_id IS NULL OR telegram_id = 0") as cur:
+            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE (telegram_id IS NULL OR telegram_id = 0) AND (excluded = 0 OR excluded IS NULL)") as cur:
                 counts['absent'] = (await cur.fetchone())['c']
                 
             # For ghost states, we rely on users not linked, or linked but stuck.
