@@ -1854,94 +1854,2022 @@ window.setSalesFunnel = function(val, el) {
                     
                     <!-- 2. Controls Row: Mode Toggle & View Toggles -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        
-                        <!-- 3x2 Grid for Funnel Steps -->
-                        <div style="display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:6px; width:100%; align-items:center;">
-                            <!-- ROW 1 -->
+                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; width:100%;">
                             <button id="btn-funnel-absent" onclick="switchGhostMode('absent')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🔴</span> <span>لم يبدأوا</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
                             </button>
-                            
-                            <div style="color:var(--text2); opacity:0.5; font-size:1.2rem;">➔</div>
-                            
                             <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🔵</span> <span>زوار البوت</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
                             </button>
-                            
-                            <div style="color:var(--text2); opacity:0.5; font-size:1.2rem;">➔</div>
-                            
                             <button id="btn-funnel-form" onclick="switchGhostMode('form')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟣</span> <span>فتحوا النموذج</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-form">0</span>)</span>
                             </button>
-                            
-                            <!-- ROW 2 -->
                             <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟠</span> <span>صالة الانتظار</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
                             </button>
-                            
-                            <div style="color:var(--text2); opacity:0.5; font-size:1.2rem;">➔</div>
-                            
                             <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
                             </button>
-                            
-                            <div style="color:var(--text2); opacity:0.5; font-size:1.2rem;">➔</div>
-                            
                             <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="cursor:pointer; font-weight:bold; font-size:0.75rem; padding:8px 4px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
                                 <div style="display:flex; align-items:center; gap:4px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
                                 <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
                             </button>
                         </div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
+                            </button>
+                            <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🔵</span> <span>زوار البوت</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
+                            </button>
+                            <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🟠</span> <span>صالة الانتظار</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
+                            </button>
+                            <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
+                            </button>
+                            <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="grid-column: 1 / -1; cursor:pointer; font-weight:bold; font-size:0.9rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
+                            </button>
+                        </div>
                         
-                        <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden; width:100%;">
-                            <button onclick="setGhostView('list')" id="g-view-list" style="flex:1; padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="القائمة">📋</button>
-                            <button onclick="setGhostView('grid')" id="g-view-grid" style="flex:1; padding:6px 12px; border:none; background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="الشبكة">🔲</button>
+                        <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                            <button onclick="setGhostView('list')"" id="g-view-list" style="padding:6px 12px; border:none; background:var(--primary); color:white; cursor:pointer; opacity:1;" title="قائمة">📝</button>
+                            <button onclick="setGhostView('table')" id="g-view-table" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="جدول">📊</button>
+                            <button onclick="setGhostView('funnel')" id="g-view-funnel" style="padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; opacity:0.6;" title="مسار التحويل">🚀</button>
                         </div>
                     </div>
                 </div>
-                
-                <div style="display:flex; flex-direction:column; gap:8px;">
+
+                <!-- 3. Chips Filters (Clean and spaced) -->
+                <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
                     <!-- Gender Chips -->
                     <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-gender">
                         <span style="font-size:0.8rem; color:var(--text2); font-weight:bold; margin-left:4px;">الجنس:</span>
-                        <button class="chip active" onclick="setGhostGender('all', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer; white-space:nowrap;">👥</button>
-                        <button class="chip" onclick="setGhostGender('H', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; white-space:nowrap;">👦</button>
-                        <button class="chip" onclick="setGhostGender('F', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; white-space:nowrap;">👧</button>
+                        <button class="chip active" onclick="setGhostGender('all', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5; white-space:nowrap;">👥</button>
+                        <button class="chip" onclick="setGhostGender('H', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">👦</button>
+                        <button class="chip" onclick="setGhostGender('F', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">👧</button>
                     </div>
                     <!-- Level Chips -->
                     <div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:4px;" id="ghost-chips-level">
                         <span style="font-size:0.8rem; color:var(--text2); font-weight:bold; margin-left:4px;">المستوى:</span>
-                        <button class="chip active" onclick="setGhostLevel('all', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer; white-space:nowrap;">📚</button>
-                        <button class="chip" onclick="setGhostLevel('1', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; white-space:nowrap;">1</button>
-                        <button class="chip" onclick="setGhostLevel('2', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; white-space:nowrap;">2</button>
-                        <button class="chip" onclick="setGhostLevel('3', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; white-space:nowrap;">3</button>
-                        <button class="chip" onclick="setGhostLevel('4', this)" style="padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:bold; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; white-space:nowrap;">4</button>
+                        <button class="chip active" onclick="setGhostLevel('all', this)" style="cursor:pointer; font-size:1.1rem; padding:4px 14px; border-radius:20px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.1); color:#4f46e5; white-space:nowrap;">📚</button>
+                        <button class="chip" onclick="setGhostLevel('1', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">1</button>
+                        <button class="chip" onclick="setGhostLevel('2', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">2</button>
+                        <button class="chip" onclick="setGhostLevel('3', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">3</button>
+                        <button class="chip" onclick="setGhostLevel('4', this)" style="cursor:pointer; font-size:1rem; padding:4px 14px; font-weight:bold; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text2); white-space:nowrap;">4</button>
                     </div>
                 </div>
             </div>
-            
-            <div id="ghost-list-container" style="flex:1; overflow-y:auto; padding:15px; position:relative; z-index:1;">
-                <div id="ghost-list">
-                    <div style="text-align:center; padding:40px; color:var(--text2);">
-                        <div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div>
-                        <div style="margin-top:8px;">جاري تحميل الزوار...</div>
+            <!-- List -->
+        <div id="ghost-list" style="flex:1; overflow-y:auto; padding:15px;">
+            <div style="text-align:center; padding:40px; color:var(--text2);">
+                <div style="font-size:3rem; margin-bottom:10px;">👻</div>
+                <div>اضغط على "تحديث" لتحميل القائمة</div>
+            </div>
+        </div>
+    </div>
+
+        <div id="tab-settings" class="tab-content" style="padding:0; width:100%; max-width:100%; box-sizing:border-box;">
+        <!-- Barre d'onglets supérieure style 'Carte de l'étudiant' -->
+        <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:4px; padding:6px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:15;">
+            <div class="mtab active" onclick="switchSettingsTab('s-general', this)" id="settab-general" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">⚙️</span>
+                <span style="font-size:0.75rem; font-weight:bold;">عام</span>
+            </div>
+            <div class="mtab" onclick="switchSettingsTab('s-academy', this)" id="settab-academy" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">🎓</span>
+                <span style="font-size:0.75rem; font-weight:bold;">الأكاديمية</span>
+            </div>
+            <div class="mtab" onclick="switchSettingsTab('s-telegram', this)" id="settab-telegram" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">✈️</span>
+                <span style="font-size:0.75rem; font-weight:bold;">تيليجرام (الروابط)</span>
+            </div>
+            <div class="mtab" onclick="switchSettingsTab('s-history', this)" id="settab-history" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">🕒</span>
+                <span style="font-size:0.75rem; font-weight:bold;">السجل</span>
+            </div>
+        </div>
+
+        <div style="padding:16px 14px 40px; max-width:1100px; margin:0 auto; box-sizing:border-box;">
+
+            <!-- ==================== 1. TAB: عام (GENERAL) ==================== -->
+            <div id="s-general" class="settings-pane" style="display:block;">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <!-- Carte 1: نمط ومظهر المنظومة -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                            <span style="font-size:1.3rem;">🎭</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">المظهر والوضع البصري</h3>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:16px;">
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('dark')" style="border:2px solid var(--accent); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#0d1117; color:#f0f6fc;">
+                                <div style="font-size:1.3rem; margin-bottom:4px;">🌙</div>
+                                <div style="font-size:0.8rem; font-weight:bold;">الوضع الليلي</div>
+                            </div>
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('cpi')" style="border:1px solid var(--border); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#0a0f1d; color:#f3f4f6;">
+                                <div style="font-size:1.3rem; margin-bottom:4px;">🌌</div>
+                                <div style="font-size:0.8rem; font-weight:bold;">الأزرق الملكي</div>
+                            </div>
+                            <div class="theme-choice-card" onclick="applyDashboardTheme('light')" style="border:1px solid var(--border); border-radius:12px; padding:12px 6px; text-align:center; cursor:pointer; background:#ffffff; color:#111827;">
+                                <div style="font-size:1.3rem; margin-bottom:4px;">☀️</div>
+                                <div style="font-size:0.8rem; font-weight:bold;">الوضع النهاري</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                            <div>
+                                <div style="font-size:0.85rem; font-weight:bold; color:var(--text1);">عرض النسب العائلي أولاً</div>
+                                <div style="font-size:0.75rem; color:var(--text2);">تقديم الاسم العائلي على الاسم الشخصي في القوائم</div>
+                            </div>
+                            <input type="checkbox" id="setting-force-name" style="width:20px; height:20px; cursor:pointer; accent-color:var(--accent);" onchange="toggleForceName(this)">
+                        </div>
+                    </div>
+
+                    <!-- Carte 2: Albaji API Key -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">🔐</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">بوابة الربط بالرسائل والتنبيهات (WhatsApp & SMS)</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px; line-height:1.5;">الرمز السري المشفر المستخدم لتأكيد الحسابات وإرسال الإشعارات للطلاب.</div>
+                        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                            <input type="password" id="albaji-api-key" placeholder="••••••••••••••••" style="flex:1; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:monospace; font-size:0.9rem;">
+                            <button type="button" class="btn" onclick="toggleAlbajiKeyVisibility()" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:10px 14px; border-radius:10px; cursor:pointer;">
+                                <span id="albaji-eye-icon">👁️</span>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveAlbajiKey()" style="width:100%; padding:10px; border-radius:10px; font-weight:bold; font-size:0.88rem; background:var(--accent);">
+                            💾 حفظ رمز الربط
+                        </button>
+                    </div>
+
+                    <!-- Carte 3: إضافة طالب يدوياً -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+                            <span style="font-size:1.3rem;">👤</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">إضافة طالب جديد يدوياً</h3>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="manual-student-fn" placeholder="الاسم الشخصي" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <input type="text" id="manual-student-ln" placeholder="النسب (العائلي)" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            </div>
+                            <input type="text" id="manual-student-id" placeholder="رقم الطالب (مسار - ex: 123426)" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            <input type="email" id="manual-student-email" placeholder="البريد الإلكتروني (مطلوب)" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="manual-student-dob" placeholder="تاريخ الميلاد (10/10/2000)" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <input type="text" id="manual-student-phone" placeholder="الهاتف (اختياري)" style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                            </div>
+                            <button class="btn btn-primary" onclick="addStudentManually()" style="margin-top:6px; padding:11px; border-radius:10px; font-weight:bold; font-size:0.9rem; background:#10b981; border:none; cursor:pointer;">
+                                ✅ تسجيل الطالب في المنظومة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 2. TAB: الأكاديمية (ACADEMY) ==================== -->
+            <div id="s-academy" class="settings-pane" style="display:none;">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <!-- تنسيق رقم مسار -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">🏷️</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">تنسيق رقم مسار وتمييز الدفعات</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">فصل سنة التسجيل وتلوينها لتمييز المستويات فوراً بالعين المجردة.</div>
+
+                        <!-- Live Preview -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px; text-align:center;">
+                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:6px;">معاينة حية ومباشرة لرقم الطالب:</div>
+                            <div id="massar-live-preview" style="font-family:monospace; font-size:1.3rem; font-weight:800; padding:6px 14px; background:var(--surface); display:inline-flex; border-radius:8px; border:1px solid var(--border);">
+                                1234-26
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">الفاصل بين الرقم والسنة:</label>
+                            <select id="pref-id-separator" onchange="saveIdPrefs()" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <option value="dash">تيرة فاصلة (1234-26)</option>
+                                <option value="parentheses">بين قوسين 1234(26)</option>
+                                <option value="space">مسافة فارغة (1234 26)</option>
+                                <option value="none">بدون فاصل (123426)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">ألوان الدفعات حسب السنة:</label>
+                            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                                <input type="text" id="pref-id-year" placeholder="السنة (ex: 26)" maxlength="2" style="width:80px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); text-align:center; font-weight:bold;">
+                                <input type="color" id="pref-id-color" value="#8b0000" style="padding:0; border:none; width:42px; height:38px; border-radius:8px; cursor:pointer; background:transparent;">
+                                <button class="btn btn-primary" onclick="addYearColor()" style="flex:1; padding:8px 14px; border-radius:10px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
+                                    ➕ حفظ لون الدفعة
+                                </button>
+                            </div>
+                            <div id="pref-color-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- استيراد وتصدير قاعدة الطلاب -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                            <span style="font-size:1.3rem;">📊</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">استيراد وتصدير ملفات الطلاب</h3>
+                        </div>
+
+                        <!-- Dropzone -->
+                        <div id="upload-drop-zone" style="border:2px dashed rgba(124, 58, 237, 0.4); background:rgba(124, 58, 237, 0.04); border-radius:12px; padding:24px 16px; text-align:center; cursor:pointer; margin-bottom:14px;" onclick="document.getElementById('excel-file-input').click()">
+                            <div style="font-size:2.2rem; margin-bottom:6px;">📥</div>
+                            <div style="font-weight:bold; font-size:0.95rem; color:var(--text1); margin-bottom:4px;">اسحب ملف الطلاب هنا أو اضغط للاختيار</div>
+                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:12px;">يدعم ملفات مسار الرسمية، ملفات Excel المنسقة وملفات CSV</div>
+                            <button class="btn btn-primary" type="button" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
+                                📂 استعراض الملف
+                            </button>
+                            <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
+                        </div>
+
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <a href="/api/admin/gateway/export_template" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16, 185, 129, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.82rem; text-decoration:none;">
+                                📥 تحميل النموذج الفارغ
+                            </a>
+                            <a href="/api/admin/gateway/export_all" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(59, 130, 246, 0.12); color:#3b82f6; border:1px solid rgba(59, 130, 246, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.82rem; text-decoration:none;">
+                                💾 تصدير كافة الطلاب
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- مزامنة Google Sheets -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">☁️</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">مزامنة جداول Google Sheets</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">المزامنة الحية والتصدير المباشر لجدول المتابعة الخارجي.</div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <button id="btn-sync-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#059669; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="syncGoogleSheets()">
+                                🔄 مزامنة من السحابة
+                            </button>
+                            <button id="btn-export-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#2563eb; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="exportGoogleSheets()">
+                                📤 تصدير إلى السحابة
+                            </button>
+                        </div>
+                        <button id="btn-purge-sheets" class="btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(239, 68, 68, 0.08); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.25); padding:8px; border-radius:8px; font-weight:bold; font-size:0.78rem; cursor:pointer;" onclick="purgeGoogleSheets()">
+                            🗑️ تفريغ جدول Google Sheets فقط
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 3. TAB: تيليجرام (TELEGRAM & 8 DOSSIERS) ==================== -->
+            <div id="s-telegram" class="settings-pane" style="display:none;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.4rem;">📁</span>
+                            <div>
+                                <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">إدارة روابط مجلدات الأكاديمية (8 مجلدات)</h3>
+                                <div style="font-size:0.78rem; color:var(--text2);">الروابط التي يرسلها البوت للطالب تلقائياً فور نجاح عملية الربط حسب جنسه ومستواه الدراسي</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveFolderLinks()" style="padding:8px 18px; border-radius:8px; font-weight:bold; font-size:0.85rem; background:var(--accent); display:flex; align-items:center; gap:6px;">
+                            💾 حفظ كافة الروابط
+                        </button>
+                    </div>
+
+                    <!-- Notice pédagogique -->
+                    <div style="background:rgba(59, 130, 246, 0.08); border:1px solid rgba(59, 130, 246, 0.25); border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:0.8rem; color:var(--text1); line-height:1.6;">
+                        💡 <b>طريقة العمل :</b> عندما يكمل الطالب إدخال بياناته بنجاح، يقوم البوت فوراً بقراءة مستواه (س1 إلى س4) وجنسه (رجل أو امرأة)، ثم يعطيه الزر المباشر لإضافة مجلد قنواته ومجموعاته الخاصة على تليجرام بنقرة واحدة.
+                    </div>
+
+                    <!-- 2 Colonnes : Hommes et Femmes -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(310px, 1fr)); gap:18px;">
+                        
+                        <!-- القسم 1: مجلدات الطلاب (ذكور / رجال) -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid #3b82f6;">
+                                <span style="font-size:1.3rem;">👨</span>
+                                <h4 style="margin:0; font-size:1rem; font-weight:800; color:#3b82f6;">مجلدات الطلاب (الرجال / الذكور)</h4>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">1️⃣ السنة الأولى (رجال):</label>
+                                    <input type="text" id="link_homme_1" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">2️⃣ السنة الثانية (رجال):</label>
+                                    <input type="text" id="link_homme_2" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">3️⃣ السنة الثالثة (رجال):</label>
+                                    <input type="text" id="link_homme_3" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">4️⃣ السنة الرابعة (رجال):</label>
+                                    <input type="text" id="link_homme_4" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- القسم 2: مجلدات الطالبات (إناث / نساء) -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid #ec4899;">
+                                <span style="font-size:1.3rem;">👩</span>
+                                <h4 style="margin:0; font-size:1rem; font-weight:800; color:#ec4899;">مجلدات الطالبات (النساء / الإناث)</h4>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">1️⃣ السنة الأولى (نساء):</label>
+                                    <input type="text" id="link_femme_1" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">2️⃣ السنة الثانية (نساء):</label>
+                                    <input type="text" id="link_femme_2" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">3️⃣ السنة الثالثة (نساء):</label>
+                                    <input type="text" id="link_femme_3" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:bold; color:var(--text1); display:block; margin-bottom:4px;">4️⃣ السنة الرابعة (نساء):</label>
+                                    <input type="text" id="link_femme_4" placeholder="https://t.me/addlist/..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text1); font-family:monospace; font-size:0.82rem;" dir="ltr">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Bouton de sauvegarde global -->
+                    <div style="margin-top:18px; text-align:center;">
+                        <button class="btn btn-primary" onclick="saveFolderLinks()" style="padding:12px 30px; border-radius:10px; font-weight:bold; font-size:0.95rem; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border:none; cursor:pointer; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);">
+                            💾 حفظ وتفعيل جميع روابط تليجرام
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 4. TAB: السجل (HISTORY & AUDIT) ==================== -->
+            <div id="s-history" class="settings-pane" style="display:none;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text1);">سجل عمليات الاستيراد والمزامنة</h3>
+                            <div style="font-size:0.78rem; color:var(--text2); margin-top:2px;">تتبع تفصيلي لكل ملف تم رفعه في المنظومة.</div>
+                        </div>
+                        <button class="btn" onclick="loadImportHistory()" style="background:var(--bg); border:1px solid var(--border); color:var(--text1); padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:bold; cursor:pointer;">
+                            🔄 تحديث
+                        </button>
+                    </div>
+
+                    <div style="overflow-x:auto; border:1px solid var(--border); border-radius:10px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; background:var(--bg); text-align:right;">
+                            <thead>
+                                <tr style="background:rgba(124, 58, 237, 0.08); border-bottom:2px solid var(--border);">
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">المعرف</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">تاريخ وتوقيت العملية</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">الطلاب</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">اسم الملف</th>
+                                    <th style="padding:10px 14px; font-weight:800; color:var(--text1);">المسؤول</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-history-tbody">
+                                <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text2);">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- TAB: إحصاء -->
+    <div id="tab-stats" class="tab-content">
+        <div style="padding:12px 12px 100px;">
+            <!-- Stats Notice / Alignment with Excel -->
+            <div id="stats-excel-notice" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:10px 14px; margin-bottom:14px; font-size:0.8rem; color:var(--text1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.1rem;">📊</span>
+                    <span><b>إحصائيات مطابقة لملف الإكسل:</b> تُعرض جميع البيانات للطلاب النشطين المعتمدين مع استبعاد الحسابات التجريبية.</span>
+                </div>
+                <span id="stats-active-students-badge" style="background:rgba(16,185,129,0.18); color:#059669; font-weight:800; padding:3px 10px; border-radius:8px; font-size:0.78rem;">1,504 طالب معتمد</span>
+            </div>
+
+            <!-- Stats Control Bar: Period + Sub-View Toggle -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                <!-- Period Selector -->
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:0.78rem; color:var(--text2); font-weight:700; margin-left:4px;">📅 الفترة:</span>
+                    <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border);">
+                        <div class="pill-btn pill-active" id="stats-0"  onclick="loadStats(0,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">الكل (الإكسل)</div>
+                        <div class="pill-btn" id="stats-90" onclick="loadStats(90, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">90 يوم</div>
+                        <div class="pill-btn" id="stats-30" onclick="loadStats(30, this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">30 يوم</div>
+                        <div class="pill-btn" id="stats-7"  onclick="loadStats(7,  this)" style="padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-left:1px solid var(--border);">7 أيام</div>
+                    </div>
+                </div>
+
+                <!-- Sub-View Toggle: Days vs Hours -->
+                <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:var(--surface);">
+                    <button type="button" id="stats-view-days-btn" onclick="switchStatsSubView('days')" style="background:var(--accent); color:white; border:none; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        📅 حسب الأيام
+                    </button>
+                    <button type="button" id="stats-view-hours-btn" onclick="switchStatsSubView('hours')" style="background:transparent; color:var(--text2); border:none; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; border-right:1px solid var(--border); display:flex; align-items:center; gap:5px;">
+                        ⏰ توزيع الساعات
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div id="stats-kpi-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">👥 إجمالي المسجلين</div>
+                    <div id="kpi-total" style="font-size:1.6rem; font-weight:900; color:var(--text1);">—</div>
+                </div>
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">✅ معدل الدفع</div>
+                    <div id="kpi-paid-pct" style="font-size:1.6rem; font-weight:900; color:#16a34a;">—</div>
+                    <div style="height:4px; border-radius:4px; background:var(--border); margin-top:6px; overflow:hidden;">
+                        <div id="kpi-paid-bar" style="height:100%; background:#16a34a; width:0%; border-radius:4px; transition:width 0.6s;"></div>
+                    </div>
+                </div>
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">👩 نساء / 👨 رجال</div>
+                    <div style="display:flex; align-items:baseline; gap:6px; margin-top:4px;">
+                        <span id="kpi-women" style="font-size:1.4rem; font-weight:900; color:#ec4899;">—</span>
+                        <span style="font-size:0.7rem; color:var(--text2);">vs</span>
+                        <span id="kpi-men" style="font-size:1.4rem; font-weight:900; color:#3b82f6;">—</span>
+                    </div>
+                    <div style="height:4px; border-radius:4px; background:var(--border); margin-top:6px; overflow:hidden; display:flex;">
+                        <div id="kpi-women-bar" style="height:100%; background:#ec4899; width:50%; transition:width 0.6s;"></div>
+                        <div id="kpi-men-bar"   style="height:100%; background:#3b82f6; width:50%; transition:width 0.6s;"></div>
+                    </div>
+                </div>
+                <div style="background:var(--card); border-radius:14px; padding:14px 12px; border:1px solid var(--border);">
+                    <div style="font-size:0.7rem; color:var(--text2); font-weight:600; margin-bottom:4px;">🔴 غير مسددين</div>
+                    <div style="display:flex; align-items:baseline; gap:6px;">
+                        <span id="kpi-unpaid" style="font-size:1.6rem; font-weight:900; color:#ef4444;">—</span>
+                        <span id="kpi-unpaid-pct" style="font-size:0.8rem; color:var(--text2);"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 1: DAYS (Default) -->
+            <div id="stats-subview-days">
+                <!-- Stacked Bar Chart -->
+                <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>📊 تطور التسجيلات <span style="font-size:0.65rem; color:var(--text2); font-weight:500;">(انقر على يوم لتفاصيله)</span></span>
+                        <div style="display:flex; gap:10px; font-size:0.7rem; font-weight:600;">
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#16a34a;display:inline-block;"></span> مسدد</span>
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span> غير مسدد</span>
+                        </div>
+                    </div>
+                    <div id="daily-chart-area" style="min-height:140px; display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:24px;">
+                        <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Table (simplified) -->
+                <div style="background:var(--card); border-radius:16px; overflow:hidden; margin-bottom:12px;">
+                    <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
+                        📋 التفاصيل اليومية
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table id="daily-stats-table" style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                            <thead>
+                                <tr style="background:rgba(10,132,255,0.07); text-align:center; color:var(--text2); font-weight:700; user-select:none;">
+                                    <th style="padding:10px 6px; width:36px; text-align:center; color:var(--text2);">#</th>
+                                    <th onclick="sortDailyStats('date')" style="padding:10px 10px; text-align:right; white-space:nowrap; cursor:pointer;" title="اضغط للترتيب">📅 التاريخ <span id="sort-icon-daily-date">⇅</span></th>
+                                    <th onclick="sortDailyStats('total')" style="padding:10px 8px; cursor:pointer;" title="اضغط للترتيب">👥 الكل <span id="sort-icon-daily-total">⇅</span></th>
+                                    <th onclick="sortDailyStats('paid')" style="padding:10px 8px; color:#16a34a; cursor:pointer;" title="اضغط للترتيب">✅ مسدد <span id="sort-icon-daily-paid">⇅</span></th>
+                                    <th onclick="sortDailyStats('unpaid')" style="padding:10px 8px; color:#ef4444; cursor:pointer;" title="اضغط للترتيب">❌ غ.مسدد <span id="sort-icon-daily-unpaid">⇅</span></th>
+                                    <th onclick="sortDailyStats('women')" style="padding:10px 8px; color:#ec4899; cursor:pointer;" title="اضغط للترتيب">👩 نساء <span id="sort-icon-daily-women">⇅</span></th>
+                                    <th onclick="sortDailyStats('men')" style="padding:10px 8px; color:#3b82f6; cursor:pointer;" title="اضغط للترتيب">👨 رجال <span id="sort-icon-daily-men">⇅</span></th>
+                                    <th onclick="sortDailyStats('pct')" style="padding:10px 10px; cursor:pointer;" title="اضغط للترتيب">📈 نسبة <span id="sort-icon-daily-pct">⇅</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-stats-body">
+                                <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                            </tbody>
+                            <tfoot id="daily-stats-foot" style="display:none;"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: HOURLY AGGREGATE (Overall slots across chosen period) -->
+            <div id="stats-subview-hours" style="display:none;">
+                <!-- Top 3 Slots Summary Cards -->
+                <div id="hourly-top3-cards" style="margin-bottom:16px;"></div>
+
+                <!-- 24-Hour Distribution Chart -->
+                <div style="background:var(--card); border-radius:16px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:0.82rem; font-weight:800; color:var(--text1); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>⏰ الرسم البياني للتسجيلات حسب ساعات اليوم (00:00 - 23:00)</span>
+                        <span id="hourly-chart-period-badge" style="font-size:0.7rem; color:var(--accent); font-weight:700;"></span>
+                    </div>
+                    <div id="hourly-chart-area" style="min-height:140px; display:flex; align-items:flex-end; gap:3px; overflow-x:auto; padding-bottom:24px;">
+                        <div style="color:var(--text2); font-size:0.85rem; margin:auto;">جاري التحميل...</div>
+                    </div>
+                </div>
+
+                <!-- Detailed 24-Hour Table -->
+                <div style="background:var(--card); border-radius:16px; overflow:hidden; margin-bottom:12px;">
+                    <div style="padding:12px 14px; font-size:0.82rem; font-weight:800; color:var(--text1); border-bottom:1px solid var(--border);">
+                        📋 جدول الساعات الإجمالي (جميع أيام الفترة المختارة)
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.78rem;">
+                            <thead>
+                                <tr style="background:rgba(10,132,255,0.07); text-align:center; color:var(--text2); font-weight:700; user-select:none;">
+                                    <th style="padding:10px 6px; width:36px; text-align:center; color:var(--text2);">#</th>
+                                    <th onclick="sortHourlyStats('hour')" style="padding:10px 12px; text-align:right; cursor:pointer;" title="اضغط للترتيب">🕐 الساعة <span id="sort-icon-hourly-hour">⇅</span></th>
+                                    <th onclick="sortHourlyStats('total')" style="padding:10px 8px; cursor:pointer;" title="اضغط للترتيب">👥 إجمالي المسجلين <span id="sort-icon-hourly-total">⇅</span></th>
+                                    <th onclick="sortHourlyStats('paid')" style="padding:10px 8px; color:#16a34a; cursor:pointer;" title="اضغط للترتيب">✅ مسدد <span id="sort-icon-hourly-paid">⇅</span></th>
+                                    <th onclick="sortHourlyStats('unpaid')" style="padding:10px 8px; color:#ef4444; cursor:pointer;" title="اضغط للترتيب">❌ غ.مسدد <span id="sort-icon-hourly-unpaid">⇅</span></th>
+                                    <th onclick="sortHourlyStats('women')" style="padding:10px 8px; color:#ec4899; cursor:pointer;" title="اضغط للترتيب">👩 نساء <span id="sort-icon-hourly-women">⇅</span></th>
+                                    <th onclick="sortHourlyStats('men')" style="padding:10px 8px; color:#3b82f6; cursor:pointer;" title="اضغط للترتيب">👨 رجال <span id="sort-icon-hourly-men">⇅</span></th>
+                                    <th onclick="sortHourlyStats('total')" style="padding:10px 10px; cursor:pointer;" title="اضغط للترتيب">📊 الكثافة <span id="sort-icon-hourly-bar">⇅</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="hourly-stats-body">
+                                <tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text2);">جاري التحميل...</td></tr>
+                            </tbody>
+                            <tfoot id="hourly-stats-foot" style="display:none;"></tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <script>
+        <!-- DAY VIEW PANEL - FULL SCREEN -->
+        <div id="day-view-panel" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:1000; background:var(--bg); flex-direction:column;">
+            <!-- Header -->
+            <div style="flex-shrink:0; background:var(--card); padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--accent);">
+                <!-- In Arabic RTL: right side = next (newer), left side = previous (older) -->
+                <button onclick="navigateDay(1)" style="background:var(--surface); border:1px solid var(--border); color:var(--text1); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:1rem; font-weight:700;">السابق ▶</button>
+                <div style="text-align:center; flex:1; margin:0 8px;">
+                    <div id="day-view-title" style="font-size:1rem; font-weight:900; color:var(--text1);"></div>
+                    <div id="day-view-summary" style="font-size:0.72rem; color:var(--text2); margin-top:2px;"></div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button onclick="navigateDay(-1)" style="background:var(--surface); border:1px solid var(--border); color:var(--text1); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:1rem; font-weight:700;">◀ التالي</button>
+                    <button onclick="closeDayView()" style="background:#ef4444; border:none; color:white; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:700; font-size:1rem;">✕</button>
+                </div>
+            </div>
+            <!-- Scrollable body -->
+            <div id="day-view-body" style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px;"></div>
+        </div>
+    </div>
+
+<!-- Modal: Fiche Étudiant (Card) -->
+    <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';" style="padding:0; align-items:stretch; justify-content:stretch;">
+        <div class="modal" id="fiche-eleve-modal" style="width: 100%; max-width: none; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; margin: 0; border-radius: 0; padding: 0; overflow: hidden;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:6px 14px; min-height:0; flex-shrink:0; position:relative;">
+                <div style="position:absolute; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; pointer-events:none;">
+                    <span id="header-student-name" style="font-weight:900; font-size:1.05rem; color:white; background:#0a84ff; padding:5px 20px; border-radius:20px; white-space:nowrap;">📋 بطاقة الطالب</span>
+                    <span id="header-year-badge" style="font-weight:800; font-size:0.9rem; color:white; background:#ff9f0a; padding:5px 12px; border-radius:20px; white-space:nowrap; display:none;">🎓 -</span>
+                </div>
+                <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">✕</button>
+            </div>
+            
+            
+            <style>
+                .modal-header { padding: 7px 14px !important; } .mtab-container { display: flex; border-bottom: none; margin-bottom: 0; overflow-x: auto;}
+                .mtab { flex: 1; text-align: center; padding: 6px 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: var(--text2); transition: 0.2s; white-space: nowrap; border-radius: 10px; min-width: 52px; }
+                .mtab.active { color: white; background: var(--accent); border-bottom: none; box-shadow: 0 2px 8px rgba(10,132,255,0.35); }
+                .mcontent { display: none; flex-direction: column; gap: 10px; }
+                .mcontent.active { display: flex; }
+                
+                /* Funnel specific */
+                .funnel-step { display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+                .funnel-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; background: var(--bg); border: 1px solid var(--border); }
+                .funnel-icon.success { background: rgba(52,199,89,0.1); border-color: #34c759; color: #34c759; }
+                .funnel-icon.pending { background: rgba(255,59,48,0.1); border-color: #ff3b30; color: #ff3b30; }
+                .funnel-text { flex: 1; font-size: 0.85rem; font-weight: 500; }
+                .funnel-date { font-size: 0.75rem; color: var(--text2); dir: ltr; }
+            
+        /* ===== PILL BUTTONS ===== */
+        .pill-btn {
+            background: var(--bg);
+            color: var(--text2);
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .pill-btn:active { opacity: 0.7; }
+        .pill-active {
+            background: var(--accent2) !important;
+            color: white !important;
+        }
+
+
+/* =========================================
+   ADVENTURE VIEW (DESERT JOURNEY) CSS
+========================================= */
+
+.fs-vbtn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.fs-view-adventure {
+    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 40px 10px 80px 10px !important;
+}
+
+.fs-view-adventure .metro-map {
+    display: block !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
+    margin: 0 auto !important;
+    position: relative !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
+    background-size: 100% 100% !important;
+    background-position: center !important;
+}
+
+.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
+
+.fs-view-adventure .metro-station {
+    position: absolute !important;
+    width: 150px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    background: rgba(255, 253, 235, 0.95) !important;
+    border: 3px solid #b45309 !important;
+    border-radius: 12px !important;
+    padding: 12px 8px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+    z-index: 10 !important;
+    transform: translate(-50%, 50%) !important; 
+    transition: 0.3s;
+}
+
+.fs-view-adventure .metro-dot-wrapper { display: none !important; }
+.fs-view-adventure .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    width: 100% !important;
+    text-align: center !important;
+}
+.fs-view-adventure .metro-content::before { display: none !important; }
+
+.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
+.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
+.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
+
+/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
+.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
+.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
+.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
+.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
+.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
+.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
+
+/* The Walking Avatar on Current Step */
+.fs-view-adventure .metro-station.current::after {
+    content: '🚶‍♂️';
+    position: absolute;
+    font-size: 50px;
+    top: -65px; 
+    left: 50%;
+    transform: translateX(-50%);
+    animation: walkBounce 0.8s infinite alternate;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+
+@keyframes walkBounce {
+    0% { transform: translate(-50%, 0) rotate(-5deg); }
+    100% { transform: translate(-50%, -15px) rotate(5deg); }
+}
+
+/* Completed & Current & Error States */
+.fs-view-adventure .metro-station.completed {
+    background: rgba(220, 252, 231, 0.95) !important;
+    border-color: #166534 !important;
+}
+.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
+.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
+.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
+
+.fs-view-adventure .metro-station.current {
+    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
+    border-color: #eab308 !important;
+    transform: translate(-50%, 50%) scale(1.05) !important;
+}
+
+.fs-view-adventure .metro-station.error {
+    background: rgba(254, 226, 226, 0.95) !important;
+    border-color: #991b1b !important;
+}
+.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
+.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
+.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
+
+</style>
+
+
+            <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:2px; padding:5px 8px;">
+                <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">👤</span><span style="font-size:0.7rem;">عام</span>
+                </div>
+                <div class="mtab" onclick="switchModalTab('actions')" id="mtab-actions" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">✉️</span><span style="font-size:0.7rem;">إجراءات</span>
+                </div>
+                <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">🎓</span><span style="font-size:0.7rem;">الأكاديمية</span>
+                </div>
+                <div class="mtab" onclick="switchModalTab('telegram')" id="mtab-telegram" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">✈️</span><span style="font-size:0.7rem;">تيليجرام</span>
+                </div>
+                <div class="mtab" onclick="document.getElementById('logs-overlay').style.display='none'; viewStudentLogs(activeStudentId);" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">📜</span><span style="font-size:0.7rem;">النشاطات (Logs)</span>
+                </div>
+
+                <div class="mtab" onclick="switchModalTab('funnel')" id="mtab-funnel" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">🛤️</span><span style="font-size:0.7rem;">مسار</span>
+                </div>
+                <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">📊</span><span style="font-size:0.7rem;">CRM</span>
+                </div>
+                <div class="mtab" onclick="switchModalTab('logs')" id="mtab-logs" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">📜</span><span style="font-size:0.7rem;">السجل</span>
+                </div>
+            </div>
+
+            <!-- Tab 0: Actions — Composer intégré plein écran -->
+            <div id="mcontent-actions" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; gap:0;" dir="rtl">
+
+                <!-- Header info élève -->
+                <div id="actions-student-banner" style="background:var(--surface); border-bottom:1px solid var(--border); padding:5px 12px; display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                    <div style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:white; font-weight:900;" id="actions-avatar">?</div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:800; font-size:0.95rem; color:var(--text1);" id="actions-name">-</div>
+                        <div style="font-size:0.78rem; color:var(--text2); display:flex; gap:8px; flex-wrap:wrap;" id="actions-meta">-</div>
+                    </div>
+                </div>
+
+                <!-- Templates rapides -->
+                <div style="padding:5px 12px 0 12px; flex-shrink:0;">
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--text2); margin-bottom:6px;">قوالب سريعة :</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='var(--border)'">✈️ دعوة تيليجرام</span>
+                        <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='var(--border)'">🔔 تذكير</span>
+                        <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='var(--border)'">🤝 استفسار</span>
+                    </div>
+                </div>
+
+                <!-- Textarea grande — prend tout l'espace restant -->
+                <div style="flex:1; padding:10px 15px; display:flex; flex-direction:column; min-height:0;">
+                    <textarea id="single-composer-text" placeholder="اكتب رسالتك هنا... يمكنك استخدام {الاسم} للاسم التلقائي"
+                        style="flex:1; width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.95rem; resize:none; box-sizing:border-box; line-height:1.6; min-height:0;"
+                        oninput="updateActionsCharCount(this)"></textarea>
+                    <div style="text-align:left; font-size:0.72rem; color:var(--text2); margin-top:4px;" id="actions-char-count">0 حرف</div>
+                </div>
+
+                <!-- Boutons d'envoi — fixes en bas -->
+                <div style="padding:6px 12px 8px 12px; flex-shrink:0; background:var(--bg); border-top:1px solid var(--border);">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <button onclick="sendSingleMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                            واتساب
+                        </button>
+                        <button onclick="sendSingleMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
+                            ✈️ تيليجرام
+                        </button>
+                        <button onclick="sendSingleMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
+                            📱 SMS
+                        </button>
+                        <button onclick="sendSingleMessage('email')" style="background:#ef4444; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
+                            📧 إيميل
+                        </button>
+                    </div>
+                    <!-- WhatsApp direct (ouvre WA avec message pré-rempli) -->
+                    <button onclick="directWhatsAppActiveStudent()" style="width:100%; margin-top:8px; background:var(--surface); color:#25D366; border:1px solid #25D366; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        ⚡ واتساب مباشر (رابط تلقائي بدون نص)
+                    </button>
+                </div>
+
+            </div>
+
+            
+            <style>
+                .pg-row { display:flex; align-items:center; padding:10px 12px; border-bottom:1px solid var(--border); background:var(--surface); }
+                .pg-row:last-child { border-bottom:none; }
+                .pg-label { display:flex; align-items:center; gap:8px; color:var(--text2); font-size:0.85rem; width:130px; flex-shrink:0; }
+                .pg-val { flex:1; text-align:center; font-weight:700; color:var(--text1); font-size:0.95rem; }
+                .pg-empty { color:#9ca3af; font-size:0.8rem; font-weight:normal; }
+                
+                .ac-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+                .ac-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+                .ac-card-title { font-size:0.8rem; color:var(--text2); margin-bottom:6px; }
+                .ac-card-val { font-size:1.1rem; font-weight:900; }
+            
+/* =========================================
+   ADVENTURE VIEW (DESERT JOURNEY) CSS
+========================================= */
+
+.fs-vbtn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.fs-view-adventure {
+    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 40px 10px 80px 10px !important;
+}
+
+.fs-view-adventure .metro-map {
+    display: block !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
+    margin: 0 auto !important;
+    position: relative !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
+    background-size: 100% 100% !important;
+    background-position: center !important;
+}
+
+.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
+
+.fs-view-adventure .metro-station {
+    position: absolute !important;
+    width: 150px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    background: rgba(255, 253, 235, 0.95) !important;
+    border: 3px solid #b45309 !important;
+    border-radius: 12px !important;
+    padding: 12px 8px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+    z-index: 10 !important;
+    transform: translate(-50%, 50%) !important; 
+    transition: 0.3s;
+}
+
+.fs-view-adventure .metro-dot-wrapper { display: none !important; }
+.fs-view-adventure .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    width: 100% !important;
+    text-align: center !important;
+}
+.fs-view-adventure .metro-content::before { display: none !important; }
+
+.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
+.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
+.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
+
+/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
+.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
+.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
+.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
+.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
+.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
+.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
+
+/* The Walking Avatar on Current Step */
+.fs-view-adventure .metro-station.current::after {
+    content: '🚶‍♂️';
+    position: absolute;
+    font-size: 50px;
+    top: -65px; 
+    left: 50%;
+    transform: translateX(-50%);
+    animation: walkBounce 0.8s infinite alternate;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+
+@keyframes walkBounce {
+    0% { transform: translate(-50%, 0) rotate(-5deg); }
+    100% { transform: translate(-50%, -15px) rotate(5deg); }
+}
+
+/* Completed & Current & Error States */
+.fs-view-adventure .metro-station.completed {
+    background: rgba(220, 252, 231, 0.95) !important;
+    border-color: #166534 !important;
+}
+.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
+.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
+.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
+
+.fs-view-adventure .metro-station.current {
+    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
+    border-color: #eab308 !important;
+    transform: translate(-50%, 50%) scale(1.05) !important;
+}
+
+.fs-view-adventure .metro-station.error {
+    background: rgba(254, 226, 226, 0.95) !important;
+    border-color: #991b1b !important;
+}
+.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
+.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
+.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
+
+</style>
+
+            <!-- Tab 1: General -->
+            <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding:0; background:var(--bg);">
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
+                    <div class="pg-row" style="background:var(--surface); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-weight:bold; color:var(--text1);">🚨 Qualité du lead (Validité)</div>
+                        <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; border:none;"></button>
+                    </div>
+
+                    <div class="pg-row" id="profile-name">
+                        <div class="pg-label">👤 الاسم الكامل</div>
+                        <div class="pg-val" id="profile-name-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🌍 باللغة الأجنبية</div>
+                        <div class="pg-val" id="profile-foreign-name-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📧 البريد الإلكتروني</div>
+                        <div class="pg-val" id="profile-email-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row" style="direction:rtl;">
+                        <div class="pg-label">📱 الهاتف</div>
+                        <div class="pg-val" id="profile-phone-text" dir="ltr" style="unicode-bidi:isolate;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🎂 تاريخ الميلاد</div>
+                        <div class="pg-val" id="profile-dob-text">-</div>
+                    </div>
+                    <div class="pg-row" id="profile-gender">
+                        <div class="pg-label">⚧ الجنس</div>
+                        <div class="pg-val" id="profile-gender-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">💼 المهنة</div>
+                        <div class="pg-val" id="profile-profession-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📍 بلد الإقامة</div>
+                        <div class="pg-val" id="profile-country-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🌍 الجنسية</div>
+                        <div class="pg-val" id="profile-nationality-text">-</div>
+                    </div>
+                </div>
+                
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
+                    <div class="pg-row">
+                        <div class="pg-label">📥 تاريخ الاستيراد</div>
+                        <div class="pg-val" id="profile-import-text" dir="ltr" style="font-size:0.85rem;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📄 المصدر</div>
+                        <div class="pg-val" id="profile-source-text">-</div>
+                    </div>
+                </div>
+
+                <!-- FULL SCREEN JOURNEY BUTTON (GENERAL TAB) -->
+                <div style="background:var(--accent); border-radius:12px; padding:12px; margin:0 5px 15px 0; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.05rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s; animation: pulse-btn 2s infinite;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <span>🛤️ افتح مسار الطالب الكامل (Plein Écran)</span>
+                </div>
+                <style>
+                @keyframes pulse-btn {
+                    0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
+                    70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+                }
+                
+/* =========================================
+   ADVENTURE VIEW (DESERT JOURNEY) CSS
+========================================= */
+
+.fs-vbtn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.fs-view-adventure {
+    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 40px 10px 80px 10px !important;
+}
+
+.fs-view-adventure .metro-map {
+    display: block !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
+    margin: 0 auto !important;
+    position: relative !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
+    background-size: 100% 100% !important;
+    background-position: center !important;
+}
+
+.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
+
+.fs-view-adventure .metro-station {
+    position: absolute !important;
+    width: 150px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    background: rgba(255, 253, 235, 0.95) !important;
+    border: 3px solid #b45309 !important;
+    border-radius: 12px !important;
+    padding: 12px 8px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+    z-index: 10 !important;
+    transform: translate(-50%, 50%) !important; 
+    transition: 0.3s;
+}
+
+.fs-view-adventure .metro-dot-wrapper { display: none !important; }
+.fs-view-adventure .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    width: 100% !important;
+    text-align: center !important;
+}
+.fs-view-adventure .metro-content::before { display: none !important; }
+
+.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
+.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
+.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
+
+/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
+.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
+.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
+.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
+.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
+.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
+.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
+
+/* The Walking Avatar on Current Step */
+.fs-view-adventure .metro-station.current::after {
+    content: '🚶‍♂️';
+    position: absolute;
+    font-size: 50px;
+    top: -65px; 
+    left: 50%;
+    transform: translateX(-50%);
+    animation: walkBounce 0.8s infinite alternate;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+
+@keyframes walkBounce {
+    0% { transform: translate(-50%, 0) rotate(-5deg); }
+    100% { transform: translate(-50%, -15px) rotate(5deg); }
+}
+
+/* Completed & Current & Error States */
+.fs-view-adventure .metro-station.completed {
+    background: rgba(220, 252, 231, 0.95) !important;
+    border-color: #166534 !important;
+}
+.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
+.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
+.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
+
+.fs-view-adventure .metro-station.current {
+    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
+    border-color: #eab308 !important;
+    transform: translate(-50%, 50%) scale(1.05) !important;
+}
+
+.fs-view-adventure .metro-station.error {
+    background: rgba(254, 226, 226, 0.95) !important;
+    border-color: #991b1b !important;
+}
+.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
+.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
+.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
+
+</style>
+                <!-- Onboarding Funnel Summary in General Tab -->
+                <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="انقر لعرض المسار بالتفصيل">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-weight:bold; font-size:0.88rem; color:var(--accent);">🎥 حالة مسار التأهيل (Onboarding)</span>
+                        <span id="profile-onb-badge" style="font-size:0.75rem; font-weight:bold; padding:2px 8px; border-radius:10px; background:#334155; color:white;">-</span>
+                    </div>
+                    <div id="profile-onb-desc" style="font-size:0.8rem; color:var(--text1); margin-bottom:4px;">-</div>
+                    <div style="font-size:0.72rem; color:var(--text2); display:flex; justify-content:space-between;">
+                        <span id="profile-onb-time">-</span>
+                        <span style="color:var(--accent); text-decoration:underline; cursor:pointer;">عرض المسار والمراحل ➔</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Academy -->
+            <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding:0 5px 10px 0; background:var(--bg);">
+                
+                <!-- Highlight Cards -->
+                <div class="ac-grid">
+                    <div class="ac-card" style="border-color:#ff9f0a; background:rgba(255,159,10,0.05);">
+                        <div class="ac-card-title">🎓 السنة الدراسية</div>
+                        <div class="ac-card-val" id="profile-year-text" style="color:#ff9f0a;">-</div>
+                    </div>
+                    <div class="ac-card" id="card-payment" style="border-color:var(--border);">
+                        <div class="ac-card-title">💳 حالة الدفع</div>
+                        <div class="ac-card-val" id="profile-payment-text">-</div>
+                    </div>
+                </div>
+                
+                <div class="ac-grid">
+                    <div class="ac-card" style="border-color:#34c759; background:rgba(52,199,89,0.05);">
+                        <div class="ac-card-title">🎓 رقم الطالب</div>
+                        <div class="ac-card-val" id="card-studentid-text" style="color:#34c759; font-size:1.05rem;">-</div>
+                    </div>
+                    <div class="ac-card" style="border-color:var(--border);">
+                        <div class="ac-card-title">📅 تاريخ التسجيل</div>
+                        <div class="ac-card-val" id="card-inscription-text" dir="ltr" style="font-size:0.95rem;">-</div>
+                    </div>
+                </div>
+
+                <!-- Info List -->
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
+                    <div class="pg-row">
+                        <div class="pg-label">🏅 مستوى العربية</div>
+                        <div class="pg-val" id="profile-arabiclevel-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🏫 المستوى المدرسي</div>
+                        <div class="pg-val" id="profile-school-level-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">👥 حالة العضوية</div>
+                        <div class="pg-val" id="profile-membership" style="font-size:0.8rem;">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 3: Telegram -->
+            <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
+                <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✅ حالة الربط : <span id="profile-tg-display">-</span></div>
+                <div class="chip" id="profile-tg-username-container" style="background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ اسم المستخدم : <span id="profile-tg-username-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 معرّف تيليجرام : <span id="profile-tgid-text" dir="ltr">-</span></div>
+            <div class="chip" id="profile-tg-firstname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الأول : <span id="profile-tg-firstname-text">-</span></div>
+            <div class="chip" id="profile-tg-lastname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم العائلي : <span id="profile-tg-lastname-text">-</span></div>
+            <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📁 تاريخ الانضمام للملف : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
+            </div>
+
+            <!-- Tab Logs/Historique — mirror exact du student-logs-modal -->
+            <div id="mcontent-logs" class="mcontent" style="flex-direction:column; flex:1; overflow-y:auto; padding:12px; gap:10px;">
+
+                <!-- Identites DB + TG -->
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:220px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
+                        <div id="logs-tab-db-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
+                    </div>
+                    <div style="flex:1; min-width:220px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
+                        <div id="logs-tab-tg-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
+                    </div>
+                </div>
+
+                <!-- Logs -->
+                <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; flex:1; min-height:200px;">
+                    <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--text1);">📜 سجل النشاطات</h3>
+                    <div id="logs-tab-body" style="overflow-y:auto; flex:1;">
+                        <div class="no-items">جاري التحميل...</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tab CRM -->
+            <div id="mcontent-crm" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; padding:0;">
+                <!-- CRM Sub-tabs -->
+                <div style="display:flex; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+                    <div class="crm-subtab active" onclick="switchCrmSubtab('timeline')" id="csub-timeline" style="flex:1; text-align:center; padding:12px; cursor:pointer; font-weight:bold; color:#0a84ff; border-bottom:2px solid #0a84ff;">🕒 سجل النشاطات</div>
+                    <div class="crm-subtab" onclick="switchCrmSubtab('add')" id="csub-add" style="flex:1; text-align:center; padding:12px; cursor:pointer; color:var(--text2); border-bottom:2px solid transparent;">➕ إضافة ملاحظة</div>
+                </div>
+
+                <!-- Timeline View -->
+                <div id="crm-view-timeline" style="flex:1; display:flex; flex-direction:column; padding:15px; overflow:hidden;">
+                    
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px; direction:rtl; text-align:right;">
+                        <h4 style="margin: 0 0 15px 0; font-size: 1.05rem; color: var(--accent); display:flex; align-items:center; gap:8px;">
+                            📊 متابعة المكالمات (Google Sheets)
+                        </h4>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">👥 الفريق</div>
+                                <div id="profile-team-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; grid-column: 1 / -1;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📝 الملاحظات</div>
+                                <div id="profile-comments-text" style="font-weight:bold; color:#ff9f0a; white-space:pre-wrap;">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 1</div>
+                                <div id="profile-appel1-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 2</div>
+                                <div id="profile-appel2-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 3</div>
+                                <div id="profile-appel3-text" style="font-weight:bold; color:var(--text1);">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px; flex-shrink:0;">
+                        <div class="chip crm-filter active" onclick="filterCrm('all')" id="crm-flt-all" style="cursor:pointer; background:rgba(10,132,255,0.15); color:#0a84ff; border-color:#0a84ff;">🔘 عرض الكل</div>
+                        <div class="chip crm-filter" onclick="filterCrm('notes')" id="crm-flt-notes" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🗣️ الملاحظات</div>
+                        <div class="chip crm-filter" onclick="filterCrm('tickets')" id="crm-flt-tickets" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🚨 التذاكر</div>
+                        <div class="chip crm-filter" onclick="filterCrm('system')" id="crm-flt-system" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🤖 النظام</div>
+                    </div>
+                    <div id="crm-timeline-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:5px; margin-bottom:20px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+
+                <!-- Add Note View -->
+                <div id="crm-view-add" style="flex:1; display:none; flex-direction:column; padding:15px; overflow-y:auto; background:var(--bg);">
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <h4 style="margin:0 0 15px 0; font-size:1.1rem; color:var(--text1);">تفاصيل الملاحظة (CRM)</h4>
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نوع التواصل:</label>
+                        <select id="crm-type" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;">
+                            <option value="APPEL">📞 اتصال عادي</option>
+                            <option value="APPEL_WA">📞 اتصال واتساب</option>
+                            <option value="WHATSAPP">💬 رسالة واتساب</option>
+                            <option value="TELEGRAM">✈️ تيليجرام</option>
+                            <option value="EMAIL">📧 بريد إلكتروني</option>
+                            <option value="AUTRE">📌 أخرى</option>
+                        </select>
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">التصنيف (المشكلة):</label>
+                        <select id="crm-tag" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;">
+                            <option value="TECHNIQUE">⚙️ مشكلة تقنية</option>
+                            <option value="REMBOURSEMENT">💳 استرداد أموال</option>
+                            <option value="MALADIE">🏥 مرض</option>
+                            <option value="VOYAGE">✈️ سفر</option>
+                            <option value="MOTIVATION">📉 نقص تحفيز</option>
+                            <option value="INFO">ℹ️ معلومة</option>
+                            <option value="AUTRE">📌 أخرى</option>
+                        </select>
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">اسم المسؤول (يُحفظ تلقائياً):</label>
+                        <input id="crm-admin-name" type="text" placeholder="اسمك..." style="width:100%; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;" oninput="localStorage.setItem('adminName', this.value)">
+                        
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نص الملاحظة:</label>
+                        <textarea id="crm-note" placeholder="اكتب تفاصيل المحادثة هنا..." style="width:100%; height:100px; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; outline:none; resize:none; margin-bottom:20px;"></textarea>
+                        
+                        <button id="btn-save-note" class="btn btn-primary" onclick="addCrmNote()" style="width:100%; padding:12px; border-radius:8px; font-size:1rem; font-weight:bold;">💾 حفظ الملاحظة وإرسال</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Funnel -->
+            <div id="mcontent-funnel" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom:15px;">
+
+    
+    <!-- FULL SCREEN JOURNEY BUTTON -->
+    <div style="background:var(--accent); border-radius:12px; padding:15px; margin-bottom:20px; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.1rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        <span>🛤️ افتح المسار الكامل (Parcours Complet Plein Écran)</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </div>
+    
+    <!-- UNIFIED COMPOSER V2 -->
+
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:20px; text-align:right;" dir="rtl">
+        <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1.05rem;">✉️ رسالة مخصصة (V2)</h4>
+        
+        <!-- Quick Templates -->
+        <div style="margin-bottom:10px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
+                <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
+                <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
+            </div>
+        </div>
+        
+        <!-- Textarea -->
+        <textarea id="single-composer-text" rows="4" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.9rem; resize:vertical; box-sizing:border-box; margin-bottom:12px;"></textarea>
+        
+        <!-- Send Buttons -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button onclick="sendSingleMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">🟩 واتساب</button>
+            <button onclick="sendSingleMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">✈️ تليجرام</button>
+            <button onclick="sendSingleMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">📱 SMS</button>
+            <button onclick="sendSingleMessage('email')" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">📧 إيميل</button>
+        </div>
+    </div>
+    <!-- END UNIFIED COMPOSER V2 -->
+    
+    <div id="funnel-victory-banner" class="success-banner" style="display:none;">
+        🎉 الهدف تحقق : الطالب مسجل في المنصة ولا يحتاج إلى متابعة إضافية !
+    </div>
+
+    <div class="timeline" id="funnel-timeline">
+        
+        <!-- ÉTAPE 1 : Email -->
+        <div class="timeline-block" id="funnel-step-email1">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>✉️ المرحلة 1 : الإيميل الترحيبي</span>
+                    <button class="btn-action" onclick="sendFunnelAction('send_email_1')">إرسال الإيميل</button>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-email-sent">⏳</span>
+                        <span>تم الإرسال :</span>
+                        <span id="f-date-email-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-email-opened">⏳</span>
+                        <span>تم فتح الإيميل :</span>
+                        <span id="f-date-email-opened" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-email-clicked">⏳</span>
+                        <span>تم النقر على الرابط :</span>
+                        <span id="f-date-email-clicked" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE 2 : Email 2 (Relance) -->
+        <div class="timeline-block" id="funnel-step-email2">
+            <div class="timeline-dot" style="background:#f59e0b;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>📨 المرحلة 2 : إيميل التذكير</span>
+                    <button class="btn-action" onclick="sendFunnelAction('send_email_2')" style="background:#f59e0b;">إرسال تذكير</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE 3 : WhatsApp -->
+        <div class="timeline-block" id="funnel-step-wa">
+            <div class="timeline-dot" style="background:#25D366;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>💬 ÉTAPE 3 : WhatsApp</span>
+                    <div>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">💬 WhatsApp 1</button>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">💬 WhatsApp 2 (Dernier)</button>
+                    </div>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-whatsapp-sent">⏳</span>
+                        <span>Dernier WhatsApp envoyé :</span>
+                        <span id="f-date-whatsapp-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE 4 : Telegram -->
+        <div class="timeline-block" id="funnel-step-tg">
+            <div class="timeline-dot" style="background:#0088cc;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>✈️ ÉTAPE 4 : Envoi sur Telegram</span>
+                    <button class="btn-action" onclick="sendFunnelAction('log_tg_1')" style="background:#0088cc;">✈️ Message direct</button>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-telegram-sent">⏳</span>
+                        <span>Message Telegram envoyé :</span>
+                        <span id="f-date-telegram-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- ÉTAPE SMS -->
+        <div class="timeline-block" id="funnel-step-sms">
+            <div class="timeline-dot" style="background:#0ea5e9;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>📱 المرحلة : رسالة SMS (Lien Direct)</span>
+                    <div>
+                        <button class="btn-action" onclick="sendFunnelAction('log_sms')" style="background:#0ea5e9;">📱 إرسال SMS / فتح التطبيق</button>
+                    </div>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-sms-sent">⏳</span>
+                        <span>آخر رسالة SMS :</span>
+                        <span id="f-date-sms-sent" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-last-source">🔍</span>
+                        <span>مصدر الدخول الأخير :</span>
+                        <span id="f-source-last-click" style="font-weight:bold; color:var(--accent);">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE ONBOARDING (VIDÉOS & CHARTE) -->
+        <div class="timeline-block" id="funnel-step-onboarding">
+            <div class="timeline-dot" style="background:#f59e0b;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🎥 مسار التأهيل وتجربة الطالب (Onboarding Funnel)</span>
+                    <span id="f-onboarding-badge" style="font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:12px; background:#334155; color:white;">لم يبدأ</span>
+                </div>
+                
+                <!-- Live Pipeline Visual Steps -->
+                <div style="margin: 12px 0 16px 0; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px;">
+                    <div style="font-size:0.75rem; font-weight:bold; color:var(--text2); margin-bottom:8px;">مراحل التقدم في رابط التأهيل (link.html) :</div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:6px;" id="onboarding-steps-grid">
+                        <div class="onb-chip" id="onb-chip-1" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-1">⚪</div>
+                            <div style="font-weight:bold;">1. التعهد الأولي</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-1">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-2" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-2">⚪</div>
+                            <div style="font-weight:bold;">2. فيديو تليجرام</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-2">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-3" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-3">⚪</div>
+                            <div style="font-weight:bold;">3. فيديو البيانات</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-3">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-4" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-4">⚪</div>
+                            <div style="font-weight:bold;">4. فيديو المجموعات</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-4">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-5" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-5">⚪</div>
+                            <div style="font-weight:bold;">5. ميثاق الشرف</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-5">-</div>
+                        </div>
+                        <div class="onb-chip" id="onb-chip-6" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-6">⚪</div>
+                            <div style="font-weight:bold;">6. شاشة الربط</div>
+                            <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-6">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-onboarding-status">🔍</span>
+                        <span>آخر نشاط مسجل في المسار :</span>
+                        <span id="f-desc-onboarding-status" style="font-weight:bold; color:var(--text1); font-size:0.82rem;">-</span>
+                    </div>
+                    <div class="timeline-sub-item" id="f-row-onboarding-error" style="display:none; background:rgba(239,68,68,0.1); padding:6px 10px; border-radius:8px; border:1px solid rgba(239,68,68,0.3);">
+                        <span>⚠️</span>
+                        <span style="color:#ef4444; font-weight:bold;">سبب الخطأ / التعثر :</span>
+                        <span id="f-desc-onboarding-error" style="color:#ef4444; font-size:0.82rem; font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÉTAPE FINALE -->
+        <div class="timeline-block" id="funnel-step-final">
+            <div class="timeline-dot" style="background:#8b5cf6;"></div>
+            <div class="timeline-content">
+                <div class="timeline-title">
+                    <span>🏁 ÉTAPE FINALE : Action de l'Élève</span>
+                </div>
+                <div class="timeline-subs">
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-bot-started">⏳</span>
+                        <span>Appuyer sur le lien (Démarrage) :</span>
+                        <span id="f-date-bot-started" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-folder-clicked">⏳</span>
+                        <span>Appuyer sur le bouton Folder :</span>
+                        <span id="f-date-folder-clicked" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                    <div class="timeline-sub-item">
+                        <span id="f-icon-group-joined">⏳</span>
+                        <span>Rejoindre le groupe :</span>
+                        <span id="f-date-group-joined" dir="ltr" style="font-weight:bold;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historique button removed — now in السجل tab -->
+        </div>
+    </div>
+
+    <!-- Modal: Historique de l'élève / مسار الطالب -->
+    <div class="modal-overlay" id="student-logs-modal" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal" style="max-width: 720px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 18px; border-radius: 16px;">
+            <div class="modal-header" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
+                <h2 style="font-size: 1.15rem; color: var(--text1); display: flex; align-items: center; gap: 8px;">
+                    <span>🧭</span> مسار الخطوات وسجل النشاط
+                </h2>
+                <button class="close-btn" onclick="document.getElementById('student-logs-modal').style.display='none'">✖</button>
+            </div>
+            
+            <!-- Identités -->
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div style="flex:1; min-width: 240px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.85rem; margin-bottom: 6px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
+                    <div id="modal-db-identity" style="font-size: 0.82rem; color:var(--text1); line-height: 1.6;">-</div>
+                </div>
+                <div style="flex:1; min-width: 240px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.25); border-radius:12px; padding:10px;">
+                    <h3 style="font-size: 0.85rem; margin-bottom: 6px; color:#0088cc;">✈️ هوية تيليجرام</h3>
+                    <div id="modal-tg-identity" style="font-size: 0.82rem; color:var(--text1); line-height: 1.6;">-</div>
+                </div>
+            </div>
+
+            <!-- Funnel Stepper Progress Bar -->
+            <div id="funnel-summary-container" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px;">
+                <div style="font-size:0.8rem; font-weight:bold; color:var(--text2); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🎯 تقدم الطالب في المحطات الإلزامية (المسار الرئيسي):</span>
+                    <span id="funnel-percent-badge" style="background:rgba(99,102,241,0.12); color:#6366f1; padding:2px 8px; border-radius:10px; font-size:0.75rem;">0%</span>
+                </div>
+                <div id="funnel-stepper-chips" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
+                    <!-- Chips dynamically injected -->
+                </div>
+            </div>
+
+            <!-- Timeline Box with View Toggle (Accordion, Grouped, Raw) -->
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; flex:1; min-height: 360px; overflow: hidden;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom: 10px;">
+                    <div style="display:flex; gap:6px; background:var(--surface); padding:3px; border-radius:8px; border:1px solid var(--border);">
+                        <button id="btn-timeline-accordion" onclick="setTimelineViewMode('accordion')" 
+                                style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:5px;">
+                            <span>🎯</span> محطات المسار (المراحل الـ 6)
+                        </button>
+                        <button id="btn-timeline-grouped" onclick="setTimelineViewMode('grouped')" 
+                                style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:5px;">
+                            <span>⚡</span> المسار الذكي
+                        </button>
+                        <button id="btn-timeline-raw" onclick="setTimelineViewMode('raw')" 
+                                style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:5px;">
+                            <span>📜</span> السجل الخام
+                        </button>
+                    </div>
+                    <span id="timeline-steps-count" style="font-size:0.75rem; color:var(--text2); font-family:monospace;"></span>
+                </div>
+                <div id="logs-body" style="overflow-y:auto; flex:1; padding-right: 4px; padding-left: 4px;">
+                    <div class="no-items">جاري التحميل...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: تفاصيل السجل والنشاط الكامل -->
+    <div class="modal-overlay" id="log-detail-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📋 تفاصيل سجل النشاط</h2>
+                <button class="close-btn" onclick="document.getElementById('log-detail-overlay').style.display='none'">✕</button>
+            </div>
+            
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <div class="profile-label">نوع النشاط / العملية</div>
+                    <div class="profile-value" id="log-detail-type" style="color:var(--warning); font-weight:800;">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">التاريخ والوقت بالتفصيل</div>
+                    <div class="profile-value" id="log-detail-time">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">اسم الطالب المسجل (في الملف)</div>
+                    <div class="profile-value" id="log-detail-name">-</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">الاسم الشخصي على تيليجرام (Telegram Name)</div>
+                    <div class="profile-value" id="log-detail-tg">-</div>
+                </div>
+                <div class="profile-item" style="border-bottom:none; margin-top:5px;">
+                    <div class="profile-label">النشاط وتفاصيل البيانات المدخلة</div>
+                    <div class="profile-value" id="log-detail-desc" style="background:var(--bg); padding:12px; border-radius:10px; line-height:1.5; color:var(--text1); font-size:0.9rem; margin-top:4px;">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Répondre SOS -->
+    <div class="modal-overlay" id="sos-overlay" onclick="if(event.target===this)this.style.display='none';">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🆘 الرد على طلب المساعدة</h2>
+                <button class="close-btn" onclick="document.getElementById('sos-overlay').style.display='none'">✕</button>
+            </div>
+            
+            <!-- Quick Link button to student history -->
+            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-bottom:14px; background:var(--accent); font-size:0.88rem; padding:10px; display:flex; align-items:center; justify-content:center; gap:6px;">
+                🔍 عرض السجل الكامل والملف الشخصي لهذا الطالب
+            </button>
+            
+            <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px; direction: ltr; text-align: left;"></div>
+            <div id="sos-modal-message" style="background:var(--bg);padding:12px;border-radius:10px;font-size:0.9rem;line-height:1.5;margin-bottom:12px;"></div>
+            
+            <div class="input-row">
+                <textarea id="sos-reply-text" placeholder="اكتب ردك هنا... سيصل إلى الطالب في رسالة خاصة"></textarea>
+                <button class="btn btn-success" onclick="sendSosReply()" style="flex:1;">إرسال الرد ✉️</button>
+            </div>
+            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-top:10px; background:#4a90e2; width:100%; padding:10px;">📜 عرض سجل محاولات الطالب</button>
+            <button class="btn btn-primary" onclick="window.open('https://t.me/c/' + activeSosTid, '_blank')" style="margin-top:10px; background:#2481cc; width:100%; padding:10px;">📱 Voir l'historique Telegram</button>
+            <button class="btn btn-danger" onclick="deleteSosTicket(activeSosId)" style="margin-top:10px; background:#dc2626; color:white; width:100%; padding:10px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">🗑️ حذف طلب المساعدة هذا نهائياً</button>
+            <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
+        </div>
+    
+    </div>
+    </div>
+    <script>
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+
+        let allStudents = [];
+        let filters = { status: 'all', gender: 'all', level: 'all', color: 'all', source: 'all', telegram: 'all', payment: 'all', remark: 'untouched', showExcluded: false, crmStatus: 'all', crmAgent: 'all', crmDueToday: false };
+        let activeSosId = null;
+        let activeSosTid = null;
+        let activeSosEmail = null;
+        let activeSosStudentId = null;
+        let activeStudentId = null;
+        let activeStudentObj = null;
+        let activeSosSubtabState = 'open';
+
+        
+        const LOG_RULES = {
+            'AUTH_FAILED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: 'فشل تسجيل الدخول' },
+            'LINK_FAILED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: 'فشل الربط' },
+            'LINK_INVALID': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'رابط غير صالح' },
+            'INVALID_LINK_ATTEMPT': { bg: '#1a1a1a', border: '#333333', text: '#ffffff', icon: '🏴‍☠️', label: 'محاولة رابط غير صالح' },
+            'SOS_SUBMITTED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'طلب مساعدة (SOS)' },
+            'MANUAL_UNLINK': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '💔', label: 'إلغاء الربط اليدوي' },
+            'NAME_VIOLATION_DETECTED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🚩', label: 'اسم غير مسموح' },
+
+            'AUTH_SUCCESS': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '✅', label: 'تسجيل دخول ناجح' },
+            'LINK_SUCCESS': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '🔗', label: 'تم ربط الحساب بنجاح' },
+            'ACCOUNT_LINKED': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '🔗', label: 'تم ربط الحساب' },
+            'LINK_SUCCESS_APPROVED': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '🔗', label: 'تم اعتماد الربط' },
+            'JOIN_GROUP_CLICK': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '🎓', label: 'دخول المجموعة' },
+            
+            'APP_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📱', label: 'فتح التطبيق' },
+            'APP_OPENED_UNLINKED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⛔', label: 'محاولة دخول مرفوضة (غير مربوط)' },
+            'FOLDER_CLICKED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📁', label: 'فتح مجلد الدروس' },
+            'QUIZ_STARTED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📝', label: 'بدأ اختبار' },
+            'TUTO_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '📖', label: 'فتح الشرح' },
+            'BOT_START': { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.4)', text: '#059669', icon: '🟢', label: 'بدء البوت (START)' },
+
+            // Onboarding Funnel Steps
+            'ONBOARDING_PAGE_OPENED': { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '🚪', label: '1. فتح صفحة التأهيل' },
+            'ONBOARDING_COMMITMENT_CHECKED': { bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.4)', text: '#6366f1', icon: '✍️', label: '2. تأكيد التعهد' },
+            'ONBOARDING_VID1_STARTED': { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.4)', text: '#a855f7', icon: '▶️', label: '3. فيديو 1 (تثبيت تليجرام)' },
+            'ONBOARDING_VID2_STARTED': { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.4)', text: '#a855f7', icon: '▶️', label: '4. فيديو 2 (إدخال البيانات)' },
+            'ONBOARDING_VID3_STARTED': { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.4)', text: '#a855f7', icon: '▶️', label: '5. فيديو 3 (المجموعات)' },
+            'ONBOARDING_CHARTER_VIEWED': { bg: 'rgba(234,179,8,0.1)', border: 'rgba(234,179,8,0.4)', text: '#ca8a04', icon: '📜', label: '6. قراءة الميثاق' },
+            'ONBOARDING_CHARTER_SIGNED': { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '✅', label: '7. قبول بنود الميثاق' },
+            'ONBOARDING_FORM_REACHED': { bg: 'rgba(14,165,233,0.1)', border: 'rgba(14,165,233,0.4)', text: '#0ea5e9', icon: '📝', label: '8. شاشة إدخال المعرف' },
+            'ONBOARDING_INPUT_ERROR': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '⚠️', label: 'خطأ في إدخال المعرف' },
+            'ONBOARDING_LINK_SUCCESS': { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.6)', text: '#15803d', icon: '🎉', label: '9. اكتمل التأهيل والربط' },
+            'ONBOARDING_WAITING_ROOM': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'صالة الانتظار (قيد المراجعة)' },
+            'ONBOARDING_SOS_OPENED': { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '🆘', label: 'فتح نافذة SOS' },
+            'ONBOARDING_SOS_SENT': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'إرسال استغاثة SOS' },
+                'SOS_REPLIED': { label: 'رد الإدارة على استغاثة SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                'SOS_APPLIED': { label: 'تطبيق SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+            'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
+            'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
+            'SOS_REQUESTED': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🆘', label: 'طلب مساعدة SOS' },
+            'LINK_WAITING_EXCEL': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '🛋️', label: 'في صالة الانتظار (إكسيل)' },
+            'LINK_WAITING_PAYMENT': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'في صالة الانتظار (الدفع)' },
+
+            'EMAIL_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '📨', label: 'إرسال إيميل' },
+            'WHATSAPP_SENT': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '💬', label: 'إرسال واتساب' },
+            'MAGIC_LINK_GENERATED': { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '⚙️', label: 'توليد رابط' },
+            'DEFAULT': { bg: 'var(--surface)', border: 'var(--border)', text: 'var(--text1)', icon: '📌', label: 'نشاط' }
+        };
+
+        function getLogStyle(action_type) {
+            let r = LOG_RULES[action_type];
+            if (r) return r;
+            if (action_type.includes('SUCCESS') || action_type.includes('JOIN')) return { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.4)', text: '#16a34a', icon: '✅', label: action_type };
+            if (action_type.includes('FAIL') || action_type.includes('UNLINK') || action_type.includes('SOS')) return { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: '#dc2626', icon: '❌', label: action_type };
+            if (action_type.includes('OPEN') || action_type.includes('CLICK')) return { bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.4)', text: '#2563eb', icon: '🖱️', label: action_type };
+            if (action_type.includes('SENT')) return { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: '#d97706', icon: '📤', label: action_type };
+            return LOG_RULES['DEFAULT'];
+        }
+        
+        function colorizeDescription(desc) {
+            if (!desc) return '';
+            let colored = desc.replace(/\b(\d{6,7})\b/g, '<span style="color:#ff9f0a; font-family:monospace; font-weight:800; padding:2px 4px; background:rgba(255,159,10,0.15); border-radius:4px; letter-spacing:1px;">$1</span>');
+            colored = colored.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi, '<span style="color:#0a84ff; font-family:monospace; font-weight:700; padding:2px 4px; background:rgba(10,132,255,0.15); border-radius:4px;">$1</span>');
+            colored = colored.replace(/\[رابط:\s*([^\]]+)\]/g, '<span style="color:#a855f7; font-family:monospace; font-weight:800; padding:2px 6px; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); border-radius:6px;">🔗 $1</span>');
+            return colored;
+        }
+
+        function renderLogCard(l, showUserInfo = false) {
+            const style = getLogStyle(l.action_type);
+            let desc = colorizeDescription(l.description || '');
+            
+            let countBadge = l.count && l.count > 1 ? `<span class="log-badge" style="background:${style.text};">x${l.count}</span>` : '';
+            
+            let userInfo = '';
+            if (showUserInfo) {
+                let tgUname = l.telegram_username || l.tg_username || '';
+                let unameSpan = tgUname ? ` <span dir="ltr" style="color:#0a84ff;">(@${tgUname})</span>` : '';
+                let tgDisplay = l.telegram_name || '';
+                if (!tgDisplay && l.tg_first_name) {
+                    tgDisplay = l.tg_first_name + (l.tg_last_name ? ' ' + l.tg_last_name : '');
+                }
+                
+                userInfo = `
+                <div class="log-card-user">
+                    ${l.first_name ? `<span>👤 <strong>${l.first_name} ${l.last_name||''}</strong></span>` : ''}
+                    ${tgDisplay ? `<span>📱 <strong>${tgDisplay}</strong>${unameSpan}</span>` : ''}
+                    ${l.telegram_id ? `<span style="font-family:monospace;">ID: ${l.telegram_id}</span>` : ''}
+                </div>`;
+            }
+
+            return `
+            <div class="log-card" style="background:${style.bg}; border:1px solid ${style.border}; border-left:4px solid ${style.text};">
+                <div class="log-card-header">
+                    <div class="log-card-title" style="color:${style.text};">
+                        ${style.icon} ${style.label} ${countBadge}
+                    </div>
+                    <div class="log-card-time" dir="ltr">${formatDateArabic(l.timestamp)}</div>
+                </div>
+                <div class="log-card-desc">${desc}</div>
+                ${userInfo}
+            </div>
+            `;
+        }
+        
+        function groupLogs(logsArr) {
+            let grouped = [];
+            logsArr.forEach(l => {
+                if (grouped.length > 0) {
+                    let prev = grouped[grouped.length-1];
+                    // Si même action, même description et même user, on groupe
+                    if (prev.action_type === l.action_type && prev.description === l.description && prev.student_id === l.student_id && prev.telegram_id === l.telegram_id) {
+                        prev.count = (prev.count || 1) + 1;
+                        return;
+                    }
+                }
+                l.count = 1;
+                grouped.push(l);
+            });
+            return grouped;
+        }
+
+        // ============ DATE FORMATTER IN ARABIC ============
+        window.ADMIN_TIMEZONE = 'Africa/Casablanca'; // Smart Timezone Global Config
+
+        function formatDateArabic(dateStr) {
+            if (!dateStr) return '-';
+            // Force UTC interpretation by appending 'Z' if not already present
+            let ds = dateStr.replace(' ', 'T');
+            if (!ds.endsWith('Z') && ds.length <= 19) {
+                ds += 'Z';
+            }
+            const date = new Date(ds);
+            if (isNaN(date.getTime())) return dateStr;
+            const options = { 
+                timeZone: window.ADMIN_TIMEZONE, // Smart timezone mapping
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            return new Intl.DateTimeFormat('ar-MA', options).format(date);
+        }
+
+        // ============ THEME CONTROL ============
+        function changeTheme(themeName) {
+            document.body.className = '';
+            if (themeName !== 'dark') {
+                document.body.classList.add('theme-' + themeName);
+            }
+            document.querySelectorAll('#tab-settings .chip').forEach(c => c.classList.remove('active'));
+            const activeChip = document.getElementById('theme-btn-' + themeName);
+            if (activeChip) activeChip.classList.add('active');
+            localStorage.setItem('admin-theme', themeName);
+        }
+
+        const savedTheme = localStorage.getItem('admin-theme') || 'cpi';
+        changeTheme(savedTheme);
+
+        // ============ TABS ============
+        
+        // ============ BULK EMAIL DISPATCH ENGINE ============
+        let emailPollInterval = null;
+
+        async function startBulkEmailDispatch() {
+            const btn = document.getElementById('btn-start-bulk-email');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ جاري البدء...';
+            
+            try {
+                const res = await fetch('/api/admin/gateway/send_bulk_emails', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Open WA or TG links based on action
+                    const student = allStudents.find(s => s.student_id === activeStudentId);
+                    if (student) {
+                        const token = student.magic_token || student.student_id;
+                        let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
+                        
+                        if (actionType === 'log_sms') {
+                    if (phoneStr) {
+                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
+                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=_sms${token}`);
+                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
+                    } else {
+                        alert("Aucun numéro de téléphone"); return;
+                    }
+                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://wa.me/${phoneStr}?text=${text}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        } else if (actionType === 'log_tg_1') {
+                            let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                            if (phoneStr) {
+                                window.open(`https://t.me/+${phoneStr}`, '_blank');
+                            } else {
+                                alert("Aucun numéro de téléphone pour cet étudiant.");
+                            }
+                        }
+                    }
+
+                    if (data.count === 0) {
+                        alert('✅ ' + data.message);
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+                        return;
+                    }
+                    document.getElementById('email-progress-container').style.display = 'block';
+                    startEmailProgressPolling();
+                } else {
+                    alert('❌ خطأ: ' + data.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+                }
+            } catch(e) {
+                alert('حدث خطأ في الاتصال: ' + e);
+                btn.disabled = false;
+                btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+            }
+        }
+
+        // ============ KPI LIVE METRICS ============
+        async function fetchKpiMetrics() {
+            try {
+                const res = await fetch('/api/admin/gateway/kpi');
+                const data = await res.json();
+                if (data.success && data.kpi) {
+                    const k = data.kpi;
+                    const elPaid = document.getElementById('kpi-total-paid');
+                    const elSent = document.getElementById('kpi-emails-sent');
+                    const elOpen = document.getElementById('kpi-open-rate');
+                    const elWaSent = document.getElementById('kpi-wa-sent');
+                    const elWaConv = document.getElementById('kpi-wa-converted');
+                    const elConv = document.getElementById('kpi-conversion-rate');
+                    
+                    if (elPaid) elPaid.innerText = k.total_paid || 0;
+                    if (elSent) elSent.innerText = k.email_sent || 0;
+                    if (elOpen) elOpen.innerText = `${k.open_rate || 0}% (${k.email_opened || 0})`;
+                    if (elWaSent) elWaSent.innerText = `${k.wa_sent || 0} مرسل`;
+                    if (elWaConv) elWaConv.innerText = `${k.joined_after_wa || 0} طالب`;
+                    if (elConv) elConv.innerText = `${k.conversion_rate || 0}% (${k.telegram_linked || 0})`;
+                }
+            } catch(e) {
+                console.error('Error fetching KPI metrics:', e);
+            }
+        }
+
+        function startEmailProgressPolling() {
+            if (emailPollInterval) clearInterval(emailPollInterval);
+            emailPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/admin/gateway/email_dispatch_status');
+                    const data = await res.json();
+                    if (data.success && data.state) {
+                        const st = data.state;
+                        const total = st.total || 1;
+                        const sent = st.sent + st.failed;
+                        const pct = Math.min(100, Math.round((sent / total) * 100));
+                        
+                        document.getElementById('email-progress-bar').style.width = pct + '%';
+                        document.getElementById('email-progress-counter').innerText = `${sent} / ${total} (${pct}%)`;
+                        document.getElementById('email-current-student').innerText = st.current_student || '';
+                        
+                        if (!st.is_running && sent >= total) {
+                            clearInterval(emailPollInterval);
+                            document.getElementById('email-progress-status').innerText = '🎉 تم اكتمال الإرسال بنجاح!';
+                            const btn = document.getElementById('btn-start-bulk-email');
+                            btn.disabled = false;
+                            btn.innerHTML = '🚀 بدء إرسال الإيميلات الآن';
+                            fetchStudents(); fetchKpiMetrics(); // Refresh student list
+                        }
+                    }
+                } catch(e) {}
+            }, 1500);
+        }
+
+        
+        // =================== GHOST VISITORS ===================
+        let rawGhostList = [];
+        let ghostCurrentFilter = 'ALL';
         let ghostCurrentMode = 'started';
         let ghostViewMode = 'list';
         let ghostLevelFilter = 'all';
         let ghostGenderFilter = 'all';
-
-
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
