@@ -1283,7 +1283,7 @@ async def api_admin_gateway_students(request: web.Request):
 
 
 async def api_admin_gateway_ghost_visitors(request: web.Request):
-    """Returns users who visited/started the bot, filtered by funnel status (started, waiting, inactive, completed)"""
+    """Returns users who visited/started the bot, filtered by funnel status (absent, started, waiting, inactive, completed)"""
     import aiosqlite
     from config import DATABASE_PATH
     try:
@@ -1291,35 +1291,67 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             
-            base_select = """
-                SELECT 
-                    u.telegram_id, u.first_name, u.last_name, u.username, u.created_at,
-                    s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
-                    s.email as student_email, s.gender as student_gender,
-                    s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
-                    (SELECT action_type FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_action,
-                    (SELECT description FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_desc,
-                    (SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_time
-                FROM users u
-                LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
-            """
+            # --- 1. Calculate Global Counts for the 5 states ---
+            counts = {'absent': 0, 'started': 0, 'waiting': 0, 'inactive': 0, 'completed': 0}
             
-            order_limit = " ORDER BY COALESCE((SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1), u.created_at) DESC LIMIT 500"
-            
-            where_clause = ""
-            if status == 'waiting':
-                where_clause = " WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )"
-            elif status == 'inactive':
-                where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_LINK_SUCCESS'"
-            elif status == 'completed':
-                where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED'"
-            else: # started
-                where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0"
+            async with db.execute("SELECT COUNT(*) as c FROM academy_students WHERE telegram_id IS NULL OR telegram_id = ''") as cur:
+                counts['absent'] = (await cur.fetchone())['c']
                 
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0") as cur:
+                counts['started'] = (await cur.fetchone())['c']
+                
+            async with db.execute("SELECT COUNT(*) as c FROM users u LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )") as cur:
+                counts['waiting'] = (await cur.fetchone())['c']
+                
+            async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step = 'STEP_LINK_SUCCESS'") as cur:
+                counts['inactive'] = (await cur.fetchone())['c']
+                
+            async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
+                counts['completed'] = (await cur.fetchone())['c']
+
+            # --- 2. Fetch specific list based on status ---
+            if status == 'absent':
+                base_select = """
+                    SELECT 
+                        NULL as telegram_id, NULL as first_name, NULL as last_name, NULL as username, NULL as created_at,
+                        s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
+                        s.email as student_email, s.gender as student_gender,
+                        s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
+                        (SELECT action_type FROM student_logs WHERE student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_action,
+                        (SELECT description FROM student_logs WHERE student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_desc,
+                        (SELECT timestamp FROM student_logs WHERE student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_time
+                    FROM academy_students s
+                """
+                where_clause = " WHERE s.telegram_id IS NULL OR s.telegram_id = '' "
+                order_limit = " ORDER BY s.id DESC LIMIT 500"
+            else:
+                base_select = """
+                    SELECT 
+                        u.telegram_id, u.first_name, u.last_name, u.username, u.created_at,
+                        s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
+                        s.email as student_email, s.gender as student_gender,
+                        s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
+                        (SELECT action_type FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_action,
+                        (SELECT description FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_desc,
+                        (SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id OR student_id = s.student_id ORDER BY id DESC LIMIT 1) as last_time
+                    FROM users u
+                    LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
+                """
+                order_limit = " ORDER BY COALESCE((SELECT timestamp FROM student_logs WHERE telegram_id = u.telegram_id ORDER BY id DESC LIMIT 1), u.created_at) DESC LIMIT 500"
+                
+                if status == 'waiting':
+                    where_clause = " WHERE ( (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0 OR (s.telegram_id IS NOT NULL AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'))) )"
+                elif status == 'inactive':
+                    where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_LINK_SUCCESS'"
+                elif status == 'completed':
+                    where_clause = " WHERE s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED'"
+                else: # started
+                    where_clause = " WHERE s.telegram_id IS NULL AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0"
+                    
             async with db.execute(base_select + where_clause + order_limit) as cur:
                 rows = [dict(r) for r in await cur.fetchall()]
                 
-        return web.json_response({'success': True, 'visitors': rows, 'count': len(rows), 'status': status})
+        return web.json_response({'success': True, 'visitors': rows, 'counts': counts, 'status': status})
     except Exception as e:
         import traceback; traceback.print_exc()
         return web.json_response({'success': False, 'error': str(e)})

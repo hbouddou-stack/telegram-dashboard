@@ -1854,18 +1854,26 @@ window.setSalesFunnel = function(val, el) {
                     
                     <!-- 2. Controls Row: Mode Toggle & View Toggles -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <div style="display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow-x:auto; white-space:nowrap; max-width:100%; -webkit-overflow-scrolling:touch;">
-                            <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border); flex-shrink:0;">
-                                <span>🔵</span> بدأوا البوت <span dir="ltr" style="font-family:monospace; margin-left:4px;">(<span id="ghost-count-started">0</span>)</span>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; width:100%;">
+                            <button id="btn-funnel-absent" onclick="switchGhostMode('absent')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🔴</span> <span>لم يبدأوا</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-absent">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border); flex-shrink:0;">
-                                <span>🟠</span> صالة الانتظار <span dir="ltr" style="font-family:monospace; margin-left:4px;">(<span id="ghost-count-waiting">0</span>)</span>
+                            <button id="btn-funnel-started" onclick="switchGhostMode('started')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid rgba(59,130,246,0.3); border-radius:10px; background:rgba(59,130,246,0.1); color:#3b82f6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🔵</span> <span>زوار البوت</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-started">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; border-right:1px solid var(--border); flex-shrink:0;">
-                                <span>🟡</span> غير نشطين <span dir="ltr" style="font-family:monospace; margin-left:4px;">(<span id="ghost-count-inactive">0</span>)</span>
+                            <button id="btn-funnel-waiting" onclick="switchGhostMode('waiting')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🟠</span> <span>صالة الانتظار</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-waiting">0</span>)</span>
                             </button>
-                            <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:8px 16px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:6px; transition:0.2s; flex-shrink:0;">
-                                <span>🟢</span> مكتملون <span dir="ltr" style="font-family:monospace; margin-left:4px;">(<span id="ghost-count-completed">0</span>)</span>
+                            <button id="btn-funnel-inactive" onclick="switchGhostMode('inactive')" style="cursor:pointer; font-weight:bold; font-size:0.86rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🟡</span> <span>تلقوا الرابط</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-inactive">0</span>)</span>
+                            </button>
+                            <button id="btn-funnel-completed" onclick="switchGhostMode('completed')" style="grid-column: 1 / -1; cursor:pointer; font-weight:bold; font-size:0.9rem; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; transition:0.2s;">
+                                <div style="display:flex; align-items:center; gap:6px;"><span>🟢</span> <span>انضموا بنجاح</span></div>
+                                <span dir="ltr" style="font-family:monospace; font-size:1rem;">(<span id="ghost-count-completed">0</span>)</span>
                             </button>
                         </div>
                         
@@ -3842,12 +3850,13 @@ window.setSalesFunnel = function(val, el) {
 
         function switchGhostMode(mode) {
             ghostCurrentMode = mode;
-            const tabs = ['started', 'waiting', 'inactive', 'completed'];
+            const tabs = ['absent', 'started', 'waiting', 'inactive', 'completed'];
             const colors = {
-                'started': { bg: 'rgba(59,130,246,0.1)', text: '#3b82f6' },
-                'waiting': { bg: 'rgba(249,115,22,0.1)', text: '#f97316' },
-                'inactive': { bg: 'rgba(234,179,8,0.1)', text: '#eab308' },
-                'completed': { bg: 'rgba(34,197,94,0.1)', text: '#22c55e' }
+                'absent': { bg: 'rgba(239,68,68,0.1)', text: '#ef4444', border: 'rgba(239,68,68,0.3)' },
+                'started': { bg: 'rgba(59,130,246,0.1)', text: '#3b82f6', border: 'rgba(59,130,246,0.3)' },
+                'waiting': { bg: 'rgba(249,115,22,0.1)', text: '#f97316', border: 'rgba(249,115,22,0.3)' },
+                'inactive': { bg: 'rgba(234,179,8,0.1)', text: '#eab308', border: 'rgba(234,179,8,0.3)' },
+                'completed': { bg: 'rgba(34,197,94,0.1)', text: '#22c55e', border: 'rgba(34,197,94,0.3)' }
             };
             
             tabs.forEach(t => {
@@ -3856,9 +3865,11 @@ window.setSalesFunnel = function(val, el) {
                     if (t === mode) {
                         btn.style.background = colors[t].bg;
                         btn.style.color = colors[t].text;
+                        btn.style.border = '1px solid ' + colors[t].border;
                     } else {
-                        btn.style.background = 'transparent';
+                        btn.style.background = 'var(--bg)';
                         btn.style.color = 'var(--text2)';
+                        btn.style.border = '1px solid var(--border)';
                     }
                 }
             });
