@@ -1022,13 +1022,14 @@ async def api_crm_data(request):
     agent = request.query.get('agent', 'all')
     search = request.query.get('search', '')
     status = request.query.get('status', 'all')
-    data = crm_service.get_leads(agent_name=agent, search=search, status_filter=status)
+    refresh = request.query.get('refresh', '').lower() in ('1', 'true')
+    data = await crm_service.get_leads_async(agent_name=agent, search=search, status_filter=status, refresh_sheet=refresh)
     return web.json_response(data)
 
 async def api_crm_lead_details(request):
     import crm_service
     lead_id = request.query.get('lead_id', '')
-    details = crm_service.get_lead_details(lead_id)
+    details = await crm_service.get_lead_details_async(lead_id)
     return web.json_response(details)
 
 async def api_crm_update_lead(request):
@@ -1043,7 +1044,7 @@ async def api_crm_update_lead(request):
         note = body.get('note', '')
         agent_email = body.get('agent_email', '')
         canal = body.get('canal', 'Téléphone')
-        success = crm_service.update_lead_status(lead_id, statut, resultat, prochaine_action, date_prochaine, note, agent_email, canal)
+        success = await crm_service.update_lead_status_async(lead_id, statut, resultat, prochaine_action, date_prochaine, note, agent_email, canal)
         return web.json_response({'success': success})
     except Exception as e:
         return web.json_response({'error': str(e)}, status=400)

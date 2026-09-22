@@ -168,6 +168,9 @@
         <select id="agentSelect" class="agent-selector" onchange="filterData()">
           <option value="all">جميع الوكلاء</option>
         </select>
+        <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث من Google Sheets">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
         <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض">
           <i class="fa-solid fa-table-list"></i>
         </button>
@@ -321,9 +324,12 @@
       return 'relance';
     }
 
-    async function loadData() {
+    async function loadData(forceRefresh = false) {
+      const refreshBtn = document.getElementById('refreshBtn');
+      if (refreshBtn && forceRefresh) refreshBtn.querySelector('i').classList.add('fa-spin');
       try {
-        const res = await fetch('/api/crm/data');
+        const url = forceRefresh ? '/api/crm/data?refresh=1' : '/api/crm/data';
+        const res = await fetch(url);
         const data = await res.json();
 
         allLeads = data.leads || [];
@@ -340,9 +346,12 @@
         else if (savedAgent && uniqueAgents.includes(savedAgent)) sel.value = savedAgent;
 
         filterData();
+        if (forceRefresh) showToast('تم تحديث البيانات من Google Sheets بنجاح! 🔄');
       } catch (err) {
         console.error(err);
         document.getElementById('leadsList').innerHTML = '<div class="loader" style="color:var(--danger)">❌ خطأ في الاتصال بالخادم</div>';
+      } finally {
+        if (refreshBtn) refreshBtn.querySelector('i').classList.remove('fa-spin');
       }
     }
 
