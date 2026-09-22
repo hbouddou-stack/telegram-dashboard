@@ -4829,237 +4829,99 @@ window.setSalesFunnel = function(val, el) {
             }
         }
 
+                async function forceManualLink() {
+            const correctId = prompt("Entrez le Matricule EXACT (Student ID) pour forcer la liaison avec ce Telegram ID :");
+            if (!correctId) return;
+            const tid = currentJourneyVisitorContext.telegram_id;
+            if (!tid) { alert("Pas d'ID Telegram trouvé."); return; }
+            
+            try {
+                const res = await fetch('/api/admin/gateway/action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'manual_link', student_id: correctId, telegram_id: tid })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("✅ Liaison manuelle forcée avec succès ! L'élève a reçu ses liens.");
+                    closeSosModal();
+                    loadData(currentTab);
+                } else {
+                    alert("Erreur: " + data.error);
+                }
+            } catch(e) { alert(e); }
+        }
+
         function renderJourneyAccordion() {
-            const logs = currentJourneyLogs || [];
-            const student_id = currentJourneyVisitorContext.student_id;
+            let logs = currentJourneyLogs || [];
+            if (!logsAscending) logs = [...logs].reverse();
+            
+            if (logs.length === 0) return `<div style="text-align:center; padding:20px;">Aucun historique.</div>`;
 
-            // Define the 7 canonical stages with rules and filters
-            const stages = [
-                {
-                    id: 'stage-1',
-                    num: '1',
-                    icon: '🤖',
-                    title: 'بدء المحادثة مع البوت (Start)',
-                    sub: 'الضغط على زر Démarrer / Start لأول مرة',
-                    checkDone: (lgs) => lgs.some(l => ['BOT_STARTED', 'BOT_START'].includes(l.action_type)),
-                    filterLogs: (lgs) => lgs.filter(l => ['BOT_STARTED', 'BOT_START'].includes(l.action_type))
-                },
-                {
-                    id: 'stage-2',
-                    num: '2',
-                    icon: '🌐',
-                    title: 'فتح الصفحة وبدء التأهيل',
-                    sub: 'الضغط على زر فتح التطبيق المصغر',
-                    checkDone: (lgs) => lgs.some(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type)),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type))
-                },
-                {
-                    id: 'stage-3',
-                    num: '3',
-                    icon: '✅',
-                    title: 'الموافقة على شروط الالتزام',
-                    sub: 'الموافقة الإلزامية على التفرغ والمتابعة',
-                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_COMMITMENT_CHECKED' || (l.description && l.description.includes('الالتزام'))),
-                    filterLogs: (lgs) => lgs.filter(l => l.action_type === 'ONBOARDING_COMMITMENT_CHECKED' || (l.description && l.description.includes('الالتزام')))
-                },
-                {
-                    id: 'stage-4',
-                    num: '4',
-                    icon: '🎥',
-                    title: 'مشاهدة الفيديوهات التوجيهية',
-                    sub: 'الفيديو 1 (الترحيب)، الفيديو 2 (النظام)، الفيديو 3 (المذاكرة)',
-                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_VID3_STARTED' || l.action_type === 'ONBOARDING_CHARTER_SIGNED' || l.action_type === 'ONBOARDING_FORM_REACHED' || l.action_type === 'ONBOARDING_LINK_SUCCESS' || !!student_id),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_VID1_STARTED', 'ONBOARDING_VID2_STARTED', 'ONBOARDING_VID3_STARTED'].includes(l.action_type) || (l.description && l.description.includes('فيديو')))
-                },
-                {
-                    id: 'stage-5',
-                    num: '5',
-                    icon: '📜',
-                    title: 'توقيع الميثاق الطلابي',
-                    sub: 'التعهد الرسمي والتوقيع الرقمي في نهاية الفيديوهات',
-                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_CHARTER_SIGNED' || l.action_type === 'ONBOARDING_FORM_REACHED' || l.action_type === 'ONBOARDING_LINK_SUCCESS' || !!student_id),
-                    filterLogs: (lgs) => lgs.filter(l => l.action_type === 'ONBOARDING_CHARTER_SIGNED' || (l.description && l.description.includes('الميثاق')))
-                },
-                {
-                    id: 'stage-6',
-                    num: '6',
-                    icon: '📝',
-                    title: 'شاشة الربط وإدخال البيانات',
-                    sub: 'إدخال رقم مسار أو المعرف الدراسي للربط',
-                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_FORM_REACHED' || l.action_type === 'ONBOARDING_LINK_SUCCESS' || l.action_type === 'LINK_FAILED_NOT_FOUND' || l.action_type === 'LINK_FAILED_UNPAID' || !!student_id),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_INPUT_ERROR', 'ONBOARDING_DIRECT_FORM'].includes(l.action_type) || (l.description && (l.description.includes('استمارة') || l.description.includes('شاشة الربط'))))
-                },
-                {
-                    id: 'stage-7',
-                    num: '7',
-                    icon: '🎉',
-                    title: 'اكتمال الربط بنجاح',
-                    sub: 'تأكيد الحساب وفتح القنوات والمجموعات',
-                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_LINK_SUCCESS' || l.action_type === 'STEP_LINK_SUCCESS' || l.action_type === 'STEP_FOLDER_CLICKED' || !!student_id),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_LINK_SUCCESS', 'STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'].includes(l.action_type) || (l.description && l.description.includes('نجاح')))
-                }
-            ];
-
-            // Evaluate statuses
-            const evaluatedStages = stages.map(st => {
-                const matched = st.filterLogs(logs);
-                const isExplicitDone = st.checkDone(logs);
-                return {
-                    ...st,
-                    matchedLogs: matched,
-                    isDone: isExplicitDone
-                };
-            });
-
-            // Implicit completion: if stage N is done, stages 0..N-1 are completed
-            let highestIndex = -1;
-            for (let i = evaluatedStages.length - 1; i >= 0; i--) {
-                if (evaluatedStages[i].isDone) {
-                    highestIndex = i;
-                    break;
-                }
-            }
-            for (let i = 0; i <= highestIndex; i++) {
-                evaluatedStages[i].isDone = true;
-            }
-
-            // Determine active/current stage (first not done, or last if all done)
-            let currentStageIdx = evaluatedStages.findIndex(s => !s.isDone);
-            if (currentStageIdx === -1) currentStageIdx = evaluatedStages.length - 1;
-
-            let html = `
-                <div style="display:flex; flex-direction:column; gap:12px; padding:6px 2px;">
-            `;
-
-            evaluatedStages.forEach((st, idx) => {
-                const isCurrent = idx === currentStageIdx && !st.isDone;
-                const isCompleted = st.isDone;
-                const isBlocked = isCurrent && st.id === 'stage-5' && st.matchedLogs.some(l => l.action_type === 'ONBOARDING_INPUT_ERROR');
-                
-                // Accordion opens automatically if it's the current active stage, or if it's stage-5 and has errors, or if completed and it's the final stage
-                const isOpenByDefault = isCurrent || (isCompleted && idx === evaluatedStages.length - 1) || (st.id === 'stage-5' && st.matchedLogs.length > 0);
-
-                let statusColor = '#64748b';
-                let statusBg = 'rgba(100, 116, 139, 0.08)';
-                let statusBorder = 'rgba(100, 116, 139, 0.2)';
-                let statusBadge = '<span style="background:rgba(100,116,139,0.12); color:#64748b; padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:bold;">⏳ في الانتظار</span>';
-
-                if (isCompleted) {
-                    statusColor = '#10b981';
-                    statusBg = 'rgba(16, 185, 129, 0.06)';
-                    statusBorder = 'rgba(16, 185, 129, 0.3)';
-                    statusBadge = '<span style="background:rgba(16,185,129,0.15); color:#10b981; padding:3px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold;">✅ مكتملة بنجاح</span>';
-                } else if (isBlocked) {
-                    statusColor = '#ef4444';
-                    statusBg = 'rgba(239, 68, 68, 0.06)';
-                    statusBorder = 'rgba(239, 68, 68, 0.35)';
-                    statusBadge = '<span style="background:rgba(239,68,68,0.15); color:#ef4444; padding:3px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold;">⚠️ عالق (خطأ في البيانات)</span>';
-                } else if (isCurrent) {
-                    statusColor = '#f59e0b';
-                    statusBg = 'rgba(245, 158, 11, 0.06)';
-                    statusBorder = 'rgba(245, 158, 11, 0.4)';
-                    statusBadge = '<span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:3px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold;">📍 المحطة الحالية</span>';
-                }
-
-                // Sub-status specifics for Stage 3 (Videos)
-                let extraSubContent = '';
-                if (st.id === 'stage-3') {
-                    const hasV1 = logs.some(l => l.action_type === 'ONBOARDING_VID1_STARTED' || (l.description && l.description.includes('فيديو 1')));
-                    const hasV2 = logs.some(l => l.action_type === 'ONBOARDING_VID2_STARTED' || (l.description && l.description.includes('فيديو 2')));
-                    const hasV3 = logs.some(l => l.action_type === 'ONBOARDING_VID3_STARTED' || (l.description && l.description.includes('فيديو 3')));
-                    
-                    extraSubContent = `
-                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; margin-bottom:8px;">
-                            <span style="font-size:0.73rem; padding:3px 8px; border-radius:6px; border:1px solid ${hasV1 || isCompleted ? '#10b981' : 'var(--border)'}; background:${hasV1 || isCompleted ? 'rgba(16,185,129,0.1)' : 'var(--bg)'}; color:${hasV1 || isCompleted ? '#10b981' : 'var(--text2)'}; font-weight:bold;">
-                                ${hasV1 || isCompleted ? '✓' : '•'} فيديو 1: الترحيب والتعريف
-                            </span>
-                            <span style="font-size:0.73rem; padding:3px 8px; border-radius:6px; border:1px solid ${hasV2 || isCompleted ? '#10b981' : 'var(--border)'}; background:${hasV2 || isCompleted ? 'rgba(16,185,129,0.1)' : 'var(--bg)'}; color:${hasV2 || isCompleted ? '#10b981' : 'var(--text2)'}; font-weight:bold;">
-                                ${hasV2 || isCompleted ? '✓' : '•'} فيديو 2: النظام الدراسي
-                            </span>
-                            <span style="font-size:0.73rem; padding:3px 8px; border-radius:6px; border:1px solid ${hasV3 || isCompleted ? '#10b981' : 'var(--border)'}; background:${hasV3 || isCompleted ? 'rgba(16,185,129,0.1)' : 'var(--bg)'}; color:${hasV3 || isCompleted ? '#10b981' : 'var(--text2)'}; font-weight:bold;">
-                                ${hasV3 || isCompleted ? '✓' : '•'} فيديو 3: طريقة المذاكرة
-                            </span>
-                        </div>
-                    `;
-                }
-
-                // Sub-status specifics for Stage 5 (Errors counter)
-                if (st.id === 'stage-5') {
-                    const errorLogs = st.matchedLogs.filter(l => l.action_type === 'ONBOARDING_INPUT_ERROR');
-                    if (errorLogs.length > 0) {
-                        extraSubContent += `
-                            <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:6px 10px; margin-top:8px; margin-bottom:8px; font-size:0.76rem; color:#ef4444; font-weight:bold; display:flex; align-items:center; gap:6px;">
-                                <span>⚠️</span>
-                                <span>تم رصد ${errorLogs.length} محاولات إدخال خاطئة أو غير متطابقة من الزائر.</span>
-                            </div>
-                        `;
+            let sessions = [];
+            let currentSession = [];
+            
+            for (let i = 0; i < logs.length; i++) {
+                const l = logs[i];
+                if (currentSession.length === 0) {
+                    currentSession.push(l);
+                } else {
+                    const lastLog = currentSession[currentSession.length - 1];
+                    const t1 = new Date(lastLog.timestamp).getTime();
+                    const t2 = new Date(l.timestamp).getTime();
+                    // gap > 60 mins -> new session
+                    if (Math.abs(t2 - t1) > 3600000) {
+                        sessions.push([...currentSession]);
+                        currentSession = [l];
+                    } else {
+                        currentSession.push(l);
                     }
                 }
+            }
+            if (currentSession.length > 0) sessions.push(currentSession);
 
-                // Sub-status specifics for Stage 6 (Linked info)
-                if (st.id === 'stage-6' && isCompleted) {
-                    extraSubContent += `
-                        <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:6px 10px; margin-top:8px; margin-bottom:8px; font-size:0.76rem; color:#10b981; font-weight:bold; display:flex; align-items:center; gap:6px;">
-                            <span>🎉</span>
-                            <span>الحساب مرتبط بنجاح برقم الطالب: <strong>${student_id || 'طالب مفعّل'}</strong></span>
-                        </div>
-                    `;
-                }
+            let html = `<div style="display:flex; flex-direction:column; gap:12px; padding:6px 2px;">`;
+
+            sessions.forEach((sess, idx) => {
+                const sessStart = new Date(sess[0].timestamp);
+                const dayStr = sessStart.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                
+                const hasSuccess = sess.some(l => ['ONBOARDING_LINK_SUCCESS', 'STEP_LINK_SUCCESS'].includes(l.action_type));
+                const hasSos = sess.some(l => l.action_type === 'SOS_REQUESTED');
+                const hasError = sess.some(l => l.action_type && (l.action_type.includes('ERROR') || l.action_type.includes('FAILED')));
+                
+                let icon = '🔄';
+                if (hasSuccess) icon = '🎉';
+                else if (hasSos) icon = '🆘';
+                else if (hasError) icon = '❌';
+
+                const color = hasSuccess ? 'var(--accent)' : (hasSos ? '#ef4444' : 'var(--text1)');
+                const bg = hasSuccess ? 'rgba(52, 199, 89, 0.1)' : 'var(--bg2)';
 
                 html += `
-                    <div style="background:var(--surface); border:1px solid ${statusBorder}; border-radius:12px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
-                        <!-- Accordion Header Bar (Clickable) -->
-                        <div onclick="toggleAccordionStage('${st.id}')" 
-                             style="cursor:pointer; padding:12px 14px; background:${statusBg}; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="width:32px; height:32px; border-radius:50%; background:var(--surface); color:${statusColor}; border:2px solid ${statusColor}; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem; flex-shrink:0;">
-                                    ${isCompleted ? '✓' : st.num}
-                                </div>
-                                <div>
-                                    <div style="font-weight:bold; font-size:0.9rem; color:var(--text1); display:flex; align-items:center; gap:6px;">
-                                        <span>${st.icon}</span>
-                                        <span>المرحلة ${st.num}: ${st.title}</span>
-                                    </div>
-                                    <div style="font-size:0.75rem; color:var(--text2); margin-top:2px;">
-                                        ${st.sub}
-                                    </div>
-                                </div>
+                    <div style="background:${bg}; border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+                        <div style="padding:15px; display:flex; gap:15px; align-items:center; cursor:pointer;" onclick="const b=document.getElementById('sess-${idx}-body'); b.style.display=b.style.display==='none'?'block':'none';">
+                            <div style="width:36px; height:36px; border-radius:18px; background:var(--bg1); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border:2px solid ${color};">
+                                ${icon}
                             </div>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                ${statusBadge}
-                                <span id="${st.id}-arrow" style="font-size:0.8rem; color:var(--text2);">${isOpenByDefault ? '▲' : '▼'}</span>
+                            <div style="flex:1;">
+                                <div style="font-weight:bold; color:${color}; font-size:1.1rem; margin-bottom:2px;">Tentative ${idx + 1}</div>
+                                <div style="font-size:0.85rem; color:var(--text2);">${dayStr} — ${sess.length} actions</div>
                             </div>
+                            <div style="color:var(--text2);">▼</div>
                         </div>
-
-                        <!-- Accordion Body Content -->
-                        <div id="${st.id}-body" style="display:${isOpenByDefault ? 'block' : 'none'}; padding:12px 14px; border-top:1px solid ${statusBorder};">
-                            ${extraSubContent}
-
-                            ${st.matchedLogs.length > 0 ? `
-                                <div style="font-size:0.75rem; font-weight:bold; color:var(--text2); margin-bottom:6px;">
-                                    📌 سجل الأحداث المرتبطة بهذه المرحلة (${st.matchedLogs.length}):
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:6px;">
-                                    ${st.matchedLogs.map((l, lIdx) => {
-                                        const dt = formatLogTimestampFrenchDigits(l.timestamp);
-                                        const isErr = l.action_type === 'ONBOARDING_INPUT_ERROR';
-                                        return `
-                                            <div style="background:var(--bg); border:1px solid ${isErr ? 'rgba(239,68,68,0.3)' : 'var(--border)'}; border-radius:8px; padding:7px 10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                                                <div style="font-size:0.79rem; color:${isErr ? '#ef4444' : 'var(--text1)'}; font-weight:${isErr ? 'bold' : 'normal'};">
-                                                    ${isErr ? '⚠️ ' : '• '} ${l.description || l.action_type}
-                                                </div>
-                                                <span dir="ltr" style="font-family:monospace; font-size:0.72rem; color:var(--text2); background:var(--surface); padding:2px 6px; border-radius:4px; border:1px solid var(--border);">
-                                                    🕒 ${dt}
-                                                </span>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            ` : `
-                                <div style="font-size:0.78rem; color:var(--text2); padding:8px 4px; font-style:italic;">
-                                    ${isCompleted ? 'تم اجتياز هذه المرحلة بنجاح مع تقدم الطالب للمرحلة التالية.' : 'لم يتم تسجيل أي نشاط في هذه المحطة حتى الآن.'}
-                                </div>
-                            `}
+                        <div id="sess-${idx}-body" style="display:${idx === sessions.length - 1 ? 'block' : 'none'}; padding:0 15px 15px 15px; border-top:1px dashed var(--border);">
+                            <div style="padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+                                ${sess.map(l => `
+                                    <div style="display:flex; gap:10px; align-items:flex-start; font-size:0.9rem; padding:6px; background:var(--bg1); border-radius:6px;">
+                                        <div style="color:var(--text2); font-family:monospace; font-size:0.8rem; margin-top:2px;">${formatLogTimestampFrenchDigits(l.timestamp).split(' ')[1]}</div>
+                                        <div style="flex:1;">
+                                            <div style="font-weight:600; color:var(--text1); margin-bottom:2px;">${formatActionTypeArabic(l.action_type)}</div>
+                                            ${l.description ? `<div style="color:var(--text2); font-size:0.85rem;">${l.description}</div>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -5257,6 +5119,10 @@ window.setSalesFunnel = function(val, el) {
             currentJourneyLogs = [];
 
             dbIdentity.innerHTML = student_id ? `<strong>المعرّف:</strong> <span style="font-family:monospace; font-weight:bold;">${student_id}</span><br><strong>الاسم:</strong> ${displayName}` : `<span style="color:var(--text2);">زائر مجهول (غير مرتبط بعد)</span>`;
+            if (telegram_id) {
+                const forceBtn = document.getElementById('btn-force-link');
+                if (forceBtn) forceBtn.style.display = 'block';
+            }
             tgIdentity.innerHTML = `<strong>Telegram ID:</strong> <span style="font-family:monospace; font-weight:bold;">${telegram_id}</span><br><strong>الاسم:</strong> ${displayName}`;
             logsBody.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري جلب المسار الكامل من البداية...</div></div>';
             if (countSpan) countSpan.textContent = '';
