@@ -3673,8 +3673,6 @@ window.setSalesFunnel = function(val, el) {
                                 style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:5px;">
                             <span>🎯</span> محطات المسار (المراحل الـ 7)
                         </button>
-                        <button id="btn-timeline-chrono" onclick="setTimelineViewMode('chrono')" style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:5px;"><span>🕒</span> زمني (Chronologique)</button>
-                        <button id="btn-timeline-chrono" onclick="setTimelineViewMode('chrono')" style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:5px;"><span>🕒</span> زمني (Chronologique)</button>
                         <button id="btn-timeline-grouped" onclick="setTimelineViewMode('grouped')" 
                                 style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:5px;">
                             <span>⚡</span> المسار الذكي
@@ -4630,7 +4628,6 @@ window.setSalesFunnel = function(val, el) {
 
         let currentJourneyLogs = [];
         window.logsAscending = true;
-        window.logsAscending = true;
         let currentTimelineView = 'accordion'; // 'accordion', 'grouped', or 'raw'
         let currentJourneyVisitorContext = { telegram_id: '', displayName: '', student_id: '' };
 
@@ -4664,15 +4661,11 @@ window.setSalesFunnel = function(val, el) {
             currentTimelineView = mode;
             const btnAccordion = document.getElementById('btn-timeline-accordion');
             const btnGrouped = document.getElementById('btn-timeline-grouped');
-            const btnChrono = document.getElementById('btn-timeline-chrono');
-            const btnChrono = document.getElementById('btn-timeline-chrono');
             const btnRaw = document.getElementById('btn-timeline-raw');
 
             [
                 { btn: btnAccordion, key: 'accordion' },
                 { btn: btnGrouped, key: 'grouped' },
-                { btn: btnChrono, key: 'chrono' },
-                { btn: btnChrono, key: 'chrono' },
                 { btn: btnRaw, key: 'raw' }
             ].forEach(item => {
                 if (item.btn) {
@@ -5238,37 +5231,7 @@ window.setSalesFunnel = function(val, el) {
                 if(data.success) {
                     alert('✅ Liaison forcée avec succès ! Le message a été envoyé à l\'élève.');
                     document.getElementById('log-detail-overlay').style.display='none';
-                    document.getElementById('univ-student-modal').style.display='none';
-                    if(typeof fetchStudents === 'function') fetchStudents();
-                } else {
-                    alert('❌ Erreur : ' + (data.error || 'Erreur inconnue'));
-                }
-            } catch(e) {
-                alert('❌ Erreur serveur : ' + e.message);
-            }
-        }
-
-        
-        async function forceManualLink() {
-            if(!currentJourneyVisitorContext) return;
-            const tgId = currentJourneyVisitorContext.telegram_id;
-            if(!tgId || tgId === '-' || tgId === 'null') {
-                alert('Impossible : aucun Telegram ID trouvé pour cet utilisateur.');
-                return;
-            }
-            const sId = prompt("Veuillez saisir le NUMÉRO ÉTUDIANT (Matricule) EXACT de l'élève à lier à ce compte Telegram :\n\n(Le bot va forcer la liaison et lui envoyer un message de bienvenue)");
-            if(!sId) return;
-            
-            try {
-                const res = await fetch('/api/admin/gateway/action', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ action: 'manual_link', telegram_id: tgId, student_id: sId })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert('✅ Liaison forcée avec succès ! Le message a été envoyé à l\'élève.');
-                    document.getElementById('log-detail-overlay').style.display='none';
-                    document.getElementById('univ-student-modal').style.display='none';
+                    if(document.getElementById('univ-student-modal')) document.getElementById('univ-student-modal').style.display='none';
                     if(typeof fetchStudents === 'function') fetchStudents();
                 } else {
                     alert('❌ Erreur : ' + (data.error || 'Erreur inconnue'));
@@ -5319,17 +5282,7 @@ window.setSalesFunnel = function(val, el) {
                 btnForceLinkUniv.style.display = 'none';
             }
         }
-        
-        const btnForceLinkUniv = document.getElementById('btn-force-link-univ');
-        if (btnForceLinkUniv) {
-            if (telegram_id && telegram_id !== '-' && telegram_id !== 'null' && telegram_id !== 0) {
-                btnForceLinkUniv.style.display = 'inline-block';
-            } else {
-                btnForceLinkUniv.style.display = 'none';
-            }
-        }
         modal.style.display = 'flex';
-
 
 
             // Set default view to 'accordion' (the clearest, step-by-step funnel view)
@@ -9088,27 +9041,7 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
             }
 
             document.body.appendChild(modal);
-            
-        const btnForceLinkUniv = document.getElementById('btn-force-link-univ');
-        if (btnForceLinkUniv) {
-            if (telegram_id && telegram_id !== '-' && telegram_id !== 'null' && telegram_id !== 0) {
-                btnForceLinkUniv.style.display = 'inline-block';
-            } else {
-                btnForceLinkUniv.style.display = 'none';
-            }
-        }
-        
-        const btnForceLinkUniv = document.getElementById('btn-force-link-univ');
-        if (btnForceLinkUniv) {
-            if (telegram_id && telegram_id !== '-' && telegram_id !== 'null' && telegram_id !== 0) {
-                btnForceLinkUniv.style.display = 'inline-block';
-            } else {
-                btnForceLinkUniv.style.display = 'none';
-            }
-        }
-        modal.style.display = 'flex';
-
-
+            modal.style.display = 'flex';
             container.innerHTML = '<div style="text-align:center; padding:60px 15px; color:#64748b; font-size:1.1rem;" dir="rtl">⏳ جارٍ فحص الحسابات وتحليل مؤشرات الشبهة والتكرار...</div>';
 
             let sourceList = [];
@@ -13999,7 +13932,6 @@ function toggleFloatingCrmMenu() {
                 </div>
             </div>
             <button id="btn-force-link-univ" onclick="forceManualLink()" style="background:#8b5cf6; color:white; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; margin-right:10px; display:none;">🔗 Forcer Liaison</button>
-            <button id="btn-force-link-univ" onclick="forceManualLink()" style="background:#8b5cf6; color:white; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:bold; margin-right:10px; display:none;">🔗 Forcer Liaison</button>
             <button onclick="document.getElementById('univ-student-modal').style.display='none'" style="background:rgba(239,68,68,0.1); color:#ef4444; border:none; width:40px; height:40px; border-radius:50%; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff';" onmouseout="this.style.background='rgba(239,68,68,0.1)';this.style.color='#ef4444';">✕</button>
         </div>
 
@@ -14110,7 +14042,6 @@ function toggleFloatingCrmMenu() {
             if (tabId === 'funnel') setTimelineViewMode('accordion');
             else if (tabId === 'smart') setTimelineViewMode('grouped');
             else if (tabId === 'chrono') setTimelineViewMode('chrono');
-            else if (tabId === 'chrono') setTimelineViewMode('chrono');
             else if (tabId === 'raw') setTimelineViewMode('raw');
         }
     }
@@ -14173,27 +14104,7 @@ function toggleFloatingCrmMenu() {
         // Load Logs
         document.getElementById('logs-body').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري جلب بيانات الطالب والسجل...</div></div>';
         
-        
-        const btnForceLinkUniv = document.getElementById('btn-force-link-univ');
-        if (btnForceLinkUniv) {
-            if (telegram_id && telegram_id !== '-' && telegram_id !== 'null' && telegram_id !== 0) {
-                btnForceLinkUniv.style.display = 'inline-block';
-            } else {
-                btnForceLinkUniv.style.display = 'none';
-            }
-        }
-        
-        const btnForceLinkUniv = document.getElementById('btn-force-link-univ');
-        if (btnForceLinkUniv) {
-            if (telegram_id && telegram_id !== '-' && telegram_id !== 'null' && telegram_id !== 0) {
-                btnForceLinkUniv.style.display = 'inline-block';
-            } else {
-                btnForceLinkUniv.style.display = 'none';
-            }
-        }
         modal.style.display = 'flex';
-
-
         switchUnivTab('identity'); 
         
         try {
