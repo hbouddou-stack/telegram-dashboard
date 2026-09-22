@@ -287,6 +287,23 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
                     [InlineKeyboardButton(text="💬 مركز الدعم والاستفسارات", web_app=WebAppInfo(url=f"{base_url}/ask.html?telegram_id={user_id}&tg_name={q_name}&tg_user={q_user}&student_id={s_dict['student_id']}&v=rag_v2"))]
                 ])
         else:
+            # Smart Blocking Logic for Unknown Organic Users
+            if not start_arg:
+                # Organic. Check if they have a history of a valid source in bot_visitors
+                async with db.execute("SELECT source FROM bot_visitors WHERE telegram_id = ?", (user_id,)) as cur:
+                    row = await cur.fetchone()
+                    original_source = row[0] if row else 'organic'
+                
+                # If they never used a link, block them!
+                if original_source == 'organic':
+                    await message.answer(
+                        "❌ <b>التسجيل عبر دعوة فقط (Inscription sur invitation uniquement)</b>\n\n"
+                        "عذراً، يجب عليك استخدام الرابط المخصص الذي تم إرساله إليك للوصول إلى هذه الخدمة.\n"
+                        "Désolé, vous devez utiliser le lien spécifique qui vous a été envoyé pour accéder à ce service.",
+                        parse_mode="HTML"
+                    )
+                    return
+
             welcome_text = (
                 f"مرحباً بك يا <b>{first_name}</b> في أكاديمية الباجي! 🎓\n\n"
                 f"هذا البوت هو بوابتك الرسمية لتفعيل عضويتك والانضمام للمجموعات الدراسية المقررة.\n\n"
