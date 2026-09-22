@@ -1641,6 +1641,15 @@ window.setSalesFunnel = function(val, el) {
             <button id="sos-filter-open" onclick="switchSosSubtab('open')" style="flex:1; padding:12px; border:none; background:var(--accent); color:white; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem;">⏳ قيد الانتظار (En attente)</button>
             <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ مغلق (Fermé)</button>
         </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="font-weight:bold; color:var(--text1);">Vue :</div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="window.sosViewMode='list'; renderSosList()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer;">Liste</button>
+                <button onclick="window.sosViewMode='table'; renderSosList()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer;">Tableau</button>
+            </div>
+        </div>
+
         <div id="sos-list"><div class="no-items">جاري التحميل...</div></div>
     </div>
     
@@ -11026,170 +11035,96 @@ async function toggleStudentValidity() {
             const q = (document.getElementById('sos-search-input') ? document.getElementById('sos-search-input').value.toLowerCase() : '');
             
             const filtered = rawSosList.filter(s => {
-                // State filter
-                const matchState = (activeSosSubtabState === 'open') 
-                    ? (s.status === 'open' || !s.status) 
-                    : (s.status === 'closed' || s.status === 'resolved');
+                const matchState = (activeSosSubtabState === 'open') ? (s.status === 'open' || !s.status) : (s.status === 'closed' || s.status === 'resolved');
                 if (!matchState) return false;
-                
-                // Gender filter
                 const g = String(s.gender || '').toLowerCase();
-                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
-                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
-                
-                const matchGender = (activeSosGenderFilter === 'all')
-                    || (activeSosGenderFilter === 'homme' && isM)
-                    || (activeSosGenderFilter === 'femme' && isF);
+                const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('رج');
+                const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أن');
+                const matchGender = (activeSosGenderFilter === 'all') || (activeSosGenderFilter === 'homme' && isM) || (activeSosGenderFilter === 'femme' && isF);
                 if (!matchGender) return false;
-                
-                // Search filter
                 if (q) {
-                    const matchSearch = (s.email_tentative || '').toLowerCase().includes(q)
-                        || (s.student_id_tentative || '').toLowerCase().includes(q)
-                        || String(s.telegram_id || '').toLowerCase().includes(q)
-                        || (s.first_name || '').toLowerCase().includes(q)
-                        || (s.last_name || '').toLowerCase().includes(q)
-                        || (s.tg_first_name || '').toLowerCase().includes(q)
-                        || (s.tg_username || '').toLowerCase().includes(q)
-                        || (s.source || '').toLowerCase().includes(q);
+                    const matchSearch = (s.email_tentative || '').toLowerCase().includes(q) || (s.student_id_tentative || '').toLowerCase().includes(q) || String(s.telegram_id || '').toLowerCase().includes(q) || (s.first_name || '').toLowerCase().includes(q) || (s.last_name || '').toLowerCase().includes(q) || (s.tg_first_name || '').toLowerCase().includes(q) || (s.tg_username || '').toLowerCase().includes(q) || (s.source || '').toLowerCase().includes(q);
                     if (!matchSearch) return false;
                 }
-                
                 return true;
             });
 
             if(filtered.length === 0) {
-                list.innerHTML = activeSosSubtabState === 'open' 
-                    ? '<div class="no-items">✅ لا توجد أي طلبات مساعدة قيد المعالجة.</div>'
-                    : '<div class="no-items">لا توجد طلبات تم حلها بعد.</div>';
+                list.innerHTML = activeSosSubtabState === 'open' ? '<div class="no-items">لا توجد أي طلبات مساعدة قيد الانتظار.</div>' : '<div class="no-items">لا توجد طلبات في هذا القسم.</div>';
                 return;
             }
 
             list.innerHTML = '';
-            filtered.forEach(sos => {
-                const div = document.createElement('div');
-                div.className = 'sos-item';
-                div.onclick = () => openSosModal(sos);
-                const statusBadge = sos.status === 'closed' || sos.status === 'resolved'
-                    ? '<span class="badge badge-linked">تم حلها</span>'
-                    : '<span class="badge badge-open">قيد المعالجة</span>';
+            
+            if (window.sosViewMode === 'table') {
+                let tableHtml = `<div style="overflow-x:auto;">
+                    <table class="data-table" style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:var(--surface); border-bottom:1px solid var(--border); text-align:right;">
+                                <th style="padding:10px;">Date</th>
+                                <th style="padding:10px;">Type (SOS 1 / 2)</th>
+                                <th style="padding:10px;">Étudiant / TG</th>
+                                <th style="padding:10px;">Matricule / Email</th>
+                                <th style="padding:10px;">Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
                 
-                const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
-                
-                let matchedGhost = hasValidTid ? (rawGhostList || []).find(v => v.telegram_id && String(v.telegram_id) === String(sos.telegram_id)) : null;
-                const matchedStudent = allStudents.find(st => 
-                    (hasValidTid && st.telegram_id && String(st.telegram_id) === String(sos.telegram_id)) ||
-                    (sos.email_tentative && st.email && st.email.trim().toLowerCase() === sos.email_tentative.trim().toLowerCase()) ||
-                    (sos.student_id_tentative && st.student_id && String(st.student_id).trim() === String(sos.student_id_tentative).trim())
-                );
+                filtered.forEach(sos => {
+                    const dt = new Date(sos.timestamp).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+                    const sourceType = (sos.source === 'waiting_room') ? '<span style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">SOS 2 (Attente)</span>' : '<span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">SOS 1 (Avant Form)</span>';
+                    const name = sos.first_name ? `${sos.first_name} ${sos.last_name}` : `${sos.tg_first_name} ${sos.tg_username ? '(@'+sos.tg_username+')' : ''}`;
+                    const mat = sos.student_id_tentative || '-';
+                    const email = sos.email_tentative || '-';
+                    
+                    tableHtml += `
+                        <tr style="border-bottom:1px solid var(--border); cursor:pointer;" onclick="openSosModal(${sos.id})" class="sos-row-hover">
+                            <td style="padding:10px; font-size:0.85rem; color:var(--text2);">${dt}</td>
+                            <td style="padding:10px;">${sourceType}</td>
+                            <td style="padding:10px; font-weight:bold; color:var(--primary);">${name}</td>
+                            <td style="padding:10px; font-size:0.85rem;"><div style="font-family:monospace; color:var(--text1);">${mat}</div><div style="color:var(--text2);">${email}</div></td>
+                            <td style="padding:10px; font-size:0.85rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text1);">${sos.message || ''}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += `</tbody></table></div>`;
+                list.innerHTML = tableHtml;
+            } else {
+                // List Mode
+                filtered.forEach(sos => {
+                    const div = document.createElement('div');
+                    div.className = 'sos-item';
+                    div.onclick = () => openSosModal(sos);
+                    const statusBadge = sos.status === 'closed' || sos.status === 'resolved' ? '<span class="badge badge-linked">تم الرد</span>' : '<span class="badge badge-open">قيد الانتظار</span>';
+                    const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
+                    const dt = new Date(sos.timestamp).toLocaleString('ar-MA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+                    
+                    const sourceType = (sos.source === 'waiting_room') ? '<span style="background:rgba(245,158,11,0.1); color:#d97706; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; border:1px solid rgba(245,158,11,0.3);">SOS 2 (Salle d\'attente)</span>' : '<span style="background:rgba(239,68,68,0.1); color:#dc2626; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; border:1px solid rgba(239,68,68,0.3);">SOS 1 (Avant formulaire)</span>';
 
-                // If ghost not found by telegram_id, match by logs / message / email in rawGhostList
-                if (!matchedGhost && rawGhostList && rawGhostList.length > 0) {
-                    const sMsg = (sos.message || '').trim().toLowerCase();
-                    const sEm = (sos.email_tentative || '').trim().toLowerCase();
-
-                    matchedGhost = rawGhostList.find(v => {
-                        const vDesc = (v.last_desc || '').toLowerCase();
-                        if (sMsg && sMsg.length >= 3 && vDesc.includes(sMsg)) return true;
-                        if (sEm && sEm.length >= 6 && sEm.includes('@') && !sEm.startsWith('@') && vDesc.includes(sEm)) return true;
-                        return false;
-                    });
-                }
-
-                const effectiveTid = sos.telegram_id || (matchedGhost ? matchedGhost.telegram_id : null);
-                const isAdmin = String(effectiveTid) === '2045194295';
-
-                const dbFirstName = sos.student_first_name || sos.first_name || (matchedStudent ? matchedStudent.first_name : '');
-                const dbLastName = sos.student_last_name || sos.last_name || (matchedStudent ? matchedStudent.last_name : '');
-                const hasDbName = !!(dbFirstName || dbLastName);
-                const dbFullName = (dbFirstName + ' ' + dbLastName).trim();
-
-                // Telegram info
-                let tgFirst = sos.tg_first_name || (matchedGhost ? matchedGhost.first_name : '') || (matchedStudent ? (matchedStudent.telegram_name || matchedStudent.tg_first_name) : '');
-                let tgLast = sos.tg_last_name || (matchedGhost ? matchedGhost.last_name : '') || (matchedStudent ? matchedStudent.tg_last_name : '');
-                let tgFullName = (tgFirst + (tgLast ? ' ' + tgLast : '')).trim();
-                let tgUsername = (sos.tg_username || (matchedGhost ? matchedGhost.username : '') || (matchedStudent ? (matchedStudent.telegram_username || matchedStudent.tg_username) : '') || '').replace(/^@/, '');
-
-                if (isAdmin && !tgFullName) {
-                    tgFullName = 'Houssam';
-                }
-
-                let nameBadgeHtml = '';
-                if (isAdmin) {
-                    nameBadgeHtml = `
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <span style="font-weight:800; color:#f59e0b; font-size:1.02rem; display:flex; align-items:center; gap:4px;">
-                                <span>👑</span>
-                                <span>${tgFullName || 'المشرف (Houssam)'}</span>
-                            </span>
-                            ${tgUsername ? `<span dir="ltr" style="font-size:0.82rem; font-weight:800; color:#0088cc; background:rgba(0,136,204,0.15); border:1px solid rgba(0,136,204,0.3); padding:1px 7px; border-radius:6px;">@${tgUsername}</span>` : ''}
-                            <span style="font-size:0.75rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:1px 6px; border-radius:6px;">(تجربة المشرف Admin)</span>
+                    let metaHtml = `
+                        <div class="meta-row">
+                            <span><span class="meta-icon">👤</span> ${sos.first_name || sos.tg_first_name || 'غير معروف'} ${sos.last_name || ''} ${sos.tg_username ? '(@'+sos.tg_username+')' : ''}</span>
                         </div>
                     `;
-                } else if (hasDbName) {
-                    nameBadgeHtml = `
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <span style="font-weight:800; color:var(--accent); font-size:1.02rem;">👤 ${dbFullName}</span>
-                            ${tgUsername ? `<span dir="ltr" style="font-size:0.8rem; font-weight:700; color:#0a84ff; background:rgba(10,132,255,0.12); padding:1px 6px; border-radius:6px;">@${tgUsername}</span>` : ''}
-                            ${tgFullName && tgFullName !== dbFullName ? `<span style="font-size:0.8rem; color:var(--text2); display:flex; align-items:center; gap:3px;">✈️ ${tgFullName}</span>` : ''}
+                    if (sos.email_tentative) metaHtml += `<div class="meta-row"><span><span class="meta-icon">📧</span> ${sos.email_tentative}</span></div>`;
+                    if (sos.student_id_tentative) metaHtml += `<div class="meta-row"><span><span class="meta-icon">🎓</span> ${sos.student_id_tentative}</span></div>`;
+                    if (hasValidTid) metaHtml += `<div class="meta-row"><span><span class="meta-icon">💬</span> TG ID: ${sos.telegram_id}</span></div>`;
+                    
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:flex-start;">
+                            <div style="display:flex; gap:10px; flex-direction:column;">
+                                ${statusBadge}
+                                ${sourceType}
+                            </div>
+                            <span style="font-size:0.8rem; color:var(--text2);">${dt}</span>
                         </div>
+                        <div style="color:var(--text1); font-weight:bold; margin-bottom:12px; font-size:0.95rem;">${sos.message || 'بدون رسالة'}</div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">${metaHtml}</div>
                     `;
-                } else if (tgFullName || tgUsername) {
-                    nameBadgeHtml = `
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <span style="font-weight:800; color:#0088cc; font-size:1.02rem; display:flex; align-items:center; gap:4px;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0088cc" style="vertical-align:middle;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                                <span>${tgFullName || 'مستخدم تيليجرام'}</span>
-                            </span>
-                            ${tgUsername ? `<span dir="ltr" style="font-size:0.82rem; font-weight:800; color:#0088cc; background:rgba(0,136,204,0.15); border:1px solid rgba(0,136,204,0.3); padding:1px 7px; border-radius:6px;">@${tgUsername}</span>` : ''}
-                            <span style="font-size:0.75rem; font-weight:700; color:#f59e0b; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:1px 6px; border-radius:6px;">(زائر تيليجرام - غير مسجل بالقاعدة)</span>
-                        </div>
-                    `;
-                } else if (effectiveTid) {
-                    nameBadgeHtml = `
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-weight:700; color:#0088cc; font-size:0.95rem;">✈️ زائر تيليجرام</span>
-                            <span dir="ltr" style="font-size:0.78rem; font-family:monospace; color:var(--text2); background:rgba(0,136,204,0.1); padding:2px 6px; border-radius:4px;">ID: ${effectiveTid}</span>
-                        </div>
-                    `;
-                } else {
-                    nameBadgeHtml = `
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-weight:700; color:var(--text2); font-size:0.95rem;">👤 غير معروف</span>
-                        </div>
-                    `;
-                }
-                
-                const g = (sos.gender || '').toLowerCase();
-                if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
-                    div.style.borderLeft = '6px solid #0084ff';
-                    div.style.backgroundColor = 'rgba(0,132,255,0.15)';
-                } else if (g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث')) {
-                    div.style.borderLeft = '6px solid #ec4899';
-                    div.style.backgroundColor = 'rgba(236,72,153,0.15)';
-                }
-                
-                div.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        ${nameBadgeHtml}
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            ${statusBadge}
-                            <button onclick="event.stopPropagation(); deleteSosTicket(${sos.id})" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); color:#ef4444; border-radius:6px; padding:2px 7px; font-size:0.75rem; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:3px;" title="حذف نهائي">🗑️ حذف</button>
-                        </div>
-                    </div>
-                    <div style="font-weight:700; font-size:0.9rem; color:var(--text1); margin-bottom:4px;">📧 ${sos.email_tentative || 'غير محدد'}</div>
-                    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:8px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                        <span>🕒 <span dir="ltr">${formatDateArabic(sos.timestamp)}</span></span>
-                        ${sos.student_id_tentative ? `<span>🔢 الرقم المدخل: <code style="color:#ff9f0a; font-weight:800;">${sos.student_id_tentative}</code></span>` : ''}
-                        ${sos.source ? `<span>🔗 المصدر: <code style="color:#a855f7; font-weight:800;">${sos.source}</code></span>` : ''}
-                    </div>
-                    <div style="font-size:0.9rem;color:var(--text1); background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; border-right:3px solid var(--accent);">${sos.message || ''}</div>
-                `;
-
-                list.appendChild(div);
-            });
+                    list.appendChild(div);
+                });
+            }
         }
-
         function openSosModal(sos) {
             const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
 
@@ -14259,6 +14194,12 @@ function toggleFloatingCrmMenu() {
     };
 
 </script>
+
+    <!-- STICKY SOS BAR -->
+    <div id="sticky-sos-bar" style="position:fixed; bottom:0; left:0; right:0; background:var(--accent); color:white; text-align:center; padding:10px; font-weight:bold; cursor:pointer; z-index:9999; display:none; box-shadow:0 -2px 10px rgba(0,0,0,0.2);" onclick="switchTab('sos')">
+        🚨 Vous avez <span id="sticky-sos-count">0</span> message(s) SOS en attente !
+    </div>
+
 </body>
 
 
