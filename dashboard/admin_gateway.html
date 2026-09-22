@@ -13995,10 +13995,10 @@ function toggleFloatingCrmMenu() {
 
     // Helper for composer
     function openComposerFromCardV2() {
-        if (!window.currentJourneyVisitorContext) return;
-        window.activeStudentId = currentJourneyVisitorContext.student_id;
+        if (!currentJourneyVisitorContext) return;
+        activeStudentId = currentJourneyVisitorContext.student_id;
         // Mock a student object for the composer
-        window.activeStudentObj = {
+        activeStudentObj = {
             student_id: currentJourneyVisitorContext.student_id,
             first_name: currentJourneyVisitorContext.displayName,
             telegram_id: currentJourneyVisitorContext.telegram_id,
@@ -14020,8 +14020,8 @@ function toggleFloatingCrmMenu() {
         const modal = document.getElementById('univ-student-modal');
         if (!modal) return;
         
-        window.currentJourneyVisitorContext = { telegram_id, displayName, student_id };
-        window.currentJourneyLogs = [];
+        currentJourneyVisitorContext = { telegram_id, displayName, student_id };
+        currentJourneyLogs = [];
         
         let uName = '';
         if (typeof rawGhostList !== 'undefined') {
@@ -14059,9 +14059,9 @@ function toggleFloatingCrmMenu() {
             const data = await res.json();
             
             if (data.success) {
-                window.currentJourneyLogs = data.logs || [];
+                currentJourneyLogs = data.logs || [];
                 // Pre-process SOS strings if needed
-                window.currentJourneyLogs.forEach(l => {
+                currentJourneyLogs.forEach(l => {
                     if (l.action_type) {
                         let act = String(l.action_type).toUpperCase();
                         if (act.includes('SOS REQUESTED') || act.includes('SOS_REQUESTED')) l.action_type = 'SOS_REQUESTED';
@@ -14101,8 +14101,12 @@ function toggleFloatingCrmMenu() {
                         document.getElementById('uid-tuser').innerText = '@' + prof.telegram_username;
                     }
                 }
+                
+                // Re-render logs in the background so they are ready if user clicks the tabs
+                if (typeof renderJourneyTimeline === 'function') renderJourneyTimeline();
+
             } else {
-                window.currentJourneyLogs = [];
+                currentJourneyLogs = [];
                 document.getElementById('logs-body').innerHTML = '<div style="padding:40px; text-align:center; color:var(--text2);">📭 لا توجد حركات مسجلة.</div>';
             }
         } catch(e) {
