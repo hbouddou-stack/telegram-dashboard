@@ -60,11 +60,25 @@ def _clean_phone(p: str) -> str:
 def _sync_sheet_blocking() -> dict:
     """Lecture bloquante de la feuille Google Sheet 'appels 2026' (exécutée via asyncio.to_thread)."""
     try:
-        if not os.path.exists(CREDS_PATH):
-            logger.warning(f"[CRM] credentials.json introuvable à {CREDS_PATH}")
+        import json
+        gc = None
+        creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
+
+        if os.path.exists(CREDS_PATH):
+            gc = gspread.service_account(filename=CREDS_PATH)
+        elif os.path.exists('credentials.json'):
+            gc = gspread.service_account(filename='credentials.json')
+        elif creds_env:
+            try:
+                creds_info = json.loads(creds_env)
+                gc = gspread.service_account_from_dict(creds_info)
+            except Exception as parse_err:
+                logger.error(f"[CRM] Erreur décodage GOOGLE_SERVICE_ACCOUNT_JSON: {parse_err}")
+                return {}
+        else:
+            logger.warning("[CRM] Aucune clé Google trouvée (ni credentials.json ni GOOGLE_SERVICE_ACCOUNT_JSON).")
             return {}
 
-        gc = gspread.service_account(filename=CREDS_PATH)
         sh = gc.open_by_key(MASTER_SHEET_ID)
         ws = sh.worksheet(MASTER_TAB)
         rows = ws.get_all_values()
