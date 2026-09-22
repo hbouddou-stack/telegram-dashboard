@@ -2530,7 +2530,7 @@ async def api_admin_sos_list(request: web.Request):
                 SELECT g.*, 
                        s.gender AS student_gender, s.first_name AS student_first_name, s.last_name AS student_last_name,
                        u.first_name AS tg_first_name, u.last_name AS tg_last_name, u.username AS tg_username,
-                       v.start_param
+                       v.source AS start_param
                 FROM gateway_sos g
                 LEFT JOIN academy_students s ON (
                     (g.email_tentative IS NOT NULL AND g.email_tentative != '' AND LOWER(TRIM(g.email_tentative)) = LOWER(TRIM(s.email))) 
