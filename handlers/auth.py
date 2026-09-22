@@ -406,10 +406,9 @@ async def cmd_federer(message: Message):
     base_url = get_webapp_base_url()
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔐 لوحة الإدارة الرئيسية (Gateway Admin)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v62"))],
-        [InlineKeyboardButton(text="🤖 لوحة إدارة الدعم والـ FAQ الذكية (Support Admin)", web_app=WebAppInfo(url=f"{base_url}/admin-support.html?v=support"))],
-        [InlineKeyboardButton(text="🧠 لوحة تحكم البوت والأسئلة (Bot Admin)", web_app=WebAppInfo(url=f"{base_url}/admin-bot.html?v=bot"))],
-        [InlineKeyboardButton(text="📥 تحميل نموذج الإكسيل لإضافة طلاب (Telegram)", callback_data="btn_send_excel_template")],
+        [InlineKeyboardButton(text="🔐 إدارة الطلاب والـ CRM (Gateway)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v62"))],
+        [InlineKeyboardButton(text="🧠 الإدارة الشاملة: الأسئلة والفيديوهات والمقررات", web_app=WebAppInfo(url=f"{base_url}/admin.html?v=master_admin"))],
+        [InlineKeyboardButton(text="📥 تحميل نموذج الإكسيل لإضافة طلاب", callback_data="btn_send_excel_template")],
         [InlineKeyboardButton(text="💬 واجهة الطالب: الدعم والـ FAQ (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))],
         [InlineKeyboardButton(text="🔗 واجهة الطالب: منصة الربط (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))]
     ])
