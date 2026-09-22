@@ -3671,7 +3671,7 @@ window.setSalesFunnel = function(val, el) {
                     <div style="display:flex; gap:6px; background:var(--surface); padding:3px; border-radius:8px; border:1px solid var(--border);">
                         <button id="btn-timeline-accordion" onclick="setTimelineViewMode('accordion')" 
                                 style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:var(--primary); color:#fff; display:flex; align-items:center; gap:5px;">
-                            <span>🎯</span> محطات المسار (المراحل الـ 6)
+                            <span>🎯</span> محطات المسار (المراحل الـ 7)
                         </button>
                         <button id="btn-timeline-grouped" onclick="setTimelineViewMode('grouped')" 
                                 style="cursor:pointer; font-size:0.78rem; font-weight:bold; padding:5px 12px; border-radius:6px; border:none; background:transparent; color:var(--text2); display:flex; align-items:center; gap:5px;">
@@ -4822,20 +4822,29 @@ window.setSalesFunnel = function(val, el) {
             const logs = currentJourneyLogs || [];
             const student_id = currentJourneyVisitorContext.student_id;
 
-            // Define the 6 canonical stages with rules and filters
+            // Define the 7 canonical stages with rules and filters
             const stages = [
                 {
                     id: 'stage-1',
                     num: '1',
-                    icon: '🌐',
-                    title: 'فتح الصفحة وبدء التأهيل',
-                    sub: 'أول دخول ومتابعة الرابط الترحيبي',
-                    checkDone: (lgs) => lgs.some(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type)),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type))
+                    icon: '🤖',
+                    title: 'بدء المحادثة مع البوت (Start)',
+                    sub: 'الضغط على زر Démarrer / Start لأول مرة',
+                    checkDone: (lgs) => lgs.some(l => ['BOT_STARTED'].includes(l.action_type)),
+                    filterLogs: (lgs) => lgs.filter(l => l.action_type === 'BOT_STARTED')
                 },
                 {
                     id: 'stage-2',
                     num: '2',
+                    icon: '🌐',
+                    title: 'فتح الصفحة وبدء التأهيل',
+                    sub: 'الضغط على زر فتح التطبيق المصغر',
+                    checkDone: (lgs) => lgs.some(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type)),
+                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_PAGE_OPENED', 'APP_OPENED', 'APP_OPENED_UNLINKED'].includes(l.action_type))
+                },
+                {
+                    id: 'stage-3',
+                    num: '3',
                     icon: '✅',
                     title: 'الموافقة على شروط الالتزام',
                     sub: 'الموافقة الإلزامية على التفرغ والمتابعة',
@@ -4843,17 +4852,17 @@ window.setSalesFunnel = function(val, el) {
                     filterLogs: (lgs) => lgs.filter(l => l.action_type === 'ONBOARDING_COMMITMENT_CHECKED' || (l.description && l.description.includes('الالتزام')))
                 },
                 {
-                    id: 'stage-3',
-                    num: '3',
+                    id: 'stage-4',
+                    num: '4',
                     icon: '🎥',
-                    title: 'مشاهدة الفيديوهات التوجيهية (3 فيديوهات)',
+                    title: 'مشاهدة الفيديوهات التوجيهية',
                     sub: 'الفيديو 1 (الترحيب)، الفيديو 2 (النظام)، الفيديو 3 (المذاكرة)',
                     checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_VID3_STARTED' || l.action_type === 'ONBOARDING_CHARTER_SIGNED' || l.action_type === 'ONBOARDING_FORM_REACHED' || l.action_type === 'ONBOARDING_LINK_SUCCESS' || !!student_id),
                     filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_VID1_STARTED', 'ONBOARDING_VID2_STARTED', 'ONBOARDING_VID3_STARTED'].includes(l.action_type) || (l.description && l.description.includes('فيديو')))
                 },
                 {
-                    id: 'stage-4',
-                    num: '4',
+                    id: 'stage-5',
+                    num: '5',
                     icon: '📜',
                     title: 'توقيع الميثاق الطلابي',
                     sub: 'التعهد الرسمي والتوقيع الرقمي في نهاية الفيديوهات',
@@ -4861,22 +4870,22 @@ window.setSalesFunnel = function(val, el) {
                     filterLogs: (lgs) => lgs.filter(l => l.action_type === 'ONBOARDING_CHARTER_SIGNED' || (l.description && l.description.includes('الميثاق')))
                 },
                 {
-                    id: 'stage-5',
-                    num: '5',
-                    icon: '📝',
-                    title: 'شاشة استمارة الربط ومطابقة البيانات',
-                    sub: 'إدخال رقم الطالب / البريد الإلكتروني للمطابقة',
-                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_LINK_SUCCESS' || l.action_type === 'MANUAL_LINK' || !!student_id),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_FORM_REACHED', 'ONBOARDING_INPUT_ERROR'].includes(l.action_type) || (l.description && (l.description.includes('استمارة') || l.description.includes('خطأ'))))
-                },
-                {
                     id: 'stage-6',
                     num: '6',
-                    icon: '🟢',
-                    title: 'اكتمال ربط الحساب وتفعيل الطالب',
-                    sub: 'نسب الحساب إلى قاعدة البيانات والحصول على الصلاحيات الكاملة',
-                    checkDone: (lgs) => !!student_id || lgs.some(l => ['ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK'].includes(l.action_type)),
-                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK'].includes(l.action_type))
+                    icon: '📝',
+                    title: 'شاشة الربط وإدخال البيانات',
+                    sub: 'إدخال رقم مسار أو المعرف الدراسي للربط',
+                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_FORM_REACHED' || l.action_type === 'ONBOARDING_LINK_SUCCESS' || l.action_type === 'LINK_FAILED_NOT_FOUND' || l.action_type === 'LINK_FAILED_UNPAID' || !!student_id),
+                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_INPUT_ERROR', 'ONBOARDING_DIRECT_FORM'].includes(l.action_type) || (l.description && (l.description.includes('استمارة') || l.description.includes('شاشة الربط'))))
+                },
+                {
+                    id: 'stage-7',
+                    num: '7',
+                    icon: '🎉',
+                    title: 'اكتمال الربط بنجاح',
+                    sub: 'تأكيد الحساب وفتح القنوات والمجموعات',
+                    checkDone: (lgs) => lgs.some(l => l.action_type === 'ONBOARDING_LINK_SUCCESS' || l.action_type === 'STEP_LINK_SUCCESS' || l.action_type === 'STEP_FOLDER_CLICKED' || !!student_id),
+                    filterLogs: (lgs) => lgs.filter(l => ['ONBOARDING_LINK_SUCCESS', 'STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED'].includes(l.action_type) || (l.description && l.description.includes('نجاح')))
                 }
             ];
 
@@ -5081,7 +5090,7 @@ window.setSalesFunnel = function(val, el) {
             }
 
             if (currentTimelineView === 'accordion') {
-                if (countSpan) countSpan.textContent = `المسار المرحلي (6 محطات)`;
+                if (countSpan) countSpan.textContent = `المسار المرحلي (7 محطات)`;
                 logsBody.innerHTML = renderJourneyAccordion();
                 return;
             }

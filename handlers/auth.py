@@ -7,7 +7,7 @@ import aiosqlite
 from config import DATABASE_PATH, TELEGRAM_ADMIN_IDS
 import re
 import logging
-from database import log_student_action
+from database import log_student_action, log_student_action_by_tg
 
 logger = logging.getLogger('bot')
 router = Router(name="auth")
