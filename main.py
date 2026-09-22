@@ -2442,11 +2442,7 @@ async def api_gateway_sos(request: web.Request):
             await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source))
             await db.execute(
                 "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
-                (numeric_sid, telegram_id or 0, tg_display, username, 'SOS_REQUESTED', f"A soumis le formulaire SOS (Message: {message[:50]}...)")
-            )
-            await db.execute(
-                "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
-                (numeric_sid, telegram_id or 0, tg_display, username, 'SOS_WAITING_ROOM', "Placé en salle d'attente. En attente de la réponse d'un administrateur.")
+                (numeric_sid, telegram_id or 0, tg_display, username, 'SOS_REQUESTED', f"تم إرسال طلب مساعدة SOS (الرسالة: {message[:50]}...)")
             )
             if numeric_sid > 0:
                 try:
@@ -6408,7 +6404,7 @@ async def api_link_account(request: web.Request):
         telegram_name = f"{telegram_first_name} {telegram_last_name}".strip()
         
         # Log Form Submission
-        await log_student_action(student_id_input, 'ONBOARDING_FORM_SUBMITTED', f"A cliqué sur valider le formulaire avec Email: {email} | Matricule: {student_id_input}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+        await log_student_action(student_id_input, 'ONBOARDING_FORM_SUBMITTED', f"قام بتقديم بيانات الربط (البريد: {email} | الرقم: {student_id_input})", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
 
         
         # 1. Upsert users table
