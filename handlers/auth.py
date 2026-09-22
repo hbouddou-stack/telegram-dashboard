@@ -674,7 +674,7 @@ async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
 @router.message(Command("reset_test"))
 async def cmd_reset_test(message: Message):
     """Removes the admin's telegram_id from the database to simulate a brand new student."""
-    if message.from_user.id not in ADMIN_IDS:
+    if message.from_user.id not in TELEGRAM_ADMIN_IDS:
         return
         
     user_id = message.from_user.id
