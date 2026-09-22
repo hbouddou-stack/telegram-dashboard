@@ -1,3 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+crm_service.py — reads from the dedicated CRM Google Sheet.
+
+The CRM sheet (1IR55QGybqsXG4Oxxg9OLdAWHQb4P3dbXBhGpfftv3rM) is separate from 
+the master sheet (1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI). The CRM sheet 
+has worksheets: CRM_Leads, CRM_Agents, CRM_Interactions.
+
+NOTE: The paid count discrepancy (478 vs more) exists because the CRM sheet only
+has data from 3 agents. The other agents' data from 'Appel 2026' has NOT been
+imported into the CRM sheet. This is a data migration issue, not a code bug.
+The solution is to import more data into CRM_Leads — NOT to change this service.
+"""
+
 import os
 import json
 import asyncio
@@ -5,7 +20,7 @@ from datetime import datetime, timedelta
 import threading
 import gspread
 
-# Target Google Sheet for the CRM (DO NOT TOUCH 1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI)
+# Target Google Sheet for the CRM
 CRM_SHEET_ID = '1IR55QGybqsXG4Oxxg9OLdAWHQb4P3dbXBhGpfftv3rM'
 CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), 'credentials.json')
 CACHE_FILE = os.path.join(os.path.dirname(__file__), 'crm_cache.json')
@@ -17,6 +32,41 @@ _memory_cache = {
     "agents": [],
     "last_sync": 0
 }
+
+# Paid status values (aligned with the rest of the app)
+_PAID_STATUTS_CRM = {'Payé / Inscrit', 'Exempté', 'مسدد', 'Inscrit'}
+_PAID_STATUT_PAIEMENT = {'مسدد', 'معفي', 'مسددة'}
+
+def _is_lead_paid(lead: dict) -> bool:
+    st = str(lead.get('Statut_CRM', '') or '').strip()
+    sp = str(lead.get('Statut_Paiement', '') or '').strip()
+    if st in _PAID_STATUTS_CRM:
+        return True
+    if sp in _PAID_STATUT_PAIEMENT:
+        return True
+    if 'مسدد' in sp and 'غير مسدد' not in sp:
+        return True
+    return False
+
+def _has_history(lead: dict) -> bool:
+    """Return True if this lead has been contacted before."""
+    return bool(
+        lead.get('Ancien_Commentaire') or
+        lead.get('Dernier_Contact_Resultat') or
+        lead.get('Dernier_Contact_Date')
+    )
+
+def _categorize_lead(lead: dict) -> str:
+    if _is_lead_paid(lead):
+        return 'paye'
+    st = str(lead.get('Statut_CRM', '') or '').strip()
+    if st in ('مغلق', 'Abandon') or 'غير مهتم' in st or 'رقم خاطئ' in st:
+        return 'ferme'
+    # "nouveau" only if the lead has NEVER been contacted
+    if (not st or st in ('Nouveau', 'جديد')) and not _has_history(lead):
+        return 'nouveau'
+    # Everything else is "in progress"
+    return 'relance'
 
 def _get_gspread_client():
     if not os.path.exists(CREDENTIALS_PATH):
@@ -72,7 +122,7 @@ def refresh_from_sheet():
         print(f"[CRM Service] Error fetching from sheet: {e}")
         return False
 
-# Initialize cache on module load if empty
+# Initialize cache on module load
 if not load_cache() or not _memory_cache.get("leads"):
     threading.Thread(target=refresh_from_sheet, daemon=True).start()
 
@@ -81,8 +131,6 @@ def get_leads(agent_name=None, search=None, status_filter=None):
         leads = list(_memory_cache.get("leads", []))
         agents = list(_memory_cache.get("agents", []))
     
-    today_str = datetime.now().strftime("%Y-%m-%d")
-
     # Filter by agent
     if agent_name and agent_name != "all":
         leads = [l for l in leads if str(l.get("Agent_Nom", "")).strip() == agent_name.strip()]
@@ -99,48 +147,22 @@ def get_leads(agent_name=None, search=None, status_filter=None):
             s_lower in str(l.get("ID_Lead", "")).lower()
         ]
 
-    # Quick metrics calculation
-    stats = {
-        "total": len(leads),
-        "en_retard": 0,
-        "aujourdhui": 0,
-        "nouveaux": 0,
-        "relances": 0,
-        "payes": 0
-    }
+    # Categorize and compute stats
+    stats = {"total": len(leads), "en_retard": 0, "aujourdhui": 0, "nouveaux": 0, "relances": 0, "payes": 0}
 
     for l in leads:
-        st = str(l.get("Statut_CRM", ""))
-        dt = str(l.get("Date_Prochaine_Action", ""))
-        
-        if "Payé" in st or "Inscrit" in st:
+        cat = _categorize_lead(l)
+        l["_category"] = cat
+        if cat == 'paye':
             stats["payes"] += 1
-            l["_category"] = "paye"
-        elif "Nouveau" in st:
+        elif cat == 'nouveau':
             stats["nouveaux"] += 1
-            l["_category"] = "nouveau"
-        elif dt and dt < today_str and "Abandon" not in st:
-            stats["en_retard"] += 1
-            l["_category"] = "retard"
-        elif dt == today_str and "Abandon" not in st:
-            stats["aujourdhui"] += 1
-            l["_category"] = "aujourdhui"
-        else:
+        elif cat == 'relance':
             stats["relances"] += 1
-            l["_category"] = "relance"
 
-    # Filter by status if specified
+    # Filter by status
     if status_filter and status_filter != "all":
-        if status_filter == "retard":
-            leads = [l for l in leads if l.get("_category") == "retard"]
-        elif status_filter == "aujourdhui":
-            leads = [l for l in leads if l.get("_category") == "aujourdhui"]
-        elif status_filter == "nouveau":
-            leads = [l for l in leads if l.get("_category") == "nouveau"]
-        elif status_filter == "relance":
-            leads = [l for l in leads if l.get("_category") == "relance"]
-        elif status_filter == "paye":
-            leads = [l for l in leads if l.get("_category") == "paye"]
+        leads = [l for l in leads if l.get("_category") == status_filter]
 
     return {
         "leads": leads,
@@ -156,14 +178,9 @@ def get_lead_details(lead_id):
     
     lead = next((l for l in leads if str(l.get("ID_Lead")).strip() == str(lead_id).strip()), None)
     lead_interactions = [i for i in interactions if str(i.get("ID_Lead")).strip() == str(lead_id).strip()]
-    
-    # Sort interactions by Date_Heure descending
     lead_interactions.reverse()
     
-    return {
-        "lead": lead,
-        "interactions": lead_interactions
-    }
+    return {"lead": lead, "interactions": lead_interactions}
 
 def update_lead_status(lead_id, statut_crm, resultat, prochaine_action, date_prochaine, note, agent_email, canal="Téléphone"):
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -178,12 +195,13 @@ def update_lead_status(lead_id, statut_crm, resultat, prochaine_action, date_pro
                 l["Dernier_Contact_Resultat"] = resultat
                 l["Prochaine_Action"] = prochaine_action
                 l["Date_Prochaine_Action"] = date_prochaine
-                if "Payé" in statut_crm:
+                if note:
+                    l["Ancien_Commentaire"] = note
+                if statut_crm == 'مسدد':
                     l["Statut_Paiement"] = "مسدد"
                 found_lead = l
                 break
                 
-        # Append to interactions
         new_inter_id = str(len(_memory_cache.get("interactions", [])) + 1)
         new_inter = {
             "ID_Interaction": new_inter_id,
@@ -197,7 +215,6 @@ def update_lead_status(lead_id, statut_crm, resultat, prochaine_action, date_pro
         _memory_cache.setdefault("interactions", []).append(new_inter)
         save_cache()
 
-    # Async background task to sync row to Google Sheets
     threading.Thread(target=_sync_lead_to_sheet, args=(lead_id, found_lead, new_inter), daemon=True).start()
     return True
 
@@ -208,14 +225,10 @@ def _sync_lead_to_sheet(lead_id, lead_data, new_interaction):
     try:
         sh = gc.open_by_key(CRM_SHEET_ID)
         
-        # 1. Update Lead row
         ws_leads = sh.worksheet('CRM_Leads')
         cell = ws_leads.find(str(lead_id))
         if cell:
             row_idx = cell.row
-            # Headers: ID_Lead, Nom, Telephone, Email, Genre, Pays, Agent_Nom, Agent_Email, 
-            # Statut_CRM(col 9), Dernier_Contact_Date(10), Dernier_Contact_Resultat(11), 
-            # Prochaine_Action(12), Date_Prochaine_Action(13), Ancien_Commentaire(14), Statut_Paiement(15)
             update_vals = [
                 lead_data.get("Statut_CRM", ""),
                 lead_data.get("Dernier_Contact_Date", ""),
@@ -224,10 +237,11 @@ def _sync_lead_to_sheet(lead_id, lead_data, new_interaction):
                 lead_data.get("Date_Prochaine_Action", "")
             ]
             ws_leads.update(range_name=f"I{row_idx}:M{row_idx}", values=[update_vals])
+            if lead_data.get("Ancien_Commentaire"):
+                ws_leads.update(range_name=f"N{row_idx}", values=[[lead_data.get("Ancien_Commentaire")]])
             if lead_data.get("Statut_Paiement"):
                 ws_leads.update(range_name=f"O{row_idx}", values=[[lead_data.get("Statut_Paiement")]])
                 
-        # 2. Append Interaction row
         ws_inter = sh.worksheet('CRM_Interactions')
         inter_vals = [
             new_interaction["ID_Interaction"],
