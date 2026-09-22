@@ -2139,28 +2139,120 @@ window.setSalesFunnel = function(val, el) {
     <div id="tab-settings" class="tab-content" style="padding:0; width:100%; max-width:100%; box-sizing:border-box;">
         <!-- Barre d'onglets supérieure style 'Carte de l'étudiant' -->
         <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:4px; padding:6px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:15;">
-            <div class="mtab active" onclick="switchSettingsTab('s-general', this)" id="settab-general" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
-                <span style="font-size:1.15rem;">⚙️</span>
-                <span style="font-size:0.75rem; font-weight:bold;">عام</span>
+            <div class="mtab active" onclick="switchSettingsTab('s-import', this)" id="settab-import" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s; background:rgba(124, 58, 237, 0.08); border:1px solid rgba(124, 58, 237, 0.2);">
+                <span style="font-size:1.15rem;">📥</span>
+                <span style="font-size:0.75rem; font-weight:bold; color:var(--text1);">استيراد وتصدير</span>
             </div>
-            <div class="mtab" onclick="switchSettingsTab('s-academy', this)" id="settab-academy" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
-                <span style="font-size:1.15rem;">🎓</span>
-                <span style="font-size:0.75rem; font-weight:bold;">الأكاديمية</span>
+            <div class="mtab" onclick="switchSettingsTab('s-general', this)" id="settab-general" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
+                <span style="font-size:1.15rem;">🎛️</span>
+                <span style="font-size:0.75rem; font-weight:bold;">الإعدادات العامة</span>
             </div>
             <div class="mtab" onclick="switchSettingsTab('s-telegram', this)" id="settab-telegram" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
-                <span style="font-size:1.15rem;">✈️</span>
-                <span style="font-size:0.75rem; font-weight:bold;">تيليجرام (الروابط)</span>
+                <span style="font-size:1.15rem;">🔗</span>
+                <span style="font-size:0.75rem; font-weight:bold;">روابط تليجرام</span>
             </div>
             <div class="mtab" onclick="switchSettingsTab('s-history', this)" id="settab-history" style="display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:85px; padding:8px 6px; cursor:pointer; border-radius:10px; transition:0.2s;">
                 <span style="font-size:1.15rem;">🕒</span>
-                <span style="font-size:0.75rem; font-weight:bold;">السجل</span>
+                <span style="font-size:0.75rem; font-weight:bold;">سجل النشاطات</span>
             </div>
         </div>
 
         <div style="padding:16px 14px 40px; max-width:1100px; margin:0 auto; box-sizing:border-box;">
 
-            <!-- ==================== 1. TAB: عام (GENERAL) ==================== -->
-            <div id="s-general" class="settings-pane" style="display:block;">
+            <!-- ==================== 1. TAB: استيراد وتصدير (IMPORT / EXPORT) ==================== -->
+            <div id="s-import" class="settings-pane" style="display:block;">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <!-- استيراد وتصدير قاعدة الطلاب -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 4px 15px rgba(124, 58, 237, 0.08);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                            <span style="font-size:1.4rem;">📊</span>
+                            <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text1);">استيراد وتصدير ملفات الطلاب</h3>
+                        </div>
+
+                        <!-- Dropzone -->
+                        <div id="upload-drop-zone" style="border:2px dashed rgba(124, 58, 237, 0.6); background:rgba(124, 58, 237, 0.05); border-radius:12px; padding:32px 16px; text-align:center; cursor:pointer; margin-bottom:14px; transition:0.2s;" onclick="document.getElementById('excel-file-input').click()" onmouseover="this.style.background='rgba(124, 58, 237, 0.1)'" onmouseout="this.style.background='rgba(124, 58, 237, 0.05)'">
+                            <div style="font-size:3rem; margin-bottom:8px;">📥</div>
+                            <div style="font-weight:bold; font-size:1.1rem; color:var(--text1); margin-bottom:6px;">اسحب ملف الطلاب هنا أو اضغط للاختيار</div>
+                            <div style="font-size:0.85rem; color:var(--text2); margin-bottom:16px;">يدعم ملفات مسار الرسمية، ملفات Excel المنسقة وملفات CSV</div>
+                            <button class="btn btn-primary" type="button" style="display:inline-flex; align-items:center; gap:6px; padding:10px 24px; border-radius:8px; font-weight:bold; font-size:0.9rem; background:var(--accent);">
+                                📂 استعراض الملف (Excel / CSV)
+                            </button>
+                            <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
+                        </div>
+
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <a href="/api/admin/gateway/export_template" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16, 185, 129, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; text-decoration:none;">
+                                📥 تحميل النموذج الفارغ
+                            </a>
+                            <a href="/api/admin/gateway/export_all" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(59, 130, 246, 0.12); color:#3b82f6; border:1px solid rgba(59, 130, 246, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; text-decoration:none;">
+                                💾 تصدير كافة الطلاب
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- مزامنة Google Sheets -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">☁️</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">مزامنة جداول Google Sheets</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">المزامنة الحية والتصدير المباشر لجدول المتابعة الخارجي.</div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <button id="btn-sync-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#059669; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="syncGoogleSheets()">
+                                🔄 مزامنة من السحابة
+                            </button>
+                            <button id="btn-export-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#2563eb; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="exportGoogleSheets()">
+                                📤 تصدير إلى السحابة
+                            </button>
+                        </div>
+                        <button id="btn-purge-sheets" class="btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(239, 68, 68, 0.08); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.25); padding:8px; border-radius:8px; font-weight:bold; font-size:0.78rem; cursor:pointer;" onclick="purgeGoogleSheets()">
+                            🗑️ تفريغ جدول Google Sheets فقط
+                        </button>
+                    </div>
+
+                    <!-- تنسيق رقم مسار -->
+                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="font-size:1.3rem;">🏷️</span>
+                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">تنسيق رقم مسار وتمييز الدفعات (متقدم)</h3>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">فصل سنة التسجيل وتلوينها لتمييز المستويات فوراً بالعين المجردة.</div>
+
+                        <!-- Live Preview -->
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px; text-align:center;">
+                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:6px;">معاينة حية ومباشرة لرقم الطالب:</div>
+                            <div id="massar-live-preview" style="font-family:monospace; font-size:1.3rem; font-weight:800; padding:6px 14px; background:var(--surface); display:inline-flex; border-radius:8px; border:1px solid var(--border);">
+                                1234-26
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">الفاصل بين الرقم والسنة:</label>
+                            <select id="pref-id-separator" onchange="saveIdPrefs()" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
+                                <option value="dash">تيرة فاصلة (1234-26)</option>
+                                <option value="parentheses">بين قوسين 1234(26)</option>
+                                <option value="space">مسافة فارغة (1234 26)</option>
+                                <option value="none">بدون فاصل (123426)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">ألوان الدفعات حسب السنة:</label>
+                            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                                <input type="text" id="pref-id-year" placeholder="السنة (ex: 26)" maxlength="2" style="width:80px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); text-align:center; font-weight:bold;">
+                                <input type="color" id="pref-id-color" value="#8b0000" style="padding:0; border:none; width:42px; height:38px; border-radius:8px; cursor:pointer; background:transparent;">
+                                <button class="btn btn-primary" onclick="addYearColor()" style="flex:1; padding:8px 14px; border-radius:10px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
+                                    ➕ حفظ لون الدفعة
+                                </button>
+                            </div>
+                            <div id="pref-color-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 2. TAB: الإعدادات العامة (GENERAL SETTINGS) ==================== -->
+            <div id="s-general" class="settings-pane" style="display:none;">
                 <div style="display:flex; flex-direction:column; gap:16px;">
                     <!-- Carte 1: نمط ومظهر المنظومة -->
                     <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
@@ -2234,99 +2326,6 @@ window.setSalesFunnel = function(val, el) {
                     </div>
                 </div>
             </div>
-
-            <!-- ==================== 2. TAB: الأكاديمية (ACADEMY) ==================== -->
-            <div id="s-academy" class="settings-pane" style="display:none;">
-                <div style="display:flex; flex-direction:column; gap:16px;">
-                    <!-- تنسيق رقم مسار -->
-                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                            <span style="font-size:1.3rem;">🏷️</span>
-                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">تنسيق رقم مسار وتمييز الدفعات</h3>
-                        </div>
-                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">فصل سنة التسجيل وتلوينها لتمييز المستويات فوراً بالعين المجردة.</div>
-
-                        <!-- Live Preview -->
-                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px; text-align:center;">
-                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:6px;">معاينة حية ومباشرة لرقم الطالب:</div>
-                            <div id="massar-live-preview" style="font-family:monospace; font-size:1.3rem; font-weight:800; padding:6px 14px; background:var(--surface); display:inline-flex; border-radius:8px; border:1px solid var(--border);">
-                                1234-26
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:14px;">
-                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">الفاصل بين الرقم والسنة:</label>
-                            <select id="pref-id-separator" onchange="saveIdPrefs()" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.88rem;">
-                                <option value="dash">تيرة فاصلة (1234-26)</option>
-                                <option value="parentheses">بين قوسين 1234(26)</option>
-                                <option value="space">مسافة فارغة (1234 26)</option>
-                                <option value="none">بدون فاصل (123426)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; display:block;">ألوان الدفعات حسب السنة:</label>
-                            <div style="display:flex; gap:8px; margin-bottom:10px;">
-                                <input type="text" id="pref-id-year" placeholder="السنة (ex: 26)" maxlength="2" style="width:80px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); text-align:center; font-weight:bold;">
-                                <input type="color" id="pref-id-color" value="#8b0000" style="padding:0; border:none; width:42px; height:38px; border-radius:8px; cursor:pointer; background:transparent;">
-                                <button class="btn btn-primary" onclick="addYearColor()" style="flex:1; padding:8px 14px; border-radius:10px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
-                                    ➕ حفظ لون الدفعة
-                                </button>
-                            </div>
-                            <div id="pref-color-list" style="display:flex; flex-direction:column; gap:6px;"></div>
-                        </div>
-                    </div>
-
-                    <!-- استيراد وتصدير قاعدة الطلاب -->
-                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                            <span style="font-size:1.3rem;">📊</span>
-                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">استيراد وتصدير ملفات الطلاب</h3>
-                        </div>
-
-                        <!-- Dropzone -->
-                        <div id="upload-drop-zone" style="border:2px dashed rgba(124, 58, 237, 0.4); background:rgba(124, 58, 237, 0.04); border-radius:12px; padding:24px 16px; text-align:center; cursor:pointer; margin-bottom:14px;" onclick="document.getElementById('excel-file-input').click()">
-                            <div style="font-size:2.2rem; margin-bottom:6px;">📥</div>
-                            <div style="font-weight:bold; font-size:0.95rem; color:var(--text1); margin-bottom:4px;">اسحب ملف الطلاب هنا أو اضغط للاختيار</div>
-                            <div style="font-size:0.75rem; color:var(--text2); margin-bottom:12px;">يدعم ملفات مسار الرسمية، ملفات Excel المنسقة وملفات CSV</div>
-                            <button class="btn btn-primary" type="button" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-weight:bold; font-size:0.85rem; background:var(--accent);">
-                                📂 استعراض الملف
-                            </button>
-                            <input type="file" id="excel-file-input" accept=".xlsx,.csv,.xls" style="display:none;" onchange="importExcel(this)">
-                        </div>
-
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <a href="/api/admin/gateway/export_template" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16, 185, 129, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.82rem; text-decoration:none;">
-                                📥 تحميل النموذج الفارغ
-                            </a>
-                            <a href="/api/admin/gateway/export_all" style="flex:1; min-width:140px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(59, 130, 246, 0.12); color:#3b82f6; border:1px solid rgba(59, 130, 246, 0.3); padding:10px; border-radius:10px; font-weight:bold; font-size:0.82rem; text-decoration:none;">
-                                💾 تصدير كافة الطلاب
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- مزامنة Google Sheets -->
-                    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                            <span style="font-size:1.3rem;">☁️</span>
-                            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text1);">مزامنة جداول Google Sheets</h3>
-                        </div>
-                        <div style="font-size:0.8rem; color:var(--text2); margin-bottom:14px;">المزامنة الحية والتصدير المباشر لجدول المتابعة الخارجي.</div>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                            <button id="btn-sync-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#059669; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="syncGoogleSheets()">
-                                🔄 مزامنة من السحابة
-                            </button>
-                            <button id="btn-export-sheets" class="btn" style="flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:6px; background:#2563eb; color:white; padding:10px; border-radius:10px; font-weight:bold; font-size:0.85rem; cursor:pointer; border:none;" onclick="exportGoogleSheets()">
-                                📤 تصدير إلى السحابة
-                            </button>
-                        </div>
-                        <button id="btn-purge-sheets" class="btn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:6px; background:rgba(239, 68, 68, 0.08); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.25); padding:8px; border-radius:8px; font-weight:bold; font-size:0.78rem; cursor:pointer;" onclick="purgeGoogleSheets()">
-                            🗑️ تفريغ جدول Google Sheets فقط
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             <!-- ==================== 3. TAB: تيليجرام (TELEGRAM & 8 DOSSIERS) ==================== -->
             <div id="s-telegram" class="settings-pane" style="display:none;">
                 <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.04); margin-bottom:16px;">
@@ -5568,7 +5567,7 @@ window.setSalesFunnel = function(val, el) {
 
             if (tabId === 's-history') {
                 loadImportHistory();
-            } else if (tabId === 's-academy') {
+            } else if (tabId === 's-import') {
                 renderYearColors();
             } else if (tabId === 's-telegram') {
                 fetchFolderLinks();
