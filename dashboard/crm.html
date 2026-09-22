@@ -444,9 +444,19 @@
 
     <!-- FILTERS -->
     <div class="stats-pills">
-      <div class="pill retard" data-filter="retard" onclick="setFilter('retard')">
-        <i class="fa-solid fa-clock"></i> متأخر <span class="pill-badge" id="count-retard">0</span>
+      <div class="pill nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
+        <i class="fa-solid fa-sparkles"></i> جديد (نوفو) <span class="pill-badge" id="count-nouveau">0</span>
       </div>
+      <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
+        <i class="fa-solid fa-arrows-rotate"></i> قيد المتابعة (للمتابعة) <span class="pill-badge" id="count-relance">0</span>
+      </div>
+      <div class="pill retard" data-filter="ferme" onclick="setFilter('ferme')">
+        <i class="fa-solid fa-ban"></i> مغلق / غير مهتم <span class="pill-badge" id="count-ferme">0</span>
+      </div>
+      <div class="pill paye" data-filter="paye" onclick="setFilter('paye')" style="margin-right: 10px;">
+        <i class="fa-solid fa-check-circle"></i> مكتمل / مسدد <span class="pill-badge" id="count-paye">0</span>
+      </div>
+    </div>
       <div class="pill aujourdhui" data-filter="aujourdhui" onclick="setFilter('aujourdhui')">
         <i class="fa-solid fa-calendar-day"></i> اليوم <span class="pill-badge" id="count-aujourdhui">0</span>
       </div>
@@ -535,19 +545,20 @@
 
         // Categorize leads
         allLeads.forEach(lead => {
-          const status = (lead.Statut_CRM || '').toLowerCase();
-          const nextDate = lead.Date_Prochaine_Action || '';
+          const status = (lead.Statut_CRM || '').trim().toLowerCase();
+          const ps = String(lead.Payment_Status || '').toUpperCase().trim();
           
-          if (status === 'مسدد' || status.includes('payé') || status.includes('تم السداد') || status.includes('paye')) {
+          // Use exact frontend paid logic
+          const isPaid = ['PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي'].includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
+          
+          if (isPaid || status === 'مسدد' || status.includes('payé') || status.includes('تم السداد') || status.includes('paye') || status.includes('مكتمل')) {
             lead._category = 'paye';
+          } else if (status === 'مغلق' || status === 'غير مهتم' || status === 'رقم خاطئ') {
+            lead._category = 'ferme';
           } else if (status === 'nouveau' || status === 'جديد' || !status) {
             lead._category = 'nouveau';
-          } else if (nextDate) {
-            if (nextDate < today) lead._category = 'retard';
-            else if (nextDate === today) lead._category = 'aujourdhui';
-            else lead._category = 'relance';
           } else {
-            lead._category = 'relance';
+            lead._category = 'relance'; // Anything in progress
           }
         });
 
@@ -591,14 +602,13 @@
       }
 
       // Update counters
-      const stats = { retard: 0, aujourdhui: 0, nouveau: 0, relance: 0, paye: 0 };
+      const stats = { nouveau: 0, relance: 0, ferme: 0, paye: 0 };
       filtered.forEach(l => { if (stats[l._category] !== undefined) stats[l._category]++; });
 
-      document.getElementById('count-retard').textContent = stats.retard;
-      document.getElementById('count-aujourdhui').textContent = stats.aujourdhui;
-      document.getElementById('count-nouveau').textContent = stats.nouveau;
-      document.getElementById('count-relance').textContent = stats.relance;
-      document.getElementById('count-paye').textContent = stats.paye;
+      if (document.getElementById('count-nouveau')) document.getElementById('count-nouveau').textContent = stats.nouveau || 0;
+      if (document.getElementById('count-relance')) document.getElementById('count-relance').textContent = stats.relance || 0;
+      if (document.getElementById('count-ferme')) document.getElementById('count-ferme').textContent = stats.ferme || 0;
+      if (document.getElementById('count-paye')) document.getElementById('count-paye').textContent = stats.paye || 0;
 
       // Filter by category
       const displayed = filtered.filter(l => l._category === activeFilter);
@@ -839,5 +849,60 @@
     // Init
     loadData();
   </script>
+
+    <!-- Bottom Navigation -->
+    <style>
+      .bottom-nav {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 65px;
+          background: #ffffff;
+          border-top: 1px solid var(--card-border);
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          z-index: 1000;
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      }
+      .nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: var(--text-muted);
+          font-size: 0.72rem;
+          font-weight: 700;
+          text-decoration: none;
+          gap: 4px;
+          transition: color 0.2s;
+      }
+      .nav-item.active {
+          color: var(--primary);
+      }
+      .nav-icon {
+          font-size: 1.3rem;
+      }
+      body { padding-bottom: 80px; } /* Prevent overlap */
+    </style>
+    <div class="bottom-nav">
+        <a href="/admin/gateway" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span>الرئيسية</span>
+        </a>
+        <a href="/admin/gateway" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>الطلاب</span>
+        </a>
+        <a href="/admin/gateway" class="nav-item">
+            <span class="nav-icon">🆘</span>
+            <span>الدعم</span>
+        </a>
+        <div class="nav-item active" style="cursor:default;">
+            <span class="nav-icon" style="font-size: 1.2rem;">📞</span>
+            <span>CRM</span>
+        </div>
+    </div>
+
 </body>
 </html>
