@@ -5175,7 +5175,10 @@ window.setSalesFunnel = function(val, el) {
                     `;
                 }).join('');
             } else if (currentTimelineView === 'chrono') {
-                const logs = currentJourneyLogs || [];
+                let logs = currentJourneyLogs || [];
+                // FILTER OUT SOS_WAITING_ROOM entirely as requested
+                logs = logs.filter(l => l.action_type !== 'SOS_WAITING_ROOM' && l.action_type !== 'SOS_2');
+                
                 if (logs.length === 0) {
                     logsBody.innerHTML = '<div class="no-items">لا توجد أحداث مسجلة.</div>';
                     return;
@@ -5189,30 +5192,44 @@ window.setSalesFunnel = function(val, el) {
                 });
                 
                 let html2 = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-left:15px; padding-right:15px;">
-                    <div style="font-weight:bold; color:var(--text1); font-size:0.9rem;">السجل الزمني للأحداث</div>
-                    <button onclick="window.logsAscending = !window.logsAscending; renderJourneyTimeline();" style="background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:4px 8px; cursor:pointer; font-family:'Tajawal'; color:var(--text2);">
-                        ${window.logsAscending ? '🔽 ترتيب تنازلي' : '🔼 ترتيب تصاعدي'}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-left:15px; padding-right:15px; position:sticky; top:0; background:var(--bg); z-index:10; padding-top:10px; padding-bottom:10px;">
+                    <div style="font-weight:bold; color:var(--text1); font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                        <span>🕒</span> السجل الزمني
+                    </div>
+                    <button onclick="window.logsAscending = !window.logsAscending; renderJourneyTimeline();" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 12px; cursor:pointer; font-family:'Tajawal'; color:var(--text2); font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        ${window.logsAscending ? '🔽 الأقدم أولاً' : '🔼 الأحدث أولاً'}
                     </button>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:12px; padding-left:15px; padding-right:15px;">`;
+                <div style="display:flex; flex-direction:column; gap:16px; padding-left:15px; padding-right:15px;">`;
+                
+                let currentDayKey = '';
                 
                 sortedLogs.forEach(l => {
                     const dt = new Date(l.timestamp);
-                    const dateStr = dt.toLocaleString('ar-MA', { 
-                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', 
-                        hour: '2-digit', minute: '2-digit', second: '2-digit'
-                    });
+                    const dayKey = dt.toLocaleDateString('ar-MA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    
+                    if (dayKey !== currentDayKey) {
+                        html2 += `
+                        <div style="margin-top:10px; margin-bottom:4px; padding-bottom:6px; border-bottom:2px solid var(--border); font-size:1.05rem; font-weight:900; color:var(--text1); display:flex; align-items:center; gap:8px;">
+                            <span style="color:var(--primary);">📅</span> ${dayKey}
+                        </div>`;
+                        currentDayKey = dayKey;
+                    }
+                    
+                    const timeStr = dt.toLocaleString('ar-MA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const act = formatActionTypeArabic(l.action_type);
                     
                     html2 += `
-                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:6px;">
-                        <div style="font-size:0.8rem; color:var(--primary); font-weight:bold; display:flex; align-items:center; gap:5px;">
-                            <span>🕒</span> ${dateStr}
+                    <div style="background:var(--surface); border:1px solid ${act.color}40; border-right:4px solid ${act.color}; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div style="font-size:0.95rem; font-weight:bold; color:${act.color}; background:${act.bg}; padding:4px 12px; border-radius:8px;">
+                                ${act.label}
+                            </div>
+                            <div style="font-size:0.85rem; color:var(--text2); font-family:monospace; background:var(--bg); padding:4px 10px; border-radius:8px; border:1px solid var(--border);">
+                                ⏰ ${timeStr}
+                            </div>
                         </div>
-                        <div style="font-size:0.9rem; font-weight:bold; color:var(--text1);">
-                            ${l.action_type || 'إجراء'}
-                        </div>
-                        <div style="font-size:0.85rem; color:var(--text2); line-height:1.4;">
+                        <div style="font-size:0.9rem; color:var(--text1); line-height:1.5; padding-top:4px;">
                             ${l.description || '-'}
                         </div>
                     </div>`;
