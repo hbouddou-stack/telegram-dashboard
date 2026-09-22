@@ -667,6 +667,34 @@ async def handle_admin_instant_approval(callback: CallbackQuery, bot: Bot):
         await callback.answer("❌ حدث خطأ أثناء التفعيل", show_alert=True)
 
 # ==========================================================
+
+# ==========================================================
+# TEST COMMAND FOR ADMINS (CLEAN SLATE)
+# ==========================================================
+@router.message(Command("reset_test"))
+async def cmd_reset_test(message: Message):
+    """Removes the admin's telegram_id from the database to simulate a brand new student."""
+    if message.from_user.id not in ADMIN_IDS:
+        return
+        
+    user_id = message.from_user.id
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("UPDATE academy_students SET telegram_id = NULL, group_joined = 0 WHERE telegram_id = ?", (user_id,))
+            await db.execute("DELETE FROM bot_visitors WHERE telegram_id = ?", (user_id,))
+            await db.execute("DELETE FROM student_logs WHERE telegram_id = ?", (user_id,))
+            await db.commit()
+            
+        await message.answer(
+            "🧹 <b>Mémoire effacée !</b>\n\n"
+            "Ton compte Telegram a été totalement supprimé de la base de données du bot. "
+            "Tu es maintenant un parfait inconnu.\n\n"
+            "👉 <b>Tu peux maintenant cliquer sur un lien magique (ex: <code>t.me/ton_bot?start=h1</code>) pour tester le parcours du début (A à Z).</b>",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        await message.answer(f"❌ Erreur: {e}")
+        
 # CONVERSATIONAL FALLBACK (WHEN STUDENT SENDS TEXT MESSAGES)
 # ==========================================================
 @router.message(F.text)
