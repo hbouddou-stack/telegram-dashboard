@@ -4627,7 +4627,8 @@ window.setSalesFunnel = function(val, el) {
         }
 
         let currentJourneyLogs = [];
-        let currentTimelineView = 'accordion'; // 'accordion', 'grouped', or 'raw'
+        let currentTimelineView = 'accordion';
+        let logsAscending = true; // NEW: Chronological order by default // 'accordion', 'grouped', or 'raw'
         let currentJourneyVisitorContext = { telegram_id: '', displayName: '', student_id: '' };
 
         function groupJourneyLogs(logs) {
@@ -4654,6 +4655,16 @@ window.setSalesFunnel = function(val, el) {
             }
             if (current) groups.push(current);
             return groups;
+        }
+
+        
+        function toggleLogsSort() {
+            logsAscending = !logsAscending;
+            const btn = document.getElementById('btn-sort-logs');
+            if (btn) {
+                btn.innerHTML = logsAscending ? '↓ Chronologique' : '↑ Plus récent d\'abord';
+            }
+            renderJourneyTimeline();
         }
 
         function setTimelineViewMode(mode) {
@@ -4830,8 +4841,8 @@ window.setSalesFunnel = function(val, el) {
                     icon: '🤖',
                     title: 'بدء المحادثة مع البوت (Start)',
                     sub: 'الضغط على زر Démarrer / Start لأول مرة',
-                    checkDone: (lgs) => lgs.some(l => ['BOT_STARTED'].includes(l.action_type)),
-                    filterLogs: (lgs) => lgs.filter(l => l.action_type === 'BOT_STARTED')
+                    checkDone: (lgs) => lgs.some(l => ['BOT_STARTED', 'BOT_START'].includes(l.action_type)),
+                    filterLogs: (lgs) => lgs.filter(l => ['BOT_STARTED', 'BOT_START'].includes(l.action_type))
                 },
                 {
                     id: 'stage-2',
@@ -5096,8 +5107,12 @@ window.setSalesFunnel = function(val, el) {
             }
 
             if (countSpan) {
-                if (currentTimelineView === 'grouped') {
-                    const groups = groupJourneyLogs(currentJourneyLogs);
+                
+            let displayLogs = [...currentJourneyLogs];
+            if (logsAscending) displayLogs.reverse();
+            
+            if (currentTimelineView === 'grouped') {
+                    const groups = groupJourneyLogs(displayLogs);
                     countSpan.textContent = `${groups.length} محطة مجمعة (${currentJourneyLogs.length} حركة إجمالية)`;
                 } else {
                     countSpan.textContent = `${currentJourneyLogs.length} حركة مسجلة بالتفصيل`;
@@ -5110,8 +5125,12 @@ window.setSalesFunnel = function(val, el) {
                     <div style="position:absolute; right:27px; top:18px; bottom:18px; width:2px; background:var(--border); z-index:1;"></div>
             `;
 
+            
+            let displayLogs = [...currentJourneyLogs];
+            if (logsAscending) displayLogs.reverse();
+            
             if (currentTimelineView === 'grouped') {
-                const groups = groupJourneyLogs(currentJourneyLogs);
+                const groups = groupJourneyLogs(displayLogs);
 
                 html += groups.map((g, index) => {
                     const act = formatActionTypeArabic(g.action_type);
@@ -5175,7 +5194,7 @@ window.setSalesFunnel = function(val, el) {
                 }).join('');
             } else {
                 // Raw linear mode
-                html += currentJourneyLogs.map((l, index) => {
+                html += displayLogs.map((l, index) => {
                     const dateFormatted = formatLogTimestampFrenchDigits(l.timestamp);
                     const act = formatActionTypeArabic(l.action_type);
                     const isFirst = index === 0;
