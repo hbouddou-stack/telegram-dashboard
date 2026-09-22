@@ -408,6 +408,7 @@ async def cmd_federer(message: Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔐 إدارة الطلاب والـ CRM (Gateway)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v62"))],
         [InlineKeyboardButton(text="🧠 الإدارة الشاملة (الأسئلة والفيديوهات والمقررات)", web_app=WebAppInfo(url=f"{base_url}/admin.html?v=master_admin"))],
+        [InlineKeyboardButton(text="🤖 لوحة التحكم بالدعم والـ FAQ (Support CRM)", web_app=WebAppInfo(url=f"{base_url}/support.html?v=support"))],
         [InlineKeyboardButton(text="📖 منصة الطالب: الدروس والاختبارات (القارئ الذكي)", web_app=WebAppInfo(url=f"{base_url}/reader.html?v=reader"))],
         [InlineKeyboardButton(text="💬 منصة الطالب: الدعم والـ FAQ (ask.html)", web_app=WebAppInfo(url=f"{base_url}/ask.html?v=rag_v2"))],
         [InlineKeyboardButton(text="🔗 منصة الطالب: الربط وتأكيد الحساب (link.html)", web_app=WebAppInfo(url=f"{base_url}/link.html?v=link2"))],
