@@ -14194,29 +14194,7 @@ function toggleFloatingCrmMenu() {
         }
     };
     
-    // Also override openStudentCard to use our Universal Modal instead of fiche-eleve-modal
-    window.openStudentCard = async function(studentOrId) {
-        let st = null;
-        if (typeof studentOrId === 'object') st = studentOrId;
-        else if (typeof allStudents !== 'undefined') st = allStudents.find(s => String(s.student_id) === String(studentOrId));
-        
-        if (!st) { alert("طالب غير موجود"); return; }
-        
-        const tgId = st.telegram_id || '';
-        const sId = st.student_id || '';
-        const dName = [st.first_name, st.last_name].filter(Boolean).join(' ') || 'مجهول';
-        
-        // Push the username temporarily to rawGhostList just so viewVisitorFullJourney finds it
-        if (st.telegram_username && typeof rawGhostList !== 'undefined') {
-            const existing = rawGhostList.find(g => String(g.telegram_id) === String(tgId));
-            if (!existing) rawGhostList.push({telegram_id: tgId, username: st.telegram_username});
-            else existing.username = st.telegram_username;
-        } else if (st.telegram_username && typeof rawGhostList === 'undefined') {
-            window.rawGhostList = [{telegram_id: tgId, username: st.telegram_username}];
-        }
-        
-        await window.viewVisitorFullJourney(tgId, dName, sId);
-    };
+    
 
 </script>
 
