@@ -10639,7 +10639,7 @@ async function toggleStudentValidity() {
             const profEl = document.getElementById('profile-profession-text');
             if(profEl) profEl.innerHTML = valOrEmpty(student.profession || student.job);
 
-            const unlinkBtn = (document.getElementById('profile-unlink-btn') || {});
+            const unlinkBtn = document.getElementById('profile-unlink-btn');
             if (unlinkBtn) {
                 if (student.telegram_id) {
                     unlinkBtn.style.display = 'block';
