@@ -1406,7 +1406,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                 counts['completed'] = (await cur.fetchone())['c']
                 
             # 10. Open SOS tickets
-            async with db.execute("SELECT COUNT(*) as c FROM gateway_sos WHERE status = 'open'") as cur:
+            async with db.execute("SELECT COUNT(DISTINCT telegram_id) as c FROM gateway_sos WHERE status = 'open'") as cur:
                 counts['sos'] = (await cur.fetchone())['c']
 
             # --- FETCH ACTUAL VISITORS ---
@@ -1479,6 +1479,8 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     where_clause = " WHERE (u.excluded = 0 OR u.excluded IS NULL) AND s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_LINK_SUCCESS'"
                 elif status == 'completed':
                     where_clause = " WHERE (u.excluded = 0 OR u.excluded IS NULL) AND s.telegram_id IS NOT NULL AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED'"
+                elif status == 'sos':
+                    where_clause = " WHERE (u.excluded = 0 OR u.excluded IS NULL) AND (SELECT COUNT(*) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') > 0"
 
                 # Append filters
                 filter_clause = ""

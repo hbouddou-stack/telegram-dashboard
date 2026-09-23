@@ -10156,7 +10156,43 @@ async function toggleStudentValidity() {
                 if(tgContainer) tgContainer.style.display = 'none';
             }
             const tgUser = String(student.telegram_username || student.tg_username || '').trim();
+            
             const uEl = document.getElementById('profile-tg-username-text');
+            
+            // --- NEW: TELEGRAM HISTORY ---
+            const existingHist = document.getElementById('profile-tg-history-container');
+            if (existingHist) existingHist.remove();
+            
+            if (data && data.logs) {
+                const historyLogs = data.logs.filter(l => l.action_type === 'CRM_NOTE' && l.description && l.description.includes('????? ????'));
+                if (historyLogs.length > 0) {
+                    let histHtml = `<div id="profile-tg-history-container" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px; margin-top:12px; grid-column: span 2;">`;
+                    histHtml += `<div style="font-size:0.9rem; font-weight:bold; color:var(--text1); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><span style="font-size:1.1rem;">??</span> ??? ????? ?????? (${historyLogs.length})</div>`;
+                    histHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+                    
+                    historyLogs.forEach(hl => {
+                        const dateStr = hl.timestamp ? new Date(hl.timestamp + 'Z').toLocaleString('fr-FR') : '';
+                        let lines = hl.description.split('\n');
+                        let changes = lines.slice(1).join('<br>').replace(/?/g, '?');
+                        histHtml += `
+                            <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px; font-size:0.8rem; color:var(--text2);">
+                                <div style="font-size:0.7rem; color:var(--primary); font-weight:bold; margin-bottom:4px;">?? ${dateStr}</div>
+                                <div style="line-height:1.4;">${changes}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    histHtml += `</div></div>`;
+                    
+                    // Append it after the ac-grid in mcontent-telegram
+                    const tgGrid = document.querySelector('#mcontent-telegram .ac-grid');
+                    if (tgGrid) {
+                        tgGrid.insertAdjacentHTML('afterend', histHtml);
+                    }
+                }
+            }
+            // -----------------------------
+
             if (uEl) {
                 if (tgUser && tgUser !== '-' && tgUser !== 'null') {
                     const cleanUser = tgUser.startsWith('@') ? tgUser : '@' + tgUser;
