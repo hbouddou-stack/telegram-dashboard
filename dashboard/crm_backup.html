@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Oswah CRM - مساحة الوكلاء</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --card-border: #e5e7eb;
+      --primary: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      /* Gender colors */
+      --female-bg: #fce7f3;
+      --female-border: #f9a8d4;
+      --male-bg: #dbeafe;
+      --male-border: #93c5fd;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "IBM Plex Sans Arabic", "Tajawal", sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text-main); padding-top: 125px; padding-bottom: 80px; }
+
+    /* STICKY HEADER */
+    .header { position: fixed; top: 0; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--card-border); z-index: 100; box-shadow: var(--shadow-sm); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; gap: 8px; }
+    .header-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
+    .header-controls { display: flex; gap: 8px; align-items: center; }
+    .agent-selector, .search-input {
+      background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px;
+      padding: 6px 10px; color: var(--text-main); font-weight: 600; font-size: 0.85rem; outline: none;
+    }
+    .search-input { width: 150px; }
+    .view-toggle-btn {
+      background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px;
+      padding: 6px 10px; cursor: pointer; font-size: 1rem; line-height: 1;
+    }
+    .view-toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* PILLS */
+    .stats-pills { display: flex; gap: 8px; overflow-x: auto; padding: 8px 14px 10px; scrollbar-width: none; background: #fff; }
+    .stats-pills::-webkit-scrollbar { display: none; }
+    .pill {
+      display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+      background: var(--bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: all 0.2s;
+    }
+    .pill.active { background: rgba(37,99,235,0.1); border-color: var(--primary); color: var(--primary); }
+    .pill.active .pill-badge { background: var(--primary); color: white; }
+    .pill.paye.active { background: rgba(16,185,129,0.1); border-color: var(--success); color: var(--success); }
+    .pill.paye.active .pill-badge { background: var(--success); }
+    .pill.ferme.active { background: rgba(239,68,68,0.1); border-color: var(--danger); color: var(--danger); }
+    .pill.ferme.active .pill-badge { background: var(--danger); }
+    .pill-badge { background: rgba(0,0,0,0.1); padding: 2px 7px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
+
+    /* LEADS COUNT BAR */
+    .leads-count-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 0.85rem; color: var(--text-muted); }
+
+    /* CARD VIEW */
+    .container { padding: 0 10px; }
+    .lead-card {
+      border-radius: var(--radius); border: 1.5px solid var(--card-border);
+      margin-bottom: 10px; overflow: hidden; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .lead-card:active { transform: scale(0.99); }
+    .lead-card.female { background: var(--female-bg); border-color: var(--female-border); border-right: 5px solid #ec4899; }
+    .lead-card.male   { background: var(--male-bg);   border-color: var(--male-border);   border-right: 5px solid #3b82f6; }
+    .lead-card.unknown { background: #fff; }
+    .lead-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 14px 6px; }
+    .lead-name { font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 2px; }
+    .lead-id { font-size: 0.78rem; color: var(--text-muted); }
+    .badge-status { padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .badge-nouveau  { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-relance  { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .badge-ferme    { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-paye     { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+
+    .lead-phone { padding: 4px 14px 6px; font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
+    .last-note-box {
+      margin: 4px 14px 6px; padding: 8px 12px; background: rgba(255,255,255,0.6);
+      border-right: 3px solid var(--card-border); border-radius: 6px;
+      font-size: 0.82rem; color: var(--text-muted); font-style: italic;
+    }
+    .next-action-box {
+      margin: 0 14px 8px; padding: 7px 10px;
+      background: rgba(255,255,255,0.7); border: 1px dashed var(--card-border); border-radius: 8px;
+      font-size: 0.82rem; color: var(--text-main);
+    }
+    .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid rgba(0,0,0,0.06); }
+    .btn-action {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      border: none; text-decoration: none; transition: background 0.15s;
+    }
+    .btn-call  { background: rgba(255,255,255,0.8); color: var(--text-main); border-left: 1px solid rgba(0,0,0,0.06); }
+    .btn-wa    { background: #25D366; color: white; }
+    .btn-log   { background: var(--primary); color: white; grid-column: span 2; }
+    .btn-call:hover { background: #e5e7eb; }
+
+    /* TABLE VIEW */
+    #tableView { display: none; overflow-x: auto; padding: 0 4px; }
+    #tableView table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: white; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-sm); }
+    #tableView th { background: #1e293b; color: white; padding: 10px 8px; text-align: right; font-weight: 700; font-size: 0.78rem; white-space: nowrap; }
+    #tableView td { padding: 9px 8px; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
+    #tableView tr.female td { background: var(--female-bg); }
+    #tableView tr.male   td { background: var(--male-bg); }
+    #tableView tr:hover td { filter: brightness(0.97); }
+    .td-actions { display: flex; gap: 5px; align-items: center; }
+    .td-btn { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; }
+    .td-btn-call { background: #e5e7eb; color: var(--text-main); text-decoration: none; }
+    .td-btn-wa   { background: #25D366; color: white; text-decoration: none; }
+    .td-btn-log  { background: var(--primary); color: white; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: flex-end; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: #fff; width: 100%; max-width: 600px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 24px 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+    .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+    .form-control { width: 100%; padding: 11px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 0.92rem; background: var(--bg); color: var(--text-main); outline: none; }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { resize: vertical; min-height: 75px; }
+    .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 13px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+    .btn-success-action { width: 100%; background: var(--success); color: white; border: none; padding: 13px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-right: 20px; margin-top: 18px; border-right: 2px solid var(--card-border); }
+    .timeline-item { position: relative; margin-bottom: 14px; }
+    .timeline-item::before { content: ""; position: absolute; right: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; }
+    .timeline-date { font-size: 0.74rem; color: var(--text-muted); margin-bottom: 3px; }
+    .timeline-content-box { background: var(--bg); padding: 9px 11px; border-radius: 8px; font-size: 0.83rem; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.88rem; font-weight: 600; transition: bottom 0.3s cubic-bezier(0.16,1,0.3,1); z-index: 2000; box-shadow: var(--shadow); }
+    .toast.show { bottom: 80px; }
+
+    /* BOTTOM NAV */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #fff; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; align-items: center; z-index: 900; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-decoration: none; gap: 3px; padding: 4px 10px; cursor: pointer; }
+    .nav-item.active { color: var(--primary); }
+    .nav-icon { font-size: 1.25rem; }
+
+    .loader { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- STICKY HEADER -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-title"><i class="fa-solid fa-briefcase"></i> Oswah CRM</div>
+      <div class="header-controls">
+        <input type="text" id="searchInput" class="search-input" placeholder="بحث..." oninput="filterData()">
+        <select id="agentSelect" class="agent-selector" onchange="filterData()">
+          <option value="all">جميع الوكلاء</option>
+        </select>
+        <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث من Google Sheets">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض">
+          <i class="fa-solid fa-table-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTER PILLS - Single clean row -->
+    <div class="stats-pills">
+      <div class="pill nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
+        <i class="fa-solid fa-star"></i> جديد <span class="pill-badge" id="count-nouveau">0</span>
+      </div>
+      <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
+        <i class="fa-solid fa-arrows-rotate"></i> للمتابعة <span class="pill-badge" id="count-relance">0</span>
+      </div>
+      <div class="pill ferme" data-filter="ferme" onclick="setFilter('ferme')">
+        <i class="fa-solid fa-ban"></i> مغلق <span class="pill-badge" id="count-ferme">0</span>
+      </div>
+      <div class="pill paye" data-filter="paye" onclick="setFilter('paye')">
+        <i class="fa-solid fa-check-circle"></i> مسدد <span class="pill-badge" id="count-paye">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- LEADS CONTAINER -->
+  <main class="container">
+    <div class="leads-count-bar">
+      <span id="current-filter-label">العملاء الجدد</span>
+      <span id="leads-count">يتم التحميل...</span>
+    </div>
+    <!-- Card View -->
+    <div id="cardView">
+      <div id="leadsList"><div class="loader"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</div></div>
+    </div>
+    <!-- Table View (hidden by default) -->
+    <div id="tableView">
+      <table>
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>الهاتف</th>
+            <th>الوكيل</th>
+            <th>الحالة</th>
+            <th>آخر ملاحظة</th>
+            <th>المتابعة القادمة</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="leadsTable"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- INTERACTION MODAL -->
+  <div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="modalLeadName">تسجيل متابعة</div>
+        <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">نتيجة التواصل:</label>
+        <select id="modalResultSelect" class="form-control">
+          <option value="">-- اختر النتيجة --</option>
+          <option value="لا يوجد رد">لا يوجد رد</option>
+          <option value="مهتم">مهتم</option>
+          <option value="وعد بالسداد">وعد بالسداد</option>
+          <option value="غير مهتم">غير مهتم</option>
+          <option value="رقم خاطئ">رقم خاطئ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ملاحظات المكالمة:</label>
+        <textarea id="modalNoteInput" class="form-control" placeholder="اكتب ملخص ما دار في المكالمة..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">تاريخ المتابعة القادمة:</label>
+        <input type="date" id="modalNextDate" class="form-control">
+      </div>
+
+      <button class="btn-submit" onclick="submitModalInteraction()">💾 حفظ التحديث</button>
+      <button class="btn-success-action" onclick="markPaid()"><i class="fa-solid fa-check-circle"></i> تأكيد الدفع (تم السداد)</button>
+
+      <hr style="border:0; border-top:1px solid var(--card-border); margin:18px 0;">
+      <div class="modal-title" style="font-size:1rem; margin-bottom:10px;">السجل والتاريخ</div>
+      <div id="modalTimeline" class="timeline"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">تم التحديث بنجاح!</div>
+
+  <!-- BOTTOM NAV - Same structure as admin_gateway.html -->
+  <div class="bottom-nav">
+    <a href="/admin-gateway" class="nav-item">
+      <span class="nav-icon">📊</span>
+      <span>الرئيسية</span>
+    </a>
+    <a href="/admin-gateway#students" class="nav-item">
+      <span class="nav-icon">👥</span>
+      <span>الطلاب</span>
+    </a>
+    <a href="/admin-gateway#sos" class="nav-item">
+      <span class="nav-icon">🆘</span>
+      <span>الدعم</span>
+    </a>
+    <div class="nav-item active">
+      <span class="nav-icon">📞</span>
+      <span>CRM</span>
+    </div>
+  </div>
+
+  <script>
+    let allLeads = [];
+    let activeFilter = 'nouveau';
+    let activeLeadId = null;
+    let isTableView = false;
+
+    // Persist agent selection
+    const savedAgent = localStorage.getItem('crm_agent_ar');
+    if (savedAgent) document.getElementById('agentSelect').value = savedAgent;
+
+    function genderClass(lead) {
+      const g = String(lead.Genre || lead.Sexe || lead.Gender || '').toLowerCase().trim();
+      if (g === 'femme' || g === 'f' || g === 'female' || g.includes('أنث') || g.includes('fille')) return 'female';
+      if (g === 'homme' || g === 'm' || g === 'male' || g.includes('ذكر') || g.includes('garcon')) return 'male';
+      return 'unknown';
+    }
+
+    function categorize(lead) {
+      const status = String(lead.Statut_CRM || '').trim().toLowerCase();
+      const ps = String(lead.Statut_Paiement || lead.Payment_Status || '').toUpperCase().trim();
+      const hasHistory = !!(lead.Ancien_Commentaire || lead.Dernier_Contact_Resultat || lead.Dernier_Contact_Date);
+
+      // Paid check
+      const PAID_VALS = ['PAID','PAYE','PAYÉ','OUI','YES','VALIDE','CONFIRME','1','TRUE','EXEMPT','EPARGNE','EXONERE','مدفوع','مكتمل','نعم','مسدد','معفي'];
+      const isPaid = PAID_VALS.includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
+
+      if (isPaid || status === 'مسدد' || status.includes('payé') || status.includes('تم السداد') || status.includes('paye') || status.includes('مكتمل')) {
+        return 'paye';
+      }
+      if (status === 'مغلق' || status === 'غير مهتم' || status === 'رقم خاطئ') {
+        return 'ferme';
+      }
+      // "nouveau" only if NO status and NO prior contact history
+      if ((!status || status === 'nouveau' || status === 'جديد') && !hasHistory) {
+        return 'nouveau';
+      }
+      // Everything else: in-progress/relance
+      return 'relance';
+    }
+
+    async function loadData(forceRefresh = false) {
+      const refreshBtn = document.getElementById('refreshBtn');
+      if (refreshBtn && forceRefresh) refreshBtn.querySelector('i').classList.add('fa-spin');
+      try {
+        const url = forceRefresh ? '/api/crm/data?refresh=1' : '/api/crm/data';
+        const res = await fetch(url);
+        const data = await res.json();
+
+        allLeads = data.leads || [];
+
+        // Categorize
+        allLeads.forEach(lead => { lead._cat = categorize(lead); });
+
+        // Populate agents dropdown
+        const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))].sort();
+        const sel = document.getElementById('agentSelect');
+        const prevVal = sel.value;
+        sel.innerHTML = '<option value="all">👥 جميع الوكلاء</option>' + uniqueAgents.map(a => `<option value="${a}">${a}</option>`).join('');
+        if (uniqueAgents.includes(prevVal)) sel.value = prevVal;
+        else if (savedAgent && uniqueAgents.includes(savedAgent)) sel.value = savedAgent;
+
+        filterData();
+        if (forceRefresh) showToast('تم تحديث البيانات من Google Sheets بنجاح! 🔄');
+      } catch (err) {
+        console.error(err);
+        document.getElementById('leadsList').innerHTML = '<div class="loader" style="color:var(--danger)">❌ خطأ في الاتصال بالخادم</div>';
+      } finally {
+        if (refreshBtn) refreshBtn.querySelector('i').classList.remove('fa-spin');
+      }
+    }
+
+    function setFilter(f) {
+      activeFilter = f;
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      const target = document.querySelector(`.pill[data-filter="${f}"]`);
+      if (target) target.classList.add('active');
+      const labels = { nouveau: 'العملاء الجدد', relance: 'قيد المتابعة', ferme: 'مغلق / غير مهتم', paye: 'تم السداد / مسدد' };
+      document.getElementById('current-filter-label').textContent = labels[f] || '';
+      filterData();
+    }
+
+    function filterData() {
+      const agent = document.getElementById('agentSelect').value;
+      const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      localStorage.setItem('crm_agent_ar', agent);
+
+      let filtered = allLeads;
+      if (agent !== 'all') filtered = filtered.filter(l => l.Agent_Nom === agent);
+      if (query) {
+        filtered = filtered.filter(l =>
+          String(l.Nom || '').toLowerCase().includes(query) ||
+          String(l.Telephone || '').includes(query) ||
+          String(l.Email || '').toLowerCase().includes(query) ||
+          String(l.ID_Lead || '').includes(query)
+        );
+      }
+
+      // Update pill counts
+      const stats = { nouveau: 0, relance: 0, ferme: 0, paye: 0 };
+      filtered.forEach(l => { if (stats[l._cat] !== undefined) stats[l._cat]++; });
+      document.getElementById('count-nouveau').textContent = stats.nouveau;
+      document.getElementById('count-relance').textContent = stats.relance;
+      document.getElementById('count-ferme').textContent = stats.ferme;
+      document.getElementById('count-paye').textContent = stats.paye;
+
+      // Filter to current tab
+      let displayed = filtered.filter(l => l._cat === activeFilter);
+      // Sort: relance sorted by next date; others by ID
+      if (activeFilter === 'relance') {
+        displayed.sort((a, b) => {
+          if (!a.Date_Prochaine_Action) return 1;
+          if (!b.Date_Prochaine_Action) return -1;
+          return a.Date_Prochaine_Action.localeCompare(b.Date_Prochaine_Action);
+        });
+      }
+
+      document.getElementById('leads-count').textContent = `العدد: ${displayed.length}`;
+      if (isTableView) renderTable(displayed);
+      else renderCards(displayed);
+    }
+
+    function toggleView() {
+      isTableView = !isTableView;
+      const btn = document.getElementById('viewToggleBtn');
+      document.getElementById('cardView').style.display = isTableView ? 'none' : 'block';
+      document.getElementById('tableView').style.display = isTableView ? 'block' : 'none';
+      btn.innerHTML = isTableView ? '<i class="fa-solid fa-id-card"></i>' : '<i class="fa-solid fa-table-list"></i>';
+      btn.classList.toggle('active', isTableView);
+      filterData();
+    }
+
+    function statusBadgeHtml(cat) {
+      if (cat === 'nouveau') return '<span class="badge-status badge-nouveau">⭐ جديد</span>';
+      if (cat === 'relance') return '<span class="badge-status badge-relance">🔄 للمتابعة</span>';
+      if (cat === 'ferme')   return '<span class="badge-status badge-ferme">🚫 مغلق</span>';
+      if (cat === 'paye')    return '<span class="badge-status badge-paye">✅ مسدد</span>';
+      return '';
+    }
+
+    function renderCards(leads) {
+      const container = document.getElementById('leadsList');
+      if (leads.length === 0) {
+        container.innerHTML = '<div class="loader">لا يوجد عملاء في هذه القائمة 🎉</div>';
+        return;
+      }
+      container.innerHTML = leads.map(l => {
+        let cleanPhone = String(l.Telephone || '').replace(/\D/g, '');
+        if (cleanPhone.startsWith('0') && cleanPhone.length === 10) cleanPhone = '212' + cleanPhone.substring(1);
+        else if (!cleanPhone.startsWith('212') && cleanPhone.length === 9) cleanPhone = '212' + cleanPhone;
+        const waLink = `https://wa.me/${cleanPhone}`;
+        const gc = genderClass(l);
+        const badge = statusBadgeHtml(l._cat);
+        const lastNote = l.Ancien_Commentaire ? `<div class="last-note-box"><i class="fa-solid fa-quote-right"></i> ${escapeHtml(l.Ancien_Commentaire)}</div>` : '';
+        const nextAction = l._cat !== 'paye' ? `
+          <div class="next-action-box">
+            <b>الخطوة القادمة:</b> ${escapeHtml(l.Prochaine_Action || 'غير محدد')}
+            ${l.Date_Prochaine_Action ? `<span style="color:var(--text-muted);font-size:0.78rem;margin-right:4px;">(${l.Date_Prochaine_Action})</span>` : ''}
+            ${l.Dernier_Contact_Resultat ? `<div style="margin-top:3px;font-size:0.78rem;"><i class="fa-solid fa-reply"></i> النتيجة السابقة: ${escapeHtml(l.Dernier_Contact_Resultat)}</div>` : ''}
+          </div>` : '';
+
+        return `
+          <div class="lead-card ${gc}">
+            <div class="lead-header">
+              <div>
+                <div class="lead-name">${escapeHtml(l.Nom || 'بدون اسم')}</div>
+                <div class="lead-id">رقم الطالب: <b>#${l.ID_Lead}</b></div>
+              </div>
+              <div>${badge}</div>
+            </div>
+            <div class="lead-phone"><i class="fa-solid fa-phone"></i> <span dir="ltr">${escapeHtml(l.Telephone || '-')}</span></div>
+            ${lastNote}
+            ${nextAction}
+            <div class="actions-grid">
+              <a href="tel:+${cleanPhone}" class="btn-action btn-call"><i class="fa-solid fa-phone"></i> اتصال</a>
+              <a href="${waLink}" target="_blank" class="btn-action btn-wa"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
+              <button class="btn-action btn-log" onclick="openInteractionModal('${l.ID_Lead}')"><i class="fa-solid fa-pen-to-square"></i> تسجيل متابعة / السجل</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderTable(leads) {
+      const tbody = document.getElementById('leadsTable');
+      if (leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">لا يوجد عملاء في هذه القائمة 🎉</td></tr>';
+        return;
+      }
+      tbody.innerHTML = leads.map(l => {
+        let cleanPhone = String(l.Telephone || '').replace(/\D/g, '');
+        if (cleanPhone.startsWith('0') && cleanPhone.length === 10) cleanPhone = '212' + cleanPhone.substring(1);
+        else if (!cleanPhone.startsWith('212') && cleanPhone.length === 9) cleanPhone = '212' + cleanPhone;
+        const waLink = `https://wa.me/${cleanPhone}`;
+        const gc = genderClass(l);
+        const badge = statusBadgeHtml(l._cat);
+        return `<tr class="${gc}">
+          <td><b>${escapeHtml(l.Nom || '-')}</b><br><small style="color:var(--text-muted)">#${l.ID_Lead}</small></td>
+          <td dir="ltr" style="font-weight:700">${escapeHtml(l.Telephone || '-')}</td>
+          <td>${escapeHtml(l.Agent_Nom || '-')}</td>
+          <td>${badge}</td>
+          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.Ancien_Commentaire || '')}">${escapeHtml(l.Ancien_Commentaire || '-')}</td>
+          <td>${l.Date_Prochaine_Action || '-'}</td>
+          <td>
+            <div class="td-actions">
+              <a href="tel:+${cleanPhone}" class="td-btn td-btn-call"><i class="fa-solid fa-phone"></i></a>
+              <a href="${waLink}" target="_blank" class="td-btn td-btn-wa"><i class="fa-brands fa-whatsapp"></i></a>
+              <button class="td-btn td-btn-log" onclick="openInteractionModal('${l.ID_Lead}')"><i class="fa-solid fa-pen-to-square"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function updateLeadAPI(leadId, payload) {
+      const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+      if (lead) {
+        lead.Statut_CRM = payload.statut;
+        lead.Dernier_Contact_Resultat = payload.resultat;
+        lead.Prochaine_Action = payload.prochaine_action;
+        lead.Date_Prochaine_Action = payload.date_prochaine;
+        if (payload.note) lead.Ancien_Commentaire = payload.note;
+        lead._cat = categorize(lead); // Re-categorize immediately
+      }
+      filterData();
+      try {
+        await fetch('/api/crm/update-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lead_id: leadId, ...payload, agent_email: lead ? lead.Agent_Email : '' })
+        });
+      } catch (err) { console.error('Update error:', err); }
+    }
+
+    async function logWhatsApp(leadId) {
+      const today = new Date().toISOString().split('T')[0];
+      await updateLeadAPI(leadId, { statut: 'للمتابعة', resultat: 'واتساب مرسل', prochaine_action: 'انتظار رد', date_prochaine: today, note: 'تم إرسال رسالة واتساب' });
+      showToast('تم تسجيل إرسال الواتساب');
+    }
+
+    async function markPaid() {
+      if (!activeLeadId) return;
+      if (!confirm('هل أنت متأكد من تأكيد دفع واشتراك هذا العميل؟')) return;
+      await updateLeadAPI(activeLeadId, { statut: 'مسدد', resultat: 'تم تأكيد الدفع', prochaine_action: 'مغلق', date_prochaine: '', note: 'تم تأكيد الدفع والاشتراك بنجاح' });
+      closeModal();
+      showToast('تم تحويل العميل إلى مسدد! 🎉');
+    }
+
+    async function submitModalInteraction() {
+      const resultat = document.getElementById('modalResultSelect').value;
+      const note = document.getElementById('modalNoteInput').value.trim();
+      const nextDate = document.getElementById('modalNextDate').value;
+
+      if (!resultat && !note) { alert('يرجى اختيار النتيجة أو كتابة ملاحظة'); return; }
+      if (!nextDate && resultat !== 'غير مهتم' && resultat !== 'رقم خاطئ') { alert('يرجى تحديد تاريخ المتابعة القادمة'); return; }
+
+      let status = 'للمتابعة';
+      let nextAction = 'معاودة الاتصال';
+      if (resultat === 'غير مهتم' || resultat === 'رقم خاطئ') { status = 'مغلق'; nextAction = 'لا شيء'; }
+      else if (resultat === 'لا يوجد رد') { nextAction = 'معاودة الاتصال'; }
+
+      await updateLeadAPI(activeLeadId, { statut: status, resultat: resultat || 'للمتابعة', prochaine_action: nextAction, date_prochaine: nextDate, note: note || resultat });
+      closeModal();
+      showToast('تم حفظ التحديث بنجاح!');
+    }
+
+    async function openInteractionModal(leadId) {
+      activeLeadId = leadId;
+      document.getElementById('interactionModal').classList.add('active');
+      const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+      if (lead) document.getElementById('modalLeadName').textContent = `تسجيل متابعة: ${lead.Nom || ''}`;
+      document.getElementById('modalResultSelect').value = '';
+      document.getElementById('modalNoteInput').value = '';
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('modalNextDate').value = tomorrow.toISOString().split('T')[0];
+
+      const timeline = document.getElementById('modalTimeline');
+      timeline.innerHTML = '<div class="loader" style="padding:10px"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل السجل...</div>';
+      try {
+        const res = await fetch(`/api/crm/lead-details?lead_id=${leadId}`);
+        const data = await res.json();
+        const interactions = data.interactions || [];
+        if (interactions.length === 0) {
+          timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center">لا توجد تفاعلات سابقة</div>';
+        } else {
+          timeline.innerHTML = interactions.map(i => `
+            <div class="timeline-item">
+              <div class="timeline-date"><b style="color:var(--text-main)">${escapeHtml(i.Date_Heure || '')}</b> • ${escapeHtml(i.Resultat || '')}</div>
+              <div class="timeline-content-box">${escapeHtml(i.Commentaire || '')}</div>
+            </div>`).join('');
+        }
+      } catch (e) {
+        timeline.innerHTML = '<div class="timeline-content-box" style="color:var(--danger)">خطأ في تحميل السجل</div>';
+      }
+    }
+
+    function closeModal() { document.getElementById('interactionModal').classList.remove('active'); activeLeadId = null; }
+    function closeModalOnBackdrop(e) { if (e.target.id === 'interactionModal') closeModal(); }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${msg}`;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

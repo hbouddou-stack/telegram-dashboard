@@ -1034,17 +1034,37 @@ async def api_crm_lead_details(request):
 
 async def api_crm_update_lead(request):
     import crm_service
+    import asyncio
     try:
         body = await request.json()
         lead_id = body.get('lead_id')
         statut = body.get('statut', '')
         resultat = body.get('resultat', '')
+        detail = body.get('detail', '')
         prochaine_action = body.get('prochaine_action', '')
         date_prochaine = body.get('date_prochaine', '')
         note = body.get('note', '')
+        agent_nom = body.get('agent_nom') or body.get('agent_name') or ''
         agent_email = body.get('agent_email', '')
-        canal = body.get('canal', 'Téléphone')
-        success = await crm_service.update_lead_status_async(lead_id, statut, resultat, prochaine_action, date_prochaine, note, agent_email, canal)
+        canal = body.get('canal', 'الهاتف')
+        send_email = body.get('send_email', False)
+
+        success = await crm_service.update_lead_status_async(
+            lead_id=lead_id,
+            statut=statut,
+            resultat=resultat,
+            prochaine_action=prochaine_action,
+            date_prochaine=date_prochaine,
+            note=note,
+            agent_email=agent_email,
+            canal=canal,
+            agent_name=agent_nom,
+            detail=detail
+        )
+
+        if success and send_email:
+            asyncio.create_task(crm_service.send_crm_fake_number_alert(lead_id))
+
         return web.json_response({'success': success})
     except Exception as e:
         return web.json_response({'error': str(e)}, status=400)
@@ -1390,14 +1410,14 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                 row = await cur.fetchone()
                 counts['terms'] = row['c'] if row else 0
 
-            # 6. Waiting / Linked: Linked & signed charter, waiting for folder click
-            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step != 'STEP_FOLDER_CLICKED')") as cur:
+                        # 6. Waiting / Links: Got links, hasn't joined
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED' AND (s.group_joined = 0 OR s.group_joined IS NULL)") as cur:
                 row = await cur.fetchone()
                 counts['waiting'] = row['c'] if row else 0
                 counts['inactive'] = counts['waiting']
 
-            # 7. Completed: clicked folder
-            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
+            # 7. Completed: Joined the group
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND s.group_joined = 1") as cur:
                 row = await cur.fetchone()
                 counts['completed'] = row['c'] if row else 0
 

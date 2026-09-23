@@ -311,6 +311,24 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
         "interactions": []
     }
 
+async def _ensure_crm_interactions_table(db):
+    await db.execute('''
+        CREATE TABLE IF NOT EXISTS crm_interactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lead_id TEXT,
+            academic_id TEXT,
+            student_id INTEGER,
+            agent_name TEXT,
+            tentative_resultat TEXT,
+            detail_statut TEXT,
+            prochaine_action TEXT,
+            date_prochaine TEXT,
+            note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    await db.commit()
+
 async def update_lead_status_async(
     lead_id: str,
     statut: str,
@@ -319,39 +337,170 @@ async def update_lead_status_async(
     date_prochaine: str,
     note: str,
     agent_email: str = '',
-    canal: str = ''
+    canal: str = '',
+    agent_name: str = '',
+    detail: str = ''
 ) -> bool:
-    """Met à jour le statut et la note d'un lead dans la base locale."""
+    """Met à jour le statut, insère dans l'historique et miroir Google Sheet."""
     try:
+        import crm_sync
         async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            await _ensure_crm_interactions_table(db)
             now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            full_note = f"[{resultat}] {note}" if (resultat and note) else (resultat or note)
+            
+            # Récupérer les infos de l'élève pour le miroir et l'historique
+            student_info = None
+            async with db.execute(
+                "SELECT student_id, academic_id, first_name, last_name, phone, email FROM academy_students WHERE academic_id = ? OR student_id = ?",
+                (str(lead_id), str(lead_id))
+            ) as cur:
+                student_info = await cur.fetchone()
 
+            st_id = student_info['student_id'] if student_info else lead_id
+            ac_id = student_info['academic_id'] if student_info else lead_id
+            full_name = f"{student_info['first_name'] or ''} {student_info['last_name'] or ''}".strip() if student_info else lead_id
+            phone = student_info['phone'] if student_info else ''
+            email = student_info['email'] if student_info else ''
+
+            # 1. Enregistrer dans la table crm_interactions (Timeline)
+            await db.execute('''
+                INSERT INTO crm_interactions 
+                (lead_id, academic_id, student_id, agent_name, tentative_resultat, detail_statut, prochaine_action, date_prochaine, note, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (str(lead_id), str(ac_id), st_id, agent_name, resultat, detail, prochaine_action, date_prochaine, note, now_str))
+
+            # 2. Mettre à jour academy_students
+            full_note = f"[{resultat}{(' - ' + detail) if detail else ''}] {note}".strip()
             query = """
                 UPDATE academy_students 
                 SET crm_lead_status = ?, 
                     crm_next_action_note = ?, 
                     crm_next_action_date = ?,
-                    crm_last_contact_at = ?
+                    crm_last_contact_at = ?,
+                    crm_assigned_to = CASE WHEN (crm_assigned_to IS NULL OR crm_assigned_to = '' OR crm_assigned_to = 'غير محدد') AND ? != '' THEN ? ELSE crm_assigned_to END
                 WHERE academic_id = ? OR student_id = ?
             """
-            await db.execute(query, (statut, full_note, date_prochaine, now_str, lead_id, lead_id))
+            await db.execute(query, (statut, full_note, date_prochaine, now_str, agent_name, agent_name, str(lead_id), str(lead_id)))
 
-            # Si le lead est marqué comme payé dans le CRM, synchroniser payment_status
             if statut in ('مسدد', 'Payé / Inscrit', 'Exempté'):
                 await db.execute(
                     "UPDATE academy_students SET payment_status = 'مسدد' WHERE (academic_id = ? OR student_id = ?) AND payment_status NOT LIKE '%مسدد%'",
-                    (lead_id, lead_id)
+                    (str(lead_id), str(lead_id))
                 )
             await db.commit()
+
+            # 3. Synchronisation miroir de secours (CSV local garanti + Google Sheet si configuré)
+            try:
+                mirror_payload = {
+                    "timestamp": now_str,
+                    "lead_id": str(lead_id),
+                    "lead_name": full_name,
+                    "phone": phone,
+                    "email": email,
+                    "agent_name": agent_name,
+                    "resultat": resultat,
+                    "detail": detail,
+                    "date_prochaine": date_prochaine,
+                    "note": note,
+                    "prochaine_action": prochaine_action
+                }
+                asyncio.create_task(crm_sync.log_and_mirror_interaction(mirror_payload))
+            except Exception as e_mirror:
+                logger.error(f"[CRM] Erreur trigger miroir: {e_mirror}")
+
         return True
     except Exception as e:
         logger.error(f"[CRM] Erreur mise à jour lead {lead_id}: {e}")
         return False
 
 async def get_lead_details_async(lead_id: str) -> dict:
-    """Retourne l'historique détaillé d'un lead."""
-    return {"interactions": []}
+    """Retourne l'historique détaillé d'un lead depuis crm_interactions."""
+    interactions = []
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            await _ensure_crm_interactions_table(db)
+            query = """
+                SELECT id, agent_name, tentative_resultat, detail_statut, prochaine_action, date_prochaine, note, created_at
+                FROM crm_interactions
+                WHERE lead_id = ? OR academic_id = ? OR student_id = ?
+                ORDER BY id DESC
+            """
+            async with db.execute(query, (str(lead_id), str(lead_id), str(lead_id))) as cur:
+                rows = await cur.fetchall()
+                for r in rows:
+                    res_parts = []
+                    if r['tentative_resultat']: res_parts.append(r['tentative_resultat'])
+                    if r['detail_statut']: res_parts.append(r['detail_statut'])
+                    res_str = " • ".join(res_parts) if res_parts else "تحديث"
+                    
+                    interactions.append({
+                        "Date_Heure": r['created_at'],
+                        "Agent": r['agent_name'] or "غير محدد",
+                        "Resultat": res_str,
+                        "Commentaire": r['note'] or "",
+                        "Date_Prochaine": r['date_prochaine'] or "",
+                        "Prochaine_Action": r['prochaine_action'] or ""
+                    })
+    except Exception as e:
+        logger.error(f"[CRM] Erreur get_lead_details {lead_id}: {e}")
+    return {"interactions": interactions}
+
+async def send_crm_fake_number_alert(lead_id: str):
+    """Envoie un e-mail automatique quand le numéro est faux/injoignable."""
+    try:
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        import config as cfg
+        
+        if not cfg.SMTP_USER or not cfg.SMTP_PASSWORD:
+            logger.info("[CRM_EMAIL] SMTP non configuré, e-mail simulé.")
+            return
+
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT first_name, email FROM academy_students WHERE academic_id = ? OR student_id = ?", (str(lead_id), str(lead_id))) as cur:
+                row = await cur.fetchone()
+                if not row or not row['email']:
+                    return
+                first_name = row['first_name'] or "عزيزي الطالب"
+                recipient_email = row['email'].strip()
+
+        msg = MIMEMultipart("alternative")
+        msg['Subject'] = "تنبيه هام بخصوص تسجيلكم في أكاديمية أسوة"
+        msg['From'] = f"{getattr(cfg, 'SMTP_SENDER_NAME', 'أكاديمية أسوة')} <{cfg.SMTP_USER}>"
+        msg['To'] = recipient_email
+
+        body_html = f"""
+        <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
+            <h2 style="color: #2563eb; margin-top: 0;">السلام عليكم ورحمة الله وبركاته، {first_name}</h2>
+            <p>لقد حاول فريق الإرشاد والتسجيل بأكاديمية أسوة التواصل معكم هاتفياً بخصوص استكمال طلب تسجيلكم، ولكن تعذر الوصول إليكم أو أن رقم الهاتف المسجل غير متاح.</p>
+            <p style="background: #fef3c7; padding: 12px; border-right: 4px solid #f59e0b; border-radius: 6px;">
+                <strong>يرجى مراسلتنا عبر الواتساب لتأكيد رقمكم الصحيح ومتابعة تسجيلكم:</strong>
+            </p>
+            <div style="text-align: center; margin: 25px 0;">
+                <a href="https://wa.me/212623126654" style="background: #25D366; color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; display: inline-block;">
+                    التواصل معنا عبر واتساب
+                </a>
+            </div>
+            <p style="color: #6b7280; font-size: 0.9em;">إذا كنتم قد تواصلتم معنا بالفعل، يرجى تجاهل هذه الرسالة.<br>مع تحيات،<br>إدارة أكاديمية أسوة</p>
+        </div>
+        """
+        msg.attach(MIMEText(body_html, "html", "utf-8"))
+
+        def _send():
+            with smtplib.SMTP(cfg.SMTP_HOST, cfg.SMTP_PORT, timeout=10) as server:
+                server.starttls()
+                server.login(cfg.SMTP_USER, cfg.SMTP_PASSWORD)
+                server.send_message(msg)
+
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, _send)
+        logger.info(f"[CRM_EMAIL] E-mail alerte numéro envoyé à {recipient_email}")
+    except Exception as e:
+        logger.error(f"[CRM_EMAIL] Erreur envoi e-mail alerte: {e}")
 
 # Synchronous compatibility aliases
 def get_leads(*args, **kwargs):

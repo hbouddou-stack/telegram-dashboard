@@ -3,596 +3,1034 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Oswah CRM - مساحة الوكلاء</title>
+  <title>Oswah CRM - إدارة المتابعات الذكية</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg: #f3f4f6;
+      --bg: #f8fafc;
       --card-bg: #ffffff;
-      --card-border: #e5e7eb;
+      --card-border: #e2e8f0;
       --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --primary-hover: #1d4ed8;
       --success: #10b981;
+      --success-light: #ecfdf5;
       --danger: #ef4444;
+      --danger-light: #fef2f2;
       --warning: #f59e0b;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --radius: 12px;
-      --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      /* Gender colors */
-      --female-bg: #fce7f3;
-      --female-border: #f9a8d4;
-      --male-bg: #dbeafe;
-      --male-border: #93c5fd;
+      --warning-light: #fffbeb;
+      --purple: #8b5cf6;
+      --purple-light: #f5f3ff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius: 14px;
+      --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+      
+      --female-bg: #fff1f2;
+      --female-border: #fecdd3;
+      --female-accent: #e11d48;
+      --male-bg: #f0fdf4;
+      --male-border: #bbf7d0;
+      --male-accent: #16a34a;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "IBM Plex Sans Arabic", "Tajawal", sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text-main); padding-top: 125px; padding-bottom: 80px; }
 
-    /* STICKY HEADER */
-    .header { position: fixed; top: 0; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--card-border); z-index: 100; box-shadow: var(--shadow-sm); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "IBM Plex Sans Arabic", "Tajawal", sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text-main); padding-top: 130px; padding-bottom: 85px; }
+
+    /* HEADER */
+    .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--card-border); z-index: 100; box-shadow: var(--shadow-sm); }
     .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; gap: 8px; }
-    .header-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
-    .header-controls { display: flex; gap: 8px; align-items: center; }
+    .header-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+    .header-controls { display: flex; gap: 6px; align-items: center; }
     .agent-selector, .search-input {
-      background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px;
-      padding: 6px 10px; color: var(--text-main); font-weight: 600; font-size: 0.85rem; outline: none;
+      background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 7px 11px; color: var(--text-main); font-weight: 600; font-size: 0.85rem; outline: none; transition: border-color 0.2s;
     }
-    .search-input { width: 150px; }
+    .agent-selector:focus, .search-input:focus { border-color: var(--primary); }
+    .search-input { width: 140px; }
     .view-toggle-btn {
-      background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px;
-      padding: 6px 10px; cursor: pointer; font-size: 1rem; line-height: 1;
+      background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 7px 11px; cursor: pointer; font-size: 0.95rem; color: var(--text-muted); transition: all 0.2s;
     }
+    .view-toggle-btn:hover { background: #e2e8f0; }
     .view-toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     /* PILLS */
     .stats-pills { display: flex; gap: 8px; overflow-x: auto; padding: 8px 14px 10px; scrollbar-width: none; background: #fff; }
     .stats-pills::-webkit-scrollbar { display: none; }
     .pill {
-      display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 20px;
-      font-size: 0.82rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 700; white-space: nowrap; cursor: pointer;
       background: var(--bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: all 0.2s;
     }
-    .pill.active { background: rgba(37,99,235,0.1); border-color: var(--primary); color: var(--primary); }
+    .pill.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
     .pill.active .pill-badge { background: var(--primary); color: white; }
-    .pill.paye.active { background: rgba(16,185,129,0.1); border-color: var(--success); color: var(--success); }
+    .pill.relance.active { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
+    .pill.relance.active .pill-badge { background: var(--purple); }
+    .pill.paye.active { background: var(--success-light); border-color: var(--success); color: var(--success); }
     .pill.paye.active .pill-badge { background: var(--success); }
-    .pill.ferme.active { background: rgba(239,68,68,0.1); border-color: var(--danger); color: var(--danger); }
+    .pill.ferme.active { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
     .pill.ferme.active .pill-badge { background: var(--danger); }
-    .pill-badge { background: rgba(0,0,0,0.1); padding: 2px 7px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
+    .pill-badge { background: rgba(0,0,0,0.08); padding: 2px 7px; border-radius: 12px; font-size: 0.76rem; font-weight: 800; }
 
     /* LEADS COUNT BAR */
-    .leads-count-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 0.85rem; color: var(--text-muted); }
+    .leads-count-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 
-    /* CARD VIEW */
-    .container { padding: 0 10px; }
+    /* CONTAINER & CARDS */
+    .container { padding: 0 12px; }
     .lead-card {
-      border-radius: var(--radius); border: 1.5px solid var(--card-border);
-      margin-bottom: 10px; overflow: hidden; transition: transform 0.15s, box-shadow 0.15s;
+      background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--card-border);
+      margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.15s, box-shadow 0.15s;
     }
-    .lead-card:active { transform: scale(0.99); }
-    .lead-card.female { background: var(--female-bg); border-color: var(--female-border); border-right: 5px solid #ec4899; }
-    .lead-card.male   { background: var(--male-bg);   border-color: var(--male-border);   border-right: 5px solid #3b82f6; }
-    .lead-card.unknown { background: #fff; }
-    .lead-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 14px 6px; }
+    .lead-card:hover { box-shadow: var(--shadow-md); }
+    .lead-card.female { border-right: 5px solid var(--female-accent); }
+    .lead-card.male   { border-right: 5px solid var(--male-accent); }
+
+    .lead-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 14px 4px; }
+    .lead-title-area { display: flex; flex-direction: column; }
     .lead-name { font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 2px; }
-    .lead-id { font-size: 0.78rem; color: var(--text-muted); }
-    .badge-status { padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
-    .badge-nouveau  { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
-    .badge-relance  { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
-    .badge-ferme    { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-    .badge-paye     { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+    .lead-submeta { display: flex; gap: 8px; align-items: center; font-size: 0.78rem; color: var(--text-muted); }
+    .lead-id-tag { background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+    .lead-agent-tag { background: #f1f5f9; color: #334155; padding: 2px 7px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    
+    .badge-status { padding: 4px 9px; border-radius: 8px; font-size: 0.74rem; font-weight: 800; white-space: nowrap; }
+    .badge-nouveau  { background: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+    .badge-relance  { background: var(--purple-light); color: var(--purple); border: 1px solid #ddd6fe; }
+    .badge-ferme    { background: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+    .badge-paye     { background: var(--success-light); color: var(--success); border: 1px solid #bbf7d0; }
 
-    .lead-phone { padding: 4px 14px 6px; font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
+    .lead-phone-line { padding: 4px 14px 6px; display: flex; justify-content: space-between; align-items: center; }
+    .phone-text { font-size: 0.95rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
+
+    /* NOTES BOX */
     .last-note-box {
-      margin: 4px 14px 6px; padding: 8px 12px; background: rgba(255,255,255,0.6);
-      border-right: 3px solid var(--card-border); border-radius: 6px;
-      font-size: 0.82rem; color: var(--text-muted); font-style: italic;
+      margin: 4px 14px 8px; padding: 9px 12px; background: #f8fafc;
+      border-right: 3px solid #cbd5e1; border-radius: 8px; font-size: 0.82rem; color: #334155; line-height: 1.4;
     }
-    .next-action-box {
-      margin: 0 14px 8px; padding: 7px 10px;
-      background: rgba(255,255,255,0.7); border: 1px dashed var(--card-border); border-radius: 8px;
-      font-size: 0.82rem; color: var(--text-main);
-    }
-    .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid rgba(0,0,0,0.06); }
-    .btn-action {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer;
-      border: none; text-decoration: none; transition: background 0.15s;
-    }
-    .btn-call  { background: rgba(255,255,255,0.8); color: var(--text-main); border-left: 1px solid rgba(0,0,0,0.06); }
-    .btn-wa    { background: #25D366; color: white; }
-    .btn-log   { background: var(--primary); color: white; grid-column: span 2; }
-    .btn-call:hover { background: #e5e7eb; }
+    .note-agent-label { font-weight: 700; color: var(--primary); margin-left: 4px; }
 
-    /* TABLE VIEW */
-    #tableView { display: none; overflow-x: auto; padding: 0 4px; }
-    #tableView table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: white; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-sm); }
-    #tableView th { background: #1e293b; color: white; padding: 10px 8px; text-align: right; font-weight: 700; font-size: 0.78rem; white-space: nowrap; }
-    #tableView td { padding: 9px 8px; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
-    #tableView tr.female td { background: var(--female-bg); }
-    #tableView tr.male   td { background: var(--male-bg); }
-    #tableView tr:hover td { filter: brightness(0.97); }
-    .td-actions { display: flex; gap: 5px; align-items: center; }
-    .td-btn { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; }
-    .td-btn-call { background: #e5e7eb; color: var(--text-main); text-decoration: none; }
-    .td-btn-wa   { background: #25D366; color: white; text-decoration: none; }
-    .td-btn-log  { background: var(--primary); color: white; }
+    .next-action-pill {
+      margin: 0 14px 10px; padding: 6px 10px; background: #fffbeb; border: 1px dashed #fde68a; border-radius: 8px;
+      font-size: 0.8rem; color: #b45309; display: flex; align-items: center; gap: 6px; font-weight: 600;
+    }
 
-    /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: flex-end; }
+    /* ACTION BUTTONS GRID */
+    .card-actions-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1.3fr; gap: 6px;
+      padding: 10px 14px; background: #f8fafc; border-top: 1px solid var(--card-border);
+    }
+    .btn-act {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; padding: 8px 4px; border-radius: 10px; font-size: 0.72rem; font-weight: 700;
+      border: 1px solid var(--card-border); background: #fff; color: var(--text-main);
+      text-decoration: none; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-act:active { transform: scale(0.96); }
+    .btn-act i { font-size: 0.95rem; }
+    .btn-act-call { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
+    .btn-act-wa { color: #16a34a; background: #f0fdf4; border-color: #bbf7d0; }
+    .btn-act-tpl { color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe; }
+    .btn-act-log { color: #ffffff; background: var(--primary); border-color: var(--primary); }
+
+    /* MODAL SYSTEM */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+      z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+    }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: #fff; width: 100%; max-width: 600px; margin: 0 auto; border-radius: 24px 24px 0 0; padding: 24px 20px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
+    .modal-content {
+      background: #fff; width: 100%; max-width: 600px; border-radius: 22px 22px 0 0;
+      padding: 20px 18px 30px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+    }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
-    .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
-    .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
-    .form-control { width: 100%; padding: 11px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 0.92rem; background: var(--bg); color: var(--text-main); outline: none; }
+
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; }
+    .modal-title { font-size: 1.05rem; font-weight: 800; color: var(--text-main); }
+    .close-btn { background: #f1f5f9; border: none; font-size: 1.1rem; color: var(--text-muted); cursor: pointer; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    /* DECISION TREE STYLES */
+    .step-label { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+    .choice-card {
+      border: 1.5px solid var(--card-border); border-radius: 10px; padding: 10px 8px;
+      display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc;
+      font-size: 0.84rem; font-weight: 700; color: var(--text-main); transition: all 0.2s;
+    }
+    .choice-card:hover { border-color: #cbd5e1; }
+    .choice-card.selected {
+      background: var(--primary-light); border-color: var(--primary); color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+    .choice-card.success.selected { background: var(--success-light); border-color: var(--success); color: var(--success); box-shadow: 0 0 0 1px var(--success); }
+    .choice-card.danger.selected { background: var(--danger-light); border-color: var(--danger); color: var(--danger); box-shadow: 0 0 0 1px var(--danger); }
+    .choice-card.warning.selected { background: var(--warning-light); border-color: var(--warning); color: var(--warning); box-shadow: 0 0 0 1px var(--warning); }
+    .choice-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+
+    .sub-section { display: none; background: #f8fafc; border-radius: 12px; padding: 12px; border: 1px solid var(--card-border); margin-bottom: 16px; animation: fadeIn 0.2s ease-in-out; }
+    .sub-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-group { margin-bottom: 12px; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 0.9rem; background: #fff; color: var(--text-main); outline: none; transition: border-color 0.2s; }
     .form-control:focus { border-color: var(--primary); }
-    textarea.form-control { resize: vertical; min-height: 75px; }
-    .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 13px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
-    .btn-success-action { width: 100%; background: var(--success); color: white; border: none; padding: 13px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+    textarea.form-control { resize: vertical; min-height: 65px; }
 
-    /* Timeline */
-    .timeline { position: relative; padding-right: 20px; margin-top: 18px; border-right: 2px solid var(--card-border); }
-    .timeline-item { position: relative; margin-bottom: 14px; }
-    .timeline-item::before { content: ""; position: absolute; right: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; }
-    .timeline-date { font-size: 0.74rem; color: var(--text-muted); margin-bottom: 3px; }
-    .timeline-content-box { background: var(--bg); padding: 9px 11px; border-radius: 8px; font-size: 0.83rem; }
+    .checkbox-alert-box {
+      display: flex; align-items: center; gap: 8px; background: #fff; border: 1px dashed #cbd5e1;
+      border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; font-weight: 700; color: #b91c1c; cursor: pointer;
+    }
+    .checkbox-alert-box input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--danger); }
 
-    /* Toast */
-    .toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.88rem; font-weight: 600; transition: bottom 0.3s cubic-bezier(0.16,1,0.3,1); z-index: 2000; box-shadow: var(--shadow); }
-    .toast.show { bottom: 80px; }
+    .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 800; cursor: pointer; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--shadow-sm); }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-fast-paid { width: 100%; background: var(--success); color: white; border: none; padding: 10px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-right: 18px; margin-top: 14px; border-right: 2px solid var(--card-border); }
+    .timeline-item { position: relative; margin-bottom: 12px; }
+    .timeline-item::before { content: ""; position: absolute; right: -24px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid #fff; }
+    .timeline-date { font-size: 0.74rem; color: var(--text-muted); margin-bottom: 2px; }
+    .timeline-content-box { background: #f8fafc; border: 1px solid var(--card-border); padding: 8px 11px; border-radius: 8px; font-size: 0.82rem; color: #1e293b; }
+
+    /* TEMPLATES LIST */
+    .template-card {
+      background: #f8fafc; border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 12px; margin-bottom: 10px; transition: border-color 0.2s;
+    }
+    .template-card:hover { border-color: var(--purple); }
+    .template-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .template-title { font-weight: 800; font-size: 0.88rem; color: var(--purple); display: flex; align-items: center; gap: 6px; }
+    .template-preview { font-size: 0.8rem; color: #475569; line-height: 1.4; background: #fff; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px; white-space: pre-wrap; }
+    .template-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-tpl-action { padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .btn-tpl-wa { background: #16a34a; color: white; text-decoration: none; }
+    .btn-tpl-copy { background: #e2e8f0; color: #334155; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.86rem; font-weight: 700; transition: bottom 0.3s cubic-bezier(0.16,1,0.3,1); z-index: 2000; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px; }
+    .toast.show { bottom: 85px; }
 
     /* BOTTOM NAV */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #fff; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; align-items: center; z-index: 900; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-decoration: none; gap: 3px; padding: 4px 10px; cursor: pointer; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #fff; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; align-items: center; z-index: 900; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.72rem; font-weight: 700; text-decoration: none; gap: 3px; padding: 4px 10px; cursor: pointer; }
     .nav-item.active { color: var(--primary); }
-    .nav-icon { font-size: 1.25rem; }
+    .nav-icon { font-size: 1.2rem; }
 
-    .loader { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 600; }
+    .loader { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
   </style>
 </head>
 <body>
 
-  <!-- STICKY HEADER -->
-  <header class="header">
-    <div class="header-top">
-      <div class="header-title"><i class="fa-solid fa-briefcase"></i> Oswah CRM</div>
-      <div class="header-controls">
-        <input type="text" id="searchInput" class="search-input" placeholder="بحث..." oninput="filterData()">
-        <select id="agentSelect" class="agent-selector" onchange="filterData()">
-          <option value="all">جميع الوكلاء</option>
-        </select>
-        <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث من Google Sheets">
-          <i class="fa-solid fa-arrows-rotate"></i>
-        </button>
-        <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض">
-          <i class="fa-solid fa-table-list"></i>
-        </button>
-      </div>
+<!-- STICKY HEADER -->
+<header class="header">
+  <div class="header-top">
+    <div class="header-title"><i class="fa-solid fa-headset"></i> Oswah CRM</div>
+    <div class="header-controls">
+      <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم أو الهاتف..." oninput="filterData()">
+      <select id="agentSelect" class="agent-selector" onchange="filterData()">
+        <option value="all">👥 جميع الوكلاء</option>
+      </select>
+      <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+      <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض">
+        <i class="fa-solid fa-table-list"></i>
+      </button>
     </div>
+  </div>
 
-    <!-- FILTER PILLS - Single clean row -->
-    <div class="stats-pills">
-      <div class="pill nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
-        <i class="fa-solid fa-star"></i> جديد <span class="pill-badge" id="count-nouveau">0</span>
-      </div>
-      <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
-        <i class="fa-solid fa-arrows-rotate"></i> للمتابعة <span class="pill-badge" id="count-relance">0</span>
-      </div>
-      <div class="pill ferme" data-filter="ferme" onclick="setFilter('ferme')">
-        <i class="fa-solid fa-ban"></i> مغلق <span class="pill-badge" id="count-ferme">0</span>
-      </div>
-      <div class="pill paye" data-filter="paye" onclick="setFilter('paye')">
-        <i class="fa-solid fa-check-circle"></i> مسدد <span class="pill-badge" id="count-paye">0</span>
-      </div>
+  <!-- FILTER PILLS -->
+  <div class="stats-pills">
+    <div class="pill nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
+      <i class="fa-solid fa-star"></i> جديد <span class="pill-badge" id="count-nouveau">0</span>
     </div>
-  </header>
+    <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
+      <i class="fa-solid fa-arrows-rotate"></i> قيد المتابعة <span class="pill-badge" id="count-relance">0</span>
+    </div>
+    <div class="pill ferme" data-filter="ferme" onclick="setFilter('ferme')">
+      <i class="fa-solid fa-ban"></i> مغلق / غير مهتم <span class="pill-badge" id="count-ferme">0</span>
+    </div>
+    <div class="pill paye" data-filter="paye" onclick="setFilter('paye')">
+      <i class="fa-solid fa-check-circle"></i> مسدد <span class="pill-badge" id="count-paye">0</span>
+    </div>
+    <div class="pill" data-filter="all" onclick="setFilter('all')">
+      <i class="fa-solid fa-users"></i> الكل <span class="pill-badge" id="count-all">0</span>
+    </div>
+  </div>
+</header>
 
-  <!-- LEADS CONTAINER -->
-  <main class="container">
-    <div class="leads-count-bar">
-      <span id="current-filter-label">العملاء الجدد</span>
-      <span id="leads-count">يتم التحميل...</span>
-    </div>
-    <!-- Card View -->
-    <div id="cardView">
-      <div id="leadsList"><div class="loader"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</div></div>
-    </div>
-    <!-- Table View (hidden by default) -->
-    <div id="tableView">
-      <table>
-        <thead>
-          <tr>
-            <th>الاسم</th>
-            <th>الهاتف</th>
-            <th>الوكيل</th>
-            <th>الحالة</th>
-            <th>آخر ملاحظة</th>
-            <th>المتابعة القادمة</th>
-            <th>إجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="leadsTable"></tbody>
-      </table>
-    </div>
-  </main>
+<!-- MAIN LEADS CONTAINER -->
+<main class="container">
+  <div class="leads-count-bar">
+    <span id="current-filter-label">العملاء الجدد</span>
+    <span id="leads-count">جاري التحميل...</span>
+  </div>
 
-  <!-- INTERACTION MODAL -->
-  <div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event)">
-    <div class="modal-content">
-      <div class="modal-header">
+  <div id="cardView">
+    <div id="leadsList"><div class="loader"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...</div></div>
+  </div>
+
+  <div id="tableView" style="display:none; overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; font-size:0.85rem;">
+      <thead style="background:#f1f5f9; text-align:right;">
+        <tr>
+          <th style="padding:10px 12px;">الاسم</th>
+          <th style="padding:10px 12px;">الهاتف</th>
+          <th style="padding:10px 12px;">الوكيل</th>
+          <th style="padding:10px 12px;">الحالة</th>
+          <th style="padding:10px 12px;">المتابعة القادمة</th>
+          <th style="padding:10px 12px; text-align:center;">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="leadsTable"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- INTERACTION & DECISION TREE MODAL -->
+<div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event, 'interactionModal')">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
         <div class="modal-title" id="modalLeadName">تسجيل متابعة</div>
-        <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <div id="modalLeadMeta" style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;"></div>
       </div>
-
-      <div class="form-group">
-        <label class="form-label">نتيجة التواصل:</label>
-        <select id="modalResultSelect" class="form-control">
-          <option value="">-- اختر النتيجة --</option>
-          <option value="لا يوجد رد">لا يوجد رد</option>
-          <option value="مهتم">مهتم</option>
-          <option value="وعد بالسداد">وعد بالسداد</option>
-          <option value="غير مهتم">غير مهتم</option>
-          <option value="رقم خاطئ">رقم خاطئ</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">ملاحظات المكالمة:</label>
-        <textarea id="modalNoteInput" class="form-control" placeholder="اكتب ملخص ما دار في المكالمة..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">تاريخ المتابعة القادمة:</label>
-        <input type="date" id="modalNextDate" class="form-control">
-      </div>
-
-      <button class="btn-submit" onclick="submitModalInteraction()">💾 حفظ التحديث</button>
-      <button class="btn-success-action" onclick="markPaid()"><i class="fa-solid fa-check-circle"></i> تأكيد الدفع (تم السداد)</button>
-
-      <hr style="border:0; border-top:1px solid var(--card-border); margin:18px 0;">
-      <div class="modal-title" style="font-size:1rem; margin-bottom:10px;">السجل والتاريخ</div>
-      <div id="modalTimeline" class="timeline"></div>
+      <button class="close-btn" onclick="closeModal('interactionModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-  </div>
 
-  <div class="toast" id="toast">تم التحديث بنجاح!</div>
-
-  <!-- BOTTOM NAV - Same structure as admin_gateway.html -->
-  <div class="bottom-nav">
-    <a href="/admin-gateway" class="nav-item">
-      <span class="nav-icon">📊</span>
-      <span>الرئيسية</span>
-    </a>
-    <a href="/admin-gateway#students" class="nav-item">
-      <span class="nav-icon">👥</span>
-      <span>الطلاب</span>
-    </a>
-    <a href="/admin-gateway#sos" class="nav-item">
-      <span class="nav-icon">🆘</span>
-      <span>الدعم</span>
-    </a>
-    <div class="nav-item active">
-      <span class="nav-icon">📞</span>
-      <span>CRM</span>
+    <!-- ETAPE 1 : RESULTAT APPEL -->
+    <div class="step-label"><i class="fa-solid fa-phone-volume"></i> 1. نتيجة محاولة الاتصال:</div>
+    <div class="choice-grid">
+      <div class="choice-card" onclick="selectResult('repondu', this)">
+        <span class="choice-icon">🟢</span> أجاب
+      </div>
+      <div class="choice-card" onclick="selectResult('sonne_sans_reponse', this)">
+        <span class="choice-icon">🟡</span> يرن بدون إجابة
+      </div>
+      <div class="choice-card" onclick="selectResult('injoignable', this)">
+        <span class="choice-icon">🟠</span> غير متاح / علبة صوتية
+      </div>
+      <div class="choice-card danger" onclick="selectResult('faux_numero', this)">
+        <span class="choice-icon">🔴</span> رقم خاطئ
+      </div>
     </div>
+
+    <!-- ETAPE 2 : DYNAMIQUE SELON LE RESULTAT -->
+    
+    <!-- Branche A : A REPONDU -->
+    <div class="sub-section" id="subRepondu">
+      <div class="step-label"><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف:</div>
+      <div class="choice-grid">
+        <div class="choice-card success" onclick="selectDetail('تم السداد', this, 'paye')">
+          <span class="choice-icon">💳</span> تم السداد
+        </div>
+        <div class="choice-card warning" onclick="selectDetail('وعد بالسداد', this, 'relance', true)">
+          <span class="choice-icon">📅</span> وعد بالسداد
+        </div>
+        <div class="choice-card" onclick="selectDetail('طلب تخفيض / حالة خاصة', this, 'relance')">
+          <span class="choice-icon">📉</span> طلب تخفيض
+        </div>
+        <div class="choice-card" onclick="selectDetail('متردد / يحتاج وقتاً للتفكير', this, 'relance', true)">
+          <span class="choice-icon">🤔</span> متردد / يفكر
+        </div>
+        <div class="choice-card" onclick="selectDetail('مشكل تقني في الموقع/الدفع', this, 'relance')">
+          <span class="choice-icon">🛠️</span> مشكل تقني
+        </div>
+        <div class="choice-card" onclick="selectDetail('طلب معلومات إضافية', this, 'relance')">
+          <span class="choice-icon">ℹ️</span> طلب معلومات
+        </div>
+        <div class="choice-card danger" onclick="selectDetail('رفض / غير مهتم', this, 'ferme')">
+          <span class="choice-icon">❌</span> غير مهتم / رفض
+        </div>
+      </div>
+    </div>
+
+    <!-- Branche B : INJOIGNABLE / SONNE -->
+    <div class="sub-section" id="subInjoignable">
+      <div class="step-label"><i class="fa-brands fa-whatsapp"></i> 2. حالة الواتساب:</div>
+      <div class="choice-grid">
+        <div class="choice-card success" onclick="selectDetail('تم إرسال رسالة واتساب', this, 'relance')">
+          <span class="choice-icon">💬</span> تم إرسال واتساب
+        </div>
+        <div class="choice-card danger" onclick="selectDetail('لا يتوفر على واتساب', this, 'relance')">
+          <span class="choice-icon">📵</span> لا يملك واتساب
+        </div>
+      </div>
+    </div>
+
+    <!-- Branche C : FAUX NUMERO -->
+    <div class="sub-section" id="subFauxNumero">
+      <div class="step-label"><i class="fa-solid fa-triangle-exclamation"></i> 2. الإجراء البديل:</div>
+      <label class="checkbox-alert-box" id="emailAlertCheckLabel">
+        <input type="checkbox" id="sendAlertEmailCheck" checked>
+        <span>✉️ إرسال بريد إلكتروني تنبيهي فوري إلى الطالب لإبلاغه بتعذر الوصول إليه</span>
+      </label>
+    </div>
+
+    <!-- DATE DE RELANCE -->
+    <div class="form-group" id="dateGroup" style="margin-top:12px;">
+      <label class="form-label" id="dateLabel">📅 تاريخ المتابعة القادمة:</label>
+      <input type="date" id="modalNextDate" class="form-control">
+    </div>
+
+    <!-- COMMENTAIRE LIBRE -->
+    <div class="form-group">
+      <label class="form-label">✍️ ملاحظات إضافية (اختياري):</label>
+      <textarea id="modalNoteInput" class="form-control" placeholder="اكتب تفاصيل خاصة أو سياق المكالمة هنا..."></textarea>
+    </div>
+
+    <button class="btn-submit" onclick="submitModalInteraction()">
+      <i class="fa-solid fa-cloud-arrow-up"></i> حفظ التحديث ونقله للمرآة
+    </button>
+    <button class="btn-fast-paid" onclick="markPaidFast()">
+      <i class="fa-solid fa-check-double"></i> تأكيد السداد الفوري (مسدد)
+    </button>
+
+    <hr style="border:0; border-top:1px solid var(--card-border); margin:18px 0 14px;">
+    <div style="font-size:0.92rem; font-weight:800; color:var(--text-main); margin-bottom:8px;">
+      <i class="fa-solid fa-clock-rotate-left"></i> سجل المتابعات والتاريخ (Timeline):
+    </div>
+    <div id="modalTimeline" class="timeline"></div>
   </div>
+</div>
 
-  <script>
-    let allLeads = [];
-    let activeFilter = 'nouveau';
-    let activeLeadId = null;
-    let isTableView = false;
+<!-- TEMPLATES MODAL -->
+<div class="modal-overlay" id="templatesModal" onclick="closeModalOnBackdrop(event, 'templatesModal')">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-brands fa-whatsapp" style="color:#16a34a"></i> نماذج رسائل واتساب الجاهزة</div>
+      <button class="close-btn" onclick="closeModal('templatesModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="templatesList"></div>
+  </div>
+</div>
 
-    // Persist agent selection
-    const savedAgent = localStorage.getItem('crm_agent_ar');
-    if (savedAgent) document.getElementById('agentSelect').value = savedAgent;
+<div class="toast" id="toast"></div>
 
-    function genderClass(lead) {
-      const g = String(lead.Genre || lead.Sexe || lead.Gender || '').toLowerCase().trim();
-      if (g === 'femme' || g === 'f' || g === 'female' || g.includes('أنث') || g.includes('fille')) return 'female';
-      if (g === 'homme' || g === 'm' || g === 'male' || g.includes('ذكر') || g.includes('garcon')) return 'male';
-      return 'unknown';
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <a href="/admin-gateway" class="nav-item">
+    <span class="nav-icon">📊</span>
+    <span>الرئيسية</span>
+  </a>
+  <a href="/admin-gateway#students" class="nav-item">
+    <span class="nav-icon">👥</span>
+    <span>الطلاب</span>
+  </a>
+  <a href="/admin-gateway#sos" class="nav-item">
+    <span class="nav-icon">🆘</span>
+    <span>الدعم</span>
+  </a>
+  <div class="nav-item active">
+    <span class="nav-icon">📞</span>
+    <span>CRM</span>
+  </div>
+</div>
+
+<script>
+let allLeads = [];
+let activeFilter = 'nouveau';
+let activeLeadId = null;
+let isTableView = false;
+
+// Etat de l'arbre de décision
+let currentResult = '';      // 'repondu', 'sonne_sans_reponse', 'injoignable', 'faux_numero'
+let currentDetail = '';      // 'تم السداد', 'وعد بالسداد', etc.
+let calculatedStatus = 'relance'; // 'paye', 'relance', 'ferme'
+
+const savedAgent = localStorage.getItem('crm_agent_ar');
+if (savedAgent) {
+  const sel = document.getElementById('agentSelect');
+  if (sel) sel.value = savedAgent;
+}
+
+function genderClass(lead) {
+  const g = String(lead.Genre || lead.Sexe || lead.Gender || '').toLowerCase().trim();
+  if (g === 'femme' || g === 'f' || g === 'female' || g.includes('أنث') || g.includes('fille')) return 'female';
+  if (g === 'homme' || g === 'm' || g === 'male' || g.includes('ذكر') || g.includes('garcon')) return 'male';
+  return 'unknown';
+}
+
+function categorize(lead) {
+  const status = String(lead.Statut_CRM || '').trim().toLowerCase();
+  const ps = String(lead.Statut_Paiement || lead.Payment_Status || '').toUpperCase().trim();
+  const hasHistory = !!(lead.Ancien_Commentaire || lead.Dernier_Contact_Resultat || lead.Dernier_Contact_Date);
+
+  const PAID_VALS = ['PAID','PAYE','PAYÉ','OUI','YES','VALIDE','CONFIRME','1','TRUE','EXEMPT','EPARGNE','EXONERE','مدفوع','مكتمل','نعم','مسدد','معفي'];
+  const isPaid = PAID_VALS.includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
+
+  if (isPaid || status === 'مسدد' || status.includes('payé') || status.includes('تم السداد') || status.includes('paye') || status.includes('مكتمل')) {
+    return 'paye';
+  }
+  if (status === 'مغلق' || status === 'غير مهتم' || status === 'رقم خاطئ') {
+    return 'ferme';
+  }
+  if ((!status || status === 'nouveau' || status === 'جديد') && !hasHistory) {
+    return 'nouveau';
+  }
+  return 'relance';
+}
+
+function cleanPhoneNumber(phone) {
+  let p = String(phone || '').replace(/\D/g, '');
+  if (p.startsWith('0') && p.length === 10) p = '212' + p.substring(1);
+  else if (!p.startsWith('212') && p.length === 9) p = '212' + p;
+  return p;
+}
+
+async function loadData(forceRefresh = false) {
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn && forceRefresh) refreshBtn.querySelector('i').classList.add('fa-spin');
+  try {
+    const url = forceRefresh ? '/api/crm/data?refresh=1' : '/api/crm/data';
+    const res = await fetch(url);
+    const data = await res.json();
+    allLeads = data.leads || [];
+
+    allLeads.forEach(lead => { lead._cat = categorize(lead); });
+
+    // Remplir liste agents
+    const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))].sort();
+    const sel = document.getElementById('agentSelect');
+    const prevVal = sel.value;
+    sel.innerHTML = '<option value="all">👥 جميع الوكلاء</option>' + uniqueAgents.map(a => `<option value="${a}">${a}</option>`).join('');
+    if (uniqueAgents.includes(prevVal)) sel.value = prevVal;
+    else if (savedAgent && uniqueAgents.includes(savedAgent)) sel.value = savedAgent;
+
+    filterData();
+    if (forceRefresh) showToast('تم تحديث البيانات بنجاح من المصدر! 🔄');
+  } catch (err) {
+    console.error(err);
+    document.getElementById('leadsList').innerHTML = '<div class="loader" style="color:var(--danger)">❌ خطأ في الاتصال بالخادم</div>';
+  } finally {
+    if (refreshBtn) refreshBtn.querySelector('i').classList.remove('fa-spin');
+  }
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  const target = document.querySelector(`.pill[data-filter="${f}"]`);
+  if (target) target.classList.add('active');
+  const labels = {
+    nouveau: 'العملاء الجدد',
+    relance: 'قيد المتابعة والتذكير',
+    ferme: 'مغلق / غير مهتم / رقم خاطئ',
+    paye: 'تم السداد والاشتراك',
+    all: 'جميع العملاء'
+  };
+  document.getElementById('current-filter-label').textContent = labels[f] || '';
+  filterData();
+}
+
+function filterData() {
+  const agent = document.getElementById('agentSelect').value;
+  const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  localStorage.setItem('crm_agent_ar', agent);
+
+  let filtered = allLeads;
+  if (agent !== 'all') filtered = filtered.filter(l => l.Agent_Nom === agent);
+  if (query) {
+    filtered = filtered.filter(l =>
+      String(l.Nom || '').toLowerCase().includes(query) ||
+      String(l.Telephone || '').includes(query) ||
+      String(l.Email || '').toLowerCase().includes(query) ||
+      String(l.ID_Lead || '').includes(query)
+    );
+  }
+
+  // Stats
+  const stats = { nouveau: 0, relance: 0, ferme: 0, paye: 0, all: filtered.length };
+  filtered.forEach(l => { if (stats[l._cat] !== undefined) stats[l._cat]++; });
+  document.getElementById('count-nouveau').textContent = stats.nouveau;
+  document.getElementById('count-relance').textContent = stats.relance;
+  document.getElementById('count-ferme').textContent = stats.ferme;
+  document.getElementById('count-paye').textContent = stats.paye;
+  document.getElementById('count-all').textContent = stats.all;
+
+  let displayed = (activeFilter === 'all') ? filtered : filtered.filter(l => l._cat === activeFilter);
+  if (activeFilter === 'relance') {
+    displayed.sort((a, b) => {
+      if (!a.Date_Prochaine_Action) return 1;
+      if (!b.Date_Prochaine_Action) return -1;
+      return a.Date_Prochaine_Action.localeCompare(b.Date_Prochaine_Action);
+    });
+  }
+
+  document.getElementById('leads-count').textContent = `العدد: ${displayed.length}`;
+  if (isTableView) renderTable(displayed);
+  else renderCards(displayed);
+}
+
+function toggleView() {
+  isTableView = !isTableView;
+  const btn = document.getElementById('viewToggleBtn');
+  document.getElementById('cardView').style.display = isTableView ? 'none' : 'block';
+  document.getElementById('tableView').style.display = isTableView ? 'block' : 'none';
+  btn.innerHTML = isTableView ? '<i class="fa-solid fa-id-card"></i>' : '<i class="fa-solid fa-table-list"></i>';
+  btn.classList.toggle('active', isTableView);
+  filterData();
+}
+
+function statusBadgeHtml(cat) {
+  if (cat === 'nouveau') return '<span class="badge-status badge-nouveau">⭐ جديد</span>';
+  if (cat === 'relance') return '<span class="badge-status badge-relance">🔄 قيد المتابعة</span>';
+  if (cat === 'ferme')   return '<span class="badge-status badge-ferme">🚫 مغلق</span>';
+  if (cat === 'paye')    return '<span class="badge-status badge-paye">✅ مسدد</span>';
+  return '';
+}
+
+function renderCards(leads) {
+  const container = document.getElementById('leadsList');
+  if (leads.length === 0) {
+    container.innerHTML = '<div class="loader">لا يوجد عملاء في هذه القائمة 🎉</div>';
+    return;
+  }
+
+  container.innerHTML = leads.map(l => {
+    const cleanPhone = cleanPhoneNumber(l.Telephone);
+    const waLink = `https://wa.me/${cleanPhone}`;
+    const gc = genderClass(l);
+    const badge = statusBadgeHtml(l._cat);
+
+    let nextActionBox = '';
+    if (l.Date_Prochaine_Action) {
+      nextActionBox = `
+        <div class="next-action-pill">
+          <i class="fa-regular fa-calendar-check"></i>
+          <span>المتابعة القادمة: <b>${escapeHtml(l.Date_Prochaine_Action)}</b> ${l.Prochaine_Action ? '(' + escapeHtml(l.Prochaine_Action) + ')' : ''}</span>
+        </div>`;
     }
 
-    function categorize(lead) {
-      const status = String(lead.Statut_CRM || '').trim().toLowerCase();
-      const ps = String(lead.Statut_Paiement || lead.Payment_Status || '').toUpperCase().trim();
-      const hasHistory = !!(lead.Ancien_Commentaire || lead.Dernier_Contact_Resultat || lead.Dernier_Contact_Date);
-
-      // Paid check
-      const PAID_VALS = ['PAID','PAYE','PAYÉ','OUI','YES','VALIDE','CONFIRME','1','TRUE','EXEMPT','EPARGNE','EXONERE','مدفوع','مكتمل','نعم','مسدد','معفي'];
-      const isPaid = PAID_VALS.includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
-
-      if (isPaid || status === 'مسدد' || status.includes('payé') || status.includes('تم السداد') || status.includes('paye') || status.includes('مكتمل')) {
-        return 'paye';
-      }
-      if (status === 'مغلق' || status === 'غير مهتم' || status === 'رقم خاطئ') {
-        return 'ferme';
-      }
-      // "nouveau" only if NO status and NO prior contact history
-      if ((!status || status === 'nouveau' || status === 'جديد') && !hasHistory) {
-        return 'nouveau';
-      }
-      // Everything else: in-progress/relance
-      return 'relance';
+    let noteBox = '';
+    if (l.Ancien_Commentaire || l.Dernier_Contact_Resultat) {
+      const commentText = l.Ancien_Commentaire || l.Dernier_Contact_Resultat;
+      noteBox = `
+        <div class="last-note-box">
+          <i class="fa-regular fa-comment-dots" style="color:var(--text-muted)"></i>
+          ${l.Agent_Nom ? `<span class="note-agent-label">[${escapeHtml(l.Agent_Nom)}]:</span>` : ''}
+          ${escapeHtml(commentText)}
+        </div>`;
     }
 
-    async function loadData(forceRefresh = false) {
-      const refreshBtn = document.getElementById('refreshBtn');
-      if (refreshBtn && forceRefresh) refreshBtn.querySelector('i').classList.add('fa-spin');
-      try {
-        const url = forceRefresh ? '/api/crm/data?refresh=1' : '/api/crm/data';
-        const res = await fetch(url);
-        const data = await res.json();
-
-        allLeads = data.leads || [];
-
-        // Categorize
-        allLeads.forEach(lead => { lead._cat = categorize(lead); });
-
-        // Populate agents dropdown
-        const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))].sort();
-        const sel = document.getElementById('agentSelect');
-        const prevVal = sel.value;
-        sel.innerHTML = '<option value="all">👥 جميع الوكلاء</option>' + uniqueAgents.map(a => `<option value="${a}">${a}</option>`).join('');
-        if (uniqueAgents.includes(prevVal)) sel.value = prevVal;
-        else if (savedAgent && uniqueAgents.includes(savedAgent)) sel.value = savedAgent;
-
-        filterData();
-        if (forceRefresh) showToast('تم تحديث البيانات من Google Sheets بنجاح! 🔄');
-      } catch (err) {
-        console.error(err);
-        document.getElementById('leadsList').innerHTML = '<div class="loader" style="color:var(--danger)">❌ خطأ في الاتصال بالخادم</div>';
-      } finally {
-        if (refreshBtn) refreshBtn.querySelector('i').classList.remove('fa-spin');
-      }
-    }
-
-    function setFilter(f) {
-      activeFilter = f;
-      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-      const target = document.querySelector(`.pill[data-filter="${f}"]`);
-      if (target) target.classList.add('active');
-      const labels = { nouveau: 'العملاء الجدد', relance: 'قيد المتابعة', ferme: 'مغلق / غير مهتم', paye: 'تم السداد / مسدد' };
-      document.getElementById('current-filter-label').textContent = labels[f] || '';
-      filterData();
-    }
-
-    function filterData() {
-      const agent = document.getElementById('agentSelect').value;
-      const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-      localStorage.setItem('crm_agent_ar', agent);
-
-      let filtered = allLeads;
-      if (agent !== 'all') filtered = filtered.filter(l => l.Agent_Nom === agent);
-      if (query) {
-        filtered = filtered.filter(l =>
-          String(l.Nom || '').toLowerCase().includes(query) ||
-          String(l.Telephone || '').includes(query) ||
-          String(l.Email || '').toLowerCase().includes(query) ||
-          String(l.ID_Lead || '').includes(query)
-        );
-      }
-
-      // Update pill counts
-      const stats = { nouveau: 0, relance: 0, ferme: 0, paye: 0 };
-      filtered.forEach(l => { if (stats[l._cat] !== undefined) stats[l._cat]++; });
-      document.getElementById('count-nouveau').textContent = stats.nouveau;
-      document.getElementById('count-relance').textContent = stats.relance;
-      document.getElementById('count-ferme').textContent = stats.ferme;
-      document.getElementById('count-paye').textContent = stats.paye;
-
-      // Filter to current tab
-      let displayed = filtered.filter(l => l._cat === activeFilter);
-      // Sort: relance sorted by next date; others by ID
-      if (activeFilter === 'relance') {
-        displayed.sort((a, b) => {
-          if (!a.Date_Prochaine_Action) return 1;
-          if (!b.Date_Prochaine_Action) return -1;
-          return a.Date_Prochaine_Action.localeCompare(b.Date_Prochaine_Action);
-        });
-      }
-
-      document.getElementById('leads-count').textContent = `العدد: ${displayed.length}`;
-      if (isTableView) renderTable(displayed);
-      else renderCards(displayed);
-    }
-
-    function toggleView() {
-      isTableView = !isTableView;
-      const btn = document.getElementById('viewToggleBtn');
-      document.getElementById('cardView').style.display = isTableView ? 'none' : 'block';
-      document.getElementById('tableView').style.display = isTableView ? 'block' : 'none';
-      btn.innerHTML = isTableView ? '<i class="fa-solid fa-id-card"></i>' : '<i class="fa-solid fa-table-list"></i>';
-      btn.classList.toggle('active', isTableView);
-      filterData();
-    }
-
-    function statusBadgeHtml(cat) {
-      if (cat === 'nouveau') return '<span class="badge-status badge-nouveau">⭐ جديد</span>';
-      if (cat === 'relance') return '<span class="badge-status badge-relance">🔄 للمتابعة</span>';
-      if (cat === 'ferme')   return '<span class="badge-status badge-ferme">🚫 مغلق</span>';
-      if (cat === 'paye')    return '<span class="badge-status badge-paye">✅ مسدد</span>';
-      return '';
-    }
-
-    function renderCards(leads) {
-      const container = document.getElementById('leadsList');
-      if (leads.length === 0) {
-        container.innerHTML = '<div class="loader">لا يوجد عملاء في هذه القائمة 🎉</div>';
-        return;
-      }
-      container.innerHTML = leads.map(l => {
-        let cleanPhone = String(l.Telephone || '').replace(/\D/g, '');
-        if (cleanPhone.startsWith('0') && cleanPhone.length === 10) cleanPhone = '212' + cleanPhone.substring(1);
-        else if (!cleanPhone.startsWith('212') && cleanPhone.length === 9) cleanPhone = '212' + cleanPhone;
-        const waLink = `https://wa.me/${cleanPhone}`;
-        const gc = genderClass(l);
-        const badge = statusBadgeHtml(l._cat);
-        const lastNote = l.Ancien_Commentaire ? `<div class="last-note-box"><i class="fa-solid fa-quote-right"></i> ${escapeHtml(l.Ancien_Commentaire)}</div>` : '';
-        const nextAction = l._cat !== 'paye' ? `
-          <div class="next-action-box">
-            <b>الخطوة القادمة:</b> ${escapeHtml(l.Prochaine_Action || 'غير محدد')}
-            ${l.Date_Prochaine_Action ? `<span style="color:var(--text-muted);font-size:0.78rem;margin-right:4px;">(${l.Date_Prochaine_Action})</span>` : ''}
-            ${l.Dernier_Contact_Resultat ? `<div style="margin-top:3px;font-size:0.78rem;"><i class="fa-solid fa-reply"></i> النتيجة السابقة: ${escapeHtml(l.Dernier_Contact_Resultat)}</div>` : ''}
-          </div>` : '';
-
-        return `
-          <div class="lead-card ${gc}">
-            <div class="lead-header">
-              <div>
-                <div class="lead-name">${escapeHtml(l.Nom || 'بدون اسم')}</div>
-                <div class="lead-id">رقم الطالب: <b>#${l.ID_Lead}</b></div>
-              </div>
-              <div>${badge}</div>
+    return `
+      <div class="lead-card ${gc}">
+        <div class="lead-header">
+          <div class="lead-title-area">
+            <div class="lead-name">${escapeHtml(l.Nom || 'بدون اسم')}</div>
+            <div class="lead-submeta">
+              <span class="lead-id-tag">#${l.ID_Lead}</span>
+              <span class="lead-agent-tag"><i class="fa-solid fa-user-tie"></i> ${escapeHtml(l.Agent_Nom || 'غير محدد')}</span>
             </div>
-            <div class="lead-phone"><i class="fa-solid fa-phone"></i> <span dir="ltr">${escapeHtml(l.Telephone || '-')}</span></div>
-            ${lastNote}
-            ${nextAction}
-            <div class="actions-grid">
-              <a href="tel:+${cleanPhone}" class="btn-action btn-call"><i class="fa-solid fa-phone"></i> اتصال</a>
-              <a href="${waLink}" target="_blank" class="btn-action btn-wa"><i class="fa-brands fa-whatsapp"></i> واتساب</a>
-              <button class="btn-action btn-log" onclick="openInteractionModal('${l.ID_Lead}')"><i class="fa-solid fa-pen-to-square"></i> تسجيل متابعة / السجل</button>
-            </div>
-          </div>`;
-      }).join('');
+          </div>
+          <div>${badge}</div>
+        </div>
+
+        <div class="lead-phone-line">
+          <span class="phone-text" dir="ltr"><i class="fa-solid fa-phone" style="font-size:0.8rem; color:var(--text-muted); margin-right:4px;"></i> ${escapeHtml(l.Telephone || '-')}</span>
+          ${l.Email ? `<span style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-regular fa-envelope"></i> ${escapeHtml(l.Email)}</span>` : ''}
+        </div>
+
+        ${nextActionBox}
+        ${noteBox}
+
+        <div class="card-actions-grid">
+          <a href="tel:+${cleanPhone}" class="btn-act btn-act-call" title="اتصال هاتفي مباشر">
+            <i class="fa-solid fa-phone-flip"></i>
+            <span>اتصال</span>
+          </a>
+          <a href="${waLink}" target="_blank" class="btn-act btn-act-wa" title="محادثة واتساب">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>واتساب</span>
+          </a>
+          <button class="btn-act btn-act-tpl" onclick="openTemplatesModal('${l.ID_Lead}')" title="نماذج رسائل جاهزة">
+            <i class="fa-solid fa-file-lines"></i>
+            <span>نماذج</span>
+          </button>
+          <button class="btn-act btn-act-log" onclick="openInteractionModal('${l.ID_Lead}')" title="تسجيل المتابعة وتحديث الحالة">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>تسجيل متابعة</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTable(leads) {
+  const tbody = document.getElementById('leadsTable');
+  tbody.innerHTML = leads.map(l => {
+    const cleanPhone = cleanPhoneNumber(l.Telephone);
+    const waLink = `https://wa.me/${cleanPhone}`;
+    const gc = genderClass(l);
+    const badge = statusBadgeHtml(l._cat);
+
+    return `
+      <tr style="border-bottom:1px solid var(--card-border);" class="${gc}">
+        <td style="padding:10px 12px;"><b>${escapeHtml(l.Nom || '-')}</b><br><small style="color:var(--text-muted)">#${l.ID_Lead}</small></td>
+        <td style="padding:10px 12px; font-weight:700;" dir="ltr">${escapeHtml(l.Telephone || '-')}</td>
+        <td style="padding:10px 12px;">${escapeHtml(l.Agent_Nom || '-')}</td>
+        <td style="padding:10px 12px;">${badge}</td>
+        <td style="padding:10px 12px;">${escapeHtml(l.Date_Prochaine_Action || '-')}</td>
+        <td style="padding:10px 12px; text-align:center;">
+          <div style="display:flex; gap:6px; justify-content:center;">
+            <a href="tel:+${cleanPhone}" class="btn-act btn-act-call" style="padding:5px 8px;"><i class="fa-solid fa-phone"></i></a>
+            <a href="${waLink}" target="_blank" class="btn-act btn-act-wa" style="padding:5px 8px;"><i class="fa-brands fa-whatsapp"></i></a>
+            <button class="btn-act btn-act-tpl" onclick="openTemplatesModal('${l.ID_Lead}')" style="padding:5px 8px;"><i class="fa-solid fa-file-lines"></i></button>
+            <button class="btn-act btn-act-log" onclick="openInteractionModal('${l.ID_Lead}')" style="padding:5px 8px;"><i class="fa-solid fa-pen"></i></button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* =========================================================
+   GESTION DE L'ARBRE DE DÉCISION (INTERACTION MODAL)
+========================================================= */
+
+function openInteractionModal(leadId) {
+  activeLeadId = leadId;
+  const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+  if (!lead) return;
+
+  document.getElementById('modalLeadName').textContent = `تسجيل متابعة: ${lead.Nom || ''}`;
+  document.getElementById('modalLeadMeta').textContent = `معرف: #${lead.ID_Lead} • هاتف: ${lead.Telephone || '-'} • الوكيل الحالي: ${lead.Agent_Nom || 'غير محدد'}`;
+  
+  // Réinitialiser l'état
+  currentResult = '';
+  currentDetail = '';
+  calculatedStatus = 'relance';
+  document.querySelectorAll('#interactionModal .choice-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('modalNoteInput').value = '';
+  document.getElementById('sendAlertEmailCheck').checked = true;
+
+  // Pré-remplir date de relance par défaut (Demain)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('modalNextDate').value = tomorrow.toISOString().split('T')[0];
+
+  document.getElementById('interactionModal').classList.add('active');
+  loadLeadTimeline(leadId);
+}
+
+function selectResult(resultKey, element) {
+  currentResult = resultKey;
+  currentDetail = '';
+  
+  // Marquer visuellement
+  element.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  element.classList.add('selected');
+
+  // Masquer toutes les sous-sections
+  document.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
+
+  const dateGroup = document.getElementById('dateGroup');
+
+  if (resultKey === 'repondu') {
+    document.getElementById('subRepondu').classList.add('active');
+    calculatedStatus = 'relance';
+    dateGroup.style.display = 'block';
+  } else if (resultKey === 'sonne_sans_reponse' || resultKey === 'injoignable') {
+    document.getElementById('subInjoignable').classList.add('active');
+    calculatedStatus = 'relance';
+    dateGroup.style.display = 'block';
+  } else if (resultKey === 'faux_numero') {
+    document.getElementById('subFauxNumero').classList.add('active');
+    currentDetail = 'رقم خاطئ';
+    calculatedStatus = 'ferme';
+    dateGroup.style.display = 'none'; // Pas de date de relance pour faux numéro
+  }
+}
+
+function selectDetail(detailText, element, targetStatus, requireDate = false) {
+  currentDetail = detailText;
+  calculatedStatus = targetStatus || 'relance';
+
+  element.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  element.classList.add('selected');
+
+  const dateGroup = document.getElementById('dateGroup');
+  if (calculatedStatus === 'ferme' || calculatedStatus === 'paye') {
+    dateGroup.style.display = 'none';
+  } else {
+    dateGroup.style.display = 'block';
+  }
+}
+
+async function submitModalInteraction() {
+  if (!activeLeadId) return;
+
+  if (!currentResult) {
+    alert('يرجى تحديد نتيجة محاولة الاتصال (السؤال رقم 1)');
+    return;
+  }
+
+  if (currentResult === 'repondu' && !currentDetail) {
+    alert('يرجى تحديد تفاصيل الموقف (السؤال رقم 2)');
+    return;
+  }
+
+  const nextDate = document.getElementById('modalNextDate').value;
+  const note = document.getElementById('modalNoteInput').value.trim();
+  const sendEmailAlert = (currentResult === 'faux_numero' && document.getElementById('sendAlertEmailCheck').checked);
+
+  // Vérification de la date si relance requise
+  if (calculatedStatus === 'relance' && !nextDate && (currentDetail === 'وعد بالسداد' || currentDetail === 'متردد / يحتاج وقتاً للتفكير')) {
+    alert('يرجى تحديد تاريخ المتابعة القادمة لهذا الموقف');
+    return;
+  }
+
+  // Déterminer l'agent actif
+  const selectedAgentInDropdown = document.getElementById('agentSelect').value;
+  const currentLead = allLeads.find(l => String(l.ID_Lead) === String(activeLeadId));
+  const activeAgentName = (selectedAgentInDropdown !== 'all' ? selectedAgentInDropdown : (currentLead?.Agent_Nom || savedAgent || 'زينب'));
+
+  let actionResultLabel = '';
+  if (currentResult === 'repondu') actionResultLabel = 'أجاب';
+  else if (currentResult === 'sonne_sans_reponse') actionResultLabel = 'يرن بدون إجابة';
+  else if (currentResult === 'injoignable') actionResultLabel = 'غير متاح / علبة صوتية';
+  else if (currentResult === 'faux_numero') actionResultLabel = 'رقم خاطئ';
+
+  let nextActionDesc = 'معاودة الاتصال';
+  if (calculatedStatus === 'ferme') nextActionDesc = 'لا شيء (مغلق)';
+  else if (calculatedStatus === 'paye') nextActionDesc = 'مكتمل (مسدد)';
+  else if (currentDetail === 'وعد بالسداد') nextActionDesc = 'متابعة الدفع في الموعد';
+
+  const payload = {
+    lead_id: activeLeadId,
+    statut: calculatedStatus === 'paye' ? 'مسدد' : (calculatedStatus === 'ferme' ? 'مغلق' : 'للمتابعة'),
+    resultat: actionResultLabel,
+    detail: currentDetail,
+    prochaine_action: nextActionDesc,
+    date_prochaine: calculatedStatus === 'relance' ? nextDate : '',
+    note: note,
+    agent_nom: activeAgentName,
+    send_email: sendEmailAlert
+  };
+
+  // Mise à jour optimiste dans l'interface
+  if (currentLead) {
+    currentLead.Statut_CRM = payload.statut;
+    currentLead.Dernier_Contact_Resultat = `${payload.resultat} • ${payload.detail}`;
+    currentLead.Prochaine_Action = payload.prochaine_action;
+    currentLead.Date_Prochaine_Action = payload.date_prochaine;
+    currentLead.Agent_Nom = activeAgentName;
+    if (note) currentLead.Ancien_Commentaire = note;
+    currentLead._cat = categorize(currentLead);
+  }
+  filterData();
+  closeModal('interactionModal');
+
+  try {
+    const res = await fetch('/api/crm/update-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('تم حفظ المتابعة وتسجيلها في المرآة الاحتياطية بنجاح! 💾');
+    } else {
+      showToast('تنبيه: تم الحفظ محلياً مع وجود خطأ جانبي');
     }
+  } catch (err) {
+    console.error('Update error:', err);
+    showToast('تم الحفظ محلياً في واجهتك');
+  }
+}
 
-    function renderTable(leads) {
-      const tbody = document.getElementById('leadsTable');
-      if (leads.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">لا يوجد عملاء في هذه القائمة 🎉</td></tr>';
-        return;
-      }
-      tbody.innerHTML = leads.map(l => {
-        let cleanPhone = String(l.Telephone || '').replace(/\D/g, '');
-        if (cleanPhone.startsWith('0') && cleanPhone.length === 10) cleanPhone = '212' + cleanPhone.substring(1);
-        else if (!cleanPhone.startsWith('212') && cleanPhone.length === 9) cleanPhone = '212' + cleanPhone;
-        const waLink = `https://wa.me/${cleanPhone}`;
-        const gc = genderClass(l);
-        const badge = statusBadgeHtml(l._cat);
-        return `<tr class="${gc}">
-          <td><b>${escapeHtml(l.Nom || '-')}</b><br><small style="color:var(--text-muted)">#${l.ID_Lead}</small></td>
-          <td dir="ltr" style="font-weight:700">${escapeHtml(l.Telephone || '-')}</td>
-          <td>${escapeHtml(l.Agent_Nom || '-')}</td>
-          <td>${badge}</td>
-          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(l.Ancien_Commentaire || '')}">${escapeHtml(l.Ancien_Commentaire || '-')}</td>
-          <td>${l.Date_Prochaine_Action || '-'}</td>
-          <td>
-            <div class="td-actions">
-              <a href="tel:+${cleanPhone}" class="td-btn td-btn-call"><i class="fa-solid fa-phone"></i></a>
-              <a href="${waLink}" target="_blank" class="td-btn td-btn-wa"><i class="fa-brands fa-whatsapp"></i></a>
-              <button class="td-btn td-btn-log" onclick="openInteractionModal('${l.ID_Lead}')"><i class="fa-solid fa-pen-to-square"></i></button>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
+async function markPaidFast() {
+  if (!activeLeadId) return;
+  const lead = allLeads.find(l => String(l.ID_Lead) === String(activeLeadId));
+  const leadName = lead ? lead.Nom : 'هذا العميل';
+  if (!confirm(`هل أنت متأكد من تأكيد دفع واشتراك الطالب "${leadName}"؟ سيتم تحويله فوراً إلى مسدد.`)) return;
+
+  const selectedAgent = document.getElementById('agentSelect').value;
+  const agentName = (selectedAgent !== 'all' ? selectedAgent : (lead?.Agent_Nom || savedAgent || 'زينب'));
+
+  const payload = {
+    lead_id: activeLeadId,
+    statut: 'مسدد',
+    resultat: 'تم تأكيد الدفع',
+    detail: 'مسدد / مكتمل',
+    prochaine_action: 'مكتمل',
+    date_prochaine: '',
+    note: 'تم تأكيد السداد والاشتراك بنجاح في الأكاديمية',
+    agent_nom: agentName
+  };
+
+  if (lead) {
+    lead.Statut_CRM = 'مسدد';
+    lead.Statut_Paiement = 'مسدد';
+    lead._cat = 'paye';
+  }
+  filterData();
+  closeModal('interactionModal');
+
+  try {
+    await fetch('/api/crm/update-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showToast('تم تحويل العميل إلى مسدد بنجاح! 🎉');
+  } catch (e) {
+    showToast('تم التحديث في الواجهة');
+  }
+}
+
+async function loadLeadTimeline(leadId) {
+  const timeline = document.getElementById('modalTimeline');
+  timeline.innerHTML = '<div class="loader" style="padding:10px"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل السجل...</div>';
+  try {
+    const res = await fetch(`/api/crm/lead-details?lead_id=${leadId}`);
+    const data = await res.json();
+    const interactions = data.interactions || [];
+    if (interactions.length === 0) {
+      timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center; color:var(--text-muted)">لا توجد متابعات سابقة مسجلة لهذا العميل</div>';
+    } else {
+      timeline.innerHTML = interactions.map(i => `
+        <div class="timeline-item">
+          <div class="timeline-date">
+            <b>${escapeHtml(i.Date_Heure || '')}</b> • بواسطة: <span style="color:var(--primary); font-weight:700;">${escapeHtml(i.Agent || 'الوكيل')}</span>
+          </div>
+          <div class="timeline-content-box">
+            <div style="font-weight:700; color:var(--text-main); margin-bottom:2px;">${escapeHtml(i.Resultat || '')}</div>
+            ${i.Commentaire ? `<div style="color:#475569;">${escapeHtml(i.Commentaire)}</div>` : ''}
+            ${i.Date_Prochaine ? `<div style="font-size:0.75rem; color:#b45309; margin-top:3px;">📅 موعد المتابعة: ${escapeHtml(i.Date_Prochaine)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
     }
+  } catch (e) {
+    timeline.innerHTML = '<div class="timeline-content-box" style="color:var(--danger)">تعذر تحميل السجل الزمني</div>';
+  }
+}
 
-    async function updateLeadAPI(leadId, payload) {
-      const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
-      if (lead) {
-        lead.Statut_CRM = payload.statut;
-        lead.Dernier_Contact_Resultat = payload.resultat;
-        lead.Prochaine_Action = payload.prochaine_action;
-        lead.Date_Prochaine_Action = payload.date_prochaine;
-        if (payload.note) lead.Ancien_Commentaire = payload.note;
-        lead._cat = categorize(lead); // Re-categorize immediately
-      }
-      filterData();
-      try {
-        await fetch('/api/crm/update-lead', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lead_id: leadId, ...payload, agent_email: lead ? lead.Agent_Email : '' })
-        });
-      } catch (err) { console.error('Update error:', err); }
-    }
+/* =========================================================
+   GESTION DES TEMPLATES WHATSAPP
+========================================================= */
 
-    async function logWhatsApp(leadId) {
-      const today = new Date().toISOString().split('T')[0];
-      await updateLeadAPI(leadId, { statut: 'للمتابعة', resultat: 'واتساب مرسل', prochaine_action: 'انتظار رد', date_prochaine: today, note: 'تم إرسال رسالة واتساب' });
-      showToast('تم تسجيل إرسال الواتساب');
-    }
+const TEMPLATES = [
+  {
+    id: 'welcome',
+    title: 'ترحيب وتذكير باستكمال التسجيل',
+    icon: 'fa-hand-peace',
+    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+معكم ${agent || 'فريق الإرشاد'} من أكاديمية أسوة.
 
-    async function markPaid() {
-      if (!activeLeadId) return;
-      if (!confirm('هل أنت متأكد من تأكيد دفع واشتراك هذا العميل؟')) return;
-      await updateLeadAPI(activeLeadId, { statut: 'مسدد', resultat: 'تم تأكيد الدفع', prochaine_action: 'مغلق', date_prochaine: '', note: 'تم تأكيد الدفع والاشتراك بنجاح' });
-      closeModal();
-      showToast('تم تحويل العميل إلى مسدد! 🎉');
-    }
+لاحظنا رغبتكم الطيبة في التسجيل معنا للموسم الجديد. هل تواجهون أي صعوبة في استكمال البيانات أو السداد، أو لديكم أي استفسار نساعدكم به؟
 
-    async function submitModalInteraction() {
-      const resultat = document.getElementById('modalResultSelect').value;
-      const note = document.getElementById('modalNoteInput').value.trim();
-      const nextDate = document.getElementById('modalNextDate').value;
+يسعدنا الرد على كل أسئلتكم!`
+  },
+  {
+    id: 'missed_call',
+    title: 'تذكير لطيف بعد تعذر الاتصال الهاتفي',
+    icon: 'fa-phone-slash',
+    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+حاولنا الاتصال بكم هاتفياً من إدارة أكاديمية أسوة لمتابعة طلب تسجيلكم، ولعله تعذر الوصول إليكم لإنشغالكم.
 
-      if (!resultat && !note) { alert('يرجى اختيار النتيجة أو كتابة ملاحظة'); return; }
-      if (!nextDate && resultat !== 'غير مهتم' && resultat !== 'رقم خاطئ') { alert('يرجى تحديد تاريخ المتابعة القادمة'); return; }
+نحن رهن إشارتكم هنا عبر الواتساب في أي وقت للإجابة عن تساؤلاتكم ومساعدتكم على تأكيد المقعد الدراسي.`
+  },
+  {
+    id: 'direct_payment',
+    title: 'رابط السداد وتأكيد المقعد',
+    icon: 'fa-credit-card',
+    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+بخصوص استكمال مساهمتكم في أكاديمية أسوة وتأكيد التحاقكم بالدفعة الجديدة، يمكنكم تسوية السداد بسهولة عبر الرابط المباشر للمنصة.
 
-      let status = 'للمتابعة';
-      let nextAction = 'معاودة الاتصال';
-      if (resultat === 'غير مهتم' || resultat === 'رقم خاطئ') { status = 'مغلق'; nextAction = 'لا شيء'; }
-      else if (resultat === 'لا يوجد رد') { nextAction = 'معاودة الاتصال'; }
+إذا كنتم تواجهون أي عائق في البطاقة البنكية أو ترغبون بوسيلة دفع أخرى، أخبرونا لنرسل لكم التفاصيل فوراً.`
+  },
+  {
+    id: 'program_info',
+    title: 'تفاصيل المنهاج ونظام الدراسة',
+    icon: 'fa-book-open',
+    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+بناءً على طلبكم، تسعد أكاديمية أسوة بتقديم برنامج علمي مؤصل ومنهجي يجمع بين حفظ كتاب الله ومدارسة العلوم الشرعية مع نخبة من الأساتذة.
 
-      await updateLeadAPI(activeLeadId, { statut: status, resultat: resultat || 'للمتابعة', prochaine_action: nextAction, date_prochaine: nextDate, note: note || resultat });
-      closeModal();
-      showToast('تم حفظ التحديث بنجاح!');
-    }
+نظام الدراسة يتميز بالمرونة العالية عبر المنصة الرقمية وتسجيلات الدروس لملاءمة وقتكم. هل ترغبون في إرسال تفاصيل مواد السنة الأولى؟`
+  }
+];
 
-    async function openInteractionModal(leadId) {
-      activeLeadId = leadId;
-      document.getElementById('interactionModal').classList.add('active');
-      const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
-      if (lead) document.getElementById('modalLeadName').textContent = `تسجيل متابعة: ${lead.Nom || ''}`;
-      document.getElementById('modalResultSelect').value = '';
-      document.getElementById('modalNoteInput').value = '';
-      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-      document.getElementById('modalNextDate').value = tomorrow.toISOString().split('T')[0];
+function openTemplatesModal(leadId) {
+  const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+  if (!lead) return;
 
-      const timeline = document.getElementById('modalTimeline');
-      timeline.innerHTML = '<div class="loader" style="padding:10px"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل السجل...</div>';
-      try {
-        const res = await fetch(`/api/crm/lead-details?lead_id=${leadId}`);
-        const data = await res.json();
-        const interactions = data.interactions || [];
-        if (interactions.length === 0) {
-          timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center">لا توجد تفاعلات سابقة</div>';
-        } else {
-          timeline.innerHTML = interactions.map(i => `
-            <div class="timeline-item">
-              <div class="timeline-date"><b style="color:var(--text-main)">${escapeHtml(i.Date_Heure || '')}</b> • ${escapeHtml(i.Resultat || '')}</div>
-              <div class="timeline-content-box">${escapeHtml(i.Commentaire || '')}</div>
-            </div>`).join('');
-        }
-      } catch (e) {
-        timeline.innerHTML = '<div class="timeline-content-box" style="color:var(--danger)">خطأ في تحميل السجل</div>';
-      }
-    }
+  const cleanPhone = cleanPhoneNumber(lead.Telephone);
+  const selectedAgent = document.getElementById('agentSelect').value;
+  const agentName = (selectedAgent !== 'all' ? selectedAgent : (lead.Agent_Nom || savedAgent || 'زينب'));
 
-    function closeModal() { document.getElementById('interactionModal').classList.remove('active'); activeLeadId = null; }
-    function closeModalOnBackdrop(e) { if (e.target.id === 'interactionModal') closeModal(); }
+  const listContainer = document.getElementById('templatesList');
+  listContainer.innerHTML = TEMPLATES.map(tpl => {
+    const rawText = tpl.getText(lead.Nom, agentName);
+    const encodedText = encodeURIComponent(rawText);
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${msg}`;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
+    return `
+      <div class="template-card">
+        <div class="template-header">
+          <div class="template-title"><i class="fa-solid ${tpl.icon}"></i> ${tpl.title}</div>
+        </div>
+        <div class="template-preview">${escapeHtml(rawText)}</div>
+        <div class="template-actions">
+          <button class="btn-tpl-action btn-tpl-copy" onclick="copyTemplateText('${encodeURIComponent(rawText)}')">
+            <i class="fa-regular fa-copy"></i> نسخ النص
+          </button>
+          <a href="${waUrl}" target="_blank" class="btn-tpl-action btn-tpl-wa" onclick="recordTemplateSent('${leadId}', '${tpl.title}')">
+            <i class="fa-brands fa-whatsapp"></i> فتح وإرسال في واتساب
+          </a>
+        </div>
+      </div>
+    `;
+  }).join('');
 
-    function escapeHtml(str) {
-      return String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-    }
+  document.getElementById('templatesModal').classList.add('active');
+}
 
-    loadData();
-  </script>
+function copyTemplateText(encodedText) {
+  const text = decodeURIComponent(encodedText);
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('تم نسخ نص الرسالة إلى الحافظة! 📋');
+  }).catch(() => {
+    showToast('تعذر النسخ التلقائي');
+  });
+}
+
+async function recordTemplateSent(leadId, templateTitle) {
+  closeModal('templatesModal');
+  showToast(`جاري فتح واتساب مع نموذج "${templateTitle}" 💬`);
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+  if (modalId === 'interactionModal') activeLeadId = null;
+}
+
+function closeModalOnBackdrop(e, modalId) {
+  if (e.target.id === modalId) closeModal(modalId);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981"></i> <span>${msg}</span>`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+// Initialisation
+loadData();
+</script>
 </body>
 </html>

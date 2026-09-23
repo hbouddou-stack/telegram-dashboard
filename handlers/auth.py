@@ -507,7 +507,9 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
             chat_title = update.chat.title or "المجموعة الرسمية"
             base_url = get_webapp_base_url()
             
-            # Vérifier si ce Telegram ID est dans la base des élèves inscrits
+                        # Vérifier si ce Telegram ID est dans la base
+            invite_link_name = getattr(update.invite_link, 'name', 'Inconnu') if getattr(update, 'invite_link', None) else 'Inconnu'
+            
             async with aiosqlite.connect(DATABASE_PATH) as db_conn:
                 db_conn.row_factory = aiosqlite.Row
                 async with db_conn.execute("SELECT * FROM academy_students WHERE telegram_id = ?", (user_id,)) as cur:
@@ -536,8 +538,10 @@ async def handle_chat_member_update(update: ChatMemberUpdated, bot: Bot):
                 await log_student_action(0, 'UNAUTHORIZED_JOIN_KICKED', f"تم طرد مستخدم غير مسجل من {chat_title}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=tg_username)
                 return
             
-            # ✅ Élève reconnu → marquer group_joined = 1
+                        # Eleve reconnu
             student_dict = dict(student)
+            from database import log_student_action
+            await log_student_action(student_dict.get('student_id', 0), 'LIEN_UTILISE', f"Lien utilise : {invite_link_name}", telegram_id=user_id, telegram_name=tg_first_name, telegram_username=tg_username)
             async with aiosqlite.connect(DATABASE_PATH) as db_conn:
                 await db_conn.execute("UPDATE academy_students SET group_joined = 1, joined_at = datetime('now') WHERE telegram_id = ?", (user_id,))
                 await db_conn.commit()
