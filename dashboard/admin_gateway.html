@@ -2640,13 +2640,13 @@ window.setSalesFunnel = function(val, el) {
     </div>
 
 
+
 <!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';" style="padding:0; align-items:stretch; justify-content:stretch;">
         <div class="modal" id="fiche-eleve-modal" style="width: 100%; max-width: none; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; margin: 0; border-radius: 0; padding: 0; overflow: hidden;">
             <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:6px 14px; min-height:0; flex-shrink:0; position:relative;">
                 <div style="position:absolute; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; pointer-events:none;">
                     <span id="header-student-name" style="font-weight:900; font-size:1.05rem; color:white; background:#0a84ff; padding:5px 20px; border-radius:20px; white-space:nowrap;">📋 بطاقة الطالب</span>
-                    <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="margin-left: 10px; font-size: 0.8rem; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; border:none;"></button>
                     <span id="header-year-badge" style="font-weight:800; font-size:0.9rem; color:white; background:#ff9f0a; padding:5px 12px; border-radius:20px; white-space:nowrap; display:none;">🎓 -</span>
                 </div>
                 <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">✕</button>
@@ -2832,8 +2832,12 @@ window.setSalesFunnel = function(val, el) {
                 <div class="mtab" onclick="switchModalTab('funnel')" id="mtab-funnel" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
                     <span style="font-size:1rem;">🛤️</span><span style="font-size:0.7rem;">مسار</span>
                 </div>
-                
-                
+                <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">📊</span><span style="font-size:0.7rem;">CRM</span>
+                </div>
+                <div class="mtab" onclick="switchModalTab('logs')" id="mtab-logs" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:1rem;">📜</span><span style="font-size:0.7rem;">السجل</span>
+                </div>
             </div>
 
             <!-- Tab 0: Actions — Composer intégré plein écran -->
@@ -3036,18 +3040,253 @@ window.setSalesFunnel = function(val, el) {
             <!-- Tab 1: General -->
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding:0; background:var(--bg);">
                 <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
-                    
+                    <div class="pg-row" style="background:var(--surface); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-weight:bold; color:var(--text1);">🚨 Qualité du lead (Validité)</div>
+                        <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; border:none;"></button>
+                    </div>
 
                     <div class="pg-row" id="profile-name">
                         <div class="pg-label">👤 الاسم الكامل</div>
                         <div class="pg-val" id="profile-name-text">-</div>
                     </div>
-                    
+                    <div class="pg-row">
+                        <div class="pg-label">🌍 باللغة الأجنبية</div>
+                        <div class="pg-val" id="profile-foreign-name-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📧 البريد الإلكتروني</div>
+                        <div class="pg-val" id="profile-email-text" dir="ltr">-</div>
+                    </div>
+                    <div class="pg-row" style="direction:rtl;">
+                        <div class="pg-label">📱 الهاتف</div>
+                        <div class="pg-val" id="profile-phone-text" dir="ltr" style="unicode-bidi:isolate;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🎂 تاريخ الميلاد</div>
+                        <div class="pg-val" id="profile-dob-text">-</div>
+                    </div>
+                    <div class="pg-row" id="profile-gender">
+                        <div class="pg-label">⚧ الجنس</div>
+                        <div class="pg-val" id="profile-gender-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">💼 المهنة</div>
+                        <div class="pg-val" id="profile-profession-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📍 بلد الإقامة</div>
+                        <div class="pg-val" id="profile-country-text">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">🌍 الجنسية</div>
+                        <div class="pg-val" id="profile-nationality-text">-</div>
+                    </div>
+                </div>
+                
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
+                    <div class="pg-row">
+                        <div class="pg-label">📥 تاريخ الاستيراد</div>
+                        <div class="pg-val" id="profile-import-text" dir="ltr" style="font-size:0.85rem;">-</div>
+                    </div>
+                    <div class="pg-row">
+                        <div class="pg-label">📄 المصدر</div>
+                        <div class="pg-val" id="profile-source-text">-</div>
+                    </div>
+                </div>
+
+                <!-- FULL SCREEN JOURNEY BUTTON (GENERAL TAB) -->
+                <div style="background:var(--accent); border-radius:12px; padding:12px; margin:0 5px 15px 0; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.05rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s; animation: pulse-btn 2s infinite;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <span>🛤️ افتح مسار الطالب الكامل (Plein Écran)</span>
+                </div>
+                <style>
+                @keyframes pulse-btn {
+                    0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
+                    70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+                }
+                
+/* =========================================
+   ADVENTURE VIEW (DESERT JOURNEY) CSS
+========================================= */
+
+.fs-vbtn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.fs-vbtn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.fs-view-adventure {
+    background: linear-gradient(to top, #eab308 0%, #f97316 40%, #8b5cf6 70%, #1e1b4b 100%) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 40px 10px 80px 10px !important;
+}
+
+.fs-view-adventure .metro-map {
+    display: block !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    height: 900px !important;
+    margin-top: 60px !important; /* Push map below sticky header */
+    margin: 0 auto !important;
+    position: relative !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M 85 95 C 85 80, 15 85, 15 75 C 15 60, 85 65, 85 55 C 85 40, 15 45, 15 35 C 15 20, 85 25, 85 10" fill="none" stroke="%23fef3c7" stroke-width="2" stroke-dasharray="4,4"/></svg>') !important;
+    background-size: 100% 100% !important;
+    background-position: center !important;
+}
+
+.fs-view-adventure .metro-line, .fs-view-adventure .metro-line-progress { display: none !important; }
+
+.fs-view-adventure .metro-station {
+    position: absolute !important;
+    width: 150px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin: 0 !important;
+    background: rgba(255, 253, 235, 0.95) !important;
+    border: 3px solid #b45309 !important;
+    border-radius: 12px !important;
+    padding: 12px 8px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+    z-index: 10 !important;
+    transform: translate(-50%, 50%) !important; 
+    transition: 0.3s;
+}
+
+.fs-view-adventure .metro-dot-wrapper { display: none !important; }
+.fs-view-adventure .metro-content { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    width: 100% !important;
+    text-align: center !important;
+}
+.fs-view-adventure .metro-content::before { display: none !important; }
+
+.fs-view-adventure .metro-title { font-size: 0.9rem !important; color: #78350f !important; font-weight: 900 !important; margin-bottom: 5px !important; }
+.fs-view-adventure .metro-desc { font-size: 0.75rem !important; color: #92400e !important; line-height: 1.3 !important; }
+.fs-view-adventure .metro-date { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; font-size: 0.7rem !important; margin-top: 8px !important; display: inline-block !important; border-radius: 4px !important; padding: 2px 6px !important; }
+
+/* Positions mapped to the SVG path (0,0 is top-left, 100,100 is bottom-right) */
+.fs-view-adventure #fs-onb-station-1, .fs-view-adventure #fs-station-1 { bottom: 5%; left: 85%; }
+.fs-view-adventure #fs-onb-station-2, .fs-view-adventure #fs-station-2 { bottom: 25%; left: 15%; }
+.fs-view-adventure #fs-onb-station-3, .fs-view-adventure #fs-station-3 { bottom: 45%; left: 85%; }
+.fs-view-adventure #fs-onb-station-4, .fs-view-adventure #fs-station-4 { bottom: 65%; left: 15%; }
+.fs-view-adventure #fs-onb-station-5, .fs-view-adventure #fs-station-5 { bottom: 82%; left: 60%; }
+.fs-view-adventure #fs-onb-station-6, .fs-view-adventure #fs-station-6 { bottom: 95%; left: 85%; }
+
+/* The Walking Avatar on Current Step */
+.fs-view-adventure .metro-station.current::after {
+    content: '🚶‍♂️';
+    position: absolute;
+    font-size: 50px;
+    top: -65px; 
+    left: 50%;
+    transform: translateX(-50%);
+    animation: walkBounce 0.8s infinite alternate;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+
+@keyframes walkBounce {
+    0% { transform: translate(-50%, 0) rotate(-5deg); }
+    100% { transform: translate(-50%, -15px) rotate(5deg); }
+}
+
+/* Completed & Current & Error States */
+.fs-view-adventure .metro-station.completed {
+    background: rgba(220, 252, 231, 0.95) !important;
+    border-color: #166534 !important;
+}
+.fs-view-adventure .metro-station.completed .metro-title { color: #14532d !important; }
+.fs-view-adventure .metro-station.completed .metro-desc { color: #166534 !important; }
+.fs-view-adventure .metro-station.completed .metro-date { background: #bbf7d0 !important; color: #166534 !important; border-color: #86efac !important; }
+
+.fs-view-adventure .metro-station.current {
+    box-shadow: 0 0 25px rgba(253, 224, 71, 0.8) !important;
+    border-color: #eab308 !important;
+    transform: translate(-50%, 50%) scale(1.05) !important;
+}
+
+.fs-view-adventure .metro-station.error {
+    background: rgba(254, 226, 226, 0.95) !important;
+    border-color: #991b1b !important;
+}
+.fs-view-adventure .metro-station.error .metro-title { color: #7f1d1d !important; }
+.fs-view-adventure .metro-station.error .metro-desc { color: #991b1b !important; }
+.fs-view-adventure .metro-station.error .metro-date { background: #fecaca !important; color: #991b1b !important; border-color: #f87171 !important; }
+
+</style>
+                <!-- Onboarding Funnel Summary in General Tab -->
+                <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="انقر لعرض المسار بالتفصيل">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-weight:bold; font-size:0.88rem; color:var(--accent);">🎥 حالة مسار التأهيل (Onboarding)</span>
+                        <span id="profile-onb-badge" style="font-size:0.75rem; font-weight:bold; padding:2px 8px; border-radius:10px; background:#334155; color:white;">-</span>
+                    </div>
+                    <div id="profile-onb-desc" style="font-size:0.8rem; color:var(--text1); margin-bottom:4px;">-</div>
+                    <div style="font-size:0.72rem; color:var(--text2); display:flex; justify-content:space-between;">
+                        <span id="profile-onb-time">-</span>
+                        <span style="color:var(--accent); text-decoration:underline; cursor:pointer;">عرض المسار والمراحل ➔</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Academy -->
+            <div id="mcontent-academy" class="mcontent" style="overflow-y:auto; flex:1; padding:0 5px 10px 0; background:var(--bg);">
+                
+                <!-- Highlight Cards -->
+                <div class="ac-grid">
+                    <div class="ac-card" style="border-color:#ff9f0a; background:rgba(255,159,10,0.05);">
+                        <div class="ac-card-title">🎓 السنة الدراسية</div>
+                        <div class="ac-card-val" id="profile-year-text" style="color:#ff9f0a;">-</div>
+                    </div>
+                    <div class="ac-card" id="card-payment" style="border-color:var(--border);">
+                        <div class="ac-card-title">💳 حالة الدفع</div>
+                        <div class="ac-card-val" id="profile-payment-text">-</div>
+                    </div>
+                </div>
+                
+                <div class="ac-grid">
+                    <div class="ac-card" style="border-color:#34c759; background:rgba(52,199,89,0.05);">
+                        <div class="ac-card-title">🎓 رقم الطالب</div>
+                        <div class="ac-card-val" id="card-studentid-text" style="color:#34c759; font-size:1.05rem;">-</div>
+                    </div>
+                    <div class="ac-card" style="border-color:var(--border);">
+                        <div class="ac-card-title">📅 تاريخ التسجيل</div>
+                        <div class="ac-card-val" id="card-inscription-text" dir="ltr" style="font-size:0.95rem;">-</div>
+                    </div>
+                </div>
+
+                <!-- Info List -->
+                <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
+                    <div class="pg-row">
+                        <div class="pg-label">🏅 مستوى العربية</div>
+                        <div class="pg-val" id="profile-arabiclevel-text">-</div>
+                    </div>
                     <div class="pg-row">
                         <div class="pg-label">🏫 المستوى المدرسي</div>
                         <div class="pg-val" id="profile-school-level-text">-</div>
                     </div>
-                    
+                    <div class="pg-row">
+                        <div class="pg-label">👥 حالة العضوية</div>
+                        <div class="pg-val" id="profile-membership" style="font-size:0.8rem;">-</div>
+                    </div>
                 </div>
             </div>
             
@@ -3059,6 +3298,31 @@ window.setSalesFunnel = function(val, el) {
             <div class="chip" id="profile-tg-firstname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الأول : <span id="profile-tg-firstname-text">-</span></div>
             <div class="chip" id="profile-tg-lastname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم العائلي : <span id="profile-tg-lastname-text">-</span></div>
             <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📁 تاريخ الانضمام للملف : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
+            </div>
+
+            <!-- Tab Logs/Historique — mirror exact du student-logs-modal -->
+            <div id="mcontent-logs" class="mcontent" style="flex-direction:column; flex:1; overflow-y:auto; padding:12px; gap:10px;">
+
+                <!-- Identites DB + TG -->
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:220px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
+                        <div id="logs-tab-db-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
+                    </div>
+                    <div style="flex:1; min-width:220px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
+                        <div id="logs-tab-tg-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
+                    </div>
+                </div>
+
+                <!-- Logs -->
+                <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; flex:1; min-height:200px;">
+                    <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--text1);">📜 سجل النشاطات</h3>
+                    <div id="logs-tab-body" style="overflow-y:auto; flex:1;">
+                        <div class="no-items">جاري التحميل...</div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Tab CRM -->
@@ -4807,7 +5071,7 @@ window.setSalesFunnel = function(val, el) {
         }
 
         function renderJourneyTimeline() {
-            const logsBody = document.getElementById('logs-body');
+            const logsBody = (document.getElementById('logs-body') || {});
             const countSpan = document.getElementById('timeline-steps-count');
 
             if (currentJourneyLogs && currentJourneyLogs.length > 0) {
@@ -5054,9 +5318,9 @@ window.setSalesFunnel = function(val, el) {
 
         async function viewVisitorFullJourney(telegram_id, displayName, student_id) {
             const modal = document.getElementById('student-logs-modal');
-            const dbIdentity = document.getElementById('modal-db-identity');
-            const tgIdentity = document.getElementById('modal-tg-identity');
-            const logsBody = document.getElementById('logs-body');
+            const dbIdentity = (document.getElementById('modal-db-identity') || {});
+            const tgIdentity = (document.getElementById('modal-tg-identity') || {});
+            const logsBody = (document.getElementById('logs-body') || {});
             const countSpan = document.getElementById('timeline-steps-count');
 
             if (currentJourneyLogs && currentJourneyLogs.length > 0) {
@@ -10245,7 +10509,7 @@ async function toggleStudentValidity() {
             
             // Set level badge
             const yr = String(student.year || '').trim();
-            const lvlBadge = document.getElementById('profile-level-badge');
+            const lvlBadge = (document.getElementById('profile-level-badge') || {});
             if(lvlBadge) {
                 if(yr === '1') lvlBadge.textContent = '1ère Année';
                 else if(yr === '2') lvlBadge.textContent = '2ème Année';
@@ -10365,7 +10629,7 @@ async function toggleStudentValidity() {
             const profEl = document.getElementById('profile-profession-text');
             if(profEl) profEl.innerHTML = valOrEmpty(student.profession || student.job);
 
-            const unlinkBtn = document.getElementById('profile-unlink-btn');
+            const unlinkBtn = (document.getElementById('profile-unlink-btn') || {});
             if (unlinkBtn) {
                 if (student.telegram_id) {
                     unlinkBtn.style.display = 'block';
@@ -10397,7 +10661,7 @@ async function toggleStudentValidity() {
             }
 
             // Student Logs
-            document.getElementById('logs-body').innerHTML = '<div class="no-items">جاري التحميل...</div>';
+            (document.getElementById('logs-body') || {}).innerHTML = '<div class="no-items">جاري التحميل...</div>';
             
             // Funnel & Tab logic
             if(typeof setFunnelStep === 'function') {
@@ -10469,7 +10733,7 @@ async function toggleStudentValidity() {
             const tgFolder = document.getElementById('profile-tg-folder-text');
             if(tgFolder) tgFolder.textContent = student.folder_clicked_at ? student.folder_clicked_at.substring(0, 16).replace('T', ' ') : '-';
             
-            const inscEl = document.getElementById('profile-inscription-text');
+            const inscEl = (document.getElementById('profile-inscription-text') || {});
             if(inscEl) inscEl.textContent = student.created_at ? student.created_at.split(' ')[0] : '-';
 
             // Phone number fancy display
@@ -10523,7 +10787,7 @@ async function toggleStudentValidity() {
             // Pre-fill Actions composer banner
             setTimeout(updateActionsBanner, 50);
             // Reset logs tab
-            var logsInner = document.getElementById('logs-tab-inner');
+            var logsInner = (document.getElementById('logs-tab-inner') || {});
             if (logsInner) logsInner.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);font-size:0.9rem;">اضغط على onglet السجل لتحميله</div>';
             if(typeof fetchCrmTimeline === 'function') fetchCrmTimeline(student.student_id, student.telegram_id);
             try {
@@ -10535,22 +10799,22 @@ async function toggleStudentValidity() {
                     if (student.tg_last_name) tgFullName += ' ' + student.tg_last_name;
                     document.getElementById('profile-tg-display').textContent = tgFullName.trim() || 'غير معروف (لم يسجل دخول مؤخراً)';
                     
-                    var logsTabTg = document.getElementById('logs-tab-tg-identity');
+                    var logsTabTg = (document.getElementById('logs-tab-tg-identity') || {});
                     if (logsTabTg) logsTabTg.innerHTML = `<strong>ID:</strong> ${student.telegram_id}<br><strong>الاسم:</strong> ${student.tg_first_name || '-'} ${student.tg_last_name || ''}`;
-                    document.getElementById('modal-tg-identity').innerHTML = `
+                    (document.getElementById('modal-tg-identity') || {}).innerHTML = `
                         <strong>ID:</strong> ${student.telegram_id}<br>
                         <strong>المعرّف:</strong> ${student.telegram_id}<br>
                         <strong>الاسم:</strong> ${student.tg_first_name || '-'}<br>
                         <strong>اللقب:</strong> ${student.tg_last_name || '-'}${student.telegram_username ? '<br><strong>المستخدم:</strong> @' + student.telegram_username : ''}
                     `;
                 } else {
-                    document.getElementById('modal-tg-identity').innerHTML = `<span style="color:var(--text2);">غير مرتبط</span>`;
+                    (document.getElementById('modal-tg-identity') || {}).innerHTML = `<span style="color:var(--text2);">غير مرتبط</span>`;
                 }
                 
                 // Also populate logs tab
-                var logsTabDb = document.getElementById('logs-tab-db-identity');
+                var logsTabDb = (document.getElementById('logs-tab-db-identity') || {});
                 if (logsTabDb) logsTabDb.innerHTML = `<strong>المعرّف:</strong> ${student.student_id || '-'}<br><strong>الاسم:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br><strong>البريد:</strong> ${student.email || '-'}<br><strong>الجنس:</strong> ${student.gender || '-'}`;
-                document.getElementById('modal-db-identity').innerHTML = `
+                (document.getElementById('modal-db-identity') || {}).innerHTML = `
                     <strong>المعرّف:</strong> ${student.student_id || '-'}<br>
                     <strong>الاسم:</strong> ${(student.first_name||'') + ' ' + (student.last_name||'')}<br>
                     <strong>البريد:</strong> ${student.email || '-'}<br>
@@ -10560,14 +10824,14 @@ async function toggleStudentValidity() {
                 if(data.success && data.logs.length > 0) {
                     let grouped = groupLogs(data.logs);
                     let html = grouped.map(l => renderLogCard(l, false)).join('');
-                    document.getElementById('logs-body').innerHTML = html;
+                    (document.getElementById('logs-body') || {}).innerHTML = html;
                     var ltb = document.getElementById('logs-tab-body');
                     if (ltb) ltb.innerHTML = html;
                     if(typeof populateOnboardingFunnel === 'function') {
                         populateOnboardingFunnel(student, data.logs);
                     }
                 } else {
-                    document.getElementById('logs-body').innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
+                    (document.getElementById('logs-body') || {}).innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
                     var ltb2 = document.getElementById('logs-tab-body');
                     if (ltb2) ltb2.innerHTML = '<div class="no-items">لا يوجد أي نشاط مسجل لهذا الطالب.</div>';
                     if(typeof populateOnboardingFunnel === 'function') {
@@ -10575,7 +10839,7 @@ async function toggleStudentValidity() {
                     }
                 }
             } catch(e) {
-                document.getElementById('logs-body').innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل.</div>';
+                (document.getElementById('logs-body') || {}).innerHTML = '<div class="no-items" style="color:var(--danger);">خطأ في تحميل السجل.</div>';
                 if(typeof populateOnboardingFunnel === 'function') {
                     populateOnboardingFunnel(student, []);
                 }
@@ -13865,7 +14129,7 @@ function toggleFloatingCrmMenu() {
         document.getElementById('uid-spayment').innerText = '-';
 
         // Load Logs
-        document.getElementById('logs-body').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري جلب بيانات الطالب والسجل...</div></div>';
+        (document.getElementById('logs-body') || {}).innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2);"><div style="font-size:2rem; animation:pulse 1s infinite;">⏳</div><div style="margin-top:8px;">جاري جلب بيانات الطالب والسجل...</div></div>';
         
         modal.style.display = 'flex';
         switchUnivTab('identity'); 
@@ -13923,11 +14187,11 @@ function toggleFloatingCrmMenu() {
 
             } else {
                 currentJourneyLogs = [];
-                document.getElementById('logs-body').innerHTML = '<div style="padding:40px; text-align:center; color:var(--text2);">📭 لا توجد حركات مسجلة.</div>';
+                (document.getElementById('logs-body') || {}).innerHTML = '<div style="padding:40px; text-align:center; color:var(--text2);">📭 لا توجد حركات مسجلة.</div>';
             }
         } catch(e) {
             console.error(e);
-            document.getElementById('logs-body').innerHTML = '<div style="padding:40px; text-align:center; color:#ef4444;">❌ خطأ في الاتصال بالخادم</div>';
+            (document.getElementById('logs-body') || {}).innerHTML = '<div style="padding:40px; text-align:center; color:#ef4444;">❌ خطأ في الاتصال بالخادم</div>';
         }
     };
     
