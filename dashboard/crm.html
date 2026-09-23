@@ -6,7 +6,7 @@
   <title>Oswah CRM - إدارة المتابعات الذكية</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -39,7 +39,7 @@
       --male-accent: #3b82f6;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "IBM Plex Sans Arabic", "Tajawal", sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Cairo", "Tajawal", -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text-main); padding-top: 130px; padding-bottom: 85px; }
 
     /* HEADER */
@@ -183,23 +183,53 @@
 
     /* MODAL SYSTEM */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-      z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);
+      z-index: 1000; display: none; align-items: center; justify-content: center; padding: 12px;
     }
     .modal-overlay.active { display: flex; }
     .modal-content {
-      background: #fff; width: 100%; max-width: 600px; border-radius: 22px 22px 0 0;
-      padding: 20px 18px 30px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+      background: #fff; width: 100%; max-width: 760px; border-radius: 18px;
+      display: flex; flex-direction: column; max-height: 90vh; overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
+      animation: modalFadeIn 0.2s cubic-bezier(0.16,1,0.3,1);
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes modalFadeIn { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; }
-    .modal-title { font-size: 1.05rem; font-weight: 800; color: var(--text-main); }
-    .close-btn { background: #f1f5f9; border: none; font-size: 1.1rem; color: var(--text-muted); cursor: pointer; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px; border-bottom: 1px solid var(--card-border); background: #ffffff;
+    }
+    .modal-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+    .close-btn {
+      background: #f1f5f9; border: none; font-size: 1.1rem; color: var(--text-muted);
+      cursor: pointer; width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .close-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+    .modal-body {
+      padding: 16px 20px; overflow-y: auto; flex: 1;
+    }
+
+    .modal-footer {
+      padding: 12px 20px; border-top: 1px solid var(--card-border); background: #f8fafc;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .btn-submit {
+      flex: 2; background: var(--primary); color: white; border: none; padding: 12px;
+      border-radius: 10px; font-size: 0.95rem; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--shadow-sm); margin-bottom: 0;
+    }
+    .btn-submit:hover { background: var(--primary-hover); }
+    .btn-fast-paid {
+      flex: 1.2; background: var(--success); color: white; border: none; padding: 12px;
+      border-radius: 10px; font-size: 0.9rem; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
 
     /* DECISION TREE STYLES */
     .step-label { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+    .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 14px; }
     .choice-card {
       border: 1.5px solid var(--card-border); border-radius: 10px; padding: 10px 8px;
       display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc;
@@ -366,154 +396,158 @@
 <!-- INTERACTION & DECISION TREE MODAL -->
 <div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event, 'interactionModal')">
   <div class="modal-content">
+    <!-- MODAL HEADER : JUST STUDENT NAME -->
     <div class="modal-header">
-      <div>
-        <div class="modal-title" id="modalLeadName">تسجيل متابعة</div>
-        <div id="modalLeadMeta" style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;"></div>
-      </div>
+      <div class="modal-title" id="modalLeadName">اسم الطالب</div>
       <button class="close-btn" onclick="closeModal('interactionModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- ETAPE 0 : QUALIFICATION DU LEAD -->
-    <div class="step-label"><i class="fa-solid fa-id-badge"></i> 0. تصنيف وطبيعة الحساب (Qualification):</div>
-    <div class="account-type-grid">
-      <div class="type-chip selected" id="chip-normal" onclick="selectLeadType('normal', this)">
-        📞 عميل حقيقي (مؤهل)
-      </div>
-      <div class="type-chip danger" id="chip-doublon" onclick="selectLeadType('doublon', this)">
-        👥 مكرر (Doublon)
-      </div>
-      <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)">
-        🧪 حساب تجريبي
-      </div>
-      <div class="type-chip warning" id="chip-staff" onclick="selectLeadType('staff', this)">
-        🏛️ إدارة / أستاذ
-      </div>
-      <div class="type-chip success" id="chip-exonere" onclick="selectLeadType('exonere', this)">
-        🎁 طالب معفي / منحة
-      </div>
-      <div class="type-chip success" id="chip-virement" onclick="selectLeadType('virement', this)">
-        🏦 تحويل (في انتظار التأكيد)
-      </div>
-    </div>
-
-    <!-- MESSAGE INFO QUAND EXCLUSION SELECTIONNEE -->
-    <div id="exclusionNoticeBox" style="display:none; background:#fff1f2; border:1px solid #fecdd3; border-radius:10px; padding:10px 12px; margin-bottom:14px; font-size:0.83rem; color:#9f1239; font-weight:700;">
-      <i class="fa-solid fa-triangle-exclamation"></i> <span id="exclusionNoticeText">سيتم استبعاد هذا الحساب وإغلاقه مباشرة دون الحاجة للاتصال به.</span>
-    </div>
-
-    <div id="callFlowSection">
-      <!-- ETAPE 1 : RESULTAT APPEL -->
-      <div class="step-label"><i class="fa-solid fa-phone-volume"></i> 1. نتيجة محاولة الاتصال:</div>
-      <div class="choice-grid">
-        <div class="choice-card" onclick="selectResult('repondu', this)">
-          <span class="choice-icon">🟢</span> أجاب
+    <!-- MODAL BODY (SCROLLABLE) -->
+    <div class="modal-body">
+      <!-- ETAPE 0 : QUALIFICATION DU LEAD (1 SEULE LIGNE : PROSPECT, DOUBLON, TEST) -->
+      <div class="step-label"><i class="fa-solid fa-id-badge"></i> 0. تصنيف وطبيعة الحساب (Qualification):</div>
+      <div class="account-type-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:14px;">
+        <div class="type-chip selected" id="chip-normal" onclick="selectLeadType('normal', this)">
+          📞 عميل حقيقي (مؤهل)
         </div>
-        <div class="choice-card" onclick="selectResult('sonne_sans_reponse', this)">
-          <span class="choice-icon">🟡</span> يرن بدون إجابة
+        <div class="type-chip danger" id="chip-doublon" onclick="selectLeadType('doublon', this)">
+          👥 مكرر (Doublon)
         </div>
-        <div class="choice-card" onclick="selectResult('injoignable', this)">
-          <span class="choice-icon">🟠</span> غير متاح / علبة صوتية
-        </div>
-        <div class="choice-card danger" onclick="selectResult('faux_numero', this)">
-          <span class="choice-icon">🔴</span> رقم خاطئ
+        <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)">
+          🧪 حساب تجريبي
         </div>
       </div>
 
-      <!-- ETAPE 2 : DYNAMIQUE SELON LE RESULTAT (MULTI-SELECTION) -->
-      
-      <!-- Branche A : A REPONDU -->
-      <div class="sub-section" id="subRepondu">
-        <div class="step-label">
-          <span><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف:</span>
-          <span style="font-size:0.74rem; color:#b45309; font-weight:800; background:#fef3c7; padding:2px 8px; border-radius:6px; margin-right:6px;">(يمكنك تحديد أكثر من خيار في نفس الوقت 💡)</span>
+      <!-- MESSAGE INFO QUAND EXCLUSION SELECTIONNEE -->
+      <div id="exclusionNoticeBox" style="display:none; background:#fff1f2; border:1px solid #fecdd3; border-radius:10px; padding:10px 12px; margin-bottom:14px; font-size:0.85rem; color:#9f1239; font-weight:700;">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span id="exclusionNoticeText">سيتم استبعاد هذا الحساب وإغلاقه مباشرة دون الحاجة للاتصال به.</span>
+      </div>
+
+      <div id="callFlowSection">
+        <!-- ETAPE 1 : RESULTAT ET CANAL DE CONTACT (APPEL OU WHATSAPP) -->
+        <div class="step-label"><i class="fa-solid fa-comments"></i> 1. وسيلة ونتيجة التواصل:</div>
+        <div class="choice-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+          <div class="choice-card" onclick="selectResult('repondu', this)">
+            <span class="choice-icon">📞</span> أجاب هاتفياً
+          </div>
+          <div class="choice-card success" onclick="selectResult('repondu_wa', this)">
+            <span class="choice-icon">💬</span> رد عبر الواتساب
+          </div>
+          <div class="choice-card" onclick="selectResult('sonne_sans_reponse', this)">
+            <span class="choice-icon">🟡</span> يرن بدون إجابة
+          </div>
+          <div class="choice-card" onclick="selectResult('injoignable', this)">
+            <span class="choice-icon">🟠</span> غير متاح / مغلق
+          </div>
+          <div class="choice-card danger" onclick="selectResult('faux_numero', this)">
+            <span class="choice-icon">🔴</span> رقم خاطئ
+          </div>
         </div>
+
+        <!-- ETAPE 2 : DYNAMIQUE SELON LE RESULTAT (MULTI-SELECTION) -->
+        
+        <!-- Branche A : A REPONDU (PAR TELEPHONE OU PAR WHATSAPP) -->
+        <div class="sub-section" id="subRepondu">
+          <div class="step-label">
+            <span><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف:</span>
+            <span style="font-size:0.74rem; color:#b45309; font-weight:800; background:#fef3c7; padding:2px 8px; border-radius:6px; margin-right:6px;">(يمكنك تحديد أكثر من خيار في نفس الوقت 💡)</span>
+          </div>
+          <div class="choice-grid">
+            <div class="choice-card success" onclick="toggleDetailMulti('تم السداد (تحويل في انتظار التأكيد)', this, 'paye')">
+              <span class="choice-icon">💳</span> تم السداد (تحويل)
+            </div>
+            <div class="choice-card success" onclick="toggleDetailMulti('طالب معفي / منحة', this, 'paye')">
+              <span class="choice-icon">🎁</span> طالب معفي / منحة
+            </div>
+            <div class="choice-card warning" onclick="toggleDetailMulti('إدارة / أستاذ بالأكاديمية', this, 'ferme')">
+              <span class="choice-icon">🏛️</span> إدارة / أستاذ
+            </div>
+            <div class="choice-card warning" onclick="toggleDetailMulti('وعد بالسداد', this, 'relance', true)">
+              <span class="choice-icon">📅</span> وعد بالسداد
+            </div>
+            <div class="choice-card" onclick="toggleDetailMulti('طلب تخفيض / حالة خاصة', this, 'relance')">
+              <span class="choice-icon">📉</span> طلب تخفيض
+            </div>
+            <div class="choice-card" onclick="toggleDetailMulti('متردد / يحتاج وقتاً للتفكير', this, 'relance', true)">
+              <span class="choice-icon">🤔</span> متردد / يفكر
+            </div>
+            <div class="choice-card" onclick="toggleDetailMulti('مشكل تقني في الموقع/الدفع', this, 'relance')">
+              <span class="choice-icon">🛠️</span> مشكل تقني
+            </div>
+            <div class="choice-card" onclick="toggleDetailMulti('طلب معلومات إضافية', this, 'relance')">
+              <span class="choice-icon">ℹ️</span> طلب معلومات
+            </div>
+            <div class="choice-card danger" onclick="toggleDetailMulti('رفض / غير مهتم', this, 'ferme')">
+              <span class="choice-icon">❌</span> غير مهتم / رفض
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branche B : INJOIGNABLE / SONNE -->
+      <div class="sub-section" id="subInjoignable">
+        <div class="step-label"><i class="fa-brands fa-whatsapp"></i> 2. حالة الواتساب:</div>
         <div class="choice-grid">
-          <div class="choice-card success" onclick="toggleDetailMulti('تم السداد (تحويل في انتظار التأكيد)', this, 'paye')">
-            <span class="choice-icon">💳</span> تم السداد (تحويل)
+          <div class="choice-card success" onclick="selectDetail('تم إرسال رسالة واتساب', this, 'relance')">
+            <span class="choice-icon">💬</span> تم إرسال واتساب
           </div>
-          <div class="choice-card warning" onclick="toggleDetailMulti('وعد بالسداد', this, 'relance', true)">
-            <span class="choice-icon">📅</span> وعد بالسداد
-          </div>
-          <div class="choice-card" onclick="toggleDetailMulti('طلب تخفيض / حالة خاصة', this, 'relance')">
-            <span class="choice-icon">📉</span> طلب تخفيض
-          </div>
-          <div class="choice-card" onclick="toggleDetailMulti('متردد / يحتاج وقتاً للتفكير', this, 'relance', true)">
-            <span class="choice-icon">🤔</span> متردد / يفكر
-          </div>
-          <div class="choice-card" onclick="toggleDetailMulti('مشكل تقني في الموقع/الدفع', this, 'relance')">
-            <span class="choice-icon">🛠️</span> مشكل تقني
-          </div>
-          <div class="choice-card" onclick="toggleDetailMulti('طلب معلومات إضافية', this, 'relance')">
-            <span class="choice-icon">ℹ️</span> طلب معلومات
-          </div>
-          <div class="choice-card danger" onclick="toggleDetailMulti('رفض / غير مهتم', this, 'ferme')">
-            <span class="choice-icon">❌</span> غير مهتم / رفض
+          <div class="choice-card danger" onclick="selectDetail('لا يتوفر على واتساب', this, 'relance')">
+            <span class="choice-icon">📵</span> لا يملك واتساب
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Branche B : INJOIGNABLE / SONNE -->
-    <div class="sub-section" id="subInjoignable">
-      <div class="step-label"><i class="fa-brands fa-whatsapp"></i> 2. حالة الواتساب:</div>
-      <div class="choice-grid">
-        <div class="choice-card success" onclick="selectDetail('تم إرسال رسالة واتساب', this, 'relance')">
-          <span class="choice-icon">💬</span> تم إرسال واتساب
-        </div>
-        <div class="choice-card danger" onclick="selectDetail('لا يتوفر على واتساب', this, 'relance')">
-          <span class="choice-icon">📵</span> لا يملك واتساب
-        </div>
+      <!-- Branche C : FAUX NUMERO -->
+      <div class="sub-section" id="subFauxNumero">
+        <div class="step-label"><i class="fa-solid fa-triangle-exclamation"></i> 2. الإجراء البديل:</div>
+        <label class="checkbox-alert-box" id="emailAlertCheckLabel">
+          <input type="checkbox" id="sendAlertEmailCheck" checked>
+          <span>✉️ إرسال بريد إلكتروني تنبيهي فوري إلى الطالب لإبلاغه بتعذر الوصول إليه</span>
+        </label>
       </div>
+
+      <!-- PROCHAINE ACTION CHOISIE PAR L'AGENT -->
+      <div class="form-group" id="nextActionGroup" style="margin-top:12px;">
+        <label class="form-label" style="color:var(--primary); font-weight:800;">
+          🎯 الإجراء القادم المطلوب (Next Action):
+        </label>
+        <select id="modalNextActionSelect" class="form-control" style="font-weight:700;">
+          <option value="📞 معاودة الاتصال الهاتفي">📞 معاودة الاتصال الهاتفي</option>
+          <option value="💬 إرسال رسالة واتساب">💬 إرسال رسالة واتساب</option>
+          <option value="✉️ إرسال بريد إلكتروني">✉️ إرسال بريد إلكتروني</option>
+          <option value="💳 متابعة تأكيد الدفع">💳 متابعة تأكيد الدفع</option>
+          <option value="⏳ انتظار رد الطالب">⏳ انتظار رد الطالب</option>
+        </select>
+      </div>
+
+      <!-- DATE DE RELANCE -->
+      <div class="form-group" id="dateGroup" style="margin-top:8px;">
+        <label class="form-label" id="dateLabel">📅 تاريخ المتابعة القادمة:</label>
+        <input type="date" id="modalNextDate" class="form-control">
+      </div>
+
+      <!-- COMMENTAIRE LIBRE -->
+      <div class="form-group">
+        <label class="form-label">✍️ ملاحظات إضافية (اختياري):</label>
+        <textarea id="modalNoteInput" class="form-control" placeholder="اكتب تفاصيل خاصة أو سياق المحادثة هنا..."></textarea>
+      </div>
+
+      <hr style="border:0; border-top:1px solid var(--card-border); margin:18px 0 14px;">
+      <div style="font-size:0.92rem; font-weight:800; color:var(--text-main); margin-bottom:8px;">
+        <i class="fa-solid fa-clock-rotate-left"></i> سجل المتابعات والتاريخ (Timeline):
+      </div>
+      <div id="modalTimeline" class="timeline"></div>
     </div>
 
-    <!-- Branche C : FAUX NUMERO -->
-    <div class="sub-section" id="subFauxNumero">
-      <div class="step-label"><i class="fa-solid fa-triangle-exclamation"></i> 2. الإجراء البديل:</div>
-      <label class="checkbox-alert-box" id="emailAlertCheckLabel">
-        <input type="checkbox" id="sendAlertEmailCheck" checked>
-        <span>✉️ إرسال بريد إلكتروني تنبيهي فوري إلى الطالب لإبلاغه بتعذر الوصول إليه</span>
-      </label>
+    <!-- MODAL FOOTER (PERMANENTEMENT VISIBLE) -->
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="submitModalInteraction()">
+        <i class="fa-solid fa-cloud-arrow-up"></i> حفظ التحديث
+      </button>
+      <button class="btn-fast-paid" onclick="markPaidFast()">
+        <i class="fa-solid fa-check-double"></i> تأكيد السداد الفوري
+      </button>
     </div>
-
-        <!-- PROCHAINE ACTION CHOISIE PAR L'AGENT -->
-    <div class="form-group" id="nextActionGroup" style="margin-top:12px;">
-      <label class="form-label" style="color:var(--primary); font-weight:800;">
-        🎯 الإجراء القادم المطلوب (الخطوة التالية):
-      </label>
-      <select id="modalNextActionSelect" class="form-control" style="font-weight:700;">
-        <option value="📞 معاودة الاتصال الهاتفي">📞 معاودة الاتصال الهاتفي</option>
-        <option value="💬 إرسال رسالة واتساب">💬 إرسال رسالة واتساب</option>
-        <option value="✉️ إرسال بريد إلكتروني">✉️ إرسال بريد إلكتروني</option>
-        <option value="💳 متابعة تأكيد الدفع">💳 متابعة تأكيد الدفع</option>
-        <option value="⏳ انتظار رد الطالب">⏳ انتظار رد الطالب</option>
-      </select>
-    </div>
-
-    <!-- DATE DE RELANCE -->
-    <div class="form-group" id="dateGroup" style="margin-top:12px;">
-      <label class="form-label" id="dateLabel">📅 تاريخ المتابعة القادمة:</label>
-      <input type="date" id="modalNextDate" class="form-control">
-    </div>
-
-    <!-- COMMENTAIRE LIBRE -->
-    <div class="form-group">
-      <label class="form-label">✍️ ملاحظات إضافية (اختياري):</label>
-      <textarea id="modalNoteInput" class="form-control" placeholder="اكتب تفاصيل خاصة أو سياق المكالمة هنا..."></textarea>
-    </div>
-
-    <button class="btn-submit" onclick="submitModalInteraction()">
-      <i class="fa-solid fa-cloud-arrow-up"></i> حفظ التحديث ونقله للمرآة
-    </button>
-    <button class="btn-fast-paid" onclick="markPaidFast()">
-      <i class="fa-solid fa-check-double"></i> تأكيد السداد الفوري (مسدد)
-    </button>
-
-    <hr style="border:0; border-top:1px solid var(--card-border); margin:18px 0 14px;">
-    <div style="font-size:0.92rem; font-weight:800; color:var(--text-main); margin-bottom:8px;">
-      <i class="fa-solid fa-clock-rotate-left"></i> سجل المتابعات والتاريخ (Timeline):
-    </div>
-    <div id="modalTimeline" class="timeline"></div>
   </div>
 </div>
 
@@ -886,8 +920,8 @@ function selectLeadType(typeKey, element) {
   const noticeBox = document.getElementById('exclusionNoticeBox');
   const noticeText = document.getElementById('exclusionNoticeText');
   const dateGroup = document.getElementById('dateGroup');
-
   const nextActGroup = document.getElementById('nextActionGroup');
+
   if (typeKey === 'normal') {
     callSection.style.display = 'block';
     noticeBox.style.display = 'none';
@@ -897,7 +931,7 @@ function selectLeadType(typeKey, element) {
   } else {
     callSection.style.display = 'none';
     noticeBox.style.display = 'block';
-    dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
+    dateGroup.style.display = 'none';
     if (nextActGroup) nextActGroup.style.display = 'none';
 
     if (typeKey === 'doublon') {
@@ -910,21 +944,6 @@ function selectLeadType(typeKey, element) {
       calculatedStatus = 'ferme';
       currentResult = 'استبعاد';
       currentDetails = ['حساب تجريبي / اختبار'];
-    } else if (typeKey === 'staff') {
-      noticeText.textContent = '🏛️ سيتم تسجيل هذا الحساب كـ "إدارة / أستاذ بالأكاديمية" وأرشفته في قائمة المغلق.';
-      calculatedStatus = 'ferme';
-      currentResult = 'استبعاد';
-      currentDetails = ['إدارة / أستاذ'];
-    } else if (typeKey === 'exonere') {
-      noticeText.textContent = '🎁 سيتم تسجيل هذا الطالب كـ "طالب معفي من الرسوم (منحة)" وتأكيد اشتراكه فوراً في قائمة المسدد.';
-      calculatedStatus = 'paye';
-      currentResult = 'تم السداد';
-      currentDetails = ['طالب معفي / منحة'];
-    } else if (typeKey === 'virement') {
-      noticeText.textContent = '🏦 صرح الطالب بالدفع عبر تحويل بنكي: سيتم نقله إلى "في انتظار التأكيد البنكي" لحين مراجعة كشف الحساب.';
-      calculatedStatus = 'paye';
-      currentResult = 'تم السداد';
-      currentDetails = ['تحويل بنكي (في انتظار التأكيد)'];
     }
   }
 }
@@ -934,8 +953,7 @@ function openInteractionModal(leadId) {
   const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
   if (!lead) return;
 
-  document.getElementById('modalLeadName').textContent = `تسجيل متابعة: ${lead.Nom || ''}`;
-  document.getElementById('modalLeadMeta').textContent = `معرف: #${lead.ID_Lead} • هاتف: ${lead.Telephone || '-'} • الوكيل الحالي: ${lead.Agent_Nom || 'غير محدد'}`;
+  document.getElementById('modalLeadName').textContent = lead.Nom || 'بدون اسم';
   
   // Réinitialiser à عميل حقيقي (normal)
   currentLeadType = 'normal';
@@ -988,10 +1006,11 @@ function selectResult(resultKey, element) {
 
   const dateGroup = document.getElementById('dateGroup');
 
-  if (resultKey === 'repondu') {
+  if (resultKey === 'repondu' || resultKey === 'repondu_wa') {
     document.getElementById('subRepondu').classList.add('active');
     calculatedStatus = 'relance';
     dateGroup.style.display = 'block';
+    if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'block';
   } else if (resultKey === 'sonne_sans_reponse' || resultKey === 'injoignable') {
     document.getElementById('subInjoignable').classList.add('active');
     calculatedStatus = 'relance';
@@ -1015,8 +1034,9 @@ function toggleDetailMulti(detailText, element, targetStatus, requireDate = fals
     element.classList.add('selected');
   }
 
-  // Si "تم السداد" est sélectionné parmi les choix
-  const hasPaid = currentDetails.some(d => d.includes('السداد') && !d.includes('وعد'));
+  // Si "تم السداد" ou "معفي" ou "إدارة" est sélectionné
+  const hasPaid = currentDetails.some(d => (d.includes('السداد') && !d.includes('وعد')) || d.includes('معفي'));
+  const isStaff = currentDetails.includes('إدارة / أستاذ بالأكاديمية');
   const hasRefused = currentDetails.includes('رفض / غير مهتم');
   const hasDateNeed = currentDetails.some(d => d === 'وعد بالسداد' || d.includes('متردد'));
 
@@ -1024,7 +1044,7 @@ function toggleDetailMulti(detailText, element, targetStatus, requireDate = fals
   if (hasPaid) {
     calculatedStatus = 'paye';
     dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
-  } else if (hasRefused && currentDetails.length === 1) {
+  } else if ((hasRefused || isStaff) && currentDetails.length === 1) {
     calculatedStatus = 'ferme';
     dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
   } else {
@@ -1046,7 +1066,7 @@ async function submitModalInteraction() {
       alert('يرجى تحديد نتيجة محاولة الاتصال (السؤال رقم 1)');
       return;
     }
-    if (currentResult === 'repondu' && currentDetails.length === 0) {
+    if ((currentResult === 'repondu' || currentResult === 'repondu_wa') && currentDetails.length === 0) {
       alert('يرجى تحديد تفاصيل الموقف (السؤال رقم 2) - يمكنك اختيار أكثر من خيار');
       return;
     }
@@ -1071,7 +1091,8 @@ async function submitModalInteraction() {
   if (currentLeadType !== 'normal') {
     actionResultLabel = (currentLeadType === 'exonere' || currentLeadType === 'virement') ? 'تم السداد' : 'استبعاد / إغلاق';
   } else {
-    if (currentResult === 'repondu') actionResultLabel = 'أجاب';
+    if (currentResult === 'repondu') actionResultLabel = 'أجاب هاتفياً';
+    else if (currentResult === 'repondu_wa') actionResultLabel = 'رد وتواصل عبر واتساب';
     else if (currentResult === 'sonne_sans_reponse') actionResultLabel = 'يرن بدون إجابة';
     else if (currentResult === 'injoignable') actionResultLabel = 'غير متاح / علبة صوتية';
     else if (currentResult === 'faux_numero') actionResultLabel = 'رقم خاطئ';
