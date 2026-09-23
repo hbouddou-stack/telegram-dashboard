@@ -1375,22 +1375,22 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                 row = await cur.fetchone()
                 counts['started'] = row['c'] if row else 0
 
-            # 3. Videos: opened onboarding page, but hasn't signed charter
-            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u WHERE (u.excluded = 0 OR u.excluded IS NULL) AND u.telegram_id NOT IN (SELECT telegram_id FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != 0) AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_PAGE_OPENED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
+            # 3. Videos: opened onboarding page, but hasn't reached form
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u WHERE (u.excluded = 0 OR u.excluded IS NULL) AND u.telegram_id NOT IN (SELECT telegram_id FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != 0) AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_PAGE_OPENED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM', 'ONBOARDING_CHARTER_SIGNED')) = 0") as cur:
                 row = await cur.fetchone()
                 counts['videos'] = row['c'] if row else 0
 
-            # 4. Terms: signed charter, but hasn't reached form
-            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u WHERE (u.excluded = 0 OR u.excluded IS NULL) AND u.telegram_id NOT IN (SELECT telegram_id FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != 0) AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type = 'ONBOARDING_CHARTER_SIGNED') > 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0") as cur:
-                row = await cur.fetchone()
-                counts['terms'] = row['c'] if row else 0
-
-            # 5. Form: reached form, not linked yet
+            # 4. Form: reached form, not linked yet
             async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u WHERE (u.excluded = 0 OR u.excluded IS NULL) AND u.telegram_id NOT IN (SELECT telegram_id FROM academy_students WHERE telegram_id IS NOT NULL AND telegram_id != 0) AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_FORM_REACHED', 'ONBOARDING_DIRECT_FORM', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID')) > 0") as cur:
                 row = await cur.fetchone()
                 counts['form'] = row['c'] if row else 0
 
-            # 6. Waiting / Linked: Linked successfully, hasn't clicked folder
+            # 5. Terms: linked, but hasn't signed charter yet
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND (SELECT COUNT(*) FROM student_logs WHERE (telegram_id = u.telegram_id OR (s.student_id IS NOT NULL AND student_id = s.student_id)) AND action_type = 'ONBOARDING_CHARTER_SIGNED') = 0") as cur:
+                row = await cur.fetchone()
+                counts['terms'] = row['c'] if row else 0
+
+            # 6. Waiting / Linked: Linked & signed charter, waiting for folder click
             async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND (s.last_onboarding_step IS NULL OR s.last_onboarding_step != 'STEP_FOLDER_CLICKED')") as cur:
                 row = await cur.fetchone()
                 counts['waiting'] = row['c'] if row else 0

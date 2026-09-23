@@ -706,7 +706,7 @@
                         </button>
                     </div>
                     <div style="padding: 0 10px;">
-                        <button id="btn-story-next-3" onclick="goWizardStep(3)" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
+                        <button id="btn-story-next-3" onclick="proceedToFormFromVideos()" disabled style="width: 100%; padding: 16px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: not-allowed; transition: all 0.3s;">
                             ⏳ يرجى مشاهدة المقطع...
                         </button>
                     </div>
@@ -715,8 +715,8 @@
 
             <!-- STEP 3: THE CHARTER (CHECKBOXES) -->
             <div id="wizard-step-3" style="display: none; animation: fadeIn 0.4s ease; text-align: center;">
-                <h3 style="margin-top: 0; font-size: 1.5rem; font-weight: 800; color: var(--text-1); margin-bottom: 15px;">ميثاق الأكاديمية</h3>
-                <p style="color: var(--text-2); font-size: 0.95rem; margin-bottom: 25px;">يُرجى الموافقة على البنود التالية كشرط أساسي لدخول المجموعات</p>
+                <h3 id="charter-title" style="margin-top: 0; font-size: 1.5rem; font-weight: 800; color: var(--text-1); margin-bottom: 15px;">ميثاق الأكاديمية</h3>
+                <p id="charter-subtitle" style="color: var(--text-2); font-size: 0.95rem; margin-bottom: 25px;">يُرجى الموافقة على البنود التالية كشرط أساسي لدخول المجموعات</p>
 
                 <div id="video-checkboxes" style="text-align: right; margin-bottom: 30px; display: flex; flex-direction: column; gap: 14px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08);">
                     <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; color: var(--text-1); font-size: 0.95rem; line-height: 1.5; user-select: none;">
@@ -733,7 +733,7 @@
                     </label>
                 </div>
 
-                <button id="btn-understood" disabled onclick="finishOnboardingWizard()" style="width: 100%; padding: 18px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: not-allowed; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <button id="btn-understood" disabled onclick="finishCharterAndShowSuccess()" style="width: 100%; padding: 18px; background: #334155; color: rgba(255,255,255,0.5); border: none; border-radius: 14px; font-weight: 800; font-size: 1.15rem; font-family: inherit; cursor: not-allowed; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <span>🔒</span> يرجى الموافقة على الميثاق
                 </button>
             </div>
@@ -838,6 +838,131 @@
                         btn.innerHTML = '<span>🔒</span> يرجى تأكيد التعهد';
                     }
                 });
+
+                window.proceedToFormFromVideos = function() {
+                    var videoContainer = document.getElementById('dynamic-video-container');
+                    var mainForm = document.getElementById('main-form');
+                    
+                    if (videoContainer) videoContainer.style.animation = 'scaleUp 0.3s reverse';
+                    
+                    setTimeout(function() {
+                        document.documentElement.classList.remove('onboarding-mode');
+                        document.body.classList.remove('onboarding-mode');
+                        window._isOnboardingMode = false;
+                        
+                        if (videoContainer) {
+                            videoContainer.style.display = 'none';
+                            document.body.style.overflow = '';
+                        }
+                        
+                        ['dynamic-video-1', 'dynamic-video-2', 'dynamic-video-3'].forEach(function(id) {
+                            var vid = document.getElementById(id);
+                            if (vid) {
+                                try { vid.pause(); } catch(e) {}
+                            }
+                        });
+                        
+                        if (mainForm) {
+                            mainForm.setAttribute('style', 'display: flex !important; flex-direction: column; gap: 20px; animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);');
+                        }
+                        
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_FORM_REACHED', 'أتم مشاهدة الفيديوهات وانتقل لاستمارة إدخال الرقم والبريد', 'STEP_4_FORM');
+                        }
+                    }, 250);
+                };
+
+                window.showCharterStep = function(data) {
+                    var videoContainer = document.getElementById('dynamic-video-container');
+                    var step1 = document.getElementById('wizard-step-1');
+                    var step2 = document.getElementById('wizard-step-2');
+                    var step3 = document.getElementById('wizard-step-3');
+                    var cTitle = document.getElementById('charter-title');
+                    var cSub = document.getElementById('charter-subtitle');
+                    
+                    if (step1) step1.style.display = 'none';
+                    if (step2) step2.style.display = 'none';
+                    if (step3) step3.style.display = 'block';
+
+                    const studentName = data.first_name || '';
+                    if (cTitle && studentName) {
+                        cTitle.innerHTML = `مرحباً بك يا ${studentName}! 🎓`;
+                    }
+                    if (cSub) {
+                        cSub.innerHTML = `تم التحقق من بياناتك بنجاح. خطوة واحدة أخيرة: وافق على ميثاق المجموعة لاستلام الروابط الخاصة:`;
+                    }
+
+                    document.documentElement.classList.add('onboarding-mode');
+                    document.body.classList.add('onboarding-mode');
+                    window._isOnboardingMode = true;
+
+                    if (videoContainer) {
+                        videoContainer.style.display = 'flex';
+                        videoContainer.style.animation = 'scaleUp 0.3s ease';
+                        document.body.style.overflow = 'hidden';
+                    }
+
+                    if (window.trackFunnelStep) {
+                        window.trackFunnelStep('ONBOARDING_CHARTER_VIEWED', `انتقل لميثاق الأكاديمية بعد نجاح التحقق (${data.student_id || ''})`, 'STEP_3_CHARTER');
+                    }
+                };
+
+                window.finishCharterAndShowSuccess = function() {
+                    var videoContainer = document.getElementById('dynamic-video-container');
+                    if (videoContainer) videoContainer.style.display = 'none';
+                    document.documentElement.classList.remove('onboarding-mode');
+                    document.body.classList.remove('onboarding-mode');
+                    document.body.style.overflow = '';
+                    window._isOnboardingMode = false;
+
+                    if (window.trackFunnelStep) {
+                        window.trackFunnelStep('ONBOARDING_CHARTER_SIGNED', 'وافق على ميثاق المجموعة بعد نجاح الربط', 'STEP_3_CHARTER_APPROVED');
+                    }
+
+                    const data = window._cachedLinkData || {};
+
+                    if (data.status === 'approved') {
+                        if (window.confetti) {
+                            confetti({
+                                particleCount: 150,
+                                spread: 80,
+                                origin: { y: 0.6 },
+                                colors: ['#fff', '#32d74b', '#FF2A5F', '#0a84ff']
+                            });
+                        }
+                        if (data.first_name) {
+                            document.getElementById('success-student-title').innerText = 'أهلاً بك يا ' + data.first_name + '! تم تفعيل حسابك بنجاح 🎉';
+                        }
+                        const linksBox = document.getElementById('issued-links-container');
+                        if (linksBox && data.links) {
+                            let linksHtml = '';
+                            if (data.links.general) {
+                                linksHtml += '<a href="' + data.links.general + '" target="_blank" style="background:#0a84ff; color:white; padding:12px; border-radius:10px; text-decoration:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">📢 الانضمام للقناة العامة للدورة</a>';
+                            }
+                            if (data.links.group) {
+                                const groupLabel = (data.gender === 'FEMME') ? '🌸 الانضمام لمجموعة الأخوات (نساء)' : '👥 الانضمام لمجموعة الطلاب (رجال)';
+                                linksHtml += '<a href="' + data.links.group + '" target="_blank" style="background:#2ecc71; color:white; padding:12px; border-radius:10px; text-decoration:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">' + groupLabel + '</a>';
+                            }
+                            linksBox.innerHTML = linksHtml;
+                        }
+                        if (data.folder_link) {
+                            dynamicFolderLink = data.folder_link;
+                        }
+                        saveStudentState('approved', data);
+                        document.getElementById('success-msg').style.display = 'flex';
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_LINK_SUCCESS', `تم إظهار شاشة النجاح والروابط (${data.student_id || ''})`, 'STEP_5_COMPLETED');
+                        }
+                    } else {
+                        // Pending / Salle d'attente
+                        saveStudentState('pending', data);
+                        document.getElementById('pending-msg').style.display = 'flex';
+                        startPollingForSuccess();
+                        if (window.trackFunnelStep) {
+                            window.trackFunnelStep('ONBOARDING_WAITING_ROOM', `في غرفة الانتظار - بانتظار التفعيل (${data.student_id || ''})`, 'STEP_5_WAITING_ROOM');
+                        }
+                    }
+                };
 
                 window.goWizardStep = function(step) {
                     document.getElementById('wizard-step-1').style.display = 'none';
@@ -1996,12 +2121,19 @@
                 const data = await response.json();
                 
                 if(data.success) {
-                    if (window.Telegram.WebApp.HapticFeedback) {
+                    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
                         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                     }
                     document.getElementById('main-form').style.display = 'none';
-                    tg.MainButton.hideProgress();
-                    tg.MainButton.hide();
+                    if (window.tg && window.tg.MainButton) {
+                        tg.MainButton.hideProgress();
+                        tg.MainButton.hide();
+                    }
+
+                    // Cache data and show Charter Step as the final ceremonial gate!
+                    window._cachedLinkData = data;
+                    showCharterStep(data);
+                    return;
 
                     if (data.status === 'approved') {
                         if(window.confetti) {
