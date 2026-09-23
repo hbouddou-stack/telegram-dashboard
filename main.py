@@ -1349,6 +1349,7 @@ async def api_admin_gateway_students(request: web.Request):
 
 
 async def api_admin_gateway_ghost_visitors(request: web.Request):
+    from config import DATABASE_PATH
     try:
         status = request.query.get('status', 'started')
         gender = request.query.get('gender', 'all')
