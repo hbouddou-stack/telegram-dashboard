@@ -88,8 +88,32 @@
       margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.15s, box-shadow 0.15s;
     }
     .lead-card:hover { box-shadow: var(--shadow-md); }
-    .lead-card.female { border-right: 5px solid var(--female-accent); }
-    .lead-card.male   { border-right: 5px solid var(--male-accent); }
+    .lead-card.female {
+      background: #fdf2f8 !important;
+      border: 1.5px solid #fbcfe8 !important;
+      border-right: 6px solid #db2777 !important;
+    }
+    .lead-card.male {
+      background: #f0fdf4 !important;
+      border: 1.5px solid #bbf7d0 !important;
+      border-right: 6px solid #16a34a !important;
+    }
+    tr.female td { background: #fdf2f8 !important; }
+    tr.male td   { background: #f0fdf4 !important; }
+
+    .account-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+    .type-chip {
+      border: 1.5px solid var(--card-border); border-radius: 8px; padding: 7px 4px;
+      text-align: center; font-size: 0.76rem; font-weight: 800; cursor: pointer; background: #fff;
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .type-chip:hover { border-color: #cbd5e1; }
+    .type-chip.selected {
+      background: var(--primary-light); border-color: var(--primary); color: var(--primary);
+    }
+    .type-chip.danger.selected { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+    .type-chip.success.selected { background: var(--success-light); border-color: var(--success); color: var(--success); }
+    .type-chip.warning.selected { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
 
     .lead-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 14px 4px; }
     .lead-title-area { display: flex; flex-direction: column; }
@@ -304,49 +328,82 @@
       <button class="close-btn" onclick="closeModal('interactionModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- ETAPE 1 : RESULTAT APPEL -->
-    <div class="step-label"><i class="fa-solid fa-phone-volume"></i> 1. نتيجة محاولة الاتصال:</div>
-    <div class="choice-grid">
-      <div class="choice-card" onclick="selectResult('repondu', this)">
-        <span class="choice-icon">🟢</span> أجاب
+    <!-- ETAPE 0 : QUALIFICATION DU LEAD -->
+    <div class="step-label"><i class="fa-solid fa-id-badge"></i> 0. تصنيف وطبيعة الحساب (Qualification):</div>
+    <div class="account-type-grid">
+      <div class="type-chip selected" id="chip-normal" onclick="selectLeadType('normal', this)">
+        📞 عميل حقيقي (مؤهل)
       </div>
-      <div class="choice-card" onclick="selectResult('sonne_sans_reponse', this)">
-        <span class="choice-icon">🟡</span> يرن بدون إجابة
+      <div class="type-chip danger" id="chip-doublon" onclick="selectLeadType('doublon', this)">
+        👥 مكرر (Doublon)
       </div>
-      <div class="choice-card" onclick="selectResult('injoignable', this)">
-        <span class="choice-icon">🟠</span> غير متاح / علبة صوتية
+      <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)">
+        🧪 حساب تجريبي
       </div>
-      <div class="choice-card danger" onclick="selectResult('faux_numero', this)">
-        <span class="choice-icon">🔴</span> رقم خاطئ
+      <div class="type-chip warning" id="chip-staff" onclick="selectLeadType('staff', this)">
+        🏛️ إدارة / أستاذ
+      </div>
+      <div class="type-chip success" id="chip-exonere" onclick="selectLeadType('exonere', this)">
+        🎁 طالب معفي / منحة
+      </div>
+      <div class="type-chip success" id="chip-virement" onclick="selectLeadType('virement', this)">
+        🏦 تحويل (في انتظار التأكيد)
       </div>
     </div>
 
-    <!-- ETAPE 2 : DYNAMIQUE SELON LE RESULTAT -->
-    
-    <!-- Branche A : A REPONDU -->
-    <div class="sub-section" id="subRepondu">
-      <div class="step-label"><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف:</div>
+    <!-- MESSAGE INFO QUAND EXCLUSION SELECTIONNEE -->
+    <div id="exclusionNoticeBox" style="display:none; background:#fff1f2; border:1px solid #fecdd3; border-radius:10px; padding:10px 12px; margin-bottom:14px; font-size:0.83rem; color:#9f1239; font-weight:700;">
+      <i class="fa-solid fa-triangle-exclamation"></i> <span id="exclusionNoticeText">سيتم استبعاد هذا الحساب وإغلاقه مباشرة دون الحاجة للاتصال به.</span>
+    </div>
+
+    <div id="callFlowSection">
+      <!-- ETAPE 1 : RESULTAT APPEL -->
+      <div class="step-label"><i class="fa-solid fa-phone-volume"></i> 1. نتيجة محاولة الاتصال:</div>
       <div class="choice-grid">
-        <div class="choice-card success" onclick="selectDetail('تم السداد', this, 'paye')">
-          <span class="choice-icon">💳</span> تم السداد
+        <div class="choice-card" onclick="selectResult('repondu', this)">
+          <span class="choice-icon">🟢</span> أجاب
         </div>
-        <div class="choice-card warning" onclick="selectDetail('وعد بالسداد', this, 'relance', true)">
-          <span class="choice-icon">📅</span> وعد بالسداد
+        <div class="choice-card" onclick="selectResult('sonne_sans_reponse', this)">
+          <span class="choice-icon">🟡</span> يرن بدون إجابة
         </div>
-        <div class="choice-card" onclick="selectDetail('طلب تخفيض / حالة خاصة', this, 'relance')">
-          <span class="choice-icon">📉</span> طلب تخفيض
+        <div class="choice-card" onclick="selectResult('injoignable', this)">
+          <span class="choice-icon">🟠</span> غير متاح / علبة صوتية
         </div>
-        <div class="choice-card" onclick="selectDetail('متردد / يحتاج وقتاً للتفكير', this, 'relance', true)">
-          <span class="choice-icon">🤔</span> متردد / يفكر
+        <div class="choice-card danger" onclick="selectResult('faux_numero', this)">
+          <span class="choice-icon">🔴</span> رقم خاطئ
         </div>
-        <div class="choice-card" onclick="selectDetail('مشكل تقني في الموقع/الدفع', this, 'relance')">
-          <span class="choice-icon">🛠️</span> مشكل تقني
+      </div>
+
+      <!-- ETAPE 2 : DYNAMIQUE SELON LE RESULTAT (MULTI-SELECTION) -->
+      
+      <!-- Branche A : A REPONDU -->
+      <div class="sub-section" id="subRepondu">
+        <div class="step-label">
+          <span><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف:</span>
+          <span style="font-size:0.74rem; color:#b45309; font-weight:800; background:#fef3c7; padding:2px 8px; border-radius:6px; margin-right:6px;">(يمكنك تحديد أكثر من خيار في نفس الوقت 💡)</span>
         </div>
-        <div class="choice-card" onclick="selectDetail('طلب معلومات إضافية', this, 'relance')">
-          <span class="choice-icon">ℹ️</span> طلب معلومات
-        </div>
-        <div class="choice-card danger" onclick="selectDetail('رفض / غير مهتم', this, 'ferme')">
-          <span class="choice-icon">❌</span> غير مهتم / رفض
+        <div class="choice-grid">
+          <div class="choice-card success" onclick="toggleDetailMulti('تم السداد (تحويل في انتظار التأكيد)', this, 'paye')">
+            <span class="choice-icon">💳</span> تم السداد (تحويل)
+          </div>
+          <div class="choice-card warning" onclick="toggleDetailMulti('وعد بالسداد', this, 'relance', true)">
+            <span class="choice-icon">📅</span> وعد بالسداد
+          </div>
+          <div class="choice-card" onclick="toggleDetailMulti('طلب تخفيض / حالة خاصة', this, 'relance')">
+            <span class="choice-icon">📉</span> طلب تخفيض
+          </div>
+          <div class="choice-card" onclick="toggleDetailMulti('متردد / يحتاج وقتاً للتفكير', this, 'relance', true)">
+            <span class="choice-icon">🤔</span> متردد / يفكر
+          </div>
+          <div class="choice-card" onclick="toggleDetailMulti('مشكل تقني في الموقع/الدفع', this, 'relance')">
+            <span class="choice-icon">🛠️</span> مشكل تقني
+          </div>
+          <div class="choice-card" onclick="toggleDetailMulti('طلب معلومات إضافية', this, 'relance')">
+            <span class="choice-icon">ℹ️</span> طلب معلومات
+          </div>
+          <div class="choice-card danger" onclick="toggleDetailMulti('رفض / غير مهتم', this, 'ferme')">
+            <span class="choice-icon">❌</span> غير مهتم / رفض
+          </div>
         </div>
       </div>
     </div>
@@ -440,8 +497,9 @@ let activeLeadId = null;
 let isTableView = false;
 
 // Etat de l'arbre de décision
-let currentResult = '';      // 'repondu', 'sonne_sans_reponse', 'injoignable', 'faux_numero'
-let currentDetail = '';      // 'تم السداد', 'وعد بالسداد', etc.
+let currentLeadType = 'normal'; // 'normal', 'doublon', 'test', 'staff', 'exonere', 'virement'
+let currentResult = '';         // 'repondu', 'sonne_sans_reponse', 'injoignable', 'faux_numero'
+let currentDetails = [];        // Tableau pour la multi-sélection (Étape 2)
 let calculatedStatus = 'relance'; // 'paye', 'relance', 'ferme'
 
 const savedAgent = localStorage.getItem('crm_agent_ar');
@@ -695,6 +753,55 @@ function renderTable(leads) {
    GESTION DE L'ARBRE DE DÉCISION (INTERACTION MODAL)
 ========================================================= */
 
+function selectLeadType(typeKey, element) {
+  currentLeadType = typeKey;
+  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
+  element.classList.add('selected');
+
+  const callSection = document.getElementById('callFlowSection');
+  const noticeBox = document.getElementById('exclusionNoticeBox');
+  const noticeText = document.getElementById('exclusionNoticeText');
+  const dateGroup = document.getElementById('dateGroup');
+
+  if (typeKey === 'normal') {
+    callSection.style.display = 'block';
+    noticeBox.style.display = 'none';
+    dateGroup.style.display = 'block';
+    calculatedStatus = 'relance';
+  } else {
+    callSection.style.display = 'none';
+    noticeBox.style.display = 'block';
+    dateGroup.style.display = 'none';
+
+    if (typeKey === 'doublon') {
+      noticeText.textContent = '👥 سيتم تسجيل هذا الحساب كـ "حساب مكرر (Doublon)" وأرشفته في قائمة المغلق.';
+      calculatedStatus = 'ferme';
+      currentResult = 'استبعاد';
+      currentDetails = ['حساب مكرر (Doublon)'];
+    } else if (typeKey === 'test') {
+      noticeText.textContent = '🧪 سيتم تسجيل هذا الحساب كـ "حساب تجريبي / اختبار" وأرشفته في قائمة المغلق.';
+      calculatedStatus = 'ferme';
+      currentResult = 'استبعاد';
+      currentDetails = ['حساب تجريبي / اختبار'];
+    } else if (typeKey === 'staff') {
+      noticeText.textContent = '🏛️ سيتم تسجيل هذا الحساب كـ "إدارة / أستاذ بالأكاديمية" وأرشفته في قائمة المغلق.';
+      calculatedStatus = 'ferme';
+      currentResult = 'استبعاد';
+      currentDetails = ['إدارة / أستاذ'];
+    } else if (typeKey === 'exonere') {
+      noticeText.textContent = '🎁 سيتم تسجيل هذا الطالب كـ "طالب معفي من الرسوم (منحة)" وتأكيد اشتراكه فوراً في قائمة المسدد.';
+      calculatedStatus = 'paye';
+      currentResult = 'تم السداد';
+      currentDetails = ['طالب معفي / منحة'];
+    } else if (typeKey === 'virement') {
+      noticeText.textContent = '🏦 صرح الطالب بالدفع عبر تحويل بنكي: سيتم نقله إلى "في انتظار التأكيد البنكي" لحين مراجعة كشف الحساب.';
+      calculatedStatus = 'paye';
+      currentResult = 'تم السداد';
+      currentDetails = ['تحويل بنكي (في انتظار التأكيد)'];
+    }
+  }
+}
+
 function openInteractionModal(leadId) {
   activeLeadId = leadId;
   const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
@@ -703,10 +810,19 @@ function openInteractionModal(leadId) {
   document.getElementById('modalLeadName').textContent = `تسجيل متابعة: ${lead.Nom || ''}`;
   document.getElementById('modalLeadMeta').textContent = `معرف: #${lead.ID_Lead} • هاتف: ${lead.Telephone || '-'} • الوكيل الحالي: ${lead.Agent_Nom || 'غير محدد'}`;
   
-  // Réinitialiser l'état
+  // Réinitialiser à عميل حقيقي (normal)
+  currentLeadType = 'normal';
   currentResult = '';
-  currentDetail = '';
+  currentDetails = [];
   calculatedStatus = 'relance';
+
+  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
+  const chipNormal = document.getElementById('chip-normal');
+  if (chipNormal) chipNormal.classList.add('selected');
+
+  document.getElementById('callFlowSection').style.display = 'block';
+  document.getElementById('exclusionNoticeBox').style.display = 'none';
+
   document.querySelectorAll('#interactionModal .choice-card').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
   document.getElementById('modalNoteInput').value = '';
@@ -723,14 +839,17 @@ function openInteractionModal(leadId) {
 
 function selectResult(resultKey, element) {
   currentResult = resultKey;
-  currentDetail = '';
+  currentDetails = [];
   
   // Marquer visuellement
   element.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
   element.classList.add('selected');
 
-  // Masquer toutes les sous-sections
-  document.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
+  // Masquer toutes les sous-sections et désélectionner
+  document.querySelectorAll('.sub-section').forEach(s => {
+    s.classList.remove('active');
+    s.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  });
 
   const dateGroup = document.getElementById('dateGroup');
 
@@ -744,38 +863,58 @@ function selectResult(resultKey, element) {
     dateGroup.style.display = 'block';
   } else if (resultKey === 'faux_numero') {
     document.getElementById('subFauxNumero').classList.add('active');
-    currentDetail = 'رقم خاطئ';
+    currentDetails = ['رقم خاطئ'];
     calculatedStatus = 'ferme';
-    dateGroup.style.display = 'none'; // Pas de date de relance pour faux numéro
+    dateGroup.style.display = 'none';
+  }
+}
+
+// Multi-sélection pour l'Étape 2 (Branche A)
+function toggleDetailMulti(detailText, element, targetStatus, requireDate = false) {
+  const index = currentDetails.indexOf(detailText);
+  if (index > -1) {
+    currentDetails.splice(index, 1);
+    element.classList.remove('selected');
+  } else {
+    currentDetails.push(detailText);
+    element.classList.add('selected');
+  }
+
+  // Si "تم السداد" est sélectionné parmi les choix
+  const hasPaid = currentDetails.some(d => d.includes('السداد') && !d.includes('وعد'));
+  const hasRefused = currentDetails.includes('رفض / غير مهتم');
+  const hasDateNeed = currentDetails.some(d => d === 'وعد بالسداد' || d.includes('متردد'));
+
+  const dateGroup = document.getElementById('dateGroup');
+  if (hasPaid) {
+    calculatedStatus = 'paye';
+    dateGroup.style.display = 'none';
+  } else if (hasRefused && currentDetails.length === 1) {
+    calculatedStatus = 'ferme';
+    dateGroup.style.display = 'none';
+  } else {
+    calculatedStatus = 'relance';
+    dateGroup.style.display = 'block';
   }
 }
 
 function selectDetail(detailText, element, targetStatus, requireDate = false) {
-  currentDetail = detailText;
-  calculatedStatus = targetStatus || 'relance';
-
-  element.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
-  element.classList.add('selected');
-
-  const dateGroup = document.getElementById('dateGroup');
-  if (calculatedStatus === 'ferme' || calculatedStatus === 'paye') {
-    dateGroup.style.display = 'none';
-  } else {
-    dateGroup.style.display = 'block';
-  }
+  toggleDetailMulti(detailText, element, targetStatus, requireDate);
 }
 
 async function submitModalInteraction() {
   if (!activeLeadId) return;
 
-  if (!currentResult) {
-    alert('يرجى تحديد نتيجة محاولة الاتصال (السؤال رقم 1)');
-    return;
-  }
-
-  if (currentResult === 'repondu' && !currentDetail) {
-    alert('يرجى تحديد تفاصيل الموقف (السؤال رقم 2)');
-    return;
+  // Si c'est un عميل حقيقي (normal), vérifier les étapes d'appel
+  if (currentLeadType === 'normal') {
+    if (!currentResult) {
+      alert('يرجى تحديد نتيجة محاولة الاتصال (السؤال رقم 1)');
+      return;
+    }
+    if (currentResult === 'repondu' && currentDetails.length === 0) {
+      alert('يرجى تحديد تفاصيل الموقف (السؤال رقم 2) - يمكنك اختيار أكثر من خيار');
+      return;
+    }
   }
 
   const nextDate = document.getElementById('modalNextDate').value;
@@ -783,32 +922,38 @@ async function submitModalInteraction() {
   const sendEmailAlert = (currentResult === 'faux_numero' && document.getElementById('sendAlertEmailCheck').checked);
 
   // Vérification de la date si relance requise
-  if (calculatedStatus === 'relance' && !nextDate && (currentDetail === 'وعد بالسداد' || currentDetail === 'متردد / يحتاج وقتاً للتفكير')) {
+  const requiresDate = currentDetails.some(d => d === 'وعد بالسداد' || d.includes('متردد'));
+  if (calculatedStatus === 'relance' && !nextDate && requiresDate) {
     alert('يرجى تحديد تاريخ المتابعة القادمة لهذا الموقف');
     return;
   }
 
-  // Déterminer l'agent actif
   const selectedAgentInDropdown = document.getElementById('agentSelect').value;
   const currentLead = allLeads.find(l => String(l.ID_Lead) === String(activeLeadId));
   const activeAgentName = (selectedAgentInDropdown !== 'all' ? selectedAgentInDropdown : (currentLead?.Agent_Nom || savedAgent || 'زينب'));
 
   let actionResultLabel = '';
-  if (currentResult === 'repondu') actionResultLabel = 'أجاب';
-  else if (currentResult === 'sonne_sans_reponse') actionResultLabel = 'يرن بدون إجابة';
-  else if (currentResult === 'injoignable') actionResultLabel = 'غير متاح / علبة صوتية';
-  else if (currentResult === 'faux_numero') actionResultLabel = 'رقم خاطئ';
+  if (currentLeadType !== 'normal') {
+    actionResultLabel = (currentLeadType === 'exonere' || currentLeadType === 'virement') ? 'تم السداد' : 'استبعاد / إغلاق';
+  } else {
+    if (currentResult === 'repondu') actionResultLabel = 'أجاب';
+    else if (currentResult === 'sonne_sans_reponse') actionResultLabel = 'يرن بدون إجابة';
+    else if (currentResult === 'injoignable') actionResultLabel = 'غير متاح / علبة صوتية';
+    else if (currentResult === 'faux_numero') actionResultLabel = 'رقم خاطئ';
+  }
+
+  const combinedDetails = currentDetails.join(' • ');
 
   let nextActionDesc = 'معاودة الاتصال';
-  if (calculatedStatus === 'ferme') nextActionDesc = 'لا شيء (مغلق)';
+  if (calculatedStatus === 'ferme') nextActionDesc = 'لا شيء (مغلق / مستبعد)';
   else if (calculatedStatus === 'paye') nextActionDesc = 'مكتمل (مسدد)';
-  else if (currentDetail === 'وعد بالسداد') nextActionDesc = 'متابعة الدفع في الموعد';
+  else if (currentDetails.includes('وعد بالسداد')) nextActionDesc = 'متابعة الدفع في الموعد';
 
   const payload = {
     lead_id: activeLeadId,
     statut: calculatedStatus === 'paye' ? 'مسدد' : (calculatedStatus === 'ferme' ? 'مغلق' : 'للمتابعة'),
     resultat: actionResultLabel,
-    detail: currentDetail,
+    detail: combinedDetails,
     prochaine_action: nextActionDesc,
     date_prochaine: calculatedStatus === 'relance' ? nextDate : '',
     note: note,
