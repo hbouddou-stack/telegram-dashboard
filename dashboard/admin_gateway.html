@@ -1875,209 +1875,179 @@ window.setSalesFunnel = function(val, el) {
             
             <div style="width:100%; max-width:850px; display:flex; flex-direction:column; align-items:center;">
                 
-                <!-- STAGE 1: ABSENT -->
-                <div class="funnel-node-card" id="btn-funnel-absent" onclick="openGhostModal('absent')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(239,68,68,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:1.7rem; background:rgba(239,68,68,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">⚪</span>
-                        <div style="text-align:right;">
-                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">1. لم يبدأوا المسار</div>
-                            <div style="font-size:0.75rem; color:var(--text2);">مسجلون بالأكاديمية ولكن لم يدخلوا البوت إطلاقاً</div>
+                <!-- ==================== 1. ALERT & EXCEPTIONS MATRIX (لوحة الطوارئ) ==================== -->
+                <div style="width:100%; max-width:620px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:24px; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.3rem;">🔥</span>
+                            <span style="font-weight:900; font-size:0.95rem; color:var(--text1);">قسم الطوارئ والاستثناءات (تنبيهات فورية)</span>
                         </div>
+                        <span style="font-size:0.75rem; color:var(--text2); background:var(--bg); padding:2px 8px; border-radius:12px; border:1px solid var(--border);">تتطلب التدخل</span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ef4444; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-absent">0</span>
-                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <!-- ALERT SOS -->
+                        <div class="funnel-node-card" id="btn-funnel-sos" onclick="openGhostModal('sos')" style="background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.4); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:1.5rem; background:rgba(239,68,68,0.15); width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🆘</span>
+                                <div style="text-align:right;">
+                                    <div style="font-weight:800; font-size:0.88rem; color:#ef4444;">استغاثات مفتوحة (SOS)</div>
+                                    <div style="font-size:0.68rem; color:var(--text2);">طلاب طلبوا مساعدة عاجلة</div>
+                                </div>
+                            </div>
+                            <span dir="ltr" style="font-family:monospace; font-weight:900; font-size:1.2rem; color:#ef4444; background:rgba(239,68,68,0.15); padding:3px 10px; border-radius:16px;" id="ghost-count-sos">0</span>
+                        </div>
+
+                        <!-- ALERT ERROR -->
+                        <div class="funnel-node-card" id="btn-funnel-error" onclick="openGhostModal('error')" style="background:rgba(220,38,38,0.04); border:1.5px solid rgba(220,38,38,0.3); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:1.5rem; background:rgba(220,38,38,0.12); width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:10px;">❌</span>
+                                <div style="text-align:right;">
+                                    <div style="font-weight:800; font-size:0.88rem; color:#dc2626;">أخطاء في الربط</div>
+                                    <div style="font-size:0.68rem; color:var(--text2);">رقم غير موجود أو غير خالص</div>
+                                </div>
+                            </div>
+                            <span dir="ltr" style="font-family:monospace; font-weight:900; font-size:1.2rem; color:#dc2626; background:rgba(220,38,38,0.12); padding:3px 10px; border-radius:16px;" id="ghost-count-error">0</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- TITLE FOR LINEAR PIPELINE -->
+                <div style="width:100%; max-width:480px; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 8px;">
+                    <span style="font-weight:800; font-size:0.9rem; color:var(--text2); display:flex; align-items:center; gap:6px;">
+                        <span>📊</span> المسار التسلسلي للطلبة (الخطوات الـ 7)
+                    </span>
+                    <!-- Hidden counters for backwards compatibility -->
+                    <span id="ghost-count-submitted" style="display:none;">0</span>
+                    <span id="ghost-count-inactive" style="display:none;">0</span>
+                </div>
+
+                <!-- ==================== 2. LINEAR FUNNEL PIPELINE (المسار التسلسلي) ==================== -->
+                
+                <!-- STAGE 1: ABSENT -->
+                <div class="funnel-node-card" id="btn-funnel-absent" onclick="openGhostModal('absent')" style="width:100%; max-width:480px; background:var(--surface); border:1.5px solid rgba(239,68,68,0.3); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.5rem; background:rgba(239,68,68,0.1); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">⚪</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.92rem; color:var(--text1);">1. لم يسجلوا بالبوت</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">طلبة مسجلون لكن لم يفعلوا البوت بعد</div>
+                        </div>
+                    </div>
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ef4444; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-absent">0</span>
+                </div>
+
                 <!-- CONNECTOR ARROW -->
-                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
-                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(59,130,246,0.4));"></div>
-                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                <div style="display:flex; flex-direction:column; align-items:center; padding:4px 0;">
+                    <div style="width:2px; height:14px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(59,130,246,0.4));"></div>
+                    <span style="font-size:0.9rem; color:var(--text2); line-height:1;">🔻</span>
                 </div>
 
                 <!-- STAGE 2: STARTED -->
-                <div class="funnel-node-card" id="btn-funnel-started" onclick="openGhostModal('started')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(59,130,246,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                <div class="funnel-node-card" id="btn-funnel-started" onclick="openGhostModal('started')" style="width:100%; max-width:480px; background:var(--surface); border:1.5px solid rgba(59,130,246,0.3); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:1.7rem; background:rgba(59,130,246,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🔵</span>
+                        <span style="font-size:1.5rem; background:rgba(59,130,246,0.1); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🔵</span>
                         <div style="text-align:right;">
-                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">2. زوار البوت (الإنطلاق)</div>
-                            <div style="font-size:0.75rem; color:var(--text2);">ضغطوا /start في البوت ولم ينتقلوا للشرح</div>
+                            <div style="font-weight:800; font-size:0.92rem; color:var(--text1);">2. بدأوا البوت</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">أرسلوا /start في البوت ولم يكملوا الخطوات</div>
                         </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#3b82f6; background:rgba(59,130,246,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-started">0</span>
-                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
-                    </div>
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#3b82f6; background:rgba(59,130,246,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-started">0</span>
                 </div>
 
                 <!-- CONNECTOR ARROW -->
-                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
-                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(59,130,246,0.4), rgba(168,85,247,0.4));"></div>
-                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                <div style="display:flex; flex-direction:column; align-items:center; padding:4px 0;">
+                    <div style="width:2px; height:14px; background:linear-gradient(to bottom, rgba(59,130,246,0.4), rgba(168,85,247,0.4));"></div>
+                    <span style="font-size:0.9rem; color:var(--text2); line-height:1;">🔻</span>
                 </div>
 
                 <!-- STAGE 3: VIDEOS -->
-                <div class="funnel-node-card" id="btn-funnel-videos" onclick="openGhostModal('videos')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(168,85,247,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                <div class="funnel-node-card" id="btn-funnel-videos" onclick="openGhostModal('videos')" style="width:100%; max-width:480px; background:var(--surface); border:1.5px solid rgba(168,85,247,0.3); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:1.7rem; background:rgba(168,85,247,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🎥</span>
+                        <span style="font-size:1.5rem; background:rgba(168,85,247,0.1); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🟣</span>
                         <div style="text-align:right;">
-                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">3. شاهدوا الفيديوهات</div>
-                            <div style="font-size:0.75rem; color:var(--text2);">فتحوا الشروحات وشاهدوا الفيديوهات التعريفية</div>
+                            <div style="font-weight:800; font-size:0.92rem; color:var(--text1);">3. مشاهدة الشرح</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">فتحوا صفحة الفيديوهات الإرشادية</div>
                         </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#a855f7; background:rgba(168,85,247,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-videos">0</span>
-                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
-                    </div>
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#a855f7; background:rgba(168,85,247,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-videos">0</span>
                 </div>
 
                 <!-- CONNECTOR ARROW -->
-                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
-                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(168,85,247,0.4), rgba(236,72,153,0.4));"></div>
-                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                <div style="display:flex; flex-direction:column; align-items:center; padding:4px 0;">
+                    <div style="width:2px; height:14px; background:linear-gradient(to bottom, rgba(168,85,247,0.4), rgba(236,72,153,0.4));"></div>
+                    <span style="font-size:0.9rem; color:var(--text2); line-height:1;">🔻</span>
                 </div>
 
                 <!-- STAGE 4: TERMS -->
-                <div class="funnel-node-card" id="btn-funnel-terms" onclick="openGhostModal('terms')" style="width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(236,72,153,0.3); border-radius:14px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
+                <div class="funnel-node-card" id="btn-funnel-terms" onclick="openGhostModal('terms')" style="width:100%; max-width:480px; background:var(--surface); border:1.5px solid rgba(236,72,153,0.3); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:1.7rem; background:rgba(236,72,153,0.1); width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px;">📝</span>
+                        <span style="font-size:1.5rem; background:rgba(236,72,153,0.1); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🌸</span>
                         <div style="text-align:right;">
-                            <div style="font-weight:800; font-size:0.95rem; color:var(--text1);">4. وافقوا على الشروط والميثاق</div>
-                            <div style="font-size:0.75rem; color:var(--text2);">قبلوا ميثاق الالتزام ولم يفتحوا النموذج بعد</div>
+                            <div style="font-weight:800; font-size:0.92rem; color:var(--text1);">4. الميثاق والشروط</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">وافقوا على الميثاق والشروط</div>
                         </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ec4899; background:rgba(236,72,153,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-terms">0</span>
-                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
-                    </div>
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ec4899; background:rgba(236,72,153,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-terms">0</span>
                 </div>
 
                 <!-- CONNECTOR ARROW -->
-                <div style="display:flex; flex-direction:column; align-items:center; padding:6px 0;">
-                    <div style="width:2px; height:18px; background:linear-gradient(to bottom, rgba(236,72,153,0.4), rgba(249,115,22,0.4));"></div>
-                    <span style="font-size:1.1rem; color:var(--text2); line-height:1;">⬇️</span>
+                <div style="display:flex; flex-direction:column; align-items:center; padding:4px 0;">
+                    <div style="width:2px; height:14px; background:linear-gradient(to bottom, rgba(236,72,153,0.4), rgba(249,115,22,0.4));"></div>
+                    <span style="font-size:0.9rem; color:var(--text2); line-height:1;">🔻</span>
                 </div>
 
-                <!-- STAGE 5: FORM (FORK POINT) -->
-                <div class="funnel-node-card" id="btn-funnel-form" onclick="openGhostModal('form')" style="width:100%; max-width:440px; background:var(--surface); border:2px solid rgba(249,115,22,0.5); border-radius:14px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 16px rgba(249,115,22,0.1);">
+                <!-- STAGE 5: FORM -->
+                <div class="funnel-node-card" id="btn-funnel-form" onclick="openGhostModal('form')" style="width:100%; max-width:480px; background:var(--surface); border:1.5px solid rgba(249,115,22,0.4); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <span style="font-size:1.7rem; background:rgba(249,115,22,0.12); width:46px; height:46px; display:flex; align-items:center; justify-content:center; border-radius:10px;">📋</span>
+                        <span style="font-size:1.5rem; background:rgba(249,115,22,0.1); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🟠</span>
                         <div style="text-align:right;">
-                            <div style="font-weight:900; font-size:1rem; color:var(--text1);">5. فتحوا نموذج إدخال البيانات</div>
-                            <div style="font-size:0.75rem; color:var(--text2);">وصلوا لاستمارة الربط (المسار يتفرع هنا)</div>
+                            <div style="font-weight:800; font-size:0.92rem; color:var(--text1);">5. استمارة الربط</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">وصلوا لاستمارة إدخال الرقم والبريد الإلكتروني</div>
                         </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span dir="ltr" style="font-family:monospace; font-weight:900; font-size:1.25rem; color:#f97316; background:rgba(249,115,22,0.15); padding:4px 14px; border-radius:20px;" id="ghost-count-form">0</span>
-                        <span style="color:var(--text2); font-size:1.1rem;">👈</span>
-                    </div>
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#f97316; background:rgba(249,115,22,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-form">0</span>
                 </div>
 
-                <!-- ==================== BRANCHING FORK CONTAINER ==================== -->
-                <div style="width:100%; margin-top:14px; display:flex; flex-direction:column; align-items:center;">
-                    
-                    <!-- SVG FORK ARROWS -->
-                    <div style="width:100%; max-width:650px; display:flex; justify-content:space-around; align-items:center; position:relative; height:34px;">
-                        <!-- Left Fork to SOS -->
-                        <div style="flex:1; border-top:2px dashed #ef4444; margin-right:20px; position:relative;">
-                            <span style="position:absolute; right:0; top:-12px; font-size:0.7rem; font-weight:bold; color:#ef4444; background:var(--bg); padding:0 6px;">واجهوا مشكلة 🚨</span>
-                        </div>
-                        <div style="font-size:1.1rem; color:var(--text2); z-index:2;">⑂</div>
-                        <!-- Right Fork to Submitted -->
-                        <div style="flex:1; border-top:2px solid #14b8a6; margin-left:20px; position:relative;">
-                            <span style="position:absolute; left:0; top:-12px; font-size:0.7rem; font-weight:bold; color:#14b8a6; background:var(--bg); padding:0 6px;">أتموا الإرسال ✅</span>
+                <!-- CONNECTOR ARROW -->
+                <div style="display:flex; flex-direction:column; align-items:center; padding:4px 0;">
+                    <div style="width:2px; height:14px; background:linear-gradient(to bottom, rgba(249,115,22,0.4), rgba(245,158,11,0.4));"></div>
+                    <span style="font-size:0.9rem; color:var(--text2); line-height:1;">🔻</span>
+                </div>
+
+                <!-- STAGE 6: WAITING / LINKED -->
+                <div class="funnel-node-card" id="btn-funnel-waiting" onclick="openGhostModal('waiting')" style="width:100%; max-width:480px; background:var(--surface); border:1.5px solid rgba(245,158,11,0.4); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.5rem; background:rgba(245,158,11,0.1); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🟡</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.92rem; color:var(--text1);">6. تم الربط بنجاح (غرفة الانتظار)</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">ربطوا حساباتهم وينتظرون بدء البرنامج</div>
                         </div>
                     </div>
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#f59e0b; background:rgba(245,158,11,0.1); padding:4px 12px; border-radius:20px;" id="ghost-count-waiting">0</span>
+                </div>
 
-                    <!-- 2 MAIN BRANCHES SIDE BY SIDE -->
-                    <div style="width:100%; max-width:800px; display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start; margin-top:8px;">
-                        
-                        <!-- LEFT BRANCH: SOS EMERGENCY -->
-                        <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                            <div class="funnel-node-card" id="btn-funnel-sos" onclick="openGhostModal('sos')" style="width:100%; background:rgba(239,68,68,0.05); border:1.5px solid rgba(239,68,68,0.4); border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(239,68,68,0.08);">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-size:1.5rem; background:rgba(239,68,68,0.15); width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🚨</span>
-                                    <div style="text-align:right;">
-                                        <div style="font-weight:800; font-size:0.88rem; color:#ef4444;">طلبوا النجدة (SOS)</div>
-                                        <div style="font-size:0.7rem; color:var(--text2);">تواصلوا لطلب الدعم والمساعدة</div>
-                                    </div>
-                                </div>
-                                <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#ef4444; background:rgba(239,68,68,0.15); padding:4px 10px; border-radius:20px;" id="ghost-count-sos">0</span>
-                            </div>
+                <!-- CONNECTOR ARROW -->
+                <div style="display:flex; flex-direction:column; align-items:center; padding:4px 0;">
+                    <div style="width:2px; height:14px; background:linear-gradient(to bottom, rgba(245,158,11,0.4), rgba(34,197,94,0.4));"></div>
+                    <span style="font-size:0.9rem; color:var(--text2); line-height:1;">🔻</span>
+                </div>
+
+                <!-- STAGE 7: COMPLETED -->
+                <div class="funnel-node-card" id="btn-funnel-completed" onclick="openGhostModal('completed')" style="width:100%; max-width:480px; background:rgba(34,197,94,0.06); border:1.5px solid rgba(34,197,94,0.4); border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(34,197,94,0.06);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.5rem; background:rgba(34,197,94,0.15); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🟢</span>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; font-size:0.92rem; color:#16a34a;">7. اكتمل المسار (فتح المجلد)</div>
+                            <div style="font-size:0.72rem; color:var(--text2);">أتموا جميع الخطوات وفتحوا مجلد الدورة</div>
                         </div>
-
-                        <!-- RIGHT BRANCH: SUBMITTED (CONTINUES THE ONBOARDING PIPELINE) -->
-                        <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                            
-                            <!-- SUBMITTED STAGE -->
-                            <div class="funnel-node-card" id="btn-funnel-submitted" onclick="openGhostModal('submitted')" style="width:100%; background:var(--surface); border:1.5px solid rgba(20,184,166,0.3); border-radius:14px; padding:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(0,0,0,0.03);">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-size:1.5rem; background:rgba(20,184,166,0.1); width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px;">📤</span>
-                                    <div style="text-align:right;">
-                                        <div style="font-weight:800; font-size:0.88rem; color:var(--text1);">6. أرسلوا النموذج (الربط)</div>
-                                        <div style="font-size:0.7rem; color:var(--text2);">أتموا كتابة بياناتهم وإرسالها</div>
-                                    </div>
-                                </div>
-                                <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#14b8a6; background:rgba(20,184,166,0.1); padding:4px 10px; border-radius:20px;" id="ghost-count-submitted">0</span>
-                            </div>
-
-                            <!-- CONNECTOR ARROW -->
-                            <div style="display:flex; flex-direction:column; align-items:center;">
-                                <div style="width:2px; height:12px; background:rgba(20,184,166,0.4);"></div>
-                                <span style="font-size:0.9rem; color:var(--text2); line-height:1;">⬇️</span>
-                            </div>
-
-                            <!-- SUB-FORK: WAITING OR ACTIVE -->
-                            <div style="width:100%; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                                
-                                <!-- WAITING ROOM -->
-                                <div class="funnel-node-card" id="btn-funnel-waiting" onclick="openGhostModal('waiting')" style="background:var(--surface); border:1.5px solid rgba(245,158,11,0.3); border-radius:12px; padding:10px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; cursor:pointer; transition:all 0.2s;">
-                                    <span style="font-size:1.4rem;">🟠</span>
-                                    <div style="font-weight:800; font-size:0.78rem; color:var(--text1);">7. صالة الانتظار</div>
-                                    <div style="font-size:0.65rem; color:var(--text2);">قيد المراجعة</div>
-                                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.05rem; color:#f59e0b; background:rgba(245,158,11,0.1); padding:2px 8px; border-radius:14px;" id="ghost-count-waiting">0</span>
-                                </div>
-
-                                <!-- INACTIVE (RECEIVED LINK) -->
-                                <div class="funnel-node-card" id="btn-funnel-inactive" onclick="openGhostModal('inactive')" style="background:var(--surface); border:1.5px solid rgba(234,179,8,0.3); border-radius:12px; padding:10px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; cursor:pointer; transition:all 0.2s;">
-                                    <span style="font-size:1.4rem;">🟡</span>
-                                    <div style="font-weight:800; font-size:0.78rem; color:var(--text1);">8. تلقوا الرابط</div>
-                                    <div style="font-size:0.65rem; color:var(--text2);">لم ينضموا بعد</div>
-                                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.05rem; color:#eab308; background:rgba(234,179,8,0.1); padding:2px 8px; border-radius:14px;" id="ghost-count-inactive">0</span>
-                                </div>
-
-                            </div>
-
-                            <!-- CONNECTOR ARROW TO COMPLETED -->
-                            <div style="display:flex; flex-direction:column; align-items:center; padding:2px 0;">
-                                <div style="width:2px; height:12px; background:rgba(34,197,94,0.4);"></div>
-                                <span style="font-size:0.9rem; color:var(--text2); line-height:1;">⬇️</span>
-                            </div>
-
-                            <!-- COMPLETED -->
-                            <div class="funnel-node-card" id="btn-funnel-completed" onclick="openGhostModal('completed')" style="width:100%; background:rgba(34,197,94,0.06); border:1.5px solid rgba(34,197,94,0.4); border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s; box-shadow:0 3px 12px rgba(34,197,94,0.06);">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-size:1.5rem; background:rgba(34,197,94,0.15); width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:10px;">🟢</span>
-                                    <div style="text-align:right;">
-                                        <div style="font-weight:800; font-size:0.88rem; color:#16a34a;">9. انضموا بنجاح!</div>
-                                        <div style="font-size:0.7rem; color:var(--text2);">دخلوا المجموعة واكتمل التحويل</div>
-                                    </div>
-                                </div>
-                                <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#16a34a; background:rgba(34,197,94,0.15); padding:4px 10px; border-radius:20px;" id="ghost-count-completed">0</span>
-                            </div>
-
-                        </div>
-
                     </div>
-
+                    <span dir="ltr" style="font-family:monospace; font-weight:800; font-size:1.15rem; color:#16a34a; background:rgba(34,197,94,0.15); padding:4px 12px; border-radius:20px;" id="ghost-count-completed">0</span>
                 </div>
 
             </div>
 
         </div>
-
-        <!-- ==================== GHOST STUDENTS MODAL POP-UP ==================== -->
+<!-- ==================== GHOST STUDENTS MODAL POP-UP ==================== -->
         <div id="ghost-students-modal-overlay" onclick="if(event.target === this) closeGhostModal()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(6px); z-index:9999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
             
             <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; width:100%; max-width:860px; height:88vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden;">
@@ -3623,16 +3593,17 @@ window.setSalesFunnel = function(val, el) {
         let ghostGenderFilter = 'all';
 
         const FUNNEL_CONFIG = {
-            'absent': { icon: '⚪', title: '1. لم يبدأوا المسار', subtitle: 'مسجلون بالأكاديمية ولكن لم يدخلوا البوت', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
-            'started': { icon: '🔵', title: '2. زوار البوت (البدء)', subtitle: 'ضغطوا /start في البوت ولم ينتقلوا للشرح', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
-            'videos': { icon: '🎥', title: '3. شاهدوا الفيديوهات', subtitle: 'فتحوا الشروحات وشاهدوا الفيديوهات التعريفية', color: '#a855f7', bg: 'rgba(168,85,247,0.1)' },
-            'terms': { icon: '📝', title: '4. وافقوا على الميثاق', subtitle: 'قبلوا ميثاق الالتزام ولم يفتحوا النموذج بعد', color: '#ec4899', bg: 'rgba(236,72,153,0.1)' },
-            'form': { icon: '📋', title: '5. فتحوا النموذج', subtitle: 'وصلوا لاستمارة الربط وإدخال البيانات', color: '#f97316', bg: 'rgba(249,115,22,0.1)' },
-            'sos': { icon: '🚨', title: 'طلبوا النجدة (SOS)', subtitle: 'تواصلوا مع الدعم الفني لحل مشكلة في الدخول', color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
-            'submitted': { icon: '📤', title: '6. أرسلوا النموذج', subtitle: 'أتموا كتابة بياناتهم وإرسال استمارة الربط', color: '#14b8a6', bg: 'rgba(20,184,166,0.1)' },
-            'waiting': { icon: '🟠', title: '7. صالة الانتظار', subtitle: 'في انتظار المراجعة والتدقيق والربط اليدوي', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-            'inactive': { icon: '🟡', title: '8. تلقوا الرابط', subtitle: 'تم تفعيل حسابهم وتلقوا الرابط ولكن لم يدخلوا', color: '#eab308', bg: 'rgba(234,179,8,0.1)' },
-            'completed': { icon: '🟢', title: '9. انضموا بنجاح', subtitle: 'دخلوا المجموعة والمنظومة التعليمية بنجاح', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' }
+            'absent': { icon: '⚪', title: '1. لم يسجلوا بالبوت', subtitle: 'طلبة مسجلون بالأكاديمية لكن لم يفعلوا البوت بعد', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+            'started': { icon: '🔵', title: '2. بدأوا البوت', subtitle: 'أرسلوا /start في البوت ولم يكملوا الخطوات', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+            'videos': { icon: '🟣', title: '3. مشاهدة الشرح', subtitle: 'فتحوا صفحة الفيديوهات الإرشادية', color: '#a855f7', bg: 'rgba(168,85,247,0.1)' },
+            'terms': { icon: '🌸', title: '4. الميثاق والشروط', subtitle: 'وافقوا على الميثاق والشروط', color: '#ec4899', bg: 'rgba(236,72,153,0.1)' },
+            'form': { icon: '🟠', title: '5. استمارة الربط', subtitle: 'وصلوا لاستمارة إدخال الرقم والبريد الإلكتروني', color: '#f97316', bg: 'rgba(249,115,22,0.1)' },
+            'waiting': { icon: '🟡', title: '6. تم الربط بنجاح (غرفة الانتظار)', subtitle: 'ربطوا حساباتهم بنجاح وينتظرون بدء البرنامج', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+            'completed': { icon: '🟢', title: '7. اكتمل المسار (فتح المجلد)', subtitle: 'أتموا جميع الخطوات وفتحوا مجلد الدورة', color: '#16a34a', bg: 'rgba(34,197,94,0.1)' },
+            'sos': { icon: '🆘', title: 'طوارئ واستغاثة (SOS)', subtitle: 'طلاب طلبوا مساعدة عاجلة من الإدارة', color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
+            'error': { icon: '❌', title: 'أخطاء الربط (رقم أو دفع)', subtitle: 'فشلوا في الربط بسبب رقم غير موجود أو دفع غير مؤكد', color: '#dc2626', bg: 'rgba(220,38,38,0.12)' },
+            'inactive': { icon: '🟡', title: '6. تم الربط بنجاح (غرفة الانتظار)', subtitle: 'ربطوا حساباتهم بنجاح', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+            'submitted': { icon: '❌', title: 'أخطاء الربط (رقم أو دفع)', subtitle: 'واجهوا مشاكل في الربط', color: '#dc2626', bg: 'rgba(220,38,38,0.12)' }
         };
 
         function openGhostModal(mode) {
@@ -3755,105 +3726,29 @@ window.setSalesFunnel = function(val, el) {
         }
 
         function getFunnelBadge(v) {
-            const action = v.last_action || '';
-            const desc = v.last_desc || '';
-            
-            if (ghostCurrentMode === 'linked') {
-                return {
-                    label: '🟢 حساب مرتبط بنجاح',
-                    color: '#10b981',
-                    bg: 'rgba(16, 185, 129, 0.12)',
-                    category: 'ACTIVE'
-                };
-            }
+            const action = (v.last_action || '').toUpperCase();
+            const desc = (v.last_desc || '').toLowerCase();
+            const step = (v.last_onboarding_step || '').toUpperCase();
 
-            if (!action && !desc) {
-                return {
-                    label: '💤 لم يبدأ المسار بعد',
-                    color: '#64748b',
-                    bg: 'rgba(100, 116, 139, 0.12)',
-                    category: 'INACTIVE'
-                };
+            if (step === 'STEP_FOLDER_CLICKED') {
+                return { label: '🟢 7. اكتمل المسار', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.12)' };
             }
-
-            if (action === 'ONBOARDING_INPUT_ERROR' || desc.includes('خطأ') || desc.includes('غير مطابق')) {
-                return {
-                    label: '⚠️ خطأ في المعرف أو البريد',
-                    color: '#ef4444',
-                    bg: 'rgba(239, 68, 68, 0.12)',
-                    category: 'BLOCKED'
-                };
+            if (v.student_id || step === 'STEP_LINK_SUCCESS' || action.includes('LINK_SUCCESS')) {
+                return { label: '🟡 6. تم الربط بنجاح', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' };
             }
-
-            if (action === 'ONBOARDING_FORM_REACHED' || desc.includes('استمارة الربط') || desc.includes('شاشة الربط')) {
-                return {
-                    label: '📝 في شاشة الربط (إدخال البيانات)',
-                    color: '#f59e0b',
-                    bg: 'rgba(245, 158, 11, 0.12)',
-                    category: 'ACTIVE'
-                };
+            if (action.includes('FORM') || desc.includes('استمارة') || action.includes('LINK_FAILED') || desc.includes('خطأ') || desc.includes('غير موجود') || desc.includes('غير خالص')) {
+                return { label: '🟠 5. استمارة الربط', color: '#f97316', bg: 'rgba(249, 115, 22, 0.12)' };
             }
-
-            if (action === 'ONBOARDING_CHARTER_SIGNED' || desc.includes('الميثاق')) {
-                return {
-                    label: '📜 وقع الميثاق الطلابي',
-                    color: '#8b5cf6',
-                    bg: 'rgba(139, 92, 246, 0.12)',
-                    category: 'ACTIVE'
-                };
+            if (action.includes('CHARTER') || desc.includes('ميثاق') || desc.includes('شروط')) {
+                return { label: '🌸 4. الميثاق والشروط', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.12)' };
             }
-
-            if (action === 'ONBOARDING_VID3_STARTED' || desc.includes('فيديو 3') || desc.includes('الفيديو 3')) {
-                return {
-                    label: '🎥 يشاهد الفيديو 3 (طريقة المذاكرة)',
-                    color: '#3b82f6',
-                    bg: 'rgba(59, 130, 246, 0.12)',
-                    category: 'ACTIVE'
-                };
+            if (action.includes('VID') || desc.includes('فيديو') || action.includes('PAGE_OPENED') || action.includes('APP_OPENED')) {
+                return { label: '🟣 3. مشاهدة الشرح', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)' };
             }
-
-            if (action === 'ONBOARDING_VID2_STARTED' || desc.includes('فيديو 2') || desc.includes('الفيديو 2')) {
-                return {
-                    label: '🎥 يشاهد الفيديو 2 (النظام الدراسي)',
-                    color: '#3b82f6',
-                    bg: 'rgba(59, 130, 246, 0.12)',
-                    category: 'ACTIVE'
-                };
+            if (v.telegram_id) {
+                return { label: '🔵 2. بدأ البوت', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' };
             }
-
-            if (action === 'ONBOARDING_VID1_STARTED' || desc.includes('فيديو 1') || desc.includes('الفيديو 1')) {
-                return {
-                    label: '🎥 يشاهد الفيديو 1 (الترحيب والتعريف)',
-                    color: '#06b6d4',
-                    bg: 'rgba(6, 182, 212, 0.12)',
-                    category: 'ACTIVE'
-                };
-            }
-
-            if (action === 'ONBOARDING_COMMITMENT_CHECKED' || desc.includes('الإقرار') || desc.includes('الالتزام')) {
-                return {
-                    label: '✅ وافق على شروط الالتزام',
-                    color: '#10b981',
-                    bg: 'rgba(16, 185, 129, 0.12)',
-                    category: 'ACTIVE'
-                };
-            }
-
-            if (action === 'ONBOARDING_PAGE_OPENED' || action === 'APP_OPENED_UNLINKED' || desc.includes('فتح')) {
-                return {
-                    label: '🌐 فتح صفحة التأهيل',
-                    color: '#6366f1',
-                    bg: 'rgba(99, 102, 241, 0.12)',
-                    category: 'ACTIVE'
-                };
-            }
-
-            return {
-                label: `📌 ${action || 'نشاط مسار'}`,
-                color: '#8b5cf6',
-                bg: 'rgba(139, 92, 246, 0.12)',
-                category: 'ACTIVE'
-            };
+            return { label: '⚪ 1. لم يسجل بالبوت', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)' };
         }
 
         function setGhostView(view) {
@@ -4027,7 +3922,11 @@ window.setSalesFunnel = function(val, el) {
                         <td style="padding:12px; font-family:monospace;">${v.telegram_id}</td>
                         <td style="padding:12px; color:var(--text2);">${genLabel} / ${levLabel}</td>
                         <td style="padding:12px; color:var(--text2);">${lastSeenStr}</td>
-                        <td style="padding:12px;"><span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">${badge.label}</span><br><span style="font-size:0.7rem; color:var(--text2);">#</span></td>
+                        <td style="padding:12px;">
+                            <span style="font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">${badge.label}</span>
+                            ${(v.has_sos > 0 || v.sos_status === 'open' || (v.last_action && v.last_action.includes('SOS'))) ? `<br><span style="font-size:0.7rem; font-weight:800; color:#ef4444; background:rgba(239,68,68,0.12); padding:2px 6px; border-radius:6px; display:inline-block; margin-top:3px; border:1px solid #ef4444;">🆘 استغاثة</span>` : ''}
+                            ${(v.has_error > 0 || (v.last_action && v.last_action.includes('LINK_FAILED')) || v.last_action === 'ONBOARDING_INPUT_ERROR') ? `<br><span style="font-size:0.7rem; font-weight:800; color:#dc2626; background:rgba(220,38,38,0.1); padding:2px 6px; border-radius:6px; display:inline-block; margin-top:3px; border:1px solid #dc2626;">❌ خطأ ربط</span>` : ''}
+                        </td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -4115,10 +4014,20 @@ window.setSalesFunnel = function(val, el) {
                             </div>
                         </div>
                         
-                        <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
-                            <span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
+                        <div style="display:flex; gap:6px; align-items:center; flex-shrink:0; flex-wrap:wrap;">
+                            <span style="font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">
                                 ${badge.label}
                             </span>
+                            ${(v.has_sos > 0 || v.sos_status === 'open' || (v.last_action && v.last_action.includes('SOS'))) ? `
+                                <span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:8px; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid #ef4444; box-shadow:0 2px 6px rgba(239,68,68,0.15); display:inline-flex; align-items:center; gap:3px;">
+                                    🆘 استغاثة
+                                </span>
+                            ` : ''}
+                            ${(v.has_error > 0 || (v.last_action && v.last_action.includes('LINK_FAILED')) || v.last_action === 'ONBOARDING_INPUT_ERROR') ? `
+                                <span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:8px; background:rgba(220,38,38,0.12); color:#dc2626; border:1px solid #dc2626; display:inline-flex; align-items:center; gap:3px;">
+                                    ❌ خطأ ربط
+                                </span>
+                            ` : ''}
                         </div>
                     `;
                     list.appendChild(card);
