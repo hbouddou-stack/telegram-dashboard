@@ -10173,7 +10173,7 @@ async function toggleStudentValidity() {
                     historyLogs.forEach(hl => {
                         const dateStr = hl.timestamp ? new Date(hl.timestamp + 'Z').toLocaleString('fr-FR') : '';
                         let lines = hl.description.split('\n');
-                        let changes = lines.slice(1).join('<br>').replace(/?/g, '?');
+                        let changes = lines.slice(1).join('<br>');
                         histHtml += `
                             <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px; font-size:0.8rem; color:var(--text2);">
                                 <div style="font-size:0.7rem; color:var(--primary); font-weight:bold; margin-bottom:4px;">?? ${dateStr}</div>
