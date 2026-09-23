@@ -11075,8 +11075,6 @@ async function toggleStudentValidity() {
                     const mat = sos.student_id_tentative || '-';
                     const email = sos.email_tentative || '-';
                     
-                    tableHtml += `
-                        
                     let rowStyle = "border-bottom:1px solid var(--border); cursor:pointer;";
                     if (sos.start_param && sos.start_param.includes('F')) {
                         rowStyle += " background-color: rgba(236, 72, 153, 0.05); border-right: 4px solid #ec4899;";
