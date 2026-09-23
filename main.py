@@ -1307,7 +1307,7 @@ async def api_admin_gateway_students(request: web.Request):
                     where_clause = "WHERE 1 = 0"
 
             query = f"""
-                SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, s.telegram_username,
+                SELECT s.student_id, s.academic_id, s.first_name, s.last_name, s.email, s.telegram_id, COALESCE(NULLIF(s.telegram_username, ''), u.username) as telegram_username, u.username as tg_username,
                        s.year, s.gender, s.dob, s.source, s.source_file, s.phone, s.created_at, s.payment_status,
                        s.profession, s.country, s.nationality, s.arabic_level, s.school_level,
                        s.team, s.comments, s.appel_1, s.appel_2, s.appel_3,

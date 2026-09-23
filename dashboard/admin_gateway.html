@@ -2649,10 +2649,7 @@ window.setSalesFunnel = function(val, el) {
                     <span id="header-student-name" style="font-weight:900; font-size:1.05rem; color:white; background:#0a84ff; padding:5px 20px; border-radius:20px; white-space:nowrap;">📋 بطاقة الطالب</span>
                     <span id="header-year-badge" style="font-weight:800; font-size:0.9rem; color:white; background:#ff9f0a; padding:5px 12px; border-radius:20px; white-space:nowrap; display:none;">🎓 -</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px; z-index:5;">
-                    <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="padding:5px 12px; border-radius:12px; font-weight:bold; font-size:0.75rem; cursor:pointer; border:none; transition:0.2s;"></button>
-                    <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">✕</button>
-                </div>
+                <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0; z-index:2;">✕</button>
             </div>
             
             
@@ -2820,7 +2817,7 @@ window.setSalesFunnel = function(val, el) {
                     <span style="font-size:1rem;">👤</span><span style="font-size:0.7rem;">عام</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('actions')" id="mtab-actions" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">✉️</span><span style="font-size:0.7rem;">إجراءات</span>
+                    <span style="font-size:1rem;">⚡</span><span style="font-size:0.7rem;">إجراءات وسجل</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
                     <span style="font-size:1rem;">🎓</span><span style="font-size:0.7rem;">الأكاديمية</span>
@@ -2836,7 +2833,19 @@ window.setSalesFunnel = function(val, el) {
             </div>
 
             <!-- Tab 0: Actions — Composer intégré plein écran -->
-            <div id="mcontent-actions" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; gap:0;" dir="rtl">
+            <div id="mcontent-actions" class="mcontent" style="flex-direction:column; flex:1; overflow-y:auto; gap:12px; padding:12px;" dir="rtl">
+                <!-- بطاقة صلاحية الحساب (Non Valide / Invalide) -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.04); flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:1.3rem;">🛡️</span>
+                        <div>
+                            <div style="font-weight:bold; font-size:0.88rem; color:var(--text1); margin-bottom:2px;">صلاحية حساب الطالب</div>
+                            <div style="font-size:0.73rem; color:var(--text2);">يمكنك استبعاد الطالب أو تعيينه كغير صالح (Test)</div>
+                        </div>
+                    </div>
+                    <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="padding:7px 14px; border-radius:12px; font-weight:bold; font-size:0.8rem; cursor:pointer; border:none; transition:0.2s; white-space:nowrap; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></button>
+                </div>
+
 
                 <!-- Header info élève -->
                 <div id="actions-student-banner" style="background:var(--surface); border-bottom:1px solid var(--border); padding:5px 12px; display:flex; align-items:center; gap:8px; flex-shrink:0;">
@@ -2886,6 +2895,17 @@ window.setSalesFunnel = function(val, el) {
                     <button onclick="directWhatsAppActiveStudent()" style="width:100%; margin-top:8px; background:var(--surface); color:#25D366; border:1px solid #25D366; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:6px;">
                         ⚡ واتساب مباشر (رابط تلقائي بدون نص)
                     </button>
+                </div>
+
+                <!-- سجل النشاطات (Logs) -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; min-height:220px; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                        <span style="font-size:1.1rem;">📜</span>
+                        <span style="font-weight:bold; font-size:0.88rem; color:var(--text1);">سجل نشاطات وتفاعلات الطالب (Logs)</span>
+                    </div>
+                    <div id="logs-tab-body" style="overflow-y:auto; max-height:240px; font-size:0.85rem; padding:4px;">
+                        <div class="no-items" style="text-align:center; padding:20px; color:var(--text2);">جاري التحميل...</div>
+                    </div>
                 </div>
 
             </div>
@@ -3128,54 +3148,52 @@ window.setSalesFunnel = function(val, el) {
             </div>
             
             <!-- Tab 3: Telegram -->
-            <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding:12px; gap:10px;" dir="rtl">
-                <!-- معرف المستخدم (@) -->
-                <div id="profile-tg-username-container" style="background:rgba(52,199,89,0.12); border:1.5px solid #34c759; border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.4rem; color:#34c759;">@</span>
-                    <div style="flex:1;">
-                        <div style="font-size:0.7rem; color:var(--text2); margin-bottom:2px;">اسم المستخدم</div>
-                        <div id="profile-tg-username-text" dir="ltr" style="font-size:1rem; font-weight:700; color:#34c759; letter-spacing:0.5px;">-</div>
+            <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding:12px; gap:12px;" dir="rtl">
+                <!-- Hero Card: Telegram Username @ (Centered & Prominent) -->
+                <div id="profile-tg-username-container" style="background:rgba(52,199,89,0.1); border:1.5px solid #34c759; border-radius:16px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(52,199,89,0.08);">
+                    <div style="width:40px; height:40px; border-radius:50%; background:rgba(52,199,89,0.2); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:#34c759; font-weight:900; margin-bottom:6px;">@</div>
+                    <div style="font-size:0.75rem; color:var(--text2); margin-bottom:4px; font-weight:bold;">معرف تيليجرام (Username)</div>
+                    <div id="profile-tg-username-text" dir="ltr" style="font-size:1.2rem; font-weight:900; color:#34c759; letter-spacing:0.5px; text-align:center;">-</div>
+                </div>
+
+                <!-- Centered 2-Column Grid of Mini-Cards -->
+                <div class="ac-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:0;">
+                    <!-- Numeric ID -->
+                    <div id="profile-tgid" class="ac-card" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px 10px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+                        <div style="font-size:1.4rem; margin-bottom:4px;">🔢</div>
+                        <div style="font-size:0.72rem; color:var(--text2); margin-bottom:4px;">المعرف الرقمي (ID)</div>
+                        <div id="profile-tgid-text" dir="ltr" style="font-size:0.95rem; font-weight:700; color:var(--text1); text-align:center;">-</div>
+                    </div>
+
+                    <!-- Telegram Name -->
+                    <div id="profile-tg-container" class="ac-card" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px 10px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+                        <div style="font-size:1.4rem; margin-bottom:4px;">📱</div>
+                        <div style="font-size:0.72rem; color:var(--text2); margin-bottom:4px;">الاسم على تيليجرام</div>
+                        <div id="profile-tg-display" style="font-size:0.95rem; font-weight:700; color:var(--text1); text-align:center;">-</div>
+                    </div>
+
+                    <!-- First Name -->
+                    <div id="profile-tg-firstname" class="ac-card" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px 10px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+                        <div style="font-size:1.4rem; margin-bottom:4px;">👤</div>
+                        <div style="font-size:0.72rem; color:var(--text2); margin-bottom:4px;">الاسم الأول</div>
+                        <div id="profile-tg-firstname-text" style="font-size:0.95rem; font-weight:700; color:var(--text1); text-align:center;">-</div>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div id="profile-tg-lastname" class="ac-card" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px 10px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+                        <div style="font-size:1.4rem; margin-bottom:4px;">👤</div>
+                        <div style="font-size:0.72rem; color:var(--text2); margin-bottom:4px;">الاسم الأخير</div>
+                        <div id="profile-tg-lastname-text" style="font-size:0.95rem; font-weight:700; color:var(--text1); text-align:center;">-</div>
                     </div>
                 </div>
-                <!-- المعرف الرقمي -->
-                <div id="profile-tgid" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.2rem;">🔢</span>
-                    <div style="flex:1;">
-                        <div style="font-size:0.7rem; color:var(--text2); margin-bottom:2px;">المعرف الرقمي (ID)</div>
-                        <div id="profile-tgid-text" dir="ltr" style="font-size:0.95rem; font-weight:600; color:var(--text);">-</div>
+
+                <!-- Folder Click Date (Full width centered card) -->
+                <div id="profile-tg-folder" class="ac-card" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:4px;">
+                        <span style="font-size:1.1rem;">📁</span>
+                        <span style="font-size:0.75rem; color:var(--text2);">تاريخ الانضمام للمجلد</span>
                     </div>
-                </div>
-                <!-- الاسم على تيليجرام -->
-                <div id="profile-tg-container" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.2rem;">📱</span>
-                    <div style="flex:1;">
-                        <div style="font-size:0.7rem; color:var(--text2); margin-bottom:2px;">الاسم على تيليجرام</div>
-                        <div id="profile-tg-display" style="font-size:0.95rem; font-weight:600; color:var(--text);">-</div>
-                    </div>
-                </div>
-                <!-- الاسم الأول -->
-                <div id="profile-tg-firstname" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.2rem;">👤</span>
-                    <div style="flex:1;">
-                        <div style="font-size:0.7rem; color:var(--text2); margin-bottom:2px;">الاسم الأول</div>
-                        <div id="profile-tg-firstname-text" style="font-size:0.95rem; font-weight:600; color:var(--text);">-</div>
-                    </div>
-                </div>
-                <!-- الاسم الأخير -->
-                <div id="profile-tg-lastname" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.2rem;">👤</span>
-                    <div style="flex:1;">
-                        <div style="font-size:0.7rem; color:var(--text2); margin-bottom:2px;">الاسم الأخير</div>
-                        <div id="profile-tg-lastname-text" style="font-size:0.95rem; font-weight:600; color:var(--text);">-</div>
-                    </div>
-                </div>
-                <!-- تاريخ النقر على المجلد -->
-                <div id="profile-tg-folder" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.2rem;">📁</span>
-                    <div style="flex:1;">
-                        <div style="font-size:0.7rem; color:var(--text2); margin-bottom:2px;">تاريخ الانضمام للمجلد</div>
-                        <div id="profile-tg-folder-text" dir="ltr" style="font-size:0.85rem; font-weight:500; color:var(--text2);">-</div>
-                    </div>
+                    <div id="profile-tg-folder-text" dir="ltr" style="font-size:0.85rem; font-weight:600; color:var(--text1); text-align:center;">-</div>
                 </div>
             </div>
 
@@ -10025,11 +10043,11 @@ async function toggleStudentValidity() {
             const valBtn = document.getElementById('toggle-validity-btn');
             if(valBtn) {
                 if(student.excluded == 1) {
-                    valBtn.innerHTML = '✅ استعادة الطالب';
+                    valBtn.innerHTML = '✅ استعادة وتفعيل الحساب';
                     valBtn.style.background = '#28a745';
                     valBtn.style.color = '#fff';
                 } else {
-                    valBtn.innerHTML = '🚫 غير صالح';
+                    valBtn.innerHTML = '🚫 تعليم كغير صالح';
                     valBtn.style.background = '#dc3545';
                     valBtn.style.color = '#fff';
                 }
@@ -10100,12 +10118,19 @@ async function toggleStudentValidity() {
             } else {
                 if(tgContainer) tgContainer.style.display = 'none';
             }
-            if (student.telegram_username) {
-                if(tgUsernameContainer) tgUsernameContainer.style.display = 'flex';
-                document.getElementById('profile-tg-username-text').textContent = '@' + student.telegram_username;
-            } else {
-                if(tgUsernameContainer) tgUsernameContainer.style.display = 'none';
+            const tgUser = String(student.telegram_username || student.tg_username || '').trim();
+            const uEl = document.getElementById('profile-tg-username-text');
+            if (uEl) {
+                if (tgUser && tgUser !== '-' && tgUser !== 'null') {
+                    const cleanUser = tgUser.startsWith('@') ? tgUser : '@' + tgUser;
+                    uEl.textContent = cleanUser;
+                    uEl.style.color = '#34c759';
+                } else {
+                    uEl.textContent = '@ غير متوفر';
+                    uEl.style.color = 'var(--text2)';
+                }
             }
+            if (tgUsernameContainer) tgUsernameContainer.style.display = 'flex';
             
             document.getElementById('profile-email-text').innerHTML = valOrEmpty(student.email);
             
