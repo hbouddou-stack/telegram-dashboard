@@ -5391,7 +5391,8 @@ window.setSalesFunnel = function(val, el) {
 
         function openStudentModalFromGhost(student_id) {
             if (typeof openStudentCard === 'function' && student_id) {
-                openStudentCard(student_id);
+                const _st = (allStudents || []).find(s => String(s.student_id) === String(student_id));
+                if(_st) openStudentCard(_st);
             }
         }
 
@@ -7016,7 +7017,7 @@ function renderKanbanView(listElement, filtered) {
             const cardBorder = isFemale ? '#fbcfe8' : '#bae6fd';
 
             const card = document.createElement('div');
-            card.onclick = () => openStudentCard(s.student_id);
+            card.onclick = () => openStudentCard(s);
             card.style.background = cardBg;
             card.style.padding = '8px 10px';
             card.style.borderRadius = '8px';
@@ -10474,6 +10475,15 @@ async function toggleStudentValidity() {
 }
 
         async function openStudentCard(student) {
+            // Show modal FIRST so user sees something even if an error occurs below
+            document.getElementById('logs-overlay').style.display = 'flex';
+            switchModalTab('general');
+
+            try {
+            // Defensive: if student is a primitive ID, look it up
+            if (typeof student !== 'object' || student === null) {
+                student = (allStudents || []).find(s => String(s.student_id) === String(student)) || {};
+            }
             activeStudentId = student.student_id;
             activeStudentObj = student;
 
@@ -10540,17 +10550,17 @@ async function toggleStudentValidity() {
             
             // Telegram name + username
             if (student.telegram_id && student.tg_first_name) {
-                tgContainer.style.display = 'flex';
+                if(tgContainer) tgContainer.style.display = 'flex';
                 const tgName = String(student.tg_first_name || '') + (student.tg_last_name ? ' ' + String(student.tg_last_name) : '');
                 document.getElementById('profile-tg-display').textContent = tgName;
             } else {
-                tgContainer.style.display = 'none';
+                if(tgContainer) tgContainer.style.display = 'none';
             }
             if (student.telegram_username) {
-                tgUsernameContainer.style.display = 'flex';
+                if(tgUsernameContainer) tgUsernameContainer.style.display = 'flex';
                 document.getElementById('profile-tg-username-text').textContent = '@' + student.telegram_username;
             } else {
-                tgUsernameContainer.style.display = 'none';
+                if(tgUsernameContainer) tgUsernameContainer.style.display = 'none';
             }
             
             document.getElementById('profile-email-text').innerHTML = valOrEmpty(student.email);
@@ -10844,6 +10854,7 @@ async function toggleStudentValidity() {
                     populateOnboardingFunnel(student, []);
                 }
             }
+            } catch(e) { console.error("openStudentCard error:", e); alert("Erreur ouverture fiche: " + e.message); }
         }
 
         async function manualUnlink() {
