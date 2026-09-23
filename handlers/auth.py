@@ -738,3 +738,20 @@ async def handle_student_text_fallback(message: Message, bot: Bot):
             await message.answer(resp_text, reply_markup=kb, parse_mode="HTML")
     except Exception as e_fall:
         logger.error(f"[FALLBACK] Error: {e_fall}")
+
+@auth_router.message(Command("clear_my_logs"))
+async def clear_my_logs_cmd(message: Message, state: FSMContext):
+    import aiosqlite
+    from config import DATABASE_PATH
+    tid = message.from_user.id
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await db.execute("DELETE FROM student_logs WHERE telegram_id = ?", (tid,))
+            await db.execute("DELETE FROM gateway_sos WHERE telegram_id = ?", (tid,))
+            await db.execute("DELETE FROM academy_students WHERE telegram_id = ?", (tid,))
+            # Do not delete from users entirely if it causes constraints, but let's try
+            await db.execute("DELETE FROM users WHERE telegram_id = ?", (tid,))
+            await db.commit()
+        await message.answer("? ?? ????? ???? ?????? ?????? (Logs, SOS, Compte) ?????.\n???? /start ????? ?? ????.")
+    except Exception as e:
+        await message.answer(f"? Erreur: {e}")

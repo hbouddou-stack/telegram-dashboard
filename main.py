@@ -2469,11 +2469,29 @@ async def api_gateway_sos(request: web.Request):
             sos_type_str = "استغاثة 2 (صالة الانتظار)" if is_sos2 else "استغاثة 1 (في الاستمارة)"
 
             # Insert into gateway_sos
-            cur_ins = await db.execute(
-                "INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, 'open', datetime('now', 'localtime'))",
-                (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source)
-            )
-            sos_id = cur_ins.lastrowid or 1
+            
+            sos_id = None
+            if telegram_id:
+                async with db.execute("SELECT id, message FROM gateway_sos WHERE telegram_id = ? AND status = 'open' ORDER BY id DESC LIMIT 1", (telegram_id,)) as cur_check:
+                    existing = await cur_check.fetchone()
+                    if existing:
+                        sos_id = existing[0]
+                        old_message = existing[1] or ""
+                        # Don't duplicate the same message if they spam click
+                        if message.strip() not in old_message:
+                            merged_message = f"{old_message}\n\n--- [????? ?????] ---\n{message}"
+                            await db.execute("UPDATE gateway_sos SET message = ?, timestamp = datetime('now', 'localtime') WHERE id = ?", (merged_message, sos_id))
+                            message = merged_message
+                        else:
+                            message = old_message
+
+            if not sos_id:
+                cur_ins = await db.execute(
+                    "INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, 'open', datetime('now', 'localtime'))",
+                    (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source)
+                )
+                sos_id = cur_ins.lastrowid or 1
+    
 
             # Insert into student_logs with full message content
             await db.execute(
@@ -6516,7 +6534,7 @@ async def api_link_account(request: web.Request):
 
                 if p_status in ['PAID', 'PAYE', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED']:
                     # Lier le telegram_id
-                    await db_conn.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (telegram_id, telegram_username, student['student_id']))
+                    await db_conn.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ?, last_onboarding_step = 'STEP_LINK_SUCCESS' WHERE student_id = ?", (telegram_id, telegram_username, student['student_id']))
                     await db_conn.commit()
                     
                     await log_student_action(student['student_id'], 'LINK_SUCCESS_APPROVED', f"تم تفعيل الحساب وتأكيد الدفع ({student.get('gender')}){source_suffix}", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
@@ -7834,32 +7852,33 @@ class UsernameTrackerMiddleware(BaseMiddleware):
                     notes = []
                     
                     if old_username != username:
-                        notes.append(f"• Pseudo changé : @{old_username or 'Aucun'} ➡️ @{username or 'Aucun'}")
+                        notes.append(f"  ????? ??????: @{old_username or '?? ????'} ? @{username or '?? ????'}")
                         changed = True
                     if old_first != first_name:
-                        notes.append(f"• Prénom changé : {old_first} ➡️ {first_name}")
+                        notes.append(f"  ????? ????? ?????: {old_first} ? {first_name}")
                         changed = True
                     if old_last != last_name:
-                        notes.append(f"• Nom changé : {old_last} ➡️ {last_name}")
+                        notes.append(f"  ????? ????? ???????: {old_last} ? {last_name}")
                         changed = True
                         
                     if changed:
-                        # Mettre à jour la table users
                         await db_conn.execute(
                             "UPDATE users SET username=?, first_name=?, last_name=? WHERE telegram_id=?", 
                             (username, first_name, last_name, telegram_id)
                         )
                         
-                        # Vérifier si c'est un élève lié
+                        student_id = None
                         async with db_conn.execute("SELECT student_id FROM academy_students WHERE telegram_id = ?", (telegram_id,)) as cur2:
                             s = await cur2.fetchone()
                             if s:
                                 student_id = s['student_id']
-                                note_text = "🔄 الهوية متغيرة في تيليجرام (Changement identite) :\n" + "\n".join(notes)
-                                await db_conn.execute(
-                                    "INSERT INTO student_logs (student_id, telegram_id, action_type, description, telegram_name, telegram_username) VALUES (?, ?, ?, ?, ?, ?)",
-                                    (student_id, telegram_id, "CRM_NOTE", f"[بواسطة: النظام - SYSTEM] [نوع: IDENTITE]\n{note_text}", first_name, username)
-                                )
+                                
+                        note_text = "?? ????? ????? ?????? ??? ???????:
+" + "\n".join(notes)
+                        await db_conn.execute(
+                            "INSERT INTO student_logs (student_id, telegram_id, action_type, description, telegram_name, telegram_username) VALUES (?, ?, ?, ?, ?, ?)",
+                            (student_id or '', telegram_id, "CRM_NOTE", f"[??????: ??????] [?????: ????? ????]\n{note_text}", first_name, username)
+                        )
                         await db_conn.commit()
                 else:
                     # Inserer le fantôme silencieusement
