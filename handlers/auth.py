@@ -739,7 +739,7 @@ async def handle_student_text_fallback(message: Message, bot: Bot):
     except Exception as e_fall:
         logger.error(f"[FALLBACK] Error: {e_fall}")
 
-@auth_router.message(Command("clear_my_logs"))
+@router.message(Command("clear_my_logs"))
 async def clear_my_logs_cmd(message: Message, state: FSMContext):
     import aiosqlite
     from config import DATABASE_PATH
