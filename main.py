@@ -6491,6 +6491,14 @@ async def api_link_account(request: web.Request):
                 real_first_name = student.get('first_name') or telegram_first_name
                 
                 # Cas 1 : L'élève est trouvé et son paiement est validé (PAYÉ)
+                # Security: Check if Telegram ID is already linked to ANOTHER student
+                async with db_conn.execute("SELECT student_id FROM academy_students WHERE telegram_id = ? AND student_id != ?", (telegram_id, student['student_id'])) as cur_check:
+                    already_linked = await cur_check.fetchone()
+                    
+                if already_linked:
+                    await log_student_action(student['student_id'], 'LINK_FAILED_DUPLICATE', "Tentative de double liaison.", telegram_id=telegram_id, telegram_name=telegram_name, telegram_username=telegram_username)
+                    return web.json_response({'success': False, 'error': 'عذراً، حساب التليجرام هذا مرتبط بالفعل بطالب آخر.'})
+
                 if p_status in ['PAID', 'PAYE', 'YES', 'OUI', 'VALIDE', 'ACTIVE', 'COMPLETED']:
                     # Lier le telegram_id
                     await db_conn.execute("UPDATE academy_students SET telegram_id = ?, telegram_username = ? WHERE student_id = ?", (telegram_id, telegram_username, student['student_id']))
