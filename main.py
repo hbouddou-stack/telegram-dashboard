@@ -2442,7 +2442,8 @@ async def api_gateway_sos(request: web.Request):
             await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source))
             await db.execute(
                 "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
-                (numeric_sid, telegram_id or 0, tg_display, username, 'SOS_REQUESTED', f"تم إرسال طلب مساعدة SOS (الرسالة: {message[:50]}...)")
+                (numeric_sid, telegram_id or 0, tg_display, username, 
+                'SOS_REQUESTED', f"{'استغاثة 2 (صالة الانتظار)' if is_sos2 else 'استغاثة 1 (قبل التحقق)'} - الرسالة: {message[:50]}...")
             )
             if numeric_sid > 0:
                 try:
@@ -2469,17 +2470,44 @@ async def api_gateway_sos(request: web.Request):
                         if row: sos_count=row[0]
             except: pass
 
-            sos_type_str="SOS 1 (Avant validation)"
-            if source=="waiting_room": sos_type_str="SOS 2 (Salle d\'attente)"
+            # Detect SOS 1 vs SOS 2
+            # SOS 2 = student already submitted form (in waiting room / linked)
+            is_sos2 = False
+            if numeric_sid > 0:
+                try:
+                    async with aiosqlite.connect(DATABASE_PATH) as db_check:
+                        async with db_check.execute(
+                            "SELECT COUNT(*) FROM student_logs WHERE (student_id = ? OR telegram_id = ?) AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
+                            (numeric_sid, telegram_id or 0)
+                        ) as cur_check:
+                            row_check = await cur_check.fetchone()
+                            if row_check and row_check[0] > 0:
+                                is_sos2 = True
+                except:
+                    pass
+            elif telegram_id:
+                try:
+                    async with aiosqlite.connect(DATABASE_PATH) as db_check:
+                        async with db_check.execute(
+                            "SELECT COUNT(*) FROM student_logs WHERE telegram_id = ? AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
+                            (telegram_id,)
+                        ) as cur_check:
+                            row_check = await cur_check.fetchone()
+                            if row_check and row_check[0] > 0:
+                                is_sos2 = True
+                except:
+                    pass
+
+            sos_type_str = "استغاثة 2 (صالة الانتظار)" if is_sos2 else "استغاثة 1 (قبل التحقق)"
 
             admin_notif = (
-                f"🚨 <b>{sos_type_str} - Ticket #{sos_count}</b>\n\n"
+                f"🚨 <b>{sos_type_str} - رقم #{sos_count}</b>\n\n"
                 f"{user_info_str}\n"
-                f"📧 <b>Email saisi :</b> <code>{email or 'N/A'}</code>\n"
+                f"📧 <b>البريد:</b> <code>{email or 'غير متوفر'}</code>\n"
                 f"🪪 <b>Matricule :</b> <code>{student_id or 'N/A'}</code>\n"
-                f"🔗 <b>Lien / Source :</b> <code>{source or 'N/A'}</code>\n"
-                f"💬 <b>Message :</b>\n<blockquote>{message}</blockquote>\n\n"
-                f"👉 Répondez depuis le Dashboard Admin (/federer)"
+                f"🔗 <b>المصدر:</b> <code>{source or 'غير متوفر'}</code>\n"
+                f"💬 <b>الرسالة:</b>\n<blockquote>{message}</blockquote>\n\n"
+                f"👉 أجب من لوحة التحكم (/federer)"
             )
             bot = request.app['bot']
             for admin_id in TELEGRAM_ADMIN_IDS:
@@ -2670,6 +2698,22 @@ async def api_admin_sos_list(request: web.Request):
                                 if not item.get('tg_first_name') and row_l[0]: item['tg_first_name'] = row_l[0]
                                 if not item.get('tg_username') and row_l[1]: item['tg_username'] = row_l[1]
 
+                # Detect SOS type (1 or 2) based on student_logs
+                _sos_tid = item.get('telegram_id')
+                _sos_sid = item.get('student_id_tentative') or ''
+                _is_sos2 = False
+                if _sos_tid:
+                    try:
+                        async with db.execute(
+                            "SELECT COUNT(*) FROM student_logs WHERE telegram_id = ? AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK') AND timestamp <= ?",
+                            (int(_sos_tid), item.get('timestamp', '9999'))
+                        ) as _cur_type:
+                            _row_type = await _cur_type.fetchone()
+                            if _row_type and _row_type[0] > 0:
+                                _is_sos2 = True
+                    except:
+                        pass
+                item['sos_type'] = 2 if _is_sos2 else 1
                 sos_list.append(item)
 
         return web.json_response({'success': True, 'sos_list': sos_list})

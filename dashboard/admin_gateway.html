@@ -1628,25 +1628,25 @@ window.setSalesFunnel = function(val, el) {
     <!-- TAB: SOS Help Requests (Subdivided: Active vs Resolved) -->
     <div id="tab-sos" class="tab-content">
         <!-- Search and Filters -->
-        <input type="text" id="sos-search-input" placeholder="🔍 Rechercher par email, TG ID, etc..." oninput="renderSosList()" class="search-box">
+        <input type="text" id="sos-search-input" placeholder="🔍 البحث بالبريد، المعرف..." oninput="renderSosList()" class="search-box">
         
         <div style="display: flex; gap: 8px; margin-bottom: 12px; margin-top: 10px;">
-            <div class="chip-gender chip-all active" id="sos-g-all" onclick="setSosGenderFilter('all', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">الكل (Tous)</div>
-            <div class="chip-gender chip-male" id="sos-g-homme" onclick="setSosGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">ذكر (Homme)</div>
-            <div class="chip-gender chip-female" id="sos-g-femme" onclick="setSosGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">أنثى (Femme)</div>
+            <div class="chip-gender chip-all active" id="sos-g-all" onclick="setSosGenderFilter('all', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">الكل</div>
+            <div class="chip-gender chip-male" id="sos-g-homme" onclick="setSosGenderFilter('homme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">ذكر</div>
+            <div class="chip-gender chip-female" id="sos-g-femme" onclick="setSosGenderFilter('femme', this)" style="flex:1; text-align:center; padding: 12px; font-size: 0.9rem;">أنثى</div>
         </div>
         
         <!-- Separate segmented buttons for SOS state -->
         <div style="display:flex; width:100%; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px;">
             <button id="sos-filter-open" onclick="switchSosSubtab('open')" style="flex:1; padding:12px; border:none; background:var(--accent); color:white; font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem;">⏳ قيد الانتظار (En attente)</button>
-            <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ مغلق (Fermé)</button>
+            <button id="sos-filter-closed" onclick="switchSosSubtab('closed')" style="flex:1; padding:12px; border:none; background:var(--surface); color:var(--text2); font-family:'Tajawal'; font-weight:bold; cursor:pointer; font-size:0.9rem; border-right:1px solid var(--border);">✅ مغلق</button>
         </div>
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <div style="font-weight:bold; color:var(--text1);">Vue :</div>
+            <div style="font-weight:bold; color:var(--text1);"></div>
             <div style="display:flex; gap:8px;">
-                <button onclick="window.sosViewMode='list'; renderSosList()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer;">Liste</button>
-                <button onclick="window.sosViewMode='table'; renderSosList()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer;">Tableau</button>
+                <button onclick="window.sosViewMode='list'; renderSosList()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer;">📋 قائمة</button>
+                <button onclick="window.sosViewMode='table'; renderSosList()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text1); cursor:pointer;">📊 جدول</button>
             </div>
         </div>
 
@@ -1776,7 +1776,7 @@ window.setSalesFunnel = function(val, el) {
                 <div style="flex:1; min-width:200px;">
                     <label style="color:var(--text1); font-weight:bold; display:block; margin-bottom:5px;">🎓 المستوى (Niveau) :</label>
                     <select id="mass-action-year" onchange="calculateMassTarget()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
-                        <option value="all">الكل (Tous)</option>
+                        <option value="all">الكل</option>
                         <option value="1">المستوى الأول (1)</option>
                         <option value="2">المستوى الثاني (2)</option>
                         <option value="3">المستوى الثالث (3)</option>
@@ -1786,7 +1786,7 @@ window.setSalesFunnel = function(val, el) {
                 <div style="flex:1; min-width:200px;">
                     <label style="color:var(--text1); font-weight:bold; display:block; margin-bottom:5px;">🚻 الجنس (Sexe) :</label>
                     <select id="mass-action-gender" onchange="calculateMassTarget()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none;">
-                        <option value="all">الكل (Tous)</option>
+                        <option value="all">الكل</option>
                         <option value="male">ذكور (Garçons)</option>
                         <option value="female">إناث (Filles)</option>
                     </select>
@@ -3749,13 +3749,11 @@ window.setSalesFunnel = function(val, el) {
             <div id="sos-modal-meta" style="color:var(--text2);font-size:0.85rem;margin-bottom:10px; direction: ltr; text-align: left;"></div>
             <div id="sos-modal-message" style="background:var(--bg);padding:12px;border-radius:10px;font-size:0.9rem;line-height:1.5;margin-bottom:12px;"></div>
             
-            <div class="input-row">
-                <textarea id="sos-reply-text" placeholder="اكتب ردك هنا... سيصل إلى الطالب في رسالة خاصة"></textarea>
-                <button class="btn btn-success" onclick="sendSosReply()" style="flex:1;">إرسال الرد ✉️</button>
+            <div style="margin-bottom:14px;">
+                <textarea id="sos-reply-text" placeholder="اكتب ردك هنا... سيتم إرساله عبر البوت مباشرة" style="width:100%; min-height:120px; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:'Tajawal'; font-size:0.95rem; resize:vertical;"></textarea>
             </div>
-            <button class="btn btn-primary" onclick="viewUserHistoryFromSos()" style="margin-top:10px; background:#4a90e2; width:100%; padding:10px;">📜 عرض سجل محاولات الطالب</button>
-            <button class="btn btn-primary" onclick="window.open('https://t.me/c/' + activeSosTid, '_blank')" style="margin-top:10px; background:#2481cc; width:100%; padding:10px;">📱 Voir l'historique Telegram</button>
-            <button class="btn btn-danger" onclick="deleteSosTicket(activeSosId)" style="margin-top:10px; background:#dc2626; color:white; width:100%; padding:10px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">🗑️ حذف طلب المساعدة هذا نهائياً</button>
+            <button class="btn btn-success" onclick="sendSosReply()" style="width:100%; padding:12px; font-size:1rem; margin-bottom:10px;">✅ إرسال الرد عبر البوت</button>
+            <button class="btn btn-danger" onclick="deleteSosTicket(activeSosId)" style="width:100%; background:#dc2626; color:white; padding:10px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">🗑️ حذف هذه الاستغاثة نهائياً</button>
             <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
         </div>
     
@@ -3816,7 +3814,7 @@ window.setSalesFunnel = function(val, el) {
                 'SOS_APPLIED': { label: 'تطبيق SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
             'SOS_1': { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🚨', label: 'SOS 1 (قبل الربط)' },
             'SOS_2': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'SOS 2 (صالة الانتظار)' },
-            'SOS_REQUESTED': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🆘', label: 'طلب مساعدة SOS' },
+            'SOS_REQUESTED': { bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.6)', text: '#b91c1c', icon: '🆘', label: 'طلب استغاثة', showDesc: true },
             'LINK_WAITING_EXCEL': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '🛋️', label: 'في صالة الانتظار (إكسيل)' },
             'LINK_WAITING_PAYMENT': { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', text: '#d97706', icon: '⏳', label: 'في صالة الانتظار (الدفع)' },
 
@@ -11061,10 +11059,10 @@ async function toggleStudentValidity() {
                     <table class="data-table" style="width:100%; border-collapse:collapse;">
                         <thead>
                             <tr style="background:var(--surface); border-bottom:1px solid var(--border); text-align:right;">
-                                <th style="padding:10px;">Date</th>
-                                <th style="padding:10px;">Type (SOS 1 / 2)</th>
-                                <th style="padding:10px;">Étudiant / TG</th>
-                                <th style="padding:10px;">Matricule / Email</th>
+                                <th style="padding:10px;">التاريخ</th>
+                                <th style="padding:10px;">النوع</th>
+                                <th style="padding:10px;">الطالب</th>
+                                <th style="padding:10px;">الرقم / البريد</th>
                                 <th style="padding:10px;">Message</th>
                             </tr>
                         </thead>
@@ -11072,7 +11070,7 @@ async function toggleStudentValidity() {
                 
                 filtered.forEach(sos => {
                     const dt = new Date(sos.timestamp).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-                    const sourceType = (sos.source === 'waiting_room') ? '<span style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">SOS 2 (Attente)</span>' : '<span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">SOS 1 (Avant Form)</span>';
+                    const sourceType = (sos.sos_type === 2) ? '<span style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">استغاثة 2 (صالة الانتظار)</span>' : '<span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">استغاثة 1 (قبل التحقق)</span>';
                     const name = sos.first_name ? `${sos.first_name} ${sos.last_name}` : `${sos.tg_first_name} ${sos.tg_username ? '(@'+sos.tg_username+')' : ''}`;
                     const mat = sos.student_id_tentative || '-';
                     const email = sos.email_tentative || '-';
@@ -11099,7 +11097,7 @@ async function toggleStudentValidity() {
                     const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
                     const dt = new Date(sos.timestamp).toLocaleString('ar-MA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
                     
-                    const sourceType = (sos.source === 'waiting_room') ? '<span style="background:rgba(245,158,11,0.1); color:#d97706; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; border:1px solid rgba(245,158,11,0.3);">SOS 2 (Salle d\'attente)</span>' : '<span style="background:rgba(239,68,68,0.1); color:#dc2626; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; border:1px solid rgba(239,68,68,0.3);">SOS 1 (Avant formulaire)</span>';
+                    const sourceType = (sos.sos_type === 2) ? '<span style="background:rgba(245,158,11,0.1); color:#d97706; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; border:1px solid rgba(245,158,11,0.3);">SOS 2 (Salle d\'attente)</span>' : '<span style="background:rgba(239,68,68,0.1); color:#dc2626; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; border:1px solid rgba(239,68,68,0.3);">استغاثة 1 (قبل التحقق)</span>';
 
                     let metaHtml = `
                         <div class="meta-row">
@@ -14197,7 +14195,7 @@ function toggleFloatingCrmMenu() {
 
     <!-- STICKY SOS BAR -->
     <div id="sticky-sos-bar" style="position:fixed; bottom:0; left:0; right:0; background:var(--accent); color:white; text-align:center; padding:10px; font-weight:bold; cursor:pointer; z-index:9999; display:none; box-shadow:0 -2px 10px rgba(0,0,0,0.2);" onclick="switchTab('sos')">
-        🚨 Vous avez <span id="sticky-sos-count">0</span> message(s) SOS en attente !
+        🚨 🚨 لديك <span id="sticky-sos-count">0</span> رسالة استغاثة بانتظار الرد!
     </div>
 
 </body>
