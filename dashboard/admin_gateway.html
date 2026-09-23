@@ -2639,15 +2639,16 @@ window.setSalesFunnel = function(val, el) {
         </div>
     </div>
 
-<!-- Modal: Fiche ├ëtudiant (Card) -->
+
+<!-- Modal: Fiche Étudiant (Card) -->
     <div class="modal-overlay" id="logs-overlay" onclick="if(event.target===this)this.style.display='none';" style="padding:0; align-items:stretch; justify-content:stretch;">
         <div class="modal" id="fiche-eleve-modal" style="width: 100%; max-width: none; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; margin: 0; border-radius: 0; padding: 0; overflow: hidden;">
             <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:6px 14px; min-height:0; flex-shrink:0; position:relative;">
                 <div style="position:absolute; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; pointer-events:none;">
-                    <span id="header-student-name" style="font-weight:900; font-size:1.05rem; color:white; background:#0a84ff; padding:5px 20px; border-radius:20px; white-space:nowrap;">­ƒôï Ï¿ÏÀÏº┘éÏ® Ïº┘äÏÀÏº┘äÏ¿</span>
-                    <span id="header-year-badge" style="font-weight:800; font-size:0.9rem; color:white; background:#ff9f0a; padding:5px 12px; border-radius:20px; white-space:nowrap; display:none;">­ƒÄô -</span>
+                    <span id="header-student-name" style="font-weight:900; font-size:1.05rem; color:white; background:#0a84ff; padding:5px 20px; border-radius:20px; white-space:nowrap;">📋 بطاقة الطالب</span>
+                    <span id="header-year-badge" style="font-weight:800; font-size:0.9rem; color:white; background:#ff9f0a; padding:5px 12px; border-radius:20px; white-space:nowrap; display:none;">🎓 -</span>
                 </div>
-                <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">Ô£ò</button>
+                <button class="close-btn" onclick="document.getElementById('logs-overlay').style.display='none'" style="flex-shrink:0;">✕</button>
             </div>
             
             
@@ -2768,7 +2769,7 @@ window.setSalesFunnel = function(val, el) {
 
 /* The Walking Avatar on Current Step */
 .fs-view-adventure .metro-station.current::after {
-    content: '­ƒÜÂÔÇìÔÖé´©Å';
+    content: '🚶‍♂️';
     position: absolute;
     font-size: 50px;
     top: -65px; 
@@ -2812,36 +2813,36 @@ window.setSalesFunnel = function(val, el) {
 
             <div class="mtab-container" style="display:flex; overflow-x:auto; background:var(--surface); gap:2px; padding:5px 8px;">
                 <div class="mtab active" onclick="switchModalTab('general')" id="mtab-general" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">­ƒæñ</span><span style="font-size:0.7rem;">Ï╣Ïº┘à</span>
+                    <span style="font-size:1rem;">👤</span><span style="font-size:0.7rem;">عام</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('actions')" id="mtab-actions" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">Ô£ë´©Å</span><span style="font-size:0.7rem;">ÏÑÏ¼Ï▒ÏºÏíÏºÏ¬</span>
+                    <span style="font-size:1rem;">✉️</span><span style="font-size:0.7rem;">إجراءات</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('academy')" id="mtab-academy" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">­ƒÄô</span><span style="font-size:0.7rem;">Ïº┘äÏú┘âÏºÏ»┘è┘à┘èÏ®</span>
+                    <span style="font-size:1rem;">🎓</span><span style="font-size:0.7rem;">الأكاديمية</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('telegram')" id="mtab-telegram" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">Ô£ê´©Å</span><span style="font-size:0.7rem;">Ï¬┘è┘ä┘èÏ¼Ï▒Ïº┘à</span>
+                    <span style="font-size:1rem;">✈️</span><span style="font-size:0.7rem;">تيليجرام</span>
                 </div>
                 <div class="mtab" onclick="document.getElementById('logs-overlay').style.display='none'; viewStudentLogs(activeStudentId);" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">­ƒô£</span><span style="font-size:0.7rem;">Ïº┘ä┘åÏ┤ÏºÏÀÏºÏ¬ (Logs)</span>
+                    <span style="font-size:1rem;">📜</span><span style="font-size:0.7rem;">النشاطات (Logs)</span>
                 </div>
 
                 <div class="mtab" onclick="switchModalTab('funnel')" id="mtab-funnel" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">­ƒøñ´©Å</span><span style="font-size:0.7rem;">┘àÏ│ÏºÏ▒</span>
+                    <span style="font-size:1rem;">🛤️</span><span style="font-size:0.7rem;">مسار</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('crm')" id="mtab-crm" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">­ƒôè</span><span style="font-size:0.7rem;">CRM</span>
+                    <span style="font-size:1rem;">📊</span><span style="font-size:0.7rem;">CRM</span>
                 </div>
                 <div class="mtab" onclick="switchModalTab('logs')" id="mtab-logs" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                    <span style="font-size:1rem;">­ƒô£</span><span style="font-size:0.7rem;">Ïº┘äÏ│Ï¼┘ä</span>
+                    <span style="font-size:1rem;">📜</span><span style="font-size:0.7rem;">السجل</span>
                 </div>
             </div>
 
-            <!-- Tab 0: Actions ÔÇö Composer int├®gr├® plein ├®cran -->
+            <!-- Tab 0: Actions — Composer intégré plein écran -->
             <div id="mcontent-actions" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; gap:0;" dir="rtl">
 
-                <!-- Header info ├®l├¿ve -->
+                <!-- Header info élève -->
                 <div id="actions-student-banner" style="background:var(--surface); border-bottom:1px solid var(--border); padding:5px 12px; display:flex; align-items:center; gap:8px; flex-shrink:0;">
                     <div style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:white; font-weight:900;" id="actions-avatar">?</div>
                     <div style="flex:1; min-width:0;">
@@ -2852,42 +2853,42 @@ window.setSalesFunnel = function(val, el) {
 
                 <!-- Templates rapides -->
                 <div style="padding:5px 12px 0 12px; flex-shrink:0;">
-                    <div style="font-size:0.75rem; font-weight:700; color:var(--text2); margin-bottom:6px;">┘é┘êÏº┘äÏ¿ Ï│Ï▒┘èÏ╣Ï® :</div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--text2); margin-bottom:6px;">قوالب سريعة :</div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='var(--border)'">Ô£ê´©Å Ï»Ï╣┘êÏ® Ï¬┘è┘ä┘èÏ¼Ï▒Ïº┘à</span>
-                        <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='var(--border)'">­ƒöö Ï¬Ï░┘â┘èÏ▒</span>
-                        <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='var(--border)'">­ƒñØ ÏºÏ│Ï¬┘üÏ│ÏºÏ▒</span>
+                        <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='var(--border)'">✈️ دعوة تيليجرام</span>
+                        <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='var(--border)'">🔔 تذكير</span>
+                        <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--text1); transition:0.15s;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='var(--border)'">🤝 استفسار</span>
                     </div>
                 </div>
 
-                <!-- Textarea grande ÔÇö prend tout l'espace restant -->
+                <!-- Textarea grande — prend tout l'espace restant -->
                 <div style="flex:1; padding:10px 15px; display:flex; flex-direction:column; min-height:0;">
-                    <textarea id="single-composer-text" placeholder="Ïº┘âÏ¬Ï¿ Ï▒Ï│Ïº┘äÏ¬┘â ┘ç┘åÏº... ┘è┘à┘â┘å┘â ÏºÏ│Ï¬Ï«Ï»Ïº┘à {Ïº┘äÏºÏ│┘à} ┘ä┘äÏºÏ│┘à Ïº┘äÏ¬┘ä┘éÏºÏª┘è"
+                    <textarea id="single-composer-text" placeholder="اكتب رسالتك هنا... يمكنك استخدام {الاسم} للاسم التلقائي"
                         style="flex:1; width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.95rem; resize:none; box-sizing:border-box; line-height:1.6; min-height:0;"
                         oninput="updateActionsCharCount(this)"></textarea>
-                    <div style="text-align:left; font-size:0.72rem; color:var(--text2); margin-top:4px;" id="actions-char-count">0 Ï¡Ï▒┘ü</div>
+                    <div style="text-align:left; font-size:0.72rem; color:var(--text2); margin-top:4px;" id="actions-char-count">0 حرف</div>
                 </div>
 
-                <!-- Boutons d'envoi ÔÇö fixes en bas -->
+                <!-- Boutons d'envoi — fixes en bas -->
                 <div style="padding:6px 12px 8px 12px; flex-shrink:0; background:var(--bg); border-top:1px solid var(--border);">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                         <button onclick="sendSingleMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                            ┘êÏºÏ¬Ï│ÏºÏ¿
+                            واتساب
                         </button>
                         <button onclick="sendSingleMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
-                            Ô£ê´©Å Ï¬┘è┘ä┘èÏ¼Ï▒Ïº┘à
+                            ✈️ تيليجرام
                         </button>
                         <button onclick="sendSingleMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
-                            ­ƒô▒ SMS
+                            📱 SMS
                         </button>
                         <button onclick="sendSingleMessage('email')" style="background:#ef4444; color:white; border:none; padding:8px 6px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:5px;">
-                            ­ƒôº ÏÑ┘è┘à┘è┘ä
+                            📧 إيميل
                         </button>
                     </div>
-                    <!-- WhatsApp direct (ouvre WA avec message pr├®-rempli) -->
+                    <!-- WhatsApp direct (ouvre WA avec message pré-rempli) -->
                     <button onclick="directWhatsAppActiveStudent()" style="width:100%; margin-top:8px; background:var(--surface); color:#25D366; border:1px solid #25D366; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:6px;">
-                        ÔÜí ┘êÏºÏ¬Ï│ÏºÏ¿ ┘àÏ¿ÏºÏ┤Ï▒ (Ï▒ÏºÏ¿ÏÀ Ï¬┘ä┘éÏºÏª┘è Ï¿Ï»┘ê┘å ┘åÏÁ)
+                        ⚡ واتساب مباشر (رابط تلقائي بدون نص)
                     </button>
                 </div>
 
@@ -2994,7 +2995,7 @@ window.setSalesFunnel = function(val, el) {
 
 /* The Walking Avatar on Current Step */
 .fs-view-adventure .metro-station.current::after {
-    content: '­ƒÜÂÔÇìÔÖé´©Å';
+    content: '🚶‍♂️';
     position: absolute;
     font-size: 50px;
     top: -65px; 
@@ -3039,62 +3040,62 @@ window.setSalesFunnel = function(val, el) {
             <div id="mcontent-general" class="mcontent active" style="overflow-y:auto; flex:1; padding:0; background:var(--bg);">
                 <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
                     <div class="pg-row" style="background:var(--surface); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-weight:bold; color:var(--text1);">­ƒÜ¿ Qualit├® du lead (Validit├®)</div>
+                        <div style="font-weight:bold; color:var(--text1);">🚨 Qualité du lead (Validité)</div>
                         <button id="toggle-validity-btn" onclick="toggleStudentValidity()" style="padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; border:none;"></button>
                     </div>
 
                     <div class="pg-row" id="profile-name">
-                        <div class="pg-label">­ƒæñ Ïº┘äÏºÏ│┘à Ïº┘ä┘âÏº┘à┘ä</div>
+                        <div class="pg-label">👤 الاسم الكامل</div>
                         <div class="pg-val" id="profile-name-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒîì Ï¿Ïº┘ä┘äÏ║Ï® Ïº┘äÏúÏ¼┘åÏ¿┘èÏ®</div>
+                        <div class="pg-label">🌍 باللغة الأجنبية</div>
                         <div class="pg-val" id="profile-foreign-name-text" dir="ltr">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒôº Ïº┘äÏ¿Ï▒┘èÏ» Ïº┘äÏÑ┘ä┘âÏ¬Ï▒┘ê┘å┘è</div>
+                        <div class="pg-label">📧 البريد الإلكتروني</div>
                         <div class="pg-val" id="profile-email-text" dir="ltr">-</div>
                     </div>
                     <div class="pg-row" style="direction:rtl;">
-                        <div class="pg-label">­ƒô▒ Ïº┘ä┘çÏºÏ¬┘ü</div>
+                        <div class="pg-label">📱 الهاتف</div>
                         <div class="pg-val" id="profile-phone-text" dir="ltr" style="unicode-bidi:isolate;">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒÄé Ï¬ÏºÏ▒┘èÏ« Ïº┘ä┘à┘è┘äÏºÏ»</div>
+                        <div class="pg-label">🎂 تاريخ الميلاد</div>
                         <div class="pg-val" id="profile-dob-text">-</div>
                     </div>
                     <div class="pg-row" id="profile-gender">
-                        <div class="pg-label">ÔÜº Ïº┘äÏ¼┘åÏ│</div>
+                        <div class="pg-label">⚧ الجنس</div>
                         <div class="pg-val" id="profile-gender-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒÆ╝ Ïº┘ä┘à┘ç┘åÏ®</div>
+                        <div class="pg-label">💼 المهنة</div>
                         <div class="pg-val" id="profile-profession-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒôì Ï¿┘äÏ» Ïº┘äÏÑ┘éÏº┘àÏ®</div>
+                        <div class="pg-label">📍 بلد الإقامة</div>
                         <div class="pg-val" id="profile-country-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒîì Ïº┘äÏ¼┘åÏ│┘èÏ®</div>
+                        <div class="pg-label">🌍 الجنسية</div>
                         <div class="pg-val" id="profile-nationality-text">-</div>
                     </div>
                 </div>
                 
                 <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; margin:0 5px 10px 0;">
                     <div class="pg-row">
-                        <div class="pg-label">­ƒôÑ Ï¬ÏºÏ▒┘èÏ« Ïº┘äÏºÏ│Ï¬┘èÏ▒ÏºÏ»</div>
+                        <div class="pg-label">📥 تاريخ الاستيراد</div>
                         <div class="pg-val" id="profile-import-text" dir="ltr" style="font-size:0.85rem;">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒôä Ïº┘ä┘àÏÁÏ»Ï▒</div>
+                        <div class="pg-label">📄 المصدر</div>
                         <div class="pg-val" id="profile-source-text">-</div>
                     </div>
                 </div>
 
                 <!-- FULL SCREEN JOURNEY BUTTON (GENERAL TAB) -->
                 <div style="background:var(--accent); border-radius:12px; padding:12px; margin:0 5px 15px 0; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.05rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s; animation: pulse-btn 2s infinite;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                    <span>­ƒøñ´©Å Ïº┘üÏ¬Ï¡ ┘àÏ│ÏºÏ▒ Ïº┘äÏÀÏº┘äÏ¿ Ïº┘ä┘âÏº┘à┘ä (Plein ├ëcran)</span>
+                    <span>🛤️ افتح مسار الطالب الكامل (Plein Écran)</span>
                 </div>
                 <style>
                 @keyframes pulse-btn {
@@ -3191,7 +3192,7 @@ window.setSalesFunnel = function(val, el) {
 
 /* The Walking Avatar on Current Step */
 .fs-view-adventure .metro-station.current::after {
-    content: '­ƒÜÂÔÇìÔÖé´©Å';
+    content: '🚶‍♂️';
     position: absolute;
     font-size: 50px;
     top: -65px; 
@@ -3232,15 +3233,15 @@ window.setSalesFunnel = function(val, el) {
 
 </style>
                 <!-- Onboarding Funnel Summary in General Tab -->
-                <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="Ïº┘å┘éÏ▒ ┘äÏ╣Ï▒ÏÂ Ïº┘ä┘àÏ│ÏºÏ▒ Ï¿Ïº┘äÏ¬┘üÏÁ┘è┘ä">
+                <div style="border-radius:12px; border:1px solid rgba(135,54,255,0.25); background:rgba(135,54,255,0.04); overflow:hidden; margin:0 5px 10px 0; padding:12px;" onclick="switchModalTab('funnel')" style="cursor:pointer;" title="انقر لعرض المسار بالتفصيل">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                        <span style="font-weight:bold; font-size:0.88rem; color:var(--accent);">­ƒÄÑ Ï¡Ïº┘äÏ® ┘àÏ│ÏºÏ▒ Ïº┘äÏ¬Ïú┘ç┘è┘ä (Onboarding)</span>
+                        <span style="font-weight:bold; font-size:0.88rem; color:var(--accent);">🎥 حالة مسار التأهيل (Onboarding)</span>
                         <span id="profile-onb-badge" style="font-size:0.75rem; font-weight:bold; padding:2px 8px; border-radius:10px; background:#334155; color:white;">-</span>
                     </div>
                     <div id="profile-onb-desc" style="font-size:0.8rem; color:var(--text1); margin-bottom:4px;">-</div>
                     <div style="font-size:0.72rem; color:var(--text2); display:flex; justify-content:space-between;">
                         <span id="profile-onb-time">-</span>
-                        <span style="color:var(--accent); text-decoration:underline; cursor:pointer;">Ï╣Ï▒ÏÂ Ïº┘ä┘àÏ│ÏºÏ▒ ┘êÏº┘ä┘àÏ▒ÏºÏ¡┘ä Ô×ö</span>
+                        <span style="color:var(--accent); text-decoration:underline; cursor:pointer;">عرض المسار والمراحل ➔</span>
                     </div>
                 </div>
             </div>
@@ -3251,22 +3252,22 @@ window.setSalesFunnel = function(val, el) {
                 <!-- Highlight Cards -->
                 <div class="ac-grid">
                     <div class="ac-card" style="border-color:#ff9f0a; background:rgba(255,159,10,0.05);">
-                        <div class="ac-card-title">­ƒÄô Ïº┘äÏ│┘åÏ® Ïº┘äÏ»Ï▒ÏºÏ│┘èÏ®</div>
+                        <div class="ac-card-title">🎓 السنة الدراسية</div>
                         <div class="ac-card-val" id="profile-year-text" style="color:#ff9f0a;">-</div>
                     </div>
                     <div class="ac-card" id="card-payment" style="border-color:var(--border);">
-                        <div class="ac-card-title">­ƒÆ│ Ï¡Ïº┘äÏ® Ïº┘äÏ»┘üÏ╣</div>
+                        <div class="ac-card-title">💳 حالة الدفع</div>
                         <div class="ac-card-val" id="profile-payment-text">-</div>
                     </div>
                 </div>
                 
                 <div class="ac-grid">
                     <div class="ac-card" style="border-color:#34c759; background:rgba(52,199,89,0.05);">
-                        <div class="ac-card-title">­ƒÄô Ï▒┘é┘à Ïº┘äÏÀÏº┘äÏ¿</div>
+                        <div class="ac-card-title">🎓 رقم الطالب</div>
                         <div class="ac-card-val" id="card-studentid-text" style="color:#34c759; font-size:1.05rem;">-</div>
                     </div>
                     <div class="ac-card" style="border-color:var(--border);">
-                        <div class="ac-card-title">­ƒôà Ï¬ÏºÏ▒┘èÏ« Ïº┘äÏ¬Ï│Ï¼┘è┘ä</div>
+                        <div class="ac-card-title">📅 تاريخ التسجيل</div>
                         <div class="ac-card-val" id="card-inscription-text" dir="ltr" style="font-size:0.95rem;">-</div>
                     </div>
                 </div>
@@ -3274,15 +3275,15 @@ window.setSalesFunnel = function(val, el) {
                 <!-- Info List -->
                 <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
                     <div class="pg-row">
-                        <div class="pg-label">­ƒÅà ┘àÏ│Ï¬┘ê┘ë Ïº┘äÏ╣Ï▒Ï¿┘èÏ®</div>
+                        <div class="pg-label">🏅 مستوى العربية</div>
                         <div class="pg-val" id="profile-arabiclevel-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒÅ½ Ïº┘ä┘àÏ│Ï¬┘ê┘ë Ïº┘ä┘àÏ»Ï▒Ï│┘è</div>
+                        <div class="pg-label">🏫 المستوى المدرسي</div>
                         <div class="pg-val" id="profile-school-level-text">-</div>
                     </div>
                     <div class="pg-row">
-                        <div class="pg-label">­ƒæÑ Ï¡Ïº┘äÏ® Ïº┘äÏ╣ÏÂ┘ê┘èÏ®</div>
+                        <div class="pg-label">👥 حالة العضوية</div>
                         <div class="pg-val" id="profile-membership" style="font-size:0.8rem;">-</div>
                     </div>
                 </div>
@@ -3290,34 +3291,34 @@ window.setSalesFunnel = function(val, el) {
             
             <!-- Tab 3: Telegram -->
             <div id="mcontent-telegram" class="mcontent" style="overflow-y:auto; flex:1; padding-right:5px;">
-                <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">Ô£à Ï¡Ïº┘äÏ® Ïº┘äÏ▒Ï¿ÏÀ : <span id="profile-tg-display">-</span></div>
-                <div class="chip" id="profile-tg-username-container" style="background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ ÏºÏ│┘à Ïº┘ä┘àÏ│Ï¬Ï«Ï»┘à : <span id="profile-tg-username-text" dir="ltr">-</span></div>
-                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">­ƒåö ┘àÏ╣Ï▒┘æ┘ü Ï¬┘è┘ä┘èÏ¼Ï▒Ïº┘à : <span id="profile-tgid-text" dir="ltr">-</span></div>
-            <div class="chip" id="profile-tg-firstname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">­ƒæñ Ïº┘äÏºÏ│┘à Ïº┘äÏú┘ê┘ä : <span id="profile-tg-firstname-text">-</span></div>
-            <div class="chip" id="profile-tg-lastname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">­ƒæñ Ïº┘äÏºÏ│┘à Ïº┘äÏ╣ÏºÏª┘ä┘è : <span id="profile-tg-lastname-text">-</span></div>
-            <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">­ƒôü Ï¬ÏºÏ▒┘èÏ« Ïº┘äÏº┘åÏÂ┘àÏº┘à ┘ä┘ä┘à┘ä┘ü : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-tg-container" style="background:rgba(52,199,89,0.15); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">✅ حالة الربط : <span id="profile-tg-display">-</span></div>
+                <div class="chip" id="profile-tg-username-container" style="background:rgba(52,199,89,0.08); border-color:#34c759; color:#34c759; justify-content:flex-start; align-items:center; gap:8px;">@ اسم المستخدم : <span id="profile-tg-username-text" dir="ltr">-</span></div>
+                <div class="chip" id="profile-tgid" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">🆔 معرّف تيليجرام : <span id="profile-tgid-text" dir="ltr">-</span></div>
+            <div class="chip" id="profile-tg-firstname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم الأول : <span id="profile-tg-firstname-text">-</span></div>
+            <div class="chip" id="profile-tg-lastname" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">👤 الاسم العائلي : <span id="profile-tg-lastname-text">-</span></div>
+            <div class="chip" id="profile-tg-folder" style="background:var(--surface); display:flex; justify-content:flex-start; align-items:center; gap:8px;">📁 تاريخ الانضمام للملف : <span id="profile-tg-folder-text" dir="ltr">-</span></div>
             </div>
 
-            <!-- Tab Logs/Historique ÔÇö mirror exact du student-logs-modal -->
+            <!-- Tab Logs/Historique — mirror exact du student-logs-modal -->
             <div id="mcontent-logs" class="mcontent" style="flex-direction:column; flex:1; overflow-y:auto; padding:12px; gap:10px;">
 
                 <!-- Identites DB + TG -->
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <div style="flex:1; min-width:220px; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px;">
-                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--accent);">­ƒôï ┘ç┘ê┘èÏ® ┘éÏºÏ╣Ï»Ï® Ïº┘äÏ¿┘èÏº┘åÏºÏ¬</h3>
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--accent);">📋 هوية قاعدة البيانات</h3>
                         <div id="logs-tab-db-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
                     </div>
                     <div style="flex:1; min-width:220px; background:rgba(0,136,204,0.05); border:1px solid rgba(0,136,204,0.3); border-radius:12px; padding:10px;">
-                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:#0088cc;">Ô£ê´©Å ┘ç┘ê┘èÏ® Ï¬┘è┘ä┘èÏ¼Ï▒Ïº┘à</h3>
+                        <h3 style="font-size:0.85rem; margin-bottom:8px; color:#0088cc;">✈️ هوية تيليجرام</h3>
                         <div id="logs-tab-tg-identity" style="font-size:0.82rem; color:var(--text1); line-height:1.7;">-</div>
                     </div>
                 </div>
 
                 <!-- Logs -->
                 <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; flex:1; min-height:200px;">
-                    <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--text1);">­ƒô£ Ï│Ï¼┘ä Ïº┘ä┘åÏ┤ÏºÏÀÏºÏ¬</h3>
+                    <h3 style="font-size:0.85rem; margin-bottom:8px; color:var(--text1);">📜 سجل النشاطات</h3>
                     <div id="logs-tab-body" style="overflow-y:auto; flex:1;">
-                        <div class="no-items">Ï¼ÏºÏ▒┘è Ïº┘äÏ¬Ï¡┘à┘è┘ä...</div>
+                        <div class="no-items">جاري التحميل...</div>
                     </div>
                 </div>
 
@@ -3327,8 +3328,8 @@ window.setSalesFunnel = function(val, el) {
             <div id="mcontent-crm" class="mcontent" style="flex-direction:column; flex:1; overflow:hidden; padding:0;">
                 <!-- CRM Sub-tabs -->
                 <div style="display:flex; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
-                    <div class="crm-subtab active" onclick="switchCrmSubtab('timeline')" id="csub-timeline" style="flex:1; text-align:center; padding:12px; cursor:pointer; font-weight:bold; color:#0a84ff; border-bottom:2px solid #0a84ff;">­ƒòÆ Ï│Ï¼┘ä Ïº┘ä┘åÏ┤ÏºÏÀÏºÏ¬</div>
-                    <div class="crm-subtab" onclick="switchCrmSubtab('add')" id="csub-add" style="flex:1; text-align:center; padding:12px; cursor:pointer; color:var(--text2); border-bottom:2px solid transparent;">Ô×ò ÏÑÏÂÏº┘üÏ® ┘à┘äÏºÏ¡Ï©Ï®</div>
+                    <div class="crm-subtab active" onclick="switchCrmSubtab('timeline')" id="csub-timeline" style="flex:1; text-align:center; padding:12px; cursor:pointer; font-weight:bold; color:#0a84ff; border-bottom:2px solid #0a84ff;">🕒 سجل النشاطات</div>
+                    <div class="crm-subtab" onclick="switchCrmSubtab('add')" id="csub-add" style="flex:1; text-align:center; padding:12px; cursor:pointer; color:var(--text2); border-bottom:2px solid transparent;">➕ إضافة ملاحظة</div>
                 </div>
 
                 <!-- Timeline View -->
@@ -3336,36 +3337,36 @@ window.setSalesFunnel = function(val, el) {
                     
                     <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px; direction:rtl; text-align:right;">
                         <h4 style="margin: 0 0 15px 0; font-size: 1.05rem; color: var(--accent); display:flex; align-items:center; gap:8px;">
-                            ­ƒôè ┘àÏ¬ÏºÏ¿Ï╣Ï® Ïº┘ä┘à┘âÏº┘ä┘àÏºÏ¬ (Google Sheets)
+                            📊 متابعة المكالمات (Google Sheets)
                         </h4>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
                             <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
-                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">­ƒæÑ Ïº┘ä┘üÏ▒┘è┘é</div>
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">👥 الفريق</div>
                                 <div id="profile-team-text" style="font-weight:bold; color:var(--text1);">-</div>
                             </div>
                             <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; ">
-                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">­ƒôØ Ïº┘ä┘à┘äÏºÏ¡Ï©ÏºÏ¬</div>
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📝 الملاحظات</div>
                                 <div id="profile-comments-text" style="font-weight:bold; color:#ff9f0a; white-space:pre-wrap;">-</div>
                             </div>
                             <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
-                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">­ƒô× Ïº┘ä┘à┘âÏº┘ä┘àÏ® 1</div>
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 1</div>
                                 <div id="profile-appel1-text" style="font-weight:bold; color:var(--text1);">-</div>
                             </div>
                             <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
-                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">­ƒô× Ïº┘ä┘à┘âÏº┘ä┘àÏ® 2</div>
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 2</div>
                                 <div id="profile-appel2-text" style="font-weight:bold; color:var(--text1);">-</div>
                             </div>
                             <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px;">
-                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">­ƒô× Ïº┘ä┘à┘âÏº┘ä┘àÏ® 3</div>
+                                <div style="font-size:0.8rem; color:var(--text2); margin-bottom:4px;">📞 المكالمة 3</div>
                                 <div id="profile-appel3-text" style="font-weight:bold; color:var(--text1);">-</div>
                             </div>
                         </div>
                     </div>
                     <div style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px; flex-shrink:0;">
-                        <div class="chip crm-filter active" onclick="filterCrm('all')" id="crm-flt-all" style="cursor:pointer; background:rgba(10,132,255,0.15); color:#0a84ff; border-color:#0a84ff;">­ƒöÿ Ï╣Ï▒ÏÂ Ïº┘ä┘â┘ä</div>
-                        <div class="chip crm-filter" onclick="filterCrm('notes')" id="crm-flt-notes" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">­ƒùú´©Å Ïº┘ä┘à┘äÏºÏ¡Ï©ÏºÏ¬</div>
-                        <div class="chip crm-filter" onclick="filterCrm('tickets')" id="crm-flt-tickets" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">­ƒÜ¿ Ïº┘äÏ¬Ï░Ïº┘âÏ▒</div>
-                        <div class="chip crm-filter" onclick="filterCrm('system')" id="crm-flt-system" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">­ƒñû Ïº┘ä┘åÏ©Ïº┘à</div>
+                        <div class="chip crm-filter active" onclick="filterCrm('all')" id="crm-flt-all" style="cursor:pointer; background:rgba(10,132,255,0.15); color:#0a84ff; border-color:#0a84ff;">🔘 عرض الكل</div>
+                        <div class="chip crm-filter" onclick="filterCrm('notes')" id="crm-flt-notes" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🗣️ الملاحظات</div>
+                        <div class="chip crm-filter" onclick="filterCrm('tickets')" id="crm-flt-tickets" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🚨 التذاكر</div>
+                        <div class="chip crm-filter" onclick="filterCrm('system')" id="crm-flt-system" style="cursor:pointer; background:var(--surface); color:var(--text2); border-color:var(--border);">🤖 النظام</div>
                     </div>
                     <div id="crm-timeline-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:5px; margin-bottom:20px;">
                         <!-- JS populated -->
@@ -3375,36 +3376,36 @@ window.setSalesFunnel = function(val, el) {
                 <!-- Add Note View -->
                 <div id="crm-view-add" style="flex:1; display:none; flex-direction:column; padding:15px; overflow-y:auto; background:var(--bg);">
                     <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                        <h4 style="margin:0 0 15px 0; font-size:1.1rem; color:var(--text1);">Ï¬┘üÏºÏÁ┘è┘ä Ïº┘ä┘à┘äÏºÏ¡Ï©Ï® (CRM)</h4>
+                        <h4 style="margin:0 0 15px 0; font-size:1.1rem; color:var(--text1);">تفاصيل الملاحظة (CRM)</h4>
                         
-                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">┘å┘êÏ╣ Ïº┘äÏ¬┘êÏºÏÁ┘ä:</label>
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نوع التواصل:</label>
                         <select id="crm-type" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;">
-                            <option value="APPEL">­ƒô× ÏºÏ¬ÏÁÏº┘ä Ï╣ÏºÏ»┘è</option>
-                            <option value="APPEL_WA">­ƒô× ÏºÏ¬ÏÁÏº┘ä ┘êÏºÏ¬Ï│ÏºÏ¿</option>
-                            <option value="WHATSAPP">­ƒÆ¼ Ï▒Ï│Ïº┘äÏ® ┘êÏºÏ¬Ï│ÏºÏ¿</option>
-                            <option value="TELEGRAM">Ô£ê´©Å Ï¬┘è┘ä┘èÏ¼Ï▒Ïº┘à</option>
-                            <option value="EMAIL">­ƒôº Ï¿Ï▒┘èÏ» ÏÑ┘ä┘âÏ¬Ï▒┘ê┘å┘è</option>
-                            <option value="AUTRE">­ƒôî ÏúÏ«Ï▒┘ë</option>
+                            <option value="APPEL">📞 اتصال عادي</option>
+                            <option value="APPEL_WA">📞 اتصال واتساب</option>
+                            <option value="WHATSAPP">💬 رسالة واتساب</option>
+                            <option value="TELEGRAM">✈️ تيليجرام</option>
+                            <option value="EMAIL">📧 بريد إلكتروني</option>
+                            <option value="AUTRE">📌 أخرى</option>
                         </select>
                         
-                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">Ïº┘äÏ¬ÏÁ┘å┘è┘ü (Ïº┘ä┘àÏ┤┘â┘äÏ®):</label>
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">التصنيف (المشكلة):</label>
                         <select id="crm-tag" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;">
-                            <option value="TECHNIQUE">ÔÜÖ´©Å ┘àÏ┤┘â┘äÏ® Ï¬┘é┘å┘èÏ®</option>
-                            <option value="REMBOURSEMENT">­ƒÆ│ ÏºÏ│Ï¬Ï▒Ï»ÏºÏ» Ïú┘à┘êÏº┘ä</option>
-                            <option value="MALADIE">­ƒÅÑ ┘àÏ▒ÏÂ</option>
-                            <option value="VOYAGE">Ô£ê´©Å Ï│┘üÏ▒</option>
-                            <option value="MOTIVATION">­ƒôë ┘å┘éÏÁ Ï¬Ï¡┘ü┘èÏ▓</option>
-                            <option value="INFO">Ôä╣´©Å ┘àÏ╣┘ä┘ê┘àÏ®</option>
-                            <option value="AUTRE">­ƒôî ÏúÏ«Ï▒┘ë</option>
+                            <option value="TECHNIQUE">⚙️ مشكلة تقنية</option>
+                            <option value="REMBOURSEMENT">💳 استرداد أموال</option>
+                            <option value="MALADIE">🏥 مرض</option>
+                            <option value="VOYAGE">✈️ سفر</option>
+                            <option value="MOTIVATION">📉 نقص تحفيز</option>
+                            <option value="INFO">ℹ️ معلومة</option>
+                            <option value="AUTRE">📌 أخرى</option>
                         </select>
                         
-                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">ÏºÏ│┘à Ïº┘ä┘àÏ│Ïñ┘ê┘ä (┘è┘ÅÏ¡┘üÏ© Ï¬┘ä┘éÏºÏª┘èÏº┘ï):</label>
-                        <input id="crm-admin-name" type="text" placeholder="ÏºÏ│┘à┘â..." style="width:100%; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;" oninput="localStorage.setItem('adminName', this.value)">
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">اسم المسؤول (يُحفظ تلقائياً):</label>
+                        <input id="crm-admin-name" type="text" placeholder="اسمك..." style="width:100%; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); outline:none; margin-bottom:15px;" oninput="localStorage.setItem('adminName', this.value)">
                         
-                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">┘åÏÁ Ïº┘ä┘à┘äÏºÏ¡Ï©Ï®:</label>
-                        <textarea id="crm-note" placeholder="Ïº┘âÏ¬Ï¿ Ï¬┘üÏºÏÁ┘è┘ä Ïº┘ä┘àÏ¡ÏºÏ»Ï½Ï® ┘ç┘åÏº..." style="width:100%; height:100px; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; outline:none; resize:none; margin-bottom:20px;"></textarea>
+                        <label style="display:block; margin-bottom:5px; font-weight:bold; color:var(--text2); font-size:0.85rem;">نص الملاحظة:</label>
+                        <textarea id="crm-note" placeholder="اكتب تفاصيل المحادثة هنا..." style="width:100%; height:100px; padding:10px; box-sizing:border-box; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; outline:none; resize:none; margin-bottom:20px;"></textarea>
                         
-                        <button id="btn-save-note" class="btn btn-primary" onclick="addCrmNote()" style="width:100%; padding:12px; border-radius:8px; font-size:1rem; font-weight:bold;">­ƒÆ¥ Ï¡┘üÏ© Ïº┘ä┘à┘äÏºÏ¡Ï©Ï® ┘êÏÑÏ▒Ï│Ïº┘ä</button>
+                        <button id="btn-save-note" class="btn btn-primary" onclick="addCrmNote()" style="width:100%; padding:12px; border-radius:8px; font-size:1rem; font-weight:bold;">💾 حفظ الملاحظة وإرسال</button>
                     </div>
                 </div>
             </div>
@@ -3415,115 +3416,115 @@ window.setSalesFunnel = function(val, el) {
     
     <!-- FULL SCREEN JOURNEY BUTTON -->
     <div style="background:var(--accent); border-radius:12px; padding:15px; margin-bottom:20px; text-align:center; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-weight:bold; font-size:1.1rem; box-shadow:0 5px 15px rgba(0,0,0,0.3); transition:transform 0.2s;" onclick="openFullscreenJourney()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-        <span>­ƒøñ´©Å Ïº┘üÏ¬Ï¡ Ïº┘ä┘àÏ│ÏºÏ▒ Ïº┘ä┘âÏº┘à┘ä (Parcours Complet Plein ├ëcran)</span>
+        <span>🛤️ افتح المسار الكامل (Parcours Complet Plein Écran)</span>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
     </div>
     
     <!-- UNIFIED COMPOSER V2 -->
 
     <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px; margin-bottom:20px; text-align:right;" dir="rtl">
-        <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1.05rem;">Ô£ë´©Å Ï▒Ï│Ïº┘äÏ® ┘àÏ«ÏÁÏÁÏ® (V2)</h4>
+        <h4 style="margin:0 0 10px 0; color:var(--text1); font-size:1.05rem;">✉️ رسالة مخصصة (V2)</h4>
         
         <!-- Quick Templates -->
         <div style="margin-bottom:10px;">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">Ô£ê´©Å Ï»Ï╣┘êÏ® ┘äÏ¼Ï▒┘êÏ¿ Ï¬┘ä┘èÏ¼Ï▒Ïº┘à</span>
-                <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">­ƒöö Ï¬Ï░┘â┘èÏ▒ (Relance)</span>
-                <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">­ƒñØ ÏºÏ│Ï¬┘üÏ│ÏºÏ▒ Ï╣┘å Ïº┘äÏº┘å┘éÏÀÏºÏ╣</span>
+                <span onclick="setSingleComposerTemplate('telegram')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">✈️ دعوة لجروب تليجرام</span>
+                <span onclick="setSingleComposerTemplate('relance')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">🔔 تذكير (Relance)</span>
+                <span onclick="setSingleComposerTemplate('support')" style="cursor:pointer; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; color:var(--text1);">🤝 استفسار عن الانقطاع</span>
             </div>
         </div>
         
         <!-- Textarea -->
-        <textarea id="single-composer-text" rows="4" placeholder="Ïº┘âÏ¬Ï¿ Ï▒Ï│Ïº┘äÏ¬┘â ┘ç┘åÏº..." style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.9rem; resize:vertical; box-sizing:border-box; margin-bottom:12px;"></textarea>
+        <textarea id="single-composer-text" rows="4" placeholder="اكتب رسالتك هنا..." style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text1); font-family:inherit; font-size:0.9rem; resize:vertical; box-sizing:border-box; margin-bottom:12px;"></textarea>
         
         <!-- Send Buttons -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button onclick="sendSingleMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">­ƒƒ® ┘êÏºÏ¬Ï│ÏºÏ¿</button>
-            <button onclick="sendSingleMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">Ô£ê´©Å Ï¬┘ä┘èÏ¼Ï▒Ïº┘à</button>
-            <button onclick="sendSingleMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">­ƒô▒ SMS</button>
-            <button onclick="sendSingleMessage('email')" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">­ƒôº ÏÑ┘è┘à┘è┘ä</button>
+            <button onclick="sendSingleMessage('whatsapp')" style="background:#25D366; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">🟩 واتساب</button>
+            <button onclick="sendSingleMessage('telegram')" style="background:#0088cc; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">✈️ تليجرام</button>
+            <button onclick="sendSingleMessage('sms')" style="background:#f59e0b; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">📱 SMS</button>
+            <button onclick="sendSingleMessage('email')" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:0.9rem;">📧 إيميل</button>
         </div>
     </div>
     <!-- END UNIFIED COMPOSER V2 -->
     
     <div id="funnel-victory-banner" class="success-banner" style="display:none;">
-        ­ƒÄë Ïº┘ä┘çÏ»┘ü Ï¬Ï¡┘é┘é : Ïº┘äÏÀÏº┘äÏ¿ ┘àÏ│Ï¼┘ä ┘ü┘è Ïº┘ä┘à┘åÏÁÏ® ┘ê┘äÏº ┘èÏ¡Ï¬ÏºÏ¼ ÏÑ┘ä┘ë ┘àÏ¬ÏºÏ¿Ï╣Ï® ÏÑÏÂÏº┘ü┘èÏ® !
+        🎉 الهدف تحقق : الطالب مسجل في المنصة ولا يحتاج إلى متابعة إضافية !
     </div>
 
     <div class="timeline" id="funnel-timeline">
         
-        <!-- ├ëTAPE 1 : Email -->
+        <!-- ÉTAPE 1 : Email -->
         <div class="timeline-block" id="funnel-step-email1">
             <div class="timeline-dot"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>Ô£ë´©Å Ïº┘ä┘àÏ▒Ï¡┘äÏ® 1 : Ïº┘äÏÑ┘è┘à┘è┘ä Ïº┘äÏ¬Ï▒Ï¡┘èÏ¿┘è</span>
-                    <button class="btn-action" onclick="sendFunnelAction('send_email_1')">ÏÑÏ▒Ï│Ïº┘ä Ïº┘äÏÑ┘è┘à┘è┘ä</button>
+                    <span>✉️ المرحلة 1 : الإيميل الترحيبي</span>
+                    <button class="btn-action" onclick="sendFunnelAction('send_email_1')">إرسال الإيميل</button>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-email-sent">ÔÅ│</span>
-                        <span>Ï¬┘à Ïº┘äÏÑÏ▒Ï│Ïº┘ä :</span>
+                        <span id="f-icon-email-sent">⏳</span>
+                        <span>تم الإرسال :</span>
                         <span id="f-date-email-sent" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                     <div class="timeline-sub-item">
-                        <span id="f-icon-email-opened">ÔÅ│</span>
-                        <span>Ï¬┘à ┘üÏ¬Ï¡ Ïº┘äÏÑ┘è┘à┘è┘ä :</span>
+                        <span id="f-icon-email-opened">⏳</span>
+                        <span>تم فتح الإيميل :</span>
                         <span id="f-date-email-opened" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                     <div class="timeline-sub-item">
-                        <span id="f-icon-email-clicked">ÔÅ│</span>
-                        <span>Ï¬┘à Ïº┘ä┘å┘éÏ▒ Ï╣┘ä┘ë Ïº┘äÏ▒ÏºÏ¿ÏÀ :</span>
+                        <span id="f-icon-email-clicked">⏳</span>
+                        <span>تم النقر على الرابط :</span>
                         <span id="f-date-email-clicked" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ├ëTAPE 2 : Email 2 (Relance) -->
+        <!-- ÉTAPE 2 : Email 2 (Relance) -->
         <div class="timeline-block" id="funnel-step-email2">
             <div class="timeline-dot" style="background:#f59e0b;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>­ƒô¿ Ïº┘ä┘àÏ▒Ï¡┘äÏ® 2 : ÏÑ┘è┘à┘è┘ä Ïº┘äÏ¬Ï░┘â┘èÏ▒</span>
-                    <button class="btn-action" onclick="sendFunnelAction('send_email_2')" style="background:#f59e0b;">ÏÑÏ▒Ï│Ïº┘ä Ï¬Ï░┘â┘èÏ▒</button>
+                    <span>📨 المرحلة 2 : إيميل التذكير</span>
+                    <button class="btn-action" onclick="sendFunnelAction('send_email_2')" style="background:#f59e0b;">إرسال تذكير</button>
                 </div>
             </div>
         </div>
 
-        <!-- ├ëTAPE 3 : WhatsApp -->
+        <!-- ÉTAPE 3 : WhatsApp -->
         <div class="timeline-block" id="funnel-step-wa">
             <div class="timeline-dot" style="background:#25D366;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>­ƒÆ¼ ├ëTAPE 3 : WhatsApp</span>
+                    <span>💬 ÉTAPE 3 : WhatsApp</span>
                     <div>
-                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">­ƒÆ¼ WhatsApp 1</button>
-                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">­ƒÆ¼ WhatsApp 2 (Dernier)</button>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_1')" style="margin-bottom:5px;">💬 WhatsApp 1</button>
+                        <button class="btn-action btn-wa" onclick="sendFunnelAction('log_wa_2')">💬 WhatsApp 2 (Dernier)</button>
                     </div>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-whatsapp-sent">ÔÅ│</span>
-                        <span>Dernier WhatsApp envoy├® :</span>
+                        <span id="f-icon-whatsapp-sent">⏳</span>
+                        <span>Dernier WhatsApp envoyé :</span>
                         <span id="f-date-whatsapp-sent" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ├ëTAPE 4 : Telegram -->
+        <!-- ÉTAPE 4 : Telegram -->
         <div class="timeline-block" id="funnel-step-tg">
             <div class="timeline-dot" style="background:#0088cc;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>Ô£ê´©Å ├ëTAPE 4 : Envoi sur Telegram</span>
-                    <button class="btn-action" onclick="sendFunnelAction('log_tg_1')" style="background:#0088cc;">Ô£ê´©Å Message direct</button>
+                    <span>✈️ ÉTAPE 4 : Envoi sur Telegram</span>
+                    <button class="btn-action" onclick="sendFunnelAction('log_tg_1')" style="background:#0088cc;">✈️ Message direct</button>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-telegram-sent">ÔÅ│</span>
-                        <span>Message Telegram envoy├® :</span>
+                        <span id="f-icon-telegram-sent">⏳</span>
+                        <span>Message Telegram envoyé :</span>
                         <span id="f-date-telegram-sent" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                 </div>
@@ -3531,72 +3532,72 @@ window.setSalesFunnel = function(val, el) {
         </div>
 
         
-        <!-- ├ëTAPE SMS -->
+        <!-- ÉTAPE SMS -->
         <div class="timeline-block" id="funnel-step-sms">
             <div class="timeline-dot" style="background:#0ea5e9;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>­ƒô▒ Ïº┘ä┘àÏ▒Ï¡┘äÏ® : Ï▒Ï│Ïº┘äÏ® SMS (Lien Direct)</span>
+                    <span>📱 المرحلة : رسالة SMS (Lien Direct)</span>
                     <div>
-                        <button class="btn-action" onclick="sendFunnelAction('log_sms')" style="background:#0ea5e9;">­ƒô▒ ÏÑÏ▒Ï│Ïº┘ä SMS / ┘üÏ¬Ï¡ Ïº┘äÏ¬ÏÀÏ¿┘è┘é</button>
+                        <button class="btn-action" onclick="sendFunnelAction('log_sms')" style="background:#0ea5e9;">📱 إرسال SMS / فتح التطبيق</button>
                     </div>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-sms-sent">ÔÅ│</span>
-                        <span>ÏóÏ«Ï▒ Ï▒Ï│Ïº┘äÏ® SMS :</span>
+                        <span id="f-icon-sms-sent">⏳</span>
+                        <span>آخر رسالة SMS :</span>
                         <span id="f-date-sms-sent" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                     <div class="timeline-sub-item">
-                        <span id="f-icon-last-source">­ƒöì</span>
-                        <span>┘àÏÁÏ»Ï▒ Ïº┘äÏ»Ï«┘ê┘ä Ïº┘äÏúÏ«┘èÏ▒ :</span>
+                        <span id="f-icon-last-source">🔍</span>
+                        <span>مصدر الدخول الأخير :</span>
                         <span id="f-source-last-click" style="font-weight:bold; color:var(--accent);">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ├ëTAPE ONBOARDING (VID├ëOS & CHARTE) -->
+        <!-- ÉTAPE ONBOARDING (VIDÉOS & CHARTE) -->
         <div class="timeline-block" id="funnel-step-onboarding">
             <div class="timeline-dot" style="background:#f59e0b;"></div>
             <div class="timeline-content">
                 <div class="timeline-title" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>­ƒÄÑ ┘àÏ│ÏºÏ▒ Ïº┘äÏ¬Ïú┘ç┘è┘ä ┘êÏ¬Ï¼Ï▒Ï¿Ï® Ïº┘äÏÀÏº┘äÏ¿ (Onboarding Funnel)</span>
-                    <span id="f-onboarding-badge" style="font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:12px; background:#334155; color:white;">┘ä┘à ┘èÏ¿Ï»Ïú</span>
+                    <span>🎥 مسار التأهيل وتجربة الطالب (Onboarding Funnel)</span>
+                    <span id="f-onboarding-badge" style="font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:12px; background:#334155; color:white;">لم يبدأ</span>
                 </div>
                 
                 <!-- Live Pipeline Visual Steps -->
                 <div style="margin: 12px 0 16px 0; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px;">
-                    <div style="font-size:0.75rem; font-weight:bold; color:var(--text2); margin-bottom:8px;">┘àÏ▒ÏºÏ¡┘ä Ïº┘äÏ¬┘éÏ»┘à ┘ü┘è Ï▒ÏºÏ¿ÏÀ Ïº┘äÏ¬Ïú┘ç┘è┘ä (link.html) :</div>
+                    <div style="font-size:0.75rem; font-weight:bold; color:var(--text2); margin-bottom:8px;">مراحل التقدم في رابط التأهيل (link.html) :</div>
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:6px;" id="onboarding-steps-grid">
                         <div class="onb-chip" id="onb-chip-1" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
-                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-1">ÔÜ¬</div>
-                            <div style="font-weight:bold;">1. Ïº┘äÏ¬Ï╣┘çÏ» Ïº┘äÏú┘ê┘ä┘è</div>
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-1">⚪</div>
+                            <div style="font-weight:bold;">1. التعهد الأولي</div>
                             <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-1">-</div>
                         </div>
                         <div class="onb-chip" id="onb-chip-2" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
-                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-2">ÔÜ¬</div>
-                            <div style="font-weight:bold;">2. ┘ü┘èÏ»┘è┘ê Ï¬┘ä┘èÏ¼Ï▒Ïº┘à</div>
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-2">⚪</div>
+                            <div style="font-weight:bold;">2. فيديو تليجرام</div>
                             <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-2">-</div>
                         </div>
                         <div class="onb-chip" id="onb-chip-3" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
-                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-3">ÔÜ¬</div>
-                            <div style="font-weight:bold;">3. ┘ü┘èÏ»┘è┘ê Ïº┘äÏ¿┘èÏº┘åÏºÏ¬</div>
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-3">⚪</div>
+                            <div style="font-weight:bold;">3. فيديو البيانات</div>
                             <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-3">-</div>
                         </div>
                         <div class="onb-chip" id="onb-chip-4" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
-                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-4">ÔÜ¬</div>
-                            <div style="font-weight:bold;">4. ┘ü┘èÏ»┘è┘ê Ïº┘ä┘àÏ¼┘à┘êÏ╣ÏºÏ¬</div>
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-4">⚪</div>
+                            <div style="font-weight:bold;">4. فيديو المجموعات</div>
                             <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-4">-</div>
                         </div>
                         <div class="onb-chip" id="onb-chip-5" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
-                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-5">ÔÜ¬</div>
-                            <div style="font-weight:bold;">5. ┘à┘èÏ½Ïº┘é Ïº┘äÏ┤Ï▒┘ü</div>
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-5">⚪</div>
+                            <div style="font-weight:bold;">5. ميثاق الشرف</div>
                             <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-5">-</div>
                         </div>
                         <div class="onb-chip" id="onb-chip-6" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:0.72rem; text-align:center; color:var(--text2);">
-                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-6">ÔÜ¬</div>
-                            <div style="font-weight:bold;">6. Ï┤ÏºÏ┤Ï® Ïº┘äÏ▒Ï¿ÏÀ</div>
+                            <div style="font-size:1rem; margin-bottom:2px;" id="onb-icon-6">⚪</div>
+                            <div style="font-weight:bold;">6. شاشة الربط</div>
                             <div style="font-size:0.65rem; color:var(--text2);" id="onb-time-6">-</div>
                         </div>
                     </div>
@@ -3604,39 +3605,39 @@ window.setSalesFunnel = function(val, el) {
 
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-onboarding-status">­ƒöì</span>
-                        <span>ÏóÏ«Ï▒ ┘åÏ┤ÏºÏÀ ┘àÏ│Ï¼┘ä ┘ü┘è Ïº┘ä┘àÏ│ÏºÏ▒ :</span>
+                        <span id="f-icon-onboarding-status">🔍</span>
+                        <span>آخر نشاط مسجل في المسار :</span>
                         <span id="f-desc-onboarding-status" style="font-weight:bold; color:var(--text1); font-size:0.82rem;">-</span>
                     </div>
                     <div class="timeline-sub-item" id="f-row-onboarding-error" style="display:none; background:rgba(239,68,68,0.1); padding:6px 10px; border-radius:8px; border:1px solid rgba(239,68,68,0.3);">
-                        <span>ÔÜá´©Å</span>
-                        <span style="color:#ef4444; font-weight:bold;">Ï│Ï¿Ï¿ Ïº┘äÏ«ÏÀÏú / Ïº┘äÏ¬Ï╣Ï½Ï▒ :</span>
+                        <span>⚠️</span>
+                        <span style="color:#ef4444; font-weight:bold;">سبب الخطأ / التعثر :</span>
                         <span id="f-desc-onboarding-error" style="color:#ef4444; font-size:0.82rem; font-weight:bold;">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ├ëTAPE FINALE -->
+        <!-- ÉTAPE FINALE -->
         <div class="timeline-block" id="funnel-step-final">
             <div class="timeline-dot" style="background:#8b5cf6;"></div>
             <div class="timeline-content">
                 <div class="timeline-title">
-                    <span>­ƒÅü ├ëTAPE FINALE : Action de l'├ël├¿ve</span>
+                    <span>🏁 ÉTAPE FINALE : Action de l'Élève</span>
                 </div>
                 <div class="timeline-subs">
                     <div class="timeline-sub-item">
-                        <span id="f-icon-bot-started">ÔÅ│</span>
-                        <span>Appuyer sur le lien (D├®marrage) :</span>
+                        <span id="f-icon-bot-started">⏳</span>
+                        <span>Appuyer sur le lien (Démarrage) :</span>
                         <span id="f-date-bot-started" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                     <div class="timeline-sub-item">
-                        <span id="f-icon-folder-clicked">ÔÅ│</span>
+                        <span id="f-icon-folder-clicked">⏳</span>
                         <span>Appuyer sur le bouton Folder :</span>
                         <span id="f-date-folder-clicked" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
                     <div class="timeline-sub-item">
-                        <span id="f-icon-group-joined">ÔÅ│</span>
+                        <span id="f-icon-group-joined">⏳</span>
                         <span>Rejoindre le groupe :</span>
                         <span id="f-date-group-joined" dir="ltr" style="font-weight:bold;">-</span>
                     </div>
@@ -3645,7 +3646,6 @@ window.setSalesFunnel = function(val, el) {
         </div>
     </div>
 </div>
-
 
 <!-- Historique button removed — now in السجل tab -->
         </div>
