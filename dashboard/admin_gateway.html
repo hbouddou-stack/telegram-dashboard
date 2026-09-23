@@ -9956,6 +9956,114 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
             }
         }
 
+        async function sendFunnelAction(actionType) {
+            if (!activeStudentId) return;
+            if (!confirm('Voulez-vous vraiment effectuer cette action ?')) return;
+            
+            const student = allStudents.find(s => s.student_id === activeStudentId);
+            let finalUrl = null;
+            
+            if (student) {
+                const token = student.magic_token || student.student_id;
+                let text = encodeURIComponent(`Ïº┘äÏ│┘äÏº┘à Ï╣┘ä┘è┘â┘àÏî ┘çÏ░Ïº Ï▒ÏºÏ¿ÏÀ Ïº┘äÏ»Ï«┘ê┘ä Ïº┘äÏ«ÏºÏÁ Ï¿┘â ┘ä┘äÏú┘âÏºÏ»┘è┘à┘èÏ®:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
+                let phoneStr = String(student.phone || '').replace(/\D/g, '');
+                
+                if (actionType === 'log_sms') {
+                    if (phoneStr) {
+                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
+                        let smsText = encodeURIComponent(`Ïº┘äÏ│┘äÏº┘à Ï╣┘ä┘è┘â┘à ${student.first_name || ''}Ïî ÏÑ┘ä┘è┘â Ï▒ÏºÏ¿ÏÀ Ïº┘äÏ»Ï«┘ê┘ä Ïº┘äÏ«ÏºÏÁ Ï¿┘â ┘ä┘äÏú┘âÏºÏ»┘è┘à┘èÏ®:\nhttps://t.me/${smsBot}?start=_sms${token}`);
+                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
+                    } else {
+                        alert("Aucun num├®ro de t├®l├®phone"); return;
+                    }
+                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
+                    if (phoneStr) {
+                        finalUrl = `https://wa.me/${phoneStr}?text=${text}`;
+                    } else {
+                        alert("Aucun num├®ro de t├®l├®phone pour cet ├®tudiant.");
+                        return;
+                    }
+                } else if (actionType === 'log_tg_1') {
+                    if (phoneStr) {
+                        finalUrl = `https://t.me/+${phoneStr}`;
+                    } else {
+                        alert("Aucun num├®ro de t├®l├®phone pour cet ├®tudiant.");
+                        return;
+                    }
+                }
+            }
+            
+            if (finalUrl) {
+                window.open(finalUrl, '_blank');
+            }
+            
+            try {
+                const res = await fetch('/api/admin/gateway/action', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: actionType,
+                        student_id: activeStudentId
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if(actionType.includes('email')) {
+                        alert('Action r├®ussie !');
+                    }
+                    loadStudents();
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            } catch(e) {}
+        }
+
+        
+            function valOrEmpty(val) {
+                if (!val || String(val).trim() === '' || String(val).trim() === 'null') {
+                    return '<span class="pg-empty">Ï║┘èÏ▒ ┘àÏ¬┘ê┘üÏ▒</span>';
+                }
+                return val;
+            }
+
+        
+async function toggleStudentValidity() {
+    if(!activeStudentId) return;
+    const currentState = activeStudentObj.excluded == 1 ? 1 : 0;
+    const newState = currentState === 1 ? 0 : 1;
+    
+    try {
+        const r = await fetch('/api/admin/gateway/duplicates/exclude', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ student_id: activeStudentId, excluded: newState })
+        });
+        const res = await r.json();
+        if(res.success) {
+            activeStudentObj.excluded = newState;
+            
+            const valBtn = document.getElementById('toggle-validity-btn');
+            if(valBtn) {
+                if(activeStudentObj.excluded == 1) {
+                    valBtn.innerHTML = 'Ô£à ÏºÏ│Ï¬Ï╣ÏºÏ»Ï® Ïº┘äÏÀÏº┘äÏ¿';
+                    valBtn.style.background = '#28a745';
+                    valBtn.style.color = '#fff';
+                } else {
+                    valBtn.innerHTML = '­ƒÜ½ Ï║┘èÏ▒ ÏÁÏº┘äÏ¡';
+                    valBtn.style.background = '#dc3545';
+                    valBtn.style.color = '#fff';
+                }
+            }
+            
+            renderStudents();
+            updateDashboardView();
+        } else {
+            alert('Erreur : ' + res.error);
+        }
+    } catch(e) {
+        alert('Erreur serveur : ' + e.message);
+    }
+}
         async function openStudentCard(student) {
             // Show modal FIRST so user sees something even if an error occurs below
             document.getElementById('logs-overlay').style.display = 'flex';
