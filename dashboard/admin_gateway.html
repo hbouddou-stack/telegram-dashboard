@@ -4147,6 +4147,9 @@ window.setSalesFunnel = function(val, el) {
                 'MANUAL_UNLINK': { label: '⛓️ إلغاء الربط يدوياً', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)' },
                 'CRM_NOTE': { label: '📝 ملاحظة إدارية', color: '#0a84ff', bg: 'rgba(10, 132, 255, 0.12)' },
                 'EMAIL_SENT': { label: '✉️ إرسال بريد إلكتروني', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)' },
+                'TELEGRAM_SENT': { label: '✈️ رسالة تليجرام مرسلة', color: '#0088cc', bg: 'rgba(0, 136, 204, 0.15)' },
+                'SOS_REQUESTED': { label: '🚨 طلب مساعدة SOS', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+                'SOS_REPLIED': { label: '🛠️ رد الإدارة على استغاثة SOS', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
                 'WHATSAPP_SENT': { label: '💬 رسالة واتساب', color: '#25D366', bg: 'rgba(37, 211, 102, 0.12)' },
                 'SMS_SENT': { label: '📨 رسالة SMS', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
                 'TUTO_OPENED': { label: 'ℹ️ فتح دليل الشرح', color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' },
@@ -4741,7 +4744,7 @@ window.setSalesFunnel = function(val, el) {
             } else if (currentTimelineView === 'chrono') {
                 let logs = currentJourneyLogs || [];
                 // FILTER OUT SOS_WAITING_ROOM entirely as requested
-                logs = logs.filter(l => l.action_type !== 'SOS_WAITING_ROOM' && l.action_type !== 'SOS_2');
+                logs = logs.filter(l => l.action_type !== 'SOS_WAITING_ROOM'); // Include SOS tickets in chronological view
                 
                 if (logs.length === 0) {
                     logsBody.innerHTML = '<div class="no-items">لا توجد أحداث مسجلة.</div>';
@@ -5786,7 +5789,7 @@ function renderPanoramicFunnelView(listElement, filteredStudents) {
     const gFilter = window.panoramicGenderFilter || 'all';
     let cohort = filteredStudents.filter(s => {
         if (gFilter === 'all') return true;
-        const g = String(s.gender || '').toLowerCase();
+        const g = String(s.gender || s.student_gender || '').toLowerCase();
         const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
         const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنثى');
         if (gFilter === 'men') return isM;
@@ -6182,7 +6185,7 @@ function renderPanoramicFunnelView(listElement, filteredStudents) {
                 stageBadge = `<span style="background:#fee2e2; color:#dc2626; padding:2px 7px; border-radius:6px; font-weight:bold; font-size:0.75rem;">⚠️ خطأ معرف (8)</span>`;
             }
 
-            const g = String(s.gender || '').toLowerCase();
+            const g = String(s.gender || s.student_gender || '').toLowerCase();
             const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
             const genderLabel = isM ? '👨 ذكر' : '👩 أنثى';
             const tgStatus = s.telegram_id ? `<span style="color:#10b981; font-weight:bold;">مربوط (${s.telegram_id})</span>` : `<span style="color:var(--text2);">غير مربوط</span>`;
@@ -6563,7 +6566,7 @@ function renderKanbanView(listElement, filtered) {
             let arName = (s.first_name_ar || s.first_name || '') + ' ' + (s.last_name_ar || s.last_name || '');
             if (!arName.trim()) arName = s.first_name || 'بدون اسم';
             
-            const g = String(s.gender || '').toLowerCase();
+            const g = String(s.gender || s.student_gender || '').toLowerCase();
             const isFemale = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
             
             const cardBg = isFemale ? '#fdf2f8' : '#f0f9ff';
@@ -7290,7 +7293,7 @@ function filterStudents() {
                                   trCountry.includes(q) ||
                                   onbStep.includes(q) || onbDetail.includes(q);
 
-                const g = String(s.gender || '').toLowerCase();
+                const g = String(s.gender || s.student_gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك');
                 const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أنث');
                 const matchGender = filters.gender === 'all'
@@ -7974,7 +7977,7 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                 div.style.flexDirection = 'column';
                 div.style.gap = '6px';
                 
-                const g = String(s.gender || '').toLowerCase();
+                const g = String(s.gender || s.student_gender || '').toLowerCase();
                 if (g.startsWith('h') || g === 'm' || g === 'male' || g.includes('ذك')) {
                     div.style.borderRight = '5px solid #0084ff';
                     div.style.background = 'rgba(0, 132, 255, 0.08)';
@@ -9873,6 +9876,20 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
             }
         }
 
+        async async function reloadCurrentStudentLogs() {
+            if (!activeStudentObj) return;
+            try {
+                const res = await fetch('/api/admin/gateway/logs?id=' + activeStudentObj.student_id + '&tid=' + (activeStudentObj.telegram_id || 'null'));
+                const data = await res.json();
+                if (data.success && data.logs && data.logs.length > 0) {
+                    let grouped = groupLogs(data.logs);
+                    let html = grouped.map(l => renderLogCard(l, false)).join('');
+                    var ltb = document.getElementById('logs-tab-body');
+                    if (ltb) ltb.innerHTML = html;
+                }
+            } catch(e) {}
+        }
+
         async function sendSingleMessage(channel) {
             if (!activeStudentObj) return;
             const text = document.getElementById('single-composer-text').value.trim();
@@ -9887,6 +9904,19 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                 if (phone.startsWith('0')) phone = '212' + phone.substring(1);
                 const url = 'https://api.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(text);
                 
+                // Log to backend so it immediately shows in student logs!
+                try {
+                    await fetch('/api/admin/gateway/bulk_action', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            action: 'whatsapp', 
+                            student_ids: [activeStudentObj.student_id], 
+                            message: text 
+                        })
+                    });
+                } catch(e) {}
+
                 try {
                     if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.openLink === 'function') {
                         window.Telegram.WebApp.openLink(url);
@@ -9896,6 +9926,8 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                 } catch(e) {
                     window.open(url, '_blank');
                 }
+                document.getElementById('single-composer-text').value = '';
+                await reloadCurrentStudentLogs();
                 return;
             }
             
@@ -9904,12 +9936,18 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                 const res = await fetch('/api/admin/gateway/bulk_action', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: channel, student_ids: [activeStudentObj.student_id], subject: 'رسالة من الأكاديمية', message: text })
+                    body: JSON.stringify({ 
+                        action: channel, 
+                        student_ids: [activeStudentObj.student_id], 
+                        subject: 'رسالة من الأكاديمية', 
+                        message: text 
+                    })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert('✅ تم الإرسال بنجاح');
+                    alert('✅ تم الإرسال وتوثيق الرسالة في سجل النشاطات بنجاح');
                     document.getElementById('single-composer-text').value = '';
+                    await reloadCurrentStudentLogs();
                 } else {
                     alert('❌ خطأ: ' + (data.error || 'حدث خطأ غير معروف'));
                 }
@@ -9917,115 +9955,6 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                 alert('❌ خطأ في الاتصال');
             }
         }
-
-        async function sendFunnelAction(actionType) {
-            if (!activeStudentId) return;
-            if (!confirm('Voulez-vous vraiment effectuer cette action ?')) return;
-            
-            const student = allStudents.find(s => s.student_id === activeStudentId);
-            let finalUrl = null;
-            
-            if (student) {
-                const token = student.magic_token || student.student_id;
-                let text = encodeURIComponent(`السلام عليكم، هذا رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/Oswah_academy_bot?start=${actionType === 'log_wa_1' ? 'w1' : 'w2'}_${token}`);
-                let phoneStr = String(student.phone || '').replace(/\D/g, '');
-                
-                if (actionType === 'log_sms') {
-                    if (phoneStr) {
-                        let smsBot = window.BOT_USERNAME || 'alsirahquizz_bot';
-                        let smsText = encodeURIComponent(`السلام عليكم ${student.first_name || ''}، إليك رابط الدخول الخاص بك للأكاديمية:\nhttps://t.me/${smsBot}?start=_sms${token}`);
-                        finalUrl = `sms:+${phoneStr}?body=${smsText}`;
-                    } else {
-                        alert("Aucun numéro de téléphone"); return;
-                    }
-                } else if (actionType === 'log_wa_1' || actionType === 'log_wa_2') {
-                    if (phoneStr) {
-                        finalUrl = `https://wa.me/${phoneStr}?text=${text}`;
-                    } else {
-                        alert("Aucun numéro de téléphone pour cet étudiant.");
-                        return;
-                    }
-                } else if (actionType === 'log_tg_1') {
-                    if (phoneStr) {
-                        finalUrl = `https://t.me/+${phoneStr}`;
-                    } else {
-                        alert("Aucun numéro de téléphone pour cet étudiant.");
-                        return;
-                    }
-                }
-            }
-            
-            if (finalUrl) {
-                window.open(finalUrl, '_blank');
-            }
-            
-            try {
-                const res = await fetch('/api/admin/gateway/action', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        action: actionType,
-                        student_id: activeStudentId
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    if(actionType.includes('email')) {
-                        alert('Action réussie !');
-                    }
-                    loadStudents();
-                } else {
-                    alert('Erreur: ' + data.error);
-                }
-            } catch(e) {}
-        }
-
-        
-            function valOrEmpty(val) {
-                if (!val || String(val).trim() === '' || String(val).trim() === 'null') {
-                    return '<span class="pg-empty">غير متوفر</span>';
-                }
-                return val;
-            }
-
-        
-async function toggleStudentValidity() {
-    if(!activeStudentId) return;
-    const currentState = activeStudentObj.excluded == 1 ? 1 : 0;
-    const newState = currentState === 1 ? 0 : 1;
-    
-    try {
-        const r = await fetch('/api/admin/gateway/duplicates/exclude', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ student_id: activeStudentId, excluded: newState })
-        });
-        const res = await r.json();
-        if(res.success) {
-            activeStudentObj.excluded = newState;
-            
-            const valBtn = document.getElementById('toggle-validity-btn');
-            if(valBtn) {
-                if(activeStudentObj.excluded == 1) {
-                    valBtn.innerHTML = '✅ استعادة الطالب';
-                    valBtn.style.background = '#28a745';
-                    valBtn.style.color = '#fff';
-                } else {
-                    valBtn.innerHTML = '🚫 غير صالح';
-                    valBtn.style.background = '#dc3545';
-                    valBtn.style.color = '#fff';
-                }
-            }
-            
-            renderStudents();
-            updateDashboardView();
-        } else {
-            alert('Erreur : ' + res.error);
-        }
-    } catch(e) {
-        alert('Erreur serveur : ' + e.message);
-    }
-}
 
         async function openStudentCard(student) {
             // Show modal FIRST so user sees something even if an error occurs below
@@ -10525,6 +10454,16 @@ async function toggleStudentValidity() {
                             badge.style.display = 'none';
                         }
                     }
+                    const stickyBar = document.getElementById('sticky-sos-bar');
+                    const stickyCount = document.getElementById('sticky-sos-count');
+                    if(stickyBar) {
+                        if(openCount > 0) {
+                            stickyBar.style.display = 'block';
+                            if(stickyCount) stickyCount.textContent = openCount;
+                        } else {
+                            stickyBar.style.display = 'none';
+                        }
+                    }
 
                     renderSosList();
                 }
@@ -10622,7 +10561,7 @@ async function toggleStudentValidity() {
             const filtered = rawSosList.filter(s => {
                 const matchState = (activeSosSubtabState === 'open') ? (s.status === 'open' || !s.status) : (s.status === 'closed' || s.status === 'resolved');
                 if (!matchState) return false;
-                const g = String(s.gender || '').toLowerCase();
+                const g = String(s.gender || s.student_gender || '').toLowerCase();
                 const isM = g.startsWith('h') || g === 'm' || g === 'male' || g.includes('رج');
                 const isF = g.startsWith('f') || g === 'female' || g === 'fille' || g.includes('أن');
                 const matchGender = (activeSosGenderFilter === 'all') || (activeSosGenderFilter === 'homme' && isM) || (activeSosGenderFilter === 'femme' && isF);
@@ -12675,7 +12614,7 @@ function renderHomeAlerts(alerts) {
                 if (s.excluded == 1) return false;
                 if (year !== 'all' && String(s.year || '') !== String(year)) return false;
                 if (gender !== 'all') {
-                    const g = String(s.gender || '').toLowerCase();
+                    const g = String(s.gender || s.student_gender || '').toLowerCase();
                     const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
                     if (gender === 'male' && !isM) return false;
                     if (gender === 'female' && isM) return false;
@@ -12728,7 +12667,7 @@ function renderHomeAlerts(alerts) {
                 if (s.excluded == 1) return false;
                 if (year !== 'all' && String(s.year || '') !== String(year)) return false;
                 if (gender !== 'all') {
-                    const g = String(s.gender || '').toLowerCase();
+                    const g = String(s.gender || s.student_gender || '').toLowerCase();
                     const isM = g.startsWith('h') || g === 'm' || g.includes('ذكر');
                     if (gender === 'male' && !isM) return false;
                     if (gender === 'female' && isM) return false;

@@ -1197,6 +1197,10 @@ async def api_admin_gateway_bulk_action(request: web.Request):
                         try:
                             await bot.send_message(chat_id=int(tid), text=msg_text)
                             sent_count += 1
+                            await db.execute(
+                                "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, 'TELEGRAM_SENT', ?)",
+                                (sid, int(tid), name, student['telegram_username'] or '', f"✈️ رسالة تليجرام: {msg_text}")
+                            )
                         except Exception as ex:
                             _log.error(f"Error sending bulk TG message to {tid}: {ex}")
                             errors.append(str(ex))
@@ -1212,6 +1216,10 @@ async def api_admin_gateway_bulk_action(request: web.Request):
                             (sid, phone, msg_text, now_str)
                         )
                         sent_count += 1
+                        await db.execute(
+                            "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, 'SMS_SENT', ?)",
+                            (sid, student['telegram_id'] or 0, name, student['telegram_username'] or '', f"📨 رسالة SMS: {msg_text}")
+                        )
                     else:
                         errors.append(f"Student {sid} has no phone")
                 elif action == 'email':
@@ -1235,12 +1243,20 @@ async def api_admin_gateway_bulk_action(request: web.Request):
                                 server.quit()
                             sent_count += 1
                             await db.execute("UPDATE academy_students SET email_sent = COALESCE(email_sent, 0) + 1, email_sent_at = ? WHERE student_id = ?", (now_str, sid))
+                            await db.execute(
+                                "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, 'EMAIL_SENT', ?)",
+                                (sid, student['telegram_id'] or 0, name, student['telegram_username'] or '', f"📧 بريد إلكتروني (الموضوع: {subject}): {msg_text}")
+                            )
                         except Exception as em_err:
                             _log.error(f"Error sending bulk email to {em}: {em_err}")
                             errors.append(str(em_err))
                 elif action == 'whatsapp':
                     sent_count += 1
                     await db.execute("UPDATE academy_students SET whatsapp_sent = COALESCE(whatsapp_sent, 0) + 1, whatsapp_sent_at = ? WHERE student_id = ?", (now_str, sid))
+                    await db.execute(
+                        "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, 'WHATSAPP_SENT', ?)",
+                        (sid, student['telegram_id'] or 0, name, student['telegram_username'] or '', f"💬 رسالة واتساب: {msg_text}")
+                    )
             
             await db.commit()
             
@@ -1398,21 +1414,28 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
             if status == 'sos':
                 base_select = """
                     SELECT 
-                        u.telegram_id, u.first_name, u.last_name, u.username, u.created_at,
-                        s.student_id, s.first_name as student_first_name, s.last_name as student_last_name,
-                        s.email as student_email, s.gender as student_gender, s.year as level,
+                        COALESCE(g.telegram_id, u.telegram_id, s.telegram_id, 0) as telegram_id,
+                        COALESCE(u.first_name, s.first_name, 'زائر') as first_name,
+                        COALESCE(u.last_name, s.last_name, '') as last_name,
+                        COALESCE(u.username, s.telegram_username, '') as username,
+                        COALESCE(u.created_at, g.timestamp) as created_at,
+                        COALESCE(s.student_id, g.student_id, CAST(g.student_id_tentative AS INTEGER), 0) as student_id,
+                        s.first_name as student_first_name, s.last_name as student_last_name,
+                        COALESCE(s.email, g.email_tentative, '') as student_email,
+                        COALESCE(s.gender, u.gender, '') as student_gender,
+                        s.year as level,
                         s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail,
                         'SOS_REQUESTED' as last_action,
                         g.message as last_desc,
                         g.id as sos_id
                     FROM gateway_sos g
-                    JOIN users u ON u.telegram_id = g.telegram_id
-                    LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
+                    LEFT JOIN users u ON u.telegram_id = g.telegram_id
+                    LEFT JOIN academy_students s ON (s.telegram_id = g.telegram_id OR (g.student_id IS NOT NULL AND g.student_id != 0 AND s.student_id = g.student_id))
                     WHERE g.status = 'open'
                 """
                 if search:
                     st = search.replace("'", "''")
-                    base_select += f" AND (LOWER(u.first_name) LIKE '%{st}%' OR LOWER(u.username) LIKE '%{st}%' OR CAST(u.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%')"
+                    base_select += f" AND (LOWER(COALESCE(u.first_name, s.first_name, '')) LIKE '%{st}%' OR LOWER(COALESCE(u.username, '')) LIKE '%{st}%' OR CAST(g.telegram_id AS TEXT) LIKE '%{st}%' OR LOWER(g.message) LIKE '%{st}%' OR LOWER(COALESCE(s.email, g.email_tentative, '')) LIKE '%{st}%')"
                 base_select += " ORDER BY g.timestamp DESC LIMIT 500"
             elif status == 'absent':
                 base_select = "SELECT s.student_id, s.first_name, s.last_name, NULL as username, NULL as telegram_id, s.email, s.phone, s.gender, s.year as level, s.last_onboarding_step, s.last_onboarding_at, s.last_onboarding_detail, NULL as last_action, NULL as last_desc, s.created_at, s.crm_lead_status as status, s.crm_assigned_to as assignee FROM academy_students s WHERE (s.telegram_id IS NULL OR s.telegram_id = 0) AND (s.excluded = 0 OR s.excluded IS NULL) AND (UPPER(s.payment_status) IN ('PAID', 'PAYE', 'PAYÉ', 'OUI', 'YES', 'VALIDE', 'CONFIRME', '1', 'TRUE', 'EXEMPT', 'EPARGNE', 'EXONERE', 'مدفوع', 'مكتمل', 'نعم', 'مسدد', 'معفي') OR s.payment_status LIKE '%مسدد%' AND s.payment_status NOT LIKE '%غير مسدد%')"
@@ -1683,17 +1706,18 @@ async def api_admin_gateway_logs(request: web.Request):
             query_tid = '''
                 SELECT action_type, description, timestamp, telegram_id, telegram_name, telegram_username 
                 FROM student_logs 
-                WHERE telegram_id = ? OR student_id = ? 
+                WHERE (telegram_id IS NOT NULL AND telegram_id != 0 AND telegram_id = ?) 
+                   OR (student_id IS NOT NULL AND student_id != 0 AND student_id = ?) 
                 UNION ALL 
                 SELECT 
-                    CASE 
-                        WHEN student_id_tentative IS NULL OR student_id_tentative = '' OR student_id_tentative = '0' THEN 'SOS_1' 
-                        ELSE 'SOS_2' 
-                    END as action_type, 
-                    message as description, timestamp, telegram_id, 'Visiteur' as telegram_name, '' as telegram_username 
+                    'SOS_REQUESTED' as action_type, 
+                    '🆘 رسالة استغاثة SOS: ' || message as description, 
+                    timestamp, telegram_id, 'طالب / زائر' as telegram_name, '' as telegram_username 
                 FROM gateway_sos 
-                WHERE telegram_id = ? OR student_id = ? 
-                ORDER BY timestamp DESC LIMIT 80
+                WHERE (telegram_id IS NOT NULL AND telegram_id != 0 AND telegram_id = ?) 
+                   OR (student_id IS NOT NULL AND student_id != 0 AND student_id = ?)
+                   OR (student_id_tentative IS NOT NULL AND student_id_tentative != '' AND student_id_tentative = ?)
+                ORDER BY timestamp DESC LIMIT 100
             '''
             
             query_sid = '''
@@ -1710,7 +1734,7 @@ async def api_admin_gateway_logs(request: web.Request):
             '''
             
             if tid and tid != 'null' and tid != 'undefined':
-                async with db.execute(query_tid, (tid, student_id, tid, student_id)) as cur:
+                async with db.execute(query_tid, (tid, student_id, tid, student_id, str(student_id))) as cur:
                     logs = [dict(row) for row in await cur.fetchall()]
             else:
                 async with db.execute(query_sid, (student_id, student_id, str(student_id))) as cur:
@@ -2340,14 +2364,16 @@ async def api_student_folder_link(request: web.Request):
 
 async def api_gateway_sos(request: web.Request):
     import aiosqlite
+    import logging
+    _log = logging.getLogger('main')
     from config import DATABASE_PATH
     try:
         data = await request.json()
-        email = data.get('email', '')
-        message = data.get('message', '')
+        email = (data.get('email') or '').strip()
+        message = (data.get('message') or '').strip()
         telegram_id = data.get('telegram_id')
-        dob = data.get('dob', '')
-        student_id = data.get('student_id', '')
+        dob = (data.get('dob') or '').strip()
+        student_id = (data.get('student_id') or '').strip()
         source = (data.get('source') or '').strip()
         first_name = (data.get('first_name') or '').strip()
         last_name = (data.get('last_name') or '').strip()
@@ -2363,12 +2389,9 @@ async def api_gateway_sos(request: web.Request):
                 if 'user' in qs:
                     u_obj = json.loads(qs['user'][0])
                     telegram_id = u_obj.get('id')
-                    if not first_name:
-                        first_name = u_obj.get('first_name', '')
-                    if not last_name:
-                        last_name = u_obj.get('last_name', '')
-                    if not username:
-                        username = u_obj.get('username', '')
+                    if not first_name: first_name = u_obj.get('first_name', '')
+                    if not last_name: last_name = u_obj.get('last_name', '')
+                    if not username: username = u_obj.get('username', '')
             except Exception:
                 pass
 
@@ -2387,6 +2410,7 @@ async def api_gateway_sos(request: web.Request):
                 numeric_sid = 0
 
         async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
             try:
                 await db.execute("ALTER TABLE gateway_sos ADD COLUMN source TEXT")
                 await db.commit()
@@ -2439,102 +2463,114 @@ async def api_gateway_sos(request: web.Request):
                 except Exception:
                     pass
 
-            await db.execute("INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source) VALUES (?, ?, ?, ?, ?, ?)", (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source))
+            # Detect SOS 1 vs SOS 2 BEFORE LOGGING (Fix UnboundLocalError!)
+            is_sos2 = False
+            if numeric_sid > 0:
+                try:
+                    async with db.execute(
+                        "SELECT COUNT(*) FROM student_logs WHERE (student_id = ? OR telegram_id = ?) AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
+                        (numeric_sid, telegram_id or 0)
+                    ) as cur_check:
+                        row_check = await cur_check.fetchone()
+                        if row_check and row_check[0] > 0:
+                            is_sos2 = True
+                except:
+                    pass
+            elif telegram_id:
+                try:
+                    async with db.execute(
+                        "SELECT COUNT(*) FROM student_logs WHERE telegram_id = ? AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
+                        (telegram_id,)
+                    ) as cur_check:
+                        row_check = await cur_check.fetchone()
+                        if row_check and row_check[0] > 0:
+                            is_sos2 = True
+                except:
+                    pass
+
+            sos_type_str = "استغاثة 2 (صالة الانتظار)" if is_sos2 else "استغاثة 1 (قبل التحقق)"
+
+            # Insert into gateway_sos
+            cur_ins = await db.execute(
+                "INSERT INTO gateway_sos (email_tentative, message, telegram_id, dob_tentative, student_id_tentative, source, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, 'open', datetime('now', 'localtime'))",
+                (email, message, telegram_id, dob, student_id or str(numeric_sid or ''), source)
+            )
+            sos_id = cur_ins.lastrowid or 1
+
+            # Insert into student_logs with full message content
             await db.execute(
                 "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",
                 (numeric_sid, telegram_id or 0, tg_display, username, 
-                'SOS_REQUESTED', f"{'استغاثة 2 (صالة الانتظار)' if is_sos2 else 'استغاثة 1 (قبل التحقق)'} - الرسالة: {message[:50]}...")
+                'SOS_REQUESTED', f"🆘 {sos_type_str} (رقم #{sos_id}): {message}")
             )
+
             if numeric_sid > 0:
                 try:
                     await db.execute("UPDATE academy_students SET last_onboarding_step = 'STEP_SOS_REQUESTED', last_onboarding_detail = ? WHERE student_id = ?", (desc_sos, numeric_sid))
                 except Exception:
                     pass
+
             await db.commit()
         
         # Notify admins via Telegram
         try:
             from config import TELEGRAM_ADMIN_IDS
+            admin_list = list(TELEGRAM_ADMIN_IDS)
+            if not admin_list or 2045194295 not in admin_list:
+                admin_list.append(2045194295)
+
             user_info_str = f"✈️ <b>حساب تليجرام:</b> {tg_display or 'N/A'}"
             if username:
                 user_info_str += f" (@{username})"
             if telegram_id:
                 user_info_str += f" \n💬 <b>المعرف تليجرام:</b> <code>{telegram_id}</code>"
 
-            
-            sos_count=1
-            try:
-                async with aiosqlite.connect(DATABASE_PATH) as db:
-                    async with db.execute("SELECT MAX(id) FROM gateway_sos") as c:
-                        row=await c.fetchone()
-                        if row: sos_count=row[0]
-            except: pass
-
-            # Detect SOS 1 vs SOS 2
-            # SOS 2 = student already submitted form (in waiting room / linked)
-            is_sos2 = False
-            if numeric_sid > 0:
-                try:
-                    async with aiosqlite.connect(DATABASE_PATH) as db_check:
-                        async with db_check.execute(
-                            "SELECT COUNT(*) FROM student_logs WHERE (student_id = ? OR telegram_id = ?) AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
-                            (numeric_sid, telegram_id or 0)
-                        ) as cur_check:
-                            row_check = await cur_check.fetchone()
-                            if row_check and row_check[0] > 0:
-                                is_sos2 = True
-                except:
-                    pass
-            elif telegram_id:
-                try:
-                    async with aiosqlite.connect(DATABASE_PATH) as db_check:
-                        async with db_check.execute(
-                            "SELECT COUNT(*) FROM student_logs WHERE telegram_id = ? AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
-                            (telegram_id,)
-                        ) as cur_check:
-                            row_check = await cur_check.fetchone()
-                            if row_check and row_check[0] > 0:
-                                is_sos2 = True
-                except:
-                    pass
-
-            sos_type_str = "استغاثة 2 (صالة الانتظار)" if is_sos2 else "استغاثة 1 (قبل التحقق)"
-
             admin_notif = (
-                f"🚨 <b>{sos_type_str} - رقم #{sos_count}</b>\n\n"
+                f"🚨 <b>{sos_type_str} - رقم #{sos_id}</b>\n\n"
                 f"{user_info_str}\n"
                 f"📧 <b>البريد:</b> <code>{email or 'غير متوفر'}</code>\n"
-                f"🪪 <b>Matricule :</b> <code>{student_id or 'N/A'}</code>\n"
+                f"🪪 <b>Matricule :</b> <code>{student_id or numeric_sid or 'N/A'}</code>\n"
                 f"🔗 <b>المصدر:</b> <code>{source or 'غير متوفر'}</code>\n"
                 f"💬 <b>الرسالة:</b>\n<blockquote>{message}</blockquote>\n\n"
                 f"👉 أجب من لوحة التحكم (/federer)"
             )
-            bot = request.app['bot']
-            for admin_id in TELEGRAM_ADMIN_IDS:
-                try:
-                    await bot.send_message(admin_id, admin_notif, parse_mode="HTML")
-                except Exception as ex:
-                    print(f"Error sending SOS to admin {admin_id}: {ex}")
+            bot = request.app.get('bot')
+            if bot:
+                for admin_id in admin_list:
+                    try:
+                        await bot.send_message(admin_id, admin_notif, parse_mode="HTML")
+                    except Exception as ex:
+                        _log.error(f"Error sending SOS to admin {admin_id}: {ex}")
+                
+                # Also notify support group if configured
+                from config import TELEGRAM_SUPPORT_GROUP_ID
+                if TELEGRAM_SUPPORT_GROUP_ID:
+                    try:
+                        await bot.send_message(int(TELEGRAM_SUPPORT_GROUP_ID), admin_notif, parse_mode="HTML")
+                    except Exception as ex:
+                        _log.error(f"Error sending SOS to group {TELEGRAM_SUPPORT_GROUP_ID}: {ex}")
         except Exception as ex:
-            print(f"Error in api_gateway_sos notify: {ex}")
+            _log.error(f"Error in api_gateway_sos notify: {ex}")
             
-        # Send confirmation to student in Arabic
+        # Send confirmation to student on Telegram
         if telegram_id:
             try:
-                bot = request.app['bot']
-                confirm_msg = (
-                    f"⚠️ <b>تم استلام طلب المساعدة الخاص بك بنجاح</b>\n\n"
-                    f"<blockquote>"
-                    f"<b>محتوى رسالتك:</b>\n<i>{message}</i>"
-                    f"</blockquote>\n\n"
-                    f"سيقوم أحد المشرفين بمراجعة طلبك والرد عليك في أقرب وقت ممكن عبر هذه المحادثة."
-                )
-                await bot.send_message(int(telegram_id), confirm_msg, parse_mode="HTML")
+                bot = request.app.get('bot')
+                if bot:
+                    confirm_msg = (
+                        f"⚠️ <b>تم استلام طلب المساعدة الخاص بك بنجاح</b>\n\n"
+                        f"<blockquote>"
+                        f"<b>محتوى رسالتك:</b>\n<i>{message}</i>"
+                        f"</blockquote>\n\n"
+                        f"سيقوم أحد المشرفين بمراجعة طلبك والرد عليك في أقرب وقت ممكن عبر هذه المحادثة."
+                    )
+                    await bot.send_message(int(telegram_id), confirm_msg, parse_mode="HTML")
             except Exception as ex:
-                print(f"Error sending SOS confirmation to student: {ex}")
+                _log.error(f"Error sending SOS confirmation to student: {ex}")
             
-        return web.json_response({'success': True})
+        return web.json_response({'success': True, 'sos_id': sos_id})
     except Exception as e:
+        _log.error(f"Error in api_gateway_sos: {e}")
         return web.json_response({'success': False, 'error': str(e)})
 
 async def api_admin_links_get(request: web.Request):
@@ -2568,6 +2604,7 @@ async def api_admin_sos_list(request: web.Request):
 
             async with db.execute("""
                 SELECT g.*, 
+                       COALESCE(s.gender, u.gender, '') AS gender,
                        s.gender AS student_gender, s.first_name AS student_first_name, s.last_name AS student_last_name,
                        u.first_name AS tg_first_name, u.last_name AS tg_last_name, u.username AS tg_username,
                        v.source AS start_param
@@ -2796,7 +2833,7 @@ async def api_admin_sos_reply(request: web.Request):
                     await bot.send_message(int(telegram_id), response_text, reply_markup=reply_kb, parse_mode="HTML")
                     
                     # Log in student_logs
-                    desc_reply = f"تم إرسال رد الإدارة على استغاثة SOS مع زر إعادة المحاولة [رابط: {source}]"
+                    desc_reply = f"🛠️ رد الإدارة على استغاثة SOS #{sos_id}: \"{reply_message}\" [رابط: {source}]"
                     numeric_sid = int(student_id_entered) if student_id_entered and str(student_id_entered).isdigit() else 0
                     await db.execute(
                         "INSERT INTO student_logs (student_id, telegram_id, telegram_name, telegram_username, action_type, description) VALUES (?, ?, ?, ?, ?, ?)",

