@@ -1378,15 +1378,15 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                 counts['submitted'] = (await cur.fetchone())['c']
                 
             # 7. Waiting: linked but stuck before LINK_SUCCESS (regardless of SOS)
-            async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND  s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED')") as cur:
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND  s.last_onboarding_step NOT IN ('STEP_LINK_SUCCESS', 'STEP_FOLDER_CLICKED')") as cur:
                 counts['waiting'] = (await cur.fetchone())['c']
                 
             # 8. Inactive: Linked, but STEP_LINK_SUCCESS (didn't click folder)
-            async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND  s.last_onboarding_step = 'STEP_LINK_SUCCESS'") as cur:
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND  s.last_onboarding_step = 'STEP_LINK_SUCCESS'") as cur:
                 counts['inactive'] = (await cur.fetchone())['c']
                 
             # 9. Completed: STEP_FOLDER_CLICKED
-            async with db.execute("SELECT COUNT(*) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND  s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
+            async with db.execute("SELECT COUNT(DISTINCT u.telegram_id) as c FROM users u JOIN academy_students s ON s.telegram_id = u.telegram_id WHERE (u.excluded = 0 OR u.excluded IS NULL) AND  s.last_onboarding_step = 'STEP_FOLDER_CLICKED'") as cur:
                 counts['completed'] = (await cur.fetchone())['c']
                 
             # 10. Open SOS tickets
@@ -1438,7 +1438,7 @@ async def api_admin_gateway_ghost_visitors(request: web.Request):
                     FROM users u
                     LEFT JOIN academy_students s ON s.telegram_id = u.telegram_id
                 """
-                where_clause = ""
+                where_clause = " WHERE (u.excluded = 0 OR u.excluded IS NULL)"
                 
                 if status == 'started':
                     where_clause = " WHERE s.telegram_id IS NULL AND (u.excluded = 0 OR u.excluded IS NULL) AND (SELECT MAX(id) FROM gateway_sos WHERE telegram_id = u.telegram_id AND status = 'open') = 0 AND (SELECT COUNT(*) FROM student_logs WHERE telegram_id = u.telegram_id AND action_type IN ('ONBOARDING_PAGE_OPENED', 'ONBOARDING_CHARTER_SIGNED', 'ONBOARDING_FORM_REACHED', 'LINK_FAILED_NOT_FOUND', 'LINK_FAILED_UNPAID', 'ONBOARDING_DIRECT_FORM')) = 0"
