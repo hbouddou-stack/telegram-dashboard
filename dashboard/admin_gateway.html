@@ -9876,7 +9876,7 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
             }
         }
 
-        async async function reloadCurrentStudentLogs() {
+        async function reloadCurrentStudentLogs() {
             if (!activeStudentObj) return;
             try {
                 const res = await fetch('/api/admin/gateway/logs?id=' + activeStudentObj.student_id + '&tid=' + (activeStudentObj.telegram_id || 'null'));
