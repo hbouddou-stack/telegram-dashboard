@@ -23,14 +23,6 @@ def get_webapp_base_url() -> str:
     return "https://web-production-58dfa.up.railway.app"
 
 async def send_welcome_with_banner(message: Message, text: str, reply_markup: InlineKeyboardMarkup):
-    logo_path = os.path.join(os.path.dirname(__file__), "..", "dashboard", "logo_albaji.png")
-    if os.path.exists(logo_path):
-        try:
-            photo = FSInputFile(logo_path)
-            await message.answer_photo(photo=photo, caption=text, reply_markup=reply_markup, parse_mode="HTML")
-            return
-        except Exception as e:
-            logger.error(f"[BANNER_ERROR] {e}")
     await message.answer(text, reply_markup=reply_markup, parse_mode="HTML")
 
 async def resolve_student_folder_link(db, s_dict):

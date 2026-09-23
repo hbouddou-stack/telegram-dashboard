@@ -2464,31 +2464,9 @@ async def api_gateway_sos(request: web.Request):
                     pass
 
             # Detect SOS 1 vs SOS 2 BEFORE LOGGING (Fix UnboundLocalError!)
-            is_sos2 = False
-            if numeric_sid > 0:
-                try:
-                    async with db.execute(
-                        "SELECT COUNT(*) FROM student_logs WHERE (student_id = ? OR telegram_id = ?) AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
-                        (numeric_sid, telegram_id or 0)
-                    ) as cur_check:
-                        row_check = await cur_check.fetchone()
-                        if row_check and row_check[0] > 0:
-                            is_sos2 = True
-                except:
-                    pass
-            elif telegram_id:
-                try:
-                    async with db.execute(
-                        "SELECT COUNT(*) FROM student_logs WHERE telegram_id = ? AND action_type IN ('ONBOARDING_FORM_SUBMITTED', 'ONBOARDING_LINK_SUCCESS', 'MANUAL_LINK')",
-                        (telegram_id,)
-                    ) as cur_check:
-                        row_check = await cur_check.fetchone()
-                        if row_check and row_check[0] > 0:
-                            is_sos2 = True
-                except:
-                    pass
+            is_sos2 = data.get('is_sos2', False)
 
-            sos_type_str = "استغاثة 2 (صالة الانتظار)" if is_sos2 else "استغاثة 1 (قبل التحقق)"
+            sos_type_str = "استغاثة 2 (صالة الانتظار)" if is_sos2 else "استغاثة 1 (في الاستمارة)"
 
             # Insert into gateway_sos
             cur_ins = await db.execute(
