@@ -34,9 +34,9 @@
       --female-bg: #fff1f2;
       --female-border: #fecdd3;
       --female-accent: #e11d48;
-      --male-bg: #f0fdf4;
-      --male-border: #bbf7d0;
-      --male-accent: #16a34a;
+      --male-bg: #eff6ff;
+      --male-border: #bfdbfe;
+      --male-accent: #3b82f6;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "IBM Plex Sans Arabic", "Tajawal", sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -94,12 +94,12 @@
       border-right: 6px solid #db2777 !important;
     }
     .lead-card.male {
-      background: #f0fdf4 !important;
-      border: 1.5px solid #bbf7d0 !important;
-      border-right: 6px solid #16a34a !important;
+      background: #eff6ff !important;
+      border: 1.5px solid #bfdbfe !important;
+      border-right: 6px solid #3b82f6 !important;
     }
     tr.female td { background: #fdf2f8 !important; }
-    tr.male td   { background: #f0fdf4 !important; }
+    tr.male td   { background: #eff6ff !important; }
 
     .account-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
     .type-chip {
@@ -116,8 +116,8 @@
     .type-chip.warning.selected { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
 
     .lead-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 14px 4px; }
-    .lead-title-area { display: flex; flex-direction: column; }
-    .lead-name { font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 2px; }
+    .lead-title-area { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .lead-name { font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 2px; text-align: center; }
     .lead-submeta { display: flex; gap: 8px; align-items: center; font-size: 0.78rem; color: var(--text-muted); }
     .lead-id-tag { background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
     .lead-agent-tag { background: #f1f5f9; color: #334155; padding: 2px 7px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
@@ -254,11 +254,16 @@
 <!-- STICKY HEADER -->
 <header class="header">
   <div class="header-top">
-    <div class="header-title"><i class="fa-solid fa-headset"></i> Oswah CRM</div>
+    <div class="header-title"><i class="fa-solid fa-headset"></i></div>
     <div class="header-controls">
       <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم أو الهاتف..." oninput="filterData()">
       <select id="agentSelect" class="agent-selector" onchange="filterData()">
         <option value="all">👥 جميع الوكلاء</option>
+      </select>
+      <select id="genderSelect" class="agent-selector" onchange="filterData()" style="width:110px;">
+        <option value="all">🚻 الجنس</option>
+        <option value="male">👨 ذكور</option>
+        <option value="female">👩 إناث</option>
       </select>
       <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات">
         <i class="fa-solid fa-arrows-rotate"></i>
@@ -592,8 +597,10 @@ function filterData() {
   const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
   localStorage.setItem('crm_agent_ar', agent);
 
+  const genderFilter = document.getElementById('genderSelect') ? document.getElementById('genderSelect').value : 'all';
   let filtered = allLeads;
   if (agent !== 'all') filtered = filtered.filter(l => l.Agent_Nom === agent);
+  if (genderFilter !== 'all') filtered = filtered.filter(l => genderClass(l) === genderFilter);
   if (query) {
     filtered = filtered.filter(l =>
       String(l.Nom || '').toLowerCase().includes(query) ||
@@ -651,7 +658,7 @@ function renderCards(leads) {
     return;
   }
 
-  container.innerHTML = leads.map(l => {
+  container.innerHTML = leads.map((l, idx) => {
     const cleanPhone = cleanPhoneNumber(l.Telephone);
     const waLink = `https://wa.me/${cleanPhone}`;
     const gc = genderClass(l);
@@ -683,7 +690,7 @@ function renderCards(leads) {
           <div class="lead-title-area">
             <div class="lead-name">${escapeHtml(l.Nom || 'بدون اسم')}</div>
             <div class="lead-submeta">
-              <span class="lead-id-tag">#${l.ID_Lead}</span>
+              <span class="lead-id-tag">#${idx + 1} (ID:${l.ID_Lead})</span>
               <span class="lead-agent-tag"><i class="fa-solid fa-user-tie"></i> ${escapeHtml(l.Agent_Nom || 'غير محدد')}</span>
             </div>
           </div>
@@ -1069,39 +1076,51 @@ const TEMPLATES = [
     id: 'welcome',
     title: 'ترحيب وتذكير باستكمال التسجيل',
     icon: 'fa-hand-peace',
-    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+    getText: (nom, agent, genre) => {
+      const appel = genre === 'female' ? 'أختي' : (genre === 'male' ? 'أخي' : 'أخي/أختي');
+      return `السلام عليكم ورحمة الله وبركاته ${nom ? appel + ' ' + nom : ''}،
 معكم ${agent || 'فريق الإرشاد'} من أكاديمية أسوة.
 
 لاحظنا رغبتكم الطيبة في التسجيل معنا للموسم الجديد. هل تواجهون أي صعوبة في استكمال البيانات أو السداد، أو لديكم أي استفسار نساعدكم به؟
 
-يسعدنا الرد على كل أسئلتكم!`
+يسعدنا الرد على كل أسئلتكم!`;
+    }
   },
   {
     id: 'missed_call',
     title: 'تذكير لطيف بعد تعذر الاتصال الهاتفي',
     icon: 'fa-phone-slash',
-    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+    getText: (nom, agent, genre) => {
+      const appel = genre === 'female' ? 'أختي' : (genre === 'male' ? 'أخي' : 'أخي/أختي');
+      return `السلام عليكم ورحمة الله وبركاته ${nom ? appel + ' ' + nom : ''}،
 حاولنا الاتصال بكم هاتفياً من إدارة أكاديمية أسوة لمتابعة طلب تسجيلكم، ولعله تعذر الوصول إليكم لإنشغالكم.
 
-نحن رهن إشارتكم هنا عبر الواتساب في أي وقت للإجابة عن تساؤلاتكم ومساعدتكم على تأكيد المقعد الدراسي.`
+نحن رهن إشارتكم هنا عبر الواتساب في أي وقت للإجابة عن تساؤلاتكم ومساعدتكم على تأكيد المقعد الدراسي.`;
+    }
   },
   {
     id: 'direct_payment',
     title: 'رابط السداد وتأكيد المقعد',
     icon: 'fa-credit-card',
-    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+    getText: (nom, agent, genre) => {
+      const appel = genre === 'female' ? 'أختي' : (genre === 'male' ? 'أخي' : 'أخي/أختي');
+      return `السلام عليكم ورحمة الله وبركاته ${nom ? appel + ' ' + nom : ''}،
 بخصوص استكمال مساهمتكم في أكاديمية أسوة وتأكيد التحاقكم بالدفعة الجديدة، يمكنكم تسوية السداد بسهولة عبر الرابط المباشر للمنصة.
 
-إذا كنتم تواجهون أي عائق في البطاقة البنكية أو ترغبون بوسيلة دفع أخرى، أخبرونا لنرسل لكم التفاصيل فوراً.`
+إذا كنتم تواجهون أي عائق في البطاقة البنكية أو ترغبون بوسيلة دفع أخرى، أخبرونا لنرسل لكم التفاصيل فوراً.`;
+    }
   },
   {
     id: 'program_info',
     title: 'تفاصيل المنهاج ونظام الدراسة',
     icon: 'fa-book-open',
-    getText: (nom, agent) => `السلام عليكم ورحمة الله وبركاته ${nom ? 'أخي/أختي ' + nom : ''}،
+    getText: (nom, agent, genre) => {
+      const appel = genre === 'female' ? 'أختي' : (genre === 'male' ? 'أخي' : 'أخي/أختي');
+      return `السلام عليكم ورحمة الله وبركاته ${nom ? appel + ' ' + nom : ''}،
 بناءً على طلبكم، تسعد أكاديمية أسوة بتقديم برنامج علمي مؤصل ومنهجي يجمع بين حفظ كتاب الله ومدارسة العلوم الشرعية مع نخبة من الأساتذة.
 
-نظام الدراسة يتميز بالمرونة العالية عبر المنصة الرقمية وتسجيلات الدروس لملاءمة وقتكم. هل ترغبون في إرسال تفاصيل مواد السنة الأولى؟`
+نظام الدراسة يتميز بالمرونة العالية عبر المنصة الرقمية وتسجيلات الدروس لملاءمة وقتكم. هل ترغبون في إرسال تفاصيل مواد السنة الأولى؟`;
+    }
   }
 ];
 
@@ -1114,8 +1133,9 @@ function openTemplatesModal(leadId) {
   const agentName = (selectedAgent !== 'all' ? selectedAgent : (lead.Agent_Nom || savedAgent || 'زينب'));
 
   const listContainer = document.getElementById('templatesList');
+  const gClass = genderClass(lead);
   listContainer.innerHTML = TEMPLATES.map(tpl => {
-    const rawText = tpl.getText(lead.Nom, agentName);
+    const rawText = tpl.getText(lead.Nom, agentName, gClass);
     const encodedText = encodeURIComponent(rawText);
     const waUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
 
@@ -1125,12 +1145,15 @@ function openTemplatesModal(leadId) {
           <div class="template-title"><i class="fa-solid ${tpl.icon}"></i> ${tpl.title}</div>
         </div>
         <div class="template-preview">${escapeHtml(rawText)}</div>
-        <div class="template-actions">
+        <div class="template-actions" style="flex-wrap: wrap;">
           <button class="btn-tpl-action btn-tpl-copy" onclick="copyTemplateText('${encodeURIComponent(rawText)}')">
-            <i class="fa-regular fa-copy"></i> نسخ النص
+            <i class="fa-regular fa-copy"></i> نسخ
           </button>
+          <a href="sms:+${cleanPhone}?body=${encodedText}" class="btn-tpl-action" style="background:#3b82f6; color:white; text-decoration:none;">
+            <i class="fa-solid fa-comment-sms"></i> SMS
+          </a>
           <a href="${waUrl}" target="_blank" class="btn-tpl-action btn-tpl-wa" onclick="recordTemplateSent('${leadId}', '${tpl.title}')">
-            <i class="fa-brands fa-whatsapp"></i> فتح وإرسال في واتساب
+            <i class="fa-brands fa-whatsapp"></i> واتساب
           </a>
         </div>
       </div>
