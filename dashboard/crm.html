@@ -81,6 +81,26 @@
     /* LEADS COUNT BAR */
     .leads-count-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 
+    
+    body.has-subfilters { padding-top: 175px; }
+    .sub-stats-pills { display: flex; gap: 6px; overflow-x: auto; padding: 6px 14px 8px; scrollbar-width: none; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+    .sub-stats-pills::-webkit-scrollbar { display: none; }
+    .sub-pill {
+      display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 16px;
+      font-size: 0.75rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+      background: #fff; border: 1px solid var(--card-border); color: var(--text-muted); transition: all 0.2s;
+    }
+    .sub-pill:hover { border-color: #cbd5e1; }
+    .sub-pill.active {
+      background: var(--purple); border-color: var(--purple); color: #fff;
+    }
+    .sub-pill.active span {
+      background: rgba(255,255,255,0.25); color: #fff; padding: 1px 6px; border-radius: 10px;
+    }
+    .sub-pill span {
+      background: #f1f5f9; padding: 1px 6px; border-radius: 10px; font-size: 0.72rem;
+    }
+
     /* CONTAINER & CARDS */
     .container { padding: 0 12px; }
     .lead-card {
@@ -292,6 +312,27 @@
       <i class="fa-solid fa-users"></i> الكل <span class="pill-badge" id="count-all">0</span>
     </div>
   </div>
+  <!-- SUB-FILTER PILLS FOR RELANCE -->
+  <div class="sub-stats-pills" id="relanceSubFilters" style="display:none;">
+    <div class="sub-pill active" data-sub="all" onclick="setSubFilter('all')">
+      👥 الكل (<span id="sub-count-all">0</span>)
+    </div>
+    <div class="sub-pill" data-sub="promesse" onclick="setSubFilter('promesse')">
+      📅 موعد محدد / وعد بالسداد (<span id="sub-count-promesse">0</span>)
+    </div>
+    <div class="sub-pill" data-sub="injoignable" onclick="setSubFilter('injoignable')">
+      📵 لم يرد / غير متاح (<span id="sub-count-injoignable">0</span>)
+    </div>
+    <div class="sub-pill" data-sub="hesite" onclick="setSubFilter('hesite')">
+      🤔 متردد / استفسار (<span id="sub-count-hesite">0</span>)
+    </div>
+    <div class="sub-pill" data-sub="whatsapp" onclick="setSubFilter('whatsapp')">
+      💬 رسالة واتساب (<span id="sub-count-whatsapp">0</span>)
+    </div>
+    <div class="sub-pill" data-sub="email" onclick="setSubFilter('email')">
+      ✉️ بريد إلكتروني (<span id="sub-count-email">0</span>)
+    </div>
+  </div>
 </header>
 
 <!-- MAIN LEADS CONTAINER -->
@@ -435,6 +476,20 @@
       </label>
     </div>
 
+        <!-- PROCHAINE ACTION CHOISIE PAR L'AGENT -->
+    <div class="form-group" id="nextActionGroup" style="margin-top:12px;">
+      <label class="form-label" style="color:var(--primary); font-weight:800;">
+        🎯 الإجراء القادم المطلوب (الخطوة التالية):
+      </label>
+      <select id="modalNextActionSelect" class="form-control" style="font-weight:700;">
+        <option value="📞 معاودة الاتصال الهاتفي">📞 معاودة الاتصال الهاتفي</option>
+        <option value="💬 إرسال رسالة واتساب">💬 إرسال رسالة واتساب</option>
+        <option value="✉️ إرسال بريد إلكتروني">✉️ إرسال بريد إلكتروني</option>
+        <option value="💳 متابعة تأكيد الدفع">💳 متابعة تأكيد الدفع</option>
+        <option value="⏳ انتظار رد الطالب">⏳ انتظار رد الطالب</option>
+      </select>
+    </div>
+
     <!-- DATE DE RELANCE -->
     <div class="form-group" id="dateGroup" style="margin-top:12px;">
       <label class="form-label" id="dateLabel">📅 تاريخ المتابعة القادمة:</label>
@@ -498,6 +553,31 @@
 <script>
 let allLeads = [];
 let activeFilter = 'nouveau';
+let activeSubFilter = 'all';
+
+function getRelanceCategory(lead) {
+  const res = (lead.Dernier_Contact_Resultat || '').toLowerCase();
+  const nextAct = (lead.Prochaine_Action || '').toLowerCase();
+  const comm = (lead.Ancien_Commentaire || '').toLowerCase();
+  const allText = `${res} ${nextAct} ${comm}`;
+
+  if (allText.includes('وعد') || allText.includes('تأكيد الدفع') || allText.includes('تحويل') || allText.includes('موعد')) return 'promesse';
+  if (allText.includes('واتساب') || allText.includes('whatsapp') || nextAct.includes('واتساب')) return 'whatsapp';
+  if (allText.includes('بريد') || allText.includes('email') || allText.includes('ايميل') || nextAct.includes('بريد')) return 'email';
+  if (allText.includes('متردد') || allText.includes('يفكر') || allText.includes('تخفيض') || allText.includes('معلومات') || allText.includes('مشكل')) return 'hesite';
+  if (allText.includes('لم يرد') || allText.includes('يرن') || allText.includes('غير متاح') || allText.includes('injoignable') || allText.includes('علبة صوتية')) return 'injoignable';
+  
+  return 'injoignable';
+}
+
+function setSubFilter(sub) {
+  activeSubFilter = sub;
+  document.querySelectorAll('.sub-pill').forEach(p => p.classList.remove('active'));
+  const target = document.querySelector(`.sub-pill[data-sub="${sub}"]`);
+  if (target) target.classList.add('active');
+  filterData();
+}
+
 let activeLeadId = null;
 let isTableView = false;
 
@@ -578,9 +658,23 @@ async function loadData(forceRefresh = false) {
 
 function setFilter(f) {
   activeFilter = f;
+  activeSubFilter = 'all';
   document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
   const target = document.querySelector(`.pill[data-filter="${f}"]`);
   if (target) target.classList.add('active');
+  
+  const subFiltersEl = document.getElementById('relanceSubFilters');
+  if (f === 'relance') {
+    subFiltersEl.style.display = 'flex';
+    document.body.classList.add('has-subfilters');
+    document.querySelectorAll('.sub-pill').forEach(p => p.classList.remove('active'));
+    const defaultSub = document.querySelector('.sub-pill[data-sub="all"]');
+    if (defaultSub) defaultSub.classList.add('active');
+  } else {
+    subFiltersEl.style.display = 'none';
+    document.body.classList.remove('has-subfilters');
+  }
+
   const labels = {
     nouveau: 'العملاء الجدد',
     relance: 'قيد المتابعة والتذكير',
@@ -619,8 +713,28 @@ function filterData() {
   document.getElementById('count-paye').textContent = stats.paye;
   document.getElementById('count-all').textContent = stats.all;
 
+  // Sous-catégories pour Relance
+  const subCounts = { all: 0, promesse: 0, injoignable: 0, hesite: 0, whatsapp: 0, email: 0 };
+  const relanceLeads = filtered.filter(l => l._cat === 'relance');
+  subCounts.all = relanceLeads.length;
+  relanceLeads.forEach(l => {
+    const subCat = getRelanceCategory(l);
+    if (subCounts[subCat] !== undefined) subCounts[subCat]++;
+  });
+  if (document.getElementById('sub-count-all')) {
+    document.getElementById('sub-count-all').textContent = subCounts.all;
+    document.getElementById('sub-count-promesse').textContent = subCounts.promesse;
+    document.getElementById('sub-count-injoignable').textContent = subCounts.injoignable;
+    document.getElementById('sub-count-hesite').textContent = subCounts.hesite;
+    document.getElementById('sub-count-whatsapp').textContent = subCounts.whatsapp;
+    document.getElementById('sub-count-email').textContent = subCounts.email;
+  }
+
   let displayed = (activeFilter === 'all') ? filtered : filtered.filter(l => l._cat === activeFilter);
   if (activeFilter === 'relance') {
+    if (activeSubFilter !== 'all') {
+      displayed = displayed.filter(l => getRelanceCategory(l) === activeSubFilter);
+    }
     displayed.sort((a, b) => {
       if (!a.Date_Prochaine_Action) return 1;
       if (!b.Date_Prochaine_Action) return -1;
@@ -665,11 +779,14 @@ function renderCards(leads) {
     const badge = statusBadgeHtml(l._cat);
 
     let nextActionBox = '';
-    if (l.Date_Prochaine_Action) {
+    if (l.Date_Prochaine_Action || l.Prochaine_Action) {
       nextActionBox = `
-        <div class="next-action-pill">
-          <i class="fa-regular fa-calendar-check"></i>
-          <span>المتابعة القادمة: <b>${escapeHtml(l.Date_Prochaine_Action)}</b> ${l.Prochaine_Action ? '(' + escapeHtml(l.Prochaine_Action) + ')' : ''}</span>
+        <div class="next-action-pill" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-bullseye" style="color:var(--primary)"></i>
+            <span>الخطوة التالية: <b>${escapeHtml(l.Prochaine_Action || 'معاودة الاتصال')}</b></span>
+          </div>
+          ${l.Date_Prochaine_Action ? `<span style="font-size:0.75rem; background:#fef3c7; border:1px solid #fde68a; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800;">📅 ${escapeHtml(l.Date_Prochaine_Action)}</span>` : ''}
         </div>`;
     }
 
@@ -770,15 +887,18 @@ function selectLeadType(typeKey, element) {
   const noticeText = document.getElementById('exclusionNoticeText');
   const dateGroup = document.getElementById('dateGroup');
 
+  const nextActGroup = document.getElementById('nextActionGroup');
   if (typeKey === 'normal') {
     callSection.style.display = 'block';
     noticeBox.style.display = 'none';
     dateGroup.style.display = 'block';
+    if (nextActGroup) nextActGroup.style.display = 'block';
     calculatedStatus = 'relance';
   } else {
     callSection.style.display = 'none';
     noticeBox.style.display = 'block';
-    dateGroup.style.display = 'none';
+    dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
+    if (nextActGroup) nextActGroup.style.display = 'none';
 
     if (typeKey === 'doublon') {
       noticeText.textContent = '👥 سيتم تسجيل هذا الحساب كـ "حساب مكرر (Doublon)" وأرشفته في قائمة المغلق.';
@@ -829,6 +949,14 @@ function openInteractionModal(leadId) {
 
   document.getElementById('callFlowSection').style.display = 'block';
   document.getElementById('exclusionNoticeBox').style.display = 'none';
+  if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'block';
+  if (document.getElementById('dateGroup')) document.getElementById('dateGroup').style.display = 'block';
+  if (lead && lead.Prochaine_Action && document.getElementById('modalNextActionSelect')) {
+    const sel = document.getElementById('modalNextActionSelect');
+    for (let opt of sel.options) {
+      if (opt.value === lead.Prochaine_Action) { sel.value = lead.Prochaine_Action; break; }
+    }
+  }
 
   document.querySelectorAll('#interactionModal .choice-card').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
@@ -872,7 +1000,7 @@ function selectResult(resultKey, element) {
     document.getElementById('subFauxNumero').classList.add('active');
     currentDetails = ['رقم خاطئ'];
     calculatedStatus = 'ferme';
-    dateGroup.style.display = 'none';
+    dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
   }
 }
 
@@ -895,10 +1023,10 @@ function toggleDetailMulti(detailText, element, targetStatus, requireDate = fals
   const dateGroup = document.getElementById('dateGroup');
   if (hasPaid) {
     calculatedStatus = 'paye';
-    dateGroup.style.display = 'none';
+    dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
   } else if (hasRefused && currentDetails.length === 1) {
     calculatedStatus = 'ferme';
-    dateGroup.style.display = 'none';
+    dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
   } else {
     calculatedStatus = 'relance';
     dateGroup.style.display = 'block';
@@ -951,10 +1079,10 @@ async function submitModalInteraction() {
 
   const combinedDetails = currentDetails.join(' • ');
 
-  let nextActionDesc = 'معاودة الاتصال';
+  const chosenNextAction = document.getElementById('modalNextActionSelect') ? document.getElementById('modalNextActionSelect').value : 'معاودة الاتصال';
+  let nextActionDesc = chosenNextAction;
   if (calculatedStatus === 'ferme') nextActionDesc = 'لا شيء (مغلق / مستبعد)';
   else if (calculatedStatus === 'paye') nextActionDesc = 'مكتمل (مسدد)';
-  else if (currentDetails.includes('وعد بالسداد')) nextActionDesc = 'متابعة الدفع في الموعد';
 
   const payload = {
     lead_id: activeLeadId,
