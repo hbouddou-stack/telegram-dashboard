@@ -3754,7 +3754,7 @@ window.setSalesFunnel = function(val, el) {
             </div>
             <button class="btn btn-success" onclick="sendSosReply()" style="width:100%; padding:12px; font-size:1rem; margin-bottom:10px;">✅ إرسال الرد عبر البوت</button>
             <button class="btn btn-danger" onclick="deleteSosTicket(activeSosId)" style="width:100%; background:#dc2626; color:white; padding:10px; border-radius:8px; font-weight:bold; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">🗑️ حذف هذه الاستغاثة نهائياً</button>
-            <div id="debug-panel"><span style="color:#555;">— سجل تصحيح الأخطاء —</span></div>
+            
         </div>
     
     </div>
@@ -4472,7 +4472,7 @@ window.setSalesFunnel = function(val, el) {
                         <td style="padding:12px; font-family:monospace;">${v.telegram_id}</td>
                         <td style="padding:12px; color:var(--text2);">${genLabel} / ${levLabel}</td>
                         <td style="padding:12px; color:var(--text2);">${lastSeenStr}</td>
-                        <td style="padding:12px;"><span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">${badge.label}</span></td>
+                        <td style="padding:12px;"><span style="font-size:0.75rem; font-weight:600; padding:4px 8px; border-radius:8px; background:${badge.bg}; color:${badge.color}; border:1px solid ${badge.color}44;">${badge.label}</span><br><span style="font-size:0.7rem; color:var(--text2);">#</span></td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -5943,7 +5943,7 @@ window.setSalesFunnel = function(val, el) {
                         <tr style="border-bottom:1px solid var(--border); background:var(--surface); transition:background 0.2s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background='var(--surface)'">
                             <td style="padding:12px; font-weight:bold; color:var(--text2);">#${log.id}</td>
                             <td style="padding:12px; font-weight:bold; color:var(--text1);" dir="ltr">${timeStr}</td>
-                            <td style="padding:12px; font-weight:bold; color:var(--text1);">${log.imported_count} <span style="font-weight:normal; font-size:0.8rem; color:var(--text2);">طالب</span></td>
+                            <td style="padding:12px; font-weight:bold; color:var(--text1);">${log.imported_count} <span style="font-weight:normal; font-size:0.8rem; color:var(--text2);">طالب</span><br><span style="font-size:0.7rem; color:var(--text2);">#</span></td>
                             <td style="padding:12px; font-family:monospace; color:var(--accent2); font-size:0.85rem;" dir="ltr">${log.filename || 'غير معروف'}</td>
                             <td style="padding:12px; font-weight:bold; color:var(--text1);">${log.admin_name || '-'}</td>
                         </tr>`;
@@ -8378,7 +8378,7 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                         `;
                     } else {
                         tr.innerHTML = `
-                            <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button></td>
+                            <td style="padding:12px 8px; font-weight:bold; color:#4b5563;">#${i + 1} <button onclick="event.stopPropagation(); viewStudentLogs(\'${s.student_id || s.email || s.academic_id}\')" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;" title="Afficher les logs">📜</button><br><span style="font-size:0.7rem; color:var(--text2);">#</span></td>
                             <td style="padding:12px 8px; text-align:center; font-size:1.1rem;" title="${botTitle}">${botSticker}</td>
                             <td style="padding:12px; font-size:1.0rem; letter-spacing:0.5px;">${studentMassarId}</td>
                             <td style="padding:12px; font-weight:bold; max-width:180px; white-space:pre-wrap; word-wrap:break-word; line-height:1.4;">${arName}${dupBadge}</td>
@@ -8386,7 +8386,7 @@ if (document.getElementById('crm-analytics-dashboard') && document.getElementByI
                             <td style="padding:12px;">${payBadge}</td>
                             <td style="padding:12px; text-align:center;">${onbBadge}</td>
                             <td style="padding:12px;  text-align:right; font-size:0.8rem; color:var(--text2);">${s.email || '-'}</td>
-                            ${filters.showExcluded ? `<td style="padding:12px; text-align:center;"><button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="background:#10b981; color:white; border:none; padding:5px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.8rem;">🔄 استعادة</button></td>` : ''}
+                            ${filters.showExcluded ? `<td style="padding:12px; text-align:center;"><button onclick="event.stopPropagation(); confirmDupAction('${s.student_id}', 0, '${(s.first_name || '') + ' ' + (s.last_name || '')}')" style="background:#10b981; color:white; border:none; padding:5px 12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.8rem;">🔄 استعادة</button><br><span style="font-size:0.7rem; color:var(--text2);">#</span></td>` : ''}
                         `;
                     }
                     tbody.appendChild(tr);
@@ -11076,11 +11076,21 @@ async function toggleStudentValidity() {
                     const email = sos.email_tentative || '-';
                     
                     tableHtml += `
-                        <tr style="border-bottom:1px solid var(--border); cursor:pointer;" onclick="openSosModal(${sos.id})" class="sos-row-hover">
+                        
+                    let rowStyle = "border-bottom:1px solid var(--border); cursor:pointer;";
+                    if (sos.start_param && sos.start_param.includes('F')) {
+                        rowStyle += " background-color: rgba(236, 72, 153, 0.05); border-right: 4px solid #ec4899;";
+                    } else if (sos.start_param && sos.start_param.includes('H')) {
+                        rowStyle += " background-color: rgba(59, 130, 246, 0.05); border-right: 4px solid #3b82f6;";
+                    } else {
+                        rowStyle += " border-right: 4px solid transparent;";
+                    }
+                    tableHtml += `
+                        <tr style="${rowStyle}" onclick="openSosModal(${sos.id})" class="sos-row-hover">
                             <td style="padding:10px; font-size:0.85rem; color:var(--text2);">${dt}</td>
                             <td style="padding:10px;">${sourceType}</td>
                             <td style="padding:10px; font-weight:bold; color:var(--primary);">${name}</td>
-                            <td style="padding:10px; font-size:0.85rem;"><div style="font-family:monospace; color:var(--text1);">${mat}</div><div style="color:var(--text2);">${email}</div></td>
+                            <td style="padding:10px; font-size:0.85rem;"><div style="font-family:monospace; color:var(--text1);">${mat}</div><div style="color:var(--text2);">${email}</div><br><span style="font-size:0.7rem; color:var(--text2);">#</span></td>
                             <td style="padding:10px; font-size:0.85rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text1);">${sos.message || ''}</td>
                         </tr>
                     `;
@@ -11092,6 +11102,13 @@ async function toggleStudentValidity() {
                 filtered.forEach(sos => {
                     const div = document.createElement('div');
                     div.className = 'sos-item';
+                    if (sos.start_param && sos.start_param.includes('F')) {
+                        div.style.backgroundColor = 'rgba(236, 72, 153, 0.05)';
+                        div.style.borderRight = '4px solid #ec4899';
+                    } else if (sos.start_param && sos.start_param.includes('H')) {
+                        div.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                        div.style.borderRight = '4px solid #3b82f6';
+                    }
                     div.onclick = () => openSosModal(sos);
                     const statusBadge = sos.status === 'closed' || sos.status === 'resolved' ? '<span class="badge badge-linked">تم الرد</span>' : '<span class="badge badge-open">قيد الانتظار</span>';
                     const hasValidTid = sos.telegram_id && String(sos.telegram_id) !== '0' && String(sos.telegram_id) !== 'null' && String(sos.telegram_id) !== 'undefined';
@@ -11165,29 +11182,40 @@ async function toggleStudentValidity() {
                 tgFullName = 'Houssam';
             }
 
-            let whoHtml = '';
-            if (isAdmin) {
-                whoHtml = `<strong>الحساب:</strong> <span style="color:#f59e0b; font-weight:800;">👑 المشرف (${tgFullName})</span> ${tgUsername ? `(@${tgUsername})` : ''} <em style="color:#f59e0b;">(تجربة المشرف Admin)</em>`;
-            } else if (dbFullName) {
-                whoHtml = `<strong>الاسم بالقاعدة:</strong> ${dbFullName}`;
-                if (tgFullName || tgUsername) {
-                    whoHtml += `<br><strong>حساب تيليجرام:</strong> ✈️ ${tgFullName || ''} ${tgUsername ? `(@${tgUsername})` : ''}`;
-                }
-            } else if (tgFullName || tgUsername) {
-                whoHtml = `<strong>حساب تيليجرام:</strong> <span style="color:#0088cc; font-weight:800;">✈️ ${tgFullName || 'مجهول'} ${tgUsername ? `(@${tgUsername})` : ''}</span> <em style="color:#f59e0b;">(زائر - غير مسجل بالقاعدة)</em>`;
-            } else if (effectiveTid) {
-                whoHtml = `<strong>حساب تيليجرام:</strong> ✈️ زائر تيليجرام (ID: ${effectiveTid})`;
-            } else {
-                whoHtml = `<strong>الحساب:</strong> غير مسجل بالقاعدة`;
-            }
-
-            document.getElementById('sos-modal-meta').innerHTML =
-                whoHtml + '<br>' +
-                '<strong>البريد المدخل:</strong> ' + (sos.email_tentative || 'N/A') + '<br>' +
-                '<strong>رقم الطالب المدخل:</strong> ' + (sos.student_id_tentative || 'N/A') + '<br>' +
-                '<strong>TG ID:</strong> ' + (effectiveTid ? `<code>${effectiveTid}</code>` : 'غير معروف') + '<br>' +
-                (sos.source ? ('<strong>الرابط / المصدر:</strong> <code>' + sos.source + '</code><br>') : '') +
-                '<strong>الوقت:</strong> ' + formatDateArabic(sos.timestamp);
+                        const studentName = dbFullName || tgFullName || 'غير متوفر';
+            const whoHtml = `
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; direction: rtl; text-align: right; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                    <span style="font-size: 1.2rem;">👤</span>
+                    <strong style="color: var(--primary); font-size: 1.05rem;">اسم الطالب:</strong>
+                    <span style="font-size: 1.05rem; font-weight: bold;">${studentName}</span>
+                    ${isAdmin ? '<span style="background:#f59e0b;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-right:10px;">حساب تجريبي Admin</span>' : ''}
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem;">
+                    <div style="background: var(--bg); padding: 8px; border-radius: 8px;">
+                        <div style="color: var(--text2); font-size: 0.8rem; margin-bottom: 4px;">📧 البريد الإلكتروني</div>
+                        <div style="color: var(--text1); font-family: monospace;">${sos.email_tentative || 'غير متوفر'}</div>
+                    </div>
+                    <div style="background: var(--bg); padding: 8px; border-radius: 8px;">
+                        <div style="color: var(--text2); font-size: 0.8rem; margin-bottom: 4px;">🎓 رقم الطالب</div>
+                        <div style="color: var(--text1); font-family: monospace;">${sos.student_id_tentative || 'غير متوفر'}</div>
+                    </div>
+                    <div style="background: var(--bg); padding: 8px; border-radius: 8px;">
+                        <div style="color: var(--text2); font-size: 0.8rem; margin-bottom: 4px;">💬 معرف تليجرام (ID)</div>
+                        <div style="color: var(--text1); font-family: monospace;" dir="ltr">${effectiveTid || 'غير متوفر'}</div>
+                    </div>
+                    <div style="background: var(--bg); padding: 8px; border-radius: 8px;">
+                        <div style="color: var(--text2); font-size: 0.8rem; margin-bottom: 4px;">🔗 الرابط (المصدر)</div>
+                        <div style="color: var(--text1); font-family: monospace;" dir="ltr">${sos.source || 'غير متوفر'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.1rem;">⏱️</span>
+                    <strong style="color: var(--text2); font-size: 0.9rem;">وقت الطلب:</strong>
+                    <span style="color: var(--text1); font-weight: bold; font-size: 0.9rem;">${formatDateArabic(sos.timestamp)}</span>
+                </div>
+            </div>`;
+            document.getElementById('sos-modal-meta').innerHTML = whoHtml;
             document.getElementById('sos-modal-message').textContent = sos.message || '';
             document.getElementById('sos-reply-text').value = '';
             document.getElementById('debug-panel').innerHTML = '<span style="color:#555;">— سجل تصحيح الأخطاء —</span>';
