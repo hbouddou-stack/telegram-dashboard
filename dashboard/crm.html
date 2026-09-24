@@ -238,7 +238,7 @@
 
     /* ACTION BUTTONS GRID */
     .card-actions-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr 1.3fr; gap: 6px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr 1.2fr; gap: 6px;
       padding: 10px 14px; background: #f8fafc; border-top: 1px solid var(--card-border);
     }
     .btn-act {
@@ -1550,6 +1550,57 @@ function selectLeadType(typeKey, element) {
   }
 }
 
+
+function closeRegistreModal() {
+    document.getElementById('registreModal').style.display = 'none';
+}
+
+async function openRegistreModal(leadId) {
+    document.getElementById('registreModal').style.display = 'flex';
+    const timeline = document.getElementById('registreTimelineContainer');
+    timeline.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><div>Chargement...</div></div>';
+    
+    try {
+        const res = await fetch(`/api/crm/lead-details?lead_id=${leadId}`);
+        const data = await res.json();
+        const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+        let interactions = data.interactions || [];
+
+        if (lead && lead.Ancien_Commentaire && interactions.length === 0) {
+            interactions.push({
+                id: null,
+                Date_Heure: lead.Dernier_Contact_Date || ' ',
+                Agent: lead.Agent_Nom || '',
+                Resultat: 'Note initiale',
+                Commentaire: lead.Ancien_Commentaire,
+                Date_Prochaine: '',
+                Prochaine_Action: ''
+            });
+        }
+
+        if (interactions.length === 0) {
+            timeline.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); background:#fff; border-radius:8px; border:1px dashed #cbd5e1;">Aucun historique de suivi pour cet élève.</div>';
+        } else {
+            timeline.innerHTML = interactions.map(i => `
+                <div class="timeline-item" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:6px; margin-bottom:6px;">
+                        <span style="font-size:0.8rem; color:#64748b;"><i class="fa-regular fa-clock"></i> <b>${escapeHtml(i.Date_Heure || '')}</b></span>
+                        <span style="font-size:0.8rem; font-weight:700; color:var(--primary);"><i class="fa-solid fa-user-tie"></i> ${escapeHtml(i.Agent || '')}</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; color:#0f172a; margin-bottom:4px;">${escapeHtml(i.Resultat || '')}</div>
+                        ${i.Prochaine_Action ? `<div style="font-size:0.8rem; color:#2563eb; margin-bottom:4px;"><i class="fa-solid fa-bullseye"></i> Action: ${escapeHtml(i.Prochaine_Action)}</div>` : ''}
+                        ${i.Commentaire ? `<div style="font-size:0.9rem; color:#334155; background:#f8fafc; padding:8px; border-radius:6px; border-left:3px solid #cbd5e1;">${escapeHtml(i.Commentaire)}</div>` : ''}
+                        ${i.Date_Prochaine ? `<div style="font-size:0.75rem; color:#b45309; margin-top:6px; font-weight:700;"><i class="fa-regular fa-calendar"></i> Prévu pour: ${escapeHtml(i.Date_Prochaine)}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (err) {
+        timeline.innerHTML = '<div style="color:red; text-align:center;">Erreur lors du chargement.</div>';
+    }
+}
+
 function openInteractionModal(leadId) {
   activeLeadId = leadId;
   const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
@@ -1831,21 +1882,18 @@ async function loadLeadTimeline(leadId) {
     const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
     let interactions = data.interactions || [];
 
-    // Ajouter l'ancien commentaire Google Sheet s'il n'est pas deja present
-    if (lead && lead.Ancien_Commentaire) {
-      const alreadyHas = interactions.some(i => i.Commentaire && (i.Commentaire.includes(lead.Ancien_Commentaire) || lead.Ancien_Commentaire.includes(i.Commentaire)));
-      if (!alreadyHas) {
-        interactions.push({
-          id: null,
-          Date_Heure: lead.Dernier_Contact_Date || 'سجل سابق',
-          Agent: lead.Agent_Nom || 'الوكيل',
-          Resultat: 'سجل الملاحظات (Google Sheet / سابق)',
-          Commentaire: lead.Ancien_Commentaire,
-          Date_Prochaine: '',
-          Prochaine_Action: ''
-        });
-      }
-    }
+    // Ajouter l'ancien commentaire de base uniquement s'il n'y a pas d'interactions
+if (lead && lead.Ancien_Commentaire && interactions.length === 0) {
+interactions.push({
+id: null,
+Date_Heure: lead.Dernier_Contact_Date || ' ',
+Agent: lead.Agent_Nom || '',
+Resultat: 'Note initiale',
+Commentaire: lead.Ancien_Commentaire,
+Date_Prochaine: '',
+Prochaine_Action: ''
+});
+}
 
     if (interactions.length === 0) {
       timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center; color:var(--text-muted)">لا توجد متابعات سابقة مسجلة لهذا العميل</div>';
