@@ -308,6 +308,13 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                     (sheet_map.get(f"phone9:{phone_last9}") if phone_last9 else None) or
                     {}
                 )
+                
+                # Blocage des collisions inter-cohortes:
+                # Si l'lève local n'est pas de la cohorte 2026, il ne doit pas hériter des données d'un élève 2026
+                # (Même s'ils partagent le même numéro de téléphone)
+                sheet_acad = sheet_match.get('academic_id', '')
+                if sheet_acad and sheet_acad.endswith('26') and not student_id.endswith('26'):
+                    sheet_match = {}
 
                 # Récupération de l'agent depuis les deux sources
                 sheet_agent = (sheet_match.get('team') or '').strip()
@@ -320,10 +327,11 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
                     agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد', ' ', '')) else 'غير معين'
                 
-                # Règle stricte pour forcer UNIQUEMENT les vrais anciens leads en "Ancien lead" 
-                # (ceux qui se terminent par 25 ou 24). Cela écrase toute collision de téléphone.
+                # On assigne "Ancien lead" aux cohortes 25/24 SEULEMENT s'ils n'ont pas déjà un agent assigné !
+                # Cela permet aux agents de conserver les anciens leads qu'ils traitaient déjà.
                 if str(student_id).endswith('25') or str(student_id).endswith('24'):
-                    agent = 'Ancien lead'
+                    if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
+                        agent = 'Ancien lead'
 
                 if agent:
                     all_agents.add(agent)
