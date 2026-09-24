@@ -8,14 +8,11 @@ import hashlib
 from config import DATABASE_PATH
 
 def get_gspread_client():
-    creds_file = 'credentials.json'
-    if os.path.exists(creds_file):
-        return gspread.service_account(filename=creds_file)
-    elif os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
-        creds_info = json.loads(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'))
-        return gspread.service_account_from_dict(creds_info)
-    else:
+    from google_creds import get_gspread_client
+    gc = get_gspread_client()
+    if not gc:
         raise Exception("Aucune clé Google (credentials.json) n'a été trouvée.")
+    return gc
 
 async def run_google_sheets_sync(sheet_id: str):
     client = get_gspread_client()

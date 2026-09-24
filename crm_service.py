@@ -55,28 +55,15 @@ def _is_paid(ps: str) -> bool:
     return False
 
 def _clean_phone(p: str) -> str:
-    return str(p or '').replace(' ', '').replace('+', '').replace('-', '').strip()
+    return ''.join(c for c in str(p or '') if c.isdigit())
 
 def _sync_sheet_blocking() -> dict:
     """Lecture bloquante de la feuille Google Sheet 'appels 2026' (exécutée via asyncio.to_thread)."""
     try:
-        import json
-        gc = None
-        creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
-
-        if os.path.exists(CREDS_PATH):
-            gc = gspread.service_account(filename=CREDS_PATH)
-        elif os.path.exists('credentials.json'):
-            gc = gspread.service_account(filename='credentials.json')
-        elif creds_env:
-            try:
-                creds_info = json.loads(creds_env)
-                gc = gspread.service_account_from_dict(creds_info)
-            except Exception as parse_err:
-                logger.error(f"[CRM] Erreur décodage GOOGLE_SERVICE_ACCOUNT_JSON: {parse_err}")
-                return {}
-        else:
-            logger.warning("[CRM] Aucune clé Google trouvée (ni credentials.json ni GOOGLE_SERVICE_ACCOUNT_JSON).")
+        from google_creds import get_gspread_client
+        gc = get_gspread_client()
+        if not gc:
+            logger.error("[CRM] Impossible d'initialiser le client Google Sheets.")
             return {}
 
         sh = gc.open_by_key(MASTER_SHEET_ID)
@@ -115,8 +102,14 @@ def _sync_sheet_blocking() -> dict:
                 mapping[f"email:{email}"] = entry
             if acad_id:
                 mapping[f"id:{acad_id}"] = entry
+                if acad_id.endswith('26') and len(acad_id) > 2:
+                    mapping[f"id:{acad_id[:-2]}"] = entry
+                else:
+                    mapping[f"id:{acad_id}26"] = entry
             if phone:
                 mapping[f"phone:{phone}"] = entry
+                if len(phone) >= 9:
+                    mapping[f"phone9:{phone[-9:]}"] = entry
 
         logger.info(f"[CRM] Google Sheet 'appels 2026' synchronisé: {len(rows)-1} lignes, {len(agents)} agents.")
 
@@ -140,32 +133,51 @@ def _sync_sheet_blocking() -> dict:
                     m_note = str(mr[10]).strip() if len(mr) > 10 else ''
                     m_paye = str(mr[11]).strip() if len(mr) > 11 else ''
 
-                    if m_agent:
-                        agents.add(m_agent)
+                    # Récupérer l'entrée existante du Master Sheet (appels 2026)
+                    existing_entry = mapping.get(f"id:{m_acad_id}") or (mapping.get(f"email:{m_email}") if m_email else None) or {}
+                    existing_team = existing_entry.get('team', '')
 
-                    # Si une modification existe dans le miroir, surcharger l'entrée
-                    has_mirror_update = bool(m_note or m_resultat or (m_statut and m_statut not in ['جديد', 'NOUVEAU', 'nouveau']) or m_next_act or m_date_next)
-                    if has_mirror_update:
+                    # L'agent du miroir ne surcharge que s'il s'agit d'un vrai agent (pas 'غير معين')
+                    effective_agent = m_agent if (m_agent and m_agent not in ['غير معين', '', 'None']) else existing_team
+                    if effective_agent:
+                        agents.add(effective_agent)
+
+                    # Une modification réelle dans le miroir concerne des notes ou un changement d'état effectif
+                    has_mirror_update = bool(
+                        m_note.strip() or 
+                        (m_resultat.strip() and m_resultat.strip() not in ['لم يتم التواصل بعد', '']) or
+                        (m_statut.strip() and m_statut.strip() not in ['جديد', 'NOUVEAU', 'nouveau', '']) or
+                        (m_next_act.strip() and m_next_act.strip() not in ['إجراء الاتصال الأول', 'معاودة الاتصال', '']) or
+                        m_date_next.strip()
+                    )
+
+                    if has_mirror_update or effective_agent:
                         mirror_entry = {
-                            'team': m_agent,
-                            'comments': m_note,
-                            'appel_1': m_resultat,
+                            'team': effective_agent,
+                            'comments': m_note or existing_entry.get('comments', ''),
+                            'appel_1': m_resultat or existing_entry.get('appel_1', ''),
                             'appel_2': '',
                             'appel_3': '',
-                            'crm_statut': m_statut,
-                            'crm_resultat': m_resultat,
-                            'crm_prochaine_action': m_next_act,
-                            'crm_date_prochaine': m_date_next,
-                            'crm_note': m_note,
-                            'payment_status': m_paye
+                            'crm_statut': m_statut if has_mirror_update else existing_entry.get('crm_statut'),
+                            'crm_resultat': m_resultat if has_mirror_update else existing_entry.get('crm_resultat'),
+                            'crm_prochaine_action': m_next_act if has_mirror_update else existing_entry.get('crm_prochaine_action'),
+                            'crm_date_prochaine': m_date_next if has_mirror_update else existing_entry.get('crm_date_prochaine'),
+                            'crm_note': m_note if has_mirror_update else existing_entry.get('crm_note'),
+                            'payment_status': m_paye or existing_entry.get('payment_status')
                         }
                         m_phone = _clean_phone(mr[2]) if len(mr) > 2 else ''
                         if m_email and '@' in m_email:
                             mapping[f"email:{m_email}"] = mirror_entry
                         if m_acad_id:
                             mapping[f"id:{m_acad_id}"] = mirror_entry
+                            if m_acad_id.endswith('26') and len(m_acad_id) > 2:
+                                mapping[f"id:{m_acad_id[:-2]}"] = mirror_entry
+                            else:
+                                mapping[f"id:{m_acad_id}26"] = mirror_entry
                         if m_phone:
                             mapping[f"phone:{m_phone}"] = mirror_entry
+                            if len(m_phone) >= 9:
+                                mapping[f"phone9:{m_phone[-9:]}"] = mirror_entry
 
             # Charger les étudiants payés du miroir
             try:
@@ -175,9 +187,12 @@ def _sync_sheet_blocking() -> dict:
                     for pr in paid_rows[1:]:
                         p_acad_id = str(pr[0]).strip() if len(pr) > 0 else ''
                         p_email = str(pr[3]).strip().lower() if len(pr) > 3 else ''
+                        p_agent = str(pr[5]).strip() if len(pr) > 5 else ''
+                        existing_p = mapping.get(f"id:{p_acad_id}") or (mapping.get(f"email:{p_email}") if p_email else None) or {}
+                        effective_p_agent = p_agent if (p_agent and p_agent not in ['غير معين', '', 'None']) else existing_p.get('team', '')
                         paid_entry = {
-                            'team': str(pr[5]).strip() if len(pr) > 5 else '',
-                            'comments': str(pr[10]).strip() if len(pr) > 10 else '',
+                            'team': effective_p_agent,
+                            'comments': str(pr[10]).strip() if len(pr) > 10 else existing_p.get('comments', ''),
                             'appel_1': 'تم السداد',
                             'crm_statut': 'مسدد',
                             'payment_status': 'مسدد'
@@ -186,6 +201,10 @@ def _sync_sheet_blocking() -> dict:
                             mapping[f"email:{p_email}"] = paid_entry
                         if p_acad_id:
                             mapping[f"id:{p_acad_id}"] = paid_entry
+                            if p_acad_id.endswith('26') and len(p_acad_id) > 2:
+                                mapping[f"id:{p_acad_id[:-2]}"] = paid_entry
+                            else:
+                                mapping[f"id:{p_acad_id}26"] = paid_entry
             except Exception as e_paid_sh:
                 logger.debug(f"[CRM] Lecture onglet paye miroir: {e_paid_sh}")
 
@@ -278,21 +297,33 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
 
                 # 2. Chercher les informations de l'agent dans la feuille Google Sheet (par ID académique, ID étudiant, email ou téléphone)
                 acad_id = str(row.get('academic_id') or '').strip()
+                phone_last9 = phone_clean[-9:] if len(phone_clean) >= 9 else ''
                 sheet_match = (
                     sheet_map.get(f"id:{acad_id}") or
+                    sheet_map.get(f"id:{acad_id}26") or
                     sheet_map.get(f"id:{student_id}") or
+                    sheet_map.get(f"id:{student_id}26") or
                     (sheet_map.get(f"email:{email}") if (email and '@' in email) else None) or
                     (sheet_map.get(f"phone:{phone_clean}") if phone_clean else None) or
+                    (sheet_map.get(f"phone9:{phone_last9}") if phone_last9 else None) or
                     {}
                 )
 
-                # Agent affecté : priorité à la feuille Google Sheet, puis DB locale, sinon "غير معين"
-                agent = (
-                    sheet_match.get('team') or 
-                    row.get('crm_assigned_to') or 
-                    row.get('team') or 
-                    'غير معين'
-                ).strip()
+                # Récupération de l'agent depuis les deux sources
+                sheet_agent = (sheet_match.get('team') or '').strip()
+                local_agent = (row.get('crm_assigned_to') or row.get('team') or '').strip()
+                
+                # Le Google Sheet a la priorité absolue
+                agent = sheet_agent
+                
+                # Si pas d'agent dans le Google Sheet (ou explicitement non assigné)
+                if not agent or agent in ('غير معين', 'None', 'غير محدد'):
+                    if acad_id.endswith('26'):
+                        # Nouveaux leads: on garde la mémoire locale, sinon Non assigné
+                        agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد')) else 'غير معين'
+                    else:
+                        # Anciens leads: on écrase/ignore la mémoire locale pour forcer "Ancien lead"
+                        agent = 'Ancien lead'
 
                 if agent:
                     all_agents.add(agent)
@@ -384,7 +415,8 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 if search_lower:
                     if (search_lower not in lead["Nom"].lower() and
                         search_lower not in lead["Telephone"].lower() and
-                        search_lower not in lead["Email"].lower()):
+                        search_lower not in lead["Email"].lower() and
+                        search_lower not in str(lead["ID_Lead"]).lower()):
                         continue
 
                 # Comptabilisation des stats

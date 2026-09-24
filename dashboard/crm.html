@@ -62,11 +62,62 @@
     }
     .agent-selector:focus { border-color: var(--primary); }
     .view-toggle-btn {
-      background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
-      padding: 7px 10px; cursor: pointer; font-size: 0.9rem; color: var(--text-muted); transition: all 0.2s; white-space: nowrap;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0;
+      cursor: pointer;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-sizing: border-box;
     }
     .view-toggle-btn:hover { background: #e2e8f0; }
     .view-toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .gender-toggle-group {
+      display: inline-flex;
+      align-items: center;
+      background: #f1f5f9;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 2px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .btn-gender {
+      border: 1px solid transparent;
+      background: transparent;
+      padding: 4px 7px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      line-height: 1.2;
+      transition: all 0.15s;
+      opacity: 0.65;
+    }
+    .btn-gender:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+    .btn-gender.active {
+      opacity: 1;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-weight: 800;
+    }
+    .btn-gender.active#btnGenderMale {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+    .btn-gender.active#btnGenderFemale {
+      background: #fdf2f8;
+      border-color: #fbcfe8;
+    }
 
     /* BOTTOM NAVIGATION (filtres principaux) */
     .bottom-nav {
@@ -347,9 +398,9 @@
 
 <!-- STICKY HEADER (2 lignes) -->
 <header class="header">
-  <!-- LIGNE 1 : Logo + Badge Admin + Filtres (Agents & Genre) + Actions (Stats, Refresh, Vue) -->
-  <div class="header-top" style="flex-wrap: wrap; gap: 6px;">
-    <div class="header-title" style="display:flex; align-items:center; gap:6px;">
+  <!-- LIGNE 1 : Direction (Logo + Admin + Sélecteur d'agent) et Boutons d'Action (Partage, Stats, Actualiser, Vue) -->
+  <div class="header-top" style="flex-wrap: nowrap; gap: 8px;">
+    <div class="header-title" style="display:flex; align-items:center; gap:6px; flex-shrink: 0;">
       <i class="fa-solid fa-headset" style="color:var(--primary)"></i>
       <span>CRM <small>أسوة</small></span>
       <!-- BADGE STATUT ADMIN -->
@@ -360,19 +411,10 @@
       <button id="adminLoginBtn" onclick="promptSwitchAgent()" title="تسجيل الدخول كمدير" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#64748b; padding:2px 6px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer;">
         <i class="fa-solid fa-lock"></i>
       </button>
-    </div>
 
-    <div class="header-actions" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-      <!-- SELECTEUR AGENTS (LIGNE 1) -->
-      <select id="agentSelect" class="agent-selector" onchange="filterData()" style="padding:5px 8px; font-size:0.78rem; max-width:110px;">
+      <!-- SELECTEUR AGENTS (LIGNE DIRECTION) -->
+      <select id="agentSelect" class="agent-selector" onchange="filterData()" style="padding:4px 8px; font-size:0.78rem; max-width:115px; margin-right:2px;">
         <option value="all">👥 الوكلاء</option>
-      </select>
-
-      <!-- SELECTEUR GENRE (LIGNE 1) -->
-      <select id="genderSelect" class="agent-selector" onchange="filterData()" style="padding:5px 6px; font-size:0.78rem; max-width:82px;">
-        <option value="all">🚻 الجنس</option>
-        <option value="male">👨 ذكور</option>
-        <option value="female">👩 إناث</option>
       </select>
 
       <!-- BADGE AGENT VERROUILLE (MODE AGENT) -->
@@ -382,32 +424,40 @@
           <i class="fa-solid fa-lock" style="font-size:0.72rem;"></i>
         </button>
       </div>
+    </div>
 
-      <!-- BOUTON PARTAGE LIENS (ADMIN UNIQUEMENT) -->
-      <button class="view-toggle-btn" id="shareLinksBtn" onclick="openShareLinksModal()" title="روابط الوكلاء (Admin)" style="color:#d97706; display:none; padding:6px 9px;">
+    <div class="header-actions" style="display:flex; align-items:center; gap:5px; flex-shrink: 0;">
+      <!-- BOUTON PARTAGE LIENS (ADMIN UNIQUEMENT - 36x36px) -->
+      <button class="view-toggle-btn" id="shareLinksBtn" onclick="openShareLinksModal()" title="روابط الوكلاء (Admin)" style="color:#d97706; display:none;">
         <i class="fa-solid fa-share-nodes"></i>
       </button>
 
-      <!-- BOUTON STATISTIQUES (ADMIN UNIQUEMENT) -->
-      <button class="view-toggle-btn" id="performanceBtn" onclick="openPerformanceModal()" title="لوحة الأداء والإحصائيات (Admin)" style="color:#7c3aed; background:#f5f3ff; border-color:#ddd6fe; display:none; padding:6px 9px;">
+      <!-- BOUTON STATISTIQUES (ADMIN UNIQUEMENT - 36x36px) -->
+      <button class="view-toggle-btn" id="performanceBtn" onclick="openPerformanceModal()" title="لوحة الأداء والإحصائيات (Admin)" style="color:#7c3aed; background:#f5f3ff; border-color:#ddd6fe; display:none;">
         <i class="fa-solid fa-chart-line"></i>
       </button>
 
-      <!-- BOUTON RAFRAICHIR (Google Sheet Force Sync) -->
-      <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات فورياً من Google Sheet" style="padding:6px 9px;">
+      <!-- BOUTON RAFRAICHIR (Google Sheet Force Sync - 36x36px) -->
+      <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات فورياً من Google Sheet">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
 
-      <!-- BOUTON BASCULE VUE (Tableau / Cartes) -->
-      <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض (جدول / بطاقات)" style="padding:6px 9px;">
+      <!-- BOUTON BASCULE VUE (Tableau / Cartes - 36x36px) -->
+      <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض (جدول / بطاقات)">
         <i class="fa-solid fa-table-list"></i>
       </button>
     </div>
   </div>
 
-  <!-- LIGNE 2 : Recherche plein écran -->
-  <div class="header-row2" style="padding: 6px 12px;">
-    <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث بالاسم، الهاتف، البريد أو رقم ID..." oninput="filterData()" style="width:100%;">
+  <!-- LIGNE 2 : Recherche + Emojis Genre (Homme / Femme / Tous) -->
+  <div class="header-row2" style="display:flex; align-items:center; gap:8px; padding: 6px 12px;">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث بالاسم، الهاتف، البريد أو رقم ID..." oninput="filterData()" style="flex:1;">
+    <!-- BOUTONS EMOJIS GENRE -->
+    <div class="gender-toggle-group">
+      <button type="button" class="btn-gender active" id="btnGenderAll" onclick="setGenderFilter('all')" title="الكل">🚻</button>
+      <button type="button" class="btn-gender" id="btnGenderMale" onclick="setGenderFilter('male')" title="ذكور">👨</button>
+      <button type="button" class="btn-gender" id="btnGenderFemale" onclick="setGenderFilter('female')" title="إناث">👩</button>
+    </div>
   </div>
 
   <!-- SUB-FILTER PILLS FOR RELANCE -->
@@ -703,9 +753,9 @@
         </div>
       </div>
 
-      <!-- LEADERBOARD TABLE & CARDS -->
+      <!-- PERFORMANCE CARDS -->
       <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-        <span>🏆 ترتيب ومؤشرات الوكلاء:</span>
+        <span>📊 أداء وإحصائيات الوكلاء حسب نسبة التحويل:</span>
         <span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">انقر على أي وكيل لفتح قائمته ومتابعة عملائه</span>
       </div>
 
@@ -919,8 +969,8 @@ function renderPerformanceDashboard() {
     };
   });
 
-  // Trier par nombre de payés décroissant, puis par conversion
-  agentStats.sort((a, b) => b.paid - a.paid || b.conversionRate - a.conversionRate);
+  // Trier par rendement / taux de conversion décroissant, puis par nombre de payés
+  agentStats.sort((a, b) => b.conversionRate - a.conversionRate || b.paid - a.paid);
 
   // Global KPIs
   const totalAll = allLeads.length;
@@ -933,15 +983,10 @@ function renderPerformanceDashboard() {
   document.getElementById('kpi-contacted-rate').textContent = totalAll > 0 ? `${Math.round((totalContacted / totalAll) * 100)}%` : '0%';
   document.getElementById('kpi-conversion-rate').textContent = totalAll > 0 ? `${Math.round((totalPaid / totalAll) * 100)}%` : '0%';
 
-  // Leaderboard render
+  // Render cards sans classement compétitif ni médailles
   const container = document.getElementById('performanceLeaderboardList');
-  const rankBadges = ['🥇 المركز الأول', '🥈 المركز الثاني', '🥉 المركز الثالث'];
 
-  container.innerHTML = agentStats.map((agent, index) => {
-    const rankLabel = rankBadges[index] || `الرتبة #${index + 1}`;
-    const rankBg = index === 0 ? '#fefce8' : (index === 1 ? '#f8fafc' : (index === 2 ? '#fff7ed' : '#ffffff'));
-    const rankBorder = index === 0 ? '#fde047' : (index === 1 ? '#cbd5e1' : (index === 2 ? '#fdba74' : '#e2e8f0'));
-
+  container.innerHTML = agentStats.map(agent => {
     // Progress bar proportions
     const pPct = agent.total > 0 ? (agent.paid / agent.total) * 100 : 0;
     const rPct = agent.total > 0 ? (agent.relance / agent.total) * 100 : 0;
@@ -949,15 +994,14 @@ function renderPerformanceDashboard() {
     const fPct = agent.total > 0 ? (agent.ferme / agent.total) * 100 : 0;
 
     return `
-      <div style="background:${rankBg}; border:1.5px solid ${rankBorder}; border-radius:14px; padding:14px; box-shadow:var(--shadow-sm); cursor:pointer; transition:all 0.15s;" onclick="filterByAgentAndCloseModal('${escapeHtml(agent.name)}')">
+      <div style="background:#ffffff; border:1px solid var(--card-border); border-radius:14px; padding:14px; box-shadow:var(--shadow-sm); cursor:pointer; transition:all 0.15s;" onclick="filterByAgentAndCloseModal('${escapeHtml(agent.name)}')">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="font-size:1.05rem; font-weight:800; color:var(--text-main);">👤 ${escapeHtml(agent.name)}</span>
-            <span style="font-size:0.75rem; background:#fff; border:1px solid ${rankBorder}; padding:2px 8px; border-radius:12px; font-weight:800;">${rankLabel}</span>
           </div>
           <div style="display:flex; gap:6px;">
             <span style="font-size:0.8rem; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; padding:3px 10px; border-radius:20px; font-weight:800;">
-              🏆 ${agent.conversionRate}% تحويل
+              📈 ${agent.conversionRate}% نسبة التحويل
             </span>
             <span style="font-size:0.8rem; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:3px 10px; border-radius:20px; font-weight:800;">
               📞 ${agent.treatmentRate}% معالجة
@@ -1210,6 +1254,26 @@ function setFilter(f) {
   filterData();
 }
 
+let currentGenderFilter = 'all';
+
+function setGenderFilter(val) {
+  currentGenderFilter = val;
+  document.querySelectorAll('.btn-gender').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  if (val === 'all') {
+    const b = document.getElementById('btnGenderAll');
+    if (b) b.classList.add('active');
+  } else if (val === 'male') {
+    const b = document.getElementById('btnGenderMale');
+    if (b) b.classList.add('active');
+  } else if (val === 'female') {
+    const b = document.getElementById('btnGenderFemale');
+    if (b) b.classList.add('active');
+  }
+  filterData();
+}
+
 function filterData() {
   let agent = 'all';
   if (currentRole === 'agent' && authenticatedAgent) {
@@ -1219,7 +1283,7 @@ function filterData() {
   }
 
   const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-  const genderFilter = document.getElementById('genderSelect') ? document.getElementById('genderSelect').value : 'all';
+  const genderFilter = currentGenderFilter;
   let filtered = allLeads;
   if (agent !== 'all') filtered = filtered.filter(l => l.Agent_Nom === agent);
   if (genderFilter !== 'all') filtered = filtered.filter(l => genderClass(l) === genderFilter);
