@@ -317,13 +317,11 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 agent = sheet_agent
                 
                 # Si pas d'agent dans le Google Sheet (ou explicitement non assigné)
-                if not agent or agent in ('غير معين', 'None', 'غير محدد'):
-                    if acad_id.endswith('26'):
-                        # Nouveaux leads: on garde la mémoire locale, sinon Non assigné
-                        agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد')) else 'غير معين'
-                    else:
-                        # Anciens leads: on écrase/ignore la mémoire locale pour forcer "Ancien lead"
-                        agent = 'Ancien lead'
+                if str(student_id).endswith('26'):
+                    if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
+                        agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد', ' ', '')) else 'غير معين'
+                else:
+                    agent = 'Ancien lead'
 
                 if agent:
                     all_agents.add(agent)
