@@ -317,10 +317,12 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 agent = sheet_agent
                 
                 # Si pas d'agent dans le Google Sheet (ou explicitement non assigné)
-                if str(student_id).endswith('26'):
-                    if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
-                        agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد', ' ', '')) else 'غير معين'
-                else:
+                if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
+                    agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد', ' ', '')) else 'غير معين'
+                
+                # Règle stricte pour forcer UNIQUEMENT les vrais anciens leads en "Ancien lead" 
+                # (ceux qui se terminent par 25 ou 24). Cela écrase toute collision de téléphone.
+                if str(student_id).endswith('25') or str(student_id).endswith('24'):
                     agent = 'Ancien lead'
 
                 if agent:
