@@ -115,8 +115,6 @@ def _sync_sheet_blocking() -> dict:
                 mapping[f"email:{email}"] = entry
             if acad_id:
                 mapping[f"id:{acad_id}"] = entry
-            if phone:
-                mapping[f"phone:{phone}"] = entry
 
         logger.info(f"[CRM] Google Sheet 'appels 2026' synchronisé: {len(rows)-1} lignes, {len(agents)} agents.")
         return {"map": mapping, "agents": agents}
@@ -202,11 +200,10 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 phone = str(row.get('phone') or '').strip()
                 phone_clean = _clean_phone(phone)
 
-                # 2. Chercher les informations de l'agent dans la feuille Google Sheet
+                # 2. Chercher les informations de l'agent dans la feuille Google Sheet (strictement par email ou ID unique)
                 sheet_match = (
                     sheet_map.get(f"email:{email}") or
                     sheet_map.get(f"id:{student_id}") or
-                    (sheet_map.get(f"phone:{phone_clean}") if phone_clean else None) or
                     {}
                 )
 
