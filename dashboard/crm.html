@@ -1830,7 +1830,7 @@ function normalizePhone(phone) {
 
 async function findDuplicates() {
   if (!activeLeadId) return;
-  const lead = allLeads.find(l => String(l.ID_Lead) === String(activeLeadId));
+  const lead = allLeads.find(function(l) { return String(l.ID_Lead) === String(activeLeadId); });
   if (!lead) return;
 
   const panel = document.getElementById('duplicateResultPanel');
@@ -1840,15 +1840,15 @@ async function findDuplicates() {
   const myPhone = normalizePhone(lead.Telephone);
   if (!myPhone || myPhone.length < 8) {
     panel.style.display = 'block';
-    panel.innerHTML = '<div class="duplicate-panel"><div class="duplicate-panel-title"><i class="fa-solid fa-triangle-exclamation"></i> رقم الهاتف غير متوفر لهذا العميل</div></div>';
+    panel.innerHTML = '<div class="duplicate-panel"><div class="duplicate-panel-title">' +
+      '<i class="fa-solid fa-triangle-exclamation"></i> رقم الهاتف غير متوفر</div></div>';
     return;
   }
 
   btn.classList.add('loading');
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري البحث...';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
-  // Recherche locale dans allLeads
-  const duplicates = allLeads.filter(l => {
+  const duplicates = allLeads.filter(function(l) {
     if (String(l.ID_Lead) === String(activeLeadId)) return false;
     return normalizePhone(l.Telephone) === myPhone;
   });
@@ -1859,27 +1859,56 @@ async function findDuplicates() {
   panel.style.display = 'block';
 
   if (duplicates.length === 0) {
-    panel.innerHTML = '<div class="duplicate-panel" style="background:#f0fdf4; border-color:#bbf7d0;"><div class="duplicate-panel-title" style="color:#166534;"><i class="fa-solid fa-circle-check"></i> لا يوجد حساب آخر بنفس رقم الهاتف</div></div>';
-  } else {
-    const catLabels = { nouveau: '⭐ جديد', relance: '🔄 متابعة', ferme: '🚫 مغلق', paye: '✅ مسدد' };
-    const cards = duplicates.map(d => {
-      const cat = d._cat || categorize(d);
-      const catLabel = catLabels[cat] || cat;
-      return '<div class="duplicate-card">' +
-        '<div>' +
-        '<div class="duplicate-card-info">' + escapeHtml(d.Nom || 'بدون اسم') + '</div>' +
-        '<div class="duplicate-card-meta">ID: ' + d.ID_Lead + ' • ' + escapeHtml(d.Agent_Nom || 'غير محدد') + ' • ' + catLabel + '</div>' +
-        '</div>' +
-        '<button onclick="closeModal('interactionModal'); setTimeout(() => openInteractionModal('' + d.ID_Lead + ''), 150)" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:800; cursor:pointer; white-space:nowrap;">' +
-        '<i class="fa-solid fa-arrow-up-right-from-square"></i> فتح' +
-        '</button>' +
-        '</div>';
-    }).join('');
-
-    panel.innerHTML = '<div class="duplicate-panel"><div class="duplicate-panel-title"><i class="fa-solid fa-triangle-exclamation"></i> تحذير: ' + duplicates.length + ' حساب(ات) بنفس رقم الهاتف!</div>' + cards + '</div>';
+    panel.innerHTML = '<div class="duplicate-panel" style="background:#f0fdf4;border-color:#bbf7d0;">' +
+      '<div class="duplicate-panel-title" style="color:#166534;">' +
+      '<i class="fa-solid fa-circle-check"></i> لا يوجد حساب آخر بنفس رقم الهاتف ✅</div></div>';
+    return;
   }
-}
 
+  const catLabels = { nouveau: 'جديد', relance: 'متابعة', ferme: 'مغلق', paye: 'مسدد' };
+  const wrapper = document.createElement('div');
+  wrapper.className = 'duplicate-panel';
+  const titleEl = document.createElement('div');
+  titleEl.className = 'duplicate-panel-title';
+  titleEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> تحذير: ' +
+    duplicates.length + ' حساب(ات) بنفس رقم الهاتف!';
+  wrapper.appendChild(titleEl);
+
+  duplicates.forEach(function(d) {
+    const cat = d._cat || categorize(d);
+    const catLabel = catLabels[cat] || cat;
+
+    const card = document.createElement('div');
+    card.className = 'duplicate-card';
+
+    const infoDiv = document.createElement('div');
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'duplicate-card-info';
+    nameDiv.textContent = d.Nom || 'بدون اسم';
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'duplicate-card-meta';
+    metaDiv.textContent = 'ID: ' + (d.ID_Lead || '') + ' — ' + (d.Agent_Nom || 'غير محدد') + ' — ' + catLabel;
+    infoDiv.appendChild(nameDiv);
+    infoDiv.appendChild(metaDiv);
+
+    const openBtn = document.createElement('button');
+    openBtn.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 8px;font-size:0.74rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;';
+    openBtn.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i> فتح';
+    (function(lid) {
+      openBtn.addEventListener('click', function() {
+        closeModal('interactionModal');
+        setTimeout(function() { openInteractionModal(lid); }, 200);
+      });
+    })(d.ID_Lead);
+
+    card.appendChild(infoDiv);
+    card.appendChild(openBtn);
+    wrapper.appendChild(card);
+  });
+
+  panel.innerHTML = '';
+  panel.appendChild(wrapper);
+}
 async function deleteInteraction(interactionId, leadId) {
   if (!confirm('هل أنت متأكد من رغبتك في حذف هذا التسجيل من السجل؟\nسيتم التراجع عن هذه المتابعة واستعادة حالة الطالب السابقة.')) return;
   try {
