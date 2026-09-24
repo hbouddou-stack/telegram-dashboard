@@ -199,26 +199,17 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 # 2. Matching UNIQUEMENT par ID academique (colonne A du sheet). Zero collision possible.
                 acad_id = str(row.get('academic_id') or '').strip()
                 sheet_match = sheet_map.get(f"id:{acad_id}") or {}
+                logger.debug("[CRM-DEBUG] acad_id=%r -> team=%r", acad_id, sheet_match.get("team"))
 
-
-                # Récupération de l'agent depuis les deux sources
+                # Agent : ce que dit le sheet Google. Si rien → Non assigné. C'est tout.
                 sheet_agent = (sheet_match.get('team') or '').strip()
-                local_agent = (row.get('crm_assigned_to') or row.get('team') or '').strip()
-                
-                # Le Google Sheet a la priorité absolue
-                agent = sheet_agent
-                
-                # Si pas d'agent dans le Google Sheet (ou explicitement non assigné)
-                if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
-                    agent = local_agent if (local_agent and local_agent not in ('غير معين', 'None', 'غير محدد', ' ', '')) else 'غير معين'
-                
-                # On assigne "Ancien lead" aux cohortes 25/24 SEULEMENT s'ils n'ont pas déjà un agent assigné !
-                # Cela permet aux agents de conserver les anciens leads qu'ils traitaient déjà.
-                if str(student_id).endswith('25') or str(student_id).endswith('24'):
-                    if not agent or agent in ('غير معين', 'None', 'غير محدد', ' ', ''):
-                        agent = 'Ancien lead'
+                NON_ASSIGNE = 'غير معين'
+                if sheet_agent and sheet_agent not in ('None', 'غير معين', 'غير محدد', ' ', ''):
+                    agent = sheet_agent
+                else:
+                    agent = NON_ASSIGNE
 
-                if agent:
+                if agent and agent != NON_ASSIGNE:
                     all_agents.add(agent)
 
                 # Concaténation des commentaires utiles (sans les 'أول: Oui' ou indicateurs d'appels artificiels)
