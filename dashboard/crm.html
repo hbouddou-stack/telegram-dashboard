@@ -332,6 +332,10 @@
         <i class="fa-solid fa-share-nodes"></i>
       </button>
 
+      <button class="view-toggle-btn" id="performanceBtn" onclick="openPerformanceModal()" title="لوحة أداء الفريق (Admin)" style="color:#7c3aed; background:#f5f3ff; border-color:#ddd6fe; display:none;">
+        <i class="fa-solid fa-chart-line"></i>
+      </button>
+
       <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
@@ -571,6 +575,49 @@
   </div>
 </div>
 
+<!-- TEAM PERFORMANCE MODAL (ADMIN ONLY) -->
+<div class="modal-overlay" id="performanceModal" onclick="closeModalOnBackdrop(event, 'performanceModal')">
+  <div class="modal-content" style="max-width: 880px;">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-chart-line" style="color:var(--purple)"></i>
+        <span>لوحة أداء وإحصائيات فريق المبيعات (Performance Dashboard)</span>
+      </div>
+      <button class="close-btn" onclick="closeModal('performanceModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div class="modal-body" style="padding: 16px 20px;">
+      <!-- KPI CARDS SUMMARY -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:18px;">
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+          <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">👥 إجمالي العملاء</div>
+          <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);" id="kpi-total-leads">0</div>
+        </div>
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:12px; text-align:center;">
+          <div style="font-size:0.75rem; font-weight:700; color:#1d4ed8; margin-bottom:4px;">📞 تم التواصل معهم</div>
+          <div style="font-size:1.4rem; font-weight:900; color:#1d4ed8;" id="kpi-contacted-rate">0%</div>
+        </div>
+        <div style="background:#ecfdf5; border:1px solid #bbf7d0; border-radius:12px; padding:12px; text-align:center;">
+          <div style="font-size:0.75rem; font-weight:700; color:#047857; margin-bottom:4px;">💳 المشتركون المسددون</div>
+          <div style="font-size:1.4rem; font-weight:900; color:#047857;" id="kpi-total-paid">0</div>
+        </div>
+        <div style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:12px; padding:12px; text-align:center;">
+          <div style="font-size:0.75rem; font-weight:700; color:#7e22ce; margin-bottom:4px;">📈 نسبة التحويل العامة</div>
+          <div style="font-size:1.4rem; font-weight:900; color:#7e22ce;" id="kpi-conversion-rate">0%</div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD TABLE & CARDS -->
+      <div style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <span>🏆 ترتيب ومؤشرات الوكلاء:</span>
+        <span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">انقر على أي وكيل لفتح قائمته ومتابعة عملائه</span>
+      </div>
+
+      <div id="performanceLeaderboardList" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- SHARE LINKS MODAL (ADMIN ONLY) -->
 <div class="modal-overlay" id="shareLinksModal" onclick="closeModalOnBackdrop(event, 'shareLinksModal')">
   <div class="modal-content" style="max-width:620px;">
@@ -693,10 +740,12 @@ function updateAuthUI() {
   const lockedName = document.getElementById('lockedAgentName');
   const shareBtn = document.getElementById('shareLinksBtn');
 
+  const perfBtn = document.getElementById('performanceBtn');
   if (currentRole === 'admin') {
     if (agentSelect) agentSelect.style.display = 'block';
     if (agentBadge) agentBadge.style.display = 'none';
     if (shareBtn) shareBtn.style.display = 'inline-flex';
+    if (perfBtn) perfBtn.style.display = 'inline-flex';
   } else if (currentRole === 'agent' && authenticatedAgent) {
     if (agentSelect) {
       agentSelect.style.display = 'none';
@@ -707,6 +756,7 @@ function updateAuthUI() {
       lockedName.textContent = authenticatedAgent;
     }
     if (shareBtn) shareBtn.style.display = 'none';
+    if (perfBtn) perfBtn.style.display = 'none';
   }
 }
 
@@ -738,6 +788,153 @@ function selectAgentProfile(agentName) {
   closeModal('firstTimeAgentModal');
   filterData();
   showToast(`مرحباً بك يا ${agentName} 👋`);
+}
+
+
+/* =========================================================
+   TABLEAU DE BORD D'ANALYTIQUE & PERFORMANCE DES AGENTS (ADMIN)
+========================================================= */
+
+function openPerformanceModal() {
+  if (currentRole !== 'admin') {
+    promptAdminUnlock();
+    return;
+  }
+  renderPerformanceDashboard();
+  document.getElementById('performanceModal').classList.add('active');
+}
+
+function renderPerformanceDashboard() {
+  const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))];
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const agentStats = uniqueAgents.map(agentName => {
+    const leads = allLeads.filter(l => l.Agent_Nom === agentName);
+    const total = leads.length;
+    const paid = leads.filter(l => l._cat === 'paye').length;
+    const relance = leads.filter(l => l._cat === 'relance').length;
+    const nouveau = leads.filter(l => l._cat === 'nouveau').length;
+    const ferme = leads.filter(l => l._cat === 'ferme').length;
+    const todayTasks = leads.filter(l => l._cat === 'relance' && l.Date_Prochaine_Action && l.Date_Prochaine_Action <= todayStr).length;
+
+    const contacted = total - nouveau;
+    const treatmentRate = total > 0 ? Math.round((contacted / total) * 100) : 0;
+    const conversionRate = total > 0 ? Math.round((paid / total) * 100) : 0;
+
+    return {
+      name: agentName,
+      total,
+      paid,
+      relance,
+      nouveau,
+      ferme,
+      todayTasks,
+      contacted,
+      treatmentRate,
+      conversionRate
+    };
+  });
+
+  // Trier par nombre de payés décroissant, puis par conversion
+  agentStats.sort((a, b) => b.paid - a.paid || b.conversionRate - a.conversionRate);
+
+  // Global KPIs
+  const totalAll = allLeads.length;
+  const totalPaid = allLeads.filter(l => l._cat === 'paye').length;
+  const totalNouveau = allLeads.filter(l => l._cat === 'nouveau').length;
+  const totalContacted = totalAll - totalNouveau;
+
+  document.getElementById('kpi-total-leads').textContent = totalAll;
+  document.getElementById('kpi-total-paid').textContent = totalPaid;
+  document.getElementById('kpi-contacted-rate').textContent = totalAll > 0 ? `${Math.round((totalContacted / totalAll) * 100)}%` : '0%';
+  document.getElementById('kpi-conversion-rate').textContent = totalAll > 0 ? `${Math.round((totalPaid / totalAll) * 100)}%` : '0%';
+
+  // Leaderboard render
+  const container = document.getElementById('performanceLeaderboardList');
+  const rankBadges = ['🥇 المركز الأول', '🥈 المركز الثاني', '🥉 المركز الثالث'];
+
+  container.innerHTML = agentStats.map((agent, index) => {
+    const rankLabel = rankBadges[index] || `الرتبة #${index + 1}`;
+    const rankBg = index === 0 ? '#fefce8' : (index === 1 ? '#f8fafc' : (index === 2 ? '#fff7ed' : '#ffffff'));
+    const rankBorder = index === 0 ? '#fde047' : (index === 1 ? '#cbd5e1' : (index === 2 ? '#fdba74' : '#e2e8f0'));
+
+    // Progress bar proportions
+    const pPct = agent.total > 0 ? (agent.paid / agent.total) * 100 : 0;
+    const rPct = agent.total > 0 ? (agent.relance / agent.total) * 100 : 0;
+    const nPct = agent.total > 0 ? (agent.nouveau / agent.total) * 100 : 0;
+    const fPct = agent.total > 0 ? (agent.ferme / agent.total) * 100 : 0;
+
+    return `
+      <div style="background:${rankBg}; border:1.5px solid ${rankBorder}; border-radius:14px; padding:14px; box-shadow:var(--shadow-sm); cursor:pointer; transition:all 0.15s;" onclick="filterByAgentAndCloseModal('${escapeHtml(agent.name)}')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.05rem; font-weight:800; color:var(--text-main);">👤 ${escapeHtml(agent.name)}</span>
+            <span style="font-size:0.75rem; background:#fff; border:1px solid ${rankBorder}; padding:2px 8px; border-radius:12px; font-weight:800;">${rankLabel}</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <span style="font-size:0.8rem; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; padding:3px 10px; border-radius:20px; font-weight:800;">
+              🏆 ${agent.conversionRate}% تحويل
+            </span>
+            <span style="font-size:0.8rem; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:3px 10px; border-radius:20px; font-weight:800;">
+              📞 ${agent.treatmentRate}% معالجة
+            </span>
+          </div>
+        </div>
+
+        <!-- STATS CHIPS GRID -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); gap:6px; margin-bottom:10px;">
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:6px; text-align:center;">
+            <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">المعينين</div>
+            <div style="font-size:1rem; font-weight:800;">${agent.total}</div>
+          </div>
+          <div style="background:#ecfdf5; border:1px solid #bbf7d0; border-radius:8px; padding:6px; text-align:center;">
+            <div style="font-size:0.7rem; color:#047857; font-weight:600;">✅ مسدد</div>
+            <div style="font-size:1rem; font-weight:800; color:#047857;">${agent.paid}</div>
+          </div>
+          <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:6px; text-align:center;">
+            <div style="font-size:0.7rem; color:#6d28d9; font-weight:600;">🔄 متابعة</div>
+            <div style="font-size:1rem; font-weight:800; color:#6d28d9;">${agent.relance}</div>
+          </div>
+          <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:6px; text-align:center;">
+            <div style="font-size:0.7rem; color:#c2410c; font-weight:600;">🎯 مهام اليوم</div>
+            <div style="font-size:1rem; font-weight:800; color:#c2410c;">${agent.todayTasks}</div>
+          </div>
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:6px; text-align:center;">
+            <div style="font-size:0.7rem; color:#1d4ed8; font-weight:600;">⭐ جديد</div>
+            <div style="font-size:1rem; font-weight:800; color:#1d4ed8;">${agent.nouveau}</div>
+          </div>
+          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:6px; text-align:center;">
+            <div style="font-size:0.7rem; color:#b91c1c; font-weight:600;">🚫 مغلق</div>
+            <div style="font-size:1rem; font-weight:800; color:#b91c1c;">${agent.ferme}</div>
+          </div>
+        </div>
+
+        <!-- VISUAL MULTI-COLOR PROGRESS BAR -->
+        <div style="height:9px; border-radius:6px; overflow:hidden; display:flex; background:#e2e8f0;">
+          <div style="width:${pPct}%; background:#10b981;" title="مسدد: ${agent.paid}"></div>
+          <div style="width:${rPct}%; background:#8b5cf6;" title="متابعة: ${agent.relance}"></div>
+          <div style="width:${nPct}%; background:#3b82f6;" title="جديد: ${agent.nouveau}"></div>
+          <div style="width:${fPct}%; background:#94a3b8;" title="مغلق: ${agent.ferme}"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:4px;">
+          <span>🟢 مسدد (${Math.round(pPct)}%)</span>
+          <span>🟣 متابعة (${Math.round(rPct)}%)</span>
+          <span>🔵 جديد لم يُتصل به (${Math.round(nPct)}%)</span>
+          <span>⚪ مغلق (${Math.round(fPct)}%)</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterByAgentAndCloseModal(agentName) {
+  const sel = document.getElementById('agentSelect');
+  if (sel) {
+    sel.value = agentName;
+    filterData();
+  }
+  closeModal('performanceModal');
+  showToast(`تم عرض عملاء الوكيل: ${agentName} 🎯`);
 }
 
 function openShareLinksModal() {
