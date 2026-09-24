@@ -115,6 +115,8 @@ def _sync_sheet_blocking() -> dict:
                 mapping[f"email:{email}"] = entry
             if acad_id:
                 mapping[f"id:{acad_id}"] = entry
+            if phone:
+                mapping[f"phone:{phone}"] = entry
 
         logger.info(f"[CRM] Google Sheet 'appels 2026' synchronisé: {len(rows)-1} lignes, {len(agents)} agents.")
 
@@ -157,10 +159,13 @@ def _sync_sheet_blocking() -> dict:
                             'crm_note': m_note,
                             'payment_status': m_paye
                         }
+                        m_phone = _clean_phone(mr[2]) if len(mr) > 2 else ''
                         if m_email and '@' in m_email:
                             mapping[f"email:{m_email}"] = mirror_entry
                         if m_acad_id:
                             mapping[f"id:{m_acad_id}"] = mirror_entry
+                        if m_phone:
+                            mapping[f"phone:{m_phone}"] = mirror_entry
 
             # Charger les étudiants payés du miroir
             try:
@@ -271,10 +276,13 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 phone = str(row.get('phone') or '').strip()
                 phone_clean = _clean_phone(phone)
 
-                # 2. Chercher les informations de l'agent dans la feuille Google Sheet (strictement par email ou ID unique)
+                # 2. Chercher les informations de l'agent dans la feuille Google Sheet (par ID académique, ID étudiant, email ou téléphone)
+                acad_id = str(row.get('academic_id') or '').strip()
                 sheet_match = (
-                    sheet_map.get(f"email:{email}") or
+                    sheet_map.get(f"id:{acad_id}") or
                     sheet_map.get(f"id:{student_id}") or
+                    (sheet_map.get(f"email:{email}") if (email and '@' in email) else None) or
+                    (sheet_map.get(f"phone:{phone_clean}") if phone_clean else None) or
                     {}
                 )
 
