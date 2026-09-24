@@ -258,15 +258,17 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 if _is_paid(statut_paiement) or statut_crm == 'مسدد':
                     dernier_resultat = 'تم السداد'
                     prochaine_action = 'مكتمل (مسدد)'
-                elif cat == 'nouveau' or statut_crm in ['جديد', 'nouveau', 'NOUVEAU', '']:
+                elif cat == 'nouveau':
                     dernier_resultat = 'لم يتم التواصل بعد'
                     prochaine_action = 'إجراء الاتصال الأول'
                 else:
-                    raw_res = row.get('crm_next_action_note') or sheet_match.get('appel_1') or 'تم التواصل سابقاً'
+                    # En suivi (relance) ou fermé : ne pas imposer de prochaine action automatique
+                    raw_res = row.get('crm_last_result') or sheet_match.get('appel_1') or ''
                     if raw_res in ['Oui', 'oui', 'OUI', '1']:
                         raw_res = 'تم التواصل سابقاً'
-                    dernier_resultat = raw_res
-                    prochaine_action = 'معاودة الاتصال'
+                    dernier_resultat = raw_res or (ancien_commentaire and 'سجل سابق') or 'تم التواصل سابقاً'
+                    # Laisser vide si l'agent n'a pas défini la prochaine action
+                    prochaine_action = row.get('crm_next_action_note') or ''
 
                 full_name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip() or 'بدون اسم'
 
@@ -475,6 +477,63 @@ async def get_lead_details_async(lead_id: str) -> dict:
                         "Date_Prochaine": r['date_prochaine'] or "",
                         "Prochaine_Action": r['prochaine_action'] or ""
                     })
+            # Si aucun historique récent dans crm_interactions, injecter l'ancien commentaire / note
+            if not interactions:
+                async with db.execute(
+                    "SELECT crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
+                    (str(lead_id), str(lead_id))
+                ) as st_cur:
+                    st_row = await st_cur.fetchone()
+                    if st_row and (st_row['crm_next_action_note'] or st_row['crm_last_contact_at']):
+                        interactions.append({
+                            "id": None,
+                            "Date_Heure": st_row['crm_last_contact_at'] or "ملاحظة سابقة",
+                            "Agent": st_row['crm_assigned_to'] or "الوكيل",
+                            "Resultat": "سجل الملاحظات السابق",
+                            "Tentative": "",
+                            "Detail": "",
+                            "Commentaire": st_row['crm_next_action_note'] or "",
+                            "Date_Prochaine": "",
+                            "Prochaine_Action": ""
+                        })
+            # Si aucun historique récent dans crm_interactions, injecter l'ancien commentaire / note
+            if not interactions:
+                async with db.execute(
+                    "SELECT crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
+                    (str(lead_id), str(lead_id))
+                ) as st_cur:
+                    st_row = await st_cur.fetchone()
+                    if st_row and (st_row['crm_next_action_note'] or st_row['crm_last_contact_at']):
+                        interactions.append({
+                            "id": None,
+                            "Date_Heure": st_row['crm_last_contact_at'] or "ملاحظة سابقة",
+                            "Agent": st_row['crm_assigned_to'] or "الوكيل",
+                            "Resultat": "سجل الملاحظات السابق",
+                            "Tentative": "",
+                            "Detail": "",
+                            "Commentaire": st_row['crm_next_action_note'] or "",
+                            "Date_Prochaine": "",
+                            "Prochaine_Action": ""
+                        })
+            # Si aucun historique recent dans crm_interactions, injecter l'ancien commentaire / note
+            if not interactions:
+                async with db.execute(
+                    "SELECT crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
+                    (str(lead_id), str(lead_id))
+                ) as st_cur:
+                    st_row = await st_cur.fetchone()
+                    if st_row and (st_row['crm_next_action_note'] or st_row['crm_last_contact_at']):
+                        interactions.append({
+                            "id": None,
+                            "Date_Heure": st_row['crm_last_contact_at'] or "ملاحظة سابقة",
+                            "Agent": st_row['crm_assigned_to'] or "الوكيل",
+                            "Resultat": "سجل الملاحظات السابق",
+                            "Tentative": "",
+                            "Detail": "",
+                            "Commentaire": st_row['crm_next_action_note'] or "",
+                            "Date_Prochaine": "",
+                            "Prochaine_Action": ""
+                        })
     except Exception as e:
         logger.error(f"[CRM] Erreur get_lead_details {lead_id}: {e}")
     return {"interactions": interactions}

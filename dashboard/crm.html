@@ -484,21 +484,32 @@
 <!-- INTERACTION & DECISION TREE MODAL -->
 <div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event, 'interactionModal')">
   <div class="modal-content">
-    <!-- MODAL HEADER : STUDENT NAME + DUPLICATE SEARCH -->
-    <div class="modal-header">
-      <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
-        <div class="modal-title" id="modalLeadName" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">اسم الطالب</div>
-        <button class="btn-dup-search" id="dupSearchBtn" onclick="findDuplicates()">
-          <i class="fa-solid fa-magnifying-glass"></i> شبيه
+    <!-- MODAL HEADER : STUDENT NAME + DUPLICATE SEARCH (SEPARE DU BOUTON FERMER) -->
+    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+        <div class="modal-title" id="modalLeadName" style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">اسم الطالب</div>
+        <button class="btn-dup-search" id="dupSearchBtn" onclick="findDuplicates()" title="البحث عن حسابات أخرى بنفس رقم الهاتف">
+          <i class="fa-solid fa-magnifying-glass"></i> بحث عن شبيه
         </button>
       </div>
-      <button class="close-btn" onclick="closeModal('interactionModal')"><i class="fa-solid fa-xmark"></i></button>
+      <button class="close-btn" onclick="closeModal('interactionModal')" style="margin-inline-start:20px;" title="إغلاق النافذة"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <!-- DUPLICATE RESULTS PANEL (hidden by default) -->
     <div id="duplicateResultPanel" style="display:none; padding:10px 14px 0;"></div>
 
     <!-- MODAL BODY (SCROLLABLE) -->
     <div class="modal-body">
+      <!-- REGISTRE DE SUIVI (HISTORIQUE DES CONTACTS) - PLACE EN HAUT -->
+      <details id="timelineDetailsBox" open style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:14px; overflow:hidden;">
+        <summary style="padding:10px 14px; font-size:0.86rem; font-weight:800; color:var(--text-main); cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none; background:#f1f5f9;">
+          <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary); margin-left:6px;"></i> سجل المتابعات والتاريخ (Timeline)</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;"><i class="fa-solid fa-chevron-down"></i></span>
+        </summary>
+        <div style="padding:10px 14px; max-height:190px; overflow-y:auto;">
+          <div id="modalTimeline" class="timeline" style="margin-top:2px;"></div>
+        </div>
+      </details>
+
       <!-- ETAPE 0 : QUALIFICATION DU LEAD (1 SEULE LIGNE : PROSPECT, DOUBLON, TEST) -->
       <div class="step-label"><i class="fa-solid fa-id-badge"></i> 0. تصنيف وطبيعة الحساب (Qualification):</div>
       <div class="account-type-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:14px;">
@@ -520,7 +531,7 @@
 
       <div id="callFlowSection">
         <!-- ETAPE 1 : RESULTAT ET CANAL DE CONTACT (APPEL OU WHATSAPP) -->
-        <div class="step-label"><i class="fa-solid fa-comments"></i> 1. وسيلة ونتيجة التواصل:</div>
+        <div class="step-label"><i class="fa-solid fa-comments"></i> 1. وسيلة ونتيجة التواصل <small style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(اختياري إذا أردت تحديث المتابعة فقط)</small>:</div>
         <div class="choice-grid" style="grid-template-columns: repeat(2, 1fr);">
           <div class="choice-card" onclick="selectResult('repondu', this)">
             <span class="choice-icon">📞</span> أجاب هاتفياً
@@ -544,7 +555,7 @@
         <!-- Branche A : A REPONDU (PAR TELEPHONE OU PAR WHATSAPP) -->
         <div class="sub-section" id="subRepondu">
           <div class="step-label">
-            <span><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف:</span>
+            <span><i class="fa-solid fa-list-check"></i> 2. تفاصيل الرد والموقف <small style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(اختياري)</small>:</span>
             <span style="font-size:0.74rem; color:#b45309; font-weight:800; background:#fef3c7; padding:2px 8px; border-radius:6px; margin-right:6px;">(يمكنك تحديد أكثر من خيار في نفس الوقت 💡)</span>
           </div>
           <div class="choice-grid">
@@ -627,11 +638,7 @@
         <textarea id="modalNoteInput" class="form-control" placeholder="اكتب تفاصيل خاصة أو سياق المحادثة هنا..."></textarea>
       </div>
 
-      <hr style="border:0; border-top:1px solid var(--card-border); margin:18px 0 14px;">
-      <div style="font-size:0.92rem; font-weight:800; color:var(--text-main); margin-bottom:8px;">
-        <i class="fa-solid fa-clock-rotate-left"></i> سجل المتابعات والتاريخ (Timeline):
-      </div>
-      <div id="modalTimeline" class="timeline"></div>
+
     </div>
 
     <!-- MODAL FOOTER (PERMANENTEMENT VISIBLE) -->
@@ -1090,7 +1097,7 @@ function categorize(lead) {
   const res = String(lead.Dernier_Contact_Resultat || '').trim();
   const hasHistory = !!(lead.Ancien_Commentaire || (res && res !== 'لم يتم التواصل بعد') || lead.Dernier_Contact_Date);
 
-  if (!hasHistory || status === 'nouveau' || status === 'جديد' || !status) {
+  if (!hasHistory && (status === 'nouveau' || status === 'جديد' || !status)) {
     return 'nouveau';
   }
   return 'relance';
@@ -1292,7 +1299,13 @@ function renderCards(leads) {
 
     const todayIso = new Date().toISOString().split('T')[0];
     let nextActionBox = '';
-    if (l.Date_Prochaine_Action || l.Prochaine_Action) {
+    // Pour les leads en suivi (relance), ne jamais imposer "إجراء الاتصال الأول" ou "معاودة الاتصال" s'ils n'ont pas été choisis
+    let displayAction = l.Prochaine_Action || '';
+    if (l._cat === 'relance' && (displayAction === 'إجراء الاتصال الأول' || displayAction === 'معاودة الاتصال')) {
+      displayAction = '';
+    }
+
+    if (displayAction || l.Date_Prochaine_Action) {
       const isOverdue = l.Date_Prochaine_Action && l.Date_Prochaine_Action < todayIso;
       const isToday = l.Date_Prochaine_Action && l.Date_Prochaine_Action === todayIso;
 
@@ -1311,7 +1324,7 @@ function renderCards(leads) {
         <div class="next-action-pill" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:6px;">
             <i class="fa-solid fa-bullseye" style="color:${isOverdue ? '#ef4444' : 'var(--primary)'}"></i>
-            <span>الخطوة التالية: <b>${escapeHtml(l.Prochaine_Action || 'معاودة الاتصال')}</b></span>
+            <span>الخطوة التالية: <b>${escapeHtml(displayAction || 'لم تحدد بعد')}</b></span>
           </div>
           ${l.Date_Prochaine_Action ? `<span style="font-size:0.75rem; background:${badgeBg}; border:1px solid ${badgeBorder}; color:${badgeColor}; padding:2px 7px; border-radius:6px; font-weight:800;">${alertIcon} ${escapeHtml(l.Date_Prochaine_Action)}</span>` : ''}
         </div>`;
@@ -1549,17 +1562,7 @@ function selectDetail(detailText, element, targetStatus, requireDate = false) {
 async function submitModalInteraction() {
   if (!activeLeadId) return;
 
-  // Si c'est un عميل حقيقي (normal), vérifier les étapes d'appel
-  if (currentLeadType === 'normal') {
-    if (!currentResult) {
-      alert('يرجى تحديد نتيجة محاولة الاتصال (السؤال رقم 1)');
-      return;
-    }
-    if ((currentResult === 'repondu' || currentResult === 'repondu_wa') && currentDetails.length === 0) {
-      alert('يرجى تحديد تفاصيل الموقف (السؤال رقم 2) - يمكنك اختيار أكثر من خيار');
-      return;
-    }
-  }
+  // Les étapes 1 et 2 sont optionnelles : l'agent peut enregistrer directement une prochaine action ou une note
 
   const nextDate = document.getElementById('modalNextDate').value;
   const note = document.getElementById('modalNoteInput').value.trim();
@@ -1579,24 +1582,36 @@ async function submitModalInteraction() {
   let actionResultLabel = '';
   if (currentLeadType !== 'normal') {
     actionResultLabel = (currentLeadType === 'exonere' || currentLeadType === 'virement') ? 'تم السداد' : 'استبعاد / إغلاق';
-  } else {
+  } else if (currentResult) {
     if (currentResult === 'repondu') actionResultLabel = 'أجاب هاتفياً';
     else if (currentResult === 'repondu_wa') actionResultLabel = 'رد وتواصل عبر واتساب';
     else if (currentResult === 'sonne_sans_reponse') actionResultLabel = 'يرن بدون إجابة';
     else if (currentResult === 'injoignable') actionResultLabel = 'غير متاح / علبة صوتية';
     else if (currentResult === 'faux_numero') actionResultLabel = 'رقم خاطئ';
+  } else {
+    // Aucune tentative d'appel selectionnee : simple mise a jour de la prochaine action ou note
+    actionResultLabel = currentLead?.Dernier_Contact_Resultat || 'تحديث المتابعة';
   }
 
   const combinedDetails = currentDetails.join(' • ');
 
-  const chosenNextAction = document.getElementById('modalNextActionSelect') ? document.getElementById('modalNextActionSelect').value : 'معاودة الاتصال';
+  const chosenNextAction = document.getElementById('modalNextActionSelect') ? document.getElementById('modalNextActionSelect').value : '';
   let nextActionDesc = chosenNextAction;
   if (calculatedStatus === 'ferme') nextActionDesc = 'لا شيء (مغلق / مستبعد)';
   else if (calculatedStatus === 'paye') nextActionDesc = 'مكتمل (مسدد)';
 
+  let targetStatut = 'للمتابعة';
+  if (calculatedStatus === 'ferme') {
+    targetStatut = 'مغلق';
+  } else if (currentDetails.some(d => d.includes('صرّح بالسداد'))) {
+    targetStatut = 'قيد التحقق من الدفع';
+  } else if (!currentResult && currentLead?.Statut_CRM) {
+    targetStatut = currentLead.Statut_CRM;
+  }
+
   const payload = {
     lead_id: activeLeadId,
-    statut: calculatedStatus === 'ferme' ? 'مغلق' : (currentDetails.some(d => d.includes('صرّح بالسداد')) ? 'قيد التحقق من الدفع' : 'للمتابعة'),
+    statut: targetStatut,
     resultat: actionResultLabel,
     detail: combinedDetails,
     prochaine_action: nextActionDesc,
@@ -1606,10 +1621,12 @@ async function submitModalInteraction() {
     send_email: sendEmailAlert
   };
 
-  // Mise à jour optimiste dans l'interface
+  // Mise a jour optimiste dans l'interface
   if (currentLead) {
     currentLead.Statut_CRM = payload.statut;
-    currentLead.Dernier_Contact_Resultat = `${payload.resultat} • ${payload.detail}`;
+    if (currentResult) {
+      currentLead.Dernier_Contact_Resultat = combinedDetails ? `${payload.resultat} • ${combinedDetails}` : payload.resultat;
+    }
     currentLead.Prochaine_Action = payload.prochaine_action;
     currentLead.Date_Prochaine_Action = payload.date_prochaine;
     currentLead.Agent_Nom = activeAgentName;
