@@ -218,22 +218,28 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 if agent:
                     all_agents.add(agent)
 
-                # Concaténation de l'historique d'appels
+                # Concaténation des commentaires utiles (sans les 'أول: Oui' ou indicateurs d'appels artificiels)
                 history_parts = []
-                # Notes de la feuille Google Sheet
-                if sheet_match.get('comments'): history_parts.append(sheet_match['comments'])
-                if sheet_match.get('appel_1'): history_parts.append(f"أول: {sheet_match['appel_1']}")
-                if sheet_match.get('appel_2'): history_parts.append(f"ثان: {sheet_match['appel_2']}")
-                if sheet_match.get('appel_3'): history_parts.append(f"ثالث: {sheet_match['appel_3']}")
+                sheet_c = (sheet_match.get('comments') or '').strip()
+                if sheet_c and sheet_c.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
+                    clean_c = sheet_c.replace('أول: Oui', '').replace('ثان: Oui', '').replace('ثالث: Oui', '').strip(' |')
+                    if clean_c:
+                        history_parts.append(clean_c)
                 
                 # Notes locales enregistrées directement dans le CRM
-                if row.get('comments') and row.get('comments') != sheet_match.get('comments'):
-                    history_parts.append(str(row['comments']))
+                if row.get('comments') and str(row.get('comments')).strip() != sheet_c:
+                    c_loc = str(row['comments']).strip()
+                    clean_loc = c_loc.replace('أول: Oui', '').replace('ثان: Oui', '').replace('ثالث: Oui', '').strip(' |')
+                    if clean_loc and clean_loc.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
+                        history_parts.append(clean_loc)
                 if row.get('crm_next_action_note'):
-                    history_parts.append(str(row['crm_next_action_note']))
+                    act_note = str(row['crm_next_action_note']).strip()
+                    clean_act = act_note.replace('أول: Oui', '').replace('ثان: Oui', '').replace('ثالث: Oui', '').strip(' |')
+                    if clean_act and clean_act.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
+                        history_parts.append(clean_act)
 
                 ancien_commentaire = ' | '.join(history_parts) if history_parts else ''
-                has_history = bool(ancien_commentaire or row.get('crm_last_contact_at'))
+                has_history = bool(ancien_commentaire or row.get('crm_last_contact_at') or sheet_match.get('appel_1'))
 
                 statut_crm = (row.get('crm_lead_status') or '').strip()
                 statut_paiement = (row.get('payment_status') or '').strip()
@@ -248,6 +254,20 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
 
                 cat = _categorize(statut_crm, statut_paiement, has_history)
 
+                # Détermination du dernier contact et de la prochaine action
+                if _is_paid(statut_paiement) or statut_crm == 'مسدد':
+                    dernier_resultat = 'تم السداد'
+                    prochaine_action = 'مكتمل (مسدد)'
+                elif cat == 'nouveau' or statut_crm in ['جديد', 'nouveau', 'NOUVEAU', '']:
+                    dernier_resultat = 'لم يتم التواصل بعد'
+                    prochaine_action = 'إجراء الاتصال الأول'
+                else:
+                    raw_res = row.get('crm_next_action_note') or sheet_match.get('appel_1') or 'تم التواصل سابقاً'
+                    if raw_res in ['Oui', 'oui', 'OUI', '1']:
+                        raw_res = 'تم التواصل سابقاً'
+                    dernier_resultat = raw_res
+                    prochaine_action = 'معاودة الاتصال'
+
                 full_name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip() or 'بدون اسم'
 
                 lead = {
@@ -260,8 +280,8 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                     "Agent_Nom": agent,
                     "Statut_CRM": statut_crm,
                     "Dernier_Contact_Date": row.get('crm_last_contact_at', ''),
-                    "Dernier_Contact_Resultat": sheet_match.get('appel_1') or row.get('crm_next_action_note', ''),
-                    "Prochaine_Action": sheet_match.get('appel_2') or 'معاودة الاتصال',
+                    "Dernier_Contact_Resultat": dernier_resultat,
+                    "Prochaine_Action": prochaine_action,
                     "Date_Prochaine_Action": row.get('crm_next_action_date', ''),
                     "Ancien_Commentaire": ancien_commentaire,
                     "Statut_Paiement": statut_paiement,
