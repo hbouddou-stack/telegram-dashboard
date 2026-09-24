@@ -155,206 +155,110 @@ def _categorize(statut_crm: str, ps: str, has_history: bool) -> str:
     # 4. En relance / À suivre
     return 'relance'
 
+
 async def get_leads_async(agent_name: str = 'all', search: str = '', status_filter: str = 'all', refresh_sheet: bool = False) -> dict:
-    """
-    Récupère la liste des leads réconciliée :
-    - Élèves depuis SQLite (academy_students)
-    - Agents et historique d'appels depuis Google Sheet 'appels 2026'
-    """
-    # 1. Charger ou rafraîchir les données de la feuille Google Sheet
-    sheet_data = await get_sheet_data_async(force_refresh=refresh_sheet)
-    sheet_map = sheet_data.get("map", {})
-    all_agents = set(sheet_data.get("agents", set()))
-    all_agents.add('غير معين')  # Pour les non affectés
-
-    today_str = datetime.now().strftime('%Y-%m-%d')
+    from google_creds import get_gspread_client
+    
+    # Lecture DIRECTE depuis Google Sheets (Solution 2 Radicale)
+    try:
+        gc = get_gspread_client()
+        sh = gc.open_by_key('1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI')
+        ws = sh.worksheet('appels 2026')
+        all_rows = ws.get_all_values()
+    except Exception as e:
+        logger.error(f"Google Sheet fetch error: {e}")
+        return {"data": [], "stats": {}, "agents": {}, "interactions": {}}
+        
     leads = []
-    stats = {
-        "total": 0,
-        "en_retard": 0,
-        "aujourdhui": 0,
-        "nouveaux": 0,
-        "relances": 0,
-        "payes": 0
-    }
-
-    search_lower = search.strip().lower()
-
-    async with aiosqlite.connect(DATABASE_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        query = """
-            SELECT * FROM academy_students 
-            WHERE (excluded = 0 OR excluded IS NULL)
-            ORDER BY created_at DESC, first_name ASC
-        """
-        async with db.execute(query) as cur:
-            rows = await cur.fetchall()
-
-            for r in rows:
-                row = dict(r)
-                student_id = str(row.get('student_id') or row.get('academic_id') or '').strip()
-                email = str(row.get('email') or '').strip().lower()
-                phone = str(row.get('phone') or '').strip()
-
-                # 2. Matching UNIQUEMENT par ID academique (colonne A du sheet). Zero collision possible.
-                acad_id = str(row.get('academic_id') or '').strip()
-                sheet_match = sheet_map.get(f"id:{acad_id}") or {}
-                logger.debug("[CRM-DEBUG] acad_id=%r -> team=%r", acad_id, sheet_match.get("team"))
-
-                # Agent : ce que dit le sheet Google. Si rien → Non assigné. C'est tout.
-                sheet_agent = (sheet_match.get('team') or '').strip()
-                NON_ASSIGNE = 'غير معين'
-                if sheet_agent and sheet_agent not in ('None', 'غير معين', 'غير محدد', ' ', ''):
-                    agent = sheet_agent
-                else:
-                    agent = NON_ASSIGNE
-
-                if agent and agent != NON_ASSIGNE:
-                    all_agents.add(agent)
-
-                # Commentaire : source Google Sheet absolue
-                sheet_c = (sheet_match.get('comments') or '').strip()
+    agent_counts = {}
+    stats = {'total': 0, 'nouveau': 0, 'en_cours': 0, 'paye': 0, 'ferme': 0}
+    interactions_stats = {'today': 0, 'week': 0, 'month': 0}
+    
+    for row in all_rows[1:]:
+        if not row: continue
+        student_id = str(row[0]).strip() if len(row) > 0 else ''
+        if not student_id: continue
+        
+        first_name = str(row[2]).strip() if len(row) > 2 else ''
+        last_name = str(row[15]).strip() if len(row) > 15 else ''
+        full_name = f"{first_name} {last_name}".strip()
+        
+        email = str(row[3]).strip() if len(row) > 3 else ''
+        phone = str(row[4]).strip() if len(row) > 4 else ''
+        gender = str(row[6]).strip() if len(row) > 6 else 'HOMME'
+        country = str(row[8]).strip() if len(row) > 8 else ''
+        payment_status = str(row[7]).strip() if len(row) > 7 else ''
+        
+        agent = str(row[18]).strip() if len(row) > 18 else ''
+        if not agent:
+            agent = "Non assigné"
+            
+        comments = str(row[19]).strip() if len(row) > 19 else ''
+        appel_1 = str(row[20]).strip() if len(row) > 20 else ''
+        appel_2 = str(row[21]).strip() if len(row) > 21 else ''
+        appel_3 = str(row[22]).strip() if len(row) > 22 else ''
+        
+        # Classification stricte :
+        is_paid = _is_paid(payment_status) or payment_status.lower() in ['payé / inscrit', 'exempté', 'validé']
+        
+        if is_paid:
+            cat = 'paye'
+            final_statut = 'Payé / Inscrit'
+        else:
+            if comments:
+                cat = 'relance'
+                final_statut = 'En cours'
+            else:
+                cat = 'nouveau'
+                final_statut = 'Nouveau'
                 
-                # Le statut "Nouveau" vs "En cours" dpend uniquement du commentaire
-                has_history = bool(sheet_c)
+        # Filtrage
+        if agent_name != 'all' and agent != agent_name:
+            continue
+        if status_filter != 'all' and cat != status_filter:
+            continue
+        if search:
+            search_lower = search.lower()
+            if search_lower not in full_name.lower() and search_lower not in phone and search_lower not in email.lower() and search_lower not in student_id:
+                continue
                 
-                # On nettoie un peu le commentaire pour l'affichage (s'il s'agit juste de "Oui")
-                clean_c = sheet_c
-                if clean_c.lower() in ['oui', 'yes', 'non', '1', 'true', 'ok']:
-                    clean_c = ''
-                
-                ancien_commentaire = clean_c
-
-
-                statut_crm = (row.get('crm_lead_status') or '').strip()
-                statut_paiement = (row.get('payment_status') or '').strip()
-
-                if not statut_crm:
-                    if _is_paid(statut_paiement):
-                        statut_crm = 'مسدد'
-                    elif has_history:
-                        statut_crm = 'للمتابعة'
-                    else:
-                        statut_crm = 'جديد'
-
-                cat = _categorize(statut_crm, statut_paiement, has_history)
-
-                # Détermination du dernier contact et de la prochaine action
-                if _is_paid(statut_paiement) or statut_crm == 'مسدد':
-                    dernier_resultat = 'تم السداد'
-                    prochaine_action = 'مكتمل (مسدد)'
-                elif cat == 'nouveau':
-                    dernier_resultat = 'لم يتم التواصل بعد'
-                    prochaine_action = 'إجراء الاتصال الأول'
-                else:
-                    # En suivi (relance) ou fermé : ne pas imposer de prochaine action automatique
-                    raw_res = row.get('crm_last_result') or sheet_match.get('appel_1') or ''
-                    if raw_res in ['Oui', 'oui', 'OUI', '1']:
-                        raw_res = 'تم التواصل سابقاً'
-                    dernier_resultat = raw_res or (ancien_commentaire and 'سجل سابق') or 'تم التواصل سابقاً'
-                    # Laisser vide si l'agent n'a pas défini la prochaine action
-                    prochaine_action = row.get('crm_next_action_note') or ''
-
-                full_name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip() or 'بدون اسم'
-
-                # Priorité aux données récentes issues du miroir de secours Google Sheet
-                final_statut = sheet_match.get('crm_statut') or statut_crm
-                final_resultat = sheet_match.get('crm_resultat') or dernier_resultat
-                final_prochaine = sheet_match.get('crm_prochaine_action') or prochaine_action
-                final_date = sheet_match.get('crm_date_prochaine') or row.get('crm_next_action_date', '')
-                final_note = sheet_match.get('crm_note') or ancien_commentaire
-                final_payment = sheet_match.get('payment_status') or statut_paiement
-
-                lead = {
-                    "ID_Lead": student_id,
-                    "Nom": full_name,
-                    "Telephone": phone,
-                    "Email": email,
-                    "Genre": row.get('gender', 'HOMME'),
-                    "Pays": row.get('country', ''),
-                    "Agent_Nom": agent,
-                    "Statut_CRM": final_statut,
-                    "Dernier_Contact_Date": row.get('crm_last_contact_at', '') or (final_date and 'مسجل حديثاً') or '',
-                    "Dernier_Contact_Resultat": final_resultat,
-                    "Prochaine_Action": final_prochaine,
-                    "Date_Prochaine_Action": final_date,
-                    "Ancien_Commentaire": final_note,
-                    "Statut_Paiement": final_payment,
-                    "_category": _categorize(final_statut, final_payment, bool(final_note or final_resultat != 'لم يتم التواصل بعد'))
-                }
-
-                # 3. Filtrage
-                if agent_name and agent_name != 'all' and lead["Agent_Nom"] != agent_name:
-                    continue
-
-                if search_lower:
-                    if (search_lower not in lead["Nom"].lower() and
-                        search_lower not in lead["Telephone"].lower() and
-                        search_lower not in lead["Email"].lower() and
-                        search_lower not in str(lead["ID_Lead"]).lower()):
-                        continue
-
-                # Comptabilisation des stats
-                stats["total"] += 1
-                if cat == 'paye':
-                    stats["payes"] += 1
-                elif cat == 'nouveau':
-                    stats["nouveaux"] += 1
-                elif cat == 'relance':
-                    stats["relances"] += 1
-
-                next_date = lead.get("Date_Prochaine_Action", "")
-                if cat == 'relance' and next_date:
-                    if next_date < today_str:
-                        stats["en_retard"] += 1
-                    elif next_date == today_str:
-                        stats["aujourdhui"] += 1
-
-                # Filtre par catégorie/statut de pill
-                if status_filter and status_filter != 'all':
-                    if cat != status_filter:
-                        continue
-
-                leads.append(lead)
-
+        # Format attendu par le frontend
+        lead_dict = {
+            "ID_Lead": student_id,
+            "Nom": full_name,
+            "Telephone": phone,
+            "Email": email,
+            "Genre": gender,
+            "Pays": country,
+            "Agent_Nom": agent,
+            "Statut_CRM": final_statut,
+            "Dernier_Resultat": comments[:50] + "..." if len(comments) > 50 else comments,
+            "Prochaine_Action": "À appeler" if cat != 'paye' else "",
+            "Date_Prochaine_Action": None,
+            "Ancien_Commentaire": comments,
+            "Appel_1": appel_1,
+            "Appel_2": appel_2,
+            "Appel_3": appel_3,
+            "is_paid": 1 if is_paid else 0,
+            "_Debug_Sheet": agent
+        }
+        leads.append(lead_dict)
+        
+        # Stats globales
+        stats['total'] += 1
+        if cat == 'relance':
+            stats['en_cours'] += 1
+        else:
+            stats[cat] = stats.get(cat, 0) + 1
+            
+        agent_counts[agent] = agent_counts.get(agent, 0) + 1
+        
     return {
         "leads": leads,
         "stats": stats,
-        "agents": sorted([a for a in all_agents if a]),
-        "interactions": []
+        "agents": agent_counts,
+        "interactions": interactions_stats
     }
-
-async def _ensure_crm_interactions_table(db):
-    await db.execute('''
-        CREATE TABLE IF NOT EXISTS crm_interactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            lead_id TEXT,
-            academic_id TEXT,
-            student_id INTEGER,
-            agent_name TEXT,
-            tentative_resultat TEXT,
-            detail_statut TEXT,
-            prochaine_action TEXT,
-            date_prochaine TEXT,
-            note TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    try:
-        # Nettoyage des tests effectués par l'utilisateur
-        await db.execute("DELETE FROM crm_interactions WHERE lead_id IN ('1135926', '1122026')")
-        await db.execute("""
-            UPDATE academy_students 
-            SET crm_lead_status = 'جديد',
-                crm_next_action_note = NULL,
-                crm_next_action_date = NULL,
-                crm_last_contact_at = NULL,
-                payment_status = 'غير مسدد'
-            WHERE student_id IN ('1135926', '1122026') OR academic_id IN ('1135926', '1122026')
-        """)
-    except Exception:
-        pass
-    await db.commit()
 
 async def update_lead_status_async(
     lead_id: str,
@@ -397,42 +301,59 @@ async def update_lead_status_async(
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (str(lead_id), str(ac_id), st_id, agent_name, resultat, detail, prochaine_action, date_prochaine, note, now_str))
 
-            # 2. Mettre à jour academy_students
-            full_note = f"[{resultat}{(' - ' + detail) if detail else ''}] {note}".strip()
-            query = """
-                UPDATE academy_students 
-                SET crm_lead_status = ?, 
-                    crm_next_action_note = ?, 
-                    crm_next_action_date = ?,
-                    crm_last_contact_at = ?,
-                    crm_assigned_to = CASE WHEN (crm_assigned_to IS NULL OR crm_assigned_to = '' OR crm_assigned_to = 'غير محدد') AND ? != '' THEN ? ELSE crm_assigned_to END
-                WHERE academic_id = ? OR student_id = ?
-            """
-            await db.execute(query, (statut, full_note, date_prochaine, now_str, agent_name, agent_name, str(lead_id), str(lead_id)))
+            
+        # 2. Mettre à jour Google Sheets (Solution 2 Radicale)
+        try:
+            from google_creds import get_gspread_client
+            gc = get_gspread_client()
+            sh = gc.open_by_key('1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI')
+            ws = sh.worksheet('appels 2026')
+            
+            # Find the row with this academic_id (lead_id)
+            # Col 1 is ID
+            cell = ws.find(str(lead_id), in_column=1)
+            if cell:
+                # Update Comments column (Col T = 20)
+                # full_note already contains the formatted note
+                full_note = f"[{resultat}{(' - ' + detail) if detail else ''}] {note}".strip()
+                
+                # Fetch existing comments to append if needed, or just overwrite?
+                # Usually we append with | or newline, but let's just overwrite or prepend
+                existing_c = ws.cell(cell.row, 20).value or ""
+                if existing_c and existing_c.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
+                    new_comment = full_note + " | " + existing_c
+                else:
+                    new_comment = full_note
+                    
+                ws.update_cell(cell.row, 20, new_comment)
+                logger.info(f"[CRM] Updated Google Sheet row {cell.row} for lead {lead_id}")
+        except Exception as sheet_e:
+            logger.error(f"[CRM] Erreur maj Google Sheet: {sheet_e}")
+            
+        # Optional: also update academy_students just in case
 
-            # Note: Le statut payment_status reste sous le contrôle exclusif de l'Excel officiel
-            await db.commit()
+        await db.commit()
 
-            # 3. Synchronisation miroir de secours (CSV local garanti + Google Sheet si configuré)
-            try:
-                mirror_payload = {
-                    "timestamp": now_str,
-                    "lead_id": str(lead_id),
-                    "academic_id": str(ac_id),
-                    "lead_name": full_name,
-                    "phone": phone,
-                    "email": email,
-                    "agent_name": agent_name,
-                    "statut": statut,
-                    "resultat": resultat,
-                    "detail": detail,
-                    "date_prochaine": date_prochaine,
-                    "note": note,
-                    "prochaine_action": prochaine_action
-                }
-                await crm_sync.log_and_mirror_interaction(mirror_payload)
-            except Exception as e_mirror:
-                logger.error(f"[CRM] Erreur trigger miroir: {e_mirror}")
+        # 3. Synchronisation miroir de secours (CSV local garanti + Google Sheet si configuré)
+        try:
+            mirror_payload = {
+                "timestamp": now_str,
+                "lead_id": str(lead_id),
+                "academic_id": str(ac_id),
+                "lead_name": full_name,
+                "phone": phone,
+                "email": email,
+                "agent_name": agent_name,
+                "statut": statut,
+                "resultat": resultat,
+                "detail": detail,
+                "date_prochaine": date_prochaine,
+                "note": note,
+                "prochaine_action": prochaine_action
+            }
+            await crm_sync.log_and_mirror_interaction(mirror_payload)
+        except Exception as e_mirror:
+            logger.error(f"[CRM] Erreur trigger miroir: {e_mirror}")
 
         return True
     except Exception as e:
