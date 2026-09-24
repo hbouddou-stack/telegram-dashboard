@@ -40,7 +40,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Cairo", "Tajawal", -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text-main); padding-top: 130px; padding-bottom: 85px; }
+    body { background: var(--bg); color: var(--text-main); padding-top: 130px; padding-bottom: 25px; }
 
     /* HEADER */
     .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--card-border); z-index: 100; box-shadow: var(--shadow-sm); }
@@ -290,13 +290,9 @@
 
     /* TOAST */
     .toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.86rem; font-weight: 700; transition: bottom 0.3s cubic-bezier(0.16,1,0.3,1); z-index: 2000; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px; }
-    .toast.show { bottom: 85px; }
+    .toast.show { bottom: 25px; }
 
-    /* BOTTOM NAV */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #fff; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; align-items: center; z-index: 900; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.72rem; font-weight: 700; text-decoration: none; gap: 3px; padding: 4px 10px; cursor: pointer; }
-    .nav-item.active { color: var(--primary); }
-    .nav-icon { font-size: 1.2rem; }
+
 
     .loader { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
   </style>
@@ -666,25 +662,7 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <a href="/admin-gateway" class="nav-item">
-    <span class="nav-icon">📊</span>
-    <span>الرئيسية</span>
-  </a>
-  <a href="/admin-gateway#students" class="nav-item">
-    <span class="nav-icon">👥</span>
-    <span>الطلاب</span>
-  </a>
-  <a href="/admin-gateway#sos" class="nav-item">
-    <span class="nav-icon">🆘</span>
-    <span>الدعم</span>
-  </a>
-  <div class="nav-item active">
-    <span class="nav-icon">📞</span>
-    <span>CRM</span>
-  </div>
-</div>
+
 
 <script>
 
@@ -1020,9 +998,11 @@ function genderClass(lead) {
 }
 
 function categorize(lead) {
+  if (lead._category && ['nouveau', 'relance', 'ferme', 'paye'].includes(lead._category)) {
+    return lead._category;
+  }
   const status = String(lead.Statut_CRM || '').trim().toLowerCase();
   const ps = String(lead.Statut_Paiement || lead.Payment_Status || '').toUpperCase().trim();
-  const hasHistory = !!(lead.Ancien_Commentaire || lead.Dernier_Contact_Resultat || lead.Dernier_Contact_Date);
 
   const PAID_VALS = ['PAID','PAYE','PAYÉ','OUI','YES','VALIDE','CONFIRME','1','TRUE','EXEMPT','EPARGNE','EXONERE','مدفوع','مكتمل','نعم','مسدد','معفي'];
   const isPaid = PAID_VALS.includes(ps) || (ps.includes('مسدد') && !ps.includes('غير مسدد'));
@@ -1033,7 +1013,10 @@ function categorize(lead) {
   if (status === 'مغلق' || status === 'غير مهتم' || status === 'رقم خاطئ') {
     return 'ferme';
   }
-  if ((!status || status === 'nouveau' || status === 'جديد') && !hasHistory) {
+  const res = String(lead.Dernier_Contact_Resultat || '').trim();
+  const hasHistory = !!(lead.Ancien_Commentaire || (res && res !== 'لم يتم التواصل بعد') || lead.Dernier_Contact_Date);
+
+  if (!hasHistory || status === 'nouveau' || status === 'جديد' || !status) {
     return 'nouveau';
   }
   return 'relance';
