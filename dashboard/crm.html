@@ -40,51 +40,71 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Cairo", "Tajawal", -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text-main); padding-top: 130px; padding-bottom: 25px; }
+    body { background: var(--bg); color: var(--text-main); padding-top: 108px; padding-bottom: 80px; }
 
-    /* HEADER */
-    .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--card-border); z-index: 100; box-shadow: var(--shadow-sm); }
-    .header-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; gap: 8px; }
-    .header-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-    .header-controls { display: flex; gap: 6px; align-items: center; }
-    .agent-selector, .search-input {
-      background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
+    /* HEADER 2-LIGNES */
+    .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.97); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); z-index: 100; box-shadow: var(--shadow-sm); }
+    /* Ligne 1 : logo + titre + actions rapides */
+    .header-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; gap: 6px; border-bottom: 1px solid #f1f5f9; }
+    .header-title { font-size: 1rem; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+    .header-title small { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 5px; align-items: center; }
+    /* Ligne 2 : recherche + genre + badge agent */
+    .header-row2 { display: flex; align-items: center; gap: 6px; padding: 7px 12px; }
+    .search-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
       padding: 7px 11px; color: var(--text-main); font-weight: 600; font-size: 0.85rem; outline: none; transition: border-color 0.2s;
     }
-    .agent-selector:focus, .search-input:focus { border-color: var(--primary); }
-    .search-input { width: 140px; }
+    .search-input:focus { border-color: var(--primary); }
+    .agent-selector {
+      background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 7px 8px; color: var(--text-main); font-weight: 600; font-size: 0.82rem; outline: none; transition: border-color 0.2s; max-width: 130px;
+    }
+    .agent-selector:focus { border-color: var(--primary); }
     .view-toggle-btn {
       background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px;
-      padding: 7px 11px; cursor: pointer; font-size: 0.95rem; color: var(--text-muted); transition: all 0.2s;
+      padding: 7px 10px; cursor: pointer; font-size: 0.9rem; color: var(--text-muted); transition: all 0.2s; white-space: nowrap;
     }
     .view-toggle-btn:hover { background: #e2e8f0; }
     .view-toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* PILLS */
-    .stats-pills { display: flex; gap: 8px; overflow-x: auto; padding: 8px 14px 10px; scrollbar-width: none; background: #fff; }
-    .stats-pills::-webkit-scrollbar { display: none; }
-    .pill {
-      display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
-      font-size: 0.82rem; font-weight: 700; white-space: nowrap; cursor: pointer;
-      background: var(--bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: all 0.2s;
+    /* BOTTOM NAVIGATION (filtres principaux) */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(10px);
+      border-top: 1px solid var(--card-border); z-index: 100;
+      display: flex; justify-content: space-around; align-items: stretch;
+      padding: 6px 4px env(safe-area-inset-bottom, 6px);
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
     }
-    .pill.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
-    .pill.active .pill-badge { background: var(--primary); color: white; }
-    .pill.today.active { background: #ffedd5 !important; border-color: #ea580c !important; color: #c2410c !important; }
-    .pill.today.active .pill-badge { background: #ea580c !important; color: white !important; }
-    .pill.relance.active { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
-    .pill.relance.active .pill-badge { background: var(--purple); }
-    .pill.paye.active { background: var(--success-light); border-color: var(--success); color: var(--success); }
-    .pill.paye.active .pill-badge { background: var(--success); }
-    .pill.ferme.active { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
-    .pill.ferme.active .pill-badge { background: var(--danger); }
-    .pill-badge { background: rgba(0,0,0,0.08); padding: 2px 7px; border-radius: 12px; font-size: 0.76rem; font-weight: 800; }
+    .nav-tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; padding: 5px 2px; border-radius: 10px; cursor: pointer;
+      font-size: 0.66rem; font-weight: 700; color: var(--text-muted); transition: all 0.18s;
+      border: none; background: transparent; position: relative;
+    }
+    .nav-tab i { font-size: 1.05rem; }
+    .nav-tab .nav-badge {
+      position: absolute; top: 2px; right: 6px;
+      background: #cbd5e1; color: #475569; font-size: 0.62rem; font-weight: 800;
+      padding: 1px 5px; border-radius: 10px; min-width: 18px; text-align: center;
+    }
+    .nav-tab.active { color: var(--primary); background: var(--primary-light); }
+    .nav-tab.active .nav-badge { background: var(--primary); color: white; }
+    .nav-tab.nt-today.active { color: #c2410c; background: #fff7ed; }
+    .nav-tab.nt-today.active .nav-badge { background: #ea580c; color: white; }
+    .nav-tab.nt-relance.active { color: var(--purple); background: var(--purple-light); }
+    .nav-tab.nt-relance.active .nav-badge { background: var(--purple); color: white; }
+    .nav-tab.nt-paye.active { color: var(--success); background: var(--success-light); }
+    .nav-tab.nt-paye.active .nav-badge { background: var(--success); color: white; }
+    .nav-tab.nt-ferme.active { color: var(--danger); background: var(--danger-light); }
+    .nav-tab.nt-ferme.active .nav-badge { background: var(--danger); color: white; }
 
     /* LEADS COUNT BAR */
     .leads-count-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 
     
-    body.has-subfilters { padding-top: 175px; }
+    body.has-subfilters { padding-top: 148px; }
     .sub-stats-pills { display: flex; gap: 6px; overflow-x: auto; padding: 6px 14px 8px; scrollbar-width: none; background: #f8fafc; border-top: 1px solid #e2e8f0; }
     .sub-stats-pills::-webkit-scrollbar { display: none; }
     .sub-pill {
@@ -294,74 +314,84 @@
 
 
 
+
     .loader { text-align: center; padding: 40px; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+
+    /* DUPLICATE PANEL */
+    .duplicate-panel {
+      background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px;
+      padding: 12px; margin-bottom: 6px; animation: fadeIn 0.2s ease;
+    }
+    .duplicate-panel-title { font-size: 0.82rem; font-weight: 800; color: #c2410c; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .duplicate-card {
+      background: #fff; border: 1px solid #fed7aa; border-radius: 8px;
+      padding: 8px 10px; margin-bottom: 6px; font-size: 0.8rem;
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    }
+    .duplicate-card:last-child { margin-bottom: 0; }
+    .duplicate-card-info { font-weight: 700; color: var(--text-main); }
+    .duplicate-card-meta { font-size: 0.74rem; color: var(--text-muted); font-weight: 600; }
+    .btn-dup-search {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 8px;
+      padding: 5px 10px; font-size: 0.78rem; font-weight: 800; color: #c2410c;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-dup-search:hover { background: #ffedd5; }
+    .btn-dup-search.loading { opacity: 0.6; pointer-events: none; }
   </style>
+
 </head>
 <body>
 
-<!-- STICKY HEADER -->
+<!-- STICKY HEADER (2 lignes) -->
 <header class="header">
+  <!-- LIGNE 1 : Logo + Titre + Actions rapides -->
   <div class="header-top">
-    <div class="header-title"><i class="fa-solid fa-headset"></i></div>
-    <div class="header-controls">
-      <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم أو الهاتف..." oninput="filterData()">
-      <!-- BADGE AGENT VERROUILLÉ (MODE AGENT) -->
-      <div id="agentLockedBadge" style="display:none; align-items:center; gap:6px; background:#eff6ff; border:1.5px solid #bfdbfe; color:#1d4ed8; padding:5px 12px; border-radius:10px; font-size:0.84rem; font-weight:800;">
-        <i class="fa-solid fa-user-check"></i> <span id="lockedAgentName">الوكيل</span>
-        <button onclick="promptSwitchAgent()" title="تبديل الحساب أو فك القفل (رمز الإدارة)" style="background:none; border:none; color:#3b82f6; cursor:pointer; padding:0 2px; margin-right:4px;">
-          <i class="fa-solid fa-lock"></i>
-        </button>
-      </div>
-
-      <!-- SÉLECTEUR AGENTS (MODE ADMIN) -->
-      <select id="agentSelect" class="agent-selector" onchange="filterData()">
-        <option value="all">👥 جميع الوكلاء</option>
-      </select>
-
-      <select id="genderSelect" class="agent-selector" onchange="filterData()" style="width:105px;">
-        <option value="all">🚻 الجنس</option>
-        <option value="male">👨 ذكور</option>
-        <option value="female">👩 إناث</option>
-      </select>
-
-      <button class="view-toggle-btn" id="shareLinksBtn" onclick="openShareLinksModal()" title="روابط الوكلاء المحمية (Admin)" style="color:#d97706; display:none;">
+    <div class="header-title">
+      <i class="fa-solid fa-headset" style="color:var(--primary)"></i>
+      <span>CRM <small>أسوة</small></span>
+    </div>
+    <div class="header-actions">
+      <button class="view-toggle-btn" id="shareLinksBtn" onclick="openShareLinksModal()" title="روابط الوكلاء (Admin)" style="color:#d97706; display:none; padding:6px 9px;">
         <i class="fa-solid fa-share-nodes"></i>
       </button>
-
-      <button class="view-toggle-btn" id="performanceBtn" onclick="openPerformanceModal()" title="لوحة أداء الفريق (Admin)" style="color:#7c3aed; background:#f5f3ff; border-color:#ddd6fe; display:none;">
+      <button class="view-toggle-btn" id="performanceBtn" onclick="openPerformanceModal()" title="لوحة الأداء (Admin)" style="color:#7c3aed; background:#f5f3ff; border-color:#ddd6fe; display:none; padding:6px 9px;">
         <i class="fa-solid fa-chart-line"></i>
       </button>
-
-      <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات">
+      <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات" style="padding:6px 9px;">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
-      <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض">
+      <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="تبديل العرض" style="padding:6px 9px;">
         <i class="fa-solid fa-table-list"></i>
       </button>
     </div>
   </div>
 
-  <!-- FILTER PILLS -->
-  <div class="stats-pills">
-    <div class="pill nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
-      <i class="fa-solid fa-star"></i> جديد <span class="pill-badge" id="count-nouveau">0</span>
-    </div>
-    <div class="pill today" data-filter="today" onclick="setFilter('today')" style="background:#fff7ed; border-color:#fed7aa; color:#c2410c;">
-      <i class="fa-solid fa-bullseye"></i> مهام اليوم <span class="pill-badge" id="count-today" style="background:#ea580c; color:white;">0</span>
-    </div>
-    <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
-      <i class="fa-solid fa-arrows-rotate"></i> قيد المتابعة <span class="pill-badge" id="count-relance">0</span>
-    </div>
-    <div class="pill ferme" data-filter="ferme" onclick="setFilter('ferme')">
-      <i class="fa-solid fa-ban"></i> مغلق / غير مهتم <span class="pill-badge" id="count-ferme">0</span>
-    </div>
-    <div class="pill paye" data-filter="paye" onclick="setFilter('paye')">
-      <i class="fa-solid fa-check-circle"></i> مسدد <span class="pill-badge" id="count-paye">0</span>
-    </div>
-    <div class="pill" data-filter="all" onclick="setFilter('all')">
-      <i class="fa-solid fa-users"></i> الكل <span class="pill-badge" id="count-all">0</span>
+  <!-- LIGNE 2 : Recherche + Sélecteurs + Badge agent -->
+  <div class="header-row2">
+    <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم أو الهاتف..." oninput="filterData()">
+
+    <!-- SELECTEUR AGENTS (MODE ADMIN) -->
+    <select id="agentSelect" class="agent-selector" onchange="filterData()">
+      <option value="all">👥 الكل</option>
+    </select>
+
+    <select id="genderSelect" class="agent-selector" onchange="filterData()" style="max-width:90px;">
+      <option value="all">🚻 الكل</option>
+      <option value="male">👨 ذكور</option>
+      <option value="female">👩 إناث</option>
+    </select>
+
+    <!-- BADGE AGENT VERROUILLE (MODE AGENT) -->
+    <div id="agentLockedBadge" style="display:none; align-items:center; gap:5px; background:#eff6ff; border:1.5px solid #bfdbfe; color:#1d4ed8; padding:5px 10px; border-radius:10px; font-size:0.82rem; font-weight:800; white-space:nowrap;">
+      <i class="fa-solid fa-user-check"></i> <span id="lockedAgentName">الوكيل</span>
+      <button onclick="promptSwitchAgent()" title="تبديل الحساب" style="background:none; border:none; color:#3b82f6; cursor:pointer; padding:0 2px;">
+        <i class="fa-solid fa-lock" style="font-size:0.8rem;"></i>
+      </button>
     </div>
   </div>
+
   <!-- SUB-FILTER PILLS FOR RELANCE -->
   <div class="sub-stats-pills" id="relanceSubFilters" style="display:none;">
     <div class="sub-pill active" data-sub="all" onclick="setSubFilter('all')">
@@ -371,19 +401,19 @@
       💳 قيد التحقق من الدفع (<span id="sub-count-verification">0</span>)
     </div>
     <div class="sub-pill" data-sub="promesse" onclick="setSubFilter('promesse')">
-      📅 موعد محدد / وعد بالسداد (<span id="sub-count-promesse">0</span>)
+      📅 وعد بالسداد (<span id="sub-count-promesse">0</span>)
     </div>
     <div class="sub-pill" data-sub="injoignable" onclick="setSubFilter('injoignable')">
-      📵 لم يرد / غير متاح (<span id="sub-count-injoignable">0</span>)
+      📵 غير متاح (<span id="sub-count-injoignable">0</span>)
     </div>
     <div class="sub-pill" data-sub="hesite" onclick="setSubFilter('hesite')">
-      🤔 متردد / استفسار (<span id="sub-count-hesite">0</span>)
+      🤔 متردد (<span id="sub-count-hesite">0</span>)
     </div>
     <div class="sub-pill" data-sub="whatsapp" onclick="setSubFilter('whatsapp')">
-      💬 رسالة واتساب (<span id="sub-count-whatsapp">0</span>)
+      💬 واتساب (<span id="sub-count-whatsapp">0</span>)
     </div>
     <div class="sub-pill" data-sub="email" onclick="setSubFilter('email')">
-      ✉️ بريد إلكتروني (<span id="sub-count-email">0</span>)
+      ✉️ بريد (<span id="sub-count-email">0</span>)
     </div>
   </div>
 </header>
@@ -416,14 +446,55 @@
   </div>
 </main>
 
+<!-- BOTTOM NAVIGATION (filtres principaux) -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-tab nt-nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
+    <i class="fa-solid fa-star"></i>
+    <span>جديد</span>
+    <span class="nav-badge" id="bn-count-nouveau">0</span>
+  </button>
+  <button class="nav-tab nt-today" data-filter="today" onclick="setFilter('today')">
+    <i class="fa-solid fa-bullseye"></i>
+    <span>اليوم</span>
+    <span class="nav-badge" id="bn-count-today">0</span>
+  </button>
+  <button class="nav-tab nt-relance" data-filter="relance" onclick="setFilter('relance')">
+    <i class="fa-solid fa-arrows-rotate"></i>
+    <span>متابعة</span>
+    <span class="nav-badge" id="bn-count-relance">0</span>
+  </button>
+  <button class="nav-tab nt-ferme" data-filter="ferme" onclick="setFilter('ferme')">
+    <i class="fa-solid fa-ban"></i>
+    <span>مغلق</span>
+    <span class="nav-badge" id="bn-count-ferme">0</span>
+  </button>
+  <button class="nav-tab nt-paye" data-filter="paye" onclick="setFilter('paye')">
+    <i class="fa-solid fa-circle-check"></i>
+    <span>مسدد</span>
+    <span class="nav-badge" id="bn-count-paye">0</span>
+  </button>
+  <button class="nav-tab" data-filter="all" onclick="setFilter('all')">
+    <i class="fa-solid fa-users"></i>
+    <span>الكل</span>
+    <span class="nav-badge" id="bn-count-all">0</span>
+  </button>
+</nav>
+
 <!-- INTERACTION & DECISION TREE MODAL -->
 <div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event, 'interactionModal')">
   <div class="modal-content">
-    <!-- MODAL HEADER : JUST STUDENT NAME -->
+    <!-- MODAL HEADER : STUDENT NAME + DUPLICATE SEARCH -->
     <div class="modal-header">
-      <div class="modal-title" id="modalLeadName">اسم الطالب</div>
+      <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+        <div class="modal-title" id="modalLeadName" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">اسم الطالب</div>
+        <button class="btn-dup-search" id="dupSearchBtn" onclick="findDuplicates()">
+          <i class="fa-solid fa-magnifying-glass"></i> شبيه
+        </button>
+      </div>
       <button class="close-btn" onclick="closeModal('interactionModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
+    <!-- DUPLICATE RESULTS PANEL (hidden by default) -->
+    <div id="duplicateResultPanel" style="display:none; padding:10px 14px 0;"></div>
 
     <!-- MODAL BODY (SCROLLABLE) -->
     <div class="modal-body">
@@ -1075,10 +1146,11 @@ async function loadData(forceRefresh = false) {
 function setFilter(f) {
   activeFilter = f;
   activeSubFilter = 'all';
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  const target = document.querySelector(`.pill[data-filter="${f}"]`);
-  if (target) target.classList.add('active');
-  
+  // Mettre a jour bottom nav
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const navTarget = document.querySelector(`.nav-tab[data-filter="${f}"]`);
+  if (navTarget) navTarget.classList.add('active');
+
   const subFiltersEl = document.getElementById('relanceSubFilters');
   if (f === 'relance') {
     subFiltersEl.style.display = 'flex';
@@ -1136,12 +1208,12 @@ function filterData() {
     }
   });
 
-  document.getElementById('count-nouveau').textContent = stats.nouveau;
-  document.getElementById('count-today').textContent = stats.today;
-  document.getElementById('count-relance').textContent = stats.relance;
-  document.getElementById('count-ferme').textContent = stats.ferme;
-  document.getElementById('count-paye').textContent = stats.paye;
-  document.getElementById('count-all').textContent = stats.all;
+  // Badges bottom nav
+  const bnIds = ['nouveau','today','relance','ferme','paye','all'];
+  bnIds.forEach(k => {
+    const el = document.getElementById('bn-count-' + k);
+    if (el) el.textContent = stats[k] || 0;
+  });
 
   // Sous-catégories pour Relance
   const subCounts = { all: 0, verification: 0, promesse: 0, injoignable: 0, hesite: 0, whatsapp: 0, email: 0 };
@@ -1744,6 +1816,69 @@ async function recordTemplateSent(leadId, templateTitle) {
 }
 
 
+/* =========================================================
+   DETECTION DE DOUBLONS (meme numero de telephone)
+========================================================= */
+
+function normalizePhone(phone) {
+  let p = String(phone || '').replace(/\D/g, '');
+  if (p.startsWith('0') && p.length === 10) p = '212' + p.substring(1);
+  else if (!p.startsWith('212') && p.length === 9) p = '212' + p;
+  return p;
+}
+
+async function findDuplicates() {
+  if (!activeLeadId) return;
+  const lead = allLeads.find(l => String(l.ID_Lead) === String(activeLeadId));
+  if (!lead) return;
+
+  const panel = document.getElementById('duplicateResultPanel');
+  const btn = document.getElementById('dupSearchBtn');
+  if (!panel || !btn) return;
+
+  const myPhone = normalizePhone(lead.Telephone);
+  if (!myPhone || myPhone.length < 8) {
+    panel.style.display = 'block';
+    panel.innerHTML = '<div class="duplicate-panel"><div class="duplicate-panel-title"><i class="fa-solid fa-triangle-exclamation"></i> رقم الهاتف غير متوفر لهذا العميل</div></div>';
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري البحث...';
+
+  // Recherche locale dans allLeads
+  const duplicates = allLeads.filter(l => {
+    if (String(l.ID_Lead) === String(activeLeadId)) return false;
+    return normalizePhone(l.Telephone) === myPhone;
+  });
+
+  btn.classList.remove('loading');
+  btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> شبيه';
+
+  panel.style.display = 'block';
+
+  if (duplicates.length === 0) {
+    panel.innerHTML = '<div class="duplicate-panel" style="background:#f0fdf4; border-color:#bbf7d0;"><div class="duplicate-panel-title" style="color:#166534;"><i class="fa-solid fa-circle-check"></i> لا يوجد حساب آخر بنفس رقم الهاتف</div></div>';
+  } else {
+    const catLabels = { nouveau: '⭐ جديد', relance: '🔄 متابعة', ferme: '🚫 مغلق', paye: '✅ مسدد' };
+    const cards = duplicates.map(d => {
+      const cat = d._cat || categorize(d);
+      const catLabel = catLabels[cat] || cat;
+      return '<div class="duplicate-card">' +
+        '<div>' +
+        '<div class="duplicate-card-info">' + escapeHtml(d.Nom || 'بدون اسم') + '</div>' +
+        '<div class="duplicate-card-meta">ID: ' + d.ID_Lead + ' • ' + escapeHtml(d.Agent_Nom || 'غير محدد') + ' • ' + catLabel + '</div>' +
+        '</div>' +
+        '<button onclick="closeModal('interactionModal'); setTimeout(() => openInteractionModal('' + d.ID_Lead + ''), 150)" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:800; cursor:pointer; white-space:nowrap;">' +
+        '<i class="fa-solid fa-arrow-up-right-from-square"></i> فتح' +
+        '</button>' +
+        '</div>';
+    }).join('');
+
+    panel.innerHTML = '<div class="duplicate-panel"><div class="duplicate-panel-title"><i class="fa-solid fa-triangle-exclamation"></i> تحذير: ' + duplicates.length + ' حساب(ات) بنفس رقم الهاتف!</div>' + cards + '</div>';
+  }
+}
+
 async function deleteInteraction(interactionId, leadId) {
   if (!confirm('هل أنت متأكد من رغبتك في حذف هذا التسجيل من السجل؟\nسيتم التراجع عن هذه المتابعة واستعادة حالة الطالب السابقة.')) return;
   try {
@@ -1767,7 +1902,13 @@ async function deleteInteraction(interactionId, leadId) {
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('active');
-  if (modalId === 'interactionModal') activeLeadId = null;
+  if (modalId === 'interactionModal') {
+    activeLeadId = null;
+    const dupPanel = document.getElementById('duplicateResultPanel');
+    if (dupPanel) { dupPanel.style.display = 'none'; dupPanel.innerHTML = ''; }
+    const dupBtn = document.getElementById('dupSearchBtn');
+    if (dupBtn) { dupBtn.classList.remove('loading'); dupBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> شبيه'; }
+  }
 }
 
 function closeModalOnBackdrop(e, modalId) {
