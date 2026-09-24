@@ -358,7 +358,7 @@ async def update_lead_status_async(
             
             # Si le lead n'existe pas en base locale (ex: nouvel ajout direct dans Google Sheet)
             if not student_info:
-                await db.execute("INSERT OR IGNORE INTO academy_students (academic_id, student_id, first_name) VALUES (?, ?, ?)", (str(lead_id), str(lead_id), 'Lead CRM'))
+                await db.execute("INSERT OR IGNORE INTO academy_students (academic_id, student_id, first_name, email, dob) VALUES (?, ?, ?, ?, ?)", (str(lead_id), str(lead_id), 'Lead CRM', f'noemail_{lead_id}@temp.com', '2000-01-01'))
                 
             query = """
                 UPDATE academy_students
