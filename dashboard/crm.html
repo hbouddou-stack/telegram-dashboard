@@ -510,17 +510,20 @@
         </div>
       </details>
 
-      <!-- ETAPE 0 : QUALIFICATION DU LEAD (1 SEULE LIGNE : PROSPECT, DOUBLON, TEST) -->
+      <!-- ETAPE 0 : QUALIFICATION DU LEAD (PROSPECT, DOUBLON, TEST, FICTIF) -->
       <div class="step-label"><i class="fa-solid fa-id-badge"></i> 0. تصنيف وطبيعة الحساب (Qualification):</div>
-      <div class="account-type-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:14px;">
+      <div class="account-type-grid" style="grid-template-columns: repeat(4, 1fr); gap:6px; margin-bottom:14px;">
         <div class="type-chip selected" id="chip-normal" onclick="selectLeadType('normal', this)">
-          📞 عميل حقيقي (مؤهل)
+          📞 عميل حقيقي
         </div>
         <div class="type-chip danger" id="chip-doublon" onclick="selectLeadType('doublon', this)">
           👥 مكرر (Doublon)
         </div>
-        <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)" style="line-height:1.2;">
-          🧪 حساب تجريبي<br><small style="font-size:0.72rem; font-weight:700; opacity:0.85;">(حساب وهمي)</small>
+        <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)">
+          🧪 حساب تجريبي (Test)
+        </div>
+        <div class="type-chip danger" id="chip-fictif" onclick="selectLeadType('fictif', this)">
+          👻 حساب وهمي (Fictif)
         </div>
       </div>
 
@@ -618,6 +621,7 @@
           🎯 الإجراء القادم المطلوب (Next Action):
         </label>
         <select id="modalNextActionSelect" class="form-control" style="font-weight:700;">
+          <option value="">-- حدد الخطوة التالية المطلوبة --</option>
           <option value="📞 معاودة الاتصال الهاتفي">📞 معاودة الاتصال الهاتفي</option>
           <option value="💬 إرسال رسالة واتساب">💬 إرسال رسالة واتساب</option>
           <option value="✉️ إرسال بريد إلكتروني">✉️ إرسال بريد إلكتروني</option>
@@ -1446,10 +1450,15 @@ function selectLeadType(typeKey, element) {
       currentResult = 'استبعاد';
       currentDetails = ['حساب مكرر (Doublon)'];
     } else if (typeKey === 'test') {
-      noticeText.textContent = '🧪 سيتم تسجيل هذا الحساب كـ "حساب تجريبي / اختبار" وأرشفته في قائمة المغلق.';
+      noticeText.textContent = '🧪 سيتم تسجيل هذا الحساب كـ "حساب تجريبي (Test)" وأرشفته في قائمة المغلق.';
       calculatedStatus = 'ferme';
       currentResult = 'استبعاد';
-      currentDetails = ['حساب تجريبي / اختبار'];
+      currentDetails = ['حساب تجريبي (Test)'];
+    } else if (typeKey === 'fictif') {
+      noticeText.textContent = '👻 سيتم تسجيل هذا الحساب كـ "حساب وهمي (Fictif)" وأرشفته في قائمة المغلق.';
+      calculatedStatus = 'ferme';
+      currentResult = 'استبعاد';
+      currentDetails = ['حساب وهمي (Fictif)'];
     }
   }
 }
@@ -1475,10 +1484,13 @@ function openInteractionModal(leadId) {
   document.getElementById('exclusionNoticeBox').style.display = 'none';
   if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'block';
   if (document.getElementById('dateGroup')) document.getElementById('dateGroup').style.display = 'block';
-  if (lead && lead.Prochaine_Action && document.getElementById('modalNextActionSelect')) {
-    const sel = document.getElementById('modalNextActionSelect');
-    for (let opt of sel.options) {
-      if (opt.value === lead.Prochaine_Action) { sel.value = lead.Prochaine_Action; break; }
+  const nextActSel = document.getElementById('modalNextActionSelect');
+  if (nextActSel) {
+    nextActSel.value = '';
+    if (lead && lead.Prochaine_Action) {
+      for (let opt of nextActSel.options) {
+        if (opt.value === lead.Prochaine_Action) { nextActSel.value = lead.Prochaine_Action; break; }
+      }
     }
   }
 
@@ -1487,10 +1499,16 @@ function openInteractionModal(leadId) {
   document.getElementById('modalNoteInput').value = '';
   document.getElementById('sendAlertEmailCheck').checked = true;
 
-  // Pré-remplir date de relance par défaut (Demain)
+  // Pré-remplir date de relance (Demain au minimum pour eviter le meme jour)
+  const todayIso = new Date().toISOString().split('T')[0];
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  document.getElementById('modalNextDate').value = tomorrow.toISOString().split('T')[0];
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const dateInput = document.getElementById('modalNextDate');
+  if (dateInput) {
+    dateInput.min = tomorrowStr;
+    dateInput.value = (lead && lead.Date_Prochaine_Action && lead.Date_Prochaine_Action > todayIso) ? lead.Date_Prochaine_Action : tomorrowStr;
+  }
 
   document.getElementById('interactionModal').classList.add('active');
   loadLeadTimeline(leadId);
@@ -1562,13 +1580,41 @@ function selectDetail(detailText, element, targetStatus, requireDate = false) {
 async function submitModalInteraction() {
   if (!activeLeadId) return;
 
-  // Les étapes 1 et 2 sont optionnelles : l'agent peut enregistrer directement une prochaine action ou une note
-
+  const chosenNextAction = document.getElementById('modalNextActionSelect') ? document.getElementById('modalNextActionSelect').value : '';
   const nextDate = document.getElementById('modalNextDate').value;
   const note = document.getElementById('modalNoteInput').value.trim();
   const sendEmailAlert = (currentResult === 'faux_numero' && document.getElementById('sendAlertEmailCheck').checked);
+  const todayIso = new Date().toISOString().split('T')[0];
 
-  // Vérification de la date si relance requise
+  // 1. Verification de la prochaine action (obligatoire si le compte n'est pas exclu/ferme/paye)
+  if (currentLeadType === 'normal' && calculatedStatus !== 'ferme' && calculatedStatus !== 'paye' && !chosenNextAction) {
+    alert('⚠️ يرجى تحديد الخطوة القادمة المطلوبة (Next Action) قبل الحفظ.');
+    const actSel = document.getElementById('modalNextActionSelect');
+    if (actSel) { actSel.focus(); actSel.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    return;
+  }
+
+  // 2. Verification de la date de relance (ne peut pas etre aujourd'hui ou dans le passe)
+  if (currentLeadType === 'normal' && calculatedStatus === 'relance' && nextDate) {
+    if (nextDate <= todayIso) {
+      alert('⚠️ تاريخ المتابعة القادمة لا يمكن أن يكون نفس تاريخ اليوم أو تاريخاً سابقاً.\nيرجى تحديد موعد مستقبلي للمتابعة.');
+      const dtInput = document.getElementById('modalNextDate');
+      if (dtInput) { dtInput.focus(); dtInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      return;
+    }
+  }
+
+  // 3. Rappel si aucune note n'a ete saisie (confirmation pour continuer quand meme)
+  if (currentLeadType === 'normal' && !note) {
+    const confirmProceed = confirm('⚠️ تذكير: لم تقم بكتابة أي ملاحظة حول هذا التواصل.\n\nهل ترغب في المتابعة والحفظ دون ملاحظة؟');
+    if (!confirmProceed) {
+      const noteEl = document.getElementById('modalNoteInput');
+      if (noteEl) { noteEl.focus(); noteEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      return;
+    }
+  }
+
+  // Verification de la date si relance requise par un statut specifique
   const requiresDate = currentDetails.some(d => d === 'وعد بالسداد' || d.includes('متردد'));
   if (calculatedStatus === 'relance' && !nextDate && requiresDate) {
     alert('يرجى تحديد تاريخ المتابعة القادمة لهذا الموقف');
@@ -1595,7 +1641,6 @@ async function submitModalInteraction() {
 
   const combinedDetails = currentDetails.join(' • ');
 
-  const chosenNextAction = document.getElementById('modalNextActionSelect') ? document.getElementById('modalNextActionSelect').value : '';
   let nextActionDesc = chosenNextAction;
   if (calculatedStatus === 'ferme') nextActionDesc = 'لا شيء (مغلق / مستبعد)';
   else if (calculatedStatus === 'paye') nextActionDesc = 'مكتمل (مسدد)';
@@ -1700,20 +1745,39 @@ async function loadLeadTimeline(leadId) {
   try {
     const res = await fetch(`/api/crm/lead-details?lead_id=${leadId}`);
     const data = await res.json();
-    const interactions = data.interactions || [];
+    const lead = allLeads.find(l => String(l.ID_Lead) === String(leadId));
+    let interactions = data.interactions || [];
+
+    // Ajouter l'ancien commentaire Google Sheet s'il n'est pas deja present
+    if (lead && lead.Ancien_Commentaire) {
+      const alreadyHas = interactions.some(i => i.Commentaire && (i.Commentaire.includes(lead.Ancien_Commentaire) || lead.Ancien_Commentaire.includes(i.Commentaire)));
+      if (!alreadyHas) {
+        interactions.push({
+          id: null,
+          Date_Heure: lead.Dernier_Contact_Date || 'سجل سابق',
+          Agent: lead.Agent_Nom || 'الوكيل',
+          Resultat: 'سجل الملاحظات (Google Sheet / سابق)',
+          Commentaire: lead.Ancien_Commentaire,
+          Date_Prochaine: '',
+          Prochaine_Action: ''
+        });
+      }
+    }
+
     if (interactions.length === 0) {
       timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center; color:var(--text-muted)">لا توجد متابعات سابقة مسجلة لهذا العميل</div>';
     } else {
       timeline.innerHTML = interactions.map(i => `
-        <div class="timeline-item" id="timeline-item-${i.id}">
+        <div class="timeline-item" id="timeline-item-${i.id || 'legacy'}">
           <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center;">
             <span><b>${escapeHtml(i.Date_Heure || '')}</b> • بواسطة: <b style="color:var(--primary);">${escapeHtml(i.Agent || 'الوكيل')}</b></span>
             ${i.id ? `<button onclick="deleteInteraction(${i.id}, '${leadId}')" class="btn-timeline-del" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; border-radius:6px; padding:2px 7px; font-size:0.72rem; font-weight:800; cursor:pointer;" title="حذف هذا السجل"><i class="fa-solid fa-trash-can"></i> حذف</button>` : ''}
           </div>
           <div class="timeline-content-box">
             <div style="font-weight:700; color:var(--text-main); margin-bottom:2px;">${escapeHtml(i.Resultat || '')}</div>
-            ${i.Commentaire ? `<div style="color:#475569;">${escapeHtml(i.Commentaire)}</div>` : ''}
-            ${i.Date_Prochaine ? `<div style="font-size:0.75rem; color:#b45309; margin-top:3px;">📅 موعد المتابعة: ${escapeHtml(i.Date_Prochaine)}</div>` : ''}
+            ${i.Prochaine_Action ? `<div style="font-size:0.78rem; font-weight:700; color:var(--primary); margin:3px 0;"><i class="fa-solid fa-bullseye"></i> الخطوة التالية: ${escapeHtml(i.Prochaine_Action)}</div>` : ''}
+            ${i.Commentaire ? `<div style="color:#334155; margin-top:2px;"><b>✍️ ملاحظة:</b> ${escapeHtml(i.Commentaire)}</div>` : ''}
+            ${i.Date_Prochaine ? `<div style="font-size:0.75rem; color:#b45309; margin-top:3px; font-weight:700;">📅 موعد المتابعة: ${escapeHtml(i.Date_Prochaine)}</div>` : ''}
           </div>
         </div>
       `).join('');

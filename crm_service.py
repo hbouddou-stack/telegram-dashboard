@@ -452,20 +452,31 @@ async def get_lead_details_async(lead_id: str) -> dict:
         async with aiosqlite.connect(DATABASE_PATH) as db:
             db.row_factory = aiosqlite.Row
             await _ensure_crm_interactions_table(db)
+
+            # 1. Récupérer student_id et academic_id pour couvrir tous les cas
+            async with db.execute(
+                "SELECT student_id, academic_id, crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
+                (str(lead_id), str(lead_id))
+            ) as st_cur:
+                st_info = await st_cur.fetchone()
+
+            st_id = str(st_info['student_id']) if st_info and st_info['student_id'] else str(lead_id)
+            ac_id = str(st_info['academic_id']) if st_info and st_info['academic_id'] else str(lead_id)
+
             query = """
                 SELECT id, agent_name, tentative_resultat, detail_statut, prochaine_action, date_prochaine, note, created_at
                 FROM crm_interactions
-                WHERE lead_id = ? OR academic_id = ? OR student_id = ?
+                WHERE lead_id = ? OR lead_id = ? OR academic_id = ? OR academic_id = ? OR student_id = ? OR student_id = ?
                 ORDER BY id DESC
             """
-            async with db.execute(query, (str(lead_id), str(lead_id), str(lead_id))) as cur:
+            async with db.execute(query, (str(lead_id), st_id, str(lead_id), ac_id, str(lead_id), st_id)) as cur:
                 rows = await cur.fetchall()
                 for r in rows:
                     res_parts = []
                     if r['tentative_resultat']: res_parts.append(r['tentative_resultat'])
                     if r['detail_statut']: res_parts.append(r['detail_statut'])
                     res_str = " • ".join(res_parts) if res_parts else "تحديث"
-                    
+
                     interactions.append({
                         "id": r['id'],
                         "Date_Heure": r['created_at'],
@@ -477,63 +488,22 @@ async def get_lead_details_async(lead_id: str) -> dict:
                         "Date_Prochaine": r['date_prochaine'] or "",
                         "Prochaine_Action": r['prochaine_action'] or ""
                     })
-            # Si aucun historique récent dans crm_interactions, injecter l'ancien commentaire / note
-            if not interactions:
-                async with db.execute(
-                    "SELECT crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
-                    (str(lead_id), str(lead_id))
-                ) as st_cur:
-                    st_row = await st_cur.fetchone()
-                    if st_row and (st_row['crm_next_action_note'] or st_row['crm_last_contact_at']):
-                        interactions.append({
-                            "id": None,
-                            "Date_Heure": st_row['crm_last_contact_at'] or "ملاحظة سابقة",
-                            "Agent": st_row['crm_assigned_to'] or "الوكيل",
-                            "Resultat": "سجل الملاحظات السابق",
-                            "Tentative": "",
-                            "Detail": "",
-                            "Commentaire": st_row['crm_next_action_note'] or "",
-                            "Date_Prochaine": "",
-                            "Prochaine_Action": ""
-                        })
-            # Si aucun historique récent dans crm_interactions, injecter l'ancien commentaire / note
-            if not interactions:
-                async with db.execute(
-                    "SELECT crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
-                    (str(lead_id), str(lead_id))
-                ) as st_cur:
-                    st_row = await st_cur.fetchone()
-                    if st_row and (st_row['crm_next_action_note'] or st_row['crm_last_contact_at']):
-                        interactions.append({
-                            "id": None,
-                            "Date_Heure": st_row['crm_last_contact_at'] or "ملاحظة سابقة",
-                            "Agent": st_row['crm_assigned_to'] or "الوكيل",
-                            "Resultat": "سجل الملاحظات السابق",
-                            "Tentative": "",
-                            "Detail": "",
-                            "Commentaire": st_row['crm_next_action_note'] or "",
-                            "Date_Prochaine": "",
-                            "Prochaine_Action": ""
-                        })
-            # Si aucun historique recent dans crm_interactions, injecter l'ancien commentaire / note
-            if not interactions:
-                async with db.execute(
-                    "SELECT crm_assigned_to, crm_next_action_note, crm_last_contact_at FROM academy_students WHERE academic_id = ? OR student_id = ?",
-                    (str(lead_id), str(lead_id))
-                ) as st_cur:
-                    st_row = await st_cur.fetchone()
-                    if st_row and (st_row['crm_next_action_note'] or st_row['crm_last_contact_at']):
-                        interactions.append({
-                            "id": None,
-                            "Date_Heure": st_row['crm_last_contact_at'] or "ملاحظة سابقة",
-                            "Agent": st_row['crm_assigned_to'] or "الوكيل",
-                            "Resultat": "سجل الملاحظات السابق",
-                            "Tentative": "",
-                            "Detail": "",
-                            "Commentaire": st_row['crm_next_action_note'] or "",
-                            "Date_Prochaine": "",
-                            "Prochaine_Action": ""
-                        })
+
+            # Si ancien commentaire / note dans academy_students non présent dans les interactions récentes
+            if st_info and (st_info['crm_next_action_note'] or st_info['crm_last_contact_at']):
+                clean_old = (st_info['crm_next_action_note'] or '').strip()
+                if clean_old and not any(clean_old in (i['Commentaire'] or '') for i in interactions):
+                    interactions.append({
+                        "id": None,
+                        "Date_Heure": st_info['crm_last_contact_at'] or "ملاحظة سابقة",
+                        "Agent": st_info['crm_assigned_to'] or "الوكيل",
+                        "Resultat": "سجل الملاحظات السابق",
+                        "Tentative": "",
+                        "Detail": "",
+                        "Commentaire": clean_old,
+                        "Date_Prochaine": "",
+                        "Prochaine_Action": ""
+                    })
     except Exception as e:
         logger.error(f"[CRM] Erreur get_lead_details {lead_id}: {e}")
     return {"interactions": interactions}
