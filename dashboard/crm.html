@@ -231,7 +231,7 @@
 
     /* DECISION TREE STYLES */
     .step-label { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
     .choice-card {
       border: 1.5px solid var(--card-border); border-radius: 10px; padding: 10px 8px;
       display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc;
@@ -367,6 +367,9 @@
     <div class="sub-pill active" data-sub="all" onclick="setSubFilter('all')">
       👥 الكل (<span id="sub-count-all">0</span>)
     </div>
+    <div class="sub-pill" data-sub="verification" onclick="setSubFilter('verification')" style="border-color:#bbf7d0; background:#f0fdf4; color:#166534;">
+      💳 قيد التحقق من الدفع (<span id="sub-count-verification">0</span>)
+    </div>
     <div class="sub-pill" data-sub="promesse" onclick="setSubFilter('promesse')">
       📅 موعد محدد / وعد بالسداد (<span id="sub-count-promesse">0</span>)
     </div>
@@ -433,8 +436,8 @@
         <div class="type-chip danger" id="chip-doublon" onclick="selectLeadType('doublon', this)">
           👥 مكرر (Doublon)
         </div>
-        <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)">
-          🧪 حساب تجريبي
+        <div class="type-chip danger" id="chip-test" onclick="selectLeadType('test', this)" style="line-height:1.2;">
+          🧪 حساب تجريبي<br><small style="font-size:0.72rem; font-weight:700; opacity:0.85;">(حساب وهمي)</small>
         </div>
       </div>
 
@@ -446,7 +449,7 @@
       <div id="callFlowSection">
         <!-- ETAPE 1 : RESULTAT ET CANAL DE CONTACT (APPEL OU WHATSAPP) -->
         <div class="step-label"><i class="fa-solid fa-comments"></i> 1. وسيلة ونتيجة التواصل:</div>
-        <div class="choice-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+        <div class="choice-grid" style="grid-template-columns: repeat(2, 1fr);">
           <div class="choice-card" onclick="selectResult('repondu', this)">
             <span class="choice-icon">📞</span> أجاب هاتفياً
           </div>
@@ -473,14 +476,14 @@
             <span style="font-size:0.74rem; color:#b45309; font-weight:800; background:#fef3c7; padding:2px 8px; border-radius:6px; margin-right:6px;">(يمكنك تحديد أكثر من خيار في نفس الوقت 💡)</span>
           </div>
           <div class="choice-grid">
-            <div class="choice-card success" onclick="toggleDetailMulti('تم السداد (تحويل في انتظار التأكيد)', this, 'paye')">
-              <span class="choice-icon">💳</span> تم السداد (تحويل)
+            <div class="choice-card success" onclick="toggleDetailMulti('صرّح بالسداد (قيد التحقق)', this, 'verification')">
+              <span class="choice-icon">💳</span> صرّح بالسداد (قيد التحقق)
             </div>
-            <div class="choice-card success" onclick="toggleDetailMulti('طالب معفي / منحة', this, 'paye')">
+            <div class="choice-card success" onclick="toggleDetailMulti('طالب معفي / منحة', this, 'relance')">
               <span class="choice-icon">🎁</span> طالب معفي / منحة
             </div>
-            <div class="choice-card warning" onclick="toggleDetailMulti('إدارة / أستاذ بالأكاديمية', this, 'ferme')">
-              <span class="choice-icon">🏛️</span> إدارة / أستاذ
+            <div class="choice-card warning" onclick="toggleDetailMulti('من إدارة الأكاديمية', this, 'ferme')">
+              <span class="choice-icon">🏛️</span> من إدارة الأكاديمية
             </div>
             <div class="choice-card warning" onclick="toggleDetailMulti('وعد بالسداد', this, 'relance', true)">
               <span class="choice-icon">📅</span> وعد بالسداد
@@ -561,11 +564,8 @@
 
     <!-- MODAL FOOTER (PERMANENTEMENT VISIBLE) -->
     <div class="modal-footer">
-      <button class="btn-submit" onclick="submitModalInteraction()">
-        <i class="fa-solid fa-cloud-arrow-up"></i> حفظ التحديث
-      </button>
-      <button class="btn-fast-paid" onclick="markPaidFast()">
-        <i class="fa-solid fa-check-double"></i> تأكيد السداد الفوري
+      <button class="btn-submit" onclick="submitModalInteraction()" style="width:100%;">
+        <i class="fa-solid fa-floppy-disk"></i> حفظ
       </button>
     </div>
   </div>
@@ -956,9 +956,11 @@ function getRelanceCategory(lead) {
   const res = (lead.Dernier_Contact_Resultat || '').toLowerCase();
   const nextAct = (lead.Prochaine_Action || '').toLowerCase();
   const comm = (lead.Ancien_Commentaire || '').toLowerCase();
-  const allText = `${res} ${nextAct} ${comm}`;
+  const statut = (lead.Statut_CRM || '').toLowerCase();
+  const allText = `${res} ${nextAct} ${comm} ${statut}`;
 
-  if (allText.includes('وعد') || allText.includes('تأكيد الدفع') || allText.includes('تحويل') || allText.includes('موعد')) return 'promesse';
+  if (allText.includes('تحقق') || allText.includes('صرّح بالسداد') || allText.includes('تحويل') || statut.includes('التحقق')) return 'verification';
+  if (allText.includes('وعد') || allText.includes('موعد')) return 'promesse';
   if (allText.includes('واتساب') || allText.includes('whatsapp') || nextAct.includes('واتساب')) return 'whatsapp';
   if (allText.includes('بريد') || allText.includes('email') || allText.includes('ايميل') || nextAct.includes('بريد')) return 'email';
   if (allText.includes('متردد') || allText.includes('يفكر') || allText.includes('تخفيض') || allText.includes('معلومات') || allText.includes('مشكل')) return 'hesite';
@@ -1142,7 +1144,7 @@ function filterData() {
   document.getElementById('count-all').textContent = stats.all;
 
   // Sous-catégories pour Relance
-  const subCounts = { all: 0, promesse: 0, injoignable: 0, hesite: 0, whatsapp: 0, email: 0 };
+  const subCounts = { all: 0, verification: 0, promesse: 0, injoignable: 0, hesite: 0, whatsapp: 0, email: 0 };
   const relanceLeads = filtered.filter(l => l._cat === 'relance');
   subCounts.all = relanceLeads.length;
   relanceLeads.forEach(l => {
@@ -1151,6 +1153,7 @@ function filterData() {
   });
   if (document.getElementById('sub-count-all')) {
     document.getElementById('sub-count-all').textContent = subCounts.all;
+    if (document.getElementById('sub-count-verification')) document.getElementById('sub-count-verification').textContent = subCounts.verification;
     document.getElementById('sub-count-promesse').textContent = subCounts.promesse;
     document.getElementById('sub-count-injoignable').textContent = subCounts.injoignable;
     document.getElementById('sub-count-hesite').textContent = subCounts.hesite;
@@ -1451,22 +1454,18 @@ function toggleDetailMulti(detailText, element, targetStatus, requireDate = fals
     element.classList.add('selected');
   }
 
-  // Si "تم السداد" ou "معفي" ou "إدارة" est sélectionné
-  const hasPaid = currentDetails.some(d => (d.includes('السداد') && !d.includes('وعد')) || d.includes('معفي'));
-  const isStaff = currentDetails.includes('إدارة / أستاذ بالأكاديمية');
+  const isStaff = currentDetails.includes('من إدارة الأكاديمية');
   const hasRefused = currentDetails.includes('رفض / غير مهتم');
-  const hasDateNeed = currentDetails.some(d => d === 'وعد بالسداد' || d.includes('متردد'));
+  const hasVerification = currentDetails.some(d => d.includes('صرّح بالسداد'));
 
   const dateGroup = document.getElementById('dateGroup');
-  if (hasPaid) {
-    calculatedStatus = 'paye';
-    dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
-  } else if ((hasRefused || isStaff) && currentDetails.length === 1) {
+  if ((hasRefused || isStaff) && currentDetails.length === 1) {
     calculatedStatus = 'ferme';
     dateGroup.style.display = 'none'; if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'none';
   } else {
     calculatedStatus = 'relance';
     dateGroup.style.display = 'block';
+    if (document.getElementById('nextActionGroup')) document.getElementById('nextActionGroup').style.display = 'block';
   }
 }
 
@@ -1524,7 +1523,7 @@ async function submitModalInteraction() {
 
   const payload = {
     lead_id: activeLeadId,
-    statut: calculatedStatus === 'paye' ? 'مسدد' : (calculatedStatus === 'ferme' ? 'مغلق' : 'للمتابعة'),
+    statut: calculatedStatus === 'ferme' ? 'مغلق' : (currentDetails.some(d => d.includes('صرّح بالسداد')) ? 'قيد التحقق من الدفع' : 'للمتابعة'),
     resultat: actionResultLabel,
     detail: combinedDetails,
     prochaine_action: nextActionDesc,
@@ -1616,9 +1615,10 @@ async function loadLeadTimeline(leadId) {
       timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center; color:var(--text-muted)">لا توجد متابعات سابقة مسجلة لهذا العميل</div>';
     } else {
       timeline.innerHTML = interactions.map(i => `
-        <div class="timeline-item">
-          <div class="timeline-date">
-            <b>${escapeHtml(i.Date_Heure || '')}</b> • بواسطة: <span style="color:var(--primary); font-weight:700;">${escapeHtml(i.Agent || 'الوكيل')}</span>
+        <div class="timeline-item" id="timeline-item-${i.id}">
+          <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center;">
+            <span><b>${escapeHtml(i.Date_Heure || '')}</b> • بواسطة: <b style="color:var(--primary);">${escapeHtml(i.Agent || 'الوكيل')}</b></span>
+            ${i.id ? `<button onclick="deleteInteraction(${i.id}, '${leadId}')" class="btn-timeline-del" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; border-radius:6px; padding:2px 7px; font-size:0.72rem; font-weight:800; cursor:pointer;" title="حذف هذا السجل"><i class="fa-solid fa-trash-can"></i> حذف</button>` : ''}
           </div>
           <div class="timeline-content-box">
             <div style="font-weight:700; color:var(--text-main); margin-bottom:2px;">${escapeHtml(i.Resultat || '')}</div>
@@ -1741,6 +1741,28 @@ function copyTemplateText(encodedText) {
 async function recordTemplateSent(leadId, templateTitle) {
   closeModal('templatesModal');
   showToast(`جاري فتح واتساب مع نموذج "${templateTitle}" 💬`);
+}
+
+
+async function deleteInteraction(interactionId, leadId) {
+  if (!confirm('هل أنت متأكد من رغبتك في حذف هذا التسجيل من السجل؟\nسيتم التراجع عن هذه المتابعة واستعادة حالة الطالب السابقة.')) return;
+  try {
+    const res = await fetch('/api/crm/delete-interaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: interactionId, lead_id: leadId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('تم حذف السجل بنجاح واستعادة حالة العميل! 🗑️');
+      loadLeadTimeline(leadId);
+      loadData(true);
+    } else {
+      showToast('تعذر حذف السجل من الخادم');
+    }
+  } catch (err) {
+    showToast('خطأ في الاتصال بالخادم');
+  }
 }
 
 function closeModal(modalId) {

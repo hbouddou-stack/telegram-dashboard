@@ -1069,6 +1069,17 @@ async def api_crm_update_lead(request):
     except Exception as e:
         return web.json_response({'error': str(e)}, status=400)
 
+async def api_crm_delete_interaction(request):
+    import crm_service
+    try:
+        body = await request.json()
+        interaction_id = body.get('id')
+        lead_id = body.get('lead_id')
+        success = await crm_service.delete_lead_interaction_async(int(interaction_id), str(lead_id))
+        return web.json_response({'success': success})
+    except Exception as e:
+        return web.json_response({'error': str(e)}, status=400)
+
 async def api_admin_gateway_stats(request: web.Request):
     import aiosqlite
     from config import DATABASE_PATH
@@ -7566,6 +7577,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/api/crm/data', api_crm_data)
     app.router.add_get('/api/crm/lead-details', api_crm_lead_details)
     app.router.add_post('/api/crm/update-lead', api_crm_update_lead)
+    app.router.add_post('/api/crm/delete-interaction', api_crm_delete_interaction)
     app.router.add_post('/api/admin/gateway/send_bulk_emails', api_admin_send_bulk_emails)
     app.router.add_get('/api/admin/gateway/email_dispatch_status', api_admin_email_dispatch_status)
     app.router.add_get('/api/track/open', api_track_open)

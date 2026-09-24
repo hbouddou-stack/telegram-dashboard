@@ -344,6 +344,20 @@ async def _ensure_crm_interactions_table(db):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    try:
+        # Nettoyage des tests effectués par l'utilisateur
+        await db.execute("DELETE FROM crm_interactions WHERE lead_id IN ('1135926', '1122026')")
+        await db.execute("""
+            UPDATE academy_students 
+            SET crm_lead_status = 'جديد',
+                crm_next_action_note = NULL,
+                crm_next_action_date = NULL,
+                crm_last_contact_at = NULL,
+                payment_status = 'غير مسدد'
+            WHERE student_id IN ('1135926', '1122026') OR academic_id IN ('1135926', '1122026')
+        """)
+    except Exception:
+        pass
     await db.commit()
 
 async def update_lead_status_async(
@@ -400,11 +414,7 @@ async def update_lead_status_async(
             """
             await db.execute(query, (statut, full_note, date_prochaine, now_str, agent_name, agent_name, str(lead_id), str(lead_id)))
 
-            if statut in ('مسدد', 'Payé / Inscrit', 'Exempté'):
-                await db.execute(
-                    "UPDATE academy_students SET payment_status = 'مسدد' WHERE (academic_id = ? OR student_id = ?) AND payment_status NOT LIKE '%مسدد%'",
-                    (str(lead_id), str(lead_id))
-                )
+            # Note: Le statut payment_status reste sous le contrôle exclusif de l'Excel officiel
             await db.commit()
 
             # 3. Synchronisation miroir de secours (CSV local garanti + Google Sheet si configuré)
@@ -434,7 +444,7 @@ async def update_lead_status_async(
         return False
 
 async def get_lead_details_async(lead_id: str) -> dict:
-    """Retourne l'historique détaillé d'un lead depuis crm_interactions."""
+    """Retourne l'historique détaillé d'un lead depuis crm_interactions avec son ID."""
     interactions = []
     try:
         async with aiosqlite.connect(DATABASE_PATH) as db:
@@ -455,9 +465,12 @@ async def get_lead_details_async(lead_id: str) -> dict:
                     res_str = " • ".join(res_parts) if res_parts else "تحديث"
                     
                     interactions.append({
+                        "id": r['id'],
                         "Date_Heure": r['created_at'],
                         "Agent": r['agent_name'] or "غير محدد",
                         "Resultat": res_str,
+                        "Tentative": r['tentative_resultat'] or "",
+                        "Detail": r['detail_statut'] or "",
                         "Commentaire": r['note'] or "",
                         "Date_Prochaine": r['date_prochaine'] or "",
                         "Prochaine_Action": r['prochaine_action'] or ""
@@ -465,6 +478,52 @@ async def get_lead_details_async(lead_id: str) -> dict:
     except Exception as e:
         logger.error(f"[CRM] Erreur get_lead_details {lead_id}: {e}")
     return {"interactions": interactions}
+
+async def delete_lead_interaction_async(interaction_id: int, lead_id: str) -> bool:
+    """Supprime une interaction du registre et recalcule l'état du lead."""
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            await _ensure_crm_interactions_table(db)
+            
+            # 1. Supprimer l'interaction spécifique
+            await db.execute("DELETE FROM crm_interactions WHERE id = ?", (interaction_id,))
+            
+            # 2. Chercher la dernière interaction restante pour ce lead
+            query = """
+                SELECT * FROM crm_interactions
+                WHERE lead_id = ? OR academic_id = ? OR student_id = ?
+                ORDER BY id DESC LIMIT 1
+            """
+            async with db.execute(query, (str(lead_id), str(lead_id), str(lead_id))) as cur:
+                last_interaction = await cur.fetchone()
+                
+            if last_interaction:
+                full_note = f"[{last_interaction['tentative_resultat']}{(' - ' + last_interaction['detail_statut']) if last_interaction['detail_statut'] else ''}] {last_interaction['note']}".strip()
+                await db.execute("""
+                    UPDATE academy_students
+                    SET crm_next_action_note = ?,
+                        crm_next_action_date = ?,
+                        crm_last_contact_at = ?
+                    WHERE academic_id = ? OR student_id = ?
+                """, (full_note, last_interaction['date_prochaine'], last_interaction['created_at'], str(lead_id), str(lead_id)))
+            else:
+                # Plus aucune interaction : réinitialiser le lead à son état vierge
+                await db.execute("""
+                    UPDATE academy_students
+                    SET crm_lead_status = 'جديد',
+                        crm_next_action_note = NULL,
+                        crm_next_action_date = NULL,
+                        crm_last_contact_at = NULL,
+                        payment_status = 'غير مسدد'
+                    WHERE academic_id = ? OR student_id = ?
+                """, (str(lead_id), str(lead_id)))
+                
+            await db.commit()
+            return True
+    except Exception as e:
+        logger.error(f"[CRM] Erreur delete interaction {interaction_id}: {e}")
+        return False
 
 async def send_crm_fake_number_alert(lead_id: str):
     """Envoie un e-mail automatique quand le numéro est faux/injoignable."""
