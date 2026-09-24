@@ -1702,11 +1702,7 @@ async function submitModalInteraction() {
   }
 
   // Verification de la date si relance requise par un statut specifique
-  const requiresDate = currentDetails.some(d => d === 'وعد بالسداد' || d.includes('متردد'));
-  if (calculatedStatus === 'relance' && !nextDate && requiresDate) {
-    alert('يرجى تحديد تاريخ المتابعة القادمة لهذا الموقف');
-    return;
-  }
+  
 
   const selectedAgentInDropdown = document.getElementById('agentSelect').value;
   const currentLead = allLeads.find(l => String(l.ID_Lead) === String(activeLeadId));

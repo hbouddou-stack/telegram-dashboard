@@ -315,10 +315,12 @@ async def update_lead_status_async(
             if cell:
                 # Update Comments column (Col T = 20)
                 # full_note already contains the formatted note
-                full_note = f"[{resultat}{(' - ' + detail) if detail else ''}] {note}".strip()
+                parts = []
+                if resultat: parts.append(f"[{resultat}{(' - ' + detail) if detail else ''}]")
+                if prochaine_action: parts.append(f"(Action: {prochaine_action})")
+                if note: parts.append(note)
+                full_note = " ".join(parts).strip()
                 
-                # Fetch existing comments to append if needed, or just overwrite?
-                # Usually we append with | or newline, but let's just overwrite or prepend
                 existing_c = ws.cell(cell.row, 20).value or ""
                 if existing_c and existing_c.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
                     new_comment = full_note + " | " + existing_c
