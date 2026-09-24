@@ -70,6 +70,8 @@
     }
     .pill.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
     .pill.active .pill-badge { background: var(--primary); color: white; }
+    .pill.today.active { background: #ffedd5 !important; border-color: #ea580c !important; color: #c2410c !important; }
+    .pill.today.active .pill-badge { background: #ea580c !important; color: white !important; }
     .pill.relance.active { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
     .pill.relance.active .pill-badge { background: var(--purple); }
     .pill.paye.active { background: var(--success-light); border-color: var(--success); color: var(--success); }
@@ -307,14 +309,29 @@
     <div class="header-title"><i class="fa-solid fa-headset"></i></div>
     <div class="header-controls">
       <input type="text" id="searchInput" class="search-input" placeholder="بحث بالاسم أو الهاتف..." oninput="filterData()">
+      <!-- BADGE AGENT VERROUILLÉ (MODE AGENT) -->
+      <div id="agentLockedBadge" style="display:none; align-items:center; gap:6px; background:#eff6ff; border:1.5px solid #bfdbfe; color:#1d4ed8; padding:5px 12px; border-radius:10px; font-size:0.84rem; font-weight:800;">
+        <i class="fa-solid fa-user-check"></i> <span id="lockedAgentName">الوكيل</span>
+        <button onclick="promptSwitchAgent()" title="تبديل الحساب أو فك القفل (رمز الإدارة)" style="background:none; border:none; color:#3b82f6; cursor:pointer; padding:0 2px; margin-right:4px;">
+          <i class="fa-solid fa-lock"></i>
+        </button>
+      </div>
+
+      <!-- SÉLECTEUR AGENTS (MODE ADMIN) -->
       <select id="agentSelect" class="agent-selector" onchange="filterData()">
         <option value="all">👥 جميع الوكلاء</option>
       </select>
-      <select id="genderSelect" class="agent-selector" onchange="filterData()" style="width:110px;">
+
+      <select id="genderSelect" class="agent-selector" onchange="filterData()" style="width:105px;">
         <option value="all">🚻 الجنس</option>
         <option value="male">👨 ذكور</option>
         <option value="female">👩 إناث</option>
       </select>
+
+      <button class="view-toggle-btn" id="shareLinksBtn" onclick="openShareLinksModal()" title="روابط الوكلاء المحمية (Admin)" style="color:#d97706; display:none;">
+        <i class="fa-solid fa-share-nodes"></i>
+      </button>
+
       <button class="view-toggle-btn" id="refreshBtn" onclick="loadData(true)" title="تحديث البيانات">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
@@ -328,6 +345,9 @@
   <div class="stats-pills">
     <div class="pill nouveau active" data-filter="nouveau" onclick="setFilter('nouveau')">
       <i class="fa-solid fa-star"></i> جديد <span class="pill-badge" id="count-nouveau">0</span>
+    </div>
+    <div class="pill today" data-filter="today" onclick="setFilter('today')" style="background:#fff7ed; border-color:#fed7aa; color:#c2410c;">
+      <i class="fa-solid fa-bullseye"></i> مهام اليوم <span class="pill-badge" id="count-today" style="background:#ea580c; color:white;">0</span>
     </div>
     <div class="pill relance" data-filter="relance" onclick="setFilter('relance')">
       <i class="fa-solid fa-arrows-rotate"></i> قيد المتابعة <span class="pill-badge" id="count-relance">0</span>
@@ -551,6 +571,41 @@
   </div>
 </div>
 
+<!-- SHARE LINKS MODAL (ADMIN ONLY) -->
+<div class="modal-overlay" id="shareLinksModal" onclick="closeModalOnBackdrop(event, 'shareLinksModal')">
+  <div class="modal-content" style="max-width:620px;">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-share-nodes" style="color:var(--primary)"></i> روابط الوكلاء المحمية (Magic Links)</div>
+      <button class="close-btn" onclick="closeModal('shareLinksModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:0.85rem; color:#475569; margin-bottom:14px; line-height:1.5;">
+        انسخ وأرسل لكل وكيل رابطه المباشر الخاص عبر الواتساب. عند فتح الرابط، سيتم قفل المتصفح على اسمه تلقائياً لمنع خلط العملاء:
+      </div>
+      <div id="shareLinksContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FIRST TIME SELECTION MODAL -->
+<div class="modal-overlay" id="firstTimeAgentModal">
+  <div class="modal-content" style="max-width:440px; text-align:center;">
+    <div class="modal-header" style="justify-content:center;">
+      <div class="modal-title"><i class="fa-solid fa-id-card-clip" style="color:var(--primary)"></i> مرحباً بك في Oswah CRM</div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:0.88rem; color:#64748b; margin-bottom:16px;">
+        يرجى اختيار حسابك لمتابعة عملائك، أو الدخول كإدارة:
+      </div>
+      <div id="firstTimeAgentsList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+      <hr style="border:0; border-top:1px solid #e2e8f0; margin:14px 0;">
+      <button onclick="promptAdminUnlock()" style="background:transparent; border:none; color:var(--primary); font-size:0.85rem; font-weight:700; cursor:pointer;">
+        🔐 تسجيل الدخول كمسؤول (Admin PIN)
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- TEMPLATES MODAL -->
 <div class="modal-overlay" id="templatesModal" onclick="closeModalOnBackdrop(event, 'templatesModal')">
   <div class="modal-content">
@@ -585,6 +640,139 @@
 </div>
 
 <script>
+
+/* =========================================================
+   SÉCURITÉ & AUTHENTIFICATION MULTI-AGENTS
+========================================================= */
+const ADMIN_PIN = 'admin2026';
+const MAGIC_SECRET = 'oswah2026';
+
+let currentRole = 'agent'; // 'admin' | 'agent'
+let authenticatedAgent = null; // Nom de l'agent si rôle agent
+
+function initAuth() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const agentParam = params.get('agent');
+  const keyParam = params.get('key');
+
+  // 1. Accès Admin direct par token ou PIN
+  if (token === ADMIN_PIN || token === 'admin') {
+    localStorage.setItem('crm_is_admin', 'true');
+    localStorage.removeItem('crm_auth_agent');
+  }
+
+  // 2. Accès Agent direct par lien magique avec clé secrète
+  if (agentParam && (keyParam === MAGIC_SECRET || token === MAGIC_SECRET)) {
+    localStorage.setItem('crm_auth_agent', agentParam);
+    localStorage.removeItem('crm_is_admin');
+  }
+
+  // 3. Lire l'état mémorisé
+  const isAdmin = localStorage.getItem('crm_is_admin') === 'true';
+  const savedAgent = localStorage.getItem('crm_auth_agent');
+
+  if (isAdmin) {
+    currentRole = 'admin';
+    authenticatedAgent = null;
+  } else if (savedAgent) {
+    currentRole = 'agent';
+    authenticatedAgent = savedAgent;
+  } else {
+    // Premier accès sans identification
+    currentRole = 'unassigned';
+    authenticatedAgent = null;
+  }
+
+  updateAuthUI();
+}
+
+function updateAuthUI() {
+  const agentSelect = document.getElementById('agentSelect');
+  const agentBadge = document.getElementById('agentLockedBadge');
+  const lockedName = document.getElementById('lockedAgentName');
+  const shareBtn = document.getElementById('shareLinksBtn');
+
+  if (currentRole === 'admin') {
+    if (agentSelect) agentSelect.style.display = 'block';
+    if (agentBadge) agentBadge.style.display = 'none';
+    if (shareBtn) shareBtn.style.display = 'inline-flex';
+  } else if (currentRole === 'agent' && authenticatedAgent) {
+    if (agentSelect) {
+      agentSelect.style.display = 'none';
+      agentSelect.value = authenticatedAgent;
+    }
+    if (agentBadge) {
+      agentBadge.style.display = 'inline-flex';
+      lockedName.textContent = authenticatedAgent;
+    }
+    if (shareBtn) shareBtn.style.display = 'none';
+  }
+}
+
+function promptSwitchAgent() {
+  const pin = prompt('🔐 أدخل الرمز السري للإدارة لتبديل الحساب أو الاطلاع على الجميع:');
+  if (pin === ADMIN_PIN || pin === '2026') {
+    localStorage.setItem('crm_is_admin', 'true');
+    localStorage.removeItem('crm_auth_agent');
+    currentRole = 'admin';
+    updateAuthUI();
+    filterData();
+    showToast('تم تفعيل وضع الإدارة الكامل بنجاح! 👑');
+  } else if (pin !== null) {
+    alert('الرمز السري غير صحيح!');
+  }
+}
+
+function promptAdminUnlock() {
+  promptSwitchAgent();
+  closeModal('firstTimeAgentModal');
+}
+
+function selectAgentProfile(agentName) {
+  localStorage.setItem('crm_auth_agent', agentName);
+  localStorage.removeItem('crm_is_admin');
+  currentRole = 'agent';
+  authenticatedAgent = agentName;
+  updateAuthUI();
+  closeModal('firstTimeAgentModal');
+  filterData();
+  showToast(`مرحباً بك يا ${agentName} 👋`);
+}
+
+function openShareLinksModal() {
+  const container = document.getElementById('shareLinksContainer');
+  const baseUrl = window.location.origin + window.location.pathname;
+
+  const uniqueAgents = [...new Set(allLeads.map(l => l.Agent_Nom).filter(Boolean))].sort();
+  
+  let html = `
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:10px 12px; margin-bottom:12px;">
+      <div style="font-weight:800; color:#16a34a; font-size:0.85rem; margin-bottom:4px;">👑 رابط المسؤول العام (Admin Link):</div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <input type="text" readonly value="${baseUrl}?token=${ADMIN_PIN}" class="form-control" style="font-size:0.78rem; padding:6px 8px; direction:ltr;">
+        <button class="btn-tpl-action btn-tpl-copy" onclick="copyTemplateText('${encodeURIComponent(baseUrl + '?token=' + ADMIN_PIN)}')">نسخ</button>
+      </div>
+    </div>
+  `;
+
+  uniqueAgents.forEach(agent => {
+    const magicUrl = `${baseUrl}?agent=${encodeURIComponent(agent)}&key=${MAGIC_SECRET}`;
+    html += `
+      <div style="background:#fff; border:1px solid var(--card-border); border-radius:10px; padding:10px 12px;">
+        <div style="font-weight:800; color:var(--text-main); font-size:0.85rem; margin-bottom:4px;">👤 رابط الوكيل: <b>${agent}</b></div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="text" readonly value="${magicUrl}" class="form-control" style="font-size:0.78rem; padding:6px 8px; direction:ltr;">
+          <button class="btn-tpl-action btn-tpl-copy" onclick="copyTemplateText('${encodeURIComponent(magicUrl)}')">نسخ</button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('shareLinksModal').classList.add('active');
+}
+
 let allLeads = [];
 let activeFilter = 'nouveau';
 let activeSubFilter = 'all';
@@ -678,7 +866,19 @@ async function loadData(forceRefresh = false) {
     const prevVal = sel.value;
     sel.innerHTML = '<option value="all">👥 جميع الوكلاء</option>' + uniqueAgents.map(a => `<option value="${a}">${a}</option>`).join('');
     if (uniqueAgents.includes(prevVal)) sel.value = prevVal;
-    else if (savedAgent && uniqueAgents.includes(savedAgent)) sel.value = savedAgent;
+
+    // Si premier accès sans compte choisi
+    if (currentRole === 'unassigned') {
+      const ftList = document.getElementById('firstTimeAgentsList');
+      if (ftList) {
+        ftList.innerHTML = uniqueAgents.map(a => `
+          <button onclick="selectAgentProfile('${a}')" class="btn-submit" style="background:#f8fafc; color:#1e293b; border:1.5px solid #cbd5e1; padding:10px; font-size:0.9rem;">
+            👤 ${a}
+          </button>
+        `).join('');
+        document.getElementById('firstTimeAgentModal').classList.add('active');
+      }
+    }
 
     filterData();
     if (forceRefresh) showToast('تم تحديث البيانات بنجاح من المصدر! 🔄');
@@ -710,8 +910,9 @@ function setFilter(f) {
   }
 
   const labels = {
-    nouveau: 'العملاء الجدد',
-    relance: 'قيد المتابعة والتذكير',
+    nouveau: 'العملاء الجدد (لم يتم التواصل معهم)',
+    today: '🎯 مهام اليوم (To-Do List: المواعيد والتذكيرات المستحقة)',
+    relance: 'قيد المتابعة والتذكير (الجدول العام)',
     ferme: 'مغلق / غير مهتم / رقم خاطئ',
     paye: 'تم السداد والاشتراك',
     all: 'جميع العملاء'
@@ -721,10 +922,14 @@ function setFilter(f) {
 }
 
 function filterData() {
-  const agent = document.getElementById('agentSelect').value;
-  const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-  localStorage.setItem('crm_agent_ar', agent);
+  let agent = 'all';
+  if (currentRole === 'agent' && authenticatedAgent) {
+    agent = authenticatedAgent;
+  } else {
+    agent = document.getElementById('agentSelect') ? document.getElementById('agentSelect').value : 'all';
+  }
 
+  const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
   const genderFilter = document.getElementById('genderSelect') ? document.getElementById('genderSelect').value : 'all';
   let filtered = allLeads;
   if (agent !== 'all') filtered = filtered.filter(l => l.Agent_Nom === agent);
@@ -738,10 +943,19 @@ function filterData() {
     );
   }
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   // Stats
-  const stats = { nouveau: 0, relance: 0, ferme: 0, paye: 0, all: filtered.length };
-  filtered.forEach(l => { if (stats[l._cat] !== undefined) stats[l._cat]++; });
+  const stats = { nouveau: 0, today: 0, relance: 0, ferme: 0, paye: 0, all: filtered.length };
+  filtered.forEach(l => {
+    if (stats[l._cat] !== undefined) stats[l._cat]++;
+    if (l._cat === 'relance' && l.Date_Prochaine_Action && l.Date_Prochaine_Action <= todayStr) {
+      stats.today++;
+    }
+  });
+
   document.getElementById('count-nouveau').textContent = stats.nouveau;
+  document.getElementById('count-today').textContent = stats.today;
   document.getElementById('count-relance').textContent = stats.relance;
   document.getElementById('count-ferme').textContent = stats.ferme;
   document.getElementById('count-paye').textContent = stats.paye;
@@ -764,7 +978,15 @@ function filterData() {
     document.getElementById('sub-count-email').textContent = subCounts.email;
   }
 
-  let displayed = (activeFilter === 'all') ? filtered : filtered.filter(l => l._cat === activeFilter);
+  let displayed = [];
+  if (activeFilter === 'all') {
+    displayed = filtered;
+  } else if (activeFilter === 'today') {
+    displayed = filtered.filter(l => l._cat === 'relance' && l.Date_Prochaine_Action && l.Date_Prochaine_Action <= todayStr);
+    displayed.sort((a, b) => (a.Date_Prochaine_Action || '').localeCompare(b.Date_Prochaine_Action || ''));
+  } else {
+    displayed = filtered.filter(l => l._cat === activeFilter);
+  }
   if (activeFilter === 'relance') {
     if (activeSubFilter !== 'all') {
       displayed = displayed.filter(l => getRelanceCategory(l) === activeSubFilter);
@@ -812,15 +1034,30 @@ function renderCards(leads) {
     const gc = genderClass(l);
     const badge = statusBadgeHtml(l._cat);
 
+    const todayIso = new Date().toISOString().split('T')[0];
     let nextActionBox = '';
     if (l.Date_Prochaine_Action || l.Prochaine_Action) {
+      const isOverdue = l.Date_Prochaine_Action && l.Date_Prochaine_Action < todayIso;
+      const isToday = l.Date_Prochaine_Action && l.Date_Prochaine_Action === todayIso;
+
+      let badgeBg = '#fef3c7';
+      let badgeColor = '#b45309';
+      let badgeBorder = '#fde68a';
+      let alertIcon = '📅';
+
+      if (isOverdue) {
+        badgeBg = '#fef2f2'; badgeColor = '#b91c1c'; badgeBorder = '#fecaca'; alertIcon = '⚠️ متأخرة:';
+      } else if (isToday) {
+        badgeBg = '#ffedd5'; badgeColor = '#c2410c'; badgeBorder = '#fed7aa'; alertIcon = '⚡ اليوم:';
+      }
+
       nextActionBox = `
         <div class="next-action-pill" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:6px;">
-            <i class="fa-solid fa-bullseye" style="color:var(--primary)"></i>
+            <i class="fa-solid fa-bullseye" style="color:${isOverdue ? '#ef4444' : 'var(--primary)'}"></i>
             <span>الخطوة التالية: <b>${escapeHtml(l.Prochaine_Action || 'معاودة الاتصال')}</b></span>
           </div>
-          ${l.Date_Prochaine_Action ? `<span style="font-size:0.75rem; background:#fef3c7; border:1px solid #fde68a; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800;">📅 ${escapeHtml(l.Date_Prochaine_Action)}</span>` : ''}
+          ${l.Date_Prochaine_Action ? `<span style="font-size:0.75rem; background:${badgeBg}; border:1px solid ${badgeBorder}; color:${badgeColor}; padding:2px 7px; border-radius:6px; font-weight:800;">${alertIcon} ${escapeHtml(l.Date_Prochaine_Action)}</span>` : ''}
         </div>`;
     }
 
@@ -1347,6 +1584,7 @@ function escapeHtml(str) {
 }
 
 // Initialisation
+initAuth();
 loadData();
 </script>
 </body>
