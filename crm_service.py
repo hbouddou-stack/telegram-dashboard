@@ -218,7 +218,7 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
         
         db_record = db_status_map.get(student_id)
         crm_status = db_record['crm_lead_status'] if db_record else ''
-        crm_note = db_record['crm_next_action_note'] if db_record else gs_comment
+        crm_note = (db_record['crm_next_action_note'] or gs_comment or '') if db_record else gs_comment
         
         if is_paid:
             cat = 'paye'
