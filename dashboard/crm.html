@@ -548,6 +548,23 @@
   </button>
 </nav>
 
+
+<!-- MODAL REGISTRE (HISTORIQUE UNIQUE) -->
+<div id="registreModal" class="modal-overlay" onclick="if(event.target===this) closeRegistreModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99999; justify-content:center; align-items:center;">
+  <div class="modal-content" style="max-width:550px; background:#f8fafc; width:90%; border-radius:12px; display:flex; flex-direction:column; max-height:85vh; margin:auto;">
+    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #e2e8f0;">
+      <h3 style="margin:0; font-size:1.1rem;"><i class="fa-solid fa-clock-rotate-left" style="color:#d97706;"></i> سجل المتابعة</h3>
+      <button onclick="closeRegistreModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+    </div>
+    <div style="padding:15px; overflow-y:auto; flex:1;" id="registreTimelineContainer">
+      <div style="text-align:center; padding:20px; color:#64748b;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:10px;"></i>
+        <div>Chargement de l'historique...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- INTERACTION & DECISION TREE MODAL -->
 <div class="modal-overlay" id="interactionModal" onclick="closeModalOnBackdrop(event, 'interactionModal')">
   <div class="modal-content">
@@ -567,15 +584,7 @@
     <!-- MODAL BODY (SCROLLABLE) -->
     <div class="modal-body">
       <!-- REGISTRE DE SUIVI (HISTORIQUE DES CONTACTS) - PLACE EN HAUT -->
-      <details id="timelineDetailsBox" open style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:14px; overflow:hidden;">
-        <summary style="padding:10px 14px; font-size:0.86rem; font-weight:800; color:var(--text-main); cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none; background:#f1f5f9;">
-          <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary); margin-left:6px;"></i> سجل المتابعات والتاريخ (Timeline)</span>
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;"><i class="fa-solid fa-chevron-down"></i></span>
-        </summary>
-        <div style="padding:10px 14px; max-height:190px; overflow-y:auto;">
-          <div id="modalTimeline" class="timeline" style="display:none;"></div>
-        </div>
-      </details>
+      
 
       <!-- ETAPE 0 : QUALIFICATION DU LEAD (PROSPECT, DOUBLON, TEST, FICTIF) -->
       <div class="step-label"><i class="fa-solid fa-id-badge"></i> 0. تصنيف وطبيعة الحساب (Qualification):</div>
@@ -1466,13 +1475,13 @@ function renderCards(leads) {
             <i class="fa-solid fa-file-lines"></i>
             <span>نماذج</span>
           </button>
-          <button class="btn-act btn-act-log" style="background:#fef3c7; color:#d97706; border-color:#fde68a;" onclick="openRegistreModal('${l.ID_Lead}')" title="Registre">
+          <button class="btn-act btn-act-log" style="background:#fef3c7; color:#d97706; border-color:#fde68a;" onclick="openRegistreModal('${l.ID_Lead}')" title="السجل">
 <i class="fa-solid fa-clock-rotate-left"></i>
-<span>Registre</span>
+<span>السجل</span>
 </button>
-<button class="btn-act btn-act-log" onclick="openInteractionModal('${l.ID_Lead}')" title="Saisir">
+<button class="btn-act btn-act-log" onclick="openInteractionModal('${l.ID_Lead}')" title="تحديث">
 <i class="fa-solid fa-pen-to-square"></i>
-<span>Saisir</span>
+<span>تحديث</span>
 </button>
         </div>
       </div>
@@ -1585,7 +1594,7 @@ async function openRegistreModal(leadId) {
         if (interactions.length === 0) {
             timeline.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); background:#fff; border-radius:8px; border:1px dashed #cbd5e1;">Aucun historique de suivi pour cet élève.</div>';
         } else {
-            timeline.innerHTML = interactions.map(i => `
+            if(timeline) timeline.innerHTML = interactions.map(i => `
                 <div class="timeline-item" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:6px; margin-bottom:6px;">
                         <span style="font-size:0.8rem; color:#64748b;"><i class="fa-regular fa-clock"></i> <b>${escapeHtml(i.Date_Heure || '')}</b></span>
@@ -1602,7 +1611,7 @@ async function openRegistreModal(leadId) {
             `).join('');
         }
     } catch (err) {
-        timeline.innerHTML = '<div style="color:red; text-align:center;">Erreur lors du chargement.</div>';
+        if(timeline) timeline.innerHTML = '<div style="color:red; text-align:center;">Erreur lors du chargement.</div>';
     }
 }
 
@@ -1901,9 +1910,9 @@ Prochaine_Action: ''
 }
 
     if (interactions.length === 0) {
-      timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center; color:var(--text-muted)">لا توجد متابعات سابقة مسجلة لهذا العميل</div>';
+      if(timeline) timeline.innerHTML = '<div class="timeline-content-box" style="text-align:center; color:var(--text-muted)">لا توجد متابعات سابقة مسجلة لهذا العميل</div>';
     } else {
-      timeline.innerHTML = interactions.map(i => `
+      if(timeline) timeline.innerHTML = interactions.map(i => `
         <div class="timeline-item" id="timeline-item-${i.id || 'legacy'}">
           <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center;">
             <span><b>${escapeHtml(i.Date_Heure || '')}</b> • بواسطة: <b style="color:var(--primary);">${escapeHtml(i.Agent || 'الوكيل')}</b></span>
@@ -1919,7 +1928,7 @@ Prochaine_Action: ''
       `).join('');
     }
   } catch (e) {
-    timeline.innerHTML = '<div class="timeline-content-box" style="color:var(--danger)">تعذر تحميل السجل الزمني</div>';
+    if(timeline) timeline.innerHTML = '<div class="timeline-content-box" style="color:var(--danger)">تعذر تحميل السجل الزمني</div>';
   }
 }
 
