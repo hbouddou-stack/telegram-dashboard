@@ -1011,6 +1011,10 @@ async def handle_admin_gateway(request):
     resp.headers['Pragma'] = 'no-cache'
     return resp
 
+async def api_version(request):
+    from aiohttp import web
+    return web.json_response({"version": "v3_fix_25"})
+
 async def handle_crm(request):
     resp = web.FileResponse(os.path.join(DASHBOARD_DIR, 'crm.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -7573,6 +7577,7 @@ async def start_web_server(bot: Bot):
     app.router.add_get('/admin-gateway', handle_admin_gateway)
     # CRM Mini App routes
     app.router.add_get('/crm', handle_crm)
+    app.router.add_get('/api/version', api_version)
     app.router.add_get('/crm.html', handle_crm)
     app.router.add_get('/api/crm/data', api_crm_data)
     app.router.add_get('/api/crm/lead-details', api_crm_lead_details)
