@@ -289,6 +289,25 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
 
 
 
+
+async def _ensure_crm_interactions_table(db):
+    await db.execute('''
+        CREATE TABLE IF NOT EXISTS crm_interactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lead_id TEXT,
+            academic_id TEXT,
+            student_id TEXT,
+            agent_name TEXT,
+            tentative_resultat TEXT,
+            detail_statut TEXT,
+            prochaine_action TEXT,
+            date_prochaine TEXT,
+            note TEXT,
+            created_at TEXT
+        )
+    ''')
+    await db.commit()
+
 async def update_lead_status_async(
     lead_id: str,
     statut: str,
