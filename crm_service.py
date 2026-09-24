@@ -58,7 +58,14 @@ def _clean_phone(p: str) -> str:
     return ''.join(c for c in str(p or '') if c.isdigit())
 
 def _sync_sheet_blocking() -> dict:
-    """Lecture bloquante de la feuille Google Sheet 'appels 2026' (exécutée via asyncio.to_thread)."""
+    """Lecture bloquante de la feuille Google Sheet 'appels 2026'.
+    
+    Logique simplifiée :
+    - On lit UNIQUEMENT la feuille 'appels 2026' (MASTER_SHEET_ID).
+    - Le mapping se fait UNIQUEMENT par ID académique (colonne A).
+    - Plus de matching par email, téléphone ou miroir secondaire.
+    - Le sheet est la source de vérité absolue pour : nom, agent, commentaires, appels.
+    """
     try:
         from google_creds import get_gspread_client
         gc = get_gspread_client()
@@ -78,144 +85,39 @@ def _sync_sheet_blocking() -> dict:
         for r in rows[1:]:
             if not any(c.strip() for c in r):
                 continue
+
             acad_id = str(r[0]).strip() if len(r) > 0 else ''
-            email = str(r[3]).strip().lower() if len(r) > 3 else ''
-            phone = _clean_phone(r[4]) if len(r) > 4 else ''
-            team = str(r[18]).strip() if len(r) > 18 else ''
+            if not acad_id:
+                continue  # Sans ID, on ne peut pas matcher — on ignore la ligne
+
+            team    = str(r[18]).strip() if len(r) > 18 else ''
             comments = str(r[19]).strip() if len(r) > 19 else ''
-            appel_1 = str(r[20]).strip() if len(r) > 20 else ''
-            appel_2 = str(r[21]).strip() if len(r) > 21 else ''
-            appel_3 = str(r[22]).strip() if len(r) > 22 else ''
+            appel_1  = str(r[20]).strip() if len(r) > 20 else ''
+            appel_2  = str(r[21]).strip() if len(r) > 21 else ''
+            appel_3  = str(r[22]).strip() if len(r) > 22 else ''
 
             if team:
                 agents.add(team)
 
             entry = {
+                'academic_id': acad_id,
                 'team': team,
                 'comments': comments,
                 'appel_1': appel_1,
                 'appel_2': appel_2,
-                'appel_3': appel_3
+                'appel_3': appel_3,
             }
 
-            if email and '@' in email:
-                mapping[f"email:{email}"] = entry
-            if acad_id:
-                mapping[f"id:{acad_id}"] = entry
-                if acad_id.endswith('26') and len(acad_id) > 2:
-                    mapping[f"id:{acad_id[:-2]}"] = entry
-                else:
-                    mapping[f"id:{acad_id}26"] = entry
-            if phone:
-                mapping[f"phone:{phone}"] = entry
-                if len(phone) >= 9:
-                    mapping[f"phone9:{phone[-9:]}"] = entry
+            # Index UNIQUEMENT par ID académique exact
+            mapping[f"id:{acad_id}"] = entry
 
-        logger.info(f"[CRM] Google Sheet 'appels 2026' synchronisé: {len(rows)-1} lignes, {len(agents)} agents.")
-
-        # Charger également la feuille miroir de secours de l'utilisateur pour appliquer les dernières modifications
-        try:
-            from crm_sync import DEFAULT_MIRROR_SHEET_ID, TAB_UNPAID, TAB_PAID
-            sh_mirror = gc.open_by_key(DEFAULT_MIRROR_SHEET_ID)
-            ws_unpaid = sh_mirror.worksheet(TAB_UNPAID)
-            mirror_rows = ws_unpaid.get_all_values()
-            if len(mirror_rows) > 1:
-                for mr in mirror_rows[1:]:
-                    if not any(c.strip() for c in mr):
-                        continue
-                    m_acad_id = str(mr[0]).strip() if len(mr) > 0 else ''
-                    m_email = str(mr[3]).strip().lower() if len(mr) > 3 else ''
-                    m_agent = str(mr[5]).strip() if len(mr) > 5 else ''
-                    m_statut = str(mr[6]).strip() if len(mr) > 6 else ''
-                    m_resultat = str(mr[7]).strip() if len(mr) > 7 else ''
-                    m_next_act = str(mr[8]).strip() if len(mr) > 8 else ''
-                    m_date_next = str(mr[9]).strip() if len(mr) > 9 else ''
-                    m_note = str(mr[10]).strip() if len(mr) > 10 else ''
-                    m_paye = str(mr[11]).strip() if len(mr) > 11 else ''
-
-                    # Récupérer l'entrée existante du Master Sheet (appels 2026)
-                    existing_entry = mapping.get(f"id:{m_acad_id}") or (mapping.get(f"email:{m_email}") if m_email else None) or {}
-                    existing_team = existing_entry.get('team', '')
-
-                    # L'agent du miroir ne surcharge que s'il s'agit d'un vrai agent (pas 'غير معين')
-                    effective_agent = m_agent if (m_agent and m_agent not in ['غير معين', '', 'None']) else existing_team
-                    if effective_agent:
-                        agents.add(effective_agent)
-
-                    # Une modification réelle dans le miroir concerne des notes ou un changement d'état effectif
-                    has_mirror_update = bool(
-                        m_note.strip() or 
-                        (m_resultat.strip() and m_resultat.strip() not in ['لم يتم التواصل بعد', '']) or
-                        (m_statut.strip() and m_statut.strip() not in ['جديد', 'NOUVEAU', 'nouveau', '']) or
-                        (m_next_act.strip() and m_next_act.strip() not in ['إجراء الاتصال الأول', 'معاودة الاتصال', '']) or
-                        m_date_next.strip()
-                    )
-
-                    if has_mirror_update or effective_agent:
-                        mirror_entry = {
-                            'team': effective_agent,
-                            'comments': m_note or existing_entry.get('comments', ''),
-                            'appel_1': m_resultat or existing_entry.get('appel_1', ''),
-                            'appel_2': '',
-                            'appel_3': '',
-                            'crm_statut': m_statut if has_mirror_update else existing_entry.get('crm_statut'),
-                            'crm_resultat': m_resultat if has_mirror_update else existing_entry.get('crm_resultat'),
-                            'crm_prochaine_action': m_next_act if has_mirror_update else existing_entry.get('crm_prochaine_action'),
-                            'crm_date_prochaine': m_date_next if has_mirror_update else existing_entry.get('crm_date_prochaine'),
-                            'crm_note': m_note if has_mirror_update else existing_entry.get('crm_note'),
-                            'payment_status': m_paye or existing_entry.get('payment_status')
-                        }
-                        m_phone = _clean_phone(mr[2]) if len(mr) > 2 else ''
-                        if m_email and '@' in m_email:
-                            mapping[f"email:{m_email}"] = mirror_entry
-                        if m_acad_id:
-                            mapping[f"id:{m_acad_id}"] = mirror_entry
-                            if m_acad_id.endswith('26') and len(m_acad_id) > 2:
-                                mapping[f"id:{m_acad_id[:-2]}"] = mirror_entry
-                            else:
-                                mapping[f"id:{m_acad_id}26"] = mirror_entry
-                        if m_phone:
-                            mapping[f"phone:{m_phone}"] = mirror_entry
-                            if len(m_phone) >= 9:
-                                mapping[f"phone9:{m_phone[-9:]}"] = mirror_entry
-
-            # Charger les étudiants payés du miroir
-            try:
-                ws_paid = sh_mirror.worksheet(TAB_PAID)
-                paid_rows = ws_paid.get_all_values()
-                if len(paid_rows) > 1:
-                    for pr in paid_rows[1:]:
-                        p_acad_id = str(pr[0]).strip() if len(pr) > 0 else ''
-                        p_email = str(pr[3]).strip().lower() if len(pr) > 3 else ''
-                        p_agent = str(pr[5]).strip() if len(pr) > 5 else ''
-                        existing_p = mapping.get(f"id:{p_acad_id}") or (mapping.get(f"email:{p_email}") if p_email else None) or {}
-                        effective_p_agent = p_agent if (p_agent and p_agent not in ['غير معين', '', 'None']) else existing_p.get('team', '')
-                        paid_entry = {
-                            'team': effective_p_agent,
-                            'comments': str(pr[10]).strip() if len(pr) > 10 else existing_p.get('comments', ''),
-                            'appel_1': 'تم السداد',
-                            'crm_statut': 'مسدد',
-                            'payment_status': 'مسدد'
-                        }
-                        if p_email and '@' in p_email:
-                            mapping[f"email:{p_email}"] = paid_entry
-                        if p_acad_id:
-                            mapping[f"id:{p_acad_id}"] = paid_entry
-                            if p_acad_id.endswith('26') and len(p_acad_id) > 2:
-                                mapping[f"id:{p_acad_id[:-2]}"] = paid_entry
-                            else:
-                                mapping[f"id:{p_acad_id}26"] = paid_entry
-            except Exception as e_paid_sh:
-                logger.debug(f"[CRM] Lecture onglet paye miroir: {e_paid_sh}")
-
-            logger.info(f"[CRM] Feuille miroir utilisateur intégrée avec succès.")
-        except Exception as e_mirror_sync:
-            logger.warning(f"[CRM] Impossible de lire la feuille miroir: {e_mirror_sync}")
-
+        logger.info(f"[CRM] Google Sheet '{MASTER_TAB}' chargé : {len(rows)-1} lignes, {len(agents)} agents, {len(mapping)} entrées indexées par ID.")
         return {"map": mapping, "agents": agents}
+
     except Exception as e:
         logger.error(f"[CRM] Erreur lecture Google Sheet 'appels 2026': {e}")
         return {}
+
 
 async def get_sheet_data_async(force_refresh: bool = False) -> dict:
     """Récupère le cache de la feuille Google Sheet ou rafraîchit en arrière-plan."""
@@ -293,28 +195,11 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 student_id = str(row.get('student_id') or row.get('academic_id') or '').strip()
                 email = str(row.get('email') or '').strip().lower()
                 phone = str(row.get('phone') or '').strip()
-                phone_clean = _clean_phone(phone)
 
-                # 2. Chercher les informations de l'agent dans la feuille Google Sheet (par ID académique, ID étudiant, email ou téléphone)
+                # 2. Matching UNIQUEMENT par ID academique (colonne A du sheet). Zero collision possible.
                 acad_id = str(row.get('academic_id') or '').strip()
-                phone_last9 = phone_clean[-9:] if len(phone_clean) >= 9 else ''
-                sheet_match = (
-                    sheet_map.get(f"id:{acad_id}") or
-                    sheet_map.get(f"id:{acad_id}26") or
-                    sheet_map.get(f"id:{student_id}") or
-                    sheet_map.get(f"id:{student_id}26") or
-                    (sheet_map.get(f"email:{email}") if (email and '@' in email) else None) or
-                    (sheet_map.get(f"phone:{phone_clean}") if phone_clean else None) or
-                    (sheet_map.get(f"phone9:{phone_last9}") if phone_last9 else None) or
-                    {}
-                )
-                
-                # Blocage des collisions inter-cohortes:
-                # Si l'lève local n'est pas de la cohorte 2026, il ne doit pas hériter des données d'un élève 2026
-                # (Même s'ils partagent le même numéro de téléphone)
-                sheet_acad = sheet_match.get('academic_id', '')
-                if sheet_acad and sheet_acad.endswith('26') and not student_id.endswith('26'):
-                    sheet_match = {}
+                sheet_match = sheet_map.get(f"id:{acad_id}") or {}
+
 
                 # Récupération de l'agent depuis les deux sources
                 sheet_agent = (sheet_match.get('team') or '').strip()
