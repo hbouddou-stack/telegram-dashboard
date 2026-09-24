@@ -212,28 +212,19 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                 if agent and agent != NON_ASSIGNE:
                     all_agents.add(agent)
 
-                # Concaténation des commentaires utiles (sans les 'أول: Oui' ou indicateurs d'appels artificiels)
-                history_parts = []
+                # Commentaire : source Google Sheet absolue
                 sheet_c = (sheet_match.get('comments') or '').strip()
-                if sheet_c and sheet_c.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
-                    clean_c = sheet_c.replace('أول: Oui', '').replace('ثان: Oui', '').replace('ثالث: Oui', '').strip(' |')
-                    if clean_c:
-                        history_parts.append(clean_c)
                 
-                # Notes locales enregistrées directement dans le CRM
-                if row.get('comments') and str(row.get('comments')).strip() != sheet_c:
-                    c_loc = str(row['comments']).strip()
-                    clean_loc = c_loc.replace('أول: Oui', '').replace('ثان: Oui', '').replace('ثالث: Oui', '').strip(' |')
-                    if clean_loc and clean_loc.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
-                        history_parts.append(clean_loc)
-                if row.get('crm_next_action_note'):
-                    act_note = str(row['crm_next_action_note']).strip()
-                    clean_act = act_note.replace('أول: Oui', '').replace('ثان: Oui', '').replace('ثالث: Oui', '').strip(' |')
-                    if clean_act and clean_act.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
-                        history_parts.append(clean_act)
+                # Le statut "Nouveau" vs "En cours" dpend uniquement du commentaire
+                has_history = bool(sheet_c)
+                
+                # On nettoie un peu le commentaire pour l'affichage (s'il s'agit juste de "Oui")
+                clean_c = sheet_c
+                if clean_c.lower() in ['oui', 'yes', 'non', '1', 'true', 'ok']:
+                    clean_c = ''
+                
+                ancien_commentaire = clean_c
 
-                ancien_commentaire = ' | '.join(history_parts) if history_parts else ''
-                has_history = bool(ancien_commentaire or row.get('crm_last_contact_at') or sheet_match.get('appel_1'))
 
                 statut_crm = (row.get('crm_lead_status') or '').strip()
                 statut_paiement = (row.get('payment_status') or '').strip()

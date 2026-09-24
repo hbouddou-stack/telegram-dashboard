@@ -106,15 +106,15 @@ async def run_google_sheets_sync(sheet_id: str):
                     academic_id = str(int(hashlib.md5(email.encode()).hexdigest()[:6], 16))[:6]
 
                     
-                async with db.execute("SELECT student_id FROM academy_students WHERE LOWER(email) = ? OR student_id = ?", (email, academic_id)) as cur:
+                async with db.execute("SELECT student_id FROM academy_students WHERE (LOWER(email) = ? AND ? != '') OR student_id = ?", (email, email, academic_id)) as cur:
                     exists = await cur.fetchone()
                     
                 if exists:
                     await db.execute("""
                         UPDATE academy_students 
                         SET first_name = ?, last_name = ?, phone = ?, gender = ?, payment_status = ?, dob = ?, year = ?, profession = ?, country = ?, nationality = ?, arabic_level = ?, school_level = ?, created_at = COALESCE(NULLIF(?, ''), created_at), team = ?, comments = ?, appel_1 = ?, appel_2 = ?, appel_3 = ?, source = 'google_sheets'
-                        WHERE LOWER(email) = ? OR student_id = ?
-                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, team, comments, appel_1, appel_2, appel_3, email, academic_id))
+                        WHERE (LOWER(email) = ? AND ? != '') OR student_id = ?
+                    """, (first_name, last_name, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, created_at_val, team, comments, appel_1, appel_2, appel_3, email, email, academic_id))
                 else:
                     await db.execute("""
                         INSERT INTO academy_students (academic_id, first_name, last_name, email, phone, gender, payment_status, dob, year, profession, country, nationality, arabic_level, school_level, team, comments, appel_1, appel_2, appel_3, source, is_active, created_at)
