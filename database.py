@@ -4361,6 +4361,7 @@ async def import_students_excel(records: list) -> dict:
                 first_name = (r.get('first_name') or '').strip()
                 last_name = (r.get('last_name') or '').strip()
                 phone = (r.get('phone') or '').strip()
+                student_id = (r.get('student_id') or '').strip()
                 gender = (r.get('gender') or 'HOMME').strip().upper()
                 # Normalisation du genre
                 if any(k in gender for k in ['F', 'FEMME', 'FEMALE', 'WOMAN', 'أنثى', 'نساء', 'امرأة', 'MME', 'MLLE']):
@@ -4390,15 +4391,16 @@ async def import_students_excel(records: list) -> dict:
                             phone = COALESCE(NULLIF(?, ''), phone),
                             gender = ?,
                             payment_status = ?,
-                            year = COALESCE(NULLIF(?, ''), year)
+                            year = COALESCE(NULLIF(?, ''), year),
+                            academic_id = COALESCE(NULLIF(?, ''), academic_id)
                         WHERE LOWER(email) = ?
-                    """, (first_name, last_name, phone, gender, payment_status, year, email))
+                    """, (first_name, last_name, phone, gender, payment_status, year, student_id, email))
                     stats["updated"] += 1
                 else:
                     await db.execute("""
-                        INSERT INTO academy_students (email, first_name, last_name, phone, gender, payment_status, year, dob)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (email, first_name, last_name, phone, gender, payment_status, year, dob))
+                        INSERT INTO academy_students (email, first_name, last_name, phone, gender, payment_status, year, dob, academic_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''))
+                    """, (email, first_name, last_name, phone, gender, payment_status, year, dob, student_id))
                     stats["inserted"] += 1
                     
             await db.commit()

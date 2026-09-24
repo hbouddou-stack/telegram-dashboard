@@ -13246,7 +13246,7 @@ function handleExcelFileSelected(event) {
         parsedExcelRecords = [];
         
         rawJson.forEach(row => {
-            let email = '', firstName = '', lastName = '', gender = 'HOMME', paymentStatus = 'PAID', phone = '', year = '1';
+            let email = '', firstName = '', lastName = '', gender = 'HOMME', paymentStatus = 'PAID', phone = '', year = '1', studentId = '';
             
             // Smart Column Matching
             for (let [k, v] of Object.entries(row)) {
@@ -13268,8 +13268,10 @@ function handleExcelFileSelected(event) {
                 } else if (keyLower.includes('phone') || keyLower.includes('tel') || keyLower.includes('هاتف') || keyLower.includes('جوال')) {
                     phone = valStr;
                 } else if (keyLower.includes('year') || keyLower.includes('annee') || keyLower.includes('سنة')) {
-                    year = valStr;
-                }
+                year = valStr;
+            } else if (keyLower === 'id' || keyLower.includes('student') || keyLower.includes('num') || keyLower.includes('etudiant') || keyLower.includes('tudiant') || keyLower.includes('رقم') || keyLower.includes('acad')) {
+                studentId = valStr;
+            }
             }
             
             if (email) {
@@ -13281,7 +13283,7 @@ function handleExcelFileSelected(event) {
                     payment_status: paymentStatus,
                     phone: phone,
                     year: year
-                });
+                , student_id: studentId});
             }
         });
         
