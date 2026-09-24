@@ -282,8 +282,6 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                     "Genre": row.get('gender', 'HOMME'),
                     "Pays": row.get('country', ''),
                     "Agent_Nom": agent,
-                    "_Debug_Local": local_agent,
-                    "_Debug_Sheet": sheet_agent,
                     "Statut_CRM": final_statut,
                     "Dernier_Contact_Date": row.get('crm_last_contact_at', '') or (final_date and 'مسجل حديثاً') or '',
                     "Dernier_Contact_Resultat": final_resultat,
