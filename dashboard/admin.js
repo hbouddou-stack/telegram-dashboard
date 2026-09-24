@@ -13246,7 +13246,7 @@ function handleExcelFileSelected(event) {
         parsedExcelRecords = [];
         
         rawJson.forEach(row => {
-            let email = '', firstName = '', lastName = '', gender = 'HOMME', paymentStatus = 'PAID', phone = '', year = '1', studentId = '';
+            let email = '', firstName = '', lastName = '', gender = 'HOMME', paymentStatus = 'UNPAID', phone = '', year = '1', studentId = '';
             
             // Smart Column Matching
             for (let [k, v] of Object.entries(row)) {
