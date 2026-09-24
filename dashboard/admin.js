@@ -13269,11 +13269,16 @@ function handleExcelFileSelected(event) {
                     phone = valStr;
                 } else if (keyLower.includes('year') || keyLower.includes('annee') || keyLower.includes('سنة')) {
                 year = valStr;
-            } else if (keyLower === 'id' || keyLower.includes('student') || keyLower.includes('num') || keyLower.includes('etudiant') || keyLower.includes('tudiant') || keyLower.includes('رقم') || keyLower.includes('acad')) {
+            } else if (keyLower === 'id' || keyLower.includes('student') || keyLower.includes('num') || keyLower.includes('etudiant') || keyLower.includes('tudiant') || keyLower.includes('رقم') || keyLower.includes('الرقم الأكاديمي') || keyLower.includes('acad')) {
                 studentId = valStr;
             }
             }
             
+        if (!studentId && Object.values(row).length > 0) {
+            let firstVal = String(Object.values(row)[0]).trim();
+            if (firstVal.match(/^\d+$/)) studentId = firstVal;
+        }
+
             if (email) {
                 parsedExcelRecords.push({
                     email: email.toLowerCase(),
