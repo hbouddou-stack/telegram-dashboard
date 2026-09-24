@@ -90,14 +90,30 @@ async def get_mirror_sheet_id() -> str:
 TAB_UNPAID = "المتابعات_والاتصالات"
 TAB_PAID = "الطلاب_المسددون"
 
+def _get_gspread_client():
+    import json
+    import gspread
+    creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
+    if os.path.exists(CREDENTIALS_FILE):
+        return gspread.service_account(filename=CREDENTIALS_FILE)
+    elif os.path.exists('credentials.json'):
+        return gspread.service_account(filename='credentials.json')
+    elif creds_env:
+        try:
+            creds_info = json.loads(creds_env)
+            return gspread.service_account_from_dict(creds_info)
+        except Exception as e:
+            logger.error("[CRM_MIRROR] Erreur décodage GOOGLE_SERVICE_ACCOUNT_JSON: %s", e)
+            return None
+    logger.warning("[CRM_MIRROR] Aucune clé Google trouvée (ni credentials.json ni GOOGLE_SERVICE_ACCOUNT_JSON).")
+    return None
+
 def _sync_to_google_sheet_sync(sheet_id: str, row_data: list, lead_dict: dict = None):
     try:
-        import gspread
-        if not os.path.exists(CREDENTIALS_FILE):
-            logger.warning("[CRM_MIRROR] credentials.json introuvable pour synchronisation Google Sheet.")
+        gc = _get_gspread_client()
+        if not gc:
             return False
 
-        gc = gspread.service_account(filename=CREDENTIALS_FILE)
         sh = gc.open_by_key(sheet_id)
         
         try:

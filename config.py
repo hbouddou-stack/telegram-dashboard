@@ -30,7 +30,19 @@ BACKUP_BOT_USERNAME = "minassatalbajibot"
 ACADEMY_GROUP_ID = int(os.getenv("ACADEMY_GROUP_ID", "-1003724140001"))
 
 # Database paths
-DATABASE_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "backup_bot.db"))
+def _detect_database_path():
+    env_db = os.getenv("DATABASE_PATH")
+    if env_db:
+        return env_db
+    vol_env = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+    if vol_env and os.path.exists(vol_env):
+        return os.path.join(vol_env, "backup_bot.db")
+    for candidate in ["/data", "/persistent_storage"]:
+        if os.path.exists(candidate):
+            return os.path.join(candidate, "backup_bot.db")
+    return os.path.join(os.path.dirname(__file__), "backup_bot.db")
+
+DATABASE_PATH = _detect_database_path()
 MAIN_DATABASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../telegram-bot/persistent_storage/academy.db"))
 MAIN_CREDENTIALS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../telegram-bot/credentials.json"))
 

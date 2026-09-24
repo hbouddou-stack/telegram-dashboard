@@ -117,6 +117,77 @@ def _sync_sheet_blocking() -> dict:
                 mapping[f"id:{acad_id}"] = entry
 
         logger.info(f"[CRM] Google Sheet 'appels 2026' synchronisé: {len(rows)-1} lignes, {len(agents)} agents.")
+
+        # Charger également la feuille miroir de secours de l'utilisateur pour appliquer les dernières modifications
+        try:
+            from crm_sync import DEFAULT_MIRROR_SHEET_ID, TAB_UNPAID, TAB_PAID
+            sh_mirror = gc.open_by_key(DEFAULT_MIRROR_SHEET_ID)
+            ws_unpaid = sh_mirror.worksheet(TAB_UNPAID)
+            mirror_rows = ws_unpaid.get_all_values()
+            if len(mirror_rows) > 1:
+                for mr in mirror_rows[1:]:
+                    if not any(c.strip() for c in mr):
+                        continue
+                    m_acad_id = str(mr[0]).strip() if len(mr) > 0 else ''
+                    m_email = str(mr[3]).strip().lower() if len(mr) > 3 else ''
+                    m_agent = str(mr[5]).strip() if len(mr) > 5 else ''
+                    m_statut = str(mr[6]).strip() if len(mr) > 6 else ''
+                    m_resultat = str(mr[7]).strip() if len(mr) > 7 else ''
+                    m_next_act = str(mr[8]).strip() if len(mr) > 8 else ''
+                    m_date_next = str(mr[9]).strip() if len(mr) > 9 else ''
+                    m_note = str(mr[10]).strip() if len(mr) > 10 else ''
+                    m_paye = str(mr[11]).strip() if len(mr) > 11 else ''
+
+                    if m_agent:
+                        agents.add(m_agent)
+
+                    # Si une modification existe dans le miroir, surcharger l'entrée
+                    has_mirror_update = bool(m_note or m_resultat or (m_statut and m_statut not in ['جديد', 'NOUVEAU', 'nouveau']) or m_next_act or m_date_next)
+                    if has_mirror_update:
+                        mirror_entry = {
+                            'team': m_agent,
+                            'comments': m_note,
+                            'appel_1': m_resultat,
+                            'appel_2': '',
+                            'appel_3': '',
+                            'crm_statut': m_statut,
+                            'crm_resultat': m_resultat,
+                            'crm_prochaine_action': m_next_act,
+                            'crm_date_prochaine': m_date_next,
+                            'crm_note': m_note,
+                            'payment_status': m_paye
+                        }
+                        if m_email and '@' in m_email:
+                            mapping[f"email:{m_email}"] = mirror_entry
+                        if m_acad_id:
+                            mapping[f"id:{m_acad_id}"] = mirror_entry
+
+            # Charger les étudiants payés du miroir
+            try:
+                ws_paid = sh_mirror.worksheet(TAB_PAID)
+                paid_rows = ws_paid.get_all_values()
+                if len(paid_rows) > 1:
+                    for pr in paid_rows[1:]:
+                        p_acad_id = str(pr[0]).strip() if len(pr) > 0 else ''
+                        p_email = str(pr[3]).strip().lower() if len(pr) > 3 else ''
+                        paid_entry = {
+                            'team': str(pr[5]).strip() if len(pr) > 5 else '',
+                            'comments': str(pr[10]).strip() if len(pr) > 10 else '',
+                            'appel_1': 'تم السداد',
+                            'crm_statut': 'مسدد',
+                            'payment_status': 'مسدد'
+                        }
+                        if p_email and '@' in p_email:
+                            mapping[f"email:{p_email}"] = paid_entry
+                        if p_acad_id:
+                            mapping[f"id:{p_acad_id}"] = paid_entry
+            except Exception as e_paid_sh:
+                logger.debug(f"[CRM] Lecture onglet paye miroir: {e_paid_sh}")
+
+            logger.info(f"[CRM] Feuille miroir utilisateur intégrée avec succès.")
+        except Exception as e_mirror_sync:
+            logger.warning(f"[CRM] Impossible de lire la feuille miroir: {e_mirror_sync}")
+
         return {"map": mapping, "agents": agents}
     except Exception as e:
         logger.error(f"[CRM] Erreur lecture Google Sheet 'appels 2026': {e}")
@@ -272,6 +343,14 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
 
                 full_name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip() or 'بدون اسم'
 
+                # Priorité aux données récentes issues du miroir de secours Google Sheet
+                final_statut = sheet_match.get('crm_statut') or statut_crm
+                final_resultat = sheet_match.get('crm_resultat') or dernier_resultat
+                final_prochaine = sheet_match.get('crm_prochaine_action') or prochaine_action
+                final_date = sheet_match.get('crm_date_prochaine') or row.get('crm_next_action_date', '')
+                final_note = sheet_match.get('crm_note') or ancien_commentaire
+                final_payment = sheet_match.get('payment_status') or statut_paiement
+
                 lead = {
                     "ID_Lead": student_id,
                     "Nom": full_name,
@@ -280,14 +359,14 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
                     "Genre": row.get('gender', 'HOMME'),
                     "Pays": row.get('country', ''),
                     "Agent_Nom": agent,
-                    "Statut_CRM": statut_crm,
-                    "Dernier_Contact_Date": row.get('crm_last_contact_at', ''),
-                    "Dernier_Contact_Resultat": dernier_resultat,
-                    "Prochaine_Action": prochaine_action,
-                    "Date_Prochaine_Action": row.get('crm_next_action_date', ''),
-                    "Ancien_Commentaire": ancien_commentaire,
-                    "Statut_Paiement": statut_paiement,
-                    "_category": cat
+                    "Statut_CRM": final_statut,
+                    "Dernier_Contact_Date": row.get('crm_last_contact_at', '') or (final_date and 'مسجل حديثاً') or '',
+                    "Dernier_Contact_Resultat": final_resultat,
+                    "Prochaine_Action": final_prochaine,
+                    "Date_Prochaine_Action": final_date,
+                    "Ancien_Commentaire": final_note,
+                    "Statut_Paiement": final_payment,
+                    "_category": _categorize(final_statut, final_payment, bool(final_note or final_resultat != 'لم يتم التواصل بعد'))
                 }
 
                 # 3. Filtrage
@@ -436,7 +515,7 @@ async def update_lead_status_async(
                     "note": note,
                     "prochaine_action": prochaine_action
                 }
-                asyncio.create_task(crm_sync.log_and_mirror_interaction(mirror_payload))
+                await crm_sync.log_and_mirror_interaction(mirror_payload)
             except Exception as e_mirror:
                 logger.error(f"[CRM] Erreur trigger miroir: {e_mirror}")
 
