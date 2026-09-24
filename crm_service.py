@@ -156,10 +156,12 @@ def _categorize(statut_crm: str, ps: str, has_history: bool) -> str:
     return 'relance'
 
 
+
 async def get_leads_async(agent_name: str = 'all', search: str = '', status_filter: str = 'all', refresh_sheet: bool = False) -> dict:
     from google_creds import get_gspread_client
+    import aiosqlite
     
-    # Lecture DIRECTE depuis Google Sheets (Solution 2 Radicale)
+    # 1. Lecture DIRECTE depuis Google Sheets (Source de verite des eleves)
     try:
         gc = get_gspread_client()
         sh = gc.open_by_key('1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI')
@@ -168,6 +170,19 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
     except Exception as e:
         logger.error(f"Google Sheet fetch error: {e}")
         return {"data": [], "stats": {}, "agents": {}, "interactions": {}}
+        
+    # 2. Lecture de la Memoire CRM (SQLite)
+    db_status_map = {}
+    try:
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT academic_id, crm_lead_status, crm_next_action_note FROM academy_students WHERE crm_lead_status IS NOT NULL") as cur:
+                rows = await cur.fetchall()
+                for r in rows:
+                    if r['academic_id']:
+                        db_status_map[str(r['academic_id']).strip()] = r
+    except Exception as e:
+        logger.error(f"CRM SQLite fetch error: {e}")
         
     leads = []
     agent_counts = {}
@@ -193,19 +208,31 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
         if not agent:
             agent = "Non assigné"
             
-        comments = str(row[19]).strip() if len(row) > 19 else ''
+        gs_comment = str(row[19]).strip() if len(row) > 19 else ''
         appel_1 = str(row[20]).strip() if len(row) > 20 else ''
         appel_2 = str(row[21]).strip() if len(row) > 21 else ''
         appel_3 = str(row[22]).strip() if len(row) > 22 else ''
         
-        # Classification stricte :
+        # 3. STATUT INTELLIGENT (Croisement GS + CRM Memoire)
         is_paid = _is_paid(payment_status) or payment_status.lower() in ['payé / inscrit', 'exempté', 'validé']
+        
+        db_record = db_status_map.get(student_id)
+        crm_status = db_record['crm_lead_status'] if db_record else ''
+        crm_note = db_record['crm_next_action_note'] if db_record else gs_comment
         
         if is_paid:
             cat = 'paye'
             final_statut = 'Payé / Inscrit'
         else:
-            if comments:
+            if crm_status:
+                # Memoire CRM detectee !
+                final_statut = crm_status
+                if 'ferm' in crm_status.lower() or 'exclu' in crm_status.lower():
+                    cat = 'ferme'
+                else:
+                    cat = 'relance'
+            elif gs_comment:
+                # Pas en base, mais commentaire manuel sur GS
                 cat = 'relance'
                 final_statut = 'En cours'
             else:
@@ -232,10 +259,10 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
             "Pays": country,
             "Agent_Nom": agent,
             "Statut_CRM": final_statut,
-            "Dernier_Resultat": comments[:50] + "..." if len(comments) > 50 else comments,
-            "Prochaine_Action": "À appeler" if cat != 'paye' else "",
+            "Dernier_Resultat": crm_note[:50] + "..." if len(crm_note) > 50 else crm_note,
+            "Prochaine_Action": "À appeler" if cat != 'paye' and cat != 'ferme' else "",
             "Date_Prochaine_Action": None,
-            "Ancien_Commentaire": comments,
+            "Ancien_Commentaire": crm_note,
             "Appel_1": appel_1,
             "Appel_2": appel_2,
             "Appel_3": appel_3,
@@ -260,6 +287,8 @@ async def get_leads_async(agent_name: str = 'all', search: str = '', status_filt
         "interactions": interactions_stats
     }
 
+
+
 async def update_lead_status_async(
     lead_id: str,
     statut: str,
@@ -272,7 +301,7 @@ async def update_lead_status_async(
     agent_name: str = '',
     detail: str = ''
 ) -> bool:
-    """Met à jour le statut, insère dans l'historique et miroir Google Sheet."""
+    """Met à jour le statut, insère dans l'historique et sauvegarde dans la mémoire du CRM + Miroir."""
     try:
         import crm_sync
         async with aiosqlite.connect(DATABASE_PATH) as db:
@@ -280,14 +309,14 @@ async def update_lead_status_async(
             await _ensure_crm_interactions_table(db)
             now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
-            # Récupérer les infos de l'élève pour le miroir et l'historique
+            # Recuperer les infos existantes s'il y en a
             student_info = None
             async with db.execute(
                 "SELECT student_id, academic_id, first_name, last_name, phone, email FROM academy_students WHERE academic_id = ? OR student_id = ?",
                 (str(lead_id), str(lead_id))
             ) as cur:
                 student_info = await cur.fetchone()
-
+                
             st_id = student_info['student_id'] if student_info else lead_id
             ac_id = student_info['academic_id'] if student_info else lead_id
             full_name = f"{student_info['first_name'] or ''} {student_info['last_name'] or ''}".strip() if student_info else lead_id
@@ -296,71 +325,60 @@ async def update_lead_status_async(
 
             # 1. Enregistrer dans la table crm_interactions (Timeline)
             await db.execute('''
-                INSERT INTO crm_interactions 
+                INSERT INTO crm_interactions
                 (lead_id, academic_id, student_id, agent_name, tentative_resultat, detail_statut, prochaine_action, date_prochaine, note, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (str(lead_id), str(ac_id), st_id, agent_name, resultat, detail, prochaine_action, date_prochaine, note, now_str))
 
+            # 2. Mettre à jour la mémoire du CRM (academy_students)
+            parts = []
+            if resultat: parts.append(f"[{resultat}{(' - ' + detail) if detail else ''}]")
+            if prochaine_action: parts.append(f"(Action: {prochaine_action})")
+            if note: parts.append(note)
+            full_note = " ".join(parts).strip()
             
-        # 2. Mettre à jour Google Sheets (Solution 2 Radicale)
-        try:
-            from google_creds import get_gspread_client
-            gc = get_gspread_client()
-            sh = gc.open_by_key('1yxaucGpT7lrLqHb10PRsii5qso2mPveiiU2424tKCEI')
-            ws = sh.worksheet('appels 2026')
-            
-            # Find the row with this academic_id (lead_id)
-            # Col 1 is ID
-            cell = ws.find(str(lead_id), in_column=1)
-            if cell:
-                # Update Comments column (Col T = 20)
-                # full_note already contains the formatted note
-                parts = []
-                if resultat: parts.append(f"[{resultat}{(' - ' + detail) if detail else ''}]")
-                if prochaine_action: parts.append(f"(Action: {prochaine_action})")
-                if note: parts.append(note)
-                full_note = " ".join(parts).strip()
+            # Si le lead n'existe pas en base locale (ex: nouvel ajout direct dans Google Sheet)
+            if not student_info:
+                await db.execute("INSERT OR IGNORE INTO academy_students (academic_id, student_id, first_name) VALUES (?, ?, ?)", (str(lead_id), str(lead_id), 'Lead CRM'))
                 
-                existing_c = ws.cell(cell.row, 20).value or ""
-                if existing_c and existing_c.lower() not in ['oui', 'yes', 'non', '1', 'true', 'ok']:
-                    new_comment = full_note + " | " + existing_c
-                else:
-                    new_comment = full_note
-                    
-                ws.update_cell(cell.row, 20, new_comment)
-                logger.info(f"[CRM] Updated Google Sheet row {cell.row} for lead {lead_id}")
-        except Exception as sheet_e:
-            logger.error(f"[CRM] Erreur maj Google Sheet: {sheet_e}")
+            query = """
+                UPDATE academy_students
+                SET crm_lead_status = ?,
+                    crm_next_action_note = ?,
+                    crm_next_action_date = ?,
+                    crm_last_contact_at = ?,
+                    crm_assigned_to = CASE WHEN (crm_assigned_to IS NULL OR crm_assigned_to = '' OR crm_assigned_to = ' ') AND ? != '' THEN ? ELSE crm_assigned_to END
+                WHERE academic_id = ? OR student_id = ?
+            """
+            await db.execute(query, (statut, full_note, date_prochaine, now_str, agent_name, agent_name, str(lead_id), str(lead_id)))
+            await db.commit()
             
-        # Optional: also update academy_students just in case
-
-        await db.commit()
-
-        # 3. Synchronisation miroir de secours (CSV local garanti + Google Sheet si configuré)
-        try:
-            mirror_payload = {
-                "timestamp": now_str,
-                "lead_id": str(lead_id),
-                "academic_id": str(ac_id),
-                "lead_name": full_name,
-                "phone": phone,
-                "email": email,
-                "agent_name": agent_name,
-                "statut": statut,
-                "resultat": resultat,
-                "detail": detail,
-                "date_prochaine": date_prochaine,
-                "note": note,
-                "prochaine_action": prochaine_action
-            }
-            await crm_sync.log_and_mirror_interaction(mirror_payload)
-        except Exception as e_mirror:
-            logger.error(f"[CRM] Erreur trigger miroir: {e_mirror}")
-
-        return True
+            # 3. Synchronisation miroir de secours (Backup Excel)
+            try:
+                mirror_payload = {
+                    "timestamp": now_str,
+                    "lead_id": str(lead_id),
+                    "academic_id": str(ac_id),
+                    "lead_name": full_name,
+                    "phone": phone,
+                    "email": email,
+                    "agent_name": agent_name,
+                    "statut": statut,
+                    "resultat": resultat,
+                    "detail": detail,
+                    "date_prochaine": date_prochaine,
+                    "note": note,
+                    "prochaine_action": prochaine_action
+                }
+                await crm_sync.log_and_mirror_interaction(mirror_payload)
+            except Exception as e_mirror:
+                logger.error(f"[CRM] Erreur trigger miroir: {e_mirror}")
+                
+            return True
     except Exception as e:
         logger.error(f"[CRM] Erreur mise à jour lead {lead_id}: {e}")
         return False
+
 
 async def get_lead_details_async(lead_id: str) -> dict:
     """Retourne l'historique détaillé d'un lead depuis crm_interactions avec son ID."""
