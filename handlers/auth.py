@@ -107,6 +107,20 @@ async def handle_command_start(message: Message, state: FSMContext, bot: Bot):
             
             # 1. Traitement du Lien Magique depuis Email / WhatsApp
             if start_arg:
+                if start_arg.lower() in ('crm', 'admin_crm', 'crm_oswah'):
+                    crm_url = f"{base_url}/crm?token=2026"
+                    kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(text="🎯 فتح تطبيق الـ CRM المستقل 🚀", web_app=WebAppInfo(url=crm_url))],
+                        [InlineKeyboardButton(text="🌐 فتحه في المتصفح المباشر", url=crm_url)]
+                    ])
+                    await message.answer(
+                        "📊 <b>منظومة CRM المستقلة - إدارة المبيعات والمتابعات (Oswah CRM)</b>\n\n"
+                        "✨ هذا التطبيق مخصص <b>حصراً لإدارة العملاء والمتابعات اليومية</b> بدون أي أقسام أو تبويبات أخرى للطلاب أو الضيوف.\n\n"
+                        "👇 <b>اضغط على الزر أدناه للدخول إلى الـ CRM مباشرة:</b>",
+                        reply_markup=kb,
+                        parse_mode="HTML"
+                    )
+                    return
                                 # Determine source for statistics
                 click_source = "Lien Inconnu"
                 if start_arg.startswith('e1_'): click_source = 'Email 1'
@@ -391,6 +405,25 @@ async def cb_send_excel_template(callback: CallbackQuery):
             parse_mode="HTML"
         )
 
+@router.message(Command("crm"))
+@router.message(F.text == "/crm")
+async def cmd_crm(message: Message):
+    """Accès direct et indépendant au CRM Oswah (sans les onglets élèves, invités, etc.)."""
+    base_url = get_webapp_base_url()
+    crm_url = f"{base_url}/crm?token=2026"
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎯 فتح تطبيق الـ CRM المستقل 🚀", web_app=WebAppInfo(url=crm_url))],
+        [InlineKeyboardButton(text="🌐 فتحه في المتصفح المباشر", url=crm_url)]
+    ])    
+    await message.answer(
+        "📊 <b>منظومة CRM المستقلة - إدارة المبيعات والمتابعات (Oswah CRM)</b>\n\n"
+        "✨ تطبيق مخصص <b>حصراً لإدارة العملاء والمتابعات اليومية</b> (مستقل تماماً وبدون أقسام الطلاب أو الضيوف أو المواد التعليمية).\n\n"
+        "👇 <b>اضغط على الزر أدناه لفتح الـ CRM مباشرة:</b>",
+        reply_markup=kb,
+        parse_mode="HTML"
+    )
+
 @router.message(Command("federer"))
 async def cmd_federer(message: Message):
     """Menu complet pour les administrateurs et accès à toutes les applications."""
@@ -398,6 +431,7 @@ async def cmd_federer(message: Message):
     base_url = get_webapp_base_url()
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎯 تطبيق الـ CRM المستقل (CRM Uniquement) 🚀", web_app=WebAppInfo(url=f"{base_url}/crm?token=2026"))],
         [InlineKeyboardButton(text="🔐 إدارة الطلاب والـ CRM (Gateway)", web_app=WebAppInfo(url=f"{base_url}/admin_gateway.html?v=live_admin_v62"))],
         [InlineKeyboardButton(text="🧠 الإدارة الشاملة (الأسئلة والفيديوهات والمقررات)", web_app=WebAppInfo(url=f"{base_url}/admin.html?v=master_admin"))],
         [InlineKeyboardButton(text="🤖 لوحة التحكم بالدعم والـ FAQ (Support CRM)", web_app=WebAppInfo(url=f"{base_url}/support.html?v=support"))],
