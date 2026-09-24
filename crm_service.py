@@ -392,10 +392,12 @@ async def update_lead_status_async(
                 mirror_payload = {
                     "timestamp": now_str,
                     "lead_id": str(lead_id),
+                    "academic_id": str(ac_id),
                     "lead_name": full_name,
                     "phone": phone,
                     "email": email,
                     "agent_name": agent_name,
+                    "statut": statut,
                     "resultat": resultat,
                     "detail": detail,
                     "date_prochaine": date_prochaine,

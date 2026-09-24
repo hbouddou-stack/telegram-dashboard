@@ -87,6 +87,9 @@ async def get_mirror_sheet_id() -> str:
         
     return DEFAULT_MIRROR_SHEET_ID
 
+TAB_UNPAID = "المتابعات_والاتصالات"
+TAB_PAID = "الطلاب_المسددون"
+
 def _sync_to_google_sheet_sync(sheet_id: str, row_data: list, lead_dict: dict = None):
     try:
         import gspread
@@ -98,12 +101,104 @@ def _sync_to_google_sheet_sync(sheet_id: str, row_data: list, lead_dict: dict = 
         sh = gc.open_by_key(sheet_id)
         
         try:
-            worksheet = sh.worksheet(MIRROR_TAB_NAME)
+            ws_unpaid = sh.worksheet(TAB_UNPAID)
         except Exception:
-            worksheet = sh.get_worksheet(0)
+            ws_unpaid = sh.get_worksheet(0)
             
-        worksheet.append_row(row_data)
-        logger.info("[CRM_MIRROR] Ligne ajoutee avec succes sur Google Sheet Miroir (%s / %s)", sheet_id, MIRROR_TAB_NAME)
+        try:
+            ws_paid = sh.worksheet(TAB_PAID)
+        except Exception:
+            ws_paid = None
+
+        if not lead_dict:
+            ws_unpaid.append_row(row_data)
+            return True
+
+        target_id = str(lead_dict.get("academic_id") or lead_dict.get("lead_id") or "").strip()
+        statut = str(lead_dict.get("statut") or "").strip()
+        is_paid = (statut in ('مسدد', 'Payé / Inscrit', 'Exempté'))
+
+        res_summary = f"{lead_dict.get('resultat', '')} - {lead_dict.get('detail', '')}".strip(" -")
+        next_act = lead_dict.get("prochaine_action") or "معاودة الاتصال"
+        agent = lead_dict.get("agent_name", "")
+        date_proch = lead_dict.get("date_prochaine", "")
+        note = lead_dict.get("note", "")
+
+        # Chercher dans la feuille des impayés (المتابعات_والاتصالات)
+        cell = None
+        if target_id:
+            try:
+                cell = ws_unpaid.find(target_id, in_column=1)
+            except Exception as e_find:
+                logger.debug("[CRM_MIRROR] Erreur recherche cellule ID %s: %s", target_id, e_find)
+
+        if is_paid:
+            if cell and ws_paid:
+                row_num = cell.row
+                existing_values = ws_unpaid.row_values(row_num)
+                ws_unpaid.delete_rows(row_num)
+                while len(existing_values) < 12:
+                    existing_values.append("")
+                if agent:
+                    existing_values[5] = agent
+                existing_values[6] = "مسدد"
+                existing_values[7] = res_summary or "تم السداد"
+                existing_values[8] = "مكتمل (مسدد)"
+                existing_values[9] = date_proch
+                existing_values[10] = f"{existing_values[10]} | {note}".strip(" |") if note else existing_values[10]
+                existing_values[11] = "مسدد"
+                ws_paid.append_row(existing_values)
+                logger.info("[CRM_MIRROR] Lead %s déplacé vers الطلاب_المسددون", target_id)
+            elif ws_paid:
+                paid_row = [
+                    target_id,
+                    lead_dict.get("lead_name", ""),
+                    lead_dict.get("phone", ""),
+                    lead_dict.get("email", ""),
+                    "",
+                    agent,
+                    "مسدد",
+                    res_summary or "تم السداد",
+                    "مكتمل (مسدد)",
+                    date_proch,
+                    note,
+                    "مسدد"
+                ]
+                ws_paid.append_row(paid_row)
+                logger.info("[CRM_MIRROR] Lead %s ajouté directement dans الطلاب_المسددون", target_id)
+        else:
+            if next_act in ['مكتمل', 'مكتمل (مسدد)']:
+                next_act = 'معاودة الاتصال'
+            if cell:
+                row_num = cell.row
+                updated_fields = [
+                    agent,
+                    statut or "مستمر",
+                    res_summary,
+                    next_act,
+                    date_proch,
+                    note
+                ]
+                ws_unpaid.update(f"F{row_num}:K{row_num}", [updated_fields])
+                logger.info("[CRM_MIRROR] Ligne %s mise à jour pour lead %s dans %s", row_num, target_id, TAB_UNPAID)
+            else:
+                new_lead_row = [
+                    target_id,
+                    lead_dict.get("lead_name", ""),
+                    lead_dict.get("phone", ""),
+                    lead_dict.get("email", ""),
+                    "",
+                    agent,
+                    statut or "جديد",
+                    res_summary,
+                    next_act,
+                    date_proch,
+                    note,
+                    "غير مسدد"
+                ]
+                ws_unpaid.append_row(new_lead_row)
+                logger.info("[CRM_MIRROR] Nouveau lead %s inséré dans %s", target_id, TAB_UNPAID)
+
         return True
     except Exception as e:
         logger.error("[CRM_MIRROR] Erreur ecriture Google Sheet Miroir: %s", e)
